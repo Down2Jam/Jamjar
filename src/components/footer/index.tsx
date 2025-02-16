@@ -1,5 +1,4 @@
-import IconLink from "../link-components/IconLink";
-import { SiDiscord, SiForgejo, SiGithub } from "@icons-pack/react-simple-icons";
+import Socials from "./Socials";
 
 export default function Footer() {
   return (
@@ -7,12 +6,7 @@ export default function Footer() {
       <div className="flex justify-between">
         <div></div>
         <div className="flex gap-3">
-          <IconLink icon={<SiGithub />} href="https://github.com/Dare2Jam" />
-          <IconLink
-            icon={<SiForgejo />}
-            href="https://git.edikoyo.com/Ategon/Jamjar"
-          />
-          <IconLink icon={<SiDiscord />} href="https://discord.d2jam.com" />
+          <Socials />
         </div>
       </div>
     </div>
