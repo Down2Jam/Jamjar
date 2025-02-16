@@ -7,7 +7,7 @@ import { Suspense } from "react";
 export default async function Home() {
   return (
     <div className="flex justify-between flex-wrap">
-      <div className="md:w-2/3">
+      <div className="w-full md:w-2/">
         <JamHeader />
         <Suspense fallback={<div>Loading...</div>}>
           <Posts />
