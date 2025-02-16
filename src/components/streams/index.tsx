@@ -73,7 +73,7 @@ export default function Streams() {
 
   return (
     <a href={`https://twitch.tv/${currentStreamer.userName}`} target="_blank">
-      <div className="text-[#333] dark:text-white p-6 transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer">
+      <div className="text-[#333] dark:text-white transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer h-[320px]">
         <div className="absolute z-0">
           <Image
             as={NextImage}
@@ -86,21 +86,23 @@ export default function Streams() {
         </div>
         <div className="absolute z-10 bg-gradient-radial from-40% from-transparent to-black rounded-2xl w-[480px] min-w-[480px] max-w-[480px] h-[270px] min-h-[270px]" />
         <div className="absolute mt-60 flex z-20 gap-2 justify-center w-[480px] min-w-[480px] max-w-[480px] items-center">
-          <Tooltip content="Previous Page">
-            <Button
-              isIconOnly
-              variant="light"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-              onPress={() => {
-                handlePrevPage();
-              }}
-              size="sm"
-            >
-              <ChevronsLeft size={16} className="text-[#999]" />
-            </Button>
-          </Tooltip>
+          {streamers.length > 3 && (
+            <Tooltip content="Previous Page">
+              <Button
+                isIconOnly
+                variant="light"
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+                onPress={() => {
+                  handlePrevPage();
+                }}
+                size="sm"
+              >
+                <ChevronsLeft size={16} className="text-[#999]" />
+              </Button>
+            </Tooltip>
+          )}
           {streamers.length > 0 + 3 * Math.floor(currentIndex / 3.0) && (
             <Tooltip
               content={
@@ -191,19 +193,21 @@ export default function Streams() {
               />
             </Tooltip>
           )}
-          <Tooltip content="Next Page">
-            <Button
-              isIconOnly
-              variant="light"
-              onClick={(e) => {
-                e.preventDefault();
-              }}
-              onPress={handleNextPage}
-              size="sm"
-            >
-              <ChevronsRight size={16} className="text-[#999]" />
-            </Button>
-          </Tooltip>
+          {streamers.length > 3 && (
+            <Tooltip content="Next Page">
+              <Button
+                isIconOnly
+                variant="light"
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+                onPress={handleNextPage}
+                size="sm"
+              >
+                <ChevronsRight size={16} className="text-[#999]" />
+              </Button>
+            </Tooltip>
+          )}
         </div>
         <div className="absolute z-20 mt-[120px] justify-between flex items-center w-[480px] min-w-[480px] max-w-[480px] px-2">
           <Tooltip content="Previous Stream">

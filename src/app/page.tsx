@@ -3,6 +3,7 @@ import Timers from "@/components/timers";
 import Streams from "@/components/streams";
 import JamHeader from "@/components/jam-header";
 import { Suspense } from "react";
+import Sidebar from "@/components/sidebar";
 
 export default async function Home() {
   return (
@@ -13,10 +14,7 @@ export default async function Home() {
           <Posts />
         </Suspense>
       </div>
-      <div>
-        <Timers />
-        <Streams />
-      </div>
+      <Sidebar />
     </div>
   );
 }

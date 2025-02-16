@@ -1,15 +1,25 @@
 "use client";
 
-import { Button, Link } from "@nextui-org/react";
+import { Button, Link, Tooltip } from "@nextui-org/react";
 import { ReactNode, useEffect, useState } from "react";
 
 interface ButtonLinkProps {
   icon?: ReactNode;
   href: string;
   name: string;
+  tooltip?: string;
+  isIconOnly?: boolean;
+  size?: "sm" | "md";
 }
 
-export default function ButtonLink({ icon, href, name }: ButtonLinkProps) {
+export default function ButtonLink({
+  icon,
+  href,
+  name,
+  tooltip,
+  isIconOnly = false,
+  size = "md",
+}: ButtonLinkProps) {
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
 
   useEffect(() => {
@@ -26,20 +36,45 @@ export default function ButtonLink({ icon, href, name }: ButtonLinkProps) {
     };
   }, []);
 
-  return (
-    <Link
-      href={href}
-      className={`flex justify-center duration-500 ease-in-out transition-all transform ${
-        !reduceMotion ? "hover:scale-110" : ""
-      }`}
-    >
-      <Button
-        endContent={icon}
-        className={`text-[#333] dark:text-white border-[#333]/50 dark:border-white/50 transition-all transform !duration-500 ease-in-out`}
-        variant="bordered"
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip}>
+        <Link
+          href={href}
+          className={`flex justify-center duration-500 ease-in-out transition-all transform ${
+            !reduceMotion ? "hover:scale-110" : ""
+          }`}
+        >
+          <Button
+            endContent={icon}
+            className={`text-[#333] dark:text-white border-[#85bdd2] dark:border-[#1892b3] bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
+            variant="bordered"
+            isIconOnly={isIconOnly}
+            size={size}
+          >
+            {name}
+          </Button>
+        </Link>
+      </Tooltip>
+    );
+  } else {
+    return (
+      <Link
+        href={href}
+        className={`flex justify-center duration-500 ease-in-out transition-all transform ${
+          !reduceMotion ? "hover:scale-110" : ""
+        }`}
       >
-        {name}
-      </Button>
-    </Link>
-  );
+        <Button
+          endContent={icon}
+          className={`text-[#333] dark:text-white border-[#85bdd2] dark:border-[#1892b3] bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
+          variant="bordered"
+          isIconOnly={isIconOnly}
+          size={size}
+        >
+          {name}
+        </Button>
+      </Link>
+    );
+  }
 }
