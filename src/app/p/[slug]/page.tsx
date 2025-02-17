@@ -69,6 +69,7 @@ export default function PostPage() {
 
   useEffect(() => {
     const loadUserAndPosts = async () => {
+      try {
       setLoading(true);
 
       // Fetch the user
@@ -79,7 +80,10 @@ export default function PostPage() {
       const postResponse = await getPost(`${slug}`, userData?.slug);
       setPost(await postResponse.json());
 
-      setLoading(false);
+      setLoading(false);              
+      } catch (error) {
+        // TODO: Do somthing with error
+      }
     };
 
     loadUserAndPosts();

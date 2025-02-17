@@ -52,6 +52,7 @@ export default function CreatePostPage() {
     setMounted(true);
 
     const load = async () => {
+      try {
       const response = await getSelf();
 
       const localuser = await response.json();
@@ -95,7 +96,10 @@ export default function CreatePostPage() {
         }
 
         setOptions(newoptions);
-      }
+      }     
+    } catch (error) {
+        // TODO: Do something with error
+    }
     };
     load();
   }, []);

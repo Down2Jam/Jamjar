@@ -27,6 +27,7 @@ export default function UserPage() {
   useEffect(() => {
     loadUser();
     async function loadUser() {
+      try {
       if (!hasCookie("token")) {
         setUser(undefined);
         redirect("/");
@@ -46,7 +47,10 @@ export default function UserPage() {
         setEmail(data.email ?? "");
       } else {
         setUser(undefined);
-      }
+      }      
+    } catch (error) {
+      // TODO: Do something with error
+    }
     }
   }, [pathname]);
 

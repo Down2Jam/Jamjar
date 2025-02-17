@@ -41,11 +41,15 @@ export default function GamePage({ params }: { params: Promise<{ gameSlug: strin
 
       // Fetch the logged-in user data
       if (getCookie("token")) {
+        try {
         const userResponse = await getSelf();
 
         if (userResponse.ok) {
           const userData = await userResponse.json();
           setUser(userData);
+        }
+        } catch (error) {
+            // TODO: Do something with error
         }
       }
     };

@@ -30,6 +30,7 @@ export default function MobileNavbar() {
   useEffect(() => {
     loadUser();
     async function loadUser() {
+      try{
       const jamResponse = await getCurrentJam();
       const currentJam = jamResponse?.jam;
       setJam(currentJam);
@@ -55,6 +56,9 @@ export default function MobileNavbar() {
         setUser(user);
       } else {
         setUser(undefined);
+      }
+      } catch(error) {
+        // TODO: Do something with error
       }
     }
   }, [pathname]);

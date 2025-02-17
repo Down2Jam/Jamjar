@@ -161,6 +161,7 @@ export default function Posts() {
     const loadUserAndPosts = async () => {
       setLoading(true);
 
+      try {
       const tagResponse = await getTags();
 
       if (tagResponse.ok) {
@@ -214,6 +215,9 @@ export default function Posts() {
       );
       setStickyPosts(await stickyPostsResponse.json());
       setLoading(false);
+    } catch(error) {
+      // TODO: Do something with error
+    }
     };
 
     loadUserAndPosts();
