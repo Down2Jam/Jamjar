@@ -70,19 +70,21 @@ export default function PostPage() {
   useEffect(() => {
     const loadUserAndPosts = async () => {
       try {
-      setLoading(true);
+        setLoading(true);
 
-      // Fetch the user
-      const userResponse = await getSelf();
-      const userData = userResponse.ok ? await userResponse.json() : undefined;
-      setUser(userData);
+        // Fetch the user
+        const userResponse = await getSelf();
+        const userData = userResponse.ok
+          ? await userResponse.json()
+          : undefined;
+        setUser(userData);
 
-      const postResponse = await getPost(`${slug}`, userData?.slug);
-      setPost(await postResponse.json());
+        const postResponse = await getPost(`${slug}`, userData?.slug);
+        setPost(await postResponse.json());
 
-      setLoading(false);              
+        setLoading(false);
       } catch (error) {
-        // TODO: Do somthing with error
+        console.error(error);
       }
     };
 

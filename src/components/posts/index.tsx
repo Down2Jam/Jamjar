@@ -162,62 +162,64 @@ export default function Posts() {
       setLoading(true);
 
       try {
-      const tagResponse = await getTags();
+        const tagResponse = await getTags();
 
-      if (tagResponse.ok) {
-        const tagObject: {
-          [category: string]: { tags: TagType[]; priority: number };
-        } = {};
+        if (tagResponse.ok) {
+          const tagObject: {
+            [category: string]: { tags: TagType[]; priority: number };
+          } = {};
 
-        for (const tag of await tagResponse.json()) {
-          if (tag.name == "D2Jam") {
-            continue;
-          }
+          for (const tag of await tagResponse.json()) {
+            if (tag.name == "D2Jam") {
+              continue;
+            }
 
-          if (tag.category) {
-            if (tag.category.name in tagObject) {
-              tagObject[tag.category.name].tags.push(tag);
-            } else {
-              tagObject[tag.category.name] = {
-                tags: [tag],
-                priority: tag.category.priority,
-              };
+            if (tag.category) {
+              if (tag.category.name in tagObject) {
+                tagObject[tag.category.name].tags.push(tag);
+              } else {
+                tagObject[tag.category.name] = {
+                  tags: [tag],
+                  priority: tag.category.priority,
+                };
+              }
             }
           }
+
+          setTags(tagObject);
         }
 
-        setTags(tagObject);
+        // Fetch the user
+        const userResponse = await getSelf();
+        const userData = userResponse.ok
+          ? await userResponse.json()
+          : undefined;
+        setUser(userData);
+
+        // Fetch posts (with userSlug if user is available)
+        const postsResponse = await getPosts(
+          sort,
+          time,
+          false,
+          tagRules,
+          userData?.slug
+        );
+        setPosts(await postsResponse.json());
+
+        // Sticky posts
+        // Fetch posts (with userSlug if user is available)
+        const stickyPostsResponse = await getPosts(
+          sort,
+          time,
+          true,
+          tagRules,
+          userData?.slug
+        );
+        setStickyPosts(await stickyPostsResponse.json());
+        setLoading(false);
+      } catch (error) {
+        console.error(error);
       }
-
-      // Fetch the user
-      const userResponse = await getSelf();
-      const userData = userResponse.ok ? await userResponse.json() : undefined;
-      setUser(userData);
-
-      // Fetch posts (with userSlug if user is available)
-      const postsResponse = await getPosts(
-        sort,
-        time,
-        false,
-        tagRules,
-        userData?.slug
-      );
-      setPosts(await postsResponse.json());
-
-      // Sticky posts
-      // Fetch posts (with userSlug if user is available)
-      const stickyPostsResponse = await getPosts(
-        sort,
-        time,
-        true,
-        tagRules,
-        userData?.slug
-      );
-      setStickyPosts(await stickyPostsResponse.json());
-      setLoading(false);
-    } catch(error) {
-      // TODO: Do something with error
-    }
     };
 
     loadUserAndPosts();

@@ -1,18 +1,22 @@
 "use client";
 
-import { use } from 'react';
-import { useState, useEffect } from 'react';
-import { getCookie } from '@/helpers/cookie';
-import Link from 'next/link';
-import { Button } from '@nextui-org/react';
-import { useRouter } from 'next/navigation';
-import { GameType } from '@/types/GameType';
-import { UserType } from '@/types/UserType';
-import { DownloadLinkType } from '@/types/DownloadLinkType';
-import { getGame } from '@/requests/game';
-import { getSelf } from '@/requests/user';
+import { use } from "react";
+import { useState, useEffect } from "react";
+import { getCookie } from "@/helpers/cookie";
+import Link from "next/link";
+import { Button } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
+import { GameType } from "@/types/GameType";
+import { UserType } from "@/types/UserType";
+import { DownloadLinkType } from "@/types/DownloadLinkType";
+import { getGame } from "@/requests/game";
+import { getSelf } from "@/requests/user";
 
-export default function GamePage({ params }: { params: Promise<{ gameSlug: string }> }) {
+export default function GamePage({
+  params,
+}: {
+  params: Promise<{ gameSlug: string }>;
+}) {
   const resolvedParams = use(params);
   const gameSlug = resolvedParams.gameSlug;
   const [game, setGame] = useState<GameType | null>(null);
@@ -26,30 +30,30 @@ export default function GamePage({ params }: { params: Promise<{ gameSlug: strin
 
       if (gameResponse.ok) {
         const gameData = await gameResponse.json();
-       
+
         const filteredContributors = gameData.contributors.filter(
-            (contributor: UserType) => contributor.id !== gameData.author.id
+          (contributor: UserType) => contributor.id !== gameData.author.id
         );
 
         const updatedGameData = {
-            ...gameData,
-            contributors: filteredContributors,
+          ...gameData,
+          contributors: filteredContributors,
         };
-       
+
         setGame(updatedGameData);
       }
 
       // Fetch the logged-in user data
       if (getCookie("token")) {
         try {
-        const userResponse = await getSelf();
+          const userResponse = await getSelf();
 
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          setUser(userData);
-        }
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            setUser(userData);
+          }
         } catch (error) {
-            // TODO: Do something with error
+          console.error(error);
         }
       }
     };
@@ -63,7 +67,9 @@ export default function GamePage({ params }: { params: Promise<{ gameSlug: strin
   const isEditable =
     user &&
     (user.id === game.author.id ||
-      game.contributors.some((contributor: UserType) => contributor.id === user.id));
+      game.contributors.some(
+        (contributor: UserType) => contributor.id === user.id
+      ));
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -84,19 +90,26 @@ export default function GamePage({ params }: { params: Promise<{ gameSlug: strin
       {/* Authors */}
       <div className="mb-8">
         <p className="text-gray-600">
-          Created by{' '}
-          <Link href={`/users/${game.author.slug}`} className="text-blue-500 hover:underline">
+          Created by{" "}
+          <Link
+            href={`/users/${game.author.slug}`}
+            className="text-blue-500 hover:underline"
+          >
             {game.author.name}
           </Link>
           {game.contributors.length > 0 && (
             <>
-              {' '}with{' '}
+              {" "}
+              with{" "}
               {game.contributors.map((contributor: UserType, index: number) => (
                 <span key={contributor.id}>
-                  <Link href={`/users/${contributor.slug}`} className="text-blue-500 hover:underline">
+                  <Link
+                    href={`/users/${contributor.slug}`}
+                    className="text-blue-500 hover:underline"
+                  >
                     {contributor.name}
                   </Link>
-                  {index < game.contributors.length - 1 ? ', ' : ''}
+                  {index < game.contributors.length - 1 ? ", " : ""}
                 </span>
               ))}
             </>
@@ -106,7 +119,10 @@ export default function GamePage({ params }: { params: Promise<{ gameSlug: strin
 
       <div className="mb-8">
         <h2 className="text-2xl font-semibold mb-4">About</h2>
-        <div className="prose-neutral prose-lg" dangerouslySetInnerHTML={{ __html: game.description ?? '' }} />
+        <div
+          className="prose-neutral prose-lg"
+          dangerouslySetInnerHTML={{ __html: game.description ?? "" }}
+        />
       </div>
 
       <div className="mb-8">

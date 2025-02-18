@@ -53,53 +53,53 @@ export default function CreatePostPage() {
 
     const load = async () => {
       try {
-      const response = await getSelf();
+        const response = await getSelf();
 
-      const localuser = await response.json();
-      setUser(localuser);
+        const localuser = await response.json();
+        setUser(localuser);
 
-      const tagResponse = await getTags();
+        const tagResponse = await getTags();
 
-      if (tagResponse.ok) {
-        const newoptions: {
-          value: string;
-          label: ReactNode;
-          id: number;
-          isFixed: boolean;
-        }[] = [];
+        if (tagResponse.ok) {
+          const newoptions: {
+            value: string;
+            label: ReactNode;
+            id: number;
+            isFixed: boolean;
+          }[] = [];
 
-        for (const tag of await tagResponse.json()) {
-          if (tag.modOnly && !localuser.mod) {
-            continue;
+          for (const tag of await tagResponse.json()) {
+            if (tag.modOnly && !localuser.mod) {
+              continue;
+            }
+            newoptions.push({
+              value: tag.name,
+              id: tag.id,
+              label: (
+                <div className="flex gap-2 items-center">
+                  {tag.icon && (
+                    <Avatar
+                      className="w-6 h-6 min-w-6 min-h-6"
+                      size="sm"
+                      src={tag.icon}
+                      classNames={{ base: "bg-transparent" }}
+                    />
+                  )}
+                  <p>
+                    {tag.name}
+                    {tag.modOnly ? " (Mod Only)" : ""}
+                  </p>
+                </div>
+              ),
+              isFixed: tag.alwaysAdded,
+            });
           }
-          newoptions.push({
-            value: tag.name,
-            id: tag.id,
-            label: (
-              <div className="flex gap-2 items-center">
-                {tag.icon && (
-                  <Avatar
-                    className="w-6 h-6 min-w-6 min-h-6"
-                    size="sm"
-                    src={tag.icon}
-                    classNames={{ base: "bg-transparent" }}
-                  />
-                )}
-                <p>
-                  {tag.name}
-                  {tag.modOnly ? " (Mod Only)" : ""}
-                </p>
-              </div>
-            ),
-            isFixed: tag.alwaysAdded,
-          });
-        }
 
-        setOptions(newoptions);
-      }     
-    } catch (error) {
-        // TODO: Do something with error
-    }
+          setOptions(newoptions);
+        }
+      } catch (error) {
+        console.error(error);
+      }
     };
     load();
   }, []);

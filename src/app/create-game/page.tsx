@@ -80,11 +80,11 @@ export default function CreateGamePage() {
 
     const load = async () => {
       try {
-      const response = await getSelf();
-      const localuser = await response.json();
-      setUser(localuser);
+        const response = await getSelf();
+        const localuser = await response.json();
+        setUser(localuser);
 
-      /*
+        /*
       const tagResponse = await getTags();
 
       if (tagResponse.ok) {
@@ -126,9 +126,9 @@ export default function CreateGamePage() {
         setSelectedTags(newoptions.filter((tag) => tag.isFixed));
       }
         */
-    } catch (error) {
-      // TODO: Do something with error
-    }
+      } catch (error) {
+        console.error(error);
+      }
     };
     load();
   }, []);

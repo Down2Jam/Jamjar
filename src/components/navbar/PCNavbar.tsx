@@ -62,62 +62,62 @@ export default function PCNavbar() {
     loadUser();
     async function loadUser() {
       try {
-      const jamResponse = await getCurrentJam();
-      const currentJam = jamResponse?.jam;
-      setJam(currentJam);
+        const jamResponse = await getCurrentJam();
+        const currentJam = jamResponse?.jam;
+        setJam(currentJam);
 
-      if (!hasCookie("token")) {
-        setUser(undefined);
-        return;
-      }
+        if (!hasCookie("token")) {
+          setUser(undefined);
+          return;
+        }
 
-      const response = await getSelf();
+        const response = await getSelf();
 
-      const user = await response.json();
+        const user = await response.json();
 
-      // Check if user has a game in current jam
-      const gameResponse = await getCurrentGame();
+        // Check if user has a game in current jam
+        const gameResponse = await getCurrentGame();
 
-      if (gameResponse.ok) {
-        const gameData = await gameResponse.json();
-        console.log("Game Data:", gameData); // Log game data
-        console.log("User Data:", user); // Log user data
+        if (gameResponse.ok) {
+          const gameData = await gameResponse.json();
+          console.log("Game Data:", gameData); // Log game data
+          console.log("User Data:", user); // Log user data
 
-        if (gameData) {
-          // Check if the logged-in user is either the creator or a contributor
-          const isContributor =
-            gameData.author?.id === user.id || // Check if logged-in user is the author
-            gameData.contributors?.some(
-              (contributor: UserType) => contributor.id === user.id
-            ); // Check if logged-in user is a contributor
+          if (gameData) {
+            // Check if the logged-in user is either the creator or a contributor
+            const isContributor =
+              gameData.author?.id === user.id || // Check if logged-in user is the author
+              gameData.contributors?.some(
+                (contributor: UserType) => contributor.id === user.id
+              ); // Check if logged-in user is a contributor
 
-          console.log("Is Contributor:", isContributor); // Log whether the user is a contributor
+            console.log("Is Contributor:", isContributor); // Log whether the user is a contributor
 
-          if (isContributor) {
-            setHasGame(gameData); // Set the game data for "My Game"
-          } else {
-            setHasGame(null); // No game associated with this user
+            if (isContributor) {
+              setHasGame(gameData); // Set the game data for "My Game"
+            } else {
+              setHasGame(null); // No game associated with this user
+            }
           }
         }
-      }
 
-      if (
-        currentJam &&
-        user.jams.filter((jam: JamType) => jam.id == currentJam.id).length > 0
-      ) {
-        setIsInJam(true);
-      } else {
-        setIsInJam(false);
-      }
+        if (
+          currentJam &&
+          user.jams.filter((jam: JamType) => jam.id == currentJam.id).length > 0
+        ) {
+          setIsInJam(true);
+        } else {
+          setIsInJam(false);
+        }
 
-      if (response.status == 200) {
-        setUser(user);
-      } else {
-        setUser(undefined);
+        if (response.status == 200) {
+          setUser(user);
+        } else {
+          setUser(undefined);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch(error) {
-      // TODO: Do something with error
-    }
     }
   }, [pathname]);
 

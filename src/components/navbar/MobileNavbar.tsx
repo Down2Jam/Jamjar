@@ -30,35 +30,35 @@ export default function MobileNavbar() {
   useEffect(() => {
     loadUser();
     async function loadUser() {
-      try{
-      const jamResponse = await getCurrentJam();
-      const currentJam = jamResponse?.jam;
-      setJam(currentJam);
+      try {
+        const jamResponse = await getCurrentJam();
+        const currentJam = jamResponse?.jam;
+        setJam(currentJam);
 
-      if (!hasCookie("token")) {
-        setUser(undefined);
-        return;
-      }
+        if (!hasCookie("token")) {
+          setUser(undefined);
+          return;
+        }
 
-      const response = await getSelf();
-      const user = await response.json();
+        const response = await getSelf();
+        const user = await response.json();
 
-      if (
-        currentJam &&
-        user.jams.filter((jam: JamType) => jam.id == currentJam.id).length > 0
-      ) {
-        setIsInJam(true);
-      } else {
-        setIsInJam(false);
-      }
+        if (
+          currentJam &&
+          user.jams.filter((jam: JamType) => jam.id == currentJam.id).length > 0
+        ) {
+          setIsInJam(true);
+        } else {
+          setIsInJam(false);
+        }
 
-      if (response.status == 200) {
-        setUser(user);
-      } else {
-        setUser(undefined);
-      }
-      } catch(error) {
-        // TODO: Do something with error
+        if (response.status == 200) {
+          setUser(user);
+        } else {
+          setUser(undefined);
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
   }, [pathname]);
