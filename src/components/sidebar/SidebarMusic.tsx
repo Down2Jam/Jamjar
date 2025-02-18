@@ -23,6 +23,7 @@ export default function SidebarMusic() {
           thumbnail="/images/D2J_Icon.png"
           format="audio/ogg"
           song="/music/game.ogg"
+          game="Test"
         />
         <SidebarSong
           name="Iguanodon"
@@ -30,6 +31,7 @@ export default function SidebarMusic() {
           thumbnail="/images/D2J_Icon.png"
           format="audio/wav"
           song="/music/iguanodon.wav"
+          game="Test"
         />
       </div>
       <div className="flex justify-center gap-2">
