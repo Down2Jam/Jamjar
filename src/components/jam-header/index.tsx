@@ -57,7 +57,7 @@ export default function JamHeader() {
   };
 
   return (
-    <a href="/about">
+    <a href="/about" className="relative">
       <div className="bg-[#7090b9] dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
         {/* Jam Header */}
         <div className="flex">
