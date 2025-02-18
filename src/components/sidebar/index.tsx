@@ -1,14 +1,7 @@
-"use client";
-
-import { Spacer } from "@nextui-org/react";
-import Streams from "../streams";
-import Timers from "../timers";
 import SidebarBanner from "./SidebarBanner";
 import SidebarButtons from "./SidebarButtons";
-import SidebarEvents from "./SidebarEvents";
-import SidebarGames from "./SidebarGames";
 import SidebarStats from "./SidebarStats";
-import SidebarMusic from "./SidebarMusic";
+import SidebarStreams from "./SidebarStreams";
 
 export default function Sidebar() {
   return (
@@ -16,13 +9,13 @@ export default function Sidebar() {
       <SidebarBanner />
       <SidebarButtons />
       <SidebarStats />
-      <Streams />
-      <Spacer y={20} />
-      <SidebarEvents />
-      <Spacer y={20} />
+      <SidebarStreams />
+      {/* <Spacer y={20} />
+      <SidebarEvents /> */}
+      {/* <Spacer y={20} />
       <SidebarGames />
       <Spacer y={20} />
-      <SidebarMusic />
+      <SidebarMusic /> */}
     </div>
   );
 }

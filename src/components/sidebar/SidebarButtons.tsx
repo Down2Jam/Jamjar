@@ -1,25 +1,9 @@
-"use client";
-
-import { Image } from "@nextui-org/react";
-import NextImage from "next/image";
-import Streams from "../streams";
-import Timers from "../timers";
 import ButtonLink from "../link-components/ButtonLink";
 import {
-  SiActivitypub,
   SiBluesky,
   SiDiscord,
   SiForgejo,
   SiGithub,
-  SiInstagram,
-  SiLemmy,
-  SiMastodon,
-  SiOpencollective,
-  SiPixelfed,
-  SiReddit,
-  SiTiktok,
-  SiTwitch,
-  SiYoutube,
 } from "@icons-pack/react-simple-icons";
 
 export default function SidebarButtons() {
@@ -43,13 +27,27 @@ export default function SidebarButtons() {
           size="sm"
         />
         <ButtonLink
-          icon={<SiMastodon size={16} />}
-          href="https://mastodon.d2jam.com"
+          icon={<SiGithub size={16} />}
+          href="https://github.d2jam.com"
           name=""
-          tooltip="Mastodon"
+          tooltip="GitHub"
           isIconOnly
           size="sm"
         />
+        <ButtonLink
+          icon={<SiForgejo size={16} />}
+          href="https://forgejo.d2jam.com"
+          name=""
+          tooltip="Forgejo"
+          isIconOnly
+          size="sm"
+        />
+      </div>
+    </div>
+  );
+}
+
+/*
         <ButtonLink
           icon={<SiReddit size={16} />}
           href="https://reddit.d2jam.com"
@@ -107,22 +105,6 @@ export default function SidebarButtons() {
           size="sm"
         />
         <ButtonLink
-          icon={<SiGithub size={16} />}
-          href="https://github.d2jam.com"
-          name=""
-          tooltip="GitHub"
-          isIconOnly
-          size="sm"
-        />
-        <ButtonLink
-          icon={<SiForgejo size={16} />}
-          href="https://forgejo.d2jam.com"
-          name=""
-          tooltip="Forgejo"
-          isIconOnly
-          size="sm"
-        />
-        <ButtonLink
           icon={<SiOpencollective size={16} />}
           href="https://opencollective.d2jam.com"
           name=""
@@ -130,7 +112,4 @@ export default function SidebarButtons() {
           isIconOnly
           size="sm"
         />
-      </div>
-    </div>
-  );
-}
+*/

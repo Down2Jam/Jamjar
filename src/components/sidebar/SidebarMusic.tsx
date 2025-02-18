@@ -1,21 +1,8 @@
 "use client";
 
-import { Image } from "@nextui-org/react";
-import NextImage from "next/image";
 import ButtonAction from "../link-components/ButtonAction";
 import { ExternalLink, MoreHorizontal } from "lucide-react";
-import AudioPlayer from "react-modern-audio-player";
 import SidebarSong from "./SidebarSong";
-
-const playList = [
-  {
-    name: "Iguanodon",
-    writer: "Ategon",
-    img: "images/D2J_Icon.png",
-    src: "iguanodon.wav",
-    id: 1,
-  },
-];
 
 export default function SidebarMusic() {
   return (

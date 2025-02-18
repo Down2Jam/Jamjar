@@ -1,11 +1,5 @@
-"use client";
-
 import { Image } from "@nextui-org/react";
 import NextImage from "next/image";
-import Streams from "../streams";
-import Timers from "../timers";
-import ButtonLink from "../link-components/ButtonLink";
-import { SiDiscord } from "@icons-pack/react-simple-icons";
 
 export default function SidebarBanner() {
   return (

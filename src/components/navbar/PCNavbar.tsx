@@ -35,8 +35,6 @@ import NavbarIconLink from "./NavbarIconLink";
 import ThemeToggle from "../theme-toggle";
 import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
-import IconLink from "../link-components/IconLink";
-import { SiBluesky, SiDiscord } from "@icons-pack/react-simple-icons";
 
 export default function PCNavbar() {
   const pathname = usePathname();
@@ -189,11 +187,6 @@ export default function PCNavbar() {
         {user && user.mod && (
           <NavbarIconLink icon={<Shield />} href="/reports" />
         )}
-        <IconLink
-          icon={<SiBluesky />}
-          href="https://bsky.app/profile/d2jam.com"
-        />
-        <IconLink icon={<SiDiscord />} href="https://discord.d2jam.com" />
         <ThemeToggle />
         <Divider orientation="vertical" className="h-1/2" />
         {!user && (

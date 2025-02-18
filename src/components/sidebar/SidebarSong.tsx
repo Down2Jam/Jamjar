@@ -1,18 +1,8 @@
 "use client";
 
-import { Button, Image } from "@nextui-org/react";
+import { Image } from "@nextui-org/react";
 import NextImage from "next/image";
-import ButtonAction from "../link-components/ButtonAction";
-import {
-  ExternalLink,
-  MoreHorizontal,
-  PauseCircleIcon,
-  PlayCircle,
-  PlayCircleIcon,
-  StopCircleIcon,
-} from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import WavesurferPlayer from "@wavesurfer/react";
+import { useEffect } from "react";
 
 interface SidebarSongProps {
   name: string;
@@ -25,33 +15,31 @@ interface SidebarSongProps {
 
 export default function SidebarSong({
   name,
-  artist,
   thumbnail,
   song,
-  format,
   game,
 }: SidebarSongProps) {
-  const songRef = useRef<HTMLAudioElement>(null);
-  const [play, setPlay] = useState(false);
-  const visualizerRef = useRef<HTMLCanvasElement>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [wavesurfer, setWavesurfer] = useState(null);
+  // const songRef = useRef<HTMLAudioElement>(null);
+  // const [play, setPlay] = useState(false);
+  // const visualizerRef = useRef<HTMLCanvasElement>(null);
+  // const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  // const [wavesurfer, setWavesurfer] = useState(null);
 
-  const onReady = (ws) => {
-    setWavesurfer(ws);
-    setPlay(false);
-  };
+  // const onReady = (ws) => {
+  //   setWavesurfer(ws);
+  //   setPlay(false);
+  // };
 
-  const onPlayPause = () => {
-    wavesurfer && wavesurfer.playPause();
-  };
+  // const onPlayPause = () => {
+  //   wavesurfer && wavesurfer.playPause();
+  // };
 
   useEffect(() => {
     async function fetchAudioBlob() {
       try {
-        const response = await fetch(song);
-        const blob = await response.blob();
-        setAudioBlob(blob);
+        //const response = await fetch(song);
+        //const blob = await response.blob();
+        //setAudioBlob(blob);
       } catch (error) {
         console.error("Error fetching audio blob:", error);
       }
@@ -75,7 +63,7 @@ export default function SidebarSong({
           <p className="text-2xl">{name}</p>
           <p>{game}</p>
         </div>
-        <div className="w-full">
+        {/* <div className="w-full">
           <WavesurferPlayer
             height={80}
             waveColor="#bb4481"
@@ -84,7 +72,7 @@ export default function SidebarSong({
             onPlay={() => setPlay(true)}
             onPause={() => setPlay(false)}
           />
-        </div>
+        </div> */}
       </div>
     </>
   );

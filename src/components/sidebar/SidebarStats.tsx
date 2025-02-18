@@ -1,29 +1,14 @@
-"use client";
-
-import { Image, Spacer } from "@nextui-org/react";
-import NextImage from "next/image";
-import Streams from "../streams";
+import { Spacer } from "@nextui-org/react";
 import Timers from "../timers";
-import ButtonLink from "../link-components/ButtonLink";
-import { SiDiscord } from "@icons-pack/react-simple-icons";
-import { useEffect, useState } from "react";
 import { getCurrentJam } from "@/helpers/jam";
 
-export default function SidebarStats() {
-  const [stats, setStats] = useState<{ entrants: number }>();
-  useEffect(() => {
-    loadUser();
-    async function loadUser() {
-      const jamResponse = await getCurrentJam();
-      console.log(jamResponse);
-      console.log(jamResponse?.jam);
-      const currentJam = jamResponse?.jam;
-      setStats({ entrants: currentJam?.users.length || 0 });
-    }
-  }, []);
+export default async function SidebarStats() {
+  const jamResponse = await getCurrentJam();
+  const currentJam = jamResponse?.jam;
+  const stats = { entrants: currentJam?.users.length || 0 };
 
   return (
-    <div className="border rounded-xl p-4 text-center bg-[#1c2026] border-[#1892b3]">
+    <div className="border rounded-xl p-4 text-[#333] dark:text-white text-center bg-[#ffffff] dark:bg-[#18181a] border-[#dbdbdb] dark:border-[#1f1f21] shadow-2xl">
       <Timers />
       <Spacer />
       <p>Entrants</p>
