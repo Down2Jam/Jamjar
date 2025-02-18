@@ -8,7 +8,7 @@ export default function NavbarSearchbar() {
         placeholder="Search"
         classNames={{
           inputWrapper:
-            "!duration-500 ease-in-out transition-all border-[#d9d9da] dark:border-[#8e8e8f] dark:bg-[#222222] bg-[#fff] border-2",
+            "!duration-500 ease-in-out transition-all border-[#d9d9da] dark:border-[#444] dark:bg-[#222222] bg-[#fff] border-2",
         }}
         endContent={<Search />}
       />

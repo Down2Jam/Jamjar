@@ -43,7 +43,7 @@ export default function ThemeToggle() {
 
   return (
     <div
-      className={`border-[#d9d9da] dark:border-[#8e8e8f] dark:bg-[#222222] bg-[#fff] border-2 rounded-xl text-[#333] dark:text-white ${
+      className={`border-[#d9d9da] dark:border-[#444] dark:bg-[#222222] bg-[#fff] border-2 rounded-xl text-[#333] dark:text-white ${
         !reduceMotion ? "hover:scale-[115%]" : ""
       } transform !duration-250 !ease-linear !transition-all`}
     >
