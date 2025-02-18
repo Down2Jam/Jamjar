@@ -8,6 +8,7 @@ import {
   NavbarItem,
 } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
+import { LogOut, Settings, User } from "lucide-react";
 
 interface NavbarUserProps {
   user: UserType;
@@ -32,6 +33,7 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
               key="profile"
               className="text-[#333] dark:text-white"
               href={`/u/${user.slug}`}
+              startContent={<User size={16} />}
             >
               Profile
             </DropdownItem>
@@ -40,6 +42,7 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
               key="settings"
               className="text-[#333] dark:text-white"
               href="/settings"
+              startContent={<Settings size={16} />}
             >
               Settings
             </DropdownItem>
@@ -49,6 +52,7 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
             color="danger"
             className="text-danger"
             href="/logout"
+            startContent={<LogOut size={16} />}
           >
             Logout
           </DropdownItem>

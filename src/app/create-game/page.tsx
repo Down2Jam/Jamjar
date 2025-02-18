@@ -184,23 +184,10 @@ export default function CreateGamePage() {
         onSubmit={async (e) => {
           e.preventDefault();
 
-          if (!title && !content) {
+          if (!title) {
             setErrors({
               title: "Please enter a valid title",
-              content: "Please enter valid content",
             });
-            toast.error("Please enter valid content");
-            return;
-          }
-
-          if (!title) {
-            setErrors({ title: "Please enter a valid title" });
-            return;
-          }
-
-          if (!content) {
-            setErrors({ content: "Please enter valid content" });
-            toast.error("Please enter valid content");
             return;
           }
 

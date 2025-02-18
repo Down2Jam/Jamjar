@@ -86,7 +86,6 @@ export default function Editor({
         types: ["heading", "paragraph"],
       }),
       Dropcursor,
-      Image,
       TaskItem,
       TaskList,
       Table,
