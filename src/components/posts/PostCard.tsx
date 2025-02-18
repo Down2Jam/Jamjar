@@ -303,7 +303,7 @@ export default function PostCard({
                                 toast.success("Unsticked post");
                                 window.location.reload();
                               } else {
-                                toast.error("Error while removing post");
+                                toast.error("Error while unstickying post");
                               }
                             }}
                           >
@@ -321,7 +321,7 @@ export default function PostCard({
                                 toast.success("Stickied post");
                                 window.location.reload();
                               } else {
-                                toast.error("Error while removing post");
+                                toast.error("Error while stickying post");
                               }
                             }}
                           >

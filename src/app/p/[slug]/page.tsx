@@ -271,7 +271,9 @@ export default function PostPage() {
                                       toast.success("Unsticked post");
                                       redirect("/");
                                     } else {
-                                      toast.error("Error while removing post");
+                                      toast.error(
+                                        "Error while unstickying post"
+                                      );
                                     }
                                   }}
                                 >
@@ -292,7 +294,7 @@ export default function PostPage() {
                                       toast.success("Unsticked post");
                                       redirect("/");
                                     } else {
-                                      toast.error("Error while removing post");
+                                      toast.error("Error while stickying post");
                                     }
                                   }}
                                 >
