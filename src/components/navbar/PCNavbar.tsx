@@ -222,7 +222,9 @@ export default function PCNavbar() {
           />
         )}
         {user && (
+          // <Badge content="1" color="primary" placement="bottom-right">
           <NavbarButtonLink name="" icon={<Bell />} href="/inbox" isIconOnly />
+          // </Badge>
         )}
         {user && user.mod && (
           <NavbarButtonLink
