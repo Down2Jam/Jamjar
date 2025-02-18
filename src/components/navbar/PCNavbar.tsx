@@ -61,6 +61,7 @@ export default function PCNavbar() {
   useEffect(() => {
     loadUser();
     async function loadUser() {
+      try {
       const jamResponse = await getCurrentJam();
       const currentJam = jamResponse?.jam;
       setJam(currentJam);
@@ -114,6 +115,9 @@ export default function PCNavbar() {
       } else {
         setUser(undefined);
       }
+    } catch(error) {
+      // TODO: Do something with error
+    }
     }
   }, [pathname]);
 

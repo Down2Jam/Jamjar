@@ -79,6 +79,7 @@ export default function CreateGamePage() {
     setMounted(true);
 
     const load = async () => {
+      try {
       const response = await getSelf();
       const localuser = await response.json();
       setUser(localuser);
@@ -125,6 +126,9 @@ export default function CreateGamePage() {
         setSelectedTags(newoptions.filter((tag) => tag.isFixed));
       }
         */
+    } catch (error) {
+      // TODO: Do something with error
+    }
     };
     load();
   }, []);
