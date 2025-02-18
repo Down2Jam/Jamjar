@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getSelf } from "./requests/user";
 import { BASE_URL } from "./requests/config";
 
 export async function middleware(request: NextRequest) {
