@@ -74,7 +74,7 @@ export default function PostCard({
 
   return (
     <Card
-      className="bg-opacity-60 !duration-250 !ease-linear !transition-all"
+      className="!duration-250 !ease-linear !transition-all"
       style={{ display: hidden ? "none" : "flex" }}
     >
       <CardBody className="p-5">
