@@ -275,6 +275,8 @@ export default function SidebarStreams() {
                       "aseprite",
                       "pixelart",
                       "gamedevelopment",
+                      "coworking",
+                      "piratejam",
                     ].includes(tag.toLowerCase())
                   )
                   .slice(0, 3)
