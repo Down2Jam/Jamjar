@@ -277,6 +277,9 @@ export default function SidebarStreams() {
                       "gamedevelopment",
                       "coworking",
                       "piratejam",
+                      "art",
+                      "games",
+                      "gamemaker",
                     ].includes(tag.toLowerCase())
                   )
                   .slice(0, 3)
