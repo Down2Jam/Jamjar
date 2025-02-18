@@ -4,7 +4,7 @@ import { BASE_URL } from "./config";
 export async function getSelf() {
   const userCookie = getCookie("user");
   const tokenCookie = getCookie("token");
-  if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
+  //if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
 
   return fetch(`${BASE_URL}/self?username=${userCookie}`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
@@ -18,7 +18,7 @@ export async function getUser(userSlug: string) {
 
 export async function searchUsers(query: string) {
   const tokenCookie = getCookie("token");
-  if(!tokenCookie) return Promise.reject("Token cookie not found.");
+  if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
   return fetch(`${BASE_URL}/user/search?q=${query}`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
@@ -34,7 +34,7 @@ export async function updateUser(
   bannerPicture: string | null
 ) {
   const tokenCookie = getCookie("token");
-  if(!tokenCookie) return Promise.reject("Token cookie not found.");
+  if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
   return fetch(`${BASE_URL}/user`, {
     body: JSON.stringify({
