@@ -14,7 +14,9 @@ import NavbarButtonLink from "./NavbarButtonLink";
 import {
   Bell,
   CalendarPlus,
+  Gamepad,
   Gamepad2,
+  Info,
   LogInIcon,
   NotebookPen,
   Shield,
@@ -31,7 +33,6 @@ import { UserType } from "@/types/UserType";
 import NavbarUser from "./PCNavbarUser";
 import NavbarButtonAction from "./NavbarButtonAction";
 import { toast } from "react-toastify";
-import NavbarIconLink from "./NavbarIconLink";
 import ThemeToggle from "../theme-toggle";
 import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
@@ -124,34 +125,34 @@ export default function PCNavbar() {
   return (
     <NavbarBase
       maxWidth="2xl"
-      className="bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color"
+      className="bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
       isBordered
       height={80}
     >
-      <div className="absolute -left-12 overflow-hidden h-[90px]">
+      <div className="absolute -left-36 overflow-hidden h-[90px]">
         <Image
           as={NextImage}
           src="/images/D2J_Icon.png"
-          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-6"
+          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-16"
           alt="Down2Jam logo"
-          width={140}
-          height={140}
+          width={210}
+          height={210}
         />
       </div>
-      <div className="absolute -right-12 overflow-hidden h-[90px]">
+      <div className="absolute -right-36 overflow-hidden h-[90px]">
         <Image
           as={NextImage}
           src="/images/D2J_Icon.png"
-          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-6"
+          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-16"
           alt="Down2Jam logo"
-          width={140}
-          height={140}
+          width={210}
+          height={210}
         />
       </div>
 
       {/* Left side navbar items */}
-      <NavbarContent justify="start" className="gap-10">
-        <NavbarBrand className="flex-grow-0">
+      <NavbarContent justify="start">
+        <NavbarBrand className="flex-grow-0 mr-10">
           <Link
             href="/"
             className={`duration-500 ease-in-out transition-all transform ${
@@ -169,8 +170,18 @@ export default function PCNavbar() {
           </Link>
         </NavbarBrand>
 
-        <NavbarLink href="/about" name="About" />
-        <NavbarLink href="/games" name="Games" />
+        <NavbarButtonLink
+          href="/about"
+          name="About"
+          icon={<Info />}
+          iconPosition="start"
+        />
+        <NavbarButtonLink
+          href="/games"
+          name="Games"
+          icon={<Gamepad />}
+          iconPosition="start"
+        />
       </NavbarContent>
 
       <NavbarContent justify="end" className="gap-4">
@@ -178,6 +189,7 @@ export default function PCNavbar() {
         {user && <Divider orientation="vertical" className="h-1/2" />}
         {user && jam && isInJam && (
           <NavbarButtonLink
+            important
             icon={<Gamepad2 />}
             name={hasGame ? "My Game" : "Create Game"}
             href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
@@ -185,6 +197,7 @@ export default function PCNavbar() {
         )}
         {user && jam && !isInJam && (
           <NavbarButtonAction
+            important
             icon={<CalendarPlus />}
             name="Join jam"
             onPress={async () => {
@@ -206,22 +219,36 @@ export default function PCNavbar() {
             icon={<SquarePen />}
             name="Create Post"
             href="/create-post"
+            important
           />
         )}
-        {user && <NavbarIconLink icon={<Bell />} href="/inbox" />}
+        {user && (
+          <NavbarButtonLink name="" icon={<Bell />} href="/inbox" isIconOnly />
+        )}
         {user && user.mod && (
-          <NavbarIconLink icon={<Shield />} href="/reports" />
+          <NavbarButtonLink
+            name=""
+            icon={<Shield />}
+            href="/reports"
+            isIconOnly
+          />
         )}
         <ThemeToggle />
         <Divider orientation="vertical" className="h-1/2" />
         {!user && (
-          <NavbarButtonLink icon={<LogInIcon />} name="Log In" href="/login" />
+          <NavbarButtonLink
+            icon={<LogInIcon />}
+            name="Log In"
+            href="/login"
+            important
+          />
         )}
         {!user && (
           <NavbarButtonLink
             icon={<NotebookPen />}
             name="Sign Up"
             href="/signup"
+            important
           />
         )}
         {user && <NavbarUser user={user} />}

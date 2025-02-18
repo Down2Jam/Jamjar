@@ -38,7 +38,7 @@ export async function updateUser(
 
   return fetch(`${BASE_URL}/user`, {
     body: JSON.stringify({
-      slug: userSlug,
+      targetUserSlug: userSlug,
       name,
       bio,
       profilePicture: profilePicture,
@@ -49,5 +49,6 @@ export async function updateUser(
       "Content-Type": "application/json",
       authorization: `Bearer ${tokenCookie}`,
     },
+    credentials: "include",
   });
 }

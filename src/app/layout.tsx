@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "A community built game jam!",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

@@ -10,6 +10,8 @@ interface ButtonLinkProps {
   tooltip?: string;
   isIconOnly?: boolean;
   size?: "sm" | "md";
+  iconPosition?: "start" | "end";
+  important?: boolean;
 }
 
 export default function ButtonLink({
@@ -19,6 +21,8 @@ export default function ButtonLink({
   tooltip,
   isIconOnly = false,
   size = "md",
+  iconPosition = "end",
+  important = false,
 }: ButtonLinkProps) {
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
 
@@ -47,7 +51,11 @@ export default function ButtonLink({
         >
           <Button
             endContent={icon}
-            className={`text-[#333] dark:text-white border-[#85bdd2] dark:border-[#1892b3] bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
+            className={`text-[#333] dark:text-white ${
+              important
+                ? "border-[#85bdd2] dark:border-[#1892b3]"
+                : "border-[#8e8e8f] dark:border-[#8e8e8f]"
+            } bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
             variant="bordered"
             isIconOnly={isIconOnly}
             size={size}
@@ -66,8 +74,13 @@ export default function ButtonLink({
         }`}
       >
         <Button
-          endContent={icon}
-          className={`text-[#333] dark:text-white border-[#85bdd2] dark:border-[#1892b3] bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
+          endContent={iconPosition == "end" ? icon : undefined}
+          startContent={iconPosition == "start" ? icon : undefined}
+          className={`text-[#333] dark:text-white ${
+            important
+              ? "border-[#85bdd2] dark:border-[#1892b3] dark:bg-[#1d232b]"
+              : "border-[#d9d9da] dark:border-[#8e8e8f] dark:bg-[#222222]"
+          } bg-[#fff] transition-all transform !duration-500 ease-in-out`}
           variant="bordered"
           isIconOnly={isIconOnly}
           size={size}

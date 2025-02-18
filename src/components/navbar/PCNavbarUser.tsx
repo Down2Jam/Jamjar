@@ -20,7 +20,7 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
         <DropdownTrigger>
           <Avatar
             src={user.profilePicture}
-            className="cursor-pointer"
+            className="cursor-pointer outline-2 outline-[#85bdd2] dark:outline-[#1892b3] bg-[#fff] dark:bg-[#1d232b]"
             classNames={{
               base: "bg-transparent",
             }}
