@@ -17,12 +17,12 @@ import { toast } from "react-toastify";
 import Select, { MultiValue, StylesConfig } from "react-select";
 import { useTheme } from "next-themes";
 import Timers from "@/components/timers";
-import Streams from "@/components/streams";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
 import { getTags } from "@/requests/tag";
 import { postPost } from "@/requests/post";
 import { sanitize } from "@/helpers/sanitize";
+import SidebarStreams from "@/components/sidebar/SidebarStreams";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
@@ -299,7 +299,7 @@ export default function CreatePostPage() {
       {!isMobile && (
         <div className="flex flex-col gap-4 px-8 items-end">
           <Timers />
-          <Streams />
+          <SidebarStreams />
         </div>
       )}
     </div>

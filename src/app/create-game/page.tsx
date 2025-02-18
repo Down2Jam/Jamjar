@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Select, SelectItem } from "@nextui-org/react";
 import Timers from "@/components/timers";
-import Streams from "@/components/streams";
 import { UserType } from "@/types/UserType";
 import { useRouter } from "next/navigation";
 import { GameType } from "@/types/GameType";
@@ -17,6 +16,7 @@ import { getSelf, searchUsers } from "@/requests/user";
 import { getCurrentGame, postGame, updateGame } from "@/requests/game";
 import { sanitize } from "@/helpers/sanitize";
 import Image from "next/image";
+import SidebarStreams from "@/components/sidebar/SidebarStreams";
 
 export default function CreateGamePage() {
   const router = useRouter();
@@ -131,7 +131,7 @@ export default function CreateGamePage() {
 
   useEffect(() => {
     const checkExistingGame = async () => {
-      const response = await getCurrentGame()
+      const response = await getCurrentGame();
       console.log("say");
       if (response.ok) {
         const gameData = await response.json();
@@ -206,22 +206,39 @@ export default function CreateGamePage() {
             return;
           }
 
-        const sanitizedHtml = sanitize(content);
-        setWaitingPost(true);
+          const sanitizedHtml = sanitize(content);
+          setWaitingPost(true);
 
-        try {
-          const links = downloadLinks.map((link) => ({
-            url: link.url,
-            platform: link.platform,
-          }));
+          try {
+            const links = downloadLinks.map((link) => ({
+              url: link.url,
+              platform: link.platform,
+            }));
 
-          const contributors = selectedAuthors.map((author) => author.id);
+            const contributors = selectedAuthors.map((author) => author.id);
 
-          const request = editGame ? 
-            updateGame(prevSlug, title, gameSlug, sanitizedHtml, thumbnailUrl, links, userSlug, contributors) :
-            postGame(title, gameSlug, sanitizedHtml, thumbnailUrl, links, userSlug, contributors);
+            const request = editGame
+              ? updateGame(
+                  prevSlug,
+                  title,
+                  gameSlug,
+                  sanitizedHtml,
+                  thumbnailUrl,
+                  links,
+                  userSlug,
+                  contributors
+                )
+              : postGame(
+                  title,
+                  gameSlug,
+                  sanitizedHtml,
+                  thumbnailUrl,
+                  links,
+                  userSlug,
+                  contributors
+                );
 
-          const response = await request;
+            const response = await request;
 
             if (response.ok) {
               toast.success(
@@ -519,7 +536,7 @@ export default function CreateGamePage() {
       {!isMobile && (
         <div className="flex flex-col gap-4 px-8 items-end">
           <Timers />
-          <Streams />
+          <SidebarStreams />
         </div>
       )}
     </div>
