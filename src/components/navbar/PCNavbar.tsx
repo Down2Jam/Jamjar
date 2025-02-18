@@ -128,6 +128,27 @@ export default function PCNavbar() {
       isBordered
       height={80}
     >
+      <div className="absolute -left-12 overflow-hidden h-[90px]">
+        <Image
+          as={NextImage}
+          src="/images/D2J_Icon.png"
+          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-6"
+          alt="Down2Jam logo"
+          width={140}
+          height={140}
+        />
+      </div>
+      <div className="absolute -right-12 overflow-hidden h-[90px]">
+        <Image
+          as={NextImage}
+          src="/images/D2J_Icon.png"
+          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-6"
+          alt="Down2Jam logo"
+          width={140}
+          height={140}
+        />
+      </div>
+
       {/* Left side navbar items */}
       <NavbarContent justify="start" className="gap-10">
         <NavbarBrand className="flex-grow-0">
