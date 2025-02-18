@@ -1,6 +1,7 @@
 import { Spacer } from "@nextui-org/react";
 import Timers from "../timers";
 import { getCurrentJam } from "@/helpers/jam";
+import { Users } from "lucide-react";
 
 export default async function SidebarStats() {
   const jamResponse = await getCurrentJam();
@@ -11,8 +12,11 @@ export default async function SidebarStats() {
     <div className="border rounded-xl p-4 text-[#333] dark:text-white text-center bg-[#ffffff] dark:bg-[#18181a] border-[#dbdbdb] dark:border-[#1f1f21] shadow-2xl z-10 !bg-opacity-60">
       <Timers />
       <Spacer />
-      <p>Entrants</p>
-      <p className="text-4xl">{stats?.entrants}</p>
+      <div className="flex items-center gap-4 justify-center">
+        <Users className="text-[#666]" />
+        <p>Entrants</p>
+        <p className="text-[#1687a7]">{stats?.entrants}</p>
+      </div>
     </div>
   );
 }
