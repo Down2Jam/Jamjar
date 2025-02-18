@@ -17,12 +17,12 @@ import { toast } from "react-toastify";
 import Select, { MultiValue, StylesConfig } from "react-select";
 import { useTheme } from "next-themes";
 import Timers from "@/components/timers";
-import Streams from "@/components/streams";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
 import { getTags } from "@/requests/tag";
 import { postPost } from "@/requests/post";
 import { sanitize } from "@/helpers/sanitize";
+import SidebarStreams from "@/components/sidebar/SidebarStreams";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
@@ -52,49 +52,53 @@ export default function CreatePostPage() {
     setMounted(true);
 
     const load = async () => {
-      const response = await getSelf();
+      try {
+        const response = await getSelf();
 
-      const localuser = await response.json();
-      setUser(localuser);
+        const localuser = await response.json();
+        setUser(localuser);
 
-      const tagResponse = await getTags();
+        const tagResponse = await getTags();
 
-      if (tagResponse.ok) {
-        const newoptions: {
-          value: string;
-          label: ReactNode;
-          id: number;
-          isFixed: boolean;
-        }[] = [];
+        if (tagResponse.ok) {
+          const newoptions: {
+            value: string;
+            label: ReactNode;
+            id: number;
+            isFixed: boolean;
+          }[] = [];
 
-        for (const tag of await tagResponse.json()) {
-          if (tag.modOnly && !localuser.mod) {
-            continue;
+          for (const tag of await tagResponse.json()) {
+            if (tag.modOnly && !localuser.mod) {
+              continue;
+            }
+            newoptions.push({
+              value: tag.name,
+              id: tag.id,
+              label: (
+                <div className="flex gap-2 items-center">
+                  {tag.icon && (
+                    <Avatar
+                      className="w-6 h-6 min-w-6 min-h-6"
+                      size="sm"
+                      src={tag.icon}
+                      classNames={{ base: "bg-transparent" }}
+                    />
+                  )}
+                  <p>
+                    {tag.name}
+                    {tag.modOnly ? " (Mod Only)" : ""}
+                  </p>
+                </div>
+              ),
+              isFixed: tag.alwaysAdded,
+            });
           }
-          newoptions.push({
-            value: tag.name,
-            id: tag.id,
-            label: (
-              <div className="flex gap-2 items-center">
-                {tag.icon && (
-                  <Avatar
-                    className="w-6 h-6 min-w-6 min-h-6"
-                    size="sm"
-                    src={tag.icon}
-                    classNames={{ base: "bg-transparent" }}
-                  />
-                )}
-                <p>
-                  {tag.name}
-                  {tag.modOnly ? " (Mod Only)" : ""}
-                </p>
-              </div>
-            ),
-            isFixed: tag.alwaysAdded,
-          });
-        }
 
-        setOptions(newoptions);
+          setOptions(newoptions);
+        }
+      } catch (error) {
+        console.error(error);
       }
     };
     load();
@@ -299,7 +303,7 @@ export default function CreatePostPage() {
       {!isMobile && (
         <div className="flex flex-col gap-4 px-8 items-end">
           <Timers />
-          <Streams />
+          <SidebarStreams />
         </div>
       )}
     </div>

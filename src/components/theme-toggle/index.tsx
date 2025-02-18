@@ -43,15 +43,15 @@ export default function ThemeToggle() {
 
   return (
     <div
-      onClick={handleToggle}
-      style={{ cursor: "pointer" }}
-      className={`${
-        isSpinning && !reduceMotion ? "animate-[spin_0.5s_ease-out]" : ""
-      }`}
+      className={`border-[#d9d9da] dark:border-[#444] dark:bg-[#222222] bg-[#fff] border-2 rounded-xl text-[#333] dark:text-white ${
+        !reduceMotion ? "hover:scale-[115%]" : ""
+      } transform !duration-250 !ease-linear !transition-all`}
     >
       <div
-        className={`!duration-250 !ease-linear !transition-all transform text-[#333] dark:text-white ${
-          !reduceMotion ? "hover:scale-125" : ""
+        onClick={handleToggle}
+        style={{ cursor: "pointer" }}
+        className={`p-[6px] ${
+          isSpinning && !reduceMotion ? "animate-[spin_0.5s_ease-out]" : ""
         }`}
       >
         {resolvedTheme === "dark" && <Moon />}

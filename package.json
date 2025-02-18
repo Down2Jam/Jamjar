@@ -46,6 +46,7 @@
     "@tiptap/pm": "^2.11.2",
     "@tiptap/react": "^2.11.2",
     "@tiptap/starter-kit": "^2.11.2",
+    "@wavesurfer/react": "^1.0.9",
     "date-fns": "^4.1.0",
     "framer-motion": "^11.11.9",
     "i": "^0.3.7",
@@ -60,7 +61,8 @@
     "react-toastify": "^11.0.3",
     "sanitize-html": "^2.14.0",
     "tiptap-extension-resize-image": "^1.2.1",
-    "tiptap-markdown": "^0.8.10"
+    "tiptap-markdown": "^0.8.10",
+    "wavesurfer.js": "^7.9.1"
   },
   "devDependencies": {
     "@types/node": "^20",

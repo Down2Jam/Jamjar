@@ -27,25 +27,29 @@ export default function UserPage() {
   useEffect(() => {
     loadUser();
     async function loadUser() {
-      if (!hasCookie("token")) {
-        setUser(undefined);
-        redirect("/");
-        return;
-      }
+      try {
+        if (!hasCookie("token")) {
+          setUser(undefined);
+          redirect("/");
+          return;
+        }
 
-      const response = await getSelf();
+        const response = await getSelf();
 
-      if (response.status == 200) {
-        const data = await response.json();
-        setUser(data);
+        if (response.status == 200) {
+          const data = await response.json();
+          setUser(data);
 
-        setProfilePicture(data.profilePicture ?? "");
-        setBannerPicture(data.bannerPicture ?? "");
-        setBio(data.bio ?? "");
-        setName(data.name ?? "");
-        setEmail(data.email ?? "");
-      } else {
-        setUser(undefined);
+          setProfilePicture(data.profilePicture ?? "");
+          setBannerPicture(data.bannerPicture ?? "");
+          setBio(data.bio ?? "");
+          setName(data.name ?? "");
+          setEmail(data.email ?? "");
+        } else {
+          setUser(undefined);
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
   }, [pathname]);
@@ -76,7 +80,13 @@ export default function UserPage() {
 
             setWaitingSave(true);
 
-            const response = await updateUser(user.slug, name, sanitizedBio, profilePicture, bannerPicture); 
+            const response = await updateUser(
+              user.slug,
+              name,
+              sanitizedBio,
+              profilePicture,
+              bannerPicture
+            );
 
             if (response.ok) {
               toast.success("Changed settings");

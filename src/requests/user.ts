@@ -2,8 +2,12 @@ import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
 export async function getSelf() {
-  return fetch(`${BASE_URL}/self?username=${getCookie("user")}`, {
-    headers: { authorization: `Bearer ${getCookie("token")}` },
+  const userCookie = getCookie("user");
+  const tokenCookie = getCookie("token");
+  //if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
+
+  return fetch(`${BASE_URL}/self?username=${userCookie}`, {
+    headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
   });
 }
@@ -13,8 +17,11 @@ export async function getUser(userSlug: string) {
 }
 
 export async function searchUsers(query: string) {
+  const tokenCookie = getCookie("token");
+  if (!tokenCookie) return Promise.reject("Token cookie not found.");
+
   return fetch(`${BASE_URL}/user/search?q=${query}`, {
-    headers: { authorization: `Bearer ${getCookie("token")}` },
+    headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
   });
 }
@@ -26,9 +33,12 @@ export async function updateUser(
   profilePicture: string | null,
   bannerPicture: string | null
 ) {
+  const tokenCookie = getCookie("token");
+  if (!tokenCookie) return Promise.reject("Token cookie not found.");
+
   return fetch(`${BASE_URL}/user`, {
     body: JSON.stringify({
-      slug: userSlug,
+      targetUserSlug: userSlug,
       name,
       bio,
       profilePicture: profilePicture,
@@ -37,7 +47,8 @@ export async function updateUser(
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      authorization: `Bearer ${getCookie("token")}`,
+      authorization: `Bearer ${tokenCookie}`,
     },
+    credentials: "include",
   });
 }
