@@ -8,7 +8,6 @@ import {
   NavbarContent,
   Divider,
 } from "@nextui-org/react";
-import NavbarLink from "./NavbarLink";
 import NavbarSearchbar from "./NavbarSearchbar";
 import NavbarButtonLink from "./NavbarButtonLink";
 import {
