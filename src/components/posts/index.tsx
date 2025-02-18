@@ -61,6 +61,7 @@ import Link from "next/link";
 import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
 import CommentCard from "./CommentCard";
+import ButtonAction from "../link-components/ButtonAction";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -548,6 +549,16 @@ export default function Posts() {
               No posts match your filters
             </p>
           )}
+          <div>
+            {posts && (
+              <ButtonAction
+                name="Load More Posts"
+                onPress={() => {
+                  toast.warning("Post pagination coming soon");
+                }}
+              />
+            )}
+          </div>
         </div>
       )}
       <Drawer
