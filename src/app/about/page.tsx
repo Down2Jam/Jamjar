@@ -161,8 +161,8 @@ export default function AboutPage() {
               must choose to opt in on every category you wish to be rated on.
             </p>
             <p>
-              Entrants using generative AI to produce art or audio must not
-              aop-in on the respective categories.
+              Entrants using generative AI to produce art or audio must not opt
+              in on the respective categories.
             </p>
           </div>
           <span className="text-medium font-medium">
