@@ -24,7 +24,7 @@ export default async function RootLayout({
       <body className={inter.className}>
         <NextUIProvider>
           <ThemeProvider attribute="class">
-            <div className="">
+            <div>
               <div className="bg-[#fff] dark:bg-[#181818] min-h-screen flex flex-col ease-in-out transition-color duration-500">
                 <div className="fixed top-0 left-0 bg-opacity-5 bg-[repeating-linear-gradient(135deg,#075e94_0px,#075e94_40px,#4a3279_40px,#4a3279_80px)] w-screen h-screen opacity-10 dark:opacity-5" />
                 <Navbar />
