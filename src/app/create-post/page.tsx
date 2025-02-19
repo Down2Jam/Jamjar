@@ -43,6 +43,14 @@ export default function CreatePostPage() {
       isFixed: boolean;
     }[]
   >();
+  const [fixedOptions, setFixedOptions] = useState<
+    {
+      value: string;
+      label: ReactNode;
+      id: number;
+      isFixed: boolean;
+    }[]
+  >();
   const { theme } = useTheme();
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
@@ -95,7 +103,8 @@ export default function CreatePostPage() {
             });
           }
 
-          setOptions(newoptions);
+          setOptions(newoptions.filter((option) => !option.isFixed));
+          setFixedOptions(newoptions.filter((option) => option.isFixed));
         }
       } catch (error) {
         console.error(error);
@@ -222,9 +231,7 @@ export default function CreatePostPage() {
 
           const combinedTags = [
             ...tags,
-            ...(options
-              ? options.filter((tag) => tag.isFixed).map((tag) => tag.id)
-              : []),
+            ...(fixedOptions ? fixedOptions.map((tag) => tag.id) : []),
           ];
           const response = await postPost(
             title,

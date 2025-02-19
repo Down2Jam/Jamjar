@@ -275,6 +275,11 @@ export default function SidebarStreams() {
                       "aseprite",
                       "pixelart",
                       "gamedevelopment",
+                      "coworking",
+                      "piratejam",
+                      "art",
+                      "games",
+                      "gamemaker",
                     ].includes(tag.toLowerCase())
                   )
                   .slice(0, 3)

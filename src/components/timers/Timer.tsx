@@ -1,5 +1,6 @@
 "use client";
 
+import { TimerIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function Timer({
@@ -49,9 +50,11 @@ export default function Timer({
 
   return (
     <div>
-      <p>{name}</p>
-      <p className="text-4xl text-wrap">{formatTime(timeLeft)[0]}</p>
-      <p className="text-4xl text-wrap">{formatTime(timeLeft)[1]}</p>
+      <div className="flex items-center gap-4 justify-center">
+        <TimerIcon className="text-[#666]" />
+        <p>{name}</p>
+        <p className="text-[#1687a7]">{formatTime(timeLeft)[0]}</p>
+      </div>
     </div>
   );
 }
