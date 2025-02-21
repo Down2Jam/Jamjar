@@ -78,3 +78,7 @@ export async function updateGame(
     credentials: "include",
   });
 }
+
+export async function getGames(sort: string) {
+  return fetch(`${BASE_URL}/games?sort=${sort}`);
+}
