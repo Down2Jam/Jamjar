@@ -2,7 +2,20 @@
 
 import { GameType } from "@/types/GameType";
 import { ReactNode, useEffect, useState } from "react";
-import { Button, Card, CardFooter, CardHeader, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Image, Link, Spinner } from "@nextui-org/react";
+import {
+  Button,
+  Card,
+  CardFooter,
+  CardHeader,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Image,
+  Link,
+  Spinner,
+} from "@nextui-org/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ClockArrowDown, ClockArrowUp, Star, StarHalfIcon } from "lucide-react";
@@ -22,31 +35,31 @@ export default function GamesPage() {
   const router = useRouter();
 
   const sorts: Record<
-  GameSort,
-  { name: string; icon: ReactNode; description: string }
-> = {
-  top: {
-    name: "Most Rated",
-    icon: <Star />,
-    description: "Shows the most rated game first",
-  },
-  bottom: {
-    name: "Least Rated",
-    icon: <StarHalfIcon />,
-    description: "Shows the least rated game first",
-  },
-  newest: {
-    name: "Newest",
-    icon: <ClockArrowUp />,
-    description: "Shows the newest game first",
-  },
-  oldest: {
-    name: "Oldest",
-    icon: <ClockArrowDown />,
-    description: "Shows the oldest game first",
-  },
-};
-  
+    GameSort,
+    { name: string; icon: ReactNode; description: string }
+  > = {
+    top: {
+      name: "Most Rated",
+      icon: <Star />,
+      description: "Shows the most rated game first",
+    },
+    bottom: {
+      name: "Least Rated",
+      icon: <StarHalfIcon />,
+      description: "Shows the least rated game first",
+    },
+    newest: {
+      name: "Newest",
+      icon: <ClockArrowUp />,
+      description: "Shows the newest game first",
+    },
+    oldest: {
+      name: "Oldest",
+      icon: <ClockArrowDown />,
+      description: "Shows the oldest game first",
+    },
+  };
+
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
     if (value) {
@@ -57,31 +70,34 @@ export default function GamesPage() {
     router.push(`?${params.toString()}`);
   };
 
-  const fetchGameData = async () => {
-    try {
-      const gameResponse = await getGames(sort);
-      setGames(await gameResponse.json());
-    } catch (error) {
-      // CATCH ERROR
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   useEffect(() => {
+    const fetchGameData = async () => {
+      try {
+        const gameResponse = await getGames(sort);
+        setGames(await gameResponse.json());
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchGameData();
   }, [sort]);
 
-  if( isLoading ) return <Spinner /> ;
+  if (isLoading) return <Spinner />;
 
   return (
     <main className="pl-4 pr-4">
       <section className="mb-4">
         <h1 className="text-3xl mb-4">Games</h1>
-        <p className="text-sm text-default-500">Here you have an overview of all the submitted games. More filters will be added in the near future.</p>
+        <p className="text-sm text-default-500">
+          Here you have an overview of all the submitted games. More filters
+          will be added in the near future.
+        </p>
       </section>
       <Divider />
-      
+
       <section className="mt-4 mb-4">
         <div className="flex justify-between pb-0">
           <div className="flex gap-2">
@@ -113,37 +129,50 @@ export default function GamesPage() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-            
           </div>
-      </div>
+        </div>
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {games ? games.map((game, index) => 
-        <Link key={game.name+index} href={`/games/${game.slug}`} >
-          <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
-            <CardHeader className="absolute top-0 flex justify-end">
-              <div className="border border-zinc-100/50 bg-primary p-2 pt-1 pb-1 rounded text-white">{game.jam.name}</div>
-            </CardHeader>
-              <Image
-                removeWrapper
-                alt={`${game.name}'s thumbnail`}
-                className="z-0 w-full h-full object-cover scale-110"
-                height={200}
-                width="100%"
-                isZoomed
-                src={game.thumbnail ?? "/images/D2J_Icon.png"}
-             />
-            <CardFooter className="text-white border-t-1 border-zinc-100/50 z-10 flex-col items-start">
-              <h3 className="font-medium text-2xl mb-2">{game.name}</h3>
-              <div className="flex justify-between w-full">
-                <p className="text-tiny uppercase font-bold">{game.author.name}</p>
-                <p className="text-tiny max-w-[200px] text-end truncate">{game.contributors.length > 0 && `contributors: ${game.contributors.map(author => author.name)}`}</p>
-              </div>
-            </CardFooter>
-          </Card>
-        </Link>
-        ) : ( <p>No games were found. :(</p> )}
+        {games ? (
+          games.map((game, index) => (
+            <Link key={game.name + index} href={`/games/${game.slug}`}>
+              <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
+                <CardHeader className="absolute top-0 flex justify-end">
+                  <div className="border border-zinc-100/50 bg-primary p-2 pt-1 pb-1 rounded text-white">
+                    {game.jam.name}
+                  </div>
+                </CardHeader>
+                <Image
+                  removeWrapper
+                  alt={`${game.name}'s thumbnail`}
+                  className="z-0 w-full h-full object-cover scale-110"
+                  height={200}
+                  width="100%"
+                  isZoomed
+                  src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                />
+                <CardFooter className="text-white border-t-1 border-zinc-100/50 z-10 flex-col items-start">
+                  <h3 className="font-medium text-2xl mb-2">{game.name}</h3>
+                  <div className="flex justify-between w-full">
+                    <p className="text-tiny uppercase font-bold">
+                      {game.author.name}
+                    </p>
+                    <p className="text-tiny max-w-[200px] text-end truncate">
+                      {game.contributors.length > 0 &&
+                        `contributors: ${game.contributors.map(
+                          (author) => author.name
+                        )}`}
+                    </p>
+                  </div>
+                </CardFooter>
+              </Card>
+            </Link>
+          ))
+        ) : (
+          <p>No games were found. :(</p>
+        )}
       </section>
     </main>
-)}
+  );
+}
