@@ -1,0 +1,1 @@
+export type GameSort = "newest" | "oldest" | "top" | "bottom";
