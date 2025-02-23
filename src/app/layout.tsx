@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "../components/navbar";
+import Navbar from "@/components/navbar";
 import { ToastContainer } from "react-toastify";
 import { NextUIProvider, Spacer } from "@nextui-org/react";
 import Footer from "@/components/footer";
