@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
 import { getTopThemes } from "@/requests/theme";
 import { Spacer } from "@nextui-org/react";
+import { JamPhase } from "@/types/JamType";
 
 const events = [
   { name: "Theme Submission", date: "FEB 28" },
@@ -25,6 +26,47 @@ export default function JamHeader() {
     useState<ActiveJamResponse | null>(null);
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const getClassesForDateDisplay = (index: number, nextEventIndex: number, eventDateObj: Date, currentDate: Date) => {
+    if (index === nextEventIndex - 1 && eventDateObj < currentDate) {
+      return "bg-[#81b8cc] dark:bg-[#1891b2]";
+    }
+    if (index === nextEventIndex) {
+      return "border-2 border-[#c087ae] dark:border-[#a1598a]";
+    }
+    if (index === nextEventIndex + 1) {
+      return "border-2 border-[#8f7daf] dark:border-[#634e89]";
+    }
+    if (index === nextEventIndex + 2) {
+      return "border-2 border-[#7b7799] dark:border-[#4c4872]";
+    }
+    if (eventDateObj < currentDate) {
+      return "border-2 border-[#fff] dark:border-[#222222] opacity-20";
+    }
+    return "border-2 border-[#5e6a83] dark:border-[#33405d]";
+  };
+
+  const getPhaseObj = (jamPhase: JamPhase ) => {
+    if(jamPhase === JamPhase.SUGGESTION) return {
+      text: "Go to Theme Suggestion",
+      href: "/theme-suggestions"
+    }
+    if(jamPhase === JamPhase.SURVIVAL) return {
+      text: "Go to Theme Survival",
+      href: "/theme-slaughter"
+    }
+    if(jamPhase === JamPhase.VOTING) return {
+      text: "Go to Theme Voting",
+      href: "/theme-voting"
+    }
+    if(jamPhase === JamPhase.JAMMING) return {
+      text: topTheme ? `THEME: ${topTheme}` : "No top-scoring theme available.",
+    }
+    if(jamPhase === JamPhase.RATING) return {
+      text:  topTheme ? `THEME: ${topTheme} RESULTS` : "No top-scoring theme available."
+    }
+    return {text: "No top-scoring theme available."};
+  }
 
   // Fetch active jam details
   useEffect(() => {
@@ -141,129 +183,34 @@ export default function JamHeader() {
             </div>
           </div>
 
-          {activeJamResponse?.phase === "Suggestion" && (
+          {activeJamResponse && activeJamResponse.jam && (
             <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <a
-                href="/theme-suggestions"
+              {getPhaseObj(activeJamResponse.phase) && getPhaseObj(activeJamResponse.phase).href ? (<a
+                href={getPhaseObj(activeJamResponse.phase).href}
                 className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
               >
-                Go to Theme Suggestion
+                {getPhaseObj(activeJamResponse.phase).text}
               </a>
-            </div>
-          )}
-
-          {activeJamResponse?.phase === "Survival" && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <a
-                href="/theme-slaughter"
-                className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
-              >
-                Go to Theme Survival
-              </a>
-            </div>
-          )}
-
-          {activeJamResponse?.phase === "Voting" && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <a
-                href="/theme-voting"
-                className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
-              >
-                Go to Theme Voting
-              </a>
-            </div>
-          )}
-
-          {activeJamResponse?.phase === "Jamming" && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              {topTheme ? (
-                <p className="text-xl font-bold text-blue-500">
-                  THEME: {topTheme}
-                </p>
               ) : (
-                <p>No top-scoring theme available.</p>
-              )}
-            </div>
-          )}
-
-          {activeJamResponse?.phase === "Rating" && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              {topTheme ? (
-                <p className="text-xl font-bold text-blue-500">
-                  THEME: {topTheme} RESULTS
-                </p>
-              ) : (
-                <p>No top-scoring theme available.</p>
+              <p className="text-xl font-bold text-blue-500">
+                {getPhaseObj(activeJamResponse.phase).text}
+              </p>
               )}
             </div>
           )}
         </div>
       </a>
       <Spacer y={3} />
-      <div className="flex gap-2 relative ml-4 mr-4">
-        {sortedEvents.map((event, index) => {
-          if (index === nextEventIndex - 1 && event.dateObj < currentDate) {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 bg-[#81b8cc] dark:bg-[#1891b2] text-center w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          } else if (index === nextEventIndex) {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 border-2 border-[#c087ae] dark:border-[#a1598a] text-center  w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          } else if (index === nextEventIndex + 1) {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 border-2 border-[#8f7daf] dark:border-[#634e89] text-center  w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          } else if (index === nextEventIndex + 2) {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 border-2 border-[#7b7799] dark:border-[#4c4872] text-center  w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          } else if (event.dateObj < currentDate) {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 border-2 border-[#fff] dark:border-[#222222] text-center opacity-20  w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          } else {
-            return (
-              <div
-                key={event.name}
-                className="rounded-md p-2 border-2 border-[#5e6a83] dark:border-[#33405d] text-center w-36 text-[#333] dark:text-white"
-              >
-                <p className="text-xs">{event.name}</p>
-                <p className="font-bold text-lg">{event.date}</p>
-              </div>
-            );
-          }
-        })}
+      <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4">
+        {sortedEvents.map((event, index) =>
+          <div
+            key={event.name}
+            className={`snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(index, nextEventIndex, event.dateObj, currentDate)}`}
+          >
+            <p className="text-xs">{event.name}</p>
+            <p className="font-bold text-lg">{event.date}</p>
+          </div>
+        )}
       </div>
     </>
   );
