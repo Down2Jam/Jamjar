@@ -14,3 +14,11 @@ export interface JamType {
   themePerUser: number;
   users: UserType[];
 }
+
+export enum JamPhase {
+  SUGGESTION = "Suggestion",
+  SURVIVAL = "Survival",
+  VOTING = "Voting",
+  JAMMING = "Jamming",
+  RATING = "Rating"
+}

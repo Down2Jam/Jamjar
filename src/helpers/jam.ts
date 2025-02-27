@@ -1,9 +1,9 @@
-import { JamType } from "@/types/JamType";
+import { JamPhase, JamType } from "@/types/JamType";
 import { toast } from "react-toastify";
 import * as jamRequests from "@/requests/jam";
 
 export interface ActiveJamResponse {
-  phase: string;
+  phase: JamPhase;
   jam: JamType | null; // Jam will be null if no active jam is found
 }
 
