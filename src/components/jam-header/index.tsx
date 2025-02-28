@@ -79,7 +79,7 @@ export default function JamHeader() {
           ? `THEME: ${topTheme} RESULTS`
           : "No top-scoring theme available.",
       };
-    return { text: "Theme Submissions will open soon" };
+    return { text: "" };
   };
 
   // Fetch active jam details
@@ -198,23 +198,25 @@ export default function JamHeader() {
             </div>
           </div>
 
-          {activeJamResponse && activeJamResponse.jam && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              {getPhaseObj(activeJamResponse.phase) &&
-              getPhaseObj(activeJamResponse.phase).href ? (
-                <a
-                  href={getPhaseObj(activeJamResponse.phase).href}
-                  className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
-                >
-                  {getPhaseObj(activeJamResponse.phase).text}
-                </a>
-              ) : (
-                <p className="text-xl font-bold text-blue-500">
-                  {getPhaseObj(activeJamResponse.phase).text}
-                </p>
-              )}
-            </div>
-          )}
+          {activeJamResponse &&
+            activeJamResponse.jam &&
+            activeJamResponse.phase != "Upcoming Jam" && (
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
+                {getPhaseObj(activeJamResponse.phase) &&
+                getPhaseObj(activeJamResponse.phase).href ? (
+                  <a
+                    href={getPhaseObj(activeJamResponse.phase).href}
+                    className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
+                  >
+                    {getPhaseObj(activeJamResponse.phase).text}
+                  </a>
+                ) : (
+                  <p className="text-xl font-bold text-blue-500">
+                    {getPhaseObj(activeJamResponse.phase).text}
+                  </p>
+                )}
+              </div>
+            )}
         </div>
       </a>
       <Spacer y={3} />
