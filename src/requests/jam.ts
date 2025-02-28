@@ -6,7 +6,7 @@ export async function getJams() {
 }
 
 export async function getCurrentJam() {
-  return fetch(`${BASE_URL}/jams/active`);
+  return fetch(`${BASE_URL}/jam`);
 }
 
 export async function joinJam(jamId: number) {
@@ -25,7 +25,7 @@ export async function joinJam(jamId: number) {
 }
 
 export async function hasJoinedCurrentJam() {
-  return fetch(`${BASE_URL}/jams/participation`, {
+  return fetch(`${BASE_URL}/jam/participation`, {
     credentials: "include",
     headers: {
       Authorization: `Bearer ${getCookie("token")}`,

@@ -26,7 +26,7 @@ export default function SidebarStreams() {
           throw new Error("Failed to fetch featured streamers");
         }
 
-        const data: FeaturedStreamerType[] = await response.json();
+        const data: FeaturedStreamerType[] = (await response.json()).data;
         setStreamers(data);
       } catch (error) {
         console.error("Error fetching featured streamers:", error);

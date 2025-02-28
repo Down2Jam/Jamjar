@@ -170,7 +170,7 @@ export default function Posts() {
             [category: string]: { tags: TagType[]; priority: number };
           } = {};
 
-          for (const tag of await tagResponse.json()) {
+          for (const tag of (await tagResponse.json()).data) {
             if (tag.name == "D2Jam") {
               continue;
             }

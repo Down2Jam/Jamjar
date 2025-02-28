@@ -15,7 +15,7 @@ export async function getJams(): Promise<JamType[]> {
 export async function getCurrentJam(): Promise<ActiveJamResponse | null> {
   try {
     const response = await jamRequests.getCurrentJam();
-    const data = await response.json();
+    const data = (await response.json()).data;
 
     return {
       phase: data.phase,
