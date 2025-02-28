@@ -15,10 +15,10 @@ export interface JamType {
   users: UserType[];
 }
 
-export enum JamPhase {
-  SUGGESTION = "Suggestion",
-  SURVIVAL = "Survival",
-  VOTING = "Voting",
-  JAMMING = "Jamming",
-  RATING = "Rating"
-}
+export type JamPhase =
+  | "Upcoming Jam"
+  | "Suggestion"
+  | "Survival"
+  | "Voting"
+  | "Jamming"
+  | "Rating";

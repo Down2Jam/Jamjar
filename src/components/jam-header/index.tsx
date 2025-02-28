@@ -52,28 +52,28 @@ export default function JamHeader() {
   };
 
   const getPhaseObj = (jamPhase: JamPhase) => {
-    if (jamPhase === JamPhase.SUGGESTION)
+    if (jamPhase === "Suggestion")
       return {
         text: "Go to Theme Suggestion",
         href: "/theme-suggestions",
       };
-    if (jamPhase === JamPhase.SURVIVAL)
+    if (jamPhase === "Survival")
       return {
         text: "Go to Theme Survival",
         href: "/theme-slaughter",
       };
-    if (jamPhase === JamPhase.VOTING)
+    if (jamPhase === "Voting")
       return {
         text: "Go to Theme Voting",
         href: "/theme-voting",
       };
-    if (jamPhase === JamPhase.JAMMING)
+    if (jamPhase === "Jamming")
       return {
         text: topTheme
           ? `THEME: ${topTheme}`
           : "No top-scoring theme available.",
       };
-    if (jamPhase === JamPhase.RATING)
+    if (jamPhase === "Rating")
       return {
         text: topTheme
           ? `THEME: ${topTheme} RESULTS`
