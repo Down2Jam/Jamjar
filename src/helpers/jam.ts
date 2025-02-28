@@ -46,7 +46,7 @@ export async function hasJoinedCurrentJam(): Promise<boolean> {
   try {
     const response = await jamRequests.hasJoinedCurrentJam();
 
-    return response.ok;
+    return (await response.json()).data;
   } catch (error) {
     console.error("Error checking jam participation:", error);
     return false;

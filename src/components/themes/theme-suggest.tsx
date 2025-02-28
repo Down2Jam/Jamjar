@@ -9,14 +9,18 @@ import {
 } from "@/helpers/jam";
 import { ThemeType } from "@/types/ThemeType";
 import { joinJam } from "@/helpers/jam";
-import { deleteThemeSuggestion, getThemeSuggestions, postThemeSuggestion } from "@/requests/theme";
+import {
+  deleteThemeSuggestion,
+  getThemeSuggestions,
+  postThemeSuggestion,
+} from "@/requests/theme";
 
 export default function ThemeSuggestions() {
   const [suggestion, setSuggestion] = useState("");
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [userSuggestions, setUserSuggestions] =  useState<ThemeType[]>([]);
+  const [userSuggestions, setUserSuggestions] = useState<ThemeType[]>([]);
   const [themeLimit, setThemeLimit] = useState(0);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
   const [activeJamResponse, setActiveJamResponse] =
@@ -152,10 +156,10 @@ export default function ThemeSuggestions() {
         </p>
         <button
           onClick={() => {
-                      if (activeJamResponse?.jam?.id !== undefined) {
-                        joinJam(activeJamResponse.jam.id);
-                      }
-                    }}
+            if (activeJamResponse?.jam?.id !== undefined) {
+              joinJam(activeJamResponse.jam.id);
+            }
+          }}
           className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           Join Jam
