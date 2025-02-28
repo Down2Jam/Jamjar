@@ -27,7 +27,12 @@ export default function JamHeader() {
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const getClassesForDateDisplay = (index: number, nextEventIndex: number, eventDateObj: Date, currentDate: Date) => {
+  const getClassesForDateDisplay = (
+    index: number,
+    nextEventIndex: number,
+    eventDateObj: Date,
+    currentDate: Date
+  ) => {
     if (index === nextEventIndex - 1 && eventDateObj < currentDate) {
       return "bg-[#81b8cc] dark:bg-[#1891b2]";
     }
@@ -46,32 +51,42 @@ export default function JamHeader() {
     return "border-2 border-[#5e6a83] dark:border-[#33405d]";
   };
 
-  const getPhaseObj = (jamPhase: JamPhase ) => {
-    if(jamPhase === JamPhase.SUGGESTION) return {
-      text: "Go to Theme Suggestion",
-      href: "/theme-suggestions"
-    }
-    if(jamPhase === JamPhase.SURVIVAL) return {
-      text: "Go to Theme Survival",
-      href: "/theme-slaughter"
-    }
-    if(jamPhase === JamPhase.VOTING) return {
-      text: "Go to Theme Voting",
-      href: "/theme-voting"
-    }
-    if(jamPhase === JamPhase.JAMMING) return {
-      text: topTheme ? `THEME: ${topTheme}` : "No top-scoring theme available.",
-    }
-    if(jamPhase === JamPhase.RATING) return {
-      text:  topTheme ? `THEME: ${topTheme} RESULTS` : "No top-scoring theme available."
-    }
-    return {text: "No top-scoring theme available."};
-  }
+  const getPhaseObj = (jamPhase: JamPhase) => {
+    if (jamPhase === JamPhase.SUGGESTION)
+      return {
+        text: "Go to Theme Suggestion",
+        href: "/theme-suggestions",
+      };
+    if (jamPhase === JamPhase.SURVIVAL)
+      return {
+        text: "Go to Theme Survival",
+        href: "/theme-slaughter",
+      };
+    if (jamPhase === JamPhase.VOTING)
+      return {
+        text: "Go to Theme Voting",
+        href: "/theme-voting",
+      };
+    if (jamPhase === JamPhase.JAMMING)
+      return {
+        text: topTheme
+          ? `THEME: ${topTheme}`
+          : "No top-scoring theme available.",
+      };
+    if (jamPhase === JamPhase.RATING)
+      return {
+        text: topTheme
+          ? `THEME: ${topTheme} RESULTS`
+          : "No top-scoring theme available.",
+      };
+    return { text: "No top-scoring theme available." };
+  };
 
   // Fetch active jam details
   useEffect(() => {
     const fetchData = async () => {
       const jamData = await getCurrentJam();
+      console.log(jamData);
       setActiveJamResponse(jamData);
 
       // If we're in Jamming phase, fetch top themes and pick the first one
@@ -185,16 +200,18 @@ export default function JamHeader() {
 
           {activeJamResponse && activeJamResponse.jam && (
             <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              {getPhaseObj(activeJamResponse.phase) && getPhaseObj(activeJamResponse.phase).href ? (<a
-                href={getPhaseObj(activeJamResponse.phase).href}
-                className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
-              >
-                {getPhaseObj(activeJamResponse.phase).text}
-              </a>
+              {getPhaseObj(activeJamResponse.phase) &&
+              getPhaseObj(activeJamResponse.phase).href ? (
+                <a
+                  href={getPhaseObj(activeJamResponse.phase).href}
+                  className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
+                >
+                  {getPhaseObj(activeJamResponse.phase).text}
+                </a>
               ) : (
-              <p className="text-xl font-bold text-blue-500">
-                {getPhaseObj(activeJamResponse.phase).text}
-              </p>
+                <p className="text-xl font-bold text-blue-500">
+                  {getPhaseObj(activeJamResponse.phase).text}
+                </p>
               )}
             </div>
           )}
@@ -202,15 +219,20 @@ export default function JamHeader() {
       </a>
       <Spacer y={3} />
       <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4">
-        {sortedEvents.map((event, index) =>
+        {sortedEvents.map((event, index) => (
           <div
             key={event.name}
-            className={`snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(index, nextEventIndex, event.dateObj, currentDate)}`}
+            className={`snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(
+              index,
+              nextEventIndex,
+              event.dateObj,
+              currentDate
+            )}`}
           >
             <p className="text-xs">{event.name}</p>
             <p className="font-bold text-lg">{event.date}</p>
           </div>
-        )}
+        ))}
       </div>
     </>
   );
