@@ -79,7 +79,7 @@ export default function JamHeader() {
           ? `THEME: ${topTheme} RESULTS`
           : "No top-scoring theme available.",
       };
-    return { text: "No top-scoring theme available." };
+    return { text: "Theme Submissions will open soon" };
   };
 
   // Fetch active jam details
