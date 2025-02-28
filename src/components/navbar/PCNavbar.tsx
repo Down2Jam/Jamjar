@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { hasCookie } from "@/helpers/cookie";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
-import { JamType } from "@/types/JamType";
+import { JamPhase, JamType } from "@/types/JamType";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import NavbarUser from "./PCNavbarUser";
@@ -39,6 +39,7 @@ import { getCurrentGame } from "@/requests/game";
 export default function PCNavbar() {
   const pathname = usePathname();
   const [jam, setJam] = useState<JamType | null>();
+  const [jamPhase, setJamPhase] = useState<JamPhase | null>();
   const [isInJam, setIsInJam] = useState<boolean>();
   const [user, setUser] = useState<UserType>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
@@ -65,6 +66,7 @@ export default function PCNavbar() {
         const jamResponse = await getCurrentJam();
         const currentJam = jamResponse?.jam;
         setJam(currentJam);
+        setJamPhase(jamResponse?.phase);
 
         if (!hasCookie("token")) {
           setUser(undefined);
@@ -186,7 +188,7 @@ export default function PCNavbar() {
       <NavbarContent justify="end" className="gap-4">
         <NavbarSearchbar />
         {user && <Divider orientation="vertical" className="h-1/2" />}
-        {user && jam && isInJam && (
+        {user && jam && isInJam && jamPhase == "Jamming" && (
           <NavbarButtonLink
             important
             icon={<Gamepad2 />}

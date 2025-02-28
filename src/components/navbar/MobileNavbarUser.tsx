@@ -9,7 +9,7 @@ import {
   NavbarItem,
 } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
-import { JamType } from "@/types/JamType";
+import { JamPhase, JamType } from "@/types/JamType";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
 import { toast } from "react-toastify";
@@ -28,12 +28,14 @@ export default function MobileNavbarUser({
   isInJam,
 }: NavbarUserProps) {
   const [currentJam, setCurrentJam] = useState<JamType | null>(null);
+  const [jamPhase, setJamPhase] = useState<JamPhase | null>();
 
   useEffect(() => {
     const fetchCurrentJam = async () => {
       try {
         const response = await getCurrentJam();
         setCurrentJam(response?.jam || null);
+        setJamPhase(response?.phase || null);
       } catch (error) {
         console.error("Error fetching current jam:", error);
       }
@@ -55,7 +57,7 @@ export default function MobileNavbarUser({
           />
         </DropdownTrigger>
         <DropdownMenu>
-          {jam && currentJam && isInJam ? (
+          {jam && currentJam && isInJam && jamPhase == "Jamming" ? (
             <DropdownItem
               key="create-game"
               href="/create-game"
