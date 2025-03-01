@@ -43,51 +43,45 @@ export default function ButtonLink({
   if (tooltip) {
     return (
       <Tooltip content={tooltip}>
-        <Link
-          href={href}
-          className={`flex justify-center duration-500 ease-in-out transition-all transform ${
+        <Button
+          endContent={icon}
+          className={`text-[#333] dark:text-white ${
+            important
+              ? "border-[#85bdd2] dark:border-[#1892b3]"
+              : "border-[#d9d9da] dark:border-[#444]"
+          } bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out ${
             !reduceMotion ? "hover:scale-110" : ""
           }`}
+          variant="bordered"
+          isIconOnly={isIconOnly}
+          size={size}
+          href={href}
+          as={Link}
         >
-          <Button
-            endContent={icon}
-            className={`text-[#333] dark:text-white ${
-              important
-                ? "border-[#85bdd2] dark:border-[#1892b3]"
-                : "border-[#d9d9da] dark:border-[#444]"
-            } bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out`}
-            variant="bordered"
-            isIconOnly={isIconOnly}
-            size={size}
-          >
-            {name}
-          </Button>
-        </Link>
+          {name}
+        </Button>
       </Tooltip>
     );
   } else {
     return (
-      <Link
-        href={href}
-        className={`flex justify-center duration-500 ease-in-out transition-all transform ${
+      <Button
+        endContent={iconPosition == "end" ? icon : undefined}
+        startContent={iconPosition == "start" ? icon : undefined}
+        className={`text-[#333] dark:text-white ${
+          important
+            ? "border-[#85bdd2] dark:border-[#1892b3] dark:bg-[#1d232b]"
+            : "border-[#d9d9da] dark:border-[#444] dark:bg-[#222222]"
+        } bg-[#fff] transition-all transform !duration-500 ease-in-out ${
           !reduceMotion ? "hover:scale-110" : ""
         }`}
+        variant="bordered"
+        isIconOnly={isIconOnly}
+        size={size}
+        href={href}
+        as={Link}
       >
-        <Button
-          endContent={iconPosition == "end" ? icon : undefined}
-          startContent={iconPosition == "start" ? icon : undefined}
-          className={`text-[#333] dark:text-white ${
-            important
-              ? "border-[#85bdd2] dark:border-[#1892b3] dark:bg-[#1d232b]"
-              : "border-[#d9d9da] dark:border-[#444] dark:bg-[#222222]"
-          } bg-[#fff] transition-all transform !duration-500 ease-in-out`}
-          variant="bordered"
-          isIconOnly={isIconOnly}
-          size={size}
-        >
-          {name}
-        </Button>
-      </Link>
+        {name}
+      </Button>
     );
   }
 }

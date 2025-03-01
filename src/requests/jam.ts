@@ -6,7 +6,9 @@ export async function getJams() {
 }
 
 export async function getCurrentJam() {
-  return fetch(`${BASE_URL}/jam`);
+  return fetch(`${BASE_URL}/jam`, {
+    next: { revalidate: 300 },
+  });
 }
 
 export async function joinJam(jamId: number) {

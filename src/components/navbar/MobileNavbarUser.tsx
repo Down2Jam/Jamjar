@@ -61,7 +61,7 @@ export default function MobileNavbarUser({
             <DropdownItem
               key="create-game"
               href="/create-game"
-              className="text-black"
+              className="text-black dark:text-white"
             >
               Create Game
             </DropdownItem>
@@ -69,7 +69,7 @@ export default function MobileNavbarUser({
           {jam && currentJam && !isInJam ? (
             <DropdownItem
               key="join-event"
-              className="text-black"
+              className="text-black dark:text-white"
               onPress={async () => {
                 try {
                   if (!currentJam) {
@@ -91,13 +91,13 @@ export default function MobileNavbarUser({
           <DropdownItem
             key="create-post"
             href="/create-post"
-            className="text-black"
+            className="text-black dark:text-white"
           >
             Create Post
           </DropdownItem>
           <DropdownItem
             key="profile"
-            className="text-black"
+            className="text-black dark:text-white"
             href={`/u/${user.slug}`}
           >
             Profile
@@ -105,7 +105,7 @@ export default function MobileNavbarUser({
           <DropdownItem
             showDivider
             key="settings"
-            className="text-black"
+            className="text-black dark:text-white"
             href="/settings"
           >
             Settings

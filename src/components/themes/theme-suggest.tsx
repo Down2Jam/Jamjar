@@ -142,7 +142,11 @@ export default function ThemeSuggestions() {
   const token = getCookie("token");
 
   if (!token) {
-    return <div>Sign in to be able to suggest themes</div>;
+    return (
+      <div className="text-[#333] dark:text-white">
+        Sign in to be able to suggest themes
+      </div>
+    );
   }
 
   if (!hasJoined) {
