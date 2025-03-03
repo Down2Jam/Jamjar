@@ -126,30 +126,17 @@ export default function PCNavbar() {
   return (
     <NavbarBase
       maxWidth="2xl"
-      className="bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="relative bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
+      style={{
+        backgroundImage: "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
+        backgroundPositionY: "center, center",
+        backgroundPositionX: "-100px, right -100px",
+        backgroundSize: "200px",
+        backgroundRepeat: "no-repeat"
+      }}
       isBordered
       height={80}
     >
-      <div className="absolute -left-36 overflow-hidden h-[90px]">
-        <Image
-          as={NextImage}
-          src="/images/D2J_Icon.png"
-          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-16"
-          alt="Down2Jam logo"
-          width={210}
-          height={210}
-        />
-      </div>
-      <div className="absolute -right-36 overflow-hidden h-[90px]">
-        <Image
-          as={NextImage}
-          src="/images/D2J_Icon.png"
-          className="min-w-[70px] -z-10 !opacity-5 dark:!opacity-[2%] -top-16"
-          alt="Down2Jam logo"
-          width={210}
-          height={210}
-        />
-      </div>
 
       {/* Left side navbar items */}
       <NavbarContent justify="start">
