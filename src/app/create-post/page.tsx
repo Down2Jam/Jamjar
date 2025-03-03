@@ -76,7 +76,7 @@ export default function CreatePostPage() {
             isFixed: boolean;
           }[] = [];
 
-          for (const tag of await tagResponse.json()) {
+          for (const tag of (await tagResponse.json()).data) {
             if (tag.modOnly && !localuser.mod) {
               continue;
             }
