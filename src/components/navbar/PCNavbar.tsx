@@ -128,16 +128,16 @@ export default function PCNavbar() {
       maxWidth="2xl"
       className="bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
       style={{
-        backgroundImage: "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
+        backgroundImage:
+          "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
         backgroundPositionY: "center, center",
-        backgroundPositionX: "-100px, right -100px",
-        backgroundSize: "200px",
-        backgroundRepeat: "no-repeat"
+        backgroundPositionX: "45px, right 45px",
+        backgroundSize: "210px",
+        backgroundRepeat: "no-repeat",
       }}
       isBordered
       height={80}
     >
-
       {/* Left side navbar items */}
       <NavbarContent justify="start">
         <NavbarBrand className="flex-grow-0 mr-10">
