@@ -126,7 +126,7 @@ export default function PCNavbar() {
   return (
     <NavbarBase
       maxWidth="2xl"
-      className="relative bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="bg-[#fff] dark:bg-[#222] p-1 duration-500 ease-in-out transition-color shadow-2xl"
       style={{
         backgroundImage: "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
         backgroundPositionY: "center, center",
