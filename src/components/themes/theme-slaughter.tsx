@@ -35,7 +35,14 @@ export default function ThemeSlaughter() {
 
   function voteYes() {
     if (currentTheme >= themes.length) return;
-    themes[currentTheme].votes = [{ slaughterScore: 1 }];
+    themes[currentTheme].votes = [
+      {
+        slaughterScore: 1,
+        id: 0,
+        themeSuggestionId: themes[currentTheme].id,
+        updatedAt: Date(),
+      },
+    ];
     changeSelectedTheme(1);
 
     try {
@@ -47,7 +54,14 @@ export default function ThemeSlaughter() {
 
   function voteNo() {
     if (currentTheme >= themes.length) return;
-    themes[currentTheme].votes = [{ slaughterScore: -1 }];
+    themes[currentTheme].votes = [
+      {
+        slaughterScore: -1,
+        id: 0,
+        themeSuggestionId: themes[currentTheme].id,
+        updatedAt: Date(),
+      },
+    ];
     changeSelectedTheme(1);
 
     try {
@@ -59,7 +73,14 @@ export default function ThemeSlaughter() {
 
   function voteSkip() {
     if (currentTheme >= themes.length) return;
-    themes[currentTheme].votes = [{ slaughterScore: 0 }];
+    themes[currentTheme].votes = [
+      {
+        slaughterScore: 0,
+        id: 0,
+        themeSuggestionId: themes[currentTheme].id,
+        updatedAt: Date(),
+      },
+    ];
     changeSelectedTheme(1);
 
     try {
@@ -100,8 +121,8 @@ export default function ThemeSlaughter() {
             .filter((theme: ThemeType) => theme.votes && theme.votes.length > 0)
             .sort(
               (a: ThemeType, b: ThemeType) =>
-                new Date(a.updatedAt).getTime() -
-                new Date(b.updatedAt).getTime()
+                (a.votes ? new Date(a.votes[0].updatedAt).getTime() : 0) -
+                (b.votes ? new Date(b.votes[0].updatedAt).getTime() : 0)
             );
 
           const nonVotedThemes = data.data
@@ -153,7 +174,7 @@ export default function ThemeSlaughter() {
     setCurrentTheme(firstUnvotedIndex);
   }, [themes]);
 
-  function getTextFromVote(vote) {
+  function getTextFromVote(vote: number) {
     switch (vote) {
       case -1:
         return "No";
@@ -164,7 +185,7 @@ export default function ThemeSlaughter() {
     }
   }
 
-  function getIconFromVote(vote) {
+  function getIconFromVote(vote: number) {
     switch (vote) {
       case -1:
         return <X size={16} className="ml-1" />;
@@ -248,7 +269,9 @@ export default function ThemeSlaughter() {
               themes.map((theme, i) => (
                 <div
                   key={theme.id}
-                  ref={(el) => (themeRefs.current[i] = el)}
+                  ref={(el) => {
+                    themeRefs.current[i] = el;
+                  }}
                   onClick={() => {
                     setSelectedTheme(i);
                   }}
