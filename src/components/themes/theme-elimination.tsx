@@ -23,6 +23,8 @@ export default function ThemeSlaughter() {
 
   useHotkeys("y", voteYes);
   useHotkeys("n", voteNo);
+  useHotkeys("a", voteYes);
+  useHotkeys("d", voteNo);
   useHotkeys("s", voteSkip);
   useHotkeys("ArrowUp", (event) => {
     event.preventDefault();
@@ -251,13 +253,13 @@ export default function ThemeSlaughter() {
           </Card>
           <ButtonAction
             name="Yes"
-            kbd="Y"
+            kbd="Y/A"
             onPress={voteYes}
             isDisabled={currentTheme >= themes.length}
           />
           <ButtonAction
             name="No"
-            kbd="N"
+            kbd="N/D"
             onPress={voteNo}
             isDisabled={currentTheme >= themes.length}
           />
