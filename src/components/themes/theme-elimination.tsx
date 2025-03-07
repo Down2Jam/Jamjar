@@ -8,6 +8,7 @@ import { Check, SkipForward, Vote, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ButtonAction from "../link-components/ButtonAction";
 import { useHotkeys } from "react-hotkeys-hook";
+import { getCookie } from "@/helpers/cookie";
 
 export default function ThemeSlaughter() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
@@ -196,6 +197,8 @@ export default function ThemeSlaughter() {
     }
   }
 
+  const token = getCookie("token");
+
   if (phaseLoading) {
     return (
       <div className="text-[#333] dark:text-white flex items-center flex-col gap-4 py-20">
@@ -203,16 +206,22 @@ export default function ThemeSlaughter() {
         <Spinner />
       </div>
     );
+  } else if (!token) {
+    return (
+      <div className="text-[#333] dark:text-white">
+        Sign in to be able to eliminate themes
+      </div>
+    );
   } else if (activeJamResponse?.phase !== "Elimination") {
     return (
       <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Not in Theme Slaughter Phase
+          Not in Theme Elimination Phase
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
           The current phase is{" "}
           <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please come
-          back during the Theme Slaughter phase.
+          back during the Theme Elimination phase.
         </p>
       </div>
     );
