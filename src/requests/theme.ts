@@ -15,15 +15,8 @@ export async function getTopThemes() {
   });
 }
 
-export async function getRandomThemes() {
-  return fetch(`${BASE_URL}/themes/random`, {
-    headers: { Authorization: `Bearer ${getCookie("token")}` },
-    credentials: "include",
-  });
-}
-
-export async function getSlaughterThemes() {
-  return fetch(`${BASE_URL}/themes/voteSlaughter`, {
+export async function getThemes() {
+  return fetch(`${BASE_URL}/themes`, {
     headers: { Authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
   });
@@ -31,10 +24,9 @@ export async function getSlaughterThemes() {
 
 export async function getThemeVotes() {
   return fetch(`${BASE_URL}/themes/votes`, {
-      headers: { Authorization: `Bearer ${getCookie("token")}` },
-      credentials: "include",
-    }
-  );
+    headers: { Authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
 }
 
 export async function postThemeSuggestion(suggestion: string) {
@@ -57,7 +49,10 @@ export async function deleteThemeSuggestion(suggestionId: number) {
   });
 }
 
-export async function postThemeSuggestionVote(suggestionId: number, votingScore: number) {
+export async function postThemeSuggestionVote(
+  suggestionId: number,
+  votingScore: number
+) {
   return fetch(`${BASE_URL}/themes/vote`, {
     method: "POST",
     headers: {
@@ -69,18 +64,20 @@ export async function postThemeSuggestionVote(suggestionId: number, votingScore:
   });
 }
 
-export async function postThemeSlaughterVote(suggestionId: number, voteType: string) {
+export async function postThemeSlaughterVote(
+  suggestionId: number,
+  voteType: number
+) {
   return fetch(`${BASE_URL}/themes/voteSlaughter`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${getCookie("token")}`,
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        suggestionId,
-        voteType,
-      }),
-    }
-  );
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      suggestionId,
+      voteType,
+    }),
+  });
 }

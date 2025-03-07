@@ -3,8 +3,8 @@ import Sidebar from "@/components/sidebar";
 
 export default async function Home() {
   return (
-    <div className="flex justify-between flex-wrap">
-      <div className="md:w-2/3">
+    <div className="flex justify-between flex-col md:flex-row">
+      <div className="w-full md:w-2/3">
         <ThemeSlaughter />
       </div>
       <Sidebar />
