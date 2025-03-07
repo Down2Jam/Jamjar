@@ -1,6 +1,11 @@
 "use client";
 
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import {
+  ActiveJamResponse,
+  getCurrentJam,
+  hasJoinedCurrentJam,
+  joinJam,
+} from "@/helpers/jam";
 import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
 import { Card, CardBody, Chip, Spinner } from "@nextui-org/react";
@@ -17,6 +22,7 @@ export default function ThemeSlaughter() {
   );
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [currentTheme, setCurrentTheme] = useState(0);
+  const [hasJoined, setHasJoined] = useState<boolean>(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const themeRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -111,6 +117,9 @@ export default function ThemeSlaughter() {
       try {
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam); // Set active jam details
+
+        const joined = await hasJoinedCurrentJam();
+        setHasJoined(joined);
       } catch (error) {
         console.error("Error fetching current jam:", error);
       }
@@ -212,6 +221,27 @@ export default function ThemeSlaughter() {
     return (
       <div className="text-[#333] dark:text-white">
         Sign in to be able to eliminate themes
+      </div>
+    );
+  } else if (!hasJoined) {
+    return (
+      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+          Join the Jam First
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          You need to join the current jam before you can eliminate themes.
+        </p>
+        <button
+          onClick={() => {
+            if (activeJamResponse?.jam?.id !== undefined) {
+              joinJam(activeJamResponse.jam.id);
+            }
+          }}
+          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Join Jam
+        </button>
       </div>
     );
   } else if (activeJamResponse?.phase !== "Elimination") {
