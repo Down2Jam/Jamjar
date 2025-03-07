@@ -18,7 +18,9 @@ const events = [
 ];
 
 const getDateObject = (dateString: string) => {
-  return new Date(`${dateString} ${new Date().getFullYear()}`);
+  const date = new Date(`${dateString} ${new Date().getFullYear()}`);
+  date.setUTCHours(23, 0, 0, 0);
+  return date;
 };
 
 export default function JamHeader() {
