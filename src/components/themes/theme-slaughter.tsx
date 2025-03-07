@@ -1,163 +1,188 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { getCookie } from "@/helpers/cookie";
-import {
-  getCurrentJam,
-  hasJoinedCurrentJam,
-  ActiveJamResponse,
-  joinJam
-} from "@/helpers/jam";
-import {ThemeType} from "@/types/ThemeType";
-import { getRandomThemes, getSlaughterThemes, postThemeSlaughterVote } from "@/requests/theme";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
+import { ThemeType } from "@/types/ThemeType";
+import { Card, CardBody, Chip, Spinner } from "@nextui-org/react";
+import { Check, SkipForward, Vote, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import ButtonAction from "../link-components/ButtonAction";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export default function ThemeSlaughter() {
-  const [randomTheme, setRandomTheme] = useState<ThemeType | null>(null);
-  const [votedThemes, setVotedThemes] = useState<ThemeType[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-  const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [themes, setThemes] = useState<ThemeType[]>([]);
   const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
     null
   );
   const [phaseLoading, setPhaseLoading] = useState(true);
-  const [themeLoading, setThemeLoading] = useState<{ [key: number]: boolean }>({});
+  const [currentTheme, setCurrentTheme] = useState(0);
 
-  // Fetch token on the client side
-  useEffect(() => {
-    const fetchedToken = getCookie("token");
-    setToken(fetchedToken);
-  }, []);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const themeRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Fetch the current jam phase using helpers/jam
+  useHotkeys("y", voteYes);
+  useHotkeys("n", voteNo);
+  useHotkeys("s", voteSkip);
+  useHotkeys("ArrowUp", (event) => {
+    event.preventDefault();
+    changeSelectedTheme(-1);
+  });
+
+  useHotkeys("ArrowDown", (event) => {
+    event.preventDefault();
+    changeSelectedTheme(1);
+  });
+
+  function voteYes() {
+    if (currentTheme >= themes.length) return;
+    themes[currentTheme].votes = [{ slaughterScore: 1 }];
+    changeSelectedTheme(1);
+
+    try {
+      postThemeSlaughterVote(themes[currentTheme].id, 1);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  function voteNo() {
+    if (currentTheme >= themes.length) return;
+    themes[currentTheme].votes = [{ slaughterScore: -1 }];
+    changeSelectedTheme(1);
+
+    try {
+      postThemeSlaughterVote(themes[currentTheme].id, -1);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  function voteSkip() {
+    if (currentTheme >= themes.length) return;
+    themes[currentTheme].votes = [{ slaughterScore: 0 }];
+    changeSelectedTheme(1);
+
+    try {
+      postThemeSlaughterVote(themes[currentTheme].id, 0);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  function changeSelectedTheme(direction: number) {
+    const newIndex = Math.min(
+      Math.max(currentTheme + direction, 0),
+      themes.length
+    );
+    setSelectedTheme(newIndex);
+  }
+
+  function setSelectedTheme(index: number) {
+    setCurrentTheme(index);
+    scrollToIndex(index - 1);
+  }
+
   useEffect(() => {
-    const fetchCurrentJamPhase = async () => {
+    async function fetchData() {
       try {
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam); // Set active jam details
       } catch (error) {
         console.error("Error fetching current jam:", error);
+      }
+
+      try {
+        const response = await getThemes();
+        if (response.ok) {
+          const data = await response.json();
+
+          const votedThemes = data.data
+            .filter((theme: ThemeType) => theme.votes && theme.votes.length > 0)
+            .sort(
+              (a: ThemeType, b: ThemeType) =>
+                new Date(a.updatedAt).getTime() -
+                new Date(b.updatedAt).getTime()
+            );
+
+          const nonVotedThemes = data.data
+            .filter(
+              (theme: ThemeType) => !theme.votes || theme.votes.length === 0
+            )
+            .sort(() => Math.random() - 0.5); // Shuffle
+
+          setThemes([...votedThemes, ...nonVotedThemes]);
+        } else {
+          console.error("Error fetching themes");
+        }
+      } catch (error) {
+        console.error("Error fetching random theme:", error);
       } finally {
-        setPhaseLoading(false); // Stop loading when phase is fetched
+        setPhaseLoading(false);
       }
-    };
+    }
 
-    fetchCurrentJamPhase();
+    fetchData();
   }, []);
 
-  // Fetch a random theme
-  const fetchRandomTheme = useCallback(async () => {
-    if (!token) return; // Wait until token is available
-    if (!activeJamResponse) return;
-    if (
-      activeJamResponse &&
-      activeJamResponse.jam &&
-      activeJamResponse.phase != "Survival"
-    ) {
-      return (
-        <div>
-          <h1>It&apos;s not Theme Survival phase.</h1>
-        </div>
-      );
-    }
-
-    try {
-      const response = await getRandomThemes();
-      if (response.ok) {
-        const data = await response.json();
-        setRandomTheme(data);
-      } else {
-        console.error("Failed to fetch random theme.");
-      }
-    } catch (error) {
-      console.error("Error fetching random theme:", error);
-    }
-  }, [activeJamResponse, token]);
-
-  // Fetch voted themes
-  const fetchVotedThemes = useCallback(async () => {
-    if (!token) return; // Wait until token is available
-
-    try {
-      const response = await getSlaughterThemes();
-      if (response.ok) {
-        const data = await response.json();
-        setVotedThemes(data);
-      } else {
-        console.error("Failed to fetch voted themes.");
-      }
-    } catch (error) {
-      console.error("Error fetching voted themes:", error);
-    }
-  }, [token]);
-
-  // Handle voting
-  const handleVote = async (voteType: string) => {
-    if (!randomTheme) return;
-  
-    // Set loading for the current random theme
-    setThemeLoading((prev) => ({ ...prev, [randomTheme.id]: true }));
-  
-    try {
-      const response = await postThemeSlaughterVote(randomTheme.id, voteType);
-  
-      if (response.ok) {
-        // Refresh data after voting
-        fetchRandomTheme();
-        fetchVotedThemes();
-      } else {
-        console.error("Failed to submit vote.");
-      }
-    } catch (error) {
-      console.error("Error submitting vote:", error);
-    } finally {
-      // Remove loading state for the current random theme
-      setThemeLoading((prev) => ({ ...prev, [randomTheme.id]: false }));
-    }
-  };
-
-  // Handle resetting a vote from the grid
-  const handleResetVote = async (themeId: number) => {
-    try {
-      const theme = votedThemes.find((theme) => theme.id === themeId);
-      if (theme) {
-        setRandomTheme(theme);
-        setVotedThemes((prev) =>
-          prev.map((t) =>
-            t.id === themeId ? { ...t, slaughterScore: 0 } : t
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Error resetting vote:", error);
+  const scrollToIndex = (index: number) => {
+    if (themeRefs.current[index] && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top:
+          themeRefs.current[index]!.offsetTop -
+          scrollContainerRef.current.offsetTop,
+        behavior: "smooth",
+      });
     }
   };
 
   useEffect(() => {
-    if (token && activeJamResponse?.phase === "Survival") {
-      fetchRandomTheme();
-      fetchVotedThemes();
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
     }
-  }, [token, activeJamResponse, fetchRandomTheme, fetchVotedThemes]);
 
-  useEffect(() => {
-    const init = async () => {
-      const joined = await hasJoinedCurrentJam();
-      setHasJoined(joined);
-      setLoading(false);
-    };
+    const firstUnvotedIndex = themes.findIndex(
+      (theme) => !theme.votes || theme.votes.length === 0
+    );
 
-    init();
-  }, []);
+    if (firstUnvotedIndex !== -1) {
+      if (firstUnvotedIndex > 0) {
+        scrollToIndex(firstUnvotedIndex - 1);
+      }
+    }
 
-  if (phaseLoading || loading) {
-    return <div>Loading...</div>;
+    setCurrentTheme(firstUnvotedIndex);
+  }, [themes]);
+
+  function getTextFromVote(vote) {
+    switch (vote) {
+      case -1:
+        return "No";
+      case 0:
+        return "Skip";
+      case 1:
+        return "Yes";
+    }
   }
 
-  
+  function getIconFromVote(vote) {
+    switch (vote) {
+      case -1:
+        return <X size={16} className="ml-1" />;
+      case 0:
+        return <SkipForward size={16} className="ml-1" />;
+      case 1:
+        return <Check size={16} className="ml-1" />;
+    }
+  }
 
-  // Render message if not in Theme Slaughter phase
-  if (activeJamResponse?.phase !== "Survival") {
+  if (phaseLoading) {
+    return (
+      <div className="text-[#333] dark:text-white flex items-center flex-col gap-4 py-20">
+        <p>Loading</p>
+        <Spinner />
+      </div>
+    );
+  } else if (activeJamResponse?.phase !== "Elimination") {
     return (
       <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
@@ -170,110 +195,98 @@ export default function ThemeSlaughter() {
         </p>
       </div>
     );
-  }
-
-  const loggedIn = getCookie("token");
-  if (!loggedIn) {
-    return <div>Sign in to be able to join the Theme Survival</div>;
-  }
-
-  if (!hasJoined) {
+  } else {
     return (
-      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Join the Jam First
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          You need to join the current jam before you can join Theme Survival.
+      <div className="text-[#333] dark:text-white flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <Vote />
+          <p className="text-2xl">Theme Elimination</p>
+        </div>
+        <p>
+          Welcome to the Theme Elimination! This is a spot to say which
+          submitted themes you like or dislike before they go to the voting
+          rounds.
         </p>
-        <button
-          onClick={() => {
-            if (activeJamResponse?.jam?.id !== undefined) {
-              joinJam(activeJamResponse.jam.id);
-            }
-          }}
-          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        <p>
+          You can vote on as many themes as you want and the themes with the
+          most score (Positive votes - Negative Votes) will move to the voting
+          rounds.
+        </p>
+
+        <div className="flex gap-2 items-center flex-wrap">
+          <Card className="min-w-40 min-h-12">
+            <CardBody className="items-center">
+              <p>{themes[currentTheme]?.suggestion}</p>
+            </CardBody>
+          </Card>
+          <ButtonAction
+            name="Yes"
+            kbd="Y"
+            onPress={voteYes}
+            isDisabled={currentTheme >= themes.length}
+          />
+          <ButtonAction
+            name="No"
+            kbd="N"
+            onPress={voteNo}
+            isDisabled={currentTheme >= themes.length}
+          />
+          <ButtonAction
+            name="Skip"
+            kbd="S"
+            onPress={voteSkip}
+            isDisabled={currentTheme >= themes.length}
+          />
+        </div>
+
+        <div
+          className=" max-h-[600px] overflow-y-auto p-4"
+          ref={scrollContainerRef}
         >
-          Join Jam
-        </button>
+          <div className="flex flex-col gap-4">
+            {themes ? (
+              themes.map((theme, i) => (
+                <div
+                  key={theme.id}
+                  ref={(el) => (themeRefs.current[i] = el)}
+                  onClick={() => {
+                    setSelectedTheme(i);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <Card
+                    className={`${
+                      theme.votes && theme.votes.length > 0 ? "opacity-50" : ""
+                    } ${
+                      i === currentTheme
+                        ? "border-2 border-blue-500 shadow-lg"
+                        : "border border-transparent"
+                    } w-full`}
+                  >
+                    <CardBody>
+                      <div className="flex justify-between">
+                        <p>{theme.suggestion}</p>
+                        {theme.votes && theme.votes.length > 0 && (
+                          <Chip
+                            className="items-center"
+                            startContent={getIconFromVote(
+                              theme.votes[0].slaughterScore
+                            )}
+                          >
+                            {getTextFromVote(theme.votes[0].slaughterScore)}
+                          </Chip>
+                        )}
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+              ))
+            ) : (
+              <>No themes were found</>
+            )}
+          </div>
+        </div>
       </div>
     );
   }
-
-  return (
-    <div className="flex h-screen">
-  {/* Left Side */}
-    <div className="w-1/2 p-6 bg-gray-100 dark:bg-gray-800 flex flex-col justify-start items-center">
-      {randomTheme ? (
-        <>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-            {randomTheme.suggestion}
-          </h2>
-          <div className="flex gap-4">
-            <button
-              onClick={() => handleVote("YES")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-green-500 text-white hover:bg-green-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              YES
-            </button>
-            <button
-              onClick={() => handleVote("NO")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-red-500 text-white hover:bg-red-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              NO
-            </button>
-            <button
-              onClick={() => handleVote("SKIP")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gray-500 text-white hover:bg-gray-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              SKIP
-            </button>
-          </div>
-        </>
-      ) : (
-        <p className="text-gray-600 dark:text-gray-400">No themes available.</p>
-      )}
-    </div>
-
-    {/* Right Side */}
-    <div className="w-1/2 p-6 bg-white dark:bg-gray-900 overflow-y-auto">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-        Your Votes
-      </h3>
-      <div className="grid grid-cols-4 gap-4">
-        {votedThemes.map((theme) => (
-          <div
-            key={theme.id}
-            onClick={() => handleResetVote(theme.id)}
-            className={`p-4 rounded-lg cursor-pointer ${
-              theme.slaughterScore > 0
-                ? "bg-green-500 text-white"
-                : theme.slaughterScore < 0
-                ? "bg-red-500 text-white"
-                : "bg-gray-300 text-black"
-            }`}
-          >
-            {theme.suggestion}
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-  );
-  return <></>;
 }

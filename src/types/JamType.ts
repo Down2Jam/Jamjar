@@ -18,7 +18,7 @@ export interface JamType {
 export type JamPhase =
   | "Upcoming Jam"
   | "Suggestion"
-  | "Survival"
+  | "Elimination"
   | "Voting"
   | "Jamming"
   | "Rating";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
+import { Button, Kbd } from "@nextui-org/react";
 import { ReactNode, useEffect, useState } from "react";
 
 interface ButtonActionProps {
@@ -8,12 +8,16 @@ interface ButtonActionProps {
   onPress: () => void;
   name: string;
   important?: boolean;
+  kbd?: string;
+  isDisabled?: boolean;
 }
 
 export default function ButtonAction({
   icon,
   onPress,
   name,
+  kbd,
+  isDisabled = false,
   important = false,
 }: ButtonActionProps) {
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
@@ -34,7 +38,15 @@ export default function ButtonAction({
 
   return (
     <Button
-      endContent={icon}
+      isDisabled={isDisabled}
+      endContent={
+        (icon || kbd) && (
+          <div>
+            {icon}
+            {kbd && <Kbd>{kbd}</Kbd>}
+          </div>
+        )
+      }
       className={`text-[#333] dark:text-white ${
         important
           ? "border-[#85bdd2] dark:border-[#1892b3] dark:bg-[#1d232b]"
