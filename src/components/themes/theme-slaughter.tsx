@@ -6,10 +6,14 @@ import {
   getCurrentJam,
   hasJoinedCurrentJam,
   ActiveJamResponse,
-  joinJam
+  joinJam,
 } from "@/helpers/jam";
-import {ThemeType} from "@/types/ThemeType";
-import { getRandomThemes, getSlaughterThemes, postThemeSlaughterVote } from "@/requests/theme";
+import { ThemeType } from "@/types/ThemeType";
+import {
+  getRandomThemes,
+  getSlaughterThemes,
+  postThemeSlaughterVote,
+} from "@/requests/theme";
 
 export default function ThemeSlaughter() {
   const [randomTheme, setRandomTheme] = useState<ThemeType | null>(null);
@@ -21,7 +25,9 @@ export default function ThemeSlaughter() {
     null
   );
   const [phaseLoading, setPhaseLoading] = useState(true);
-  const [themeLoading, setThemeLoading] = useState<{ [key: number]: boolean }>({});
+  const [themeLoading, setThemeLoading] = useState<{ [key: number]: boolean }>(
+    {}
+  );
 
   // Fetch token on the client side
   useEffect(() => {
@@ -52,11 +58,11 @@ export default function ThemeSlaughter() {
     if (
       activeJamResponse &&
       activeJamResponse.jam &&
-      activeJamResponse.phase != "Survival"
+      activeJamResponse.phase != "Elimination"
     ) {
       return (
         <div>
-          <h1>It&apos;s not Theme Survival phase.</h1>
+          <h1>It&apos;s not Theme Elimination phase.</h1>
         </div>
       );
     }
@@ -67,7 +73,11 @@ export default function ThemeSlaughter() {
         const data = await response.json();
         setRandomTheme(data);
       } else {
-        console.error("Failed to fetch random theme.");
+        if (response.status == 404) {
+          setRandomTheme(null);
+        } else {
+          console.error("Error fetching random theme");
+        }
       }
     } catch (error) {
       console.error("Error fetching random theme:", error);
@@ -94,13 +104,13 @@ export default function ThemeSlaughter() {
   // Handle voting
   const handleVote = async (voteType: string) => {
     if (!randomTheme) return;
-  
+
     // Set loading for the current random theme
     setThemeLoading((prev) => ({ ...prev, [randomTheme.id]: true }));
-  
+
     try {
       const response = await postThemeSlaughterVote(randomTheme.id, voteType);
-  
+
       if (response.ok) {
         // Refresh data after voting
         fetchRandomTheme();
@@ -123,9 +133,7 @@ export default function ThemeSlaughter() {
       if (theme) {
         setRandomTheme(theme);
         setVotedThemes((prev) =>
-          prev.map((t) =>
-            t.id === themeId ? { ...t, slaughterScore: 0 } : t
-          )
+          prev.map((t) => (t.id === themeId ? { ...t, slaughterScore: 0 } : t))
         );
       }
     } catch (error) {
@@ -134,7 +142,7 @@ export default function ThemeSlaughter() {
   };
 
   useEffect(() => {
-    if (token && activeJamResponse?.phase === "Survival") {
+    if (token && activeJamResponse?.phase === "Elimination") {
       fetchRandomTheme();
       fetchVotedThemes();
     }
@@ -154,10 +162,8 @@ export default function ThemeSlaughter() {
     return <div>Loading...</div>;
   }
 
-  
-
-  // Render message if not in Theme Slaughter phase
-  if (activeJamResponse?.phase !== "Survival") {
+  // Render message if not in Theme Elimination phase
+  if (activeJamResponse?.phase !== "Elimination") {
     return (
       <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
@@ -174,7 +180,7 @@ export default function ThemeSlaughter() {
 
   const loggedIn = getCookie("token");
   if (!loggedIn) {
-    return <div>Sign in to be able to join the Theme Survival</div>;
+    return <div>Sign in to be able to join the Theme Elimination</div>;
   }
 
   if (!hasJoined) {
@@ -184,7 +190,8 @@ export default function ThemeSlaughter() {
           Join the Jam First
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          You need to join the current jam before you can join Theme Survival.
+          You need to join the current jam before you can join Theme
+          Elimination.
         </p>
         <button
           onClick={() => {
@@ -202,78 +209,80 @@ export default function ThemeSlaughter() {
 
   return (
     <div className="flex h-screen">
-  {/* Left Side */}
-    <div className="w-1/2 p-6 bg-gray-100 dark:bg-gray-800 flex flex-col justify-start items-center">
-      {randomTheme ? (
-        <>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
-            {randomTheme.suggestion}
-          </h2>
-          <div className="flex gap-4">
-            <button
-              onClick={() => handleVote("YES")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-green-500 text-white hover:bg-green-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              YES
-            </button>
-            <button
-              onClick={() => handleVote("NO")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-red-500 text-white hover:bg-red-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              NO
-            </button>
-            <button
-              onClick={() => handleVote("SKIP")}
-              className={`px-6 py-3 font-bold rounded-lg ${
-                themeLoading[randomTheme?.id || -1]
-                  ? "bg-gray-400 text-white cursor-not-allowed"
-                  : "bg-gray-500 text-white hover:bg-gray-600"
-              }`}
-              disabled={themeLoading[randomTheme?.id || -1]}
-            >
-              SKIP
-            </button>
-          </div>
-        </>
-      ) : (
-        <p className="text-gray-600 dark:text-gray-400">No themes available.</p>
-      )}
-    </div>
+      {/* Left Side */}
+      <div className="w-1/2 p-6 bg-gray-100 dark:bg-gray-800 flex flex-col justify-start items-center">
+        {randomTheme ? (
+          <>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+              {randomTheme.suggestion}
+            </h2>
+            <div className="flex gap-4">
+              <button
+                onClick={() => handleVote("YES")}
+                className={`px-6 py-3 font-bold rounded-lg ${
+                  themeLoading[randomTheme?.id || -1]
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-green-500 text-white hover:bg-green-600"
+                }`}
+                disabled={themeLoading[randomTheme?.id || -1]}
+              >
+                YES
+              </button>
+              <button
+                onClick={() => handleVote("NO")}
+                className={`px-6 py-3 font-bold rounded-lg ${
+                  themeLoading[randomTheme?.id || -1]
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-red-500 text-white hover:bg-red-600"
+                }`}
+                disabled={themeLoading[randomTheme?.id || -1]}
+              >
+                NO
+              </button>
+              <button
+                onClick={() => handleVote("SKIP")}
+                className={`px-6 py-3 font-bold rounded-lg ${
+                  themeLoading[randomTheme?.id || -1]
+                    ? "bg-gray-400 text-white cursor-not-allowed"
+                    : "bg-gray-500 text-white hover:bg-gray-600"
+                }`}
+                disabled={themeLoading[randomTheme?.id || -1]}
+              >
+                SKIP
+              </button>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-600 dark:text-gray-400">
+            No themes available.
+          </p>
+        )}
+      </div>
 
-    {/* Right Side */}
-    <div className="w-1/2 p-6 bg-white dark:bg-gray-900 overflow-y-auto">
-      <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-        Your Votes
-      </h3>
-      <div className="grid grid-cols-4 gap-4">
-        {votedThemes.map((theme) => (
-          <div
-            key={theme.id}
-            onClick={() => handleResetVote(theme.id)}
-            className={`p-4 rounded-lg cursor-pointer ${
-              theme.slaughterScore > 0
-                ? "bg-green-500 text-white"
-                : theme.slaughterScore < 0
-                ? "bg-red-500 text-white"
-                : "bg-gray-300 text-black"
-            }`}
-          >
-            {theme.suggestion}
-          </div>
-        ))}
+      {/* Right Side */}
+      <div className="w-1/2 p-6 bg-white dark:bg-gray-900 overflow-y-auto">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
+          Your Votes
+        </h3>
+        <div className="grid grid-cols-4 gap-4">
+          {votedThemes.map((theme) => (
+            <div
+              key={theme.id}
+              onClick={() => handleResetVote(theme.id)}
+              className={`p-4 rounded-lg cursor-pointer ${
+                theme.slaughterScore > 0
+                  ? "bg-green-500 text-white"
+                  : theme.slaughterScore < 0
+                  ? "bg-red-500 text-white"
+                  : "bg-gray-300 text-black"
+              }`}
+            >
+              {theme.suggestion}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
   );
   return <></>;
 }

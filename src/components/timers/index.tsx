@@ -30,7 +30,7 @@ export default function Timers() {
 
     if (
       activeJamResponse.phase == "Suggestion" ||
-      activeJamResponse.phase == "Survival" ||
+      activeJamResponse.phase == "Elimination" ||
       activeJamResponse.phase == "Voting" ||
       activeJamResponse.phase == "Upcoming Jam"
     ) {

@@ -59,10 +59,10 @@ export default function JamHeader() {
         text: "Go to Theme Suggestion",
         href: "/theme-suggestions",
       };
-    if (jamPhase === "Survival")
+    if (jamPhase === "Elimination")
       return {
-        text: "Go to Theme Survival",
-        href: "/theme-slaughter",
+        text: "Go to Theme Elimination",
+        href: "/theme-elimination",
       };
     if (jamPhase === "Voting")
       return {
