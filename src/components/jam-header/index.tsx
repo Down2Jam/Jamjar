@@ -19,7 +19,7 @@ const events = [
 
 const getDateObject = (dateString: string) => {
   const date = new Date(`${dateString} ${new Date().getFullYear()}`);
-  date.setUTCHours(23, 0, 0, 0);
+  date.setUTCHours(22, 0, 0, 0);
   return date;
 };
 
