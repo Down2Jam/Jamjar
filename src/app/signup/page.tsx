@@ -115,6 +115,7 @@ export default function UserPage() {
           type="password"
           value={password}
           onValueChange={setPassword}
+          autoComplete="new-password"
         />
         <Input
           isRequired
@@ -125,6 +126,7 @@ export default function UserPage() {
           type="password"
           value={password2}
           onValueChange={setPassword2}
+          autoComplete="new-password"
         />
         <div className="flex gap-2">
           <Button color="primary" type="submit">
