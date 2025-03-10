@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="flex justify-between">
         <div></div>
         <div className="flex gap-3">
-          <IconLink icon={<SiGithub />} href="https://github.com/Dare2Jam" />
+          <IconLink icon={<SiGithub />} href="https://github.com/Down2Jam" />
           <IconLink
             icon={<SiForgejo />}
             href="https://git.edikoyo.com/Ategon/Jamjar"
