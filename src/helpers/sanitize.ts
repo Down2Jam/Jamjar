@@ -18,5 +18,9 @@ export function sanitize(content: string) {
         "text-align": [/^right|left|center$/],
       },
     },
+    allowedSchemes: ["http", "https"],
+    allowedSchemesByTag: {
+      img: ["data", "http", "https"],
+    },
   });
 }
