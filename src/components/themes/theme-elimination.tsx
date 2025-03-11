@@ -351,7 +351,7 @@ export default function ThemeSlaughter() {
     }
 
     setCurrentTheme(firstUnvotedIndex);
-  }, [themes]);
+  }, [themes, currentTheme]);
 
   function getTextFromVote(vote: number) {
     switch (vote) {
