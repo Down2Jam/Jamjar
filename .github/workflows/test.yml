@@ -37,6 +37,8 @@ jobs:
     needs: test
     container:
       image: node:20
+    env:
+      NEXT_PUBLIC_MODE: PROD
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
