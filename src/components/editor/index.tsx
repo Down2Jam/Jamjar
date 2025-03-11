@@ -94,7 +94,25 @@ export default function Editor({
       Youtube,
       CodeBlock,
       Link,
-      ImageResize,
+      ImageResize.configure({
+        allowBase64: true,
+      }).extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            style: {
+              default: "height: auto; cursor: pointer;",
+              parseHTML: (element) => {
+                const width =
+                  element.getAttribute("width") || element.style.width;
+                return width
+                  ? `width: ${width}px; height: auto; cursor: pointer;`
+                  : `${element.style.cssText}`;
+              },
+            },
+          };
+        },
+      }),
     ],
     content: content,
     immediatelyRender: false,
