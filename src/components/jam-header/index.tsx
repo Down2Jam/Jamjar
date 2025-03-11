@@ -203,7 +203,7 @@ export default function JamHeader() {
           {activeJamResponse &&
             activeJamResponse.jam &&
             activeJamResponse.phase != "Upcoming Jam" && (
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-b-2x flex items-center justify-around">
                 {getPhaseObj(activeJamResponse.phase) &&
                 getPhaseObj(activeJamResponse.phase).href ? (
                   <a
@@ -217,6 +217,12 @@ export default function JamHeader() {
                     {getPhaseObj(activeJamResponse.phase).text}
                   </p>
                 )}
+                <a
+                  href="/team-finder"
+                  className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
+                >
+                  Go to Team Finder
+                </a>
               </div>
             )}
         </div>
