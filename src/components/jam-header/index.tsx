@@ -145,9 +145,9 @@ export default function JamHeader() {
 
   return (
     <>
-      <a href="/about" className="relative">
-        <div className="bg-[#7090b9] dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
-          {/* Jam Header */}
+      <div className="bg-[#7090b9] dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
+        {/* Jam Header */}
+        <a href="/about" className="relative">
           <div className="flex">
             <div className="bg-[#85bdd2] dark:bg-[#1892b3] p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250">
               <Calendar />
@@ -162,6 +162,7 @@ export default function JamHeader() {
                 )}
               </p>
             </div>
+
             <div className="p-4 px-6 font-bold">
               <p>
                 {activeJamResponse?.jam ? (
@@ -199,28 +200,32 @@ export default function JamHeader() {
               </p>
             </div>
           </div>
+        </a>
 
-          {activeJamResponse &&
-            activeJamResponse.jam &&
-            activeJamResponse.phase != "Upcoming Jam" && (
+        {activeJamResponse &&
+          activeJamResponse.jam &&
+          activeJamResponse.phase != "Upcoming Jam" &&
+          (getPhaseObj(activeJamResponse.phase) &&
+          getPhaseObj(activeJamResponse.phase).href ? (
+            <a
+              href={getPhaseObj(activeJamResponse.phase).href}
+              className="hover:underline text-blue-300 dark:text-blue-500"
+            >
               <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-                {getPhaseObj(activeJamResponse.phase) &&
-                getPhaseObj(activeJamResponse.phase).href ? (
-                  <a
-                    href={getPhaseObj(activeJamResponse.phase).href}
-                    className="text-blue-300 dark:text-blue-500 hover:underline font-semibold"
-                  >
-                    {getPhaseObj(activeJamResponse.phase).text}
-                  </a>
-                ) : (
-                  <p className="text-xl font-bold text-blue-500">
-                    {getPhaseObj(activeJamResponse.phase).text}
-                  </p>
-                )}
+                <p className="font-semibold ">
+                  {getPhaseObj(activeJamResponse.phase).text}
+                </p>
               </div>
-            )}
-        </div>
-      </a>
+            </a>
+          ) : (
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
+              <p className="font-semibold text-blue-500">
+                {getPhaseObj(activeJamResponse.phase).text}
+              </p>
+            </div>
+          ))}
+      </div>
+
       <Spacer y={3} />
       <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4">
         {sortedEvents.map((event, index) => (

@@ -109,9 +109,11 @@ export default function SidebarStreams() {
           {streamers.length > 0 + 3 * Math.floor(currentIndex / 3.0) && (
             <Tooltip
               className="text-black dark:text-white"
-              content={
+              content={`${
+                streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
+              } - ${
                 streamers[0 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
-              }
+              }`}
             >
               <Image
                 as={NextImage}
@@ -140,9 +142,11 @@ export default function SidebarStreams() {
           {streamers.length > 1 + 3 * Math.floor(currentIndex / 3.0) && (
             <Tooltip
               className="text-black dark:text-white"
-              content={
+              content={`${
+                streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
+              } - ${
                 streamers[1 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
-              }
+              }`}
             >
               <Image
                 as={NextImage}
@@ -171,9 +175,11 @@ export default function SidebarStreams() {
           {streamers.length > 2 + 3 * Math.floor(currentIndex / 3.0) && (
             <Tooltip
               className="text-black dark:text-white"
-              content={
+              content={`${
+                streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
+              } - ${
                 streamers[2 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
-              }
+              }`}
             >
               <Image
                 as={NextImage}
@@ -247,7 +253,9 @@ export default function SidebarStreams() {
         </div>
         <div className="relative z-10 p-2">
           <div className="flex flex-col gap-1">
-            <p className="text-white">{currentStreamer.streamTitle}</p>
+            <p className="text-white">
+              {currentStreamer.userName} - {currentStreamer.streamTitle}
+            </p>
             <div className="flex gap-2 pl-4 items-center">
               <Tooltip
                 content="Viewer Count"
