@@ -65,6 +65,9 @@
     "tiptap-markdown": "^0.8.10",
     "wavesurfer.js": "^7.9.1"
   },
+  "overrides": {
+    "@internationalized/date": "^3.7.0"
+  },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",

@@ -10,11 +10,10 @@ import { JamPhase } from "@/types/JamType";
 const events = [
   { name: "Theme Submission", date: "FEB 28" },
   { name: "Theme Elimination", date: "MAR 7" },
-  { name: "Theme Voting #1", date: "MAR 14" },
-  { name: "Theme Voting #2", date: "MAR 15" },
-  { name: "Theme Voting #3", date: "MAR 16" },
-  { name: "Theme Voting Final", date: "MAR 17" },
-  { name: "Jam Start", date: "MAR 21" },
+  { name: "Theme Voting", date: "MAR 14" },
+  { name: "Game Jam", date: "MAR 21" },
+  { name: "Rating Period", date: "MAR 24" },
+  { name: "Results", date: "APR 7" },
 ];
 
 const getDateObject = (dateString: string) => {
@@ -231,7 +230,7 @@ export default function JamHeader() {
         {sortedEvents.map((event, index) => (
           <div
             key={event.name}
-            className={`snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(
+            className={`grow snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(
               index,
               nextEventIndex,
               event.dateObj,

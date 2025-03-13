@@ -8,6 +8,7 @@ interface ButtonActionProps {
   onPress: () => void;
   name: string;
   important?: boolean;
+  isIconOnly?: boolean;
   kbd?: string;
   isDisabled?: boolean;
 }
@@ -17,6 +18,7 @@ export default function ButtonAction({
   onPress,
   name,
   kbd,
+  isIconOnly = false,
   isDisabled = false,
   important = false,
 }: ButtonActionProps) {
@@ -39,6 +41,7 @@ export default function ButtonAction({
   return (
     <Button
       isDisabled={isDisabled}
+      isIconOnly={isIconOnly}
       endContent={
         (icon || kbd) && (
           <div>
