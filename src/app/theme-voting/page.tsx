@@ -1,6 +1,5 @@
-import Timers from "@/components/timers";
 import ThemeVoting from "@/components/themes/theme-vote";
-import SidebarStreams from "@/components/sidebar/SidebarStreams";
+import Sidebar from "@/components/sidebar";
 
 export default async function Home() {
   return (
@@ -8,10 +7,7 @@ export default async function Home() {
       <div className="md:w-2/3">
         <ThemeVoting />
       </div>
-      <div>
-        <Timers />
-        <SidebarStreams />
-      </div>
+      <Sidebar />
     </div>
   );
 }

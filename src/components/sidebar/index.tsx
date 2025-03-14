@@ -1,7 +1,9 @@
+import { Spacer } from "@nextui-org/react";
 import SidebarBanner from "./SidebarBanner";
 import SidebarButtons from "./SidebarButtons";
 import SidebarStats from "./SidebarStats";
 import SidebarStreams from "./SidebarStreams";
+import SidebarEvents from "./SidebarEvents";
 
 export default function Sidebar() {
   return (
@@ -10,8 +12,8 @@ export default function Sidebar() {
       <SidebarButtons />
       <SidebarStats />
       <SidebarStreams />
-      {/* <Spacer y={20} />
-      <SidebarEvents /> */}
+      <Spacer y={20} />
+      <SidebarEvents />
       {/* <Spacer y={20} />
       <SidebarGames />
       <Spacer y={20} />

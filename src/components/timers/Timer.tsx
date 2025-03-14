@@ -39,7 +39,7 @@ export default function Timer({
     const seconds = totalSeconds % 60;
 
     return [
-      `${days} days ${hours.toString()} hours`,
+      `${days != 0 ? `${days} days ` : ""}${hours.toString()} hours`,
       `${minutes.toString()} minutes ${seconds.toString()} seconds`,
     ];
   };
