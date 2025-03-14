@@ -13,7 +13,9 @@ export async function postEvent(
   title: string,
   content: string,
   start: string,
-  end: string
+  end: string,
+  link: string,
+  icon: string
 ) {
   return fetch(`${BASE_URL}/event`, {
     body: JSON.stringify({
@@ -22,6 +24,8 @@ export async function postEvent(
       start,
       end,
       userSlug: getCookie("user"),
+      link,
+      icon,
     }),
     method: "POST",
     headers: {

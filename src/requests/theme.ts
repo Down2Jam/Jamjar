@@ -15,8 +15,8 @@ export async function getTopThemes() {
   });
 }
 
-export async function getThemes() {
-  return fetch(`${BASE_URL}/themes`, {
+export async function getThemes(isVoting: boolean = false) {
+  return fetch(`${BASE_URL}/themes?isVoting=${isVoting ? 1 : 0}`, {
     headers: { Authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
   });
@@ -69,6 +69,24 @@ export async function postThemeSlaughterVote(
   voteType: number
 ) {
   return fetch(`${BASE_URL}/themes/voteSlaughter`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      suggestionId,
+      voteType,
+    }),
+  });
+}
+
+export async function postThemeVotingVote(
+  suggestionId: number,
+  voteType: number
+) {
+  return fetch(`${BASE_URL}/themes/voteVoting`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

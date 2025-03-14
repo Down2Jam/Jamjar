@@ -7,12 +7,24 @@ import {
   Button,
   DateRangePicker,
   DateValue,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
   Form,
   Input,
   Spacer,
   Spinner,
 } from "@nextui-org/react";
-import { LoaderCircle } from "lucide-react";
+import {
+  Calendar,
+  Code,
+  FileCode,
+  Gamepad2,
+  LoaderCircle,
+  Palette,
+  Trophy,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -22,9 +34,47 @@ import { getSelf } from "@/requests/user";
 import { sanitize } from "@/helpers/sanitize";
 import SidebarStreams from "@/components/sidebar/SidebarStreams";
 import { postEvent } from "@/requests/event";
+import { EventIcon } from "@/types/EventIcon";
+
+const icons = {
+  art: {
+    description: "Streams where you make art content for the jam",
+    icon: <Palette />,
+    name: "Art",
+  },
+  event: {
+    description: "A generic event icon",
+    icon: <Calendar />,
+    name: "Event",
+  },
+  gamedev: {
+    description: "Streams where you make games for the jam",
+    icon: <Code />,
+    name: "Gamedev",
+  },
+  games: {
+    description: "Streams where you play games from the jam",
+    icon: <Gamepad2 />,
+    name: "Games",
+  },
+  tournament: {
+    description:
+      "Streams where you run a tournament (e.g. a score chasing tournament)",
+    icon: <Trophy />,
+    name: "Tournament",
+  },
+  webdev: {
+    description:
+      "Streams where you make web content (e.g. work on the d2jam site)",
+    icon: <FileCode />,
+    name: "Webdev",
+  },
+};
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
+  const [link, setLink] = useState("");
+  const [icon, setIcon] = useState<EventIcon>("event");
   const [content, setContent] = useState("");
   const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
@@ -75,23 +125,8 @@ export default function CreatePostPage() {
         onSubmit={async (e) => {
           e.preventDefault();
 
-          if (!title && !content) {
-            setErrors({
-              title: "Please enter a valid title",
-              content: "Please enter valid content",
-            });
-            toast.error("Please enter valid content");
-            return;
-          }
-
           if (!title) {
             setErrors({ title: "Please enter a valid title" });
-            return;
-          }
-
-          if (!content) {
-            setErrors({ content: "Please enter valid content" });
-            toast.error("Please enter valid content");
             return;
           }
 
@@ -113,7 +148,9 @@ export default function CreatePostPage() {
             title,
             sanitizedHtml,
             date.start.toString(),
-            date.end.toString()
+            date.end.toString(),
+            link,
+            icon
           );
 
           if (response.status == 401) {
@@ -143,9 +180,48 @@ export default function CreatePostPage() {
           onValueChange={setTitle}
         />
 
+        <Input
+          label="Link"
+          labelPlacement="outside"
+          name="link"
+          placeholder="Enter a link"
+          type="text"
+          value={link}
+          onValueChange={setLink}
+        />
+
         <Editor content={content} setContent={setContent} />
 
         <Spacer />
+
+        <p>Icon</p>
+        <Dropdown backdrop="opaque">
+          <DropdownTrigger>
+            <Button
+              size="sm"
+              className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+              variant="faded"
+            >
+              {icons[icon]?.name}
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            onAction={(key) => {
+              setIcon(key as EventIcon);
+            }}
+            className="text-[#333] dark:text-white"
+          >
+            {Object.entries(icons).map(([key, icon]) => (
+              <DropdownItem
+                key={key}
+                startContent={icon.icon}
+                description={icon.description}
+              >
+                {icon.name}
+              </DropdownItem>
+            ))}
+          </DropdownMenu>
+        </Dropdown>
 
         <DateRangePicker
           defaultValue={{
@@ -169,7 +245,7 @@ export default function CreatePostPage() {
                 : undefined,
             })
           }
-          label="Stay duration"
+          label="Event duration"
           labelPlacement="outside"
         />
 
