@@ -1,5 +1,305 @@
+"use client";
+
+import { getCookie } from "@/helpers/cookie";
+import {
+  ActiveJamResponse,
+  getCurrentJam,
+  hasJoinedCurrentJam,
+  joinJam,
+} from "@/helpers/jam";
+import { ThemeType } from "@/types/ThemeType";
+import { Card, CardBody, Spinner } from "@nextui-org/react";
+import { Star, Vote } from "lucide-react";
+import { useEffect, useState } from "react";
+import ButtonAction from "../link-components/ButtonAction";
+import { getThemes, postThemeVotingVote } from "@/requests/theme";
+
 export default function VotingPage() {
-  return <></>;
+  const [themes, setThemes] = useState<ThemeType[]>([]);
+  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
+    null
+  );
+  const [phaseLoading, setPhaseLoading] = useState(true);
+  const [hasJoined, setHasJoined] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const activeJam = await getCurrentJam();
+        setActiveJam(activeJam); // Set active jam details
+
+        const joined = await hasJoinedCurrentJam();
+        setHasJoined(joined);
+      } catch (error) {
+        console.error("Error fetching current jam:", error);
+      }
+
+      try {
+        const response = await getThemes(true);
+        if (response.ok) {
+          const data = await response.json();
+
+          const votedThemes = data.data
+            .filter(
+              (theme: ThemeType) => theme.votes2 && theme.votes2.length > 0
+            )
+            .sort(
+              (a: ThemeType, b: ThemeType) =>
+                (a.votes2 ? new Date(a.votes2[0].updatedAt).getTime() : 0) -
+                (b.votes2 ? new Date(b.votes2[0].updatedAt).getTime() : 0)
+            );
+
+          const nonVotedThemes = data.data
+            .filter(
+              (theme: ThemeType) => !theme.votes2 || theme.votes2.length === 0
+            )
+            .sort(() => Math.random() - 0.5); // Shuffle
+
+          setThemes([...votedThemes, ...nonVotedThemes]);
+        } else {
+          console.error("Error fetching themes");
+        }
+      } catch (error) {
+        console.error("Error fetching random theme:", error);
+      } finally {
+        setPhaseLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  function voteSkip(index: number) {
+    const newThemes = [...themes];
+    newThemes[index] = {
+      ...newThemes[index],
+      votes2: [
+        {
+          voteScore: 0,
+          voteRound: 1,
+          id: 0,
+          themeSuggestionId: newThemes[index].id,
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    };
+
+    setThemes(newThemes);
+
+    try {
+      postThemeVotingVote(themes[index].id, 0);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  function voteLike(index: number) {
+    const newThemes = [...themes];
+    newThemes[index] = {
+      ...newThemes[index],
+      votes2: [
+        {
+          voteScore: 1,
+          voteRound: 1,
+          id: 0,
+          themeSuggestionId: newThemes[index].id,
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    };
+
+    setThemes(newThemes);
+
+    try {
+      postThemeVotingVote(themes[index].id, 1);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  function voteStar(index: number) {
+    const newThemes = [...themes];
+    newThemes[index] = {
+      ...newThemes[index],
+      votes2: [
+        {
+          voteScore: 3,
+          voteRound: 1,
+          id: 0,
+          themeSuggestionId: newThemes[index].id,
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+    };
+
+    setThemes(newThemes);
+
+    try {
+      postThemeVotingVote(themes[index].id, 3);
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    }
+  }
+
+  const token = getCookie("token");
+
+  if (phaseLoading) {
+    return (
+      <div className="text-[#333] dark:text-white flex items-center flex-col gap-4 py-20">
+        <p>Loading</p>
+        <Spinner />
+      </div>
+    );
+  } else if (!token) {
+    return (
+      <div className="text-[#333] dark:text-white">
+        Sign in to be able to vote on themes
+      </div>
+    );
+  } else if (!hasJoined) {
+    return (
+      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+          Join the Jam First
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          You need to join the current jam before you can eliminate themes.
+        </p>
+        <button
+          onClick={() => {
+            if (activeJamResponse?.jam?.id !== undefined) {
+              joinJam(activeJamResponse.jam.id);
+            }
+          }}
+          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Join Jam
+        </button>
+      </div>
+    );
+  } else if (activeJamResponse?.phase !== "Voting") {
+    return (
+      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+          Not in Theme Voting Phase
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          The current phase is{" "}
+          <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please come
+          back during the Theme Voting phase.
+        </p>
+      </div>
+    );
+  } else {
+    return (
+      <div className="text-[#333] dark:text-white flex flex-col gap-4">
+        <div className="flex items-center gap-4">
+          <Vote />
+          <p className="text-2xl">Theme Voting</p>
+        </div>
+        <p>
+          Welcome to the Theme Voting! You can vote on the current top 15 themes
+          to show which ones you enjoy. The top voted theme after taking into
+          account everybody&apos;s votes will be the theme of the jam.
+        </p>
+        <p>
+          You can vote on as many themes as you want. Likes add +1 to the
+          theme&apos;s score while stars (that you can give 2 of) give +3 to a
+          theme&apos;s score.
+        </p>
+
+        <div className="p-4">
+          <div className="flex flex-col gap-2">
+            {themes ? (
+              themes.map((theme, i) => (
+                <div key={theme.id}>
+                  <Card className={`border border-transparent w-full`}>
+                    <CardBody className="py-2">
+                      <div className="flex justify-between items-center">
+                        <p>
+                          <span className="text-xs text-gray-500">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>{" "}
+                          {theme.suggestion}
+                        </p>
+                        <div className="items-center flex gap-3">
+                          <ButtonAction
+                            color="gray"
+                            size="sm"
+                            tooltip="Skip"
+                            isIconOnly
+                            onPress={() => {
+                              voteSkip(i);
+                            }}
+                            name="0"
+                            important={
+                              themes[i].votes2 &&
+                              themes[i].votes2.length > 0 &&
+                              themes[i].votes2[0].voteScore == 0
+                            }
+                          />
+                          <ButtonAction
+                            color="green"
+                            size="sm"
+                            tooltip="Like (+1)"
+                            isIconOnly
+                            onPress={() => {
+                              voteLike(i);
+                            }}
+                            name="1"
+                            important={
+                              themes[i].votes2 &&
+                              themes[i].votes2.length > 0 &&
+                              themes[i].votes2[0].voteScore == 1
+                            }
+                          />
+                          <ButtonAction
+                            color="yellow"
+                            size="sm"
+                            tooltip="Star (+3)"
+                            isIconOnly
+                            icon={<Star size={14} />}
+                            onPress={() => {
+                              voteStar(i);
+                            }}
+                            name=""
+                            important={
+                              themes[i].votes2 &&
+                              themes[i].votes2.length > 0 &&
+                              themes[i].votes2[0].voteScore == 3
+                            }
+                            isDisabled={
+                              themes.reduce(
+                                (prev, curr) =>
+                                  prev +
+                                  (curr.votes2 &&
+                                  curr.votes2.length > 0 &&
+                                  curr.votes2[0].voteScore == 3
+                                    ? 1
+                                    : 0),
+                                0
+                              ) >= 2 &&
+                              !(
+                                themes[i].votes2 &&
+                                themes[i].votes2.length > 0 &&
+                                themes[i].votes2[0].voteScore == 3
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </div>
+              ))
+            ) : (
+              <>No themes were found</>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
 
 // "use client";

@@ -27,13 +27,13 @@ import ButtonAction from "../link-components/ButtonAction";
 import { EventFilter } from "@/types/EventFilter";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { SiTwitch } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
 import Timer from "../timers/Timer";
 import ButtonLink from "../link-components/ButtonLink";
 import { UserType } from "@/types/UserType";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
+import { getIcon } from "@/helpers/event";
 
 export default function Events() {
   const searchParams = useSearchParams();
@@ -168,7 +168,7 @@ export default function Events() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={<SiTwitch size={16} />}
+                      content={getIcon(event.icon)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >

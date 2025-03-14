@@ -18,8 +18,6 @@ import { useMemo } from "react";
 
 function VoteCircle({ themes }: { themes: ThemeType[] }) {
   const voteCounts = useMemo(() => {
-    console.log("UPDATE");
-
     let yes = 0,
       no = 0,
       skip = 0,

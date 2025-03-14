@@ -6,11 +6,11 @@ import { Bell, ExternalLink, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { SiTwitch } from "@icons-pack/react-simple-icons";
 import ButtonLink from "../link-components/ButtonLink";
 import Timer from "../timers/Timer";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { getIcon } from "@/helpers/event";
 
 export default function SidebarEvents() {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -59,7 +59,7 @@ export default function SidebarEvents() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={<SiTwitch size={16} />}
+                      content={getIcon(event.icon)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >
@@ -124,7 +124,7 @@ export default function SidebarEvents() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={<SiTwitch size={16} />}
+                      content={getIcon(event.icon)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >

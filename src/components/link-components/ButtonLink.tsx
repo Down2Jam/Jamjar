@@ -50,7 +50,11 @@ export default function ButtonLink({
               ? "border-[#85bdd2] dark:border-[#1892b3]"
               : "border-[#d9d9da] dark:border-[#444]"
           } bg-[#fff] dark:bg-[#1d232b] transition-all transform !duration-500 ease-in-out ${
-            !reduceMotion ? "hover:scale-110" : ""
+            !reduceMotion
+              ? size == "sm"
+                ? "hover:scale-105"
+                : "hover:scale-110"
+              : ""
           }`}
           variant="bordered"
           isIconOnly={isIconOnly}
