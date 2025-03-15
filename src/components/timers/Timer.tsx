@@ -6,9 +6,11 @@ import { useState, useEffect } from "react";
 export default function Timer({
   name,
   targetDate,
+  reverse = false,
 }: {
   name: string;
   targetDate: Date;
+  reverse?: boolean;
 }) {
   const [timeLeft, setTimeLeft] = useState(targetDate.getTime() - Date.now());
   const [mounted, setMounted] = useState<boolean>(false);
@@ -19,7 +21,9 @@ export default function Timer({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const newTimeLeft = targetDate.getTime() - Date.now();
+      const newTimeLeft = reverse
+        ? Date.now() - targetDate.getTime()
+        : targetDate.getTime() - Date.now();
       if (newTimeLeft <= 0) {
         clearInterval(interval);
         setTimeLeft(0);
@@ -29,7 +33,7 @@ export default function Timer({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [targetDate]);
+  }, [targetDate, reverse]);
 
   const formatTime = (milliseconds: number) => {
     const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
@@ -38,10 +42,11 @@ export default function Timer({
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return [
-      `${days != 0 ? `${days} days ` : ""}${hours.toString()} hours`,
-      `${minutes.toString()} minutes ${seconds.toString()} seconds`,
-    ];
+    return `${days != 0 ? `${days} days ` : ""}${
+      hours != 0 ? `${hours} hours ` : ""
+    }${hours == 0 || days == 0 ? `${minutes} minutes ` : ""}${
+      days == 0 && (hours == 0 || minutes == 0) ? `${seconds} seconds` : ""
+    }${reverse ? " ago" : ""}`;
   };
 
   if (!mounted) {
@@ -53,7 +58,7 @@ export default function Timer({
       <div className="flex items-center gap-4 justify-center">
         <TimerIcon className="text-[#666]" />
         <p>{name}</p>
-        <p className="text-[#1687a7]">{formatTime(timeLeft)[0]}</p>
+        <p className="text-[#1687a7]">{formatTime(timeLeft)}</p>
       </div>
     </div>
   );

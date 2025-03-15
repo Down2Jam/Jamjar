@@ -1,7 +1,7 @@
 export type EventIcon =
-  | "games"
-  | "gamedev"
-  | "art"
-  | "webdev"
-  | "tournament"
-  | "event";
+  | "gamepad2"
+  | "code"
+  | "palette"
+  | "filecode"
+  | "trophy"
+  | "calendar";

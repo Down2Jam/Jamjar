@@ -31,7 +31,9 @@ export async function updateUser(
   name: string,
   bio: string,
   profilePicture: string | null,
-  bannerPicture: string | null
+  bannerPicture: string | null,
+  primaryRoles: string[],
+  secondaryRoles: string[]
 ) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
@@ -43,6 +45,8 @@ export async function updateUser(
       bio,
       profilePicture: profilePicture,
       bannerPicture: bannerPicture,
+      primaryRoles,
+      secondaryRoles,
     }),
     method: "PUT",
     headers: {
