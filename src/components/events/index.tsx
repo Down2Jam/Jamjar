@@ -33,7 +33,7 @@ import ButtonLink from "../link-components/ButtonLink";
 import { UserType } from "@/types/UserType";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
-import { getIcon } from "@/helpers/event";
+import { getIcon } from "@/helpers/icon";
 
 export default function Events() {
   const searchParams = useSearchParams();
@@ -168,7 +168,7 @@ export default function Events() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={getIcon(event.icon)}
+                      content={getIcon(event.icon, 16)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >
@@ -176,21 +176,36 @@ export default function Events() {
                     </Badge>
                     <div className="flex flex-col gap-1 text-center">
                       <Link href={`/e/${event.slug}`}>{event.name}</Link>
-                      <Timer
-                        name="Ends in"
-                        targetDate={new Date(event.endTime)}
-                      />
+                      {filter == "current" ? (
+                        <Timer
+                          name="Ends in"
+                          targetDate={new Date(event.endTime)}
+                        />
+                      ) : filter == "upcoming" ? (
+                        <Timer
+                          name="Starts in"
+                          targetDate={new Date(event.startTime)}
+                        />
+                      ) : (
+                        <Timer
+                          name="Ended"
+                          reverse
+                          targetDate={new Date(event.endTime)}
+                        />
+                      )}
                     </div>
 
                     <div className="flex flex-row items-center gap-3">
-                      <ButtonAction
-                        icon={<Bell />}
-                        name=""
-                        onPress={() => {
-                          toast.warning("Event notifications coming soon");
-                        }}
-                        isIconOnly
-                      />
+                      {filter == "upcoming" && (
+                        <ButtonAction
+                          icon={<Bell />}
+                          name=""
+                          onPress={() => {
+                            toast.warning("Event notifications coming soon");
+                          }}
+                          isIconOnly
+                        />
+                      )}
                       {event.link && (
                         <ButtonLink
                           icon={<ExternalLink />}

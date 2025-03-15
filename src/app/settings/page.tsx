@@ -3,7 +3,17 @@
 import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
-import { Avatar, Button, Form, Input, Spacer } from "@nextui-org/react";
+import {
+  Avatar,
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Form,
+  Input,
+  Spacer,
+} from "@nextui-org/react";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -11,6 +21,9 @@ import { LoaderCircle } from "lucide-react";
 import Image from "next/image";
 import { getSelf, updateUser } from "@/requests/user";
 import { sanitize } from "@/helpers/sanitize";
+import { getTeamRoles } from "@/requests/team";
+import { RoleType } from "@/types/RoleType";
+import { getIcon } from "@/helpers/icon";
 
 export default function UserPage() {
   const [user, setUser] = useState<UserType>();
@@ -23,6 +36,9 @@ export default function UserPage() {
   const pathname = usePathname();
   const [waitingSave, setWaitingSave] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
+  const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
+  const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
+  const [roles, setRoles] = useState<RoleType[]>([]);
 
   useEffect(() => {
     loadUser();
@@ -45,8 +61,25 @@ export default function UserPage() {
           setBio(data.bio ?? "");
           setName(data.name ?? "");
           setEmail(data.email ?? "");
+          setPrimaryRoles(
+            new Set(data.primaryRoles.map((role: RoleType) => role.slug)) ??
+              new Set()
+          );
+          setSecondaryRoles(
+            new Set(data.secondaryRoles.map((role: RoleType) => role.slug)) ??
+              new Set()
+          );
         } else {
           setUser(undefined);
+        }
+
+        const rolesResponse = await getTeamRoles();
+
+        if (rolesResponse.status == 200) {
+          const data = await rolesResponse.json();
+          setRoles(data.data);
+        } else {
+          setRoles([]);
         }
       } catch (error) {
         console.error(error);
@@ -67,6 +100,12 @@ export default function UserPage() {
             setBannerPicture(user.bannerPicture ?? "");
             setBio(user.bio ?? "");
             setName(user.name ?? "");
+            setPrimaryRoles(
+              new Set(user.primaryRoles.map((role) => role.slug)) ?? new Set()
+            );
+            setSecondaryRoles(
+              new Set(user.secondaryRoles.map((role) => role.slug)) ?? new Set()
+            );
           }}
           onSubmit={async (e) => {
             e.preventDefault();
@@ -85,7 +124,9 @@ export default function UserPage() {
               name,
               sanitizedBio,
               profilePicture,
-              bannerPicture
+              bannerPicture,
+              Array.from(primaryRoles),
+              Array.from(secondaryRoles)
             );
 
             if (response.ok) {
@@ -246,6 +287,86 @@ export default function UserPage() {
               </Button>
             </div>
           )}
+
+          <p>Primary Roles</p>
+          <p className="text-xs">Things you usually do</p>
+          <Dropdown backdrop="opaque">
+            <DropdownTrigger>
+              <Button
+                size="sm"
+                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                variant="faded"
+              >
+                {primaryRoles.size > 0
+                  ? Array.from(primaryRoles)
+                      .map(
+                        (role) =>
+                          roles.find((findrole) => findrole.slug == role)
+                            ?.name || "Unknown"
+                      )
+                      .join(", ")
+                  : "No Roles"}
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              selectionMode="multiple"
+              className="text-[#333] dark:text-white"
+              selectedKeys={primaryRoles}
+              onSelectionChange={(selection) => {
+                setPrimaryRoles(selection as Set<string>);
+              }}
+            >
+              {roles.map((primaryRole) => (
+                <DropdownItem
+                  key={primaryRole.slug}
+                  startContent={getIcon(primaryRole.icon)}
+                  description={primaryRole.description}
+                >
+                  {primaryRole.name}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
+
+          <p>Secondary Roles</p>
+          <p className="text-xs">Things you are capable of doing</p>
+          <Dropdown backdrop="opaque">
+            <DropdownTrigger>
+              <Button
+                size="sm"
+                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                variant="faded"
+              >
+                {secondaryRoles.size > 0
+                  ? Array.from(secondaryRoles)
+                      .map(
+                        (role) =>
+                          roles.find((findrole) => findrole.slug == role)
+                            ?.name || "Unknown"
+                      )
+                      .join(", ")
+                  : "No Roles"}
+              </Button>
+            </DropdownTrigger>
+            <DropdownMenu
+              selectionMode="multiple"
+              className="text-[#333] dark:text-white"
+              selectedKeys={secondaryRoles}
+              onSelectionChange={(selection) => {
+                setSecondaryRoles(selection as Set<string>);
+              }}
+            >
+              {roles.map((secondaryRole) => (
+                <DropdownItem
+                  key={secondaryRole.slug}
+                  startContent={getIcon(secondaryRole.icon)}
+                  description={secondaryRole.description}
+                >
+                  {secondaryRole.name}
+                </DropdownItem>
+              ))}
+            </DropdownMenu>
+          </Dropdown>
 
           <div className="flex gap-2">
             <Button color="primary" type="submit">

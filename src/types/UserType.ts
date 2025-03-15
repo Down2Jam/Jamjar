@@ -1,3 +1,5 @@
+import { RoleType } from "./RoleType";
+
 export interface UserType {
   id: number;
   slug: string;
@@ -9,4 +11,6 @@ export interface UserType {
   mod: boolean;
   admin: boolean;
   twitch: string;
+  primaryRoles: RoleType[];
+  secondaryRoles: RoleType[];
 }

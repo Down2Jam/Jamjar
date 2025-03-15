@@ -2,7 +2,7 @@
 
 import { getUser } from "@/requests/user";
 import { UserType } from "@/types/UserType";
-import { Avatar } from "@nextui-org/react";
+import { Avatar, Chip } from "@nextui-org/react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +42,22 @@ export default function UserPage() {
             <p className="text-3xl text-black dark:text-white !duration-500 !ease-linear !transition-all">
               {user.name}
             </p>
+            {(user.primaryRoles || user.secondaryRoles) && (
+              <div className="flex gap-3 items-center py-2">
+                <div className="flex gap-3 items-center">
+                  {user.primaryRoles.map((role) => (
+                    <Chip variant="faded" key={role.id}>
+                      {role.name}
+                    </Chip>
+                  ))}
+                  {user.secondaryRoles.map((role) => (
+                    <Chip variant="faded" key={role.id} className="opacity-50">
+                      {role.name}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            )}
             <div
               className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
               dangerouslySetInnerHTML={{

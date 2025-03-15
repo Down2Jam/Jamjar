@@ -1,131 +1,29 @@
 "use client";
 
-import { GameType } from "@/types/GameType";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Button,
+  Avatar,
+  AvatarGroup,
   Card,
-  CardFooter,
-  CardHeader,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Image,
-  Link,
+  CardBody,
   Spinner,
+  Tooltip,
 } from "@nextui-org/react";
-import { GameSort } from "@/types/GameSort";
-import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Book,
-  ClockArrowDown,
-  ClockArrowUp,
-  Code,
-  Flame,
-  Gamepad,
-  Hammer,
-  Headphones,
-  Map,
-  MicVocal,
-  Music,
-  Paintbrush,
-  Palette,
-  Users,
-} from "lucide-react";
-import { getGames } from "@/requests/game";
-import { TeamRole } from "@/types/TeamRole";
+import { Clipboard } from "lucide-react";
+import { TeamType } from "@/types/TeamType";
+import { getTeams } from "@/requests/team";
+import ButtonAction from "../link-components/ButtonAction";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [games, setGames] = useState<GameType[]>();
-  const [sort, setSort] = useState<Set<TeamRole>>(new Set());
-  const router = useRouter();
-
-  const sorts: Record<
-    TeamRole,
-    { name: string; icon: ReactNode; description: string }
-  > = {
-    artist: {
-      name: "Artist",
-      icon: <Palette />,
-      description:
-        "People who create visual assets such as characters, backgrounds, and animations.",
-    },
-    coder: {
-      name: "Coder",
-      icon: <Code />,
-      description:
-        "People who implement game mechanics, features, and systems.",
-    },
-    gamedesigner: {
-      name: "Game Designer",
-      icon: <Gamepad />,
-      description:
-        "People who design core mechanics, rules, and objectives, and create the overall gameplay.",
-    },
-    generalist: {
-      name: "Generalist",
-      icon: <Hammer />,
-      description:
-        "People who are capable of doing every role on a team with no specific focus.",
-    },
-    management: {
-      name: "Management",
-      icon: <Users />,
-      description:
-        "People who oversee the project, coordinating tasks, resolving conflict and ensuring the team stays on track.",
-    },
-    narrativedesigner: {
-      name: "Narrative Designer",
-      icon: <Book />,
-      description:
-        "People who create the storyline, dialogue, and narrative elements of the game.",
-    },
-    leveldesigner: {
-      name: "Level Designer",
-      icon: <Map />,
-      description:
-        "People who create the layout, structure, and pacing of in game levels and the game world.",
-    },
-    qa: {
-      name: "Quality Assurance",
-      icon: <Flame />,
-      description:
-        "People who test the game for bugs, glitches, and gameplay issues before its released.",
-    },
-    sounddesigner: {
-      name: "Sound Designer",
-      icon: <Music />,
-      description:
-        "People who create audio assets including sound effects, ambient sounds, and background music.",
-    },
-    soundengineer: {
-      name: "Sound Engineer",
-      icon: <Headphones />,
-      description:
-        "People who implement sound into the game including audio mixing, mastering, post processing, and events.",
-    },
-    uxui: {
-      name: "UX/UI Designer",
-      icon: <Paintbrush />,
-      description:
-        "People who design the user interface as well as how the player interacts with the game.",
-    },
-    voiceactor: {
-      name: "Voice Actor",
-      icon: <MicVocal />,
-      description:
-        "People who provide voiceovers for characters, narration, or dialogue in game.",
-    },
-  };
+  const [teams, setTeams] = useState<TeamType[]>();
+  // const [filter, setFilter] = useState<Set<TeamRole>>(new Set());
 
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        //const gameResponse = await getGames(sort);
-        //setGames(await gameResponse.json());
-        console.log(sort);
+        const teamResponse = await getTeams();
+        setTeams((await teamResponse.json()).data);
       } catch (error) {
         console.error(error);
       } finally {
@@ -134,7 +32,7 @@ export default function TeamFinder() {
     };
 
     fetchGameData();
-  }, [sort]);
+  }, []);
 
   if (isLoading) return <Spinner />;
 
@@ -143,72 +41,72 @@ export default function TeamFinder() {
       <section className="mt-4 mb-4">
         <div className="flex justify-between pb-0">
           <div className="flex gap-2">
-            <Dropdown backdrop="opaque">
+            {/* <Dropdown backdrop="opaque">
               <DropdownTrigger>
                 <Button
                   size="sm"
                   className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
                   variant="faded"
                 >
-                  {sorts[sort]?.name}
+                  {filter.size > 0 ? "Filter" : "No Filter"}
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 selectionMode="multiple"
                 className="text-[#333] dark:text-white"
-                selectedKeys={sort}
-                onSelectionChange={setSort}
+                selectedKeys={filter}
+                onSelectionChange={(selection) => {
+                  setFilter(selection as Set<TeamRole>);
+                }}
               >
-                {Object.entries(sorts).map(([key, sort]) => (
+                {Object.entries(filters).map(([key, filter]) => (
                   <DropdownItem
                     key={key}
-                    startContent={sort.icon}
-                    description={sort.description}
+                    startContent={filter.icon}
+                    description={filter.description}
                   >
-                    {sort.name}
+                    {filter.name}
                   </DropdownItem>
                 ))}
               </DropdownMenu>
-            </Dropdown>
+            </Dropdown> */}
           </div>
         </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {games ? (
-          games.map((game, index) => (
-            <Link key={game.name + index} href={`/games/${game.slug}`}>
-              <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
-                <CardHeader className="absolute top-0 flex justify-end">
-                  <div className="border border-zinc-100/50 bg-primary p-2 pt-1 pb-1 rounded text-white">
-                    {game.jam.name}
-                  </div>
-                </CardHeader>
-                <Image
-                  removeWrapper
-                  alt={`${game.name}'s thumbnail`}
-                  className="z-0 w-full h-full object-cover scale-110"
-                  height={200}
-                  width="100%"
-                  isZoomed
-                  src={game.thumbnail ?? "/images/D2J_Icon.png"}
-                />
-                <CardFooter className="text-white border-t-1 border-zinc-100/50 z-10 flex-col items-start">
-                  <h3 className="font-medium text-2xl mb-2">{game.name}</h3>
-                  <div className="flex justify-between w-full">
-                    <p className="text-tiny uppercase font-bold">
-                      {game.author.name}
-                    </p>
-                    <p className="text-tiny max-w-[200px] text-end truncate">
-                      {game.contributors.length > 0 &&
-                        `contributors: ${game.contributors.map(
-                          (author) => author.name
-                        )}`}
-                    </p>
-                  </div>
-                </CardFooter>
-              </Card>
-            </Link>
+      <section className="flex flex-col gap-4">
+        {teams ? (
+          teams.map((team) => (
+            <Card key={team.id}>
+              <CardBody className="flex items-center justify-between flex-row gap-3 p-4 min-h-20">
+                <div className="flex items-center gap-3">
+                  <AvatarGroup>
+                    {team.users.map((user) => (
+                      <Tooltip key={user.id} content={user.name}>
+                        <Avatar
+                          size="sm"
+                          className="w-6 h-6"
+                          src={user.profilePicture}
+                          classNames={{
+                            base: "bg-transparent",
+                          }}
+                        />
+                      </Tooltip>
+                    ))}
+                  </AvatarGroup>
+                  {team.owner.name}&apos;s Team
+                </div>
+                <div>
+                  {team.applicationsOpen && (
+                    <ButtonAction
+                      name="Apply"
+                      icon={<Clipboard />}
+                      onPress={() => {}}
+                    />
+                  )}
+                </div>
+              </CardBody>
+            </Card>
           ))
         ) : (
           <p>No games were found. :(</p>

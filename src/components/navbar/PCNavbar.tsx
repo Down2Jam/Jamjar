@@ -35,6 +35,7 @@ import { toast } from "react-toastify";
 import ThemeToggle from "../theme-toggle";
 import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
+// import { TeamType } from "@/types/TeamType";
 
 export default function PCNavbar() {
   const pathname = usePathname();
@@ -44,6 +45,7 @@ export default function PCNavbar() {
   const [user, setUser] = useState<UserType>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const [hasGame, setHasGame] = useState<GameType | null>();
+  // const [hasTeam, setHasTeam] = useState<TeamType | null>();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -183,6 +185,14 @@ export default function PCNavbar() {
             href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
           />
         )}
+        {/* {user && jam && isInJam && (jamPhase != "Rating" || hasTeam) && (
+          <NavbarButtonLink
+            important
+            icon={<Users />}
+            name={hasTeam ? "My Team" : "Team Finder"}
+            href={hasTeam ? "/games/" + hasTeam.id : "/team-finder"}
+          />
+        )} */}
         {user && jam && !isInJam && (
           <NavbarButtonAction
             important

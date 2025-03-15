@@ -10,7 +10,7 @@ import ButtonLink from "../link-components/ButtonLink";
 import Timer from "../timers/Timer";
 import { toast } from "react-toastify";
 import Link from "next/link";
-import { getIcon } from "@/helpers/event";
+import { getIcon } from "@/helpers/icon";
 
 export default function SidebarEvents() {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -59,7 +59,7 @@ export default function SidebarEvents() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={getIcon(event.icon)}
+                      content={getIcon(event.icon, 16)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >
@@ -74,14 +74,6 @@ export default function SidebarEvents() {
                     </div>
 
                     <div className="flex flex-row items-center gap-3">
-                      <ButtonAction
-                        icon={<Bell />}
-                        name=""
-                        onPress={() => {
-                          toast.warning("Event notifications coming soon");
-                        }}
-                        isIconOnly
-                      />
                       {event.link && (
                         <ButtonLink
                           icon={<ExternalLink />}
@@ -124,7 +116,7 @@ export default function SidebarEvents() {
                 <Card key={event.id} className="p-2">
                   <CardBody className="flex-row justify-between items-center">
                     <Badge
-                      content={getIcon(event.icon)}
+                      content={getIcon(event.icon, 16)}
                       size="sm"
                       className="min-w-8 min-h-8"
                     >

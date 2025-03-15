@@ -2,7 +2,12 @@
 
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
-import { fromDate, ZonedDateTime } from "@internationalized/date";
+import {
+  fromDate,
+  getLocalTimeZone,
+  now,
+  ZonedDateTime,
+} from "@internationalized/date";
 import {
   Button,
   DateRangePicker,
@@ -37,33 +42,33 @@ import { postEvent } from "@/requests/event";
 import { EventIcon } from "@/types/EventIcon";
 
 const icons = {
-  art: {
+  palette: {
     description: "Streams where you make art content for the jam",
     icon: <Palette />,
     name: "Art",
   },
-  event: {
+  calendar: {
     description: "A generic event icon",
     icon: <Calendar />,
     name: "Event",
   },
-  gamedev: {
+  code: {
     description: "Streams where you make games for the jam",
     icon: <Code />,
     name: "Gamedev",
   },
-  games: {
+  gamepad2: {
     description: "Streams where you play games from the jam",
     icon: <Gamepad2 />,
     name: "Games",
   },
-  tournament: {
+  trophy: {
     description:
       "Streams where you run a tournament (e.g. a score chasing tournament)",
     icon: <Trophy />,
     name: "Tournament",
   },
-  webdev: {
+  filecode: {
     description:
       "Streams where you make web content (e.g. work on the d2jam site)",
     icon: <FileCode />,
@@ -74,7 +79,7 @@ const icons = {
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
-  const [icon, setIcon] = useState<EventIcon>("event");
+  const [icon, setIcon] = useState<EventIcon>("calendar");
   const [content, setContent] = useState("");
   const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
@@ -85,8 +90,8 @@ export default function CreatePostPage() {
     start: ZonedDateTime | undefined;
     end: ZonedDateTime | undefined;
   }>({
-    start: fromDate(new Date(), "America/Los_Angeles"),
-    end: fromDate(new Date(), "America/Los_Angeles").add({ hours: 3 }),
+    start: now(getLocalTimeZone()),
+    end: now(getLocalTimeZone()).add({ hours: 3 }),
   });
 
   useEffect(() => {
@@ -225,22 +230,22 @@ export default function CreatePostPage() {
 
         <DateRangePicker
           defaultValue={{
-            start: fromDate(new Date(), "America/Los_Angeles"),
-            end: fromDate(new Date(), "America/Los_Angeles").add({ hours: 3 }),
+            start: now(getLocalTimeZone()),
+            end: now(getLocalTimeZone()).add({ hours: 3 }),
           }}
           value={{ start: date.start as DateValue, end: date.end as DateValue }}
           onChange={(value) =>
             setDate({
               start: value?.start
                 ? fromDate(
-                    value?.start.toDate("America/Los_Angeles"),
-                    "America/Los_Angeles"
+                    value?.start.toDate(getLocalTimeZone()),
+                    getLocalTimeZone()
                   )
                 : undefined,
               end: value?.end
                 ? fromDate(
-                    value?.end.toDate("America/Los_Angeles"),
-                    "America/Los_Angeles"
+                    value?.end.toDate(getLocalTimeZone()),
+                    getLocalTimeZone()
                   )
                 : undefined,
             })
