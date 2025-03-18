@@ -1,4 +1,6 @@
 import { RoleType } from "./RoleType";
+import { TeamInviteType } from "./TeamInviteType";
+import { TeamType } from "./TeamType";
 
 export interface UserType {
   id: number;
@@ -13,4 +15,7 @@ export interface UserType {
   twitch: string;
   primaryRoles: RoleType[];
   secondaryRoles: RoleType[];
+  teams: TeamType[];
+  teamInvites: TeamInviteType[];
+  ownedTeams: TeamType[];
 }

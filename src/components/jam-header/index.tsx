@@ -144,7 +144,7 @@ export default function JamHeader() {
 
   return (
     <>
-      <div className="bg-[#7090b9] dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
+      <div className="bg-[#7090b9] z-10 relative dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
         {/* Jam Header */}
         <a href="/about" className="relative">
           <div className="flex">
@@ -210,14 +210,14 @@ export default function JamHeader() {
               href={getPhaseObj(activeJamResponse.phase).href}
               className="hover:underline text-blue-300 dark:text-blue-500"
             >
-              <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
+              <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
                 <p className="font-semibold ">
                   {getPhaseObj(activeJamResponse.phase).text}
                 </p>
               </div>
             </a>
           ) : (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
+            <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
               <p className="font-semibold text-blue-500">
                 {getPhaseObj(activeJamResponse.phase).text}
               </p>
