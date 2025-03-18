@@ -7,6 +7,7 @@ import {
   Navbar as NavbarBase,
   NavbarContent,
   Divider,
+  Badge,
 } from "@nextui-org/react";
 import NavbarSearchbar from "./NavbarSearchbar";
 import NavbarButtonLink from "./NavbarButtonLink";
@@ -20,6 +21,7 @@ import {
   NotebookPen,
   Shield,
   SquarePen,
+  Users,
 } from "lucide-react";
 import NextImage from "next/image";
 import { useEffect, useState } from "react";
@@ -35,7 +37,6 @@ import { toast } from "react-toastify";
 import ThemeToggle from "../theme-toggle";
 import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
-// import { TeamType } from "@/types/TeamType";
 
 export default function PCNavbar() {
   const pathname = usePathname();
@@ -45,7 +46,6 @@ export default function PCNavbar() {
   const [user, setUser] = useState<UserType>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const [hasGame, setHasGame] = useState<GameType | null>();
-  // const [hasTeam, setHasTeam] = useState<TeamType | null>();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -185,14 +185,17 @@ export default function PCNavbar() {
             href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
           />
         )}
-        {/* {user && jam && isInJam && (jamPhase != "Rating" || hasTeam) && (
-          <NavbarButtonLink
-            important
-            icon={<Users />}
-            name={hasTeam ? "My Team" : "Team Finder"}
-            href={hasTeam ? "/games/" + hasTeam.id : "/team-finder"}
-          />
-        )} */}
+        {user &&
+          jam &&
+          isInJam &&
+          (jamPhase != "Rating" || user.teams.length > 0) && (
+            <NavbarButtonLink
+              important
+              icon={<Users />}
+              name={user.teams.length > 0 ? "My Team" : "Team Finder"}
+              href={user.teams.length > 0 ? "/team" : "/team-finder"}
+            />
+          )}
         {user && jam && !isInJam && (
           <NavbarButtonAction
             important
@@ -220,11 +223,36 @@ export default function PCNavbar() {
             important
           />
         )}
-        {user && (
-          // <Badge content="1" color="primary" placement="bottom-right">
-          <NavbarButtonLink name="" icon={<Bell />} href="/inbox" isIconOnly />
-          // </Badge>
-        )}
+        {user &&
+          (user.teamInvites.length > 0 ||
+          user.ownedTeams.filter((team) => team.applications.length > 0)
+            .length > 0 ? (
+            <Badge
+              content={
+                user.teamInvites.length +
+                user.ownedTeams.reduce(
+                  (prev, curr) => prev + curr.applications.length,
+                  0
+                )
+              }
+              color="primary"
+              placement="top-right"
+            >
+              <NavbarButtonLink
+                name=""
+                icon={<Bell />}
+                href="/inbox"
+                isIconOnly
+              />
+            </Badge>
+          ) : (
+            <NavbarButtonLink
+              name=""
+              icon={<Bell />}
+              href="/inbox"
+              isIconOnly
+            />
+          ))}
         {user && user.mod && (
           <NavbarButtonLink
             name=""
