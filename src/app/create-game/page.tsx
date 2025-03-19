@@ -136,7 +136,7 @@ export default function CreateGamePage() {
   useEffect(() => {
     const checkExistingGame = async () => {
       const response = await getCurrentGame();
-      console.log("say");
+
       if (response.ok) {
         const gameData = await response.json();
         if (gameData) {

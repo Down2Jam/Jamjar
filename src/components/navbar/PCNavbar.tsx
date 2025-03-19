@@ -84,8 +84,6 @@ export default function PCNavbar() {
 
         if (gameResponse.ok) {
           const gameData = await gameResponse.json();
-          console.log("Game Data:", gameData); // Log game data
-          console.log("User Data:", user); // Log user data
 
           if (gameData) {
             // Check if the logged-in user is either the creator or a contributor
@@ -94,8 +92,6 @@ export default function PCNavbar() {
               gameData.contributors?.some(
                 (contributor: UserType) => contributor.id === user.id
               ); // Check if logged-in user is a contributor
-
-            console.log("Is Contributor:", isContributor); // Log whether the user is a contributor
 
             if (isContributor) {
               setHasGame(gameData); // Set the game data for "My Game"

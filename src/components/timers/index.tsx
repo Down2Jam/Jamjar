@@ -26,7 +26,6 @@ export default function Timers() {
     const startTimeUTC = new Date(
       activeJamResponse.jam.startTime
     ).toISOString();
-    console.log(startTimeUTC);
 
     if (
       activeJamResponse.phase == "Suggestion" ||
