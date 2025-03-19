@@ -23,11 +23,6 @@ export default function Timers() {
   }, []);
 
   if (activeJamResponse && activeJamResponse.jam) {
-    const startTimeUTC = new Date(
-      activeJamResponse.jam.startTime
-    ).toISOString();
-    console.log(startTimeUTC);
-
     if (
       activeJamResponse.phase == "Suggestion" ||
       activeJamResponse.phase == "Elimination" ||

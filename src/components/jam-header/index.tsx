@@ -87,7 +87,7 @@ export default function JamHeader() {
   useEffect(() => {
     const fetchData = async () => {
       const jamData = await getCurrentJam();
-      console.log(jamData);
+
       setActiveJamResponse(jamData);
 
       // If we're in Jamming phase, fetch top themes and pick the first one
