@@ -26,7 +26,7 @@ export default function InboxPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 text-[#333] dark:text-white">
       <p>Invites</p>
       {user?.teamInvites.length || 0 > 0 ? (
         <div className="flex flex-col gap-3">

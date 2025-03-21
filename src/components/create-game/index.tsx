@@ -151,7 +151,7 @@ export default function CreateGame() {
 
   return (
     <Form
-      className="w-full max-w-2xl flex flex-col gap-4"
+      className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
       validationErrors={errors}
       onSubmit={async (e) => {
         e.preventDefault();

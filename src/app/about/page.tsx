@@ -36,7 +36,7 @@ export default function AboutPage() {
           src="/images/D2J_Icon.png"
         />
       </div>
-      <div className="flex flex-col gap-2 py-4">
+      <div className="flex flex-col gap-2 py-4 text-[#333] dark:text-white">
         <h1 className="text-2xl fint-bold leading-7">{jam?.name}</h1>
         <p className="text-sm text-default-500">
           The community centered game jam

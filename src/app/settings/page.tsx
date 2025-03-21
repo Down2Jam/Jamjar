@@ -93,7 +93,7 @@ export default function UserPage() {
         "Loading settings..."
       ) : (
         <Form
-          className="w-full max-w-2xl flex flex-col gap-4"
+          className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
           validationErrors={errors}
           onReset={() => {
             setProfilePicture(user.profilePicture ?? "");

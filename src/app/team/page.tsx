@@ -152,7 +152,7 @@ export default function EditTeamPage() {
   return (
     <div className="flex items-center justify-center">
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
+        className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);

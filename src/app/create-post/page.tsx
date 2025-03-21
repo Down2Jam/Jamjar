@@ -186,7 +186,7 @@ export default function CreatePostPage() {
   return (
     <div className="static flex items-top mt-10 justify-center top-0 left-0 gap-16">
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
+        className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
         validationErrors={errors}
         onSubmit={async (e) => {
           e.preventDefault();
