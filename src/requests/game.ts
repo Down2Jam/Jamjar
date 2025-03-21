@@ -9,6 +9,10 @@ export async function getCurrentGame() {
   });
 }
 
+export async function getRatingCategories() {
+  return fetch(`${BASE_URL}/rating-categories`);
+}
+
 export async function getGame(gameSlug: string) {
   return fetch(`${BASE_URL}/games/${gameSlug}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
@@ -25,8 +29,7 @@ export async function postGame(
     url: string;
     platform: PlatformType;
   }[],
-  userSlug: string,
-  contributors: number[]
+  userSlug: string
 ) {
   return fetch(`${BASE_URL}/games/create`, {
     body: JSON.stringify({
@@ -36,7 +39,6 @@ export async function postGame(
       thumbnail,
       downloadLinks,
       userSlug,
-      contributors,
     }),
     method: "POST",
     headers: {
@@ -57,8 +59,7 @@ export async function updateGame(
     url: string;
     platform: PlatformType;
   }[],
-  userSlug: string,
-  contributors: number[]
+  userSlug: string
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -68,7 +69,6 @@ export async function updateGame(
       thumbnail,
       downloadLinks,
       userSlug,
-      contributors,
     }),
     method: "PUT",
     headers: {

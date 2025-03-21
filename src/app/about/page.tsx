@@ -3,8 +3,10 @@
 import { getCurrentJam } from "@/helpers/jam";
 import { JamType } from "@/types/JamType";
 import { Accordion, AccordionItem, Image } from "@nextui-org/react";
+import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toZonedTime } from "date-fns-tz";
 
 export default function AboutPage() {
   const [jam, setJam] = useState<JamType | null>();
@@ -51,9 +53,19 @@ export default function AboutPage() {
             </div>
             <div className="flex flex-col gap-0.5">
               <p className="text-medium text-foreground font-medium">
-                Friday, March 21st
+                {jam ? format(new Date(jam.startTime), "EEEE, MMMM do") : ""}
               </p>
-              <p className="text-small text-default-500">5:00 PM EST</p>
+              <p className="text-small text-default-500">
+                {jam
+                  ? format(
+                      toZonedTime(
+                        new Date(jam.startTime),
+                        Intl.DateTimeFormat().resolvedOptions().timeZone
+                      ),
+                      "p zzz"
+                    )
+                  : ""}
+              </p>
             </div>
           </div>
           <div className="flex gap-3 items-center">

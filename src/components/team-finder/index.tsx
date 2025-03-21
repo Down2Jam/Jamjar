@@ -81,8 +81,12 @@ export default function TeamFinder() {
                 (role) =>
                   user.primaryRoles.filter((userrole) => userrole.id == role.id)
                     .length > 0
-              ).length > 0
+              ).length > 0 || team.rolesWanted.length == 0
           );
+
+          if (teams.length == 0) {
+            setFilter("Primary or Secondary Role");
+          }
         } else if (filter == "Primary or Secondary Role") {
           teams = teams.filter(
             (team: TeamType) =>
@@ -92,10 +96,16 @@ export default function TeamFinder() {
                     .length > 0 ||
                   user.secondaryRoles.filter(
                     (userrole) => userrole.id == role.id
-                  ).length > 0
+                  ).length > 0 ||
+                  team.rolesWanted.length == 0
               ).length > 0
           );
+
+          if (teams.length == 0) {
+            setFilter("All");
+          }
         }
+
         setTeams(teams);
       } catch (error) {
         console.error(error);

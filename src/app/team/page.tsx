@@ -377,7 +377,7 @@ export default function EditTeamPage() {
         <Textarea
           label="Description"
           labelPlacement="outside"
-          placeholder="Enter a description of your team (and a way to contact you)"
+          placeholder="Enter a description of your team (and a way to contact you) that displays on the team finder"
           isDisabled={teams[selectedTeam].ownerId != user.id}
           onValueChange={setDescription}
           value={description || ""}

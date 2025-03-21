@@ -3,7 +3,7 @@
 import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
-import { getTopThemes } from "@/requests/theme";
+import { getTheme } from "@/requests/theme";
 import { Spacer } from "@nextui-org/react";
 import { JamPhase } from "@/types/JamType";
 
@@ -71,13 +71,13 @@ export default function JamHeader() {
     if (jamPhase === "Jamming")
       return {
         text: topTheme
-          ? `THEME: ${topTheme}`
+          ? `Theme: ${topTheme}`
           : "No top-scoring theme available.",
       };
     if (jamPhase === "Rating")
       return {
         text: topTheme
-          ? `THEME: ${topTheme} RESULTS`
+          ? `Theme: ${topTheme} RESULTS`
           : "No top-scoring theme available.",
       };
     return { text: "" };
@@ -96,13 +96,11 @@ export default function JamHeader() {
         jamData.jam
       ) {
         try {
-          const response = await getTopThemes();
+          const response = await getTheme();
 
           if (response.ok) {
-            const themes = await response.json();
-            if (themes.length > 0) {
-              setTopTheme(themes[0].suggestion);
-            }
+            const theme = (await response.json()).data;
+            setTopTheme(theme.suggestion);
           } else {
             console.error("Failed to fetch top themes.", response.status);
           }
