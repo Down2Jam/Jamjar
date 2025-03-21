@@ -42,10 +42,16 @@ export default function Timer({
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return `${days != 0 ? `${days} days ` : ""}${
-      hours != 0 ? `${hours} hours ` : ""
-    }${hours == 0 || days == 0 ? `${minutes} minutes ` : ""}${
-      days == 0 && (hours == 0 || minutes == 0) ? `${seconds} seconds` : ""
+    return `${days != 0 ? `${days} day${days == 1 ? "" : "s"} ` : ""}${
+      hours != 0 ? `${hours} hour${hours == 1 ? "" : "s"} ` : ""
+    }${
+      hours == 0 || days == 0
+        ? `${minutes} minute${minutes == 1 ? "" : "s"} `
+        : ""
+    }${
+      days == 0 && (hours == 0 || minutes == 0)
+        ? `${seconds} second${seconds == 1 ? "" : "s"}`
+        : ""
     }${reverse ? " ago" : ""}`;
   };
 

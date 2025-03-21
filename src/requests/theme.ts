@@ -8,11 +8,8 @@ export async function getThemeSuggestions() {
   });
 }
 
-export async function getTopThemes() {
-  return fetch(`${BASE_URL}/themes/top-themes`, {
-    headers: { Authorization: `Bearer ${getCookie("token")}` },
-    credentials: "include",
-  });
+export async function getTheme() {
+  return fetch(`${BASE_URL}/theme`);
 }
 
 export async function getThemes(isVoting: boolean = false) {

@@ -96,6 +96,7 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
 
                   const response = await postComment(
                     sanitizedHtml,
+                    null,
                     comment!.id
                   );
 

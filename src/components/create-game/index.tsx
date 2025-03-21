@@ -2,18 +2,43 @@
 
 import Editor from "@/components/editor";
 import { getCookie } from "@/helpers/cookie";
-import { Button, Form, Input, Spacer } from "@nextui-org/react";
-import { LoaderCircle } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  Button,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Form,
+  Input,
+  Spacer,
+  Switch,
+} from "@nextui-org/react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Gamepad2,
+  LoaderCircle,
+  Swords,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Select, SelectItem } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
 import { getSelf } from "@/requests/user";
-import { getCurrentGame, postGame, updateGame } from "@/requests/game";
+import {
+  getCurrentGame,
+  getRatingCategories,
+  postGame,
+  updateGame,
+} from "@/requests/game";
 import { sanitize } from "@/helpers/sanitize";
 import Image from "next/image";
+import { createTeam } from "@/helpers/team";
+import { RatingCategoryType } from "@/types/RatingCategoryType";
+import { GameType } from "@/types/GameType";
+import ButtonAction from "../link-components/ButtonAction";
 
 export default function CreateGame() {
   const router = useRouter();
@@ -35,12 +60,18 @@ export default function CreateGame() {
   const [gameSlug, setGameSlug] = useState("");
   const [prevSlug, setPrevGameSlug] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
-  const [selectedAuthors, setSelectedAuthors] = useState<Array<UserType>>([]);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [user, setUser] = useState<UserType>();
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
   const [editorKey, setEditorKey] = useState(0);
+  const [ratingCategories, setRatingCategories] = useState<
+    RatingCategoryType[]
+  >([]);
   const urlRegex = /^(https?:\/\/)/;
+
+  const [games, setGames] = useState<GameType[]>([]);
+  const [currentGame, setCurrentGame] = useState<number>(0);
+  const [category, setCategory] = useState<"REGULAR" | "ODA">("REGULAR");
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -56,51 +87,24 @@ export default function CreateGame() {
     const load = async () => {
       try {
         const response = await getSelf();
-        const localuser = await response.json();
+        const localuser = (await response.json()) as UserType;
         setUser(localuser);
 
-        /*
-      const tagResponse = await getTags();
+        const ratingResponse = await getRatingCategories();
+        const ratingCategories = await ratingResponse.json();
+        setRatingCategories(ratingCategories.data);
 
-      if (tagResponse.ok) {
-        const newoptions: {
-          value: string;
-          label: ReactNode;
-          id: number;
-          isFixed: boolean;
-        }[] = [];
-
-        for (const tag of await tagResponse.json()) {
-          if (tag.modOnly && localuser && !localuser.mod) {
-            continue;
+        if (localuser.teams.length == 0) {
+          const successful = await createTeam();
+          if (successful) {
+            const response2 = await getSelf();
+            const localuser = (await response2.json()) as UserType;
+            setUser(localuser);
+          } else {
+            toast.error("Error while creating team");
+            redirect("/");
           }
-          newoptions.push({
-            value: tag.name,
-            id: tag.id,
-            label: (
-              <div className="flex gap-2 items-center">
-                {tag.icon && (
-                  <Avatar
-                    className="w-6 h-6 min-w-6 min-h-6"
-                    size="sm"
-                    src={tag.icon}
-                    classNames={{ base: "bg-transparent" }}
-                  />
-                )}
-                <p>
-                  {tag.name}
-                  {tag.modOnly ? " (Mod Only)" : ""}
-                </p>
-              </div>
-            ),
-            isFixed: tag.alwaysAdded,
-          });
         }
-
-        setOptions(newoptions);
-        setSelectedTags(newoptions.filter((tag) => tag.isFixed));
-      }
-        */
       } catch (error) {
         console.error(error);
       }
@@ -108,47 +112,42 @@ export default function CreateGame() {
     load();
   }, []);
 
+  const changeGame = useCallback(
+    (newid: number) => {
+      setCurrentGame(newid);
+
+      if (!games) return;
+
+      setTitle(games[newid].name);
+      setGameSlug(games[newid].slug);
+      setPrevGameSlug(games[newid].slug);
+      setContent(games[newid].description || "");
+      setEditorKey((prev) => prev + 1);
+      setThumbnailUrl(games[newid].thumbnail || null);
+      setDownloadLinks(games[newid].downloadLinks);
+      setCategory(games[newid].category);
+    },
+    [games]
+  );
+
   useEffect(() => {
     const checkExistingGame = async () => {
       const response = await getCurrentGame();
 
       if (response.ok) {
-        const gameData = await response.json();
-        if (gameData) {
+        const gameData = (await response.json()).data;
+        if (gameData.length > 0) {
+          setGames(gameData);
           setEditGame(true);
-          setTitle(gameData.name);
-          setGameSlug(gameData.slug);
-          setPrevGameSlug(gameData.slug);
-          setContent(gameData.description);
-          setEditorKey((prev) => prev + 1);
-          setThumbnailUrl(gameData.thumbnail);
-          setDownloadLinks(gameData.downloadLinks);
-          const uniqueAuthors = [
-            gameData.author,
-            ...gameData.contributors,
-          ].filter(
-            (author, index, self) =>
-              index === self.findIndex((a) => a.id === author.id)
-          );
-          setSelectedAuthors(uniqueAuthors);
-        } else {
-          setSelectedAuthors(user ? [user] : []);
+          changeGame(0);
         }
-      } else {
-        setEditGame(false);
-        setTitle("");
-        setGameSlug("");
-        setContent("");
-        setEditorKey((prev) => prev + 1);
-        setThumbnailUrl("");
-        setDownloadLinks([]);
       }
     };
 
     if (mounted && user) {
       checkExistingGame();
     }
-  }, [user, mounted]);
+  }, [user, mounted, changeGame]);
 
   return (
     <Form
@@ -179,8 +178,6 @@ export default function CreateGame() {
             platform: link.platform,
           }));
 
-          const contributors = selectedAuthors.map((author) => author.id);
-
           const request = editGame
             ? updateGame(
                 prevSlug,
@@ -189,8 +186,7 @@ export default function CreateGame() {
                 sanitizedHtml,
                 thumbnailUrl,
                 links,
-                userSlug,
-                contributors
+                userSlug
               )
             : postGame(
                 title,
@@ -198,8 +194,7 @@ export default function CreateGame() {
                 sanitizedHtml,
                 thumbnailUrl,
                 links,
-                userSlug,
-                contributors
+                userSlug
               );
 
           const response = await request;
@@ -431,6 +426,84 @@ export default function CreateGame() {
             Add Download Link
           </Button>
         </div>
+
+        <Spacer />
+
+        <div className="flex flex-col gap-2">
+          <p className="text-[#333] dark:text-white">
+            Opt-In Rating Categories
+          </p>
+          <p className="text-sm text-[#777] dark:text-[#bbb]">
+            Any optional categories you want to get a rating & rank in
+          </p>
+          <Spacer />
+          {ratingCategories.map((category) => (
+            <Switch
+              key={category.id}
+              // isSelected={applicationsOpen}
+              // onValueChange={setApplicationsOpen}
+            >
+              <div className="text-[#333] dark:text-white">
+                <p>{category.name}</p>
+                <p className="text-sm text-[#777] dark:text-[#bbb]">
+                  {category.description}
+                </p>
+              </div>
+            </Switch>
+          ))}
+        </div>
+
+        <Spacer />
+
+        <Dropdown>
+          <DropdownTrigger>
+            <Button>
+              {category == "REGULAR" ? "Regular" : "One Dev Army"}
+            </Button>
+          </DropdownTrigger>
+          <DropdownMenu
+            onAction={(key) => {
+              setCategory(key as "REGULAR" | "ODA");
+            }}
+          >
+            <DropdownItem
+              key="REGULAR"
+              description="The regular jam category"
+              startContent={<Gamepad2 />}
+            >
+              Regular
+            </DropdownItem>
+            <DropdownItem
+              key="ODA"
+              description="1 Dev, No third party assets"
+              startContent={<Swords />}
+            >
+              One Dev Army (O.D.A)
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
+
+        {games.length > 1 && (
+          <div className="flex gap-2">
+            <ButtonAction
+              iconPosition="start"
+              name="Previous Game"
+              icon={<ArrowLeft />}
+              onPress={() => {
+                changeGame(currentGame - 1);
+              }}
+              isDisabled={currentGame == 0}
+            />
+            <ButtonAction
+              name="Next Game"
+              icon={<ArrowRight />}
+              onPress={() => {
+                changeGame(currentGame + 1);
+              }}
+              isDisabled={currentGame == games.length - 1}
+            />
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button color="primary" type="submit">

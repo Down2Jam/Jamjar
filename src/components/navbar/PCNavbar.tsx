@@ -15,7 +15,6 @@ import {
   Bell,
   CalendarPlus,
   Gamepad,
-  Gamepad2,
   Info,
   LogInIcon,
   NotebookPen,
@@ -29,7 +28,6 @@ import { usePathname } from "next/navigation";
 import { hasCookie } from "@/helpers/cookie";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
 import { JamPhase, JamType } from "@/types/JamType";
-import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import NavbarUser from "./PCNavbarUser";
 import NavbarButtonAction from "./NavbarButtonAction";
@@ -45,7 +43,7 @@ export default function PCNavbar() {
   const [isInJam, setIsInJam] = useState<boolean>();
   const [user, setUser] = useState<UserType>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  const [hasGame, setHasGame] = useState<GameType | null>();
+  // const [hasGame, setHasGame] = useState<GameType | null>();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -87,17 +85,16 @@ export default function PCNavbar() {
 
           if (gameData) {
             // Check if the logged-in user is either the creator or a contributor
-            const isContributor =
-              gameData.author?.id === user.id || // Check if logged-in user is the author
-              gameData.contributors?.some(
-                (contributor: UserType) => contributor.id === user.id
-              ); // Check if logged-in user is a contributor
-
-            if (isContributor) {
-              setHasGame(gameData); // Set the game data for "My Game"
-            } else {
-              setHasGame(null); // No game associated with this user
-            }
+            // const isContributor =
+            //   gameData.author?.id === user.id || // Check if logged-in user is the author
+            //   gameData.contributors?.some(
+            //     (contributor: UserType) => contributor.id === user.id
+            //   ); // Check if logged-in user is a contributor
+            // if (isContributor) {
+            //   setHasGame(gameData); // Set the game data for "My Game"
+            // } else {
+            //   setHasGame(null); // No game associated with this user
+            // }
           }
         }
 
@@ -173,14 +170,14 @@ export default function PCNavbar() {
       <NavbarContent justify="end" className="gap-4">
         <NavbarSearchbar />
         {user && <Divider orientation="vertical" className="h-1/2" />}
-        {user && jam && isInJam && jamPhase == "Jamming" && (
+        {/* {user && jam && isInJam && jamPhase == "Jamming" && (
           <NavbarButtonLink
             important
             icon={<Gamepad2 />}
             name={hasGame ? "My Game" : "Create Game"}
             href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
           />
-        )}
+        )} */}
         {user &&
           jam &&
           isInJam &&
