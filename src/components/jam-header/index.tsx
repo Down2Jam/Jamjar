@@ -63,11 +63,23 @@ export default function JamHeader() {
         text: "Go to Theme Elimination",
         href: "/theme-elimination",
       };
-    if (jamPhase === "Voting")
-      return {
-        text: "Go to Theme Voting",
-        href: "/theme-voting",
-      };
+    if (jamPhase === "Voting") {
+      if (
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(activeJamResponse.jam.startTime).getTime() -
+          new Date().getTime() <=
+          60 * 60 * 1000
+      )
+        return {
+          text: "Theme will be revealed on jam start",
+        };
+      else
+        return {
+          text: "Go to Theme Voting",
+          href: "/theme-voting",
+        };
+    }
     if (jamPhase === "Jamming")
       return {
         text: topTheme
@@ -216,7 +228,7 @@ export default function JamHeader() {
             </a>
           ) : (
             <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <p className="font-semibold text-blue-500">
+              <p className="font-semibold text-blue-300 dark:text-blue-500">
                 {getPhaseObj(activeJamResponse.phase).text}
               </p>
             </div>

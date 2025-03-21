@@ -190,6 +190,23 @@ export default function VotingPage() {
         </p>
       </div>
     );
+  } else if (
+    activeJamResponse &&
+    activeJamResponse.jam &&
+    new Date(activeJamResponse.jam.startTime).getTime() -
+      new Date().getTime() <=
+      60 * 60 * 1000
+  ) {
+    return (
+      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+          Not in Theme Voting Phase
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400">
+          Theme will be revealed on jam start.
+        </p>
+      </div>
+    );
   } else {
     return (
       <div className="text-[#333] dark:text-white flex flex-col gap-4">
