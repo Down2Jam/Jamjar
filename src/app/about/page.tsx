@@ -45,10 +45,10 @@ export default function AboutPage() {
           <div className="flex gap-3 items-center">
             <div className="flex-none border-1 border-default-200/50 rounded-small text-center w-11 overflow-hidden">
               <div className="text-tiny bg-default-100 py-0.5 text-default-500">
-                Mar
+                {jam ? format(new Date(jam.startTime), "MMM") : ""}
               </div>
               <div className="flex items-center justify-center font-semibold text-medium h-6 text-default-500">
-                21
+                {jam ? format(new Date(jam.startTime), "dd") : ""}
               </div>
             </div>
             <div className="flex flex-col gap-0.5">
