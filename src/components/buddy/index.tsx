@@ -24,7 +24,7 @@ export default function Buddy() {
     "You have died of Train",
     "Do a train roll",
     "Are you training, son?",
-    "I''ve got a train feeling about this",
+    "I've got a train feeling about this",
     "I choose Train",
     "Shall we Train?",
     "You're already Train",

@@ -216,6 +216,27 @@ export default function EditTeamPage() {
         {teams[selectedTeam].ownerId != user.id && (
           <p>You cannot edit the team if you are not the owner</p>
         )}
+        {teams.length > 1 && (
+          <div className="flex gap-2">
+            <ButtonAction
+              iconPosition="start"
+              name="Previous Team"
+              icon={<ArrowLeft />}
+              onPress={() => {
+                changeTeam(selectedTeam - 1);
+              }}
+              isDisabled={selectedTeam == 0}
+            />
+            <ButtonAction
+              name="Next Team"
+              icon={<ArrowRight />}
+              onPress={() => {
+                changeTeam(selectedTeam + 1);
+              }}
+              isDisabled={selectedTeam == teams.length - 1}
+            />
+          </div>
+        )}
         {(!teams[selectedTeam].game ||
           teams[selectedTeam].game.category != "ODA") && (
           <div className="flex gap-2">
@@ -429,27 +450,6 @@ export default function EditTeamPage() {
             </Dropdown>
           </div>
         </div>
-        {teams.length > 1 && (
-          <div className="flex gap-2">
-            <ButtonAction
-              iconPosition="start"
-              name="Previous Team"
-              icon={<ArrowLeft />}
-              onPress={() => {
-                changeTeam(selectedTeam - 1);
-              }}
-              isDisabled={selectedTeam == 0}
-            />
-            <ButtonAction
-              name="Next Team"
-              icon={<ArrowRight />}
-              onPress={() => {
-                changeTeam(selectedTeam + 1);
-              }}
-              isDisabled={selectedTeam == teams.length - 1}
-            />
-          </div>
-        )}
         {teams[selectedTeam].ownerId == user.id && (
           <div className="flex gap-2">
             <Button color="primary" type="submit">
