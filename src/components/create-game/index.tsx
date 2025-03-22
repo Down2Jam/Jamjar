@@ -396,6 +396,10 @@ export default function CreateGame() {
         <Spacer />
 
         <p>Links</p>
+        <p className="text-sm text-[#777] dark:text-[#bbb]">
+          Upload your game to a hosting site (such as itch.io) and link it here
+          for people to play on or download from
+        </p>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             {Array.isArray(downloadLinks) &&
@@ -403,7 +407,7 @@ export default function CreateGame() {
                 <div key={link.id} className="flex gap-2">
                   <Input
                     className="flex-grow"
-                    placeholder="https://example.com/download"
+                    placeholder="https://example.com"
                     value={link.url}
                     onValueChange={(value) => {
                       const newLinks = [...downloadLinks];
@@ -484,7 +488,7 @@ export default function CreateGame() {
               ]);
             }}
           >
-            Add Download Link
+            Add Link
           </Button>
         </div>
 
