@@ -4,6 +4,7 @@ import {
   SiDiscord,
   SiForgejo,
   SiGithub,
+  SiYoutube,
 } from "@icons-pack/react-simple-icons";
 
 export default function SidebarButtons() {
@@ -23,6 +24,14 @@ export default function SidebarButtons() {
           href="https://bluesky.d2jam.com"
           name=""
           tooltip="Bluesky"
+          isIconOnly
+          size="sm"
+        />
+        <ButtonLink
+          icon={<SiYoutube size={16} />}
+          href="https://youtube.d2jam.com"
+          name=""
+          tooltip="YouTube"
           isIconOnly
           size="sm"
         />
