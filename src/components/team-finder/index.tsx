@@ -224,9 +224,6 @@ export default function TeamFinder() {
                             size="sm"
                             className="w-6 h-6"
                             src={user.profilePicture}
-                            classNames={{
-                              base: "bg-transparent",
-                            }}
                           />
                         </Tooltip>
                       ))}
