@@ -8,6 +8,7 @@ export default function Buddy() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [tooltipText, setTooltipText] = useState("Choo Choo");
+  const [lastTooltipIndex, setLastTooltipIndex] = useState<number | null>(null);
 
   const tooltips = [
     "Choo Choo",
@@ -28,7 +29,7 @@ export default function Buddy() {
     "I choose Train",
     "Shall we Train?",
     "You're already Train",
-    "Give me Train or give me death",
+    "Give me train or give me death",
     "The train is a lie",
   ];
 
@@ -49,7 +50,12 @@ export default function Buddy() {
   const handleHover = (isOpen: boolean) => {
     if (!isOpen) return;
 
-    const randomIndex = Math.floor(Math.random() * tooltips.length);
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * tooltips.length);
+    } while (randomIndex === lastTooltipIndex); // Ensure a different tooltip is chosen
+
+    setLastTooltipIndex(randomIndex);
     setTooltipText(tooltips[randomIndex]);
   };
 
