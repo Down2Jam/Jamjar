@@ -499,9 +499,13 @@ export default function CreateGame() {
             <p>Team</p>
             <Dropdown>
               <DropdownTrigger>
-                <Button>{`${
-                  teams && teams[currentTeam].owner.name
-                }'s Team`}</Button>
+                <Button>
+                  {teams && teams[currentTeam]
+                    ? teams[currentTeam].name
+                      ? teams[currentTeam].name
+                      : `${teams[currentTeam].owner.name}'s Team`
+                    : "Unknown"}
+                </Button>
               </DropdownTrigger>
               <DropdownMenu
                 onAction={(i) => {
@@ -513,7 +517,11 @@ export default function CreateGame() {
                     key={i}
                     description={`${team.users.length} members`}
                   >
-                    {`${teams[currentTeam].owner.name}'s Team`}
+                    {teams && teams[i]
+                      ? teams[i].name
+                        ? teams[i].name
+                        : `${teams[i].owner.name}'s Team`
+                      : "Unknown"}
                   </DropdownItem>
                 ))}
               </DropdownMenu>

@@ -129,7 +129,8 @@ export async function updateTeam(
   invitations: TeamInviteType[],
   applicationsOpen: boolean,
   wantedRoles: string[],
-  description: string
+  description: string,
+  name: string
 ) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
@@ -142,6 +143,7 @@ export async function updateTeam(
       description: description,
       users: users,
       invitations: invitations,
+      name: name,
     }),
     method: "PUT",
     headers: {

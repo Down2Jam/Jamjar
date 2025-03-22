@@ -228,7 +228,7 @@ export default function TeamFinder() {
                         </Tooltip>
                       ))}
                     </AvatarGroup>
-                    {team.owner.name}&apos;s Team
+                    {team.name ? team.name : `${team.owner.name}'s Team`}
                   </div>
                   <div>
                     {team.applicationsOpen &&

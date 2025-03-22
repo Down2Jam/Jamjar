@@ -16,4 +16,5 @@ export interface TeamType {
   invites: TeamInviteType[];
   applications: TeamApplicationType[];
   game: GameType;
+  name: string;
 }

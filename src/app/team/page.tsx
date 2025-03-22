@@ -65,6 +65,7 @@ export default function EditTeamPage() {
   const [invitations, setInvitations] = useState<TeamInviteType[]>([]);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
+  const [name, setName] = useState<string>("");
 
   // Fetch the current jam phase using helpers/jam
   useEffect(() => {
@@ -111,6 +112,7 @@ export default function EditTeamPage() {
             setUsers(data.data[0].users);
             setInvitations(data.data[0].invites);
             setDescription(data.data[0].description);
+            setName(data.data[0].name);
             setWantedRoles(
               new Set(
                 data.data[0].rolesWanted.map((role: RoleType) => role.slug)
@@ -144,6 +146,7 @@ export default function EditTeamPage() {
 
     setApplicationsOpen(teams[newid].applicationsOpen);
     setDescription(teams[newid].description);
+    setName(teams[newid].name);
     setUsers(teams[newid].users);
     setInvitations(teams[newid].invites);
     setWantedRoles(
@@ -174,6 +177,7 @@ export default function EditTeamPage() {
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);
+          setName(teams[selectedTeam].name);
           setUsers(teams[selectedTeam].users);
           setInvitations(teams[selectedTeam].invites);
           setWantedRoles(
@@ -193,7 +197,8 @@ export default function EditTeamPage() {
             invitations,
             applicationsOpen,
             Array.from(wantedRoles),
-            description
+            description,
+            name
           );
 
           if (response.ok) {
@@ -339,6 +344,14 @@ export default function EditTeamPage() {
             )}
           </ModalContent>
         </Modal>
+        <Input
+          label="Name"
+          labelPlacement="outside"
+          placeholder="Enter a team name"
+          isDisabled={teams[selectedTeam].ownerId != user.id}
+          onValueChange={setName}
+          value={name || ""}
+        />
         <Textarea
           label="Description"
           labelPlacement="outside"
