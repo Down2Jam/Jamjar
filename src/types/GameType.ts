@@ -18,4 +18,5 @@ export interface GameType {
   team: TeamType;
   ratingCategories: RatingCategoryType[];
   published: boolean;
+  themeJustification: string;
 }

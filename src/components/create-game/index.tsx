@@ -12,6 +12,7 @@ import {
   Input,
   Spacer,
   Switch,
+  Textarea,
 } from "@nextui-org/react";
 import {
   ArrowLeft,
@@ -48,6 +49,7 @@ export default function CreateGame() {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [themeJustification, setThemeJustification] = useState("");
   const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
   const [editGame, setEditGame] = useState(false);
@@ -140,6 +142,7 @@ export default function CreateGame() {
     setGameSlug(games[newid].slug);
     setPrevGameSlug(games[newid].slug);
     setContent(games[newid].description || "");
+    setThemeJustification(games[newid].themeJustification || "");
     setEditorKey((prev) => prev + 1);
     setThumbnailUrl(games[newid].thumbnail || null);
     setDownloadLinks(games[newid].downloadLinks || []);
@@ -232,7 +235,8 @@ export default function CreateGame() {
                 userSlug,
                 category,
                 chosenRatingCategories,
-                publishValue
+                publishValue,
+                themeJustification
               )
             : postGame(
                 title,
@@ -244,7 +248,8 @@ export default function CreateGame() {
                 category,
                 teams[currentTeam].id,
                 chosenRatingCategories,
-                publishValue
+                publishValue,
+                themeJustification
               );
 
           const response = await request;
@@ -282,6 +287,7 @@ export default function CreateGame() {
             setGameSlug("");
             setPrevGameSlug("");
             setContent("");
+            setThemeJustification("");
             setEditorKey((prev) => prev + 1);
             setThumbnailUrl(null);
             setDownloadLinks([]);
@@ -325,6 +331,17 @@ export default function CreateGame() {
         content={content}
         setContent={setContent}
         gameEditor
+      />
+
+      <Spacer />
+
+      <Textarea
+        label="Theme Justification"
+        labelPlacement="outside"
+        placeholder="Why your game follows the theme"
+        value={themeJustification}
+        onValueChange={setThemeJustification}
+        description="This will be shown to people as they rate you for theme"
       />
 
       <Spacer />
