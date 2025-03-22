@@ -27,5 +27,5 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Add your pages where you need to be logged in.
-  matcher: ["/create-post", "/create-game"],
+  matcher: [],
 };
