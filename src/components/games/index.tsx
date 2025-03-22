@@ -144,17 +144,6 @@ export default function Games() {
                 />
                 <CardFooter className="text-white border-t-1 border-zinc-100/50 z-10 flex-col items-start">
                   <h3 className="font-medium text-2xl mb-2">{game.name}</h3>
-                  <div className="flex justify-between w-full">
-                    <p className="text-tiny uppercase font-bold">
-                      {game.author.name}
-                    </p>
-                    <p className="text-tiny max-w-[200px] text-end truncate">
-                      {game.contributors.length > 0 &&
-                        `contributors: ${game.contributors.map(
-                          (author) => author.name
-                        )}`}
-                    </p>
-                  </div>
                 </CardFooter>
               </Card>
             </Link>

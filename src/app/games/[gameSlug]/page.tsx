@@ -31,16 +31,7 @@ export default function GamePage({
       if (gameResponse.ok) {
         const gameData = await gameResponse.json();
 
-        const filteredContributors = gameData.contributors.filter(
-          (contributor: UserType) => contributor.id !== gameData.author.id
-        );
-
-        const updatedGameData = {
-          ...gameData,
-          contributors: filteredContributors,
-        };
-
-        setGame(updatedGameData);
+        setGame(gameData);
       }
 
       // Fetch the logged-in user data
@@ -66,13 +57,10 @@ export default function GamePage({
   // Check if the logged-in user is the creator or a contributor
   const isEditable =
     user &&
-    (user.id === game.author.id ||
-      game.contributors.some(
-        (contributor: UserType) => contributor.id === user.id
-      ));
+    game.team.users.some((contributor: UserType) => contributor.id === user.id);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 text-[#333] dark:text-white">
       {/* Game Name and Edit Button */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-4xl font-bold">{game.name}</h1>
@@ -89,31 +77,15 @@ export default function GamePage({
 
       {/* Authors */}
       <div className="mb-8">
-        <p className="text-gray-600">
+        <p className="text-gray-600 flex items-center gap-2">
           Created by{" "}
-          <Link
-            href={`/users/${game.author.slug}`}
-            className="text-blue-500 hover:underline"
-          >
-            {game.author.name}
-          </Link>
-          {game.contributors.length > 0 && (
-            <>
-              {" "}
-              with{" "}
-              {game.contributors.map((contributor: UserType, index: number) => (
-                <span key={contributor.id}>
-                  <Link
-                    href={`/users/${contributor.slug}`}
-                    className="text-blue-500 hover:underline"
-                  >
-                    {contributor.name}
-                  </Link>
-                  {index < game.contributors.length - 1 ? ", " : ""}
-                </span>
-              ))}
-            </>
-          )}
+          <span className="flex items-center gap-2">
+            {game.team.users.map((user) => (
+              <Link href={`/users/${user.slug}`} key={user.id}>
+                {user.name}
+              </Link>
+            ))}
+          </span>
         </p>
       </div>
 
@@ -121,26 +93,22 @@ export default function GamePage({
         <h2 className="text-2xl font-semibold mb-4">About</h2>
         <div
           className="prose-neutral prose-lg"
-          dangerouslySetInnerHTML={{ __html: game.description ?? "" }}
+          dangerouslySetInnerHTML={{
+            __html: game.description || "No Description",
+          }}
         />
       </div>
 
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Downloads</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-2xl font-semibold mb-4">Links</h2>
+        <div className="flex flex-col gap-2">
           {game.downloadLinks.map((link: DownloadLinkType) => (
-            <Button
-              key={link.id}
-              as="a"
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full"
-              color="primary"
-              variant="bordered"
-            >
-              Download for {link.platform}
-            </Button>
+            <div className="flex gap-2" key={link.id}>
+              <p>{link.platform}</p>
+              <a href={link.url} className="underline">
+                {link.url}
+              </a>
+            </div>
           ))}
         </div>
       </div>

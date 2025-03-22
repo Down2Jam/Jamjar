@@ -70,6 +70,10 @@ export default function TeamFinder() {
       try {
         const teamResponse = await getTeams();
         let teams = (await teamResponse.json()).data;
+        const noRoleTeams = teams.filter(
+          (team: TeamType) => team.rolesWanted.length == 0
+        );
+        teams = teams.filter((team: TeamType) => team.rolesWanted.length != 0);
         if (teamType == "Open to Applications") {
           teams = teams.filter((team: TeamType) => team.applicationsOpen);
         }
@@ -81,7 +85,7 @@ export default function TeamFinder() {
                 (role) =>
                   user.primaryRoles.filter((userrole) => userrole.id == role.id)
                     .length > 0
-              ).length > 0 || team.rolesWanted.length == 0
+              ).length > 0
           );
 
           if (teams.length == 0) {
@@ -96,8 +100,7 @@ export default function TeamFinder() {
                     .length > 0 ||
                   user.secondaryRoles.filter(
                     (userrole) => userrole.id == role.id
-                  ).length > 0 ||
-                  team.rolesWanted.length == 0
+                  ).length > 0
               ).length > 0
           );
 
@@ -105,6 +108,8 @@ export default function TeamFinder() {
             setFilter("All");
           }
         }
+
+        teams = [...teams, ...noRoleTeams];
 
         setTeams(teams);
       } catch (error) {
@@ -226,17 +231,18 @@ export default function TeamFinder() {
                     {team.owner.name}&apos;s Team
                   </div>
                   <div>
-                    {team.applicationsOpen && (
-                      <ButtonAction
-                        name="Apply"
-                        icon={<Clipboard />}
-                        onPress={() => {
-                          setBody("");
-                          setSelectedTeam(team.id);
-                          onOpen();
-                        }}
-                      />
-                    )}
+                    {team.applicationsOpen &&
+                      (!team.game || team.game.category != "ODA") && (
+                        <ButtonAction
+                          name="Apply"
+                          icon={<Clipboard />}
+                          onPress={() => {
+                            setBody("");
+                            setSelectedTeam(team.id);
+                            onOpen();
+                          }}
+                        />
+                      )}
                   </div>
                 </div>
                 {team.description && <p>{team.description}</p>}

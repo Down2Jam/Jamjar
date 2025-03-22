@@ -15,6 +15,7 @@ import {
   Bell,
   CalendarPlus,
   Gamepad,
+  Gamepad2,
   Info,
   LogInIcon,
   NotebookPen,
@@ -35,6 +36,7 @@ import { toast } from "react-toastify";
 import ThemeToggle from "../theme-toggle";
 import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
+import { GameType } from "@/types/GameType";
 
 export default function PCNavbar() {
   const pathname = usePathname();
@@ -43,7 +45,7 @@ export default function PCNavbar() {
   const [isInJam, setIsInJam] = useState<boolean>();
   const [user, setUser] = useState<UserType>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  // const [hasGame, setHasGame] = useState<GameType | null>();
+  const [hasGame, setHasGame] = useState<GameType | null>();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -81,21 +83,15 @@ export default function PCNavbar() {
         const gameResponse = await getCurrentGame();
 
         if (gameResponse.ok) {
-          const gameData = await gameResponse.json();
+          const gameData = (await gameResponse.json()).data;
 
-          if (gameData) {
-            // Check if the logged-in user is either the creator or a contributor
-            // const isContributor =
-            //   gameData.author?.id === user.id || // Check if logged-in user is the author
-            //   gameData.contributors?.some(
-            //     (contributor: UserType) => contributor.id === user.id
-            //   ); // Check if logged-in user is a contributor
-            // if (isContributor) {
-            //   setHasGame(gameData); // Set the game data for "My Game"
-            // } else {
-            //   setHasGame(null); // No game associated with this user
-            // }
+          if (gameData && gameData.length > 0) {
+            setHasGame(gameData[0]);
+          } else {
+            setHasGame(null);
           }
+        } else {
+          setHasGame(null);
         }
 
         if (
@@ -170,14 +166,14 @@ export default function PCNavbar() {
       <NavbarContent justify="end" className="gap-4">
         <NavbarSearchbar />
         {user && <Divider orientation="vertical" className="h-1/2" />}
-        {/* {user && jam && isInJam && jamPhase == "Jamming" && (
+        {user && jam && isInJam && jamPhase == "Jamming" && (
           <NavbarButtonLink
             important
             icon={<Gamepad2 />}
             name={hasGame ? "My Game" : "Create Game"}
             href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
           />
-        )} */}
+        )}
         {user &&
           jam &&
           isInJam &&

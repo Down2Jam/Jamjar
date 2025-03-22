@@ -1,3 +1,4 @@
+import { GameType } from "./GameType";
 import { RoleType } from "./RoleType";
 import { TeamApplicationType } from "./TeamApplicationType";
 import { TeamInviteType } from "./TeamInviteType";
@@ -14,4 +15,5 @@ export interface TeamType {
   description: string;
   invites: TeamInviteType[];
   applications: TeamApplicationType[];
+  game: GameType;
 }

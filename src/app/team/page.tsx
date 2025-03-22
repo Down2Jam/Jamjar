@@ -44,6 +44,7 @@ import ButtonAction from "@/components/link-components/ButtonAction";
 import { toast } from "react-toastify";
 import { deleteTeam, inviteToTeam, leaveTeam } from "@/helpers/team";
 import { TeamInviteType } from "@/types/TeamInviteType";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 
 export default function EditTeamPage() {
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
@@ -62,6 +63,23 @@ export default function EditTeamPage() {
   const [body, setBody] = useState<string>("");
   const [users, setUsers] = useState<UserType[]>([]);
   const [invitations, setInvitations] = useState<TeamInviteType[]>([]);
+  const [activeJamResponse, setActiveJamResponse] =
+    useState<ActiveJamResponse | null>(null);
+
+  // Fetch the current jam phase using helpers/jam
+  useEffect(() => {
+    const fetchCurrentJamPhase = async () => {
+      try {
+        const activeJam = await getCurrentJam();
+        setActiveJamResponse(activeJam); // Set active jam details
+      } catch (error) {
+        console.error("Error fetching current jam:", error);
+      } finally {
+      }
+    };
+
+    fetchCurrentJamPhase();
+  }, []);
 
   useEffect(() => {
     loadUser();
@@ -191,12 +209,15 @@ export default function EditTeamPage() {
         {teams[selectedTeam].ownerId != user.id && (
           <p>You cannot edit the team if you are not the owner</p>
         )}
-        <ButtonAction
-          name="Invite User"
-          icon={<User />}
-          onPress={onOpen}
-          isDisabled={teams[selectedTeam].ownerId != user.id}
-        />
+        {(!teams[selectedTeam].game ||
+          teams[selectedTeam].game.category != "ODA") && (
+          <ButtonAction
+            name="Invite User"
+            icon={<User />}
+            onPress={onOpen}
+            isDisabled={teams[selectedTeam].ownerId != user.id}
+          />
+        )}
         {users?.map((user2) => (
           <Card key={user2.id}>
             <CardBody className="gap-3 min-w-96">
@@ -318,62 +339,6 @@ export default function EditTeamPage() {
             )}
           </ModalContent>
         </Modal>
-        {/* <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium">Add Authors</label>
-          <Input
-            isDisabled={teams[selectedTeam].ownerId != user.id}
-            placeholder="Search users..."
-            value={authorSearch}
-            onValueChange={(value) => {
-              setAuthorSearch(value);
-              handleAuthorSearch(value);
-            }}
-          />
-          {searchResults.length > 0 && (
-            <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-              {searchResults.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex justify-between items-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer"
-                  onClick={() => {
-                    if (!selectedAuthors.some((a) => a.id === user.id)) {
-                      setSelectedAuthors([...selectedAuthors, user]);
-                    }
-                    setSearchResults([]);
-                    setAuthorSearch("");
-                  }}
-                >
-                  <span>{user.name}</span>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-2">
-            {selectedAuthors.map((author) => (
-              <div
-                key={author.id}
-                className="bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100 px-3 py-1 rounded-full flex items-center gap-2"
-              >
-                <span>{author.name}</span>
-                {((teams[selectedTeam] &&
-                  author.id !== teams[selectedTeam].ownerId) ||
-                  (!teams[selectedTeam] && author.id !== user?.id)) &&
-                  teams[selectedTeam].ownerId == user.id && (
-                    <button
-                      onClick={() =>
-                        setSelectedAuthors(
-                          selectedAuthors.filter((a) => a.id !== author.id)
-                        )
-                      }
-                      className="text-sm hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  )}
-              </div>
-            ))}
-          </div>
-        </div> */}
         <Textarea
           label="Description"
           labelPlacement="outside"
@@ -442,7 +407,6 @@ export default function EditTeamPage() {
             </Dropdown>
           </div>
         </div>
-
         {teams.length > 1 && (
           <div className="flex gap-2">
             <ButtonAction
@@ -480,18 +444,20 @@ export default function EditTeamPage() {
         )}
         <Spacer />
         <div className="flex gap-2">
-          {teams[selectedTeam].ownerId == user.id && (
-            <ButtonAction
-              name="Delete Team"
-              icon={<Trash />}
-              onPress={async () => {
-                const successful = await deleteTeam(teams[selectedTeam].id);
-                if (successful) {
-                  redirect("/team-finder");
-                }
-              }}
-            />
-          )}
+          {teams[selectedTeam].ownerId == user.id &&
+            activeJamResponse?.jam?.id == teams[selectedTeam].jamId &&
+            activeJamResponse.phase != "Rating" && (
+              <ButtonAction
+                name="Delete Team"
+                icon={<Trash />}
+                onPress={async () => {
+                  const successful = await deleteTeam(teams[selectedTeam].id);
+                  if (successful) {
+                    redirect("/team-finder");
+                  }
+                }}
+              />
+            )}
           {teams[selectedTeam].ownerId != user.id && (
             <ButtonAction
               name="Leave Team"

@@ -29,9 +29,12 @@ export async function postGame(
     url: string;
     platform: PlatformType;
   }[],
-  userSlug: string
+  userSlug: string,
+  category: "ODA" | "REGULAR",
+  targetTeamId: number,
+  ratingCategories: number[]
 ) {
-  return fetch(`${BASE_URL}/games/create`, {
+  return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
       name: title,
       slug: gameSlug,
@@ -39,6 +42,9 @@ export async function postGame(
       thumbnail,
       downloadLinks,
       userSlug,
+      category,
+      targetTeamId,
+      ratingCategories,
     }),
     method: "POST",
     headers: {
@@ -59,7 +65,9 @@ export async function updateGame(
     url: string;
     platform: PlatformType;
   }[],
-  userSlug: string
+  userSlug: string,
+  category: "ODA" | "REGULAR",
+  ratingCategories: number[]
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -69,6 +77,8 @@ export async function updateGame(
       thumbnail,
       downloadLinks,
       userSlug,
+      category,
+      ratingCategories,
     }),
     method: "PUT",
     headers: {

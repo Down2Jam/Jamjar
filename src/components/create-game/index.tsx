@@ -39,6 +39,9 @@ import { createTeam } from "@/helpers/team";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { GameType } from "@/types/GameType";
 import ButtonAction from "../link-components/ButtonAction";
+import { TeamType } from "@/types/TeamType";
+import { getTeamsUser } from "@/requests/team";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 
 export default function CreateGame() {
   const router = useRouter();
@@ -48,13 +51,6 @@ export default function CreateGame() {
   const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
   const [editGame, setEditGame] = useState(false);
-  /*
-  const [selectedTags, setSelectedTags] = useState<MultiValue<{
-    value: string;
-    label: ReactNode;
-    isFixed: boolean;
-  }> | null>(null);
-   */
   const [mounted, setMounted] = useState<boolean>(false);
 
   const [gameSlug, setGameSlug] = useState("");
@@ -72,6 +68,14 @@ export default function CreateGame() {
   const [games, setGames] = useState<GameType[]>([]);
   const [currentGame, setCurrentGame] = useState<number>(0);
   const [category, setCategory] = useState<"REGULAR" | "ODA">("REGULAR");
+  const [currentTeam, setCurrentTeam] = useState<number>(0);
+  const [teams, setTeams] = useState<TeamType[]>([]);
+  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
+    null
+  );
+  const [chosenRatingCategories, setChosenRatingCategories] = useState<
+    number[]
+  >([]);
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -94,6 +98,9 @@ export default function CreateGame() {
         const ratingCategories = await ratingResponse.json();
         setRatingCategories(ratingCategories.data);
 
+        const activeJam = await getCurrentJam();
+        setActiveJam(activeJam);
+
         if (localuser.teams.length == 0) {
           const successful = await createTeam();
           if (successful) {
@@ -105,6 +112,19 @@ export default function CreateGame() {
             redirect("/");
           }
         }
+
+        const teamResponse = await getTeamsUser();
+
+        if (teamResponse.status == 200) {
+          const data = await teamResponse.json();
+          const filteredTeams = data.data.filter(
+            (team: TeamType) => !team.game
+          );
+
+          setTeams(filteredTeams);
+        } else {
+          setTeams([]);
+        }
       } catch (error) {
         console.error(error);
       }
@@ -112,23 +132,28 @@ export default function CreateGame() {
     load();
   }, []);
 
-  const changeGame = useCallback(
-    (newid: number) => {
-      setCurrentGame(newid);
+  const changeGame = useCallback((newid: number, games: GameType[]) => {
+    setCurrentGame(newid);
 
-      if (!games) return;
+    if (!games) return;
+    if (games.length == 0) return;
 
-      setTitle(games[newid].name);
-      setGameSlug(games[newid].slug);
-      setPrevGameSlug(games[newid].slug);
-      setContent(games[newid].description || "");
-      setEditorKey((prev) => prev + 1);
-      setThumbnailUrl(games[newid].thumbnail || null);
-      setDownloadLinks(games[newid].downloadLinks);
-      setCategory(games[newid].category);
-    },
-    [games]
-  );
+    setTitle(games[newid].name);
+    setGameSlug(games[newid].slug);
+    setPrevGameSlug(games[newid].slug);
+    setContent(games[newid].description || "");
+    setEditorKey((prev) => prev + 1);
+    setThumbnailUrl(games[newid].thumbnail || null);
+    setDownloadLinks(games[newid].downloadLinks || []);
+    setCategory(games[newid].category);
+    setChosenRatingCategories(
+      games[newid].ratingCategories.map((ratingCategory) => ratingCategory.id)
+    );
+  }, []);
+
+  const changeTeam = useCallback((newid: number) => {
+    setCurrentTeam(newid);
+  }, []);
 
   useEffect(() => {
     const checkExistingGame = async () => {
@@ -139,7 +164,12 @@ export default function CreateGame() {
         if (gameData.length > 0) {
           setGames(gameData);
           setEditGame(true);
-          changeGame(0);
+          changeGame(0, gameData);
+        } else {
+          if (teams.length == 0) {
+            toast.error("No available teams");
+            redirect("/");
+          }
         }
       }
     };
@@ -147,7 +177,7 @@ export default function CreateGame() {
     if (mounted && user) {
       checkExistingGame();
     }
-  }, [user, mounted, changeGame]);
+  }, [teams, mounted, changeGame, user]);
 
   return (
     <Form
@@ -186,7 +216,9 @@ export default function CreateGame() {
                 sanitizedHtml,
                 thumbnailUrl,
                 links,
-                userSlug
+                userSlug,
+                category,
+                chosenRatingCategories
               )
             : postGame(
                 title,
@@ -194,14 +226,17 @@ export default function CreateGame() {
                 sanitizedHtml,
                 thumbnailUrl,
                 links,
-                userSlug
+                userSlug,
+                category,
+                teams[currentTeam].id,
+                chosenRatingCategories
               );
 
           const response = await request;
 
           if (response.ok) {
             toast.success(
-              gameSlug
+              prevSlug
                 ? "Game updated successfully!"
                 : "Game created successfully!"
             );
@@ -220,9 +255,27 @@ export default function CreateGame() {
     >
       <div>
         <h1 className="text-2xl font-bold mb-4 flex">
-          {gameSlug ? "Edit Game" : "Create New Game"}
+          {prevSlug ? "Edit Game" : "Create New Game"}
         </h1>
       </div>
+      {teams.length > 0 && prevSlug && (
+        <ButtonAction
+          onPress={() => {
+            setGames([]);
+            setEditGame(false);
+            setTitle("");
+            setGameSlug("");
+            setPrevGameSlug("");
+            setContent("");
+            setEditorKey((prev) => prev + 1);
+            setThumbnailUrl(null);
+            setDownloadLinks([]);
+            setCategory("REGULAR");
+            setChosenRatingCategories([]);
+          }}
+          name="Create New Game"
+        />
+      )}
       <Input
         isRequired
         label="Game Name"
@@ -325,6 +378,9 @@ export default function CreateGame() {
           </div>
         )}
 
+        <Spacer />
+
+        <p>Links</p>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             {Array.isArray(downloadLinks) &&
@@ -366,33 +422,24 @@ export default function CreateGame() {
                   />
                   <Select
                     className="w-96"
-                    defaultSelectedKeys={["Windows"]}
+                    defaultSelectedKeys={["Web"]}
                     aria-label="Select platform" // Add this to fix accessibility warning
                     onSelectionChange={(value) => {
                       const newLinks = [...downloadLinks];
                       newLinks[index].platform =
-                        value as unknown as PlatformType;
+                        value.currentKey as unknown as PlatformType;
                       setDownloadLinks(newLinks);
                     }}
+                    selectedKeys={[link.platform]}
                   >
-                    <SelectItem key="Windows" value="Windows">
-                      Windows
-                    </SelectItem>
-                    <SelectItem key="MacOS" value="MacOS">
-                      MacOS
-                    </SelectItem>
-                    <SelectItem key="Linux" value="Linux">
-                      Linux
-                    </SelectItem>
-                    <SelectItem key="Web" value="Web">
-                      Web
-                    </SelectItem>
-                    <SelectItem key="Mobile" value="Mobile">
-                      Mobile
-                    </SelectItem>
-                    <SelectItem key="Other" value="Other">
-                      Other
-                    </SelectItem>
+                    <SelectItem key="Web">Web</SelectItem>
+                    <SelectItem key="SourceCode">Source Code</SelectItem>
+                    <SelectItem key="Windows">Windows</SelectItem>
+                    <SelectItem key="MacOS">MacOS</SelectItem>
+                    <SelectItem key="Linux">Linux</SelectItem>
+                    <SelectItem key="iOS">Apple iOS</SelectItem>
+                    <SelectItem key="Android">Android</SelectItem>
+                    <SelectItem key="Other">Other</SelectItem>
                   </Select>
                   <Button
                     color="danger"
@@ -410,7 +457,6 @@ export default function CreateGame() {
           </div>
 
           <Button
-            color="primary"
             variant="solid"
             onPress={() => {
               setDownloadLinks([
@@ -418,7 +464,7 @@ export default function CreateGame() {
                 {
                   id: Date.now(),
                   url: "",
-                  platform: "Windows",
+                  platform: "Web",
                 },
               ]);
             }}
@@ -426,6 +472,35 @@ export default function CreateGame() {
             Add Download Link
           </Button>
         </div>
+
+        <Spacer />
+
+        {teams.length > 1 && !prevSlug && (
+          <>
+            <p>Team</p>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button>{`${
+                  teams && teams[currentTeam].owner.name
+                }'s Team`}</Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                onAction={(i) => {
+                  changeTeam(i as number);
+                }}
+              >
+                {teams.map((team, i) => (
+                  <DropdownItem
+                    key={i}
+                    description={`${team.users.length} members`}
+                  >
+                    {`${teams[currentTeam].owner.name}'s Team`}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </>
+        )}
 
         <Spacer />
 
@@ -440,8 +515,25 @@ export default function CreateGame() {
           {ratingCategories.map((category) => (
             <Switch
               key={category.id}
-              // isSelected={applicationsOpen}
-              // onValueChange={setApplicationsOpen}
+              isSelected={
+                chosenRatingCategories.filter(
+                  (category2) => category2 == category.id
+                ).length > 0
+              }
+              onValueChange={(value) => {
+                if (value) {
+                  setChosenRatingCategories([
+                    ...chosenRatingCategories,
+                    category.id,
+                  ]);
+                } else {
+                  setChosenRatingCategories(
+                    chosenRatingCategories.filter(
+                      (category2) => category2 != category.id
+                    )
+                  );
+                }
+              }}
             >
               <div className="text-[#333] dark:text-white">
                 <p>{category.name}</p>
@@ -455,33 +547,42 @@ export default function CreateGame() {
 
         <Spacer />
 
-        <Dropdown>
-          <DropdownTrigger>
-            <Button>
-              {category == "REGULAR" ? "Regular" : "One Dev Army"}
-            </Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            onAction={(key) => {
-              setCategory(key as "REGULAR" | "ODA");
-            }}
-          >
-            <DropdownItem
-              key="REGULAR"
-              description="The regular jam category"
-              startContent={<Gamepad2 />}
-            >
-              Regular
-            </DropdownItem>
-            <DropdownItem
-              key="ODA"
-              description="1 Dev, No third party assets"
-              startContent={<Swords />}
-            >
-              One Dev Army (O.D.A)
-            </DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        {teams &&
+          teams.length > 0 &&
+          teams[currentTeam].users.length == 1 &&
+          activeJamResponse &&
+          activeJamResponse.phase == "Jamming" && (
+            <>
+              <p>Game Category</p>
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button>
+                    {category == "REGULAR" ? "Regular" : "One Dev Army"}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  onAction={(key) => {
+                    setCategory(key as "REGULAR" | "ODA");
+                  }}
+                >
+                  <DropdownItem
+                    key="REGULAR"
+                    description="The regular jam category"
+                    startContent={<Gamepad2 />}
+                  >
+                    Regular
+                  </DropdownItem>
+                  <DropdownItem
+                    key="ODA"
+                    description="1 Dev, No third party assets"
+                    startContent={<Swords />}
+                  >
+                    One Dev Army (O.D.A)
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </>
+          )}
 
         {games.length > 1 && (
           <div className="flex gap-2">
@@ -490,7 +591,7 @@ export default function CreateGame() {
               name="Previous Game"
               icon={<ArrowLeft />}
               onPress={() => {
-                changeGame(currentGame - 1);
+                changeGame(currentGame - 1, games);
               }}
               isDisabled={currentGame == 0}
             />
@@ -498,7 +599,7 @@ export default function CreateGame() {
               name="Next Game"
               icon={<ArrowRight />}
               onPress={() => {
-                changeGame(currentGame + 1);
+                changeGame(currentGame + 1, games);
               }}
               isDisabled={currentGame == games.length - 1}
             />
@@ -510,7 +611,7 @@ export default function CreateGame() {
             {waitingPost ? (
               <LoaderCircle className="animate-spin" size={16} />
             ) : (
-              <p>{editGame ? "Update" : "Create"}</p>
+              <p>{prevSlug ? "Update" : "Create"}</p>
             )}
           </Button>
         </div>
