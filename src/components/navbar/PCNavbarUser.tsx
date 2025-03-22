@@ -8,7 +8,7 @@ import {
   NavbarItem,
 } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
-import { LogOut, Settings, User } from "lucide-react";
+import { Bug, LogOut, Settings, User } from "lucide-react";
 
 interface NavbarUserProps {
   user: UserType;
@@ -38,13 +38,21 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
               Profile
             </DropdownItem>
             <DropdownItem
-              showDivider
               key="settings"
               className="text-[#333] dark:text-white"
               href="/settings"
               startContent={<Settings size={16} />}
             >
               Settings
+            </DropdownItem>
+            <DropdownItem
+              showDivider
+              key="bug"
+              className="text-[#333] dark:text-white"
+              href="https://github.com/Down2Jam/Jamjar/issues"
+              startContent={<Bug size={16} />}
+            >
+              Report Bug
             </DropdownItem>
           </DropdownSection>
           <DropdownItem
