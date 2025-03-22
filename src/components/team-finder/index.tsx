@@ -46,6 +46,7 @@ export default function TeamFinder() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [body, setBody] = useState<string>("");
   const [selectedTeam, setSelectedTeam] = useState<number>();
+  const [sortSet, setSortSet] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -88,7 +89,7 @@ export default function TeamFinder() {
               ).length > 0
           );
 
-          if (teams.length == 0) {
+          if (teams.length == 0 && !sortSet) {
             setFilter("Primary or Secondary Role");
           }
         } else if (filter == "Primary or Secondary Role") {
@@ -104,7 +105,7 @@ export default function TeamFinder() {
               ).length > 0
           );
 
-          if (teams.length == 0) {
+          if (teams.length == 0 && !sortSet) {
             setFilter("All");
           }
         }
@@ -116,6 +117,7 @@ export default function TeamFinder() {
         console.error(error);
       } finally {
         setIsLoading(false);
+        setSortSet(true);
       }
     }
 
