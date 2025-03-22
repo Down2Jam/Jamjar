@@ -214,7 +214,10 @@ export default function TeamFinder() {
               <CardBody className="p-6 gap-3">
                 <div className="flex items-center justify-between flex-row gap-3">
                   <div className="flex items-center gap-3">
-                    <AvatarGroup>
+                    <AvatarGroup
+                      renderCount={(count) => <p>+{count}</p>}
+                      max={10}
+                    >
                       {team.users.map((user) => (
                         <Tooltip key={user.id} content={user.name}>
                           <Avatar
