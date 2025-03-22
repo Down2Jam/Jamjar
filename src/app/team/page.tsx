@@ -39,12 +39,14 @@ import {
   LogOut,
   Trash,
   User,
+  Users,
 } from "lucide-react";
 import ButtonAction from "@/components/link-components/ButtonAction";
 import { toast } from "react-toastify";
 import { deleteTeam, inviteToTeam, leaveTeam } from "@/helpers/team";
 import { TeamInviteType } from "@/types/TeamInviteType";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import ButtonLink from "@/components/link-components/ButtonLink";
 
 export default function EditTeamPage() {
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
@@ -216,12 +218,19 @@ export default function EditTeamPage() {
         )}
         {(!teams[selectedTeam].game ||
           teams[selectedTeam].game.category != "ODA") && (
-          <ButtonAction
-            name="Invite User"
-            icon={<User />}
-            onPress={onOpen}
-            isDisabled={teams[selectedTeam].ownerId != user.id}
-          />
+          <div className="flex gap-2">
+            <ButtonAction
+              name="Invite User"
+              icon={<User />}
+              onPress={onOpen}
+              isDisabled={teams[selectedTeam].ownerId != user.id}
+            />
+            <ButtonLink
+              icon={<Users />}
+              name={"Go to Team Finder"}
+              href={"/team-finder"}
+            />
+          </div>
         )}
         {users?.map((user2) => (
           <Card key={user2.id}>
