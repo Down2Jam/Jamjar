@@ -122,7 +122,7 @@ export default function TeamFinder() {
     }
 
     fetchData();
-  }, [teamType, filter, user]);
+  }, [teamType, filter, user, sortSet]);
 
   if (isLoading) return <Spinner />;
 

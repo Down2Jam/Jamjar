@@ -6,6 +6,7 @@ import { ToastContainer } from "react-toastify";
 import { NextUIProvider, Spacer } from "@nextui-org/react";
 import Footer from "@/components/footer";
 import { ThemeProvider } from "next-themes";
+import Buddy from "@/components/buddy";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default async function RootLayout({
             <div>
               <div className="bg-[#fff] dark:bg-[#181818] min-h-screen flex flex-col ease-in-out transition-color duration-500">
                 <div className="fixed top-0 left-0 bg-[repeating-linear-gradient(135deg,#075e94_0px,#075e94_40px,#4a3279_40px,#4a3279_80px)] w-screen h-screen opacity-10 dark:opacity-5 pointer-events-none" />
+                <Buddy />
                 <Navbar />
                 <Spacer y={5} />
                 <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-8xl mx-auto flex-grow w-full px-8">

@@ -18,6 +18,17 @@ const config: Config = {
       maxWidth: {
         "8xl": "96rem",
       },
+      animation: {
+        wiggle: "wiggle 0.3s ease-in-out",
+      },
+      keyframes: {
+        wiggle: {
+          "0%, 100%": { transform: "rotate(0deg)" },
+          "25%": { transform: "rotate(10deg)" },
+          "50%": { transform: "rotate(-10deg)" },
+          "75%": { transform: "rotate(5deg)" },
+        },
+      },
     },
   },
   darkMode: "class",
