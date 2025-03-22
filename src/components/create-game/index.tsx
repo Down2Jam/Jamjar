@@ -57,7 +57,6 @@ export default function CreateGame() {
   const [prevSlug, setPrevGameSlug] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
-  const [user, setUser] = useState<UserType>();
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
   const [editorKey, setEditorKey] = useState(0);
   const [ratingCategories, setRatingCategories] = useState<
@@ -76,6 +75,7 @@ export default function CreateGame() {
   const [chosenRatingCategories, setChosenRatingCategories] = useState<
     number[]
   >([]);
+  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -92,7 +92,6 @@ export default function CreateGame() {
       try {
         const response = await getSelf();
         const localuser = (await response.json()) as UserType;
-        setUser(localuser);
 
         const ratingResponse = await getRatingCategories();
         const ratingCategories = await ratingResponse.json();
@@ -104,9 +103,6 @@ export default function CreateGame() {
         if (localuser.teams.length == 0) {
           const successful = await createTeam();
           if (successful) {
-            const response2 = await getSelf();
-            const localuser = (await response2.json()) as UserType;
-            setUser(localuser);
           } else {
             toast.error("Error while creating team");
             redirect("/");
@@ -125,6 +121,8 @@ export default function CreateGame() {
         } else {
           setTeams([]);
         }
+
+        setDataLoaded(true);
       } catch (error) {
         console.error(error);
       }
@@ -174,10 +172,10 @@ export default function CreateGame() {
       }
     };
 
-    if (mounted && user) {
+    if (mounted && dataLoaded) {
       checkExistingGame();
     }
-  }, [teams, mounted, changeGame, user]);
+  }, [teams, mounted, changeGame, dataLoaded]);
 
   return (
     <Form
