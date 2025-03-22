@@ -17,6 +17,19 @@ export default function Buddy() {
     "Theres a train behind you",
     "Houston, we have a train",
     "When life gives you lemons, make a lemon train",
+    "You are the 1000th visitor, click here for a surprise",
+    "Its dangerous to go alone! Take this train",
+    "Train... Train never changes",
+    "The train is out there",
+    "You have died of Train",
+    "Do a train roll",
+    "Are you training, son?",
+    "I''ve got a train feeling about this",
+    "I choose Train",
+    "Shall we Train?",
+    "You're already Train",
+    "Give me Train or give me death",
+    "The train is a lie",
   ];
 
   useEffect(() => {
