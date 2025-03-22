@@ -217,7 +217,7 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
   ];
 
   return (
-    <div className="mb-2 flex space-x-2">
+    <div className="mb-2 flex space-x-2 flex-wrap">
       {buttons.map(({ icon, onClick, disabled, isActive }, index) => (
         <EditorMenuButton
           key={index}
