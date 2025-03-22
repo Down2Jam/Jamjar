@@ -44,7 +44,7 @@ export default function UserPage() {
             </p>
             {(user.primaryRoles || user.secondaryRoles) && (
               <div className="flex gap-3 items-center py-2">
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-3 items-center flex-wrap">
                   {user.primaryRoles.map((role) => (
                     <Chip variant="faded" key={role.id}>
                       {role.name}
