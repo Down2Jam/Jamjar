@@ -71,13 +71,13 @@ export default function TeamFinder() {
       try {
         const teamResponse = await getTeams();
         let teams = (await teamResponse.json()).data;
+        if (teamType == "Open to Applications") {
+          teams = teams.filter((team: TeamType) => team.applicationsOpen);
+        }
         const noRoleTeams = teams.filter(
           (team: TeamType) => team.rolesWanted.length == 0
         );
         teams = teams.filter((team: TeamType) => team.rolesWanted.length != 0);
-        if (teamType == "Open to Applications") {
-          teams = teams.filter((team: TeamType) => team.applicationsOpen);
-        }
 
         if (filter == "Primary Role") {
           teams = teams.filter(
