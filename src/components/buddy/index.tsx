@@ -66,7 +66,12 @@ export default function Buddy() {
       }`}
       onClick={handleClick}
     >
-      <Tooltip content={tooltipText} closeDelay={0} onOpenChange={handleHover}>
+      <Tooltip
+        content={tooltipText}
+        closeDelay={0}
+        onOpenChange={handleHover}
+        className="text-[#333] dark:text-white"
+      >
         <Image
           src="/images/Train.png"
           alt="Train buddy"
