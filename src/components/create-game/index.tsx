@@ -200,6 +200,21 @@ export default function CreateGame() {
         const sanitizedHtml = sanitize(content);
         setWaitingPost(true);
 
+        const submitter = (e.nativeEvent as SubmitEvent)
+          .submitter as HTMLButtonElement;
+
+        let publishValue = games[currentGame]
+          ? games[currentGame].published
+          : false;
+
+        if (submitter.value === "publish") {
+          publishValue = true;
+        }
+
+        if (submitter.value === "unpublish") {
+          publishValue = false;
+        }
+
         try {
           const links = downloadLinks.map((link) => ({
             url: link.url,
@@ -216,7 +231,8 @@ export default function CreateGame() {
                 links,
                 userSlug,
                 category,
-                chosenRatingCategories
+                chosenRatingCategories,
+                publishValue
               )
             : postGame(
                 title,
@@ -227,7 +243,8 @@ export default function CreateGame() {
                 userSlug,
                 category,
                 teams[currentTeam].id,
-                chosenRatingCategories
+                chosenRatingCategories,
+                publishValue
               );
 
           const response = await request;
@@ -605,13 +622,41 @@ export default function CreateGame() {
         )}
 
         <div className="flex gap-2">
-          <Button color="primary" type="submit">
+          <Button color="primary" type="submit" name="action" value="save">
             {waitingPost ? (
               <LoaderCircle className="animate-spin" size={16} />
             ) : (
               <p>{prevSlug ? "Update" : "Create"}</p>
             )}
           </Button>
+          {(!games[currentGame] || !games[currentGame].published) && (
+            <Button
+              color="secondary"
+              type="submit"
+              name="action"
+              value="publish"
+            >
+              {waitingPost ? (
+                <LoaderCircle className="animate-spin" size={16} />
+              ) : (
+                <p>{prevSlug ? "Publish" : "Create & Publish"}</p>
+              )}
+            </Button>
+          )}
+          {games[currentGame] && games[currentGame].published && (
+            <Button
+              color="danger"
+              type="submit"
+              name="action"
+              value="unpublish"
+            >
+              {waitingPost ? (
+                <LoaderCircle className="animate-spin" size={16} />
+              ) : (
+                <p>{"Unpublish"}</p>
+              )}
+            </Button>
+          )}
         </div>
       </div>
     </Form>

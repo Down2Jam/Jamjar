@@ -32,7 +32,8 @@ export async function postGame(
   userSlug: string,
   category: "ODA" | "REGULAR",
   targetTeamId: number,
-  ratingCategories: number[]
+  ratingCategories: number[],
+  published: boolean
 ) {
   return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -45,6 +46,7 @@ export async function postGame(
       category,
       targetTeamId,
       ratingCategories,
+      published,
     }),
     method: "POST",
     headers: {
@@ -67,7 +69,8 @@ export async function updateGame(
   }[],
   userSlug: string,
   category: "ODA" | "REGULAR",
-  ratingCategories: number[]
+  ratingCategories: number[],
+  published: boolean
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -79,6 +82,7 @@ export async function updateGame(
       userSlug,
       category,
       ratingCategories,
+      published,
     }),
     method: "PUT",
     headers: {
