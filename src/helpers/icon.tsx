@@ -5,6 +5,7 @@ import {
   Book,
   Bug,
   Calendar,
+  CircleDotDashed,
   CircleHelp,
   Cloudy,
   Code,
@@ -51,7 +52,7 @@ export function getIcon(icon: string = "event", size: number = 24) {
     case "calendar":
       return <Calendar size={size} />;
     case "circledotdashed":
-      return <Calendar size={size} />;
+      return <CircleDotDashed size={size} />;
     case "cloudy":
       return <Cloudy size={size} />;
     case "code":

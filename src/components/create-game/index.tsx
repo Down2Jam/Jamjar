@@ -22,9 +22,9 @@ import {
   LoaderCircle,
   Swords,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Select, SelectItem } from "@nextui-org/react";
+import { Select as OldSelect, SelectItem } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
 import { redirect, useRouter } from "next/navigation";
 import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
@@ -51,6 +51,8 @@ import { AchievementType } from "@/types/AchievementType";
 import { GameTagType } from "@/types/GameTagType";
 import { FlagType } from "@/types/FlagType";
 import { getIcon } from "@/helpers/icon";
+import Select, { StylesConfig } from "react-select";
+import { useTheme } from "next-themes";
 
 export default function CreateGame() {
   const router = useRouter();
@@ -88,10 +90,11 @@ export default function CreateGame() {
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
   const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
-  const [flags, setFlags] = useState<Set<string>>(new Set());
+  const [flags, setFlags] = useState<number[]>([]);
   const [tags, setTags] = useState<Set<string>>(new Set());
   const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const { theme } = useTheme();
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -173,13 +176,9 @@ export default function CreateGame() {
       setDownloadLinks(games[newid].downloadLinks || []);
       setAchievements(games[newid].achievements || []);
       setFlags(
-        new Set(
-          games[newid].flags
-            ?.map((flag) =>
-              allFlags.findIndex((f) => f.id === flag.id).toString()
-            )
-            .filter((index) => index !== "-1") || []
-        )
+        games[newid].flags
+          ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
+          .filter((index) => index !== -1) || []
       );
       setTags(
         new Set(
@@ -200,6 +199,56 @@ export default function CreateGame() {
   const changeTeam = useCallback((newid: number) => {
     setCurrentTeam(newid);
   }, []);
+
+  const styles: StylesConfig<
+    {
+      value: string;
+      id: number;
+      label: ReactNode;
+    },
+    true
+  > = {
+    multiValue: (base) => {
+      return {
+        ...base,
+        backgroundColor: theme == "dark" ? "#444" : "#eee",
+      };
+    },
+    multiValueLabel: (base) => {
+      return {
+        ...base,
+        color: theme == "dark" ? "#fff" : "#444",
+        fontWeight: "bold",
+        paddingRight: "2px",
+      };
+    },
+    multiValueRemove: (base) => {
+      return {
+        ...base,
+        display: "flex",
+        color: theme == "dark" ? "#ddd" : "#222",
+      };
+    },
+    control: (styles) => ({
+      ...styles,
+      backgroundColor: theme == "dark" ? "#181818" : "#fff",
+      minWidth: "300px",
+    }),
+    menu: (styles) => ({
+      ...styles,
+      backgroundColor: theme == "dark" ? "#181818" : "#fff",
+      color: theme == "dark" ? "#fff" : "#444",
+      zIndex: 100,
+    }),
+    option: (styles, { isFocused }) => ({
+      ...styles,
+      backgroundColor: isFocused
+        ? theme == "dark"
+          ? "#333"
+          : "#ddd"
+        : undefined,
+    }),
+  };
 
   useEffect(() => {
     const checkExistingGame = async () => {
@@ -283,7 +332,7 @@ export default function CreateGame() {
                 publishValue,
                 themeJustification,
                 achievements,
-                Array.from(flags).map((thing) => allFlags[parseInt(thing)].id),
+                Array.from(flags).map((thing) => allFlags[thing].id),
                 Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
                 leaderboards
               )
@@ -300,7 +349,7 @@ export default function CreateGame() {
                 publishValue,
                 themeJustification,
                 achievements,
-                Array.from(flags).map((thing) => allFlags[parseInt(thing)].id),
+                Array.from(flags).map((thing) => allFlags[thing].id),
                 Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
                 leaderboards
               );
@@ -346,7 +395,7 @@ export default function CreateGame() {
             setDownloadLinks([]);
             setAchievements([]);
             setTags(new Set());
-            setFlags(new Set());
+            setFlags([]);
             setLeaderboards([]);
             setCategory("REGULAR");
             setChosenRatingCategories([]);
@@ -513,7 +562,7 @@ export default function CreateGame() {
                       }
                     }}
                   />
-                  <Select
+                  <OldSelect
                     className="w-96"
                     defaultSelectedKeys={["Web"]}
                     aria-label="Select platform" // Add this to fix accessibility warning
@@ -533,7 +582,7 @@ export default function CreateGame() {
                     <SelectItem key="iOS">Apple iOS</SelectItem>
                     <SelectItem key="Android">Android</SelectItem>
                     <SelectItem key="Other">Other</SelectItem>
-                  </Select>
+                  </OldSelect>
                   <Button
                     color="danger"
                     variant="light"
@@ -657,39 +706,34 @@ export default function CreateGame() {
           <p className="text-sm text-[#777] dark:text-[#bbb]">
             Warnings about what content your game contains
           </p>
-          <div>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button>
-                  {flags && flags.size > 0
-                    ? Array.from(flags)
-                        .map((flag) => allFlags[parseInt(flag)].name)
-                        .join(", ")
-                    : "None"}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                selectionMode="multiple"
-                className="text-[#333] dark:text-white"
-                selectedKeys={flags}
-                onSelectionChange={(selection) => {
-                  setFlags(selection as Set<string>);
-                }}
-              >
-                {allFlags.map((flag, i) => (
-                  <DropdownItem
-                    key={i}
-                    description={
-                      flag.description ? flag.description : undefined
-                    }
-                    startContent={getIcon(flag.icon)}
-                  >
-                    {flag.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-          </div>
+          {mounted && (
+            <Select
+              styles={styles}
+              isMulti
+              isClearable={false}
+              onChange={(value) => setFlags(value.map((i) => i.id))}
+              value={flags.map((index) => ({
+                value: allFlags[index].name,
+                id: index,
+                label: (
+                  <div className="flex gap-2 items-center">
+                    {allFlags[index].icon && getIcon(allFlags[index].icon)}
+                    <p>{allFlags[index].name}</p>
+                  </div>
+                ),
+              }))}
+              options={allFlags.map((flag, i) => ({
+                value: flag.name,
+                id: i,
+                label: (
+                  <div className="flex gap-2 items-center">
+                    {flag.icon && getIcon(flag.icon)}
+                    <p>{flag.name}</p>
+                  </div>
+                ),
+              }))}
+            />
+          )}
         </div>
 
         <Spacer />
