@@ -19,12 +19,16 @@ import {
   ArrowLeft,
   ArrowRight,
   Gamepad2,
+  LandPlot,
   LoaderCircle,
+  Rabbit,
   Swords,
+  Trophy,
+  Turtle,
 } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Select as OldSelect, SelectItem } from "@nextui-org/react";
+import { Select as NextSelect, SelectItem } from "@nextui-org/react";
 import { UserType } from "@/types/UserType";
 import { redirect, useRouter } from "next/navigation";
 import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
@@ -46,7 +50,7 @@ import ButtonAction from "../link-components/ButtonAction";
 import { TeamType } from "@/types/TeamType";
 import { getTeamsUser } from "@/requests/team";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import { LeaderboardType } from "@/types/LeaderboardType";
+import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { AchievementType } from "@/types/AchievementType";
 import { GameTagType } from "@/types/GameTagType";
 import { FlagType } from "@/types/FlagType";
@@ -382,6 +386,27 @@ export default function CreateGame() {
           {prevSlug ? "Edit Game" : "Create New Game"}
         </h1>
       </div>
+      {games.length > 1 && (
+        <div className="flex gap-2">
+          <ButtonAction
+            iconPosition="start"
+            name="Previous Game"
+            icon={<ArrowLeft />}
+            onPress={() => {
+              changeGame(currentGame - 1, games);
+            }}
+            isDisabled={currentGame == 0}
+          />
+          <ButtonAction
+            name="Next Game"
+            icon={<ArrowRight />}
+            onPress={() => {
+              changeGame(currentGame + 1, games);
+            }}
+            isDisabled={currentGame == games.length - 1}
+          />
+        </div>
+      )}
       {teams.length > 0 && prevSlug && (
         <ButtonAction
           onPress={() => {
@@ -569,7 +594,7 @@ export default function CreateGame() {
                       }
                     }}
                   />
-                  <OldSelect
+                  <NextSelect
                     className="w-96"
                     defaultSelectedKeys={["Web"]}
                     aria-label="Select platform" // Add this to fix accessibility warning
@@ -581,15 +606,55 @@ export default function CreateGame() {
                     }}
                     selectedKeys={[link.platform]}
                   >
-                    <SelectItem key="Web">Web</SelectItem>
-                    <SelectItem key="SourceCode">Source Code</SelectItem>
-                    <SelectItem key="Windows">Windows</SelectItem>
-                    <SelectItem key="MacOS">MacOS</SelectItem>
-                    <SelectItem key="Linux">Linux</SelectItem>
-                    <SelectItem key="iOS">Apple iOS</SelectItem>
-                    <SelectItem key="Android">Android</SelectItem>
-                    <SelectItem key="Other">Other</SelectItem>
-                  </OldSelect>
+                    <SelectItem
+                      key="Web"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Web
+                    </SelectItem>
+                    <SelectItem
+                      key="SourceCode"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Source Code
+                    </SelectItem>
+                    <SelectItem
+                      key="Windows"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Windows
+                    </SelectItem>
+                    <SelectItem
+                      key="MacOS"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      MacOS
+                    </SelectItem>
+                    <SelectItem
+                      key="Linux"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Linux
+                    </SelectItem>
+                    <SelectItem
+                      key="iOS"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Apple iOS
+                    </SelectItem>
+                    <SelectItem
+                      key="Android"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Android
+                    </SelectItem>
+                    <SelectItem
+                      key="Other"
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Other
+                    </SelectItem>
+                  </NextSelect>
                   <Button
                     color="danger"
                     variant="light"
@@ -709,44 +774,6 @@ export default function CreateGame() {
               }))}
             />
           )}
-          {/* <div>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button>
-                  {tags && tags.size > 0
-                    ? Array.from(tags)
-                        .map((tag) => allTags[parseInt(tag)].name)
-                        .join(", ")
-                    : "None"}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                selectionMode="multiple"
-                className="text-[#333] dark:text-white"
-                selectedKeys={tags}
-                onSelectionChange={(selection) => {
-                  setTags(selection as Set<string>);
-                }}
-              >
-                {allTags.map((tag, i) => (
-                  <DropdownItem
-                    key={i}
-                    description={tag.description ? tag.description : undefined}
-                    startContent={
-                      tag.icon && (
-                        <Avatar
-                          src={tag.icon}
-                          classNames={{ base: "bg-transparent" }}
-                        />
-                      )
-                    }
-                  >
-                    {tag.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-          </div> */}
         </div>
 
         <Spacer />
@@ -831,6 +858,115 @@ export default function CreateGame() {
 
         <Spacer />
 
+        <div className="flex flex-col gap-2">
+          <p className="text-[#333] dark:text-white">Leaderboards</p>
+          <p className="text-sm text-[#777] dark:text-[#bbb]">
+            Leaderboards for people to submit high scores for your game (scores
+            will be reported manually with pictures for evidence).
+          </p>
+          {leaderboards.map((lb, index) => (
+            <div key={index} className="flex flex-col gap-2">
+              <div className="flex gap-2 items-center">
+                <Input
+                  label="Leaderboard Name"
+                  placeholder="Enter name here"
+                  value={lb.name}
+                  onChange={(e) => {
+                    const updated = [...leaderboards];
+                    updated[index].name = e.target.value;
+                    setLeaderboards(updated);
+                  }}
+                />
+
+                <NextSelect
+                  label="Leaderboard Type"
+                  defaultSelectedKeys={["SCORE"]}
+                  onChange={(e) => {
+                    const updated = [...leaderboards];
+                    updated[index].type = e.target.value as LeaderboardTypeType;
+                    setLeaderboards(updated);
+                  }}
+                >
+                  <SelectItem
+                    key="SCORE"
+                    description="Highest Score"
+                    startContent={<Trophy />}
+                    classNames={{ base: "text-[#333] dark:text-white" }}
+                  >
+                    Score
+                  </SelectItem>
+                  <SelectItem
+                    key="GOLF"
+                    description="Lowest Score"
+                    startContent={<LandPlot />}
+                    classNames={{ base: "text-[#333] dark:text-white" }}
+                  >
+                    Golf
+                  </SelectItem>
+                  <SelectItem
+                    key="TIME"
+                    description="Lowest Time"
+                    startContent={<Rabbit />}
+                    classNames={{ base: "text-[#333] dark:text-white" }}
+                  >
+                    Time
+                  </SelectItem>
+                  <SelectItem
+                    key="ENDURANCE"
+                    description="Highest Time"
+                    startContent={<Turtle />}
+                    classNames={{ base: "text-[#333] dark:text-white" }}
+                  >
+                    Endurance
+                  </SelectItem>
+                </NextSelect>
+                <Button
+                  color="danger"
+                  onPress={() =>
+                    setLeaderboards(leaderboards.filter((_, i) => i !== index))
+                  }
+                >
+                  Remove
+                </Button>
+              </div>
+              <Switch
+                isSelected={lb.onlyBest}
+                onValueChange={(value) => {
+                  const updated = [...leaderboards];
+                  updated[index].onlyBest = value;
+                  setLeaderboards(updated);
+                }}
+              >
+                <div className="text-[#333] dark:text-white">
+                  <p>Only Highest</p>
+                  <p className="text-sm text-[#777] dark:text-[#bbb]">
+                    Only shows each users highest score
+                  </p>
+                </div>
+              </Switch>
+            </div>
+          ))}
+          <Button
+            onPress={() =>
+              setLeaderboards([
+                ...leaderboards,
+                {
+                  id: -1,
+                  name: "",
+                  type: "SCORE",
+                  onlyBest: true,
+                  game: {} as GameType,
+                  scores: [],
+                },
+              ])
+            }
+          >
+            Add Leaderboard
+          </Button>
+        </div>
+
+        <Spacer />
+
         {teams &&
           teams.length > 0 &&
           teams[currentTeam].users.length == 1 &&
@@ -868,27 +1004,7 @@ export default function CreateGame() {
             </>
           )}
 
-        {games.length > 1 && (
-          <div className="flex gap-2">
-            <ButtonAction
-              iconPosition="start"
-              name="Previous Game"
-              icon={<ArrowLeft />}
-              onPress={() => {
-                changeGame(currentGame - 1, games);
-              }}
-              isDisabled={currentGame == 0}
-            />
-            <ButtonAction
-              name="Next Game"
-              icon={<ArrowRight />}
-              onPress={() => {
-                changeGame(currentGame + 1, games);
-              }}
-              isDisabled={currentGame == games.length - 1}
-            />
-          </div>
-        )}
+        <Spacer />
 
         <div className="flex gap-2">
           <Button color="primary" type="submit" name="action" value="save">

@@ -17,7 +17,7 @@ import {
 } from "@nextui-org/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ClockArrowDown, ClockArrowUp, Star, StarHalfIcon } from "lucide-react";
+import { ClockArrowDown, ClockArrowUp } from "lucide-react";
 import { getGames } from "@/requests/game";
 
 export default function Games() {
