@@ -160,8 +160,9 @@ export default function AboutPage() {
               <p>
                 You will need to upload your game to a site such as{" "}
                 <a href="https://itch.io">Itch.io</a> to host the game files.
-                Then you can make a game page on the d2jam site and create a
-                link on that page to where you hosted the game files.
+                Then you can make a game page on the d2jam site (by clicking the
+                create game button) and create a link on that page to where you
+                hosted the game files.
               </p>
               <p>
                 A page on the d2jam site is required to let people browse games
