@@ -22,6 +22,7 @@ export default function UserPage() {
           setUsername("");
           setPassword("");
           setPassword2("");
+          setEmail("");
         }}
         onSubmit={async (e) => {
           e.preventDefault();
@@ -68,7 +69,7 @@ export default function UserPage() {
             return;
           }
 
-          const response = await signup(username, password);
+          const response = await signup(username, password, email);
 
           if (response.status == 409) {
             setErrors({ username: "User already exists" });

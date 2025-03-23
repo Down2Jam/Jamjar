@@ -1,8 +1,12 @@
 import { BASE_URL } from "./config";
 
-export async function signup(username: string, password: string) {
+export async function signup(
+  username: string,
+  password: string,
+  email: string
+) {
   return fetch(`${BASE_URL}/user`, {
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, password, email }),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
