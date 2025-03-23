@@ -118,7 +118,11 @@ export default function CreateGame() {
 
         const flagsResponse = await getFlags();
         const flagsData = await flagsResponse.json();
-        setAllFlags(flagsData.data);
+        setAllFlags(
+          flagsData.data.sort((a: FlagType, b: FlagType) =>
+            a.name.localeCompare(b.name)
+          )
+        );
 
         const tagsResponse = await getGameTags();
         const tagsData = await tagsResponse.json();
