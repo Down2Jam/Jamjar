@@ -91,7 +91,7 @@ export default function CreateGame() {
   const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
   const [flags, setFlags] = useState<number[]>([]);
-  const [tags, setTags] = useState<Set<string>>(new Set());
+  const [tags, setTags] = useState<number[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
   const { theme } = useTheme();
@@ -185,11 +185,9 @@ export default function CreateGame() {
           .filter((index) => index !== -1) || []
       );
       setTags(
-        new Set(
-          games[newid].tags
-            ?.map((tag) => allTags.findIndex((f) => f.id === tag.id).toString())
-            .filter((index) => index !== "-1") || []
-        )
+        games[newid].tags
+          ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
+          .filter((index) => index !== -1) || []
       );
       setLeaderboards(games[newid].leaderboards || []);
       setCategory(games[newid].category);
@@ -337,7 +335,7 @@ export default function CreateGame() {
                 themeJustification,
                 achievements,
                 Array.from(flags).map((thing) => allFlags[thing].id),
-                Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
+                Array.from(tags).map((thing) => allTags[thing].id),
                 leaderboards
               )
             : postGame(
@@ -354,7 +352,7 @@ export default function CreateGame() {
                 themeJustification,
                 achievements,
                 Array.from(flags).map((thing) => allFlags[thing].id),
-                Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
+                Array.from(tags).map((thing) => allTags[thing].id),
                 leaderboards
               );
 
@@ -398,7 +396,7 @@ export default function CreateGame() {
             setThumbnailUrl(null);
             setDownloadLinks([]);
             setAchievements([]);
-            setTags(new Set());
+            setTags([]);
             setFlags([]);
             setLeaderboards([]);
             setCategory("REGULAR");
@@ -456,8 +454,11 @@ export default function CreateGame() {
 
       <Spacer />
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-2">
         <p>Thumbnail</p>
+        <p className="text-sm text-[#777] dark:text-[#bbb]">
+          Shows when people are browsing through games
+        </p>
         <input
           type="file"
           accept="image/*"
@@ -519,9 +520,11 @@ export default function CreateGame() {
             </Button>
           </div>
         )}
+      </div>
 
-        <Spacer />
+      <Spacer />
 
+      <div className="flex flex-col gap-2">
         <p>Links</p>
         <p className="text-sm text-[#777] dark:text-[#bbb]">
           Upload your game to a hosting site (such as itch.io) and link it here
@@ -663,7 +666,49 @@ export default function CreateGame() {
           <p className="text-sm text-[#777] dark:text-[#bbb]">
             Tags for game engine, genre, etc. for people to filter by
           </p>
-          <div>
+          {mounted && (
+            <Select
+              styles={styles}
+              isMulti
+              isClearable={false}
+              onChange={(value) => setTags(value.map((i) => i.id))}
+              value={tags.map((index) => ({
+                value: allTags[index].name,
+                id: index,
+                label: (
+                  <div className="flex gap-2 items-center">
+                    {allTags[index].icon && (
+                      <Avatar
+                        className="w-6 h-6 min-w-6 min-h-6"
+                        size="sm"
+                        src={allTags[index].icon}
+                        classNames={{ base: "bg-transparent" }}
+                      />
+                    )}
+                    <p>{allTags[index].name}</p>
+                  </div>
+                ),
+              }))}
+              options={allTags.map((tag, i) => ({
+                value: tag.name,
+                id: i,
+                label: (
+                  <div className="flex gap-2 items-center">
+                    {tag.icon && (
+                      <Avatar
+                        className="w-6 h-6 min-w-6 min-h-6"
+                        size="sm"
+                        src={tag.icon}
+                        classNames={{ base: "bg-transparent" }}
+                      />
+                    )}
+                    <p>{tag.name}</p>
+                  </div>
+                ),
+              }))}
+            />
+          )}
+          {/* <div>
             <Dropdown>
               <DropdownTrigger>
                 <Button>
@@ -700,7 +745,7 @@ export default function CreateGame() {
                 ))}
               </DropdownMenu>
             </Dropdown>
-          </div>
+          </div> */}
         </div>
 
         <Spacer />
