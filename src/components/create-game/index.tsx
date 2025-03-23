@@ -862,7 +862,7 @@ export default function CreateGame() {
           <p className="text-[#333] dark:text-white">Leaderboards</p>
           <p className="text-sm text-[#777] dark:text-[#bbb]">
             Leaderboards for people to submit high scores for your game (scores
-            will be reported manually with pictures for evidence).
+            will be reported manually with pictures for evidence)
           </p>
           {leaderboards.map((lb, index) => (
             <div key={index} className="flex flex-col gap-2">
