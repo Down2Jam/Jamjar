@@ -37,16 +37,16 @@ export default function Games() {
     GameSort,
     { name: string; icon: ReactNode; description: string }
   > = {
-    top: {
-      name: "Most Rated",
-      icon: <Star />,
-      description: "Shows the most rated game first",
-    },
-    bottom: {
-      name: "Least Rated",
-      icon: <StarHalfIcon />,
-      description: "Shows the least rated game first",
-    },
+    // top: {
+    //   name: "Most Rated",
+    //   icon: <Star />,
+    //   description: "Shows the most rated game first",
+    // },
+    // bottom: {
+    //   name: "Least Rated",
+    //   icon: <StarHalfIcon />,
+    //   description: "Shows the least rated game first",
+    // },
     newest: {
       name: "Newest",
       icon: <ClockArrowUp />,

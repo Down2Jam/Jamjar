@@ -1,1 +1,1 @@
-export type GameSort = "newest" | "oldest" | "top" | "bottom";
+export type GameSort = "newest" | "oldest";
