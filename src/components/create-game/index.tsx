@@ -689,6 +689,7 @@ export default function CreateGame() {
                   </div>
                 ),
               }))}
+              isOptionDisabled={() => tags != null && tags.length >= 10}
               options={allTags.map((tag, i) => ({
                 value: tag.name,
                 id: i,
