@@ -31,6 +31,26 @@ export default function Buddy() {
     "You're already Train",
     "Give me train or give me death",
     "The train is a lie",
+    "I like trains",
+    "The answer is train",
+    "I have Siderodromophobia",
+    "Theres a train in my train",
+    "Insert train related sentence here",
+    "One small step for train, one giant step for trainkind",
+    "The last trainbender",
+    "In train we trust",
+    "Press F to train",
+    "The train will remember that",
+    "What would a train do?",
+    "You can do it",
+    "The first train was invented in 66,000,000 B.C.",
+    "I believe in you",
+    "You got this",
+    "Danger: Train nearby",
+    "Nature naturally evolves into train",
+    "There are at least 2 trains in the world",
+    "There are 5 spiders living in the average train",
+    "Every day I'm training",
   ];
 
   useEffect(() => {
@@ -50,13 +70,17 @@ export default function Buddy() {
   const handleHover = (isOpen: boolean) => {
     if (!isOpen) return;
 
-    let randomIndex;
-    do {
-      randomIndex = Math.floor(Math.random() * tooltips.length);
-    } while (randomIndex === lastTooltipIndex); // Ensure a different tooltip is chosen
+    if (Math.random() < 0.001) {
+      setTooltipText("🚂");
+    } else {
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * tooltips.length);
+      } while (randomIndex === lastTooltipIndex); // Ensure a different tooltip is chosen
 
-    setLastTooltipIndex(randomIndex);
-    setTooltipText(tooltips[randomIndex]);
+      setLastTooltipIndex(randomIndex);
+      setTooltipText(tooltips[randomIndex]);
+    }
   };
 
   return (
