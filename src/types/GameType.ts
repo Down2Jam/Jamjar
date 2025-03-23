@@ -1,5 +1,9 @@
+import { AchievementType } from "./AchievementType";
 import { DownloadLinkType } from "./DownloadLinkType";
+import { FlagType } from "./FlagType";
+import { GameTagType } from "./GameTagType";
 import { JamType } from "./JamType";
+import { LeaderboardType } from "./LeaderboardType";
 import { RatingCategoryType } from "./RatingCategoryType";
 import { TeamType } from "./TeamType";
 
@@ -19,4 +23,8 @@ export interface GameType {
   ratingCategories: RatingCategoryType[];
   published: boolean;
   themeJustification: string;
+  achievements: AchievementType[];
+  leaderboards: LeaderboardType[];
+  flags: FlagType[];
+  tags: GameTagType[];
 }

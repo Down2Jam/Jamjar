@@ -3,6 +3,7 @@
 import Editor from "@/components/editor";
 import { getCookie } from "@/helpers/cookie";
 import {
+  Avatar,
   Button,
   Dropdown,
   DropdownItem,
@@ -30,6 +31,8 @@ import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
 import { getSelf } from "@/requests/user";
 import {
   getCurrentGame,
+  getFlags,
+  getGameTags,
   getRatingCategories,
   postGame,
   updateGame,
@@ -43,6 +46,11 @@ import ButtonAction from "../link-components/ButtonAction";
 import { TeamType } from "@/types/TeamType";
 import { getTeamsUser } from "@/requests/team";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { LeaderboardType } from "@/types/LeaderboardType";
+import { AchievementType } from "@/types/AchievementType";
+import { GameTagType } from "@/types/GameTagType";
+import { FlagType } from "@/types/FlagType";
+import { getIcon } from "@/helpers/icon";
 
 export default function CreateGame() {
   const router = useRouter();
@@ -78,6 +86,12 @@ export default function CreateGame() {
     number[]
   >([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
+  const [allFlags, setAllFlags] = useState<FlagType[]>([]);
+  const [allTags, setAllTags] = useState<GameTagType[]>([]);
+  const [flags, setFlags] = useState<Set<string>>(new Set());
+  const [tags, setTags] = useState<Set<string>>(new Set());
+  const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
+  const [achievements, setAchievements] = useState<AchievementType[]>([]);
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -98,6 +112,14 @@ export default function CreateGame() {
         const ratingResponse = await getRatingCategories();
         const ratingCategories = await ratingResponse.json();
         setRatingCategories(ratingCategories.data);
+
+        const flagsResponse = await getFlags();
+        const flagsData = await flagsResponse.json();
+        setAllFlags(flagsData.data);
+
+        const tagsResponse = await getGameTags();
+        const tagsData = await tagsResponse.json();
+        setAllTags(tagsData.data);
 
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam);
@@ -132,25 +154,48 @@ export default function CreateGame() {
     load();
   }, []);
 
-  const changeGame = useCallback((newid: number, games: GameType[]) => {
-    setCurrentGame(newid);
+  const changeGame = useCallback(
+    (newid: number, games: GameType[]) => {
+      setCurrentGame(newid);
 
-    if (!games) return;
-    if (games.length == 0) return;
+      if (!games) return;
+      if (!allFlags || allFlags.length == 0) return;
+      if (!allTags || allTags.length == 0) return;
+      if (games.length == 0) return;
 
-    setTitle(games[newid].name);
-    setGameSlug(games[newid].slug);
-    setPrevGameSlug(games[newid].slug);
-    setContent(games[newid].description || "");
-    setThemeJustification(games[newid].themeJustification || "");
-    setEditorKey((prev) => prev + 1);
-    setThumbnailUrl(games[newid].thumbnail || null);
-    setDownloadLinks(games[newid].downloadLinks || []);
-    setCategory(games[newid].category);
-    setChosenRatingCategories(
-      games[newid].ratingCategories.map((ratingCategory) => ratingCategory.id)
-    );
-  }, []);
+      setTitle(games[newid].name);
+      setGameSlug(games[newid].slug);
+      setPrevGameSlug(games[newid].slug);
+      setContent(games[newid].description || "");
+      setThemeJustification(games[newid].themeJustification || "");
+      setEditorKey((prev) => prev + 1);
+      setThumbnailUrl(games[newid].thumbnail || null);
+      setDownloadLinks(games[newid].downloadLinks || []);
+      setAchievements(games[newid].achievements || []);
+      setFlags(
+        new Set(
+          games[newid].flags
+            ?.map((flag) =>
+              allFlags.findIndex((f) => f.id === flag.id).toString()
+            )
+            .filter((index) => index !== "-1") || []
+        )
+      );
+      setTags(
+        new Set(
+          games[newid].tags
+            ?.map((tag) => allTags.findIndex((f) => f.id === tag.id).toString())
+            .filter((index) => index !== "-1") || []
+        )
+      );
+      setLeaderboards(games[newid].leaderboards || []);
+      setCategory(games[newid].category);
+      setChosenRatingCategories(
+        games[newid].ratingCategories.map((ratingCategory) => ratingCategory.id)
+      );
+    },
+    [allFlags, allTags]
+  );
 
   const changeTeam = useCallback((newid: number) => {
     setCurrentTeam(newid);
@@ -236,7 +281,11 @@ export default function CreateGame() {
                 category,
                 chosenRatingCategories,
                 publishValue,
-                themeJustification
+                themeJustification,
+                achievements,
+                Array.from(flags).map((thing) => allFlags[parseInt(thing)].id),
+                Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
+                leaderboards
               )
             : postGame(
                 title,
@@ -249,7 +298,11 @@ export default function CreateGame() {
                 teams[currentTeam].id,
                 chosenRatingCategories,
                 publishValue,
-                themeJustification
+                themeJustification,
+                achievements,
+                Array.from(flags).map((thing) => allFlags[parseInt(thing)].id),
+                Array.from(tags).map((thing) => allTags[parseInt(thing)].id),
+                leaderboards
               );
 
           const response = await request;
@@ -291,6 +344,10 @@ export default function CreateGame() {
             setEditorKey((prev) => prev + 1);
             setThumbnailUrl(null);
             setDownloadLinks([]);
+            setAchievements([]);
+            setTags(new Set());
+            setFlags(new Set());
+            setLeaderboards([]);
             setCategory("REGULAR");
             setChosenRatingCategories([]);
           }}
@@ -545,6 +602,95 @@ export default function CreateGame() {
             </Dropdown>
           </>
         )}
+
+        <Spacer />
+
+        <div className="flex flex-col gap-2">
+          <p className="text-[#333] dark:text-white">Tags</p>
+          <p className="text-sm text-[#777] dark:text-[#bbb]">
+            Tags for game engine, genre, etc. for people to filter by
+          </p>
+          <div>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button>
+                  {tags && tags.size > 0
+                    ? Array.from(tags)
+                        .map((tag) => allTags[parseInt(tag)].name)
+                        .join(", ")
+                    : "None"}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                selectionMode="multiple"
+                className="text-[#333] dark:text-white"
+                selectedKeys={tags}
+                onSelectionChange={(selection) => {
+                  setTags(selection as Set<string>);
+                }}
+              >
+                {allTags.map((tag, i) => (
+                  <DropdownItem
+                    key={i}
+                    description={tag.description ? tag.description : undefined}
+                    startContent={
+                      tag.icon && (
+                        <Avatar
+                          src={tag.icon}
+                          classNames={{ base: "bg-transparent" }}
+                        />
+                      )
+                    }
+                  >
+                    {tag.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        </div>
+
+        <Spacer />
+
+        <div className="flex flex-col gap-2">
+          <p className="text-[#333] dark:text-white">Content Flags</p>
+          <p className="text-sm text-[#777] dark:text-[#bbb]">
+            Warnings about what content your game contains
+          </p>
+          <div>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button>
+                  {flags && flags.size > 0
+                    ? Array.from(flags)
+                        .map((flag) => allFlags[parseInt(flag)].name)
+                        .join(", ")
+                    : "None"}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                selectionMode="multiple"
+                className="text-[#333] dark:text-white"
+                selectedKeys={flags}
+                onSelectionChange={(selection) => {
+                  setFlags(selection as Set<string>);
+                }}
+              >
+                {allFlags.map((flag, i) => (
+                  <DropdownItem
+                    key={i}
+                    description={
+                      flag.description ? flag.description : undefined
+                    }
+                    startContent={getIcon(flag.icon)}
+                  >
+                    {flag.name}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+        </div>
 
         <Spacer />
 

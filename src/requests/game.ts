@@ -1,6 +1,8 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PlatformType } from "@/types/DownloadLinkType";
+import { AchievementType } from "@/types/AchievementType";
+import { LeaderboardType } from "@/types/LeaderboardType";
 
 export async function getCurrentGame() {
   return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
@@ -11,6 +13,14 @@ export async function getCurrentGame() {
 
 export async function getRatingCategories() {
   return fetch(`${BASE_URL}/rating-categories`);
+}
+
+export async function getFlags() {
+  return fetch(`${BASE_URL}/flags`);
+}
+
+export async function getGameTags() {
+  return fetch(`${BASE_URL}/gametags`);
 }
 
 export async function getGame(gameSlug: string) {
@@ -34,7 +44,11 @@ export async function postGame(
   targetTeamId: number,
   ratingCategories: number[],
   published: boolean,
-  themeJustification: string
+  themeJustification: string,
+  achievements: AchievementType[],
+  flags: number[],
+  tags: number[],
+  leaderboards: LeaderboardType[]
 ) {
   return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -49,6 +63,10 @@ export async function postGame(
       ratingCategories,
       published,
       themeJustification,
+      achievements,
+      flags,
+      tags,
+      leaderboards,
     }),
     method: "POST",
     headers: {
@@ -73,7 +91,11 @@ export async function updateGame(
   category: "ODA" | "REGULAR",
   ratingCategories: number[],
   published: boolean,
-  themeJustification: string
+  themeJustification: string,
+  achievements: AchievementType[],
+  flags: number[],
+  tags: number[],
+  leaderboards: LeaderboardType[]
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -87,6 +109,10 @@ export async function updateGame(
       ratingCategories,
       published,
       themeJustification,
+      achievements,
+      flags,
+      tags,
+      leaderboards,
     }),
     method: "PUT",
     headers: {
