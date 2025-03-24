@@ -161,6 +161,10 @@ export default function GamePage({
     user &&
     game.team.users.some((contributor: UserType) => contributor.id === user.id);
 
+  if (!game.published && !isEditable) {
+    return <p>This game has not been published</p>;
+  }
+
   return (
     <>
       <div className="border-2 border-[#dddddd] dark:border-[#222224] relative rounded-xl overflow-hidden bg-white dark:bg-[#18181a] text-[#333] dark:text-white">
