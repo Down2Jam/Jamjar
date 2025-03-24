@@ -93,6 +93,9 @@ export default function CreateGame() {
   const [chosenRatingCategories, setChosenRatingCategories] = useState<
     number[]
   >([]);
+  const [chosenMajRatingCategories, setChosenMajRatingCategories] = useState<
+    number[]
+  >([]);
   const [dataLoaded, setDataLoaded] = useState<boolean>(false);
   const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
@@ -200,6 +203,11 @@ export default function CreateGame() {
       setCategory(games[newid].category);
       setChosenRatingCategories(
         games[newid].ratingCategories.map((ratingCategory) => ratingCategory.id)
+      );
+      setChosenMajRatingCategories(
+        games[newid].majRatingCategories.map(
+          (ratingCategory) => ratingCategory.id
+        )
       );
     },
     [allFlags, allTags]
@@ -339,6 +347,7 @@ export default function CreateGame() {
                 userSlug,
                 category,
                 chosenRatingCategories,
+                chosenMajRatingCategories,
                 publishValue,
                 themeJustification,
                 achievements,
@@ -357,6 +366,7 @@ export default function CreateGame() {
                 category,
                 teams[currentTeam].id,
                 chosenRatingCategories,
+                chosenMajRatingCategories,
                 publishValue,
                 themeJustification,
                 achievements,
@@ -432,6 +442,7 @@ export default function CreateGame() {
             setLeaderboards([]);
             setCategory("REGULAR");
             setChosenRatingCategories([]);
+            setChosenMajRatingCategories([]);
           }}
           name="Create New Game"
         />
@@ -463,6 +474,44 @@ export default function CreateGame() {
         }}
         description="This will be used in the URL: d2jam.com/g/your-game-name"
       />
+
+      {teams &&
+        teams.length > 0 &&
+        teams[currentTeam].users.length == 1 &&
+        activeJamResponse &&
+        (activeJamResponse.phase == "Jamming" ||
+          activeJamResponse.phase == "Submission") && (
+          <>
+            <p>Game Category</p>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button>
+                  {category == "REGULAR" ? "Regular" : "One Dev Army"}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                onAction={(key) => {
+                  setCategory(key as "REGULAR" | "ODA");
+                }}
+              >
+                <DropdownItem
+                  key="REGULAR"
+                  description="The regular jam category"
+                  startContent={<Gamepad2 />}
+                >
+                  Regular
+                </DropdownItem>
+                <DropdownItem
+                  key="ODA"
+                  description="1 Dev, No third party assets"
+                  startContent={<Swords />}
+                >
+                  One Dev Army (O.D.A)
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </>
+        )}
 
       <label className="text-sm font-medium">Game Description</label>
       <Editor
@@ -899,36 +948,70 @@ export default function CreateGame() {
             Any optional categories you want to get a rating & rank in
           </p>
           <Spacer />
-          {ratingCategories.map((category) => (
-            <Switch
-              key={category.id}
-              isSelected={
-                chosenRatingCategories.filter(
-                  (category2) => category2 == category.id
-                ).length > 0
-              }
-              onValueChange={(value) => {
-                if (value) {
-                  setChosenRatingCategories([
-                    ...chosenRatingCategories,
-                    category.id,
-                  ]);
-                } else {
-                  setChosenRatingCategories(
-                    chosenRatingCategories.filter(
-                      (category2) => category2 != category.id
-                    )
-                  );
+          {ratingCategories.map((category3) => (
+            <div key={category3.id}>
+              <Switch
+                isSelected={
+                  chosenRatingCategories.filter(
+                    (category2) => category2 == category3.id
+                  ).length > 0
                 }
-              }}
-            >
-              <div className="text-[#333] dark:text-white">
-                <p>{category.name}</p>
-                <p className="text-sm text-[#777] dark:text-[#bbb]">
-                  {category.description}
-                </p>
-              </div>
-            </Switch>
+                onValueChange={(value) => {
+                  if (value) {
+                    setChosenRatingCategories([
+                      ...chosenRatingCategories,
+                      category3.id,
+                    ]);
+                  } else {
+                    setChosenRatingCategories(
+                      chosenRatingCategories.filter(
+                        (category2) => category2 != category3.id
+                      )
+                    );
+                  }
+                }}
+              >
+                <div className="text-[#333] dark:text-white">
+                  <p>{category3.name}</p>
+                  <p className="text-sm text-[#777] dark:text-[#bbb]">
+                    {category3.description}
+                  </p>
+                </div>
+              </Switch>
+              {category3.askMajorityContent &&
+                category == "REGULAR" &&
+                chosenRatingCategories.filter(
+                  (category2) => category2 == category3.id
+                ).length > 0 && (
+                  <Switch
+                    key={category3.id + "maj"}
+                    isSelected={
+                      chosenMajRatingCategories.filter(
+                        (category2) => category2 == category3.id
+                      ).length > 0
+                    }
+                    className="pl-5 pt-2"
+                    onValueChange={(value) => {
+                      if (value) {
+                        setChosenMajRatingCategories([
+                          ...chosenMajRatingCategories,
+                          category3.id,
+                        ]);
+                      } else {
+                        setChosenMajRatingCategories(
+                          chosenMajRatingCategories.filter(
+                            (category2) => category2 != category3.id
+                          )
+                        );
+                      }
+                    }}
+                  >
+                    <p className="text-sm text-[#777] dark:text-[#bbb]">
+                      Did you make the majority of the {category3.name} content
+                    </p>
+                  </Switch>
+                )}
+            </div>
           ))}
         </div>
 
@@ -1078,46 +1161,6 @@ export default function CreateGame() {
             Add Leaderboard
           </Button>
         </div>
-
-        <Spacer />
-
-        {teams &&
-          teams.length > 0 &&
-          teams[currentTeam].users.length == 1 &&
-          activeJamResponse &&
-          (activeJamResponse.phase == "Jamming" ||
-            activeJamResponse.phase == "Submission") && (
-            <>
-              <p>Game Category</p>
-              <Dropdown>
-                <DropdownTrigger>
-                  <Button>
-                    {category == "REGULAR" ? "Regular" : "One Dev Army"}
-                  </Button>
-                </DropdownTrigger>
-                <DropdownMenu
-                  onAction={(key) => {
-                    setCategory(key as "REGULAR" | "ODA");
-                  }}
-                >
-                  <DropdownItem
-                    key="REGULAR"
-                    description="The regular jam category"
-                    startContent={<Gamepad2 />}
-                  >
-                    Regular
-                  </DropdownItem>
-                  <DropdownItem
-                    key="ODA"
-                    description="1 Dev, No third party assets"
-                    startContent={<Swords />}
-                  >
-                    One Dev Army (O.D.A)
-                  </DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
-            </>
-          )}
 
         <Spacer />
 

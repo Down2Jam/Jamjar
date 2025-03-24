@@ -7,4 +7,5 @@ export interface RatingCategoryType {
   description: string;
   ratings: RatingType;
   games: GameType;
+  askMajorityContent: boolean;
 }

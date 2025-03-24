@@ -30,4 +30,5 @@ export interface GameType {
   flags: FlagType[];
   tags: GameTagType[];
   comments: CommentType[];
+  majRatingCategories: RatingCategoryType[];
 }
