@@ -11,4 +11,5 @@ export interface LeaderboardType {
   scores: ScoreType[];
   onlyBest: boolean;
   maxUsersShown: number;
+  decimalPlaces: number;
 }

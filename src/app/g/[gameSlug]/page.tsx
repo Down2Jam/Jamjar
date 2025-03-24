@@ -364,7 +364,8 @@ export default function GamePage({
                                     />
                                   </TableCell>
                                   <TableCell className="text-[#94d4df] dark:text-[#4092b3]">
-                                    {score.data}
+                                    {score.data /
+                                      10 ** leaderboard.decimalPlaces}
                                   </TableCell>
                                   <TableCell className="flex gap-2">
                                     <ButtonAction

@@ -942,97 +942,120 @@ export default function CreateGame() {
           </p>
           {leaderboards.map((lb, index) => (
             <div key={index} className="flex flex-col gap-2">
-              <div className="flex gap-2 items-center">
-                <Input
-                  label="Leaderboard Name"
-                  placeholder="Enter name here"
-                  value={lb.name}
-                  onChange={(e) => {
-                    const updated = [...leaderboards];
-                    updated[index].name = e.target.value;
-                    setLeaderboards(updated);
-                  }}
-                />
+              <div className="flex flex-col gap-2 ">
+                <div className="flex gap-2 items-center">
+                  <Input
+                    label="Leaderboard Name"
+                    placeholder="Enter name here"
+                    value={lb.name}
+                    onChange={(e) => {
+                      const updated = [...leaderboards];
+                      updated[index].name = e.target.value;
+                      setLeaderboards(updated);
+                    }}
+                  />
 
-                <NumberInput
-                  label="Users per page"
-                  placeholder="Enter a user amount"
-                  value={lb.maxUsersShown}
-                  minValue={0}
-                  maxValue={100}
-                  onValueChange={(e) => {
-                    const updated = [...leaderboards];
-                    updated[index].maxUsersShown = e;
-                    setLeaderboards(updated);
-                  }}
-                />
-
-                <NextSelect
-                  label="Leaderboard Type"
-                  defaultSelectedKeys={["SCORE"]}
-                  onChange={(e) => {
-                    const updated = [...leaderboards];
-                    updated[index].type = e.target.value as LeaderboardTypeType;
-                    setLeaderboards(updated);
-                  }}
-                >
-                  <SelectItem
-                    key="SCORE"
-                    description="Highest Score"
-                    startContent={<Trophy />}
-                    classNames={{ base: "text-[#333] dark:text-white" }}
-                  >
-                    Score
-                  </SelectItem>
-                  <SelectItem
-                    key="GOLF"
-                    description="Lowest Score"
-                    startContent={<LandPlot />}
-                    classNames={{ base: "text-[#333] dark:text-white" }}
-                  >
-                    Golf
-                  </SelectItem>
-                  <SelectItem
-                    key="SPEEDRUN"
-                    description="Lowest Time"
-                    startContent={<Rabbit />}
-                    classNames={{ base: "text-[#333] dark:text-white" }}
-                  >
-                    Speedrun
-                  </SelectItem>
-                  <SelectItem
-                    key="ENDURANCE"
-                    description="Highest Time"
-                    startContent={<Turtle />}
-                    classNames={{ base: "text-[#333] dark:text-white" }}
-                  >
-                    Endurance
-                  </SelectItem>
-                </NextSelect>
-                <Button
-                  color="danger"
-                  onPress={() =>
-                    setLeaderboards(leaderboards.filter((_, i) => i !== index))
-                  }
-                >
-                  Remove
-                </Button>
-              </div>
-              <Switch
-                isSelected={lb.onlyBest}
-                onValueChange={(value) => {
-                  const updated = [...leaderboards];
-                  updated[index].onlyBest = value;
-                  setLeaderboards(updated);
-                }}
-              >
-                <div className="text-[#333] dark:text-white">
-                  <p>Only Highest</p>
-                  <p className="text-sm text-[#777] dark:text-[#bbb]">
-                    Only shows each users highest score
-                  </p>
+                  <NumberInput
+                    label="Users per page"
+                    placeholder="Enter a user amount"
+                    value={lb.maxUsersShown}
+                    minValue={0}
+                    maxValue={100}
+                    onValueChange={(e) => {
+                      const updated = [...leaderboards];
+                      updated[index].maxUsersShown = e;
+                      setLeaderboards(updated);
+                    }}
+                  />
                 </div>
-              </Switch>
+
+                <div className="flex gap-2 items-center">
+                  <NextSelect
+                    label="Leaderboard Type"
+                    defaultSelectedKeys={["SCORE"]}
+                    onChange={(e) => {
+                      const updated = [...leaderboards];
+                      updated[index].type = e.target
+                        .value as LeaderboardTypeType;
+                      setLeaderboards(updated);
+                    }}
+                  >
+                    <SelectItem
+                      key="SCORE"
+                      description="Highest Score"
+                      startContent={<Trophy />}
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Score
+                    </SelectItem>
+                    <SelectItem
+                      key="GOLF"
+                      description="Lowest Score"
+                      startContent={<LandPlot />}
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Golf
+                    </SelectItem>
+                    <SelectItem
+                      key="SPEEDRUN"
+                      description="Lowest Time"
+                      startContent={<Rabbit />}
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Speedrun
+                    </SelectItem>
+                    <SelectItem
+                      key="ENDURANCE"
+                      description="Highest Time"
+                      startContent={<Turtle />}
+                      classNames={{ base: "text-[#333] dark:text-white" }}
+                    >
+                      Endurance
+                    </SelectItem>
+                  </NextSelect>
+                  {(lb.type == "SCORE" || lb.type == "GOLF") && (
+                    <NumberInput
+                      label="Decimal places"
+                      placeholder="Enter the scores decimal places"
+                      value={lb.decimalPlaces}
+                      minValue={0}
+                      maxValue={3}
+                      onValueChange={(e) => {
+                        const updated = [...leaderboards];
+                        updated[index].decimalPlaces = e;
+                        setLeaderboards(updated);
+                      }}
+                    />
+                  )}
+                </div>
+                <Switch
+                  isSelected={lb.onlyBest}
+                  onValueChange={(value) => {
+                    const updated = [...leaderboards];
+                    updated[index].onlyBest = value;
+                    setLeaderboards(updated);
+                  }}
+                >
+                  <div className="text-[#333] dark:text-white">
+                    <p>Only Highest</p>
+                    <p className="text-sm text-[#777] dark:text-[#bbb]">
+                      Only shows each users highest score
+                    </p>
+                  </div>
+                </Switch>
+                <div>
+                  <Button
+                    color="danger"
+                    onPress={() =>
+                      setLeaderboards(
+                        leaderboards.filter((_, i) => i !== index)
+                      )
+                    }
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
             </div>
           ))}
           <Button
