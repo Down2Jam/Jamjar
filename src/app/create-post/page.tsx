@@ -9,7 +9,7 @@ import {
   Form,
   Input,
   Spacer,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { LoaderCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Link, Tooltip } from "@nextui-org/react";
+import { Button, Link, Tooltip } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
 
 interface ButtonLinkProps {

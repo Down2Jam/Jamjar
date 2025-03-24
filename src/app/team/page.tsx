@@ -23,7 +23,7 @@ import {
   Switch,
   Textarea,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";

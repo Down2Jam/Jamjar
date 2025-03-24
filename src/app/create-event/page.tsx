@@ -20,7 +20,7 @@ import {
   Input,
   Spacer,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   Calendar,
   Code,

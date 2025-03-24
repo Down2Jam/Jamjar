@@ -1,4 +1,4 @@
-import { NavbarItem } from "@nextui-org/react";
+import { NavbarItem } from "@heroui/react";
 import Link from "../link-components/Link";
 
 interface NavbarLinkProps {

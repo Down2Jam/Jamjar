@@ -1,4 +1,4 @@
-import { Spacer } from "@nextui-org/react";
+import { Spacer } from "@heroui/react";
 import Timers from "../timers";
 import { getCurrentJam } from "@/helpers/jam";
 import { Users } from "lucide-react";

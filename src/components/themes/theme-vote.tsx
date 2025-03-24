@@ -8,7 +8,7 @@ import {
   joinJam,
 } from "@/helpers/jam";
 import { ThemeType } from "@/types/ThemeType";
-import { Card, CardBody, Spinner } from "@nextui-org/react";
+import { Card, CardBody, Spinner } from "@heroui/react";
 import { Star, Vote } from "lucide-react";
 import { useEffect, useState } from "react";
 import ButtonAction from "../link-components/ButtonAction";

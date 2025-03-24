@@ -2,7 +2,7 @@
 
 import { getCurrentJam } from "@/helpers/jam";
 import { JamType } from "@/types/JamType";
-import { Accordion, AccordionItem, Image } from "@nextui-org/react";
+import { Accordion, AccordionItem, Image } from "@heroui/react";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { useEffect, useState } from "react";

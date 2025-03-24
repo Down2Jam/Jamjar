@@ -21,7 +21,7 @@ import {
   Textarea,
   Tooltip,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Clipboard, Settings, Settings2, Star, Users2 } from "lucide-react";
 import { TeamType } from "@/types/TeamType";
 import { getTeams } from "@/requests/team";

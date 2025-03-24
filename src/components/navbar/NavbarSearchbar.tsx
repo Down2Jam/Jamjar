@@ -1,4 +1,4 @@
-import { Input, NavbarItem } from "@nextui-org/react";
+import { Input, NavbarItem } from "@heroui/react";
 import { Search } from "lucide-react";
 
 export default function NavbarSearchbar() {

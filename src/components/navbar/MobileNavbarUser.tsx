@@ -7,7 +7,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import { JamPhase, JamType } from "@/types/JamType";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";

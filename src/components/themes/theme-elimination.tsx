@@ -8,7 +8,7 @@ import {
 } from "@/helpers/jam";
 import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
-import { Card, CardBody, Chip, Spinner, Tooltip } from "@nextui-org/react";
+import { Card, CardBody, Chip, Spinner, Tooltip } from "@heroui/react";
 import { Check, SkipForward, Vote, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ButtonAction from "../link-components/ButtonAction";

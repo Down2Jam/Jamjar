@@ -1,7 +1,7 @@
 "use client";
 
 import { signup } from "@/requests/auth";
-import { Button, Form, Input, Link } from "@nextui-org/react";
+import { Button, Form, Input, Link } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";

@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "../components/navbar";
 import { ToastContainer } from "react-toastify";
-import { NextUIProvider, Spacer } from "@nextui-org/react";
+import { HeroUIProvider, Spacer } from "@heroui/react";
 import Footer from "@/components/footer";
 import { ThemeProvider } from "next-themes";
 import Buddy from "@/components/buddy";
@@ -23,7 +23,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <NextUIProvider>
+        <HeroUIProvider>
           <ThemeProvider attribute="class">
             <div>
               <div className="bg-[#fff] dark:bg-[#181818] min-h-screen flex flex-col ease-in-out transition-color duration-500">
@@ -39,7 +39,7 @@ export default async function RootLayout({
               </div>
             </div>
           </ThemeProvider>
-        </NextUIProvider>
+        </HeroUIProvider>
       </body>
     </html>
   );

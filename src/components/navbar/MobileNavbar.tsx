@@ -6,7 +6,7 @@ import {
   NavbarBrand,
   Navbar as NavbarBase,
   NavbarContent,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import NavbarButtonLink from "./NavbarButtonLink";
 import { LogInIcon, NotebookPen } from "lucide-react";
 import NextImage from "next/image";

@@ -32,7 +32,7 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Youtube from "@tiptap/extension-youtube";
 import CodeBlock from "@tiptap/extension-code-block";
-import { Spacer } from "@nextui-org/react";
+import { Spacer } from "@heroui/react";
 import { useTheme } from "next-themes";
 import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";

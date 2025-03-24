@@ -1,4 +1,4 @@
-import { NavbarItem } from "@nextui-org/react";
+import { NavbarItem } from "@heroui/react";
 import { ReactNode } from "react";
 import ButtonAction from "../link-components/ButtonAction";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Link as BaseLink } from "@nextui-org/react";
+import { Link as BaseLink } from "@heroui/react";
 import { useEffect, useState } from "react";
 
 interface LinkProps {

@@ -1,5 +1,5 @@
 import TeamFinder from "@/components/team-finder";
-import { Divider } from "@nextui-org/react";
+import { Divider } from "@heroui/react";
 import { Suspense } from "react";
 
 export default function GamesPage() {

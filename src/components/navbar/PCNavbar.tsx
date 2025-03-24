@@ -8,7 +8,7 @@ import {
   NavbarContent,
   Divider,
   Badge,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import NavbarSearchbar from "./NavbarSearchbar";
 import NavbarButtonLink from "./NavbarButtonLink";
 import {

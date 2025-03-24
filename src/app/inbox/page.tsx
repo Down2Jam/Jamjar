@@ -4,7 +4,7 @@ import ButtonAction from "@/components/link-components/ButtonAction";
 import { handleApplication, handleInvite } from "@/helpers/team";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
-import { Card, CardBody } from "@nextui-org/react";
+import { Card, CardBody } from "@heroui/react";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 

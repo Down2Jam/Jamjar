@@ -1,6 +1,6 @@
 "use client";
 
-import { Image } from "@nextui-org/react";
+import { Image } from "@heroui/react";
 import NextImage from "next/image";
 import ButtonAction from "../link-components/ButtonAction";
 import { ExternalLink, MoreHorizontal } from "lucide-react";

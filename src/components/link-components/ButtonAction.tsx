@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Kbd, Tooltip } from "@nextui-org/react";
+import { Button, Kbd, Tooltip } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
 
 interface ButtonActionProps {

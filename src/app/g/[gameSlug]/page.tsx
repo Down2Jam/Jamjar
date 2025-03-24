@@ -3,7 +3,21 @@
 import { use } from "react";
 import { useState, useEffect } from "react";
 import { getCookie, hasCookie } from "@/helpers/cookie";
-import { Avatar, Chip, Spacer } from "@nextui-org/react";
+import {
+  Avatar,
+  Chip,
+  Pagination,
+  Spacer,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Tabs,
+  User,
+} from "@heroui/react";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame } from "@/requests/game";
@@ -12,7 +26,16 @@ import Image from "next/image";
 import { getIcon } from "@/helpers/icon";
 import Link from "@/components/link-components/Link";
 import ButtonLink from "@/components/link-components/ButtonLink";
-import { Edit } from "lucide-react";
+import {
+  Edit,
+  Eye,
+  LandPlot,
+  Plus,
+  Rabbit,
+  Trash,
+  Trophy,
+  Turtle,
+} from "lucide-react";
 import Editor from "@/components/editor";
 import ButtonAction from "@/components/link-components/ButtonAction";
 import { toast } from "react-toastify";
@@ -31,6 +54,7 @@ export default function GamePage({
   const [user, setUser] = useState<UserType | null>(null);
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -179,31 +203,6 @@ export default function GamePage({
                 </div>
               </>
             )}
-            {/* <div className="flex flex-col gap-2">
-              <p className="text-[#666] dark:text-[#ccc] text-xs">
-                ACHIEVEMENTS
-              </p>
-              <Card>
-                <CardBody className="text-[#333] dark:text-white">N/A</CardBody>
-              </Card>
-            </div> */}
-            {/* {game.leaderboards && game.leaderboards.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p className="text-default-500 text-xs">LEADERBOARD</p>
-                <Card>
-                  <CardBody className="text-[#333] dark:text-white gap-2">
-                    N/A
-                    <div>
-                      <ButtonAction
-                        name="Submit Score"
-                        icon={<Plus />}
-                        onPress={() => {}}
-                      />
-                    </div>
-                  </CardBody>
-                </Card>
-              </div>
-            )} */}
             {game.downloadLinks && game.downloadLinks.length > 0 && (
               <>
                 <p className="text-[#666] dark:text-[#ccc] text-xs">LINKS</p>
@@ -218,6 +217,147 @@ export default function GamePage({
                   ))}
                 </div>
               </>
+            )}
+            {/* <div className="flex flex-col gap-2">
+              <p className="text-[#666] dark:text-[#ccc] text-xs">
+                ACHIEVEMENTS
+              </p>
+              <Card>
+                <CardBody className="text-[#333] dark:text-white">N/A</CardBody>
+              </Card>
+            </div> */}
+            {game.leaderboards && game.leaderboards.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p className="text-default-500 text-xs">LEADERBOARD</p>
+
+                <Tabs variant="bordered">
+                  {game.leaderboards.map((leaderboard) => (
+                    <Tab
+                      key={leaderboard.id}
+                      title={
+                        <div className="flex items-center space-x-2">
+                          {leaderboard.type == "SCORE" ? (
+                            <Trophy size={12} />
+                          ) : leaderboard.type == "GOLF" ? (
+                            <LandPlot size={12} />
+                          ) : leaderboard.type == "SPEEDRUN" ? (
+                            <Rabbit size={12} />
+                          ) : (
+                            <Turtle size={12} />
+                          )}
+                          <p className="text-xs">{leaderboard.name}</p>
+                        </div>
+                      }
+                    >
+                      {leaderboard.scores && (
+                        <Table
+                          classNames={{ wrapper: "border-none" }}
+                          className="w-full"
+                          bottomContent={
+                            <div className="flex w-full justify-center">
+                              <Pagination
+                                showControls
+                                color="primary"
+                                variant="faded"
+                                page={page}
+                                total={1}
+                                onChange={(page) => setPage(page)}
+                              />
+                            </div>
+                          }
+                        >
+                          <TableHeader>
+                            <TableColumn>#</TableColumn>
+                            <TableColumn>User</TableColumn>
+                            <TableColumn>
+                              {leaderboard.type == "SCORE" ||
+                              leaderboard.type == "GOLF"
+                                ? "Score"
+                                : "Time"}
+                            </TableColumn>
+                            <TableColumn>Actions</TableColumn>
+                          </TableHeader>
+                          <TableBody>
+                            {(leaderboard.onlyBest
+                              ? Array.from(
+                                  leaderboard.scores
+                                    .reduce((acc, score) => {
+                                      if (
+                                        !acc.has(score.user.id) ||
+                                        acc.get(score.user.id).data < score.data
+                                      ) {
+                                        acc.set(score.user.id, score);
+                                      }
+                                      return acc;
+                                    }, new Map())
+                                    .values()
+                                )
+                              : leaderboard.scores
+                            )
+                              .sort((a, b) => {
+                                if (leaderboard.type == "GOLF") {
+                                  return a.data - b.data;
+                                } else {
+                                  return b.data - a.data;
+                                }
+                              })
+                              .slice(0, leaderboard.maxUsersShown)
+                              .map((score, i) => (
+                                <TableRow key={score.id}>
+                                  <TableCell className="text-[#ccc] dark:text-[#666]">
+                                    {i + 1}
+                                  </TableCell>
+                                  <TableCell>
+                                    <User
+                                      className="flex justify-start"
+                                      name={score.user.name}
+                                      avatarProps={{
+                                        src: score.user.profilePicture,
+                                        className: "w-6 h-6",
+                                        size: "sm",
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell className="text-[#94d4df] dark:text-[#4092b3]">
+                                    {score.data}
+                                  </TableCell>
+                                  <TableCell className="flex gap-2">
+                                    <ButtonAction
+                                      name=""
+                                      isIconOnly
+                                      icon={<Eye size={16} />}
+                                      onPress={() => {}}
+                                      size="sm"
+                                    />
+                                    {(isEditable ||
+                                      score.user.id == user?.id) && (
+                                      <ButtonAction
+                                        important
+                                        color="red"
+                                        name=""
+                                        isIconOnly
+                                        icon={<Trash size={16} />}
+                                        onPress={() => {}}
+                                        size="sm"
+                                      />
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      )}
+                    </Tab>
+                  ))}
+                </Tabs>
+                <div>
+                  <ButtonAction
+                    name="Submit Score"
+                    icon={<Plus />}
+                    onPress={() => {}}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>

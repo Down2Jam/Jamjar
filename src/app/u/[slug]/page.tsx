@@ -2,7 +2,7 @@
 
 import { getUser } from "@/requests/user";
 import { UserType } from "@/types/UserType";
-import { Avatar, Chip } from "@nextui-org/react";
+import { Avatar, Chip } from "@heroui/react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";

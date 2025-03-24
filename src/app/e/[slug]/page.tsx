@@ -4,7 +4,7 @@ import ButtonAction from "@/components/link-components/ButtonAction";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import { getEvent } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { Image, Spacer, Spinner } from "@nextui-org/react";
+import { Image, Spacer, Spinner } from "@heroui/react";
 import { BadgePlus, Bell, ExternalLink, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";

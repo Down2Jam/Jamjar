@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
-import { Button, Chip, Image, Tooltip } from "@nextui-org/react";
+import { Button, Chip, Image, Tooltip } from "@heroui/react";
 import NextImage from "next/image";
 import { getStreamers } from "@/requests/streamer";
 import {

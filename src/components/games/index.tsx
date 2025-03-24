@@ -14,7 +14,7 @@ import {
   Image,
   Link,
   Spinner,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ClockArrowDown, ClockArrowUp } from "lucide-react";

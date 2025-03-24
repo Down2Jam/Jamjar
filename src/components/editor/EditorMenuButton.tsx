@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 
 type EditorMenuButtonProps = {
   onClick: () => void;

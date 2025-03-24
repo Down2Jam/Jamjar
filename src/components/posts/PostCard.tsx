@@ -12,7 +12,7 @@ import {
   DropdownSection,
   DropdownTrigger,
   Spacer,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";

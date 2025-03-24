@@ -1,4 +1,4 @@
-import { Spacer } from "@nextui-org/react";
+import { Spacer } from "@heroui/react";
 import SidebarBanner from "./SidebarBanner";
 import SidebarButtons from "./SidebarButtons";
 import SidebarStats from "./SidebarStats";

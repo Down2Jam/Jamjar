@@ -11,10 +11,11 @@ import {
   DropdownTrigger,
   Form,
   Input,
+  NumberInput,
   Spacer,
   Switch,
   Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -28,7 +29,7 @@ import {
 } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Select as NextSelect, SelectItem } from "@nextui-org/react";
+import { Select as NextSelect, SelectItem } from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import { redirect, useRouter } from "next/navigation";
 import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
@@ -953,6 +954,19 @@ export default function CreateGame() {
                   }}
                 />
 
+                <NumberInput
+                  label="Max Users shown"
+                  placeholder="Enter a user amount"
+                  value={lb.maxUsersShown}
+                  minValue={0}
+                  maxValue={100}
+                  onValueChange={(e) => {
+                    const updated = [...leaderboards];
+                    updated[index].maxUsersShown = e;
+                    setLeaderboards(updated);
+                  }}
+                />
+
                 <NextSelect
                   label="Leaderboard Type"
                   defaultSelectedKeys={["SCORE"]}
@@ -979,12 +993,12 @@ export default function CreateGame() {
                     Golf
                   </SelectItem>
                   <SelectItem
-                    key="TIME"
+                    key="SPEEDRUN"
                     description="Lowest Time"
                     startContent={<Rabbit />}
                     classNames={{ base: "text-[#333] dark:text-white" }}
                   >
-                    Time
+                    Speedrun
                   </SelectItem>
                   <SelectItem
                     key="ENDURANCE"
@@ -1032,6 +1046,7 @@ export default function CreateGame() {
                   onlyBest: true,
                   game: {} as GameType,
                   scores: [],
+                  maxUsersShown: 20,
                 },
               ])
             }

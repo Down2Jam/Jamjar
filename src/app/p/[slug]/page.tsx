@@ -18,7 +18,7 @@ import {
   DropdownSection,
   DropdownTrigger,
   Spacer,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { formatDistance } from "date-fns";
 import {
   Flag,

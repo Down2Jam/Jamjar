@@ -13,7 +13,7 @@ import {
   Form,
   Input,
   Spacer,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";

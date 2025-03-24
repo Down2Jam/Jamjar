@@ -6,7 +6,7 @@ import {
   DropdownSection,
   DropdownTrigger,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import { Bug, LogOut, Settings, User } from "lucide-react";
 

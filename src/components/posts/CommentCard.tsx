@@ -1,5 +1,5 @@
 import { CommentType } from "@/types/CommentType";
-import { Avatar, Button, Card, CardBody, Spacer } from "@nextui-org/react";
+import { Avatar, Button, Card, CardBody, Spacer } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import { LoaderCircle, Reply } from "lucide-react";
 import Link from "next/link";

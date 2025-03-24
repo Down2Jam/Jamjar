@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Badge, Card, CardBody, Spinner } from "@nextui-org/react";
+import { Avatar, Badge, Card, CardBody, Spinner } from "@heroui/react";
 import ButtonAction from "../link-components/ButtonAction";
 import { Bell, ExternalLink, MoreHorizontal } from "lucide-react";
 import { useEffect, useState } from "react";

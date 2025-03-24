@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Card, CardBody } from "@nextui-org/react";
+import { Avatar, Card, CardBody } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";

@@ -11,7 +11,7 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import {
   TreeDeciduous,
   Hourglass,

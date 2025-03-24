@@ -4,7 +4,7 @@ import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
-import { Spacer } from "@nextui-org/react";
+import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
 
 const events = [
