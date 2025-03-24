@@ -1,4 +1,5 @@
 import { AchievementType } from "./AchievementType";
+import { CommentType } from "./CommentType";
 import { DownloadLinkType } from "./DownloadLinkType";
 import { FlagType } from "./FlagType";
 import { GameTagType } from "./GameTagType";
@@ -28,4 +29,5 @@ export interface GameType {
   leaderboards: LeaderboardType[];
   flags: FlagType[];
   tags: GameTagType[];
+  comments: CommentType[];
 }

@@ -2,8 +2,8 @@
 
 import { use } from "react";
 import { useState, useEffect } from "react";
-import { getCookie } from "@/helpers/cookie";
-import { Avatar, Chip } from "@nextui-org/react";
+import { getCookie, hasCookie } from "@/helpers/cookie";
+import { Avatar, Chip, Spacer } from "@nextui-org/react";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame } from "@/requests/game";
@@ -13,6 +13,12 @@ import { getIcon } from "@/helpers/icon";
 import Link from "@/components/link-components/Link";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import { Edit } from "lucide-react";
+import Editor from "@/components/editor";
+import ButtonAction from "@/components/link-components/ButtonAction";
+import { toast } from "react-toastify";
+import { sanitize } from "@/helpers/sanitize";
+import { postComment } from "@/requests/comment";
+import CommentCard from "@/components/posts/CommentCard";
 
 export default function GamePage({
   params,
@@ -23,6 +29,8 @@ export default function GamePage({
   const gameSlug = resolvedParams.gameSlug;
   const [game, setGame] = useState<GameType | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
+  const [content, setContent] = useState("");
+  const [waitingPost, setWaitingPost] = useState(false);
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -213,6 +221,57 @@ export default function GamePage({
             )}
           </div>
         </div>
+      </div>
+      <Spacer y={10} />
+      <Editor content={content} setContent={setContent} />
+      <Spacer y={5} />
+      <ButtonAction
+        onPress={async () => {
+          if (!content) {
+            toast.error("Please enter valid content");
+            return;
+          }
+
+          if (!hasCookie("token")) {
+            toast.error("You are not logged in");
+            return;
+          }
+
+          const sanitizedHtml = sanitize(content);
+          setWaitingPost(true);
+
+          const response = await postComment(
+            sanitizedHtml,
+            null,
+            null,
+            game.id
+          );
+
+          if (response.status == 401) {
+            toast.error("Invalid User");
+            setWaitingPost(false);
+            return;
+          }
+
+          if (response.ok) {
+            toast.success("Successfully created comment");
+            setWaitingPost(false);
+            window.location.reload();
+          } else {
+            toast.error("An error occured");
+            setWaitingPost(false);
+          }
+        }}
+        name={waitingPost ? "Loading..." : "Create Comment"}
+      />
+      <Spacer y={10} />
+
+      <div className="flex flex-col gap-3">
+        {game?.comments?.map((comment) => (
+          <div key={comment.id}>
+            <CommentCard comment={comment} />
+          </div>
+        ))}
       </div>
     </>
   );

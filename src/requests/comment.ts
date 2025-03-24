@@ -4,13 +4,15 @@ import { BASE_URL } from "./config";
 export async function postComment(
   content: string,
   postId: number | null,
-  commentId: number | null = null
+  commentId: number | null = null,
+  gameId: number | null = null
 ) {
   return fetch(`${BASE_URL}/comment`, {
     body: JSON.stringify({
       content,
       postId,
       commentId,
+      gameId,
       username: getCookie("user"),
     }),
     method: "POST",
