@@ -11,7 +11,7 @@ export async function getCurrentGame() {
   });
 }
 
-export async function getRatingCategories(always: boolean) {
+export async function getRatingCategories(always: boolean = false) {
   return fetch(
     `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`
   );
