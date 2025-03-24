@@ -77,6 +77,10 @@ export default function GamePage({
   } = useDisclosure();
   const [evidenceUrl, setEvidenceUrl] = useState<string>();
   const [score, setScore] = useState<number>(0);
+  const [milliseconds, setMilliseconds] = useState<number>(0);
+  const [seconds, setSeconds] = useState<number>(0);
+  const [minutes, setMinutes] = useState<number>(0);
+  const [hours, setHours] = useState<number>(0);
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -335,7 +339,10 @@ export default function GamePage({
                               : leaderboard.scores
                             )
                               .sort((a, b) => {
-                                if (leaderboard.type == "GOLF") {
+                                if (
+                                  leaderboard.type == "GOLF" ||
+                                  leaderboard.type == "SPEEDRUN"
+                                ) {
                                   return a.data - b.data;
                                 } else {
                                   return b.data - a.data;
@@ -364,8 +371,37 @@ export default function GamePage({
                                     />
                                   </TableCell>
                                   <TableCell className="text-[#94d4df] dark:text-[#4092b3]">
-                                    {score.data /
-                                      10 ** leaderboard.decimalPlaces}
+                                    {leaderboard.type == "GOLF" ||
+                                    leaderboard.type == "SCORE"
+                                      ? score.data /
+                                        10 ** leaderboard.decimalPlaces
+                                      : (() => {
+                                          const totalMilliseconds = score.data;
+                                          const hours = Math.floor(
+                                            totalMilliseconds / 3600000
+                                          );
+                                          const minutes = Math.floor(
+                                            (totalMilliseconds % 3600000) /
+                                              60000
+                                          );
+                                          const seconds = Math.floor(
+                                            (totalMilliseconds % 60000) / 1000
+                                          );
+                                          const milliseconds =
+                                            totalMilliseconds % 1000;
+
+                                          return `${
+                                            hours > 0 ? `${hours}:` : ""
+                                          }${minutes}:${seconds
+                                            .toString()
+                                            .padStart(2, "0")}${
+                                            milliseconds > 0
+                                              ? `.${milliseconds
+                                                  .toString()
+                                                  .padStart(3, "0")}`
+                                              : ""
+                                          }`;
+                                        })()}
                                   </TableCell>
                                   <TableCell className="flex gap-2">
                                     <ButtonAction
@@ -460,23 +496,57 @@ export default function GamePage({
                       <p>{selectedLeaderboard?.name}</p>
                     </ModalHeader>
                     <ModalBody>
-                      <NumberInput
-                        label={
-                          selectedLeaderboard?.type == "SCORE" ||
-                          selectedLeaderboard?.type == "GOLF"
-                            ? "Score"
-                            : "Time"
-                        }
-                        placeholder={`Enter your ${
-                          selectedLeaderboard?.type == "SCORE" ||
-                          selectedLeaderboard?.type == "GOLF"
-                            ? "score"
-                            : "time"
-                        }`}
-                        value={score}
-                        onValueChange={setScore}
-                        variant="bordered"
-                      />
+                      {(selectedLeaderboard?.type == "SPEEDRUN" ||
+                        selectedLeaderboard?.type == "ENDURANCE") && (
+                        <>
+                          <NumberInput
+                            label="Hours"
+                            placeholder="Enter hours"
+                            value={hours}
+                            minValue={0}
+                            maxValue={24}
+                            onValueChange={setHours}
+                            variant="bordered"
+                          />
+                          <NumberInput
+                            label="Minutes"
+                            placeholder="Enter minutes"
+                            value={minutes}
+                            minValue={0}
+                            maxValue={59}
+                            onValueChange={setMinutes}
+                            variant="bordered"
+                          />
+                          <NumberInput
+                            label="Seconds"
+                            placeholder="Enter seconds"
+                            value={seconds}
+                            minValue={0}
+                            maxValue={59}
+                            onValueChange={setSeconds}
+                            variant="bordered"
+                          />
+                          <NumberInput
+                            label="Milliseconds"
+                            placeholder="Enter milliseconds"
+                            value={milliseconds}
+                            minValue={0}
+                            maxValue={999}
+                            onValueChange={setMilliseconds}
+                            variant="bordered"
+                          />
+                        </>
+                      )}
+                      {(selectedLeaderboard?.type == "SCORE" ||
+                        selectedLeaderboard?.type == "GOLF") && (
+                        <NumberInput
+                          label="Score"
+                          placeholder="Enter your score"
+                          value={score}
+                          onValueChange={setScore}
+                          variant="bordered"
+                        />
+                      )}
                       <p>Evidence Picture</p>
                       <input
                         type="file"
@@ -547,8 +617,21 @@ export default function GamePage({
                             return;
                           }
 
+                          let finalScore = score;
+
+                          if (
+                            selectedLeaderboard.type == "SPEEDRUN" ||
+                            selectedLeaderboard.type == "ENDURANCE"
+                          ) {
+                            finalScore =
+                              milliseconds +
+                              seconds * 1000 +
+                              minutes * 1000 * 60 +
+                              hours * 1000 * 60 * 60;
+                          }
+
                           const success = await postScore(
-                            score,
+                            finalScore,
                             evidenceUrl,
                             selectedLeaderboard.id
                           );

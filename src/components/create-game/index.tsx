@@ -1070,6 +1070,7 @@ export default function CreateGame() {
                   game: {} as GameType,
                   scores: [],
                   maxUsersShown: 10,
+                  decimalPlaces: 0,
                 },
               ])
             }
