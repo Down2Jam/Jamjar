@@ -11,8 +11,10 @@ export async function getCurrentGame() {
   });
 }
 
-export async function getRatingCategories() {
-  return fetch(`${BASE_URL}/rating-categories`);
+export async function getRatingCategories(always: boolean) {
+  return fetch(
+    `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`
+  );
 }
 
 export async function getFlags() {

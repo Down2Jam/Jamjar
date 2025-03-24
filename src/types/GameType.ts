@@ -6,6 +6,7 @@ import { GameTagType } from "./GameTagType";
 import { JamType } from "./JamType";
 import { LeaderboardType } from "./LeaderboardType";
 import { RatingCategoryType } from "./RatingCategoryType";
+import { RatingType } from "./RatingType";
 import { TeamType } from "./TeamType";
 
 export interface GameType {
@@ -31,4 +32,6 @@ export interface GameType {
   tags: GameTagType[];
   comments: CommentType[];
   majRatingCategories: RatingCategoryType[];
+  ratings: RatingType[];
+  jamId: number;
 }

@@ -23,21 +23,24 @@ import {
   TableHeader,
   TableRow,
   Tabs,
+  Tooltip,
   useDisclosure,
   User,
 } from "@heroui/react";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
-import { getGame } from "@/requests/game";
+import { getGame, getRatingCategories } from "@/requests/game";
 import { getSelf } from "@/requests/user";
 import Image from "next/image";
 import { getIcon } from "@/helpers/icon";
 import Link from "@/components/link-components/Link";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import {
+  CircleHelp,
   Edit,
   Eye,
   LandPlot,
+  MessageCircleMore,
   Plus,
   Rabbit,
   Star,
@@ -54,6 +57,10 @@ import CommentCard from "@/components/posts/CommentCard";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
+import { postRating } from "@/requests/rating";
+import { RatingType } from "@/types/RatingType";
+import { RatingCategoryType } from "@/types/RatingCategoryType";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 
 export default function GamePage({
   params,
@@ -87,17 +94,30 @@ export default function GamePage({
   const [selectedStars, setSelectedStars] = useState<{ [key: number]: number }>(
     {}
   );
+  const [ratingCategories, setRatingCategories] = useState<
+    RatingCategoryType[]
+  >([]);
+  const [activeJamResponse, setActiveJamResponse] =
+    useState<ActiveJamResponse | null>(null);
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
       // Fetch the game data
       const gameResponse = await getGame(gameSlug);
 
+      let gameData;
       if (gameResponse.ok) {
-        const gameData = await gameResponse.json();
+        gameData = await gameResponse.json();
 
         setGame(gameData);
       }
+
+      const ratingResponse = await getRatingCategories(true);
+      const ratingCategories = await ratingResponse.json();
+      setRatingCategories(ratingCategories.data);
+
+      const jamData = await getCurrentJam();
+      setActiveJamResponse(jamData);
 
       // Fetch the logged-in user data
       if (getCookie("token")) {
@@ -107,6 +127,23 @@ export default function GamePage({
           if (userResponse.ok) {
             const userData = await userResponse.json();
             setUser(userData);
+
+            if (gameData) {
+              const ratings = gameData.ratings
+                .filter((rating: RatingType) => rating.userId == userData.id)
+                .reduce(
+                  (
+                    acc: { [key: number]: number },
+                    rating: { categoryId: number; value: number }
+                  ) => {
+                    acc[rating.categoryId] = rating.value;
+                    return acc;
+                  },
+                  {}
+                );
+
+              setSelectedStars(ratings);
+            }
           }
         } catch (error) {
           console.error(error);
@@ -155,37 +192,6 @@ export default function GamePage({
                 __html: game.description || "No Description",
               }}
             />
-            {/* <div>
-              <div className="flex items-center gap-2">
-                <Vote />
-                <p>Ratings</p>
-              </div>
-              {!user && (
-                <p className="text-[#666] dark:text-[#ccc]">
-                  You must be logged in to rate games
-                </p>
-              )}
-              {user?.teams.filter((team) => team.game && team.game.published)
-                .length == 0 && (
-                <p className="text-[#666] dark:text-[#ccc]">
-                  Your ratings will not count towards the rankings as you did
-                  not submit a game
-                </p>
-              )}
-              {game.ratingCategories.map((ratingCategory) => (
-                <StarRow
-                  key={ratingCategory.id}
-                  id={ratingCategory.id}
-                  name={ratingCategory.name}
-                  hoverStars={hoverStars}
-                  setHoverStars={setHoverStars}
-                  hoverCategory={hoverCategory}
-                  setHoverCategory={setHoverCategory}
-                  selectedStars={selectedStars}
-                  setSelectedStars={setSelectedStars}
-                />
-              ))}
-            </div> */}
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
             {isEditable && (
@@ -289,6 +295,69 @@ export default function GamePage({
                 <CardBody className="text-[#333] dark:text-white">N/A</CardBody>
               </Card>
             </div> */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[#666] dark:text-[#ccc] text-xs">RATINGS</p>
+              {isEditable && (
+                <p className="text-[#666] dark:text-[#ccc] text-xs">
+                  You can&apos;t rate your own game
+                </p>
+              )}
+              {!user && (
+                <p className="text-[#666] dark:text-[#ccc] text-xs">
+                  You must be logged in to rate games
+                </p>
+              )}
+              {!isEditable &&
+                user?.teams.filter((team) => team.game && team.game.published)
+                  .length == 0 &&
+                (activeJamResponse?.jam?.id != game.jamId ||
+                  (activeJamResponse?.phase != "Rating" &&
+                    activeJamResponse?.phase != "Submission")) && (
+                  <p className="text-[#666] dark:text-[#ccc] text-xs">
+                    It is not the rating period
+                  </p>
+                )}
+              {!isEditable &&
+                user?.teams.filter((team) => team.game && team.game.published)
+                  .length == 0 &&
+                activeJamResponse?.jam?.id == game.jamId &&
+                (activeJamResponse?.phase == "Rating" ||
+                  activeJamResponse?.phase == "Submission") && (
+                  <p className="text-[#666] dark:text-[#ccc] text-xs">
+                    Your ratings will not count towards the rankings as you did
+                    not submit a game
+                  </p>
+                )}
+              <div>
+                {user &&
+                  !isEditable &&
+                  activeJamResponse?.jam?.id == game.jamId &&
+                  (activeJamResponse?.phase == "Rating" ||
+                    activeJamResponse?.phase == "Submission") &&
+                  [...game.ratingCategories, ...ratingCategories]
+                    .sort((a, b) => b.order - a.order)
+                    .map((ratingCategory) => (
+                      <StarRow
+                        key={ratingCategory.id}
+                        id={ratingCategory.id}
+                        name={ratingCategory.name}
+                        text={
+                          ratingCategory.name == "Theme"
+                            ? game.themeJustification
+                            : ""
+                        }
+                        description={ratingCategory.description}
+                        hoverStars={hoverStars}
+                        setHoverStars={setHoverStars}
+                        hoverCategory={hoverCategory}
+                        setHoverCategory={setHoverCategory}
+                        selectedStars={selectedStars}
+                        setSelectedStars={setSelectedStars}
+                        gameId={game.id}
+                      />
+                    ))}
+              </div>
+            </div>
             {game.leaderboards && game.leaderboards.length > 0 && (
               <div className="flex flex-col gap-2">
                 <p className="text-default-500 text-xs">LEADERBOARD</p>
@@ -746,27 +815,32 @@ export default function GamePage({
 function StarRow({
   id,
   name,
+  text,
+  description,
   hoverStars,
   setHoverStars,
   selectedStars,
   setSelectedStars,
   hoverCategory,
   setHoverCategory,
+  gameId,
 }: {
   id: number;
   name: string;
+  text?: string;
+  description: string;
   hoverStars: { [key: number]: number };
   setHoverStars: (stars: { [key: number]: number }) => void;
   selectedStars: { [key: number]: number };
   setSelectedStars: (stars: { [key: number]: number }) => void;
   hoverCategory: number | null;
   setHoverCategory: (id: number | null) => void;
+  gameId: number;
 }) {
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
 
   return (
     <div className="flex items-center gap-4">
-      <p className="text-[#666] dark:text-[#ccc]">{name}</p>
       <div className="flex">
         {[2, 4, 6, 8, 10].map((value) => (
           <StarElement
@@ -781,9 +855,30 @@ function StarRow({
             setSelectedStars={setSelectedStars}
             newlyClicked={newlyClicked}
             setNewlyClicked={setNewlyClicked}
+            gameId={gameId}
           />
         ))}
       </div>
+      <p className="text-[#666] dark:text-[#ccc]">{name}</p>
+      <Tooltip content={description} className="text-[#333] dark:text-[#ccc]">
+        <CircleHelp size={16} className="text-[#ccc] dark:text-[#333]" />
+      </Tooltip>
+      {text && (
+        <Tooltip
+          content={
+            <div>
+              <p className="text-lg font-bold">Theme Justification</p>
+              <p>{text}</p>
+            </div>
+          }
+          className="text-[#333] dark:text-[#ccc] max-w-96"
+        >
+          <MessageCircleMore
+            size={16}
+            className="text-[#ccc] dark:text-[#333]"
+          />
+        </Tooltip>
+      )}
     </div>
   );
 }
@@ -799,6 +894,7 @@ function StarElement({
   setHoverCategoryId,
   newlyClicked,
   setNewlyClicked,
+  gameId,
 }: {
   id: number;
   value: number;
@@ -810,6 +906,7 @@ function StarElement({
   setHoverCategoryId: (id: number | null) => void;
   newlyClicked: boolean;
   setNewlyClicked: (arg0: boolean) => void;
+  gameId: number;
 }) {
   return (
     <div
@@ -860,6 +957,7 @@ function StarElement({
         onClick={() => {
           setSelectedStars({ ...selectedStars, [id]: value - 1 });
           setNewlyClicked(true);
+          postRating(gameId, id, value - 1);
         }}
       />
       {/* Right Half (Triggers value) */}
@@ -872,6 +970,7 @@ function StarElement({
         onClick={() => {
           setSelectedStars({ ...selectedStars, [id]: value });
           setNewlyClicked(true);
+          postRating(gameId, id, value);
         }}
       />
     </div>

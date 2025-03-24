@@ -8,4 +8,5 @@ export interface RatingType {
   category: RatingCategoryType;
   user: UserType;
   game: GameType;
+  userId: number;
 }

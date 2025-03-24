@@ -134,8 +134,14 @@ export default function Games() {
             <Link key={game.name + index} href={`/g/${game.slug}`}>
               <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
                 <CardHeader className="absolute top-0 flex justify-end">
-                  <div className="border border-zinc-100/50 bg-primary p-2 pt-1 pb-1 rounded text-white">
-                    {game.jam.name}
+                  <div
+                    className={` p-2 pt-1 pb-1 rounded text-white shadow-md ${
+                      game.category == "REGULAR"
+                        ? "bg-blue-700"
+                        : "bg-purple-700"
+                    }`}
+                  >
+                    {game.category}
                   </div>
                 </CardHeader>
                 <Image

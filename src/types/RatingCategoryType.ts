@@ -8,4 +8,5 @@ export interface RatingCategoryType {
   ratings: RatingType;
   games: GameType;
   askMajorityContent: boolean;
+  order: number;
 }
