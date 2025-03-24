@@ -8,8 +8,7 @@ export default function GamesPage() {
       <section className="mb-4">
         <h1 className="text-3xl mb-4">Games</h1>
         <p className="text-sm text-default-500">
-          Here you have an overview of all the submitted games. More filters
-          will be added in the near future.
+          Here you have an overview of all the submitted games
         </p>
       </section>
       <Divider />

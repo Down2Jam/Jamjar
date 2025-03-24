@@ -17,7 +17,7 @@ import {
 } from "@heroui/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ClockArrowDown, ClockArrowUp } from "lucide-react";
+import { ClockArrowDown, ClockArrowUp, Dice5 } from "lucide-react";
 import { getGames } from "@/requests/game";
 
 export default function Games() {
@@ -25,11 +25,11 @@ export default function Games() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [games, setGames] = useState<GameType[]>();
   const [sort, setSort] = useState<GameSort>(
-    (["newest", "oldest", "top"].includes(
+    (["newest", "oldest", "random"].includes(
       searchParams.get("sort") as GameSort
     ) &&
       (searchParams.get("sort") as GameSort)) ||
-      "newest"
+      "random"
   );
   const router = useRouter();
 
@@ -47,6 +47,11 @@ export default function Games() {
     //   icon: <StarHalfIcon />,
     //   description: "Shows the least rated game first",
     // },
+    random: {
+      name: "Random",
+      icon: <Dice5 />,
+      description: "Shows games in a random order",
+    },
     newest: {
       name: "Newest",
       icon: <ClockArrowUp />,

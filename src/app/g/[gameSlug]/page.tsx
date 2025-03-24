@@ -5,7 +5,14 @@ import { useState, useEffect } from "react";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import {
   Avatar,
+  Button,
   Chip,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  NumberInput,
   Pagination,
   Spacer,
   Tab,
@@ -16,6 +23,7 @@ import {
   TableHeader,
   TableRow,
   Tabs,
+  useDisclosure,
   User,
 } from "@heroui/react";
 import { GameType } from "@/types/GameType";
@@ -42,6 +50,9 @@ import { toast } from "react-toastify";
 import { sanitize } from "@/helpers/sanitize";
 import { postComment } from "@/requests/comment";
 import CommentCard from "@/components/posts/CommentCard";
+import { LeaderboardType } from "@/types/LeaderboardType";
+import { deleteScore } from "@/helpers/score";
+import { postScore } from "@/requests/score";
 
 export default function GamePage({
   params,
@@ -55,6 +66,17 @@ export default function GamePage({
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
   const [page, setPage] = useState(1);
+  const [selectedScore, setSelectedScore] = useState<string>("");
+  const [selectedLeaderboard, setSelectedLeaderboard] =
+    useState<LeaderboardType>();
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const {
+    isOpen: isOpen2,
+    onOpen: onOpen2,
+    onOpenChange: onOpenChange2,
+  } = useDisclosure();
+  const [evidenceUrl, setEvidenceUrl] = useState<string>();
+  const [score, setScore] = useState<number>(0);
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -260,7 +282,25 @@ export default function GamePage({
                                 color="primary"
                                 variant="faded"
                                 page={page}
-                                total={1}
+                                total={Math.ceil(
+                                  (leaderboard.onlyBest
+                                    ? Array.from(
+                                        leaderboard.scores
+                                          .reduce((acc, score) => {
+                                            if (
+                                              !acc.has(score.user.id) ||
+                                              acc.get(score.user.id).data <
+                                                score.data
+                                            ) {
+                                              acc.set(score.user.id, score);
+                                            }
+                                            return acc;
+                                          }, new Map())
+                                          .values()
+                                      )
+                                    : leaderboard.scores
+                                  ).length / leaderboard.maxUsersShown
+                                )}
                                 onChange={(page) => setPage(page)}
                               />
                             </div>
@@ -301,11 +341,16 @@ export default function GamePage({
                                   return b.data - a.data;
                                 }
                               })
-                              .slice(0, leaderboard.maxUsersShown)
+                              .slice(
+                                0 + leaderboard.maxUsersShown * (page - 1),
+                                leaderboard.maxUsersShown * page
+                              )
                               .map((score, i) => (
                                 <TableRow key={score.id}>
                                   <TableCell className="text-[#ccc] dark:text-[#666]">
-                                    {i + 1}
+                                    {i +
+                                      1 +
+                                      leaderboard.maxUsersShown * (page - 1)}
                                   </TableCell>
                                   <TableCell>
                                     <User
@@ -326,18 +371,29 @@ export default function GamePage({
                                       name=""
                                       isIconOnly
                                       icon={<Eye size={16} />}
-                                      onPress={() => {}}
+                                      onPress={() => {
+                                        setSelectedScore(score.evidence);
+                                        onOpen();
+                                      }}
                                       size="sm"
                                     />
                                     {(isEditable ||
-                                      score.user.id == user?.id) && (
+                                      score.user.id == user?.id ||
+                                      user?.mod) && (
                                       <ButtonAction
                                         important
                                         color="red"
                                         name=""
                                         isIconOnly
                                         icon={<Trash size={16} />}
-                                        onPress={() => {}}
+                                        onPress={async () => {
+                                          const success = await deleteScore(
+                                            score.id
+                                          );
+                                          if (success) {
+                                            window.location.reload();
+                                          }
+                                        }}
                                         size="sm"
                                       />
                                     )}
@@ -347,18 +403,167 @@ export default function GamePage({
                           </TableBody>
                         </Table>
                       )}
+                      <Spacer y={5} />
+                      <div>
+                        <ButtonAction
+                          name="Submit Score"
+                          icon={<Plus />}
+                          onPress={() => {
+                            setSelectedLeaderboard(leaderboard);
+                            setScore(0);
+                            setEvidenceUrl(undefined);
+                            onOpen2();
+                          }}
+                        />
+                      </div>
                     </Tab>
                   ))}
                 </Tabs>
-                <div>
-                  <ButtonAction
-                    name="Submit Score"
-                    icon={<Plus />}
-                    onPress={() => {}}
-                  />
-                </div>
               </div>
             )}
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+              <ModalContent>
+                {(onClose) => (
+                  <>
+                    <ModalBody className="min-h-60">
+                      <Image
+                        src={selectedScore}
+                        alt="Evidence image"
+                        fill
+                        objectFit="contain"
+                      />
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="danger" variant="light" onPress={onClose}>
+                        Close
+                      </Button>
+                    </ModalFooter>
+                  </>
+                )}
+              </ModalContent>
+            </Modal>
+            <Modal isOpen={isOpen2} onOpenChange={onOpenChange2}>
+              <ModalContent>
+                {(onClose) => (
+                  <>
+                    <ModalHeader className="flex items-center gap-2">
+                      {selectedLeaderboard?.type == "SCORE" ? (
+                        <Trophy />
+                      ) : selectedLeaderboard?.type == "GOLF" ? (
+                        <LandPlot />
+                      ) : selectedLeaderboard?.type == "SPEEDRUN" ? (
+                        <Rabbit />
+                      ) : (
+                        <Turtle />
+                      )}
+                      <p>{selectedLeaderboard?.name}</p>
+                    </ModalHeader>
+                    <ModalBody>
+                      <NumberInput
+                        label={
+                          selectedLeaderboard?.type == "SCORE" ||
+                          selectedLeaderboard?.type == "GOLF"
+                            ? "Score"
+                            : "Time"
+                        }
+                        placeholder={`Enter your ${
+                          selectedLeaderboard?.type == "SCORE" ||
+                          selectedLeaderboard?.type == "GOLF"
+                            ? "score"
+                            : "time"
+                        }`}
+                        value={score}
+                        onValueChange={setScore}
+                        variant="bordered"
+                      />
+                      <p>Evidence Picture</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          const formData = new FormData();
+                          formData.append("upload", file);
+
+                          try {
+                            const response = await fetch(
+                              process.env.NEXT_PUBLIC_MODE === "PROD"
+                                ? "https://d2jam.com/api/v1/image"
+                                : "http://localhost:3005/api/v1/image",
+                              {
+                                method: "POST",
+                                body: formData,
+                                headers: {
+                                  authorization: `Bearer ${getCookie("token")}`,
+                                },
+                                credentials: "include",
+                              }
+                            );
+
+                            if (response.ok) {
+                              const data = await response.json();
+                              setEvidenceUrl(data.data);
+                              toast.success(data.message);
+                            } else {
+                              toast.error("Failed to upload image");
+                            }
+                          } catch (error) {
+                            console.error(error);
+                            toast.error("Error uploading image");
+                          }
+                        }}
+                      />
+
+                      {evidenceUrl && (
+                        <div className="w-full">
+                          <div className="bg-[#222222] min-h-60 w-full relative">
+                            <Image
+                              src={evidenceUrl}
+                              alt={`${selectedLeaderboard?.name}'s evidence`}
+                              className="object-cover"
+                              fill
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="danger" variant="light" onPress={onClose}>
+                        Close
+                      </Button>
+                      <Button
+                        color="primary"
+                        onPress={async () => {
+                          if (!evidenceUrl) {
+                            toast.error("No evidence image provided");
+                            return;
+                          }
+
+                          if (!selectedLeaderboard) {
+                            toast.error("No leaderboard selected");
+                            return;
+                          }
+
+                          const success = await postScore(
+                            score,
+                            evidenceUrl,
+                            selectedLeaderboard.id
+                          );
+                          if (success) {
+                            onClose();
+                            window.location.reload();
+                          }
+                        }}
+                      >
+                        Submit
+                      </Button>
+                    </ModalFooter>
+                  </>
+                )}
+              </ModalContent>
+            </Modal>
           </div>
         </div>
       </div>

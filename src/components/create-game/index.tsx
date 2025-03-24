@@ -955,7 +955,7 @@ export default function CreateGame() {
                 />
 
                 <NumberInput
-                  label="Max Users shown"
+                  label="Users per page"
                   placeholder="Enter a user amount"
                   value={lb.maxUsersShown}
                   minValue={0}
@@ -1046,7 +1046,7 @@ export default function CreateGame() {
                   onlyBest: true,
                   game: {} as GameType,
                   scores: [],
-                  maxUsersShown: 20,
+                  maxUsersShown: 10,
                 },
               ])
             }

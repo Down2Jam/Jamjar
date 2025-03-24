@@ -1,1 +1,1 @@
-export type GameSort = "newest" | "oldest";
+export type GameSort = "newest" | "oldest" | "random";
