@@ -369,7 +369,7 @@ export default function CreateGame() {
                 : "Game created successfully!"
             );
             setWaitingPost(false);
-            router.push(`/games/${gameSlug || sanitizeSlug(title)}`);
+            router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
           } else {
             const error = await response.text();
             toast.error(error || "Failed to create game");
@@ -455,7 +455,7 @@ export default function CreateGame() {
           setGameSlug(sanitizeSlug(value));
           setIsSlugManuallyEdited(true);
         }}
-        description="This will be used in the URL: d2jam.com/games/your-game-name"
+        description="This will be used in the URL: d2jam.com/g/your-game-name"
       />
 
       <label className="text-sm font-medium">Game Description</label>

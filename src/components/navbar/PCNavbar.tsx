@@ -171,7 +171,7 @@ export default function PCNavbar() {
             important
             icon={<Gamepad2 />}
             name={hasGame ? "My Game" : "Create Game"}
-            href={hasGame ? "/games/" + hasGame.slug : "/create-game"}
+            href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
           />
         )}
         {user &&

@@ -126,7 +126,7 @@ export default function Games() {
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {games ? (
           games.map((game, index) => (
-            <Link key={game.name + index} href={`/games/${game.slug}`}>
+            <Link key={game.name + index} href={`/g/${game.slug}`}>
               <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
                 <CardHeader className="absolute top-0 flex justify-end">
                   <div className="border border-zinc-100/50 bg-primary p-2 pt-1 pb-1 rounded text-white">
