@@ -40,6 +40,7 @@ import {
   LandPlot,
   Plus,
   Rabbit,
+  Star,
   Trash,
   Trophy,
   Turtle,
@@ -81,6 +82,11 @@ export default function GamePage({
   const [seconds, setSeconds] = useState<number>(0);
   const [minutes, setMinutes] = useState<number>(0);
   const [hours, setHours] = useState<number>(0);
+  const [hoverStars, setHoverStars] = useState<{ [key: number]: number }>({});
+  const [hoverCategory, setHoverCategory] = useState<number | null>(null);
+  const [selectedStars, setSelectedStars] = useState<{ [key: number]: number }>(
+    {}
+  );
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -149,6 +155,37 @@ export default function GamePage({
                 __html: game.description || "No Description",
               }}
             />
+            {/* <div>
+              <div className="flex items-center gap-2">
+                <Vote />
+                <p>Ratings</p>
+              </div>
+              {!user && (
+                <p className="text-[#666] dark:text-[#ccc]">
+                  You must be logged in to rate games
+                </p>
+              )}
+              {user?.teams.filter((team) => team.game && team.game.published)
+                .length == 0 && (
+                <p className="text-[#666] dark:text-[#ccc]">
+                  Your ratings will not count towards the rankings as you did
+                  not submit a game
+                </p>
+              )}
+              {game.ratingCategories.map((ratingCategory) => (
+                <StarRow
+                  key={ratingCategory.id}
+                  id={ratingCategory.id}
+                  name={ratingCategory.name}
+                  hoverStars={hoverStars}
+                  setHoverStars={setHoverStars}
+                  hoverCategory={hoverCategory}
+                  setHoverCategory={setHoverCategory}
+                  selectedStars={selectedStars}
+                  setSelectedStars={setSelectedStars}
+                />
+              ))}
+            </div> */}
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
             {isEditable && (
@@ -706,78 +743,137 @@ export default function GamePage({
   );
 }
 
-/*
-<div className="max-w-4xl mx-auto px-4 py-8 text-[#333] dark:text-white">
-      
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-4xl font-bold">{game.name}</h1>
-        {isEditable && (
-          <Button
-            color="primary"
-            variant="solid"
-            onPress={() => router.push(`/create-game`)}
-          >
-            Edit
-          </Button>
-        )}
-      </div>
+function StarRow({
+  id,
+  name,
+  hoverStars,
+  setHoverStars,
+  selectedStars,
+  setSelectedStars,
+  hoverCategory,
+  setHoverCategory,
+}: {
+  id: number;
+  name: string;
+  hoverStars: { [key: number]: number };
+  setHoverStars: (stars: { [key: number]: number }) => void;
+  selectedStars: { [key: number]: number };
+  setSelectedStars: (stars: { [key: number]: number }) => void;
+  hoverCategory: number | null;
+  setHoverCategory: (id: number | null) => void;
+}) {
+  const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
 
-      
-      <div className="mb-8">
-        <p className="text-gray-600 flex items-center gap-2">
-          Created by{" "}
-          <span className="flex items-center gap-2">
-            {game.team.users.map((user) => (
-              <Link href={`/users/${user.slug}`} key={user.id}>
-                {user.name}
-              </Link>
-            ))}
-          </span>
-        </p>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">About</h2>
-        <div
-          className="prose-neutral prose-lg"
-          dangerouslySetInnerHTML={{
-            __html: game.description || "No Description",
-          }}
-        />
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Links</h2>
-        <div className="flex flex-col gap-2">
-          {game.downloadLinks.map((link: DownloadLinkType) => (
-            <div className="flex gap-2" key={link.id}>
-              <p>{link.platform}</p>
-              <a href={link.url} className="underline">
-                {link.url}
-              </a>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Views</p>
-          <p className="text-2xl font-bold">0</p>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Downloads</p>
-          <p className="text-2xl font-bold">0</p>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Rating</p>
-          <p className="text-2xl font-bold">N/A</p>
-        </div>
-        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">Comments</p>
-          <p className="text-2xl font-bold">0</p>
-        </div>
+  return (
+    <div className="flex items-center gap-4">
+      <p className="text-[#666] dark:text-[#ccc]">{name}</p>
+      <div className="flex">
+        {[2, 4, 6, 8, 10].map((value) => (
+          <StarElement
+            key={value}
+            id={id}
+            value={value}
+            hoverStars={hoverStars}
+            setHoverStars={setHoverStars}
+            hoverCategoryId={hoverCategory}
+            setHoverCategoryId={setHoverCategory}
+            selectedStars={selectedStars}
+            setSelectedStars={setSelectedStars}
+            newlyClicked={newlyClicked}
+            setNewlyClicked={setNewlyClicked}
+          />
+        ))}
       </div>
     </div>
-*/
+  );
+}
+
+function StarElement({
+  id,
+  value,
+  hoverStars,
+  setHoverStars,
+  selectedStars,
+  setSelectedStars,
+  hoverCategoryId,
+  setHoverCategoryId,
+  newlyClicked,
+  setNewlyClicked,
+}: {
+  id: number;
+  value: number;
+  hoverStars: { [key: number]: number };
+  setHoverStars: (stars: { [key: number]: number }) => void;
+  selectedStars: { [key: number]: number };
+  setSelectedStars: (stars: { [key: number]: number }) => void;
+  hoverCategoryId: number | null;
+  setHoverCategoryId: (id: number | null) => void;
+  newlyClicked: boolean;
+  setNewlyClicked: (arg0: boolean) => void;
+}) {
+  return (
+    <div
+      className="relative w-6 h-6 cursor-pointer"
+      onMouseEnter={() => setHoverCategoryId(id)}
+      onMouseLeave={() => {
+        setHoverCategoryId(null);
+        setHoverStars({});
+        setNewlyClicked(false);
+      }}
+    >
+      {/* Full Star */}
+      <Star
+        fill="currentColor"
+        className={`absolute transition-all duration-300 ${
+          hoverStars[id] > 0 &&
+          hoverStars[id] >= value &&
+          hoverCategoryId == id &&
+          !newlyClicked
+            ? "text-[#777]"
+            : selectedStars[id] > 0 && selectedStars[id] >= value
+            ? "text-yellow-400 dark:text-yellow-200"
+            : "text-[#ccc] dark:text-[#333]"
+        }`}
+      />
+      {/* Half Star (Overlapping Left Side) */}
+      <Star
+        fill="currentColor"
+        className={`absolute transition-all duration-300 ${
+          hoverStars[id] > 0 &&
+          hoverStars[id] >= value - 1 &&
+          hoverCategoryId == id &&
+          !newlyClicked
+            ? "text-[#777]"
+            : selectedStars[id] > 0 && selectedStars[id] >= value - 1
+            ? "text-yellow-400 dark:text-yellow-200"
+            : "text-[#ccc] dark:text-[#333]"
+        }`}
+        style={{ clipPath: "inset(0 50% 0 0)" }} // Show only left half
+      />
+      {/* Left Half (Triggers value - 1) */}
+      <div
+        className="absolute left-0 top-0 w-3 h-6"
+        onMouseEnter={() => {
+          setHoverStars({ ...hoverStars, [id]: value - 1 });
+          setNewlyClicked(false);
+        }}
+        onClick={() => {
+          setSelectedStars({ ...selectedStars, [id]: value - 1 });
+          setNewlyClicked(true);
+        }}
+      />
+      {/* Right Half (Triggers value) */}
+      <div
+        className="absolute right-0 top-0 w-3 h-6"
+        onMouseEnter={() => {
+          setHoverStars({ ...hoverStars, [id]: value });
+          setNewlyClicked(false);
+        }}
+        onClick={() => {
+          setSelectedStars({ ...selectedStars, [id]: value });
+          setNewlyClicked(true);
+        }}
+      />
+    </div>
+  );
+}
