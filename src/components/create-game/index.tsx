@@ -72,6 +72,7 @@ export default function CreateGame() {
   const [gameSlug, setGameSlug] = useState("");
   const [prevSlug, setPrevGameSlug] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
   const [editorKey, setEditorKey] = useState(0);
@@ -181,6 +182,7 @@ export default function CreateGame() {
       setThemeJustification(games[newid].themeJustification || "");
       setEditorKey((prev) => prev + 1);
       setThumbnailUrl(games[newid].thumbnail || null);
+      setBannerUrl(games[newid].banner || null);
       setDownloadLinks(games[newid].downloadLinks || []);
       setAchievements(games[newid].achievements || []);
       setFlags(
@@ -331,6 +333,7 @@ export default function CreateGame() {
                 gameSlug,
                 sanitizedHtml,
                 thumbnailUrl,
+                bannerUrl,
                 links,
                 userSlug,
                 category,
@@ -347,6 +350,7 @@ export default function CreateGame() {
                 gameSlug,
                 sanitizedHtml,
                 thumbnailUrl,
+                bannerUrl,
                 links,
                 userSlug,
                 category,
@@ -419,6 +423,7 @@ export default function CreateGame() {
             setThemeJustification("");
             setEditorKey((prev) => prev + 1);
             setThumbnailUrl(null);
+            setBannerUrl(null);
             setDownloadLinks([]);
             setAchievements([]);
             setTags([]);
@@ -542,6 +547,76 @@ export default function CreateGame() {
               }}
             >
               Remove Thumbnail
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <Spacer />
+
+      <div className="flex flex-col gap-2">
+        <p>Banner</p>
+        <p className="text-sm text-[#777] dark:text-[#bbb]">
+          Shows on the game page
+        </p>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("upload", file);
+
+            try {
+              const response = await fetch(
+                process.env.NEXT_PUBLIC_MODE === "PROD"
+                  ? "https://d2jam.com/api/v1/image"
+                  : "http://localhost:3005/api/v1/image",
+                {
+                  method: "POST",
+                  body: formData,
+                  headers: {
+                    authorization: `Bearer ${getCookie("token")}`,
+                  },
+                  credentials: "include",
+                }
+              );
+
+              if (response.ok) {
+                const data = await response.json();
+                setBannerUrl(data.data);
+                toast.success(data.message);
+              } else {
+                toast.error("Failed to upload image");
+              }
+            } catch (error) {
+              console.error(error);
+              toast.error("Error uploading image");
+            }
+          }}
+        />
+
+        {bannerUrl && (
+          <div className="w-full">
+            <div className="bg-[#222222] h-28 w-full relative">
+              <Image
+                src={bannerUrl}
+                alt={`${title}'s banner`}
+                className="object-cover"
+                fill
+              />
+            </div>
+            <Spacer y={3} />
+            <Button
+              color="danger"
+              size="sm"
+              onPress={() => {
+                setBannerUrl(null);
+              }}
+            >
+              Remove Banner
             </Button>
           </div>
         )}

@@ -13,6 +13,7 @@ export interface GameType {
   name: string;
   description?: string;
   thumbnail?: string;
+  banner?: string;
   createdAt: Date;
   updatedAt: Date;
   downloadLinks: DownloadLinkType[];

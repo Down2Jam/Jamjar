@@ -64,10 +64,10 @@ export default function GamePage({
     <>
       <div className="border-2 border-[#dddddd] dark:border-[#222224] relative rounded-xl overflow-hidden bg-white dark:bg-[#18181a] text-[#333] dark:text-white">
         <div className="bg-[#e4e4e4] dark:bg-[#222222] h-60 relative">
-          {game.thumbnail && (
+          {(game.thumbnail || game.banner) && (
             <Image
-              src={game.thumbnail}
-              alt={`${game.name}'s thumbnail`}
+              src={game.banner || game.thumbnail || ""}
+              alt={`${game.name}'s banner`}
               className="object-cover"
               fill
             />
@@ -77,7 +77,7 @@ export default function GamePage({
           <div className="w-2/3 p-4 flex flex-col gap-4">
             <div>
               <p className="text-4xl">{game.name}</p>
-              <p className="text-[#333] dark:text-white">
+              <p className="text-[#666] dark:text-[#ccc]">
                 By{" "}
                 {game.team.name ||
                   (game.team.users.length == 1
@@ -126,7 +126,7 @@ export default function GamePage({
               </div>
             </>
 
-            {game.tags && (
+            {game.tags && game.tags.length > 0 && (
               <>
                 <p className="text-[#666] dark:text-[#ccc] text-xs">TAGS</p>
                 <div className="flex flex-wrap gap-2">
@@ -152,7 +152,7 @@ export default function GamePage({
                 </div>
               </>
             )}
-            {game.flags && (
+            {game.flags && game.flags.length > 0 && (
               <>
                 <p className="text-[#666] dark:text-[#ccc] text-xs">FLAGS</p>
                 <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ export default function GamePage({
                 </Card>
               </div>
             )} */}
-            {game.downloadLinks && (
+            {game.downloadLinks && game.downloadLinks.length > 0 && (
               <>
                 <p className="text-[#666] dark:text-[#ccc] text-xs">LINKS</p>
                 <div className="flex flex-col gap-2 items-start">

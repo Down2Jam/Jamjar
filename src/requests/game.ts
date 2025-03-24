@@ -35,6 +35,7 @@ export async function postGame(
   gameSlug: string,
   description: string,
   thumbnail: string | null,
+  banner: string | null,
   downloadLinks: {
     url: string;
     platform: PlatformType;
@@ -56,6 +57,7 @@ export async function postGame(
       slug: gameSlug,
       description,
       thumbnail,
+      banner,
       downloadLinks,
       userSlug,
       category,
@@ -83,6 +85,7 @@ export async function updateGame(
   gameSlug: string,
   description: string,
   thumbnail: string | null,
+  banner: string | null,
   downloadLinks: {
     url: string;
     platform: PlatformType;
@@ -103,6 +106,7 @@ export async function updateGame(
       slug: gameSlug,
       description,
       thumbnail,
+      banner,
       downloadLinks,
       userSlug,
       category,
