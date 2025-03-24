@@ -19,6 +19,7 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
+  Calendar,
   Gamepad2,
   LandPlot,
   LoaderCircle,
@@ -84,7 +85,9 @@ export default function CreateGame() {
 
   const [games, setGames] = useState<GameType[]>([]);
   const [currentGame, setCurrentGame] = useState<number>(0);
-  const [category, setCategory] = useState<"REGULAR" | "ODA">("REGULAR");
+  const [category, setCategory] = useState<"REGULAR" | "ODA" | "EXTRA">(
+    "REGULAR"
+  );
   const [currentTeam, setCurrentTeam] = useState<number>(0);
   const [teams, setTeams] = useState<TeamType[]>([]);
   const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
@@ -475,10 +478,7 @@ export default function CreateGame() {
         description="This will be used in the URL: d2jam.com/g/your-game-name"
       />
 
-      {teams &&
-        teams.length > 0 &&
-        teams[currentTeam].users.length == 1 &&
-        activeJamResponse &&
+      {activeJamResponse &&
         (activeJamResponse.phase == "Jamming" ||
           activeJamResponse.phase == "Submission") && (
           <>
@@ -486,12 +486,16 @@ export default function CreateGame() {
             <Dropdown>
               <DropdownTrigger>
                 <Button>
-                  {category == "REGULAR" ? "Regular" : "One Dev Army"}
+                  {category == "REGULAR"
+                    ? "Regular"
+                    : category == "ODA"
+                    ? "One Dev Army"
+                    : "Extra"}
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
                 onAction={(key) => {
-                  setCategory(key as "REGULAR" | "ODA");
+                  setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                 }}
               >
                 <DropdownItem
@@ -501,12 +505,25 @@ export default function CreateGame() {
                 >
                   Regular
                 </DropdownItem>
+                {teams &&
+                teams.length > 0 &&
+                teams[currentTeam].users.length == 1 ? (
+                  <DropdownItem
+                    key="ODA"
+                    description="1 Dev, No third party assets"
+                    startContent={<Swords />}
+                  >
+                    One Dev Army (O.D.A)
+                  </DropdownItem>
+                ) : (
+                  <></>
+                )}
                 <DropdownItem
-                  key="ODA"
-                  description="1 Dev, No third party assets"
-                  startContent={<Swords />}
+                  key="EXTRA"
+                  description="Can be submitted during the rating period. Will not be ranked"
+                  startContent={<Calendar />}
                 >
-                  One Dev Army (O.D.A)
+                  Extra
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>

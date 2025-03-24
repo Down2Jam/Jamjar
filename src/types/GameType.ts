@@ -20,7 +20,7 @@ export interface GameType {
   updatedAt: Date;
   downloadLinks: DownloadLinkType[];
   jam: JamType;
-  category: "ODA" | "REGULAR";
+  category: "ODA" | "REGULAR" | "EXTRA";
   teamId: number;
   team: TeamType;
   ratingCategories: RatingCategoryType[];

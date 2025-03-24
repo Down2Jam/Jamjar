@@ -43,7 +43,7 @@ export async function postGame(
     platform: PlatformType;
   }[],
   userSlug: string,
-  category: "ODA" | "REGULAR",
+  category: "ODA" | "REGULAR" | "EXTRA",
   targetTeamId: number,
   ratingCategories: number[],
   majRatingCategories: number[],
@@ -95,7 +95,7 @@ export async function updateGame(
     platform: PlatformType;
   }[],
   userSlug: string,
-  category: "ODA" | "REGULAR",
+  category: "ODA" | "REGULAR" | "EXTRA",
   ratingCategories: number[],
   majRatingCategories: number[],
   published: boolean,

@@ -138,7 +138,9 @@ export default function Games() {
                     className={` p-2 pt-1 pb-1 rounded text-white shadow-md ${
                       game.category == "REGULAR"
                         ? "bg-blue-700"
-                        : "bg-purple-700"
+                        : game.category == "ODA"
+                        ? "bg-purple-700"
+                        : "bg-pink-700"
                     }`}
                   >
                     {game.category}
