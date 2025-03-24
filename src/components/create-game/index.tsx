@@ -1061,7 +1061,8 @@ export default function CreateGame() {
           teams.length > 0 &&
           teams[currentTeam].users.length == 1 &&
           activeJamResponse &&
-          activeJamResponse.phase == "Jamming" && (
+          (activeJamResponse.phase == "Jamming" ||
+            activeJamResponse.phase == "Submission") && (
             <>
               <p>Game Category</p>
               <Dropdown>
@@ -1104,34 +1105,39 @@ export default function CreateGame() {
               <p>{prevSlug ? "Update" : "Create"}</p>
             )}
           </Button>
-          {(!games[currentGame] || !games[currentGame].published) && (
-            <Button
-              color="secondary"
-              type="submit"
-              name="action"
-              value="publish"
-            >
-              {waitingPost ? (
-                <LoaderCircle className="animate-spin" size={16} />
-              ) : (
-                <p>{prevSlug ? "Publish" : "Create & Publish"}</p>
-              )}
-            </Button>
-          )}
-          {games[currentGame] && games[currentGame].published && (
-            <Button
-              color="danger"
-              type="submit"
-              name="action"
-              value="unpublish"
-            >
-              {waitingPost ? (
-                <LoaderCircle className="animate-spin" size={16} />
-              ) : (
-                <p>{"Unpublish"}</p>
-              )}
-            </Button>
-          )}
+          {(!games[currentGame] || !games[currentGame].published) &&
+            (activeJamResponse?.phase == "Jamming" ||
+              activeJamResponse?.phase == "Submission") && (
+              <Button
+                color="secondary"
+                type="submit"
+                name="action"
+                value="publish"
+              >
+                {waitingPost ? (
+                  <LoaderCircle className="animate-spin" size={16} />
+                ) : (
+                  <p>{prevSlug ? "Publish" : "Create & Publish"}</p>
+                )}
+              </Button>
+            )}
+          {games[currentGame] &&
+            games[currentGame].published &&
+            (activeJamResponse?.phase == "Jamming" ||
+              activeJamResponse?.phase == "Submission") && (
+              <Button
+                color="danger"
+                type="submit"
+                name="action"
+                value="unpublish"
+              >
+                {waitingPost ? (
+                  <LoaderCircle className="animate-spin" size={16} />
+                ) : (
+                  <p>{"Unpublish"}</p>
+                )}
+              </Button>
+            )}
         </div>
       </div>
     </Form>

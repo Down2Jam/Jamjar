@@ -9,6 +9,7 @@ import {
 } from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import { Bug, LogOut, Settings, User } from "lucide-react";
+import { redirect } from "next/navigation";
 
 interface NavbarUserProps {
   user: UserType;
@@ -32,16 +33,16 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
             <DropdownItem
               key="profile"
               className="text-[#333] dark:text-white"
-              href={`/u/${user.slug}`}
               startContent={<User size={16} />}
+              onPress={() => redirect(`/u/${user.slug}`)}
             >
               Profile
             </DropdownItem>
             <DropdownItem
               key="settings"
               className="text-[#333] dark:text-white"
-              href="/settings"
               startContent={<Settings size={16} />}
+              onPress={() => redirect("/settings")}
             >
               Settings
             </DropdownItem>
@@ -49,8 +50,10 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
               showDivider
               key="bug"
               className="text-[#333] dark:text-white"
-              href="https://github.com/Down2Jam/Jamjar/issues"
               startContent={<Bug size={16} />}
+              onPress={() =>
+                redirect("https://github.com/Down2Jam/Jamjar/issues")
+              }
             >
               Report Bug
             </DropdownItem>
@@ -59,8 +62,8 @@ export default function PCNavbarUser({ user }: NavbarUserProps) {
             key="logout"
             color="danger"
             className="text-danger"
-            href="/logout"
             startContent={<LogOut size={16} />}
+            onPress={() => redirect("/logout")}
           >
             Logout
           </DropdownItem>

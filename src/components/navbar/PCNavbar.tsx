@@ -166,12 +166,23 @@ export default function PCNavbar() {
       <NavbarContent justify="end" className="gap-4">
         <NavbarSearchbar />
         {user && <Divider orientation="vertical" className="h-1/2" />}
-        {user && jam && isInJam && jamPhase == "Jamming" && (
+        {user &&
+          jam &&
+          isInJam &&
+          (jamPhase == "Jamming" || jamPhase == "Submission") && (
+            <NavbarButtonLink
+              important
+              icon={<Gamepad2 />}
+              name={hasGame ? "My Game" : "Create Game"}
+              href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
+            />
+          )}
+        {user && jam && isInJam && jamPhase == "Rating" && hasGame && (
           <NavbarButtonLink
             important
             icon={<Gamepad2 />}
-            name={hasGame ? "My Game" : "Create Game"}
-            href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
+            name={"My Game"}
+            href={"/g/" + hasGame.slug}
           />
         )}
         {user &&

@@ -86,11 +86,14 @@ export default function JamHeader() {
           ? `Theme: ${topTheme}`
           : "No top-scoring theme available.",
       };
+    if (jamPhase === "Submission")
+      return {
+        text: "Submissions close soon",
+      };
     if (jamPhase === "Rating")
       return {
-        text: topTheme
-          ? `Theme: ${topTheme} RESULTS`
-          : "No top-scoring theme available.",
+        text: "Go rate games!",
+        href: "/games",
       };
     return { text: "" };
   };
@@ -104,7 +107,9 @@ export default function JamHeader() {
 
       // If we're in Jamming phase, fetch top themes and pick the first one
       if (
-        (jamData?.phase === "Jamming" || jamData?.phase === "Rating") &&
+        (jamData?.phase === "Jamming" ||
+          jamData?.phase === "Submission" ||
+          jamData?.phase === "Rating") &&
         jamData.jam
       ) {
         try {

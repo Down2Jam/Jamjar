@@ -7,6 +7,7 @@ export interface JamType {
   slaughterHours: number;
   votingHours: number;
   jammingHours: number;
+  submissionHours: number;
   ratingHours: number;
   startTime: Date;
   createdAt: Date;
@@ -21,4 +22,5 @@ export type JamPhase =
   | "Elimination"
   | "Voting"
   | "Jamming"
+  | "Submission"
   | "Rating";

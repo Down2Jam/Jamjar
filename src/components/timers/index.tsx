@@ -51,6 +51,21 @@ export default function Timers() {
           />
         </div>
       );
+    } else if (activeJamResponse.phase == "Submission") {
+      return (
+        <div className="text-[#333] dark:text-white transition-color duration-250">
+          <Timer
+            name="Submissions ends in"
+            targetDate={
+              new Date(
+                new Date(activeJamResponse.jam.startTime).getTime() +
+                  activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.submissionHours * 60 * 60 * 1000
+              )
+            }
+          />
+        </div>
+      );
     } else if (activeJamResponse.phase == "Rating") {
       return (
         <div className="text-[#333] dark:text-white transition-color duration-250">
@@ -60,7 +75,8 @@ export default function Timers() {
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +
                   activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
-                  activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                  activeJamResponse.jam.ratingHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.submissionHours * 60 * 60 * 1000
               )
             }
           />

@@ -57,7 +57,10 @@ export default function MobileNavbarUser({
           />
         </DropdownTrigger>
         <DropdownMenu>
-          {jam && currentJam && isInJam && jamPhase == "Jamming" ? (
+          {jam &&
+          currentJam &&
+          isInJam &&
+          (jamPhase == "Jamming" || jamPhase == "Submission") ? (
             <DropdownItem
               key="create-game"
               href="/create-game"
