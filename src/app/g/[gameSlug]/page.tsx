@@ -605,7 +605,7 @@ export default function GamePage({
                       (rating) =>
                         rating.user.teams.filter(
                           (team) => team.game && team.game.published
-                        ).length > 1
+                        ).length > 0
                     ).length /
                       (game.ratingCategories.length + ratingCategories.length)
                   )}
@@ -615,7 +615,7 @@ export default function GamePage({
                     (rating) =>
                       rating.user.teams.filter(
                         (team) => team.game && team.game.published
-                      ).length > 1
+                      ).length > 0
                   ).length /
                     (game.ratingCategories.length + ratingCategories.length)
                 ) < 5 && (
