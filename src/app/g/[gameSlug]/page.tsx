@@ -130,8 +130,8 @@ export default function GamePage({
             setUser(userData);
 
             if (gameData) {
-              const ratings = gameData.ratings
-                .filter((rating: RatingType) => rating.userId == userData.id)
+              const ratings = userData.ratings
+                .filter((rating: RatingType) => rating.gameId == gameData.id)
                 .reduce(
                   (
                     acc: { [key: number]: number },
