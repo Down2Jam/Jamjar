@@ -438,7 +438,14 @@ export default function GamePage({
                                     .reduce((acc, score) => {
                                       if (
                                         !acc.has(score.user.id) ||
-                                        acc.get(score.user.id).data < score.data
+                                        (acc.get(score.user.id).data <
+                                          score.data &&
+                                          (leaderboard.type == "SCORE" ||
+                                            leaderboard.type == "ENDURANCE")) ||
+                                        (acc.get(score.user.id).data >
+                                          score.data &&
+                                          (leaderboard.type == "GOLF" ||
+                                            leaderboard.type == "SPEEDRUN"))
                                       ) {
                                         acc.set(score.user.id, score);
                                       }
