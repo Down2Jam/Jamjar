@@ -619,6 +619,7 @@ export default function GamePage({
                         selectedLeaderboard?.type == "ENDURANCE") && (
                         <>
                           <NumberInput
+                            className="text-[#333] dark:text-white"
                             label="Hours"
                             placeholder="Enter hours"
                             value={hours}
@@ -628,6 +629,7 @@ export default function GamePage({
                             variant="bordered"
                           />
                           <NumberInput
+                            className="text-[#333] dark:text-white"
                             label="Minutes"
                             placeholder="Enter minutes"
                             value={minutes}
@@ -637,6 +639,7 @@ export default function GamePage({
                             variant="bordered"
                           />
                           <NumberInput
+                            className="text-[#333] dark:text-white"
                             label="Seconds"
                             placeholder="Enter seconds"
                             value={seconds}
@@ -646,6 +649,7 @@ export default function GamePage({
                             variant="bordered"
                           />
                           <NumberInput
+                            className="text-[#333] dark:text-white"
                             label="Milliseconds"
                             description="Milliseconds are out of 1000. e.g. if its 0.23 seconds enter 230"
                             placeholder="Enter milliseconds"
@@ -660,6 +664,7 @@ export default function GamePage({
                       {(selectedLeaderboard?.type == "SCORE" ||
                         selectedLeaderboard?.type == "GOLF") && (
                         <NumberInput
+                          className="text-[#333] dark:text-white"
                           label="Score"
                           placeholder="Enter your score"
                           value={score}
