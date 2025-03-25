@@ -577,7 +577,7 @@ export default function GamePage({
                 </Tabs>
               </div>
             )}
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <p className="text-default-500 text-xs">STATS</p>
               <p>
                 Ratings Received:{" "}
@@ -616,7 +616,7 @@ export default function GamePage({
                   )
                 )}
               </p>
-            </div>
+            </div> */}
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
               <ModalContent>
                 {(onClose) => (
