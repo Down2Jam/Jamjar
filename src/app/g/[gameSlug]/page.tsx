@@ -509,7 +509,9 @@ export default function GamePage({
 
                                           return `${
                                             hours > 0 ? `${hours}:` : ""
-                                          }${minutes}:${seconds
+                                          }${minutes
+                                            .toString()
+                                            .padStart(2, "0")}:${seconds
                                             .toString()
                                             .padStart(2, "0")}${
                                             milliseconds > 0
@@ -645,6 +647,7 @@ export default function GamePage({
                           />
                           <NumberInput
                             label="Milliseconds"
+                            description="Milliseconds are out of 1000. e.g. if its 0.23 seconds enter 230"
                             placeholder="Enter milliseconds"
                             value={milliseconds}
                             minValue={0}
