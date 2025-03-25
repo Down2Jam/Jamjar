@@ -1,3 +1,4 @@
+import { GameType } from "./GameType";
 import { UserType } from "./UserType";
 
 export interface JamType {
@@ -14,6 +15,7 @@ export interface JamType {
   updatedAt: Date;
   themePerUser: number;
   users: UserType[];
+  games: GameType[];
 }
 
 export type JamPhase =
