@@ -577,6 +577,46 @@ export default function GamePage({
                 </Tabs>
               </div>
             )}
+            <div className="flex flex-col gap-2">
+              <p className="text-default-500 text-xs">STATS</p>
+              <p>
+                Ratings Received:{" "}
+                {Math.round(
+                  game.ratings.length /
+                    (game.ratingCategories.length + ratingCategories.length)
+                )}
+              </p>
+              <p>
+                Ranked Ratings Received:{" "}
+                {Math.round(
+                  game.ratings.filter(
+                    (rating) =>
+                      rating.user.teams.filter(
+                        (team) => team.game && team.game.published
+                      ).length > 1
+                  ).length /
+                    (game.ratingCategories.length + ratingCategories.length)
+                )}
+              </p>
+              <p>
+                Ratings Given:{" "}
+                {Math.round(
+                  game.team.users.reduce(
+                    (prev, cur) =>
+                      prev +
+                      cur.ratings.reduce(
+                        (prev2, cur2) =>
+                          prev2 +
+                          1 /
+                            (cur2.game.ratingCategories.length +
+                              ratingCategories.length),
+                        0
+                      ),
+                    0
+                  )
+                )}
+              </p>
+            </div>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
               <ModalContent>
                 {(onClose) => (

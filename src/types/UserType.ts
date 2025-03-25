@@ -1,3 +1,4 @@
+import { RatingType } from "./RatingType";
 import { RoleType } from "./RoleType";
 import { TeamInviteType } from "./TeamInviteType";
 import { TeamType } from "./TeamType";
@@ -18,4 +19,5 @@ export interface UserType {
   teams: TeamType[];
   teamInvites: TeamInviteType[];
   ownedTeams: TeamType[];
+  ratings: RatingType[];
 }
