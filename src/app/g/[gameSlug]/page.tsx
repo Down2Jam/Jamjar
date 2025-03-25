@@ -919,11 +919,13 @@ export default function GamePage({
       <Spacer y={10} />
 
       <div className="flex flex-col gap-3">
-        {game?.comments?.map((comment) => (
-          <div key={comment.id}>
-            <CommentCard comment={comment} />
-          </div>
-        ))}
+        {game?.comments
+          ?.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          .map((comment) => (
+            <div key={comment.id}>
+              <CommentCard comment={comment} />
+            </div>
+          ))}
       </div>
     </>
   );
