@@ -36,6 +36,7 @@ import { getIcon } from "@/helpers/icon";
 import Link from "@/components/link-components/Link";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import {
+  AlertTriangle,
   CircleHelp,
   Edit,
   Eye,
@@ -577,17 +578,38 @@ export default function GamePage({
                 </Tabs>
               </div>
             )}
-            {/* <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
               <p className="text-default-500 text-xs">STATS</p>
-              <p>
+              <Chip
+                radius="sm"
+                size="sm"
+                className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
+                variant="faded"
+              >
                 Ratings Received:{" "}
                 {Math.round(
                   game.ratings.length /
                     (game.ratingCategories.length + ratingCategories.length)
                 )}
-              </p>
-              <p>
-                Ranked Ratings Received:{" "}
+              </Chip>
+              <div className="flex items-center gap-2">
+                <Chip
+                  radius="sm"
+                  size="sm"
+                  className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
+                  variant="faded"
+                >
+                  Ranked Ratings Received:{" "}
+                  {Math.round(
+                    game.ratings.filter(
+                      (rating) =>
+                        rating.user.teams.filter(
+                          (team) => team.game && team.game.published
+                        ).length > 1
+                    ).length /
+                      (game.ratingCategories.length + ratingCategories.length)
+                  )}
+                </Chip>
                 {Math.round(
                   game.ratings.filter(
                     (rating) =>
@@ -596,10 +618,39 @@ export default function GamePage({
                       ).length > 1
                   ).length /
                     (game.ratingCategories.length + ratingCategories.length)
+                ) < 5 && (
+                  <Tooltip
+                    className="text-red-500"
+                    content="This game needs 5 ratings received in order to be ranked after the rating period"
+                  >
+                    <AlertTriangle size={16} className="text-red-500" />
+                  </Tooltip>
                 )}
-              </p>
-              <p>
-                Ratings Given:{" "}
+              </div>
+              <div className="flex items-center gap-2">
+                <Chip
+                  radius="sm"
+                  size="sm"
+                  className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
+                  variant="faded"
+                >
+                  Ratings Given:{" "}
+                  {Math.round(
+                    game.team.users.reduce(
+                      (prev, cur) =>
+                        prev +
+                        cur.ratings.reduce(
+                          (prev2, cur2) =>
+                            prev2 +
+                            1 /
+                              (cur2.game.ratingCategories.length +
+                                ratingCategories.length),
+                          0
+                        ),
+                      0
+                    )
+                  )}
+                </Chip>
                 {Math.round(
                   game.team.users.reduce(
                     (prev, cur) =>
@@ -614,9 +665,16 @@ export default function GamePage({
                       ),
                     0
                   )
+                ) < 5 && (
+                  <Tooltip
+                    content="This game needs 5 ratings given in order to be ranked after the rating period"
+                    className="text-red-500"
+                  >
+                    <AlertTriangle size={16} className="text-red-500" />
+                  </Tooltip>
                 )}
-              </p>
-            </div> */}
+              </div>
+            </div>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
               <ModalContent>
                 {(onClose) => (
