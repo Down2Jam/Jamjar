@@ -19,6 +19,8 @@ import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ClockArrowDown, ClockArrowUp, Dice5 } from "lucide-react";
 import { getGames } from "@/requests/game";
+import { UserType } from "@/types/UserType";
+import { getSelf } from "@/requests/user";
 
 export default function Games() {
   const searchParams = useSearchParams();
@@ -32,6 +34,7 @@ export default function Games() {
       "random"
   );
   const router = useRouter();
+  const [user, setUser] = useState<UserType>();
 
   const sorts: Record<
     GameSort,
@@ -73,6 +76,15 @@ export default function Games() {
     }
     router.push(`?${params.toString()}`);
   };
+
+  useEffect(() => {
+    async function getData() {
+      const response = await getSelf();
+      setUser(await response.json());
+    }
+
+    getData();
+  }, []);
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -133,6 +145,11 @@ export default function Games() {
           games.map((game, index) => (
             <Link key={game.name + index} href={`/g/${game.slug}`}>
               <Card radius="lg" isFooterBlurred className="bg-[#212121] w-full">
+                {game.ratings.some((rating) => rating.userId == user?.id) && (
+                  <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
+                    <p className="opacity-50">RATED</p>
+                  </div>
+                )}
                 <CardHeader className="absolute top-0 flex justify-end">
                   <div
                     className={` p-2 pt-1 pb-1 rounded text-white shadow-md ${
