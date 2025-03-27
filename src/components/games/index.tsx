@@ -17,7 +17,13 @@ import {
 } from "@heroui/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ClockArrowDown, ClockArrowUp, Dice5 } from "lucide-react";
+import {
+  ChevronsDown,
+  CircleAlert,
+  ClockArrowDown,
+  ClockArrowUp,
+  Dice5,
+} from "lucide-react";
 import { getGames } from "@/requests/game";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -27,7 +33,7 @@ export default function Games() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [games, setGames] = useState<GameType[]>();
   const [sort, setSort] = useState<GameSort>(
-    (["newest", "oldest", "random"].includes(
+    (["newest", "oldest", "random", "leastratings", "danger"].includes(
       searchParams.get("sort") as GameSort
     ) &&
       (searchParams.get("sort") as GameSort)) ||
@@ -40,20 +46,20 @@ export default function Games() {
     GameSort,
     { name: string; icon: ReactNode; description: string }
   > = {
-    // top: {
-    //   name: "Most Rated",
-    //   icon: <Star />,
-    //   description: "Shows the most rated game first",
-    // },
-    // bottom: {
-    //   name: "Least Rated",
-    //   icon: <StarHalfIcon />,
-    //   description: "Shows the least rated game first",
-    // },
     random: {
       name: "Random",
       icon: <Dice5 />,
       description: "Shows games in a random order",
+    },
+    leastratings: {
+      name: "Least Ratings",
+      icon: <ChevronsDown />,
+      description: "Shows games that have the least amount of ratings first",
+    },
+    danger: {
+      name: "Danger",
+      icon: <CircleAlert />,
+      description: "Shows games closest to being able to be ranked first",
     },
     newest: {
       name: "Newest",
