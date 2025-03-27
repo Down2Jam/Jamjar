@@ -554,7 +554,7 @@ export default function CreateGame() {
       <div className="flex flex-col gap-2">
         <p>Thumbnail</p>
         <p className="text-sm text-[#777] dark:text-[#bbb]">
-          Shows when people are browsing through games (382x220)
+          Shows when people are browsing through games (384x216)
         </p>
         <input
           type="file"
@@ -597,7 +597,7 @@ export default function CreateGame() {
 
         {thumbnailUrl && (
           <div className="w-full">
-            <div className="bg-[#222222] h-[220px] w-[382px] relative">
+            <div className="bg-[#222222] h-[216px] w-[384px] relative">
               <Image
                 src={thumbnailUrl}
                 alt={`${title}'s thumbnail`}

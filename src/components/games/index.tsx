@@ -59,7 +59,7 @@ export default function Games() {
     danger: {
       name: "Danger",
       icon: <CircleAlert />,
-      description: "Shows games closest to being able to be ranked first",
+      description: "Shows games closest to being able to be ranked",
     },
     newest: {
       name: "Newest",
