@@ -4,6 +4,10 @@ import { Card, Image, Link, Spacer } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { GameType } from "@/types/GameType";
 import { getGames } from "@/requests/game";
+import ButtonAction from "../link-components/ButtonAction";
+import { ExternalLink, MoreHorizontal } from "lucide-react";
+import { toast } from "react-toastify";
+import ButtonLink from "../link-components/ButtonLink";
 
 export default function SidebarGames() {
   const [games, setGames] = useState<GameType[]>([]);
@@ -73,6 +77,20 @@ export default function SidebarGames() {
                 </Card>
               </Link>
             ))}
+        </div>
+        <div className="flex justify-center gap-2">
+          <ButtonAction
+            icon={<MoreHorizontal />}
+            name="Load More"
+            onPress={() => {
+              toast.warning("Game pagination coming soon");
+            }}
+          />
+          <ButtonLink
+            icon={<ExternalLink />}
+            name="To Games Page"
+            href={`/games`}
+          />
         </div>
       </div>
     </>
