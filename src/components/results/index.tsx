@@ -35,11 +35,48 @@ export default function Results() {
       (searchParams.get("contentType") as "MAJORITYCONTENT" | "ALL")) ||
       "MAJORITYCONTENT"
   );
+  const [sort, setSort] = useState<
+    | "OVERALL"
+    | "GAMEPLAY"
+    | "AUDIO"
+    | "GRAPHICS"
+    | "CREATIVITY"
+    | "EMOTIONALDELIVERY"
+    | "THEME"
+  >(
+    ([
+      "OVERALL",
+      "GAMEPLAY",
+      "AUDIO",
+      "GRAPHICS",
+      "CREATIVITY",
+      "EMOTIONALDELIVERY",
+      "THEME",
+    ].includes(
+      searchParams.get("sort") as
+        | "OVERALL"
+        | "GAMEPLAY"
+        | "AUDIO"
+        | "GRAPHICS"
+        | "CREATIVITY"
+        | "EMOTIONALDELIVERY"
+        | "THEME"
+    ) &&
+      (searchParams.get("sort") as
+        | "OVERALL"
+        | "GAMEPLAY"
+        | "AUDIO"
+        | "GRAPHICS"
+        | "CREATIVITY"
+        | "EMOTIONALDELIVERY"
+        | "THEME")) ||
+      "OVERALL"
+  );
   const router = useRouter();
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getResults(category, contentType);
+      const response = await getResults(category, contentType, sort);
 
       if (response.ok) {
         const gameData = (await response.json()).data;
@@ -48,7 +85,7 @@ export default function Results() {
     };
 
     getData();
-  }, [category, contentType]);
+  }, [category, contentType, sort]);
 
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -152,6 +189,43 @@ export default function Results() {
                 >
                   All
                 </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+            <Dropdown backdrop="opaque">
+              <DropdownTrigger>
+                <Button
+                  size="sm"
+                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                  variant="faded"
+                >
+                  {sort}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                onAction={(key) => {
+                  setSort(
+                    key as
+                      | "OVERALL"
+                      | "GAMEPLAY"
+                      | "AUDIO"
+                      | "GRAPHICS"
+                      | "CREATIVITY"
+                      | "EMOTIONALDELIVERY"
+                      | "THEME"
+                  );
+                  updateQueryParam("contentType", key as string);
+                }}
+                className="text-[#333] dark:text-white"
+              >
+                <DropdownItem key="OVERALL">Overall</DropdownItem>
+                <DropdownItem key="GAMEPLAY">Gameplay</DropdownItem>
+                <DropdownItem key="AUDIO">Audio</DropdownItem>
+                <DropdownItem key="GRAPHICS">Graphics</DropdownItem>
+                <DropdownItem key="CREATIVITY">Creativity</DropdownItem>
+                <DropdownItem key="EMOTIONALDELIVERY">
+                  Emotional Delivery
+                </DropdownItem>
+                <DropdownItem key="THEME">Theme</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>

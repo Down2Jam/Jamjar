@@ -137,8 +137,12 @@ export async function getGames(sort: string) {
   return fetch(`${BASE_URL}/games?sort=${sort}`);
 }
 
-export async function getResults(category: string, contentType: string) {
+export async function getResults(
+  category: string,
+  contentType: string,
+  sort: string
+) {
   return fetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}`
+    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}`
   );
 }
