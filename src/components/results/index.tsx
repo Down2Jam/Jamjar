@@ -122,12 +122,13 @@ export default function Results() {
         {games &&
           games.map((game) => (
             <Card key={game.id}>
-              <CardBody className="flex-row items-center">
+              <CardBody className="flex-row items-center gap-4">
                 <Image
                   alt={`${game.name}'s thumbnail`}
                   height={128}
                   src={game.thumbnail ?? "/images/D2J_Icon.png"}
                   width={128}
+                  className="w-32 h-32"
                 />
                 <div className="flex flex-col">
                   <Link
@@ -137,12 +138,12 @@ export default function Results() {
                     center={false}
                   />
                   {game.categoryAverages
-                    .sort((a, b) => b.averageScore - a.averageScore)
+                    .sort((a, b) => a.placement - b.placement)
                     .map((category) => (
                       <div key={category.categoryId}>
                         {category.categoryName}:{" "}
                         <span className="text-default-500">
-                          {category.averageScore / 2} stars
+                          {(category.averageScore / 2).toFixed(2)} stars
                         </span>{" "}
                         <span className="text-default-400">
                           ({ordinal_suffix_of(category.placement)})
