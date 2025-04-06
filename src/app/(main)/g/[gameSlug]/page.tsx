@@ -310,60 +310,61 @@ export default function GamePage({
             </div> */}
             <div className="flex flex-col gap-3">
               <p className="text-[#666] dark:text-[#ccc] text-xs">RATINGS</p>
-              {activeJamResponse?.jam?.id != game.jamId && (
-                <div className="w-96 h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart
-                      cx="50%"
-                      cy="50%"
-                      outerRadius="70%"
-                      data={[
-                        {
-                          subject: "Overall",
-                          A: 5,
-                          B: 10,
-                          fullMark: 10,
-                        },
-                        {
-                          subject: "Graphics",
-                          A: 6,
-                          B: 3,
-                          fullMark: 10,
-                        },
-                        {
-                          subject: "Audio",
-                          A: 10,
-                          B: 8,
-                          fullMark: 10,
-                        },
-                        {
-                          subject: "Emotional Delivery",
-                          A: 10,
-                          B: 8,
-                          fullMark: 10,
-                        },
-                        {
-                          subject: "Audio",
-                          A: 10,
-                          B: 8,
-                          fullMark: 10,
-                        },
-                      ]}
-                    >
-                      <PolarGrid />
-                      <PolarAngleAxis dataKey="subject" />
-                      <PolarRadiusAxis domain={[0, 10]} />
-                      <Radar
-                        name="Ratings"
-                        dataKey="A"
-                        stroke="#8884d8"
-                        fill="#8884d8"
-                        fillOpacity={0.6}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-              )}
+              {activeJamResponse &&
+                activeJamResponse?.jam?.id != game.jamId && (
+                  <div className="w-96 h-96">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart
+                        cx="50%"
+                        cy="50%"
+                        outerRadius="70%"
+                        data={[
+                          {
+                            subject: "Overall",
+                            A: 5,
+                            B: 10,
+                            fullMark: 10,
+                          },
+                          {
+                            subject: "Graphics",
+                            A: 6,
+                            B: 3,
+                            fullMark: 10,
+                          },
+                          {
+                            subject: "Audio",
+                            A: 10,
+                            B: 8,
+                            fullMark: 10,
+                          },
+                          {
+                            subject: "Emotional Delivery",
+                            A: 10,
+                            B: 8,
+                            fullMark: 10,
+                          },
+                          {
+                            subject: "Audio",
+                            A: 10,
+                            B: 8,
+                            fullMark: 10,
+                          },
+                        ]}
+                      >
+                        <PolarGrid />
+                        <PolarAngleAxis dataKey="subject" />
+                        <PolarRadiusAxis domain={[0, 10]} />
+                        <Radar
+                          name="Ratings"
+                          dataKey="A"
+                          stroke="#8884d8"
+                          fill="#8884d8"
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               {isEditable && activeJamResponse?.jam?.id == game.jamId && (
                 <p className="text-[#666] dark:text-[#ccc] text-xs">
                   You can&apos;t rate your own game

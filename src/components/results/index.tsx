@@ -28,11 +28,18 @@ export default function Results() {
       (searchParams.get("category") as "REGULAR" | "ODA")) ||
       "REGULAR"
   );
+  const [contentType, setContentType] = useState<"MAJORITYCONTENT" | "ALL">(
+    (["MAJORITYCONTENT", "ALL"].includes(
+      searchParams.get("contentType") as "MAJORITYCONTENT" | "ALL"
+    ) &&
+      (searchParams.get("contentType") as "MAJORITYCONTENT" | "ALL")) ||
+      "MAJORITYCONTENT"
+  );
   const router = useRouter();
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getResults(category);
+      const response = await getResults(category, contentType);
 
       if (response.ok) {
         const gameData = (await response.json()).data;
@@ -41,7 +48,7 @@ export default function Results() {
     };
 
     getData();
-  }, [category]);
+  }, [category, contentType]);
 
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -114,6 +121,39 @@ export default function Results() {
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
+            <Dropdown backdrop="opaque">
+              <DropdownTrigger>
+                <Button
+                  size="sm"
+                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                  variant="faded"
+                >
+                  {contentType}
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                onAction={(key) => {
+                  setContentType(key as "MAJORITYCONTENT" | "ALL");
+                  updateQueryParam("contentType", key as string);
+                }}
+                className="text-[#333] dark:text-white"
+              >
+                <DropdownItem
+                  key="MAJORITYCONTENT"
+                  description="Majority of art, audio, etc. made in the jam time"
+                  startContent={<Gamepad2 />}
+                >
+                  Majority Content
+                </DropdownItem>
+                <DropdownItem
+                  key="ALL"
+                  description="All art, audio regardless of when it was made"
+                  startContent={<Swords />}
+                >
+                  All
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
           </div>
         </div>
       </section>
@@ -126,8 +166,8 @@ export default function Results() {
                 <Image
                   removeWrapper
                   alt={`${game.name}'s thumbnail`}
-                  className="z-0 w-36 h-36 object-cover"
-                  height={144}
+                  className="z-0 h-[108px] w-[192px] object-cover"
+                  height={108}
                   width="100%"
                   isZoomed
                   src={game.thumbnail ?? "/images/D2J_Icon.png"}
