@@ -331,57 +331,66 @@ export default function GamePage({
                 activeJamResponse?.jam?.id != game.jamId) ||
                 user?.id == 3) && (
                 <>
-                  {Object.keys(game?.scores || {}).map((score) => (
-                    <div
-                      key={score}
-                      className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
-                    >
-                      <span className="text-default-500 text-sm">{score}:</span>
-                      <span
-                        className={
-                          game.scores[score].placement == 1
-                            ? "text-yellow-500"
-                            : game.scores[score].placement == 2
-                            ? "text-slate-500"
-                            : game.scores[score].placement == 3
-                            ? "text-orange-700"
-                            : game.scores[score].placement >= 4 &&
-                              game.scores[score].placement <= 5
-                            ? "text-blue-500"
-                            : game.scores[score].placement >= 6 &&
-                              game.scores[score].placement <= 10
-                            ? "text-purple-500"
-                            : "text-[#666] dark:text-[#ccc]"
-                        }
+                  {Object.keys(game?.scores || {})
+                    .sort(
+                      (a, b) =>
+                        (game.scores[a].placement || 0) -
+                        (game.scores[b].placement || 0)
+                    )
+                    .map((score) => (
+                      <div
+                        key={score}
+                        className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                       >
-                        {(game.scores[score].averageScore / 2).toFixed(2)} stars
-                      </span>
-                      {game.scores[score].placement && (
-                        <span className="text-default-500">
-                          ({ordinal_suffix_of(game.scores[score].placement)})
+                        <span className="text-default-500 text-sm">
+                          {score}:
                         </span>
-                      )}
-                      <span className="flex items-center justify-center">
-                        {game.scores[score].placement == 1 && (
-                          <Award size={16} className="text-yellow-500" />
+                        <span
+                          className={
+                            game.scores[score].placement == 1
+                              ? "text-yellow-500"
+                              : game.scores[score].placement == 2
+                              ? "text-slate-500"
+                              : game.scores[score].placement == 3
+                              ? "text-orange-700"
+                              : game.scores[score].placement >= 4 &&
+                                game.scores[score].placement <= 5
+                              ? "text-blue-500"
+                              : game.scores[score].placement >= 6 &&
+                                game.scores[score].placement <= 10
+                              ? "text-purple-500"
+                              : "text-[#666] dark:text-[#ccc]"
+                          }
+                        >
+                          {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
+                          stars
+                        </span>
+                        {game.scores[score].placement && (
+                          <span className="text-default-500">
+                            ({ordinal_suffix_of(game.scores[score].placement)})
+                          </span>
                         )}
-                        {game.scores[score].placement == 2 && (
-                          <Award size={16} className="text-slate-500" />
-                        )}
-                        {game.scores[score].placement == 3 && (
-                          <Award size={16} className="text-orange-700" />
-                        )}
-                        {game.scores[score].placement >= 4 &&
-                          game.scores[score].placement <= 5 && (
-                            <Badge size={12} className="text-blue-500" />
+                        <span className="flex items-center justify-center">
+                          {game.scores[score].placement == 1 && (
+                            <Award size={16} className="text-yellow-500" />
                           )}
-                        {game.scores[score].placement >= 6 &&
-                          game.scores[score].placement <= 10 && (
-                            <Badge size={12} className="text-purple-500" />
+                          {game.scores[score].placement == 2 && (
+                            <Award size={16} className="text-slate-500" />
                           )}
-                      </span>
-                    </div>
-                  ))}
+                          {game.scores[score].placement == 3 && (
+                            <Award size={16} className="text-orange-700" />
+                          )}
+                          {game.scores[score].placement >= 4 &&
+                            game.scores[score].placement <= 5 && (
+                              <Badge size={12} className="text-blue-500" />
+                            )}
+                          {game.scores[score].placement >= 6 &&
+                            game.scores[score].placement <= 10 && (
+                              <Badge size={12} className="text-purple-500" />
+                            )}
+                        </span>
+                      </div>
+                    ))}
                   <div className="w-96 h-60">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
