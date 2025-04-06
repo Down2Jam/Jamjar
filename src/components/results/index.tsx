@@ -13,7 +13,7 @@ import {
   DropdownMenu,
   DropdownTrigger,
 } from "@heroui/react";
-import { Gamepad2, Swords } from "lucide-react";
+import { Award, Badge, Gamepad2, Swords } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -128,7 +128,7 @@ export default function Results() {
                   height={128}
                   src={game.thumbnail ?? "/images/D2J_Icon.png"}
                   width={128}
-                  className="w-32 h-32"
+                  className="w-32 h-32 object-cover rounded-md"
                 />
                 <div className="flex flex-col">
                   <Link
@@ -140,14 +140,45 @@ export default function Results() {
                   {game.categoryAverages
                     .sort((a, b) => a.placement - b.placement)
                     .map((category) => (
-                      <div key={category.categoryId}>
-                        {category.categoryName}:{" "}
-                        <span className="text-default-500">
-                          {(category.averageScore / 2).toFixed(2)} stars
-                        </span>{" "}
-                        <span className="text-default-400">
-                          ({ordinal_suffix_of(category.placement)})
-                        </span>
+                      <div
+                        key={category.categoryId}
+                        className="flex flex-row items-center"
+                      >
+                        <p>
+                          {category.categoryName}:{" "}
+                          <span className="text-default-500">
+                            {(category.averageScore / 2).toFixed(2)} stars
+                          </span>{" "}
+                          <span className="text-default-400">
+                            ({ordinal_suffix_of(category.placement)})
+                          </span>
+                        </p>
+                        {category.placement == 1 && (
+                          <div className="text-yellow-500">
+                            <Award />
+                          </div>
+                        )}
+                        {category.placement == 2 && (
+                          <div className="text-slate-500">
+                            <Award />
+                          </div>
+                        )}
+                        {category.placement == 3 && (
+                          <div className="text-orange-700">
+                            <Award />
+                          </div>
+                        )}
+                        {category.placement >= 4 && category.placement <= 5 && (
+                          <div className="text-blue-500">
+                            <Badge />
+                          </div>
+                        )}
+                        {category.placement >= 6 &&
+                          category.placement <= 10 && (
+                            <div className="text-purple-500">
+                              <Badge />
+                            </div>
+                          )}
                       </div>
                     ))}
                 </div>
