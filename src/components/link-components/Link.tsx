@@ -7,9 +7,15 @@ interface LinkProps {
   name: string;
   href: string;
   color?: "blue" | "text";
+  center?: boolean;
 }
 
-export default function Link({ name, href, color = "text" }: LinkProps) {
+export default function Link({
+  name,
+  href,
+  color = "text",
+  center = true,
+}: LinkProps) {
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
 
   useEffect(() => {
@@ -33,7 +39,9 @@ export default function Link({ name, href, color = "text" }: LinkProps) {
         color == "blue"
           ? "text-[#5cbdce] dark:text-[#4092b3]"
           : "text-[#333] dark:text-white"
-      } flex justify-center duration-500 ease-in-out transition-all transform ${
+      } flex ${
+        center ? "justify-center" : ""
+      } duration-500 ease-in-out transition-all transform ${
         !reduceMotion ? "hover:scale-110" : ""
       } transition-color`}
     >

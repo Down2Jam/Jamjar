@@ -1179,6 +1179,61 @@ export default function CreateGame() {
           </Button>
         </div>
 
+        {/* <Spacer />
+
+        <div className="flex flex-col gap-2">
+          <p className="text-[#333] dark:text-white">Soundtrack</p>
+          <p className="text-sm text-[#777] dark:text-[#bbb]">
+            The soundtrack of your game for people to listen to when browsing
+            your game page.
+          </p>
+          <Button
+            onPress={async () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = "audio/*";
+              input.onchange = async (e: Event) => {
+                const file = (e.target as HTMLInputElement)?.files?.[0];
+                if (!file) return;
+
+                const formData = new FormData();
+                formData.append("upload", file);
+
+                try {
+                  const response = await fetch(
+                    process.env.NEXT_PUBLIC_MODE === "PROD"
+                      ? "https://d2jam.com/api/v1/music"
+                      : "http://localhost:3005/api/v1/music",
+                    {
+                      method: "POST",
+                      body: formData,
+                      headers: {
+                        authorization: `Bearer ${getCookie("token")}`,
+                      },
+                      credentials: "include",
+                    }
+                  );
+
+                  const result = await response.json();
+                  if (response.ok) {
+                    toast.error("Song uploaded");
+                    console.log("Upload successful:", result);
+                  } else {
+                    toast.error("Upload failed");
+                    console.error("Upload failed:", result);
+                  }
+                } catch (error) {
+                  toast.error("Error uploading file");
+                  console.error("Error uploading file:", error);
+                }
+              };
+              input.click();
+            }}
+          >
+            Add Song
+          </Button>
+        </div> */}
+
         <Spacer />
 
         <div className="flex gap-2">

@@ -9,8 +9,8 @@
       "lint": "next lint"
    },
    "dependencies": {
-      "@icons-pack/react-simple-icons": "^11.0.1",
       "@heroui/react": "2.7.5",
+      "@icons-pack/react-simple-icons": "^11.0.1",
       "@tailwindcss/typography": "^0.5.16",
       "@tiptap/extension-blockquote": "^2.11.2",
       "@tiptap/extension-bold": "^2.11.2",
@@ -61,6 +61,7 @@
       "react-hotkeys-hook": "^4.6.1",
       "react-select": "^5.9.0",
       "react-toastify": "^11.0.3",
+      "recharts": "^2.15.2",
       "sanitize-html": "^2.14.0",
       "tiptap-extension-resize-image": "^1.2.1",
       "tiptap-markdown": "^0.8.10",

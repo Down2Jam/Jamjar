@@ -62,6 +62,14 @@ import { postRating } from "@/requests/rating";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function GamePage({
   params,
@@ -302,12 +310,66 @@ export default function GamePage({
             </div> */}
             <div className="flex flex-col gap-3">
               <p className="text-[#666] dark:text-[#ccc] text-xs">RATINGS</p>
-              {isEditable && (
+              {activeJamResponse?.jam?.id != game.jamId && (
+                <div className="w-96 h-96">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart
+                      cx="50%"
+                      cy="50%"
+                      outerRadius="70%"
+                      data={[
+                        {
+                          subject: "Overall",
+                          A: 5,
+                          B: 10,
+                          fullMark: 10,
+                        },
+                        {
+                          subject: "Graphics",
+                          A: 6,
+                          B: 3,
+                          fullMark: 10,
+                        },
+                        {
+                          subject: "Audio",
+                          A: 10,
+                          B: 8,
+                          fullMark: 10,
+                        },
+                        {
+                          subject: "Emotional Delivery",
+                          A: 10,
+                          B: 8,
+                          fullMark: 10,
+                        },
+                        {
+                          subject: "Audio",
+                          A: 10,
+                          B: 8,
+                          fullMark: 10,
+                        },
+                      ]}
+                    >
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="subject" />
+                      <PolarRadiusAxis domain={[0, 10]} />
+                      <Radar
+                        name="Ratings"
+                        dataKey="A"
+                        stroke="#8884d8"
+                        fill="#8884d8"
+                        fillOpacity={0.6}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+              {isEditable && activeJamResponse?.jam?.id == game.jamId && (
                 <p className="text-[#666] dark:text-[#ccc] text-xs">
                   You can&apos;t rate your own game
                 </p>
               )}
-              {!user && (
+              {!user && activeJamResponse?.jam?.id == game.jamId && (
                 <p className="text-[#666] dark:text-[#ccc] text-xs">
                   You must be logged in to rate games
                 </p>
@@ -315,9 +377,9 @@ export default function GamePage({
               {!isEditable &&
                 user?.teams.filter((team) => team.game && team.game.published)
                   .length == 0 &&
-                (activeJamResponse?.jam?.id != game.jamId ||
-                  (activeJamResponse?.phase != "Rating" &&
-                    activeJamResponse?.phase != "Submission")) && (
+                activeJamResponse?.jam?.id == game.jamId &&
+                activeJamResponse?.phase != "Rating" &&
+                activeJamResponse?.phase != "Submission" && (
                   <p className="text-[#666] dark:text-[#ccc] text-xs">
                     It is not the rating period
                   </p>

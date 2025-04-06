@@ -136,3 +136,7 @@ export async function updateGame(
 export async function getGames(sort: string) {
   return fetch(`${BASE_URL}/games?sort=${sort}`);
 }
+
+export async function getResults(category: string) {
+  return fetch(`${BASE_URL}/results?category=${category}`);
+}
