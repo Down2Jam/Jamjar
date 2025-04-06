@@ -71,6 +71,7 @@ import {
   PolarAngleAxis,
   PolarRadiusAxis,
   ResponsiveContainer,
+  Legend,
 } from "recharts";
 
 export default function GamePage({
@@ -400,7 +401,7 @@ export default function GamePage({
                         data={Object.keys(game?.scores || {}).map((score) => ({
                           subject: score,
                           A: game.scores[score].averageScore / 2,
-                          B: game.scores[score].averageScore / 2,
+                          B: game.scores[score].averageUnrankedScore / 2,
                           fullMark: 5,
                         }))}
                       >
@@ -412,19 +413,20 @@ export default function GamePage({
                           tick={false}
                         />
                         <Radar
-                          name="Ratings"
+                          name="All"
+                          dataKey="B"
+                          stroke="#d884c7"
+                          fill="#d884c7"
+                          fillOpacity={0.6}
+                        />
+                        <Radar
+                          name="Ranked"
                           dataKey="A"
                           stroke="#8884d8"
                           fill="#8884d8"
                           fillOpacity={0.6}
                         />
-                        <Radar
-                          name="Ratings"
-                          dataKey="B"
-                          stroke="#8884d8"
-                          fill="#8884d8"
-                          fillOpacity={0.6}
-                        />
+                        <Legend />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>

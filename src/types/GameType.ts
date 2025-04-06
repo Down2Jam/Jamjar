@@ -38,6 +38,7 @@ export interface GameType {
     [name: string]: {
       placement: number;
       averageScore: number;
+      averageUnrankedScore: number;
     };
   };
 }
