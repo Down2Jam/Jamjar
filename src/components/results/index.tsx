@@ -158,39 +158,41 @@ export default function Results() {
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>
-            <Dropdown backdrop="opaque">
-              <DropdownTrigger>
-                <Button
-                  size="sm"
-                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                  variant="faded"
+            {category == "REGULAR" && (
+              <Dropdown backdrop="opaque">
+                <DropdownTrigger>
+                  <Button
+                    size="sm"
+                    className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                    variant="faded"
+                  >
+                    {contentType}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu
+                  onAction={(key) => {
+                    setContentType(key as "MAJORITYCONTENT" | "ALL");
+                    updateQueryParam("contentType", key as string);
+                  }}
+                  className="text-[#333] dark:text-white"
                 >
-                  {contentType}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                onAction={(key) => {
-                  setContentType(key as "MAJORITYCONTENT" | "ALL");
-                  updateQueryParam("contentType", key as string);
-                }}
-                className="text-[#333] dark:text-white"
-              >
-                <DropdownItem
-                  key="MAJORITYCONTENT"
-                  description="Majority of art, audio, etc. made in the jam time"
-                  startContent={<Gamepad2 />}
-                >
-                  Majority Content
-                </DropdownItem>
-                <DropdownItem
-                  key="ALL"
-                  description="All art, audio regardless of when it was made"
-                  startContent={<Swords />}
-                >
-                  All
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+                  <DropdownItem
+                    key="MAJORITYCONTENT"
+                    description="Majority of art, audio, etc. made in the jam time"
+                    startContent={<Gamepad2 />}
+                  >
+                    Majority Content
+                  </DropdownItem>
+                  <DropdownItem
+                    key="ALL"
+                    description="All art, audio regardless of when it was made"
+                    startContent={<Swords />}
+                  >
+                    All
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            )}
             <Dropdown backdrop="opaque">
               <DropdownTrigger>
                 <Button
