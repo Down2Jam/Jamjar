@@ -977,10 +977,10 @@ export default function GamePage({
                             selectedLeaderboard.type == "ENDURANCE"
                           ) {
                             finalScore =
-                              milliseconds +
-                              seconds * 1000 +
-                              minutes * 1000 * 60 +
-                              hours * 1000 * 60 * 60;
+                              (milliseconds || 0) +
+                              (seconds || 0) * 1000 +
+                              (minutes || 0) * 1000 * 60 +
+                              (hours || 0) * 1000 * 60 * 60;
                           }
 
                           const success = await postScore(
