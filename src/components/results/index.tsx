@@ -12,9 +12,9 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
+  Image,
 } from "@heroui/react";
 import { Award, Badge, Gamepad2, Swords } from "lucide-react";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -124,11 +124,13 @@ export default function Results() {
             <Card key={game.id}>
               <CardBody className="flex-row items-center gap-4">
                 <Image
+                  removeWrapper
                   alt={`${game.name}'s thumbnail`}
-                  height={128}
+                  className="z-0 w-36 h-36 object-cover"
+                  height={144}
+                  width="100%"
+                  isZoomed
                   src={game.thumbnail ?? "/images/D2J_Icon.png"}
-                  width={128}
-                  className="w-32 h-32 object-cover rounded-md"
                 />
                 <div className="flex flex-col">
                   <Link
@@ -142,7 +144,7 @@ export default function Results() {
                     .map((category) => (
                       <div
                         key={category.categoryId}
-                        className="grid grid-cols-[100px_100px_40px_30px] items-center gap-2"
+                        className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                       >
                         <span className="text-default-500 text-sm">
                           {category.categoryName}:
