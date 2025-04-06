@@ -77,7 +77,7 @@ export default function AboutPage() {
                 Entrants
               </p>
               <p className="text-small text-default-500">
-                {jam?.users.length || "..."} and counting
+                {jam?.users.length ?? "..."} and counting
               </p>
             </div>
           </div>

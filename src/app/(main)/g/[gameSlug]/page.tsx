@@ -37,6 +37,8 @@ import Link from "@/components/link-components/Link";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import {
   AlertTriangle,
+  Award,
+  Badge,
   CircleHelp,
   Edit,
   Eye,
@@ -163,6 +165,21 @@ export default function GamePage({
     fetchGameAndUser();
   }, [gameSlug]);
 
+  function ordinal_suffix_of(i: number) {
+    const j = i % 10,
+      k = i % 100;
+    if (j === 1 && k !== 11) {
+      return i + "st";
+    }
+    if (j === 2 && k !== 12) {
+      return i + "nd";
+    }
+    if (j === 3 && k !== 13) {
+      return i + "rd";
+    }
+    return i + "th";
+  }
+
   if (!game) return <div>Loading...</div>;
 
   // Check if the logged-in user is the creator or a contributor
@@ -207,7 +224,7 @@ export default function GamePage({
             />
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
-            {isEditable && (
+            {isEditable && activeJamResponse?.jam?.id == game.jamId && (
               <div>
                 <ButtonLink
                   icon={<Edit />}
@@ -310,50 +327,81 @@ export default function GamePage({
             </div> */}
             <div className="flex flex-col gap-3">
               <p className="text-[#666] dark:text-[#ccc] text-xs">RATINGS</p>
-              {activeJamResponse &&
-                activeJamResponse?.jam?.id != game.jamId && (
-                  <div className="w-96 h-96">
+              {((activeJamResponse &&
+                activeJamResponse?.jam?.id != game.jamId) ||
+                user?.id == 3) && (
+                <>
+                  {Object.keys(game?.scores || {}).map((score) => (
+                    <div
+                      key={score}
+                      className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
+                    >
+                      <span className="text-default-500 text-sm">{score}:</span>
+                      <span
+                        className={
+                          game.scores[score].placement == 1
+                            ? "text-yellow-500"
+                            : game.scores[score].placement == 2
+                            ? "text-slate-500"
+                            : game.scores[score].placement == 3
+                            ? "text-orange-700"
+                            : game.scores[score].placement >= 4 &&
+                              game.scores[score].placement <= 5
+                            ? "text-blue-500"
+                            : game.scores[score].placement >= 6 &&
+                              game.scores[score].placement <= 10
+                            ? "text-purple-500"
+                            : "text-[#666] dark:text-[#ccc]"
+                        }
+                      >
+                        {(game.scores[score].averageScore / 2).toFixed(2)} stars
+                      </span>
+                      {game.scores[score].placement && (
+                        <span className="text-default-500">
+                          ({ordinal_suffix_of(game.scores[score].placement)})
+                        </span>
+                      )}
+                      <span className="flex items-center justify-center">
+                        {game.scores[score].placement == 1 && (
+                          <Award size={16} className="text-yellow-500" />
+                        )}
+                        {game.scores[score].placement == 2 && (
+                          <Award size={16} className="text-slate-500" />
+                        )}
+                        {game.scores[score].placement == 3 && (
+                          <Award size={16} className="text-orange-700" />
+                        )}
+                        {game.scores[score].placement >= 4 &&
+                          game.scores[score].placement <= 5 && (
+                            <Badge size={12} className="text-blue-500" />
+                          )}
+                        {game.scores[score].placement >= 6 &&
+                          game.scores[score].placement <= 10 && (
+                            <Badge size={12} className="text-purple-500" />
+                          )}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="w-96 h-60">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
                         cx="50%"
                         cy="50%"
-                        outerRadius="70%"
-                        data={[
-                          {
-                            subject: "Overall",
-                            A: 5,
-                            B: 10,
-                            fullMark: 10,
-                          },
-                          {
-                            subject: "Graphics",
-                            A: 6,
-                            B: 3,
-                            fullMark: 10,
-                          },
-                          {
-                            subject: "Audio",
-                            A: 10,
-                            B: 8,
-                            fullMark: 10,
-                          },
-                          {
-                            subject: "Emotional Delivery",
-                            A: 10,
-                            B: 8,
-                            fullMark: 10,
-                          },
-                          {
-                            subject: "Audio",
-                            A: 10,
-                            B: 8,
-                            fullMark: 10,
-                          },
-                        ]}
+                        outerRadius="80%"
+                        data={Object.keys(game?.scores || {}).map((score) => ({
+                          subject: score,
+                          A: game.scores[score].averageScore / 2,
+                          B: game.scores[score].averageScore / 2,
+                          fullMark: 5,
+                        }))}
                       >
                         <PolarGrid />
                         <PolarAngleAxis dataKey="subject" />
-                        <PolarRadiusAxis domain={[0, 10]} />
+                        <PolarRadiusAxis
+                          domain={[0, 5]}
+                          axisLine={false}
+                          tick={false}
+                        />
                         <Radar
                           name="Ratings"
                           dataKey="A"
@@ -361,10 +409,18 @@ export default function GamePage({
                           fill="#8884d8"
                           fillOpacity={0.6}
                         />
+                        <Radar
+                          name="Ratings"
+                          dataKey="B"
+                          stroke="#8884d8"
+                          fill="#8884d8"
+                          fillOpacity={0.6}
+                        />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
-                )}
+                </>
+              )}
               {isEditable && activeJamResponse?.jam?.id == game.jamId && (
                 <p className="text-[#666] dark:text-[#ccc] text-xs">
                   You can&apos;t rate your own game

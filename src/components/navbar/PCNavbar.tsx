@@ -21,6 +21,7 @@ import {
   NotebookPen,
   Shield,
   SquarePen,
+  Star,
   Users,
 } from "lucide-react";
 import NextImage from "next/image";
@@ -161,6 +162,14 @@ export default function PCNavbar() {
           icon={<Gamepad />}
           iconPosition="start"
         />
+        {jamPhase == "Upcoming Jam" && (
+          <NavbarButtonLink
+            href="/results"
+            name="Results"
+            icon={<Star />}
+            iconPosition="start"
+          />
+        )}
       </NavbarContent>
 
       <NavbarContent justify="end" className="gap-4">
@@ -188,12 +197,21 @@ export default function PCNavbar() {
         {user &&
           jam &&
           isInJam &&
-          (jamPhase != "Rating" || user.teams.length > 0) && (
+          (jamPhase != "Rating" ||
+            user.teams.filter((team) => team.jamId == jam.id).length > 0) && (
             <NavbarButtonLink
               important
               icon={<Users />}
-              name={user.teams.length > 0 ? "My Team" : "Team Finder"}
-              href={user.teams.length > 0 ? "/team" : "/team-finder"}
+              name={
+                user.teams.filter((team) => team.jamId == jam.id).length > 0
+                  ? "My Team"
+                  : "Team Finder"
+              }
+              href={
+                user.teams.filter((team) => team.jamId == jam.id).length > 0
+                  ? "/team"
+                  : "/team-finder"
+              }
             />
           )}
         {user && jam && !isInJam && (

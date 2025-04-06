@@ -20,30 +20,41 @@ export default async function SidebarStats() {
         <p>Entrants</p>
         <p className="text-[#1687a7]">{currentJam?.users.length || 0}</p>
       </div>
-      <Spacer />
-      <div className="flex items-center gap-4 justify-center">
-        <Gamepad2 className="text-[#666]" />
-        <p>Games</p>
-        <p className="text-[#1687a7]">
-          {currentJam?.games.filter((game) => game.published).length || 0}
-        </p>
-      </div>
-      <Spacer />
-      <div className="flex items-center gap-4 justify-center">
-        <Star className="text-[#666]" />
-        <p>Ratings</p>
-        <p className="text-[#1687a7]">
-          {Math.round(
-            currentJam?.games.reduce(
-              (prev: number, cur: GameType) =>
-                cur.ratings.length /
-                  (cur.ratingCategories.length + ratingCategories.length) +
-                prev,
-              0
-            ) || 0
-          )}
-        </p>
-      </div>
+      {currentJam?.games.filter((game) => game.published).length != 0 && (
+        <>
+          <Spacer />
+          <div className="flex items-center gap-4 justify-center">
+            <Gamepad2 className="text-[#666]" />
+            <p>Games</p>
+            <p className="text-[#1687a7]">
+              {currentJam?.games.filter((game) => game.published).length || 0}
+            </p>
+          </div>
+        </>
+      )}
+      {currentJam?.games.reduce(
+        (prev: number, cur: GameType) => cur.ratings.length + prev,
+        0
+      ) != 0 && (
+        <>
+          <Spacer />
+          <div className="flex items-center gap-4 justify-center">
+            <Star className="text-[#666]" />
+            <p>Ratings</p>
+            <p className="text-[#1687a7]">
+              {Math.round(
+                currentJam?.games.reduce(
+                  (prev: number, cur: GameType) =>
+                    cur.ratings.length /
+                      (cur.ratingCategories.length + ratingCategories.length) +
+                    prev,
+                  0
+                ) || 0
+              )}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 }

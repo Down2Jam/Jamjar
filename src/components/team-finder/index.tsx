@@ -32,6 +32,8 @@ import { redirect } from "next/navigation";
 import { getIcon } from "@/helpers/icon";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
+import { getCurrentJam } from "@/helpers/jam";
+import { JamType } from "@/types/JamType";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -47,12 +49,16 @@ export default function TeamFinder() {
   const [body, setBody] = useState<string>("");
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const [sortSet, setSortSet] = useState<boolean>(false);
+  const [jam, setJam] = useState<JamType | null>();
 
   useEffect(() => {
     async function fetchData() {
       try {
         const self = await getSelf();
         const data = await self.json();
+        const jamResponse = await getCurrentJam();
+        const currentJam = jamResponse?.jam;
+        setJam(currentJam);
 
         if (data.primaryRoles.length > 0) setFilter("Primary Role");
         setUser(data);
@@ -112,7 +118,7 @@ export default function TeamFinder() {
 
         teams = [...teams, ...noRoleTeams];
 
-        setTeams(teams);
+        setTeams(teams.filter((team: TeamType) => team.jamId == jam?.id));
       } catch (error) {
         console.error(error);
       } finally {
@@ -122,7 +128,7 @@ export default function TeamFinder() {
     }
 
     fetchData();
-  }, [teamType, filter, user, sortSet]);
+  }, [teamType, filter, user, sortSet, jam]);
 
   if (isLoading) return <Spinner />;
 
@@ -132,7 +138,7 @@ export default function TeamFinder() {
     <>
       <section className="mt-4 mb-4 flex flex-col gap-3">
         <div className="flex gap-3">
-          {user.teams.length > 0 && (
+          {user.teams.filter((team) => team.jamId == jam?.id).length > 0 && (
             <ButtonLink name="My Team" icon={<Users2 />} href="/team" />
           )}
           <ButtonAction

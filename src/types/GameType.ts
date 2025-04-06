@@ -34,4 +34,10 @@ export interface GameType {
   majRatingCategories: RatingCategoryType[];
   ratings: RatingType[];
   jamId: number;
+  scores: {
+    [name: string]: {
+      placement: number;
+      averageScore: number;
+    };
+  };
 }

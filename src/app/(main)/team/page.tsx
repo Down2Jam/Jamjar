@@ -96,6 +96,9 @@ export default function EditTeamPage() {
 
         const response = await getSelf();
 
+        const jamResponse = await getCurrentJam();
+        const currentJam = jamResponse?.jam;
+
         if (response.status == 200) {
           const data = await response.json();
           setUser(data);
@@ -107,7 +110,9 @@ export default function EditTeamPage() {
 
         if (teamResponse.status == 200) {
           const data = await teamResponse.json();
-          setTeams(data.data);
+          setTeams(
+            data.data.filter((team: TeamType) => team.jamId == currentJam?.id)
+          );
 
           if (data.data.length > 0) {
             setApplicationsOpen(data.data[0].applicationsOpen);
