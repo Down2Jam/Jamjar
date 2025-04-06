@@ -1255,7 +1255,9 @@ export default function CreateGame() {
           </Button>
           {(!games[currentGame] || !games[currentGame].published) &&
             (activeJamResponse?.phase == "Jamming" ||
-              activeJamResponse?.phase == "Submission") && (
+              activeJamResponse?.phase == "Submission" ||
+              (activeJamResponse?.phase == "Rating" &&
+                category == "EXTRA")) && (
               <Button
                 color="secondary"
                 type="submit"
@@ -1272,7 +1274,9 @@ export default function CreateGame() {
           {games[currentGame] &&
             games[currentGame].published &&
             (activeJamResponse?.phase == "Jamming" ||
-              activeJamResponse?.phase == "Submission") && (
+              activeJamResponse?.phase == "Submission" ||
+              (activeJamResponse?.phase == "Rating" &&
+                category == "EXTRA")) && (
               <Button
                 color="danger"
                 type="submit"
