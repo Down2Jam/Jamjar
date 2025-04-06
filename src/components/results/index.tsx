@@ -142,43 +142,52 @@ export default function Results() {
                     .map((category) => (
                       <div
                         key={category.categoryId}
-                        className="flex flex-row items-center"
+                        className="grid grid-cols-[100px_100px_40px_30px] items-center gap-2"
                       >
-                        <p>
-                          {category.categoryName}:{" "}
-                          <span className="text-default-500">
-                            {(category.averageScore / 2).toFixed(2)} stars
-                          </span>{" "}
-                          <span className="text-default-400">
-                            ({ordinal_suffix_of(category.placement)})
-                          </span>
-                        </p>
-                        {category.placement == 1 && (
-                          <div className="text-yellow-500">
-                            <Award />
-                          </div>
-                        )}
-                        {category.placement == 2 && (
-                          <div className="text-slate-500">
-                            <Award />
-                          </div>
-                        )}
-                        {category.placement == 3 && (
-                          <div className="text-orange-700">
-                            <Award />
-                          </div>
-                        )}
-                        {category.placement >= 4 && category.placement <= 5 && (
-                          <div className="text-blue-500">
-                            <Badge />
-                          </div>
-                        )}
-                        {category.placement >= 6 &&
-                          category.placement <= 10 && (
-                            <div className="text-purple-500">
-                              <Badge />
-                            </div>
+                        <span className="text-default-500 text-sm">
+                          {category.categoryName}:
+                        </span>
+                        <span
+                          className={
+                            category.placement == 1
+                              ? "text-yellow-500"
+                              : category.placement == 2
+                              ? "text-slate-500"
+                              : category.placement == 3
+                              ? "text-orange-700"
+                              : category.placement >= 4 &&
+                                category.placement <= 5
+                              ? "text-blue-500"
+                              : category.placement >= 6 &&
+                                category.placement <= 10
+                              ? "text-purple-500"
+                              : "text-[#666] dark:text-[#ccc]"
+                          }
+                        >
+                          {(category.averageScore / 2).toFixed(2)} stars
+                        </span>
+                        <span className="text-default-500">
+                          ({ordinal_suffix_of(category.placement)})
+                        </span>
+                        <span className="flex items-center justify-center">
+                          {category.placement == 1 && (
+                            <Award size={16} className="text-yellow-500" />
                           )}
+                          {category.placement == 2 && (
+                            <Award size={16} className="text-slate-500" />
+                          )}
+                          {category.placement == 3 && (
+                            <Award size={16} className="text-orange-700" />
+                          )}
+                          {category.placement >= 4 &&
+                            category.placement <= 5 && (
+                              <Badge size={12} className="text-blue-500" />
+                            )}
+                          {category.placement >= 6 &&
+                            category.placement <= 10 && (
+                              <Badge size={12} className="text-purple-500" />
+                            )}
+                        </span>
                       </div>
                     ))}
                 </div>
