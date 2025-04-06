@@ -178,7 +178,9 @@ export default function PCNavbar() {
         {user &&
           jam &&
           isInJam &&
-          (jamPhase == "Jamming" || jamPhase == "Submission") && (
+          (jamPhase == "Jamming" ||
+            jamPhase == "Submission" ||
+            jamPhase == "Rating") && (
             <NavbarButtonLink
               important
               icon={<Gamepad2 />}
@@ -186,34 +188,22 @@ export default function PCNavbar() {
               href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
             />
           )}
-        {user && jam && isInJam && jamPhase == "Rating" && hasGame && (
+        {user && jam && isInJam && (
           <NavbarButtonLink
             important
-            icon={<Gamepad2 />}
-            name={"My Game"}
-            href={"/g/" + hasGame.slug}
+            icon={<Users />}
+            name={
+              user.teams.filter((team) => team.jamId == jam.id).length > 0
+                ? "My Team"
+                : "Team Finder"
+            }
+            href={
+              user.teams.filter((team) => team.jamId == jam.id).length > 0
+                ? "/team"
+                : "/team-finder"
+            }
           />
         )}
-        {user &&
-          jam &&
-          isInJam &&
-          (jamPhase != "Rating" ||
-            user.teams.filter((team) => team.jamId == jam.id).length > 0) && (
-            <NavbarButtonLink
-              important
-              icon={<Users />}
-              name={
-                user.teams.filter((team) => team.jamId == jam.id).length > 0
-                  ? "My Team"
-                  : "Team Finder"
-              }
-              href={
-                user.teams.filter((team) => team.jamId == jam.id).length > 0
-                  ? "/team"
-                  : "/team-finder"
-              }
-            />
-          )}
         {user && jam && !isInJam && (
           <NavbarButtonAction
             important

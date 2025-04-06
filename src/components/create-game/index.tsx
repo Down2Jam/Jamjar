@@ -142,6 +142,7 @@ export default function CreateGame() {
 
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam);
+        setCategory(activeJam?.phase == "Rating" ? "EXTRA" : "REGULAR");
 
         if (localuser.teams.length == 0) {
           const successful = await createTeam();
@@ -443,7 +444,9 @@ export default function CreateGame() {
             setTags([]);
             setFlags([]);
             setLeaderboards([]);
-            setCategory("REGULAR");
+            setCategory(
+              activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR"
+            );
             setChosenRatingCategories([]);
             setChosenMajRatingCategories([]);
           }}
@@ -480,7 +483,8 @@ export default function CreateGame() {
 
       {activeJamResponse &&
         (activeJamResponse.phase == "Jamming" ||
-          activeJamResponse.phase == "Submission") && (
+          activeJamResponse.phase == "Submission" ||
+          (activeJamResponse.phase == "Rating" && !prevSlug)) && (
           <>
             <p>Game Category</p>
             <Dropdown>
@@ -498,16 +502,21 @@ export default function CreateGame() {
                   setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                 }}
               >
-                <DropdownItem
-                  key="REGULAR"
-                  description="The regular jam category"
-                  startContent={<Gamepad2 />}
-                >
-                  Regular
-                </DropdownItem>
+                {activeJamResponse.phase != "Rating" ? (
+                  <DropdownItem
+                    key="REGULAR"
+                    description="The regular jam category"
+                    startContent={<Gamepad2 />}
+                  >
+                    Regular
+                  </DropdownItem>
+                ) : (
+                  <></>
+                )}
                 {teams &&
                 teams.length > 0 &&
-                teams[currentTeam].users.length == 1 ? (
+                teams[currentTeam].users.length == 1 &&
+                activeJamResponse.phase != "Rating" ? (
                   <DropdownItem
                     key="ODA"
                     description="1 Dev, No third party assets"
