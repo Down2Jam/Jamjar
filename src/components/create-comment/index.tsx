@@ -8,7 +8,7 @@ import { postComment } from "@/requests/comment";
 import { useState } from "react";
 
 // CreateComment.tsx
-export default function CreateComment({ gameId }: { gameId: string }) {
+export default function CreateComment({ gameId }: { gameId: number }) {
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
 
