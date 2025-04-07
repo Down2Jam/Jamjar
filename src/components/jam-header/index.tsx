@@ -8,12 +8,12 @@ import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
 
 const events = [
-  { name: "Theme Submission", date: "FEB 28" },
-  { name: "Theme Elimination", date: "MAR 7" },
-  { name: "Theme Voting", date: "MAR 14" },
-  { name: "Game Jam", date: "MAR 21" },
-  { name: "Rating Period", date: "MAR 24" },
-  { name: "Results", date: "APR 7" },
+  { name: "Theme Submission", date: "AUG 15" },
+  { name: "Theme Elimination", date: "AUG 22" },
+  { name: "Theme Voting", date: "AUG 29" },
+  { name: "Game Jam", date: "SEP 5" },
+  { name: "Rating Period", date: "SEP 8" },
+  { name: "Results", date: "SEP 21" },
 ];
 
 const getDateObject = (dateString: string) => {
