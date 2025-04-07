@@ -110,19 +110,20 @@ export default function EditTeamPage() {
 
         if (teamResponse.status == 200) {
           const data = await teamResponse.json();
-          setTeams(
-            data.data.filter((team: TeamType) => team.jamId == currentJam?.id)
+          const filteredData = data.data.filter(
+            (team: TeamType) => team.jamId == currentJam?.id
           );
+          setTeams(filteredData);
 
-          if (data.data.length > 0) {
-            setApplicationsOpen(data.data[0].applicationsOpen);
-            setUsers(data.data[0].users);
-            setInvitations(data.data[0].invites);
-            setDescription(data.data[0].description);
-            setName(data.data[0].name);
+          if (filteredData.length > 0) {
+            setApplicationsOpen(filteredData[0].applicationsOpen);
+            setUsers(filteredData[0].users);
+            setInvitations(filteredData[0].invites);
+            setDescription(filteredData[0].description);
+            setName(filteredData[0].name);
             setWantedRoles(
               new Set(
-                data.data[0].rolesWanted.map((role: RoleType) => role.slug)
+                filteredData[0].rolesWanted.map((role: RoleType) => role.slug)
               ) ?? new Set()
             );
           }
