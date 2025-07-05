@@ -1,53 +1,52 @@
-import Posts from "@/components/posts";
-import JamHeader from "@/components/jam-header";
-import { Suspense } from "react";
-import Sidebar from "@/components/sidebar";
+import { Image } from "@heroui/image";
+import { Button } from "@heroui/button";
+import NextImage from "next/image";
+import { Spacer } from "@heroui/react";
+import HomeBackground from "./HomeBackground";
+import Link from "next/link";
 
 export default async function Home() {
   return (
-    <div className="flex justify-between flex-col md:flex-row">
-      <div className="w-full md:w-2/3">
-        <JamHeader />
-        <Suspense fallback={<div>Loading...</div>}>
-          <Posts />
-        </Suspense>
+    <>
+      <HomeBackground />
+      <Spacer y={72} />
+      <div className="flex justify-center items-center gap-16 relative z-0">
+        <div>
+          <h1 className="text-5xl bg-gradient-to-r from-[#46c2e1] to-[#d84f7b] bg-clip-text text-transparent w-fit font-bold">
+            Down2Jam
+          </h1>
+          <p className="text-2xl font-semibold">
+            The community centered game jam
+          </p>
+          <p className="text-gray-400">September 5th - 8th</p>
+          <Spacer y={4} />
+          <div className="flex flex-row gap-2">
+            <Button
+              variant="ghost"
+              className="border-[#3c72b9] text-[#46c2e1]"
+              as={Link}
+              href="/signup"
+            >
+              Join
+            </Button>
+            <Button variant="ghost" as={Link} href="/about">
+              About
+            </Button>
+            <Button variant="ghost" as={Link} href="/why">
+              Why Jam?
+            </Button>
+          </div>
+        </div>
+        <Image
+          isBlurred
+          src="/images/D2J_Icon.png"
+          as={NextImage}
+          width={256}
+          height={256}
+          alt="D2Jam Logo"
+          className="shadow-xl"
+        />
       </div>
-      <Sidebar />
-    </div>
+    </>
   );
-}
-
-{
-  /* <div>
-<div className="absolute left-0 top-0 w-full h-full z-0">
-  <Image
-    src="/images/bg.jpg"
-    alt="Home background"
-    className="object-cover w-full h-full"
-    radius="none"
-    loading="eager"
-    removeWrapper
-  />
-  <div className="absolute left-0 top-0 w-full h-full bg-gradient-to-r from-black/50 to-transparent z-10" />
-</div>
-<div className="relative left-0 top-0 z-10 px-8">
-  <div className="flex gap-20">
-    <div className="flex flex-col gap-4 py-16 sm:py-36 md:py-72">
-      <h1 className="text-3xl sm:text-4xl md:text-5xl">Dare2Jam</h1>
-      <p className="text-lg sm:text-xl">April 4th - 7th</p>
-      <div className="flex gap-2">
-        <Link href="https://discord.gg/rfmKzM6ASw" target="_blank">
-          <Button
-            variant="bordered"
-            className="border-white/50 text-white"
-            startContent={<SiDiscord />}
-          >
-            Join the Discord
-          </Button>
-        </Link>
-      </div>
-    </div>
-  </div>
-</div>
-</div> */
 }

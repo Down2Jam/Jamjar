@@ -1,7 +1,7 @@
 import Navbar from "../../components/navbar";
 import { ToastContainer } from "react-toastify";
 import { Spacer } from "@heroui/react";
-import Footer from "@/components/footer";
+// import Footer from "@/components/footer";
 
 export default async function RootLayout({
   children,
@@ -16,7 +16,7 @@ export default async function RootLayout({
       <div className="max-w-6xl xl:max-w-7xl 2xl:max-w-8xl mx-auto flex-grow w-full px-8">
         {children}
       </div>
-      <Footer />
+      {/* <Footer /> */}
       <ToastContainer />
     </div>
   );

@@ -42,11 +42,7 @@ export default function ThemeToggle() {
   }
 
   return (
-    <div
-      className={`border-[#d9d9da] dark:border-[#444] dark:bg-[#222222] bg-[#fff] border-2 rounded-xl text-[#333] dark:text-white ${
-        !reduceMotion ? "hover:scale-[115%]" : ""
-      } transform !duration-250 !ease-linear !transition-all`}
-    >
+    <div className={`rounded-xl text-[#333] dark:text-white`}>
       <div
         onClick={handleToggle}
         style={{ cursor: "pointer" }}
@@ -54,8 +50,8 @@ export default function ThemeToggle() {
           isSpinning && !reduceMotion ? "animate-[spin_0.5s_ease-out]" : ""
         }`}
       >
-        {resolvedTheme === "dark" && <Moon />}
-        {resolvedTheme === "light" && <Sun />}
+        {resolvedTheme === "dark" && <Moon size={20} />}
+        {resolvedTheme === "light" && <Sun size={20} />}
       </div>
     </div>
   );
