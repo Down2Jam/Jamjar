@@ -1,0 +1,43 @@
+{
+  "Splash": {
+    "Join": "kyo"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "loka"
+    },
+    "Results": {
+      "Title": "nema"
+    },
+    "Forum": {
+      "Title": "makona"
+    },
+    "Join": {
+      "Title": "kyo"
+    },
+    "About": {
+      "Title": "ivera"
+    },
+    "Donate": {
+      "Title": "zeba"
+    },
+    "Lucky": {
+      "Title": "go'ka"
+    },
+    "RSS": {
+      "Title": "RSS"
+    },
+    "Light": {
+      "Title": "sol"
+    },
+    "Dark": {
+      "Title": "nalo"
+    },
+    "Settings": {
+      "Title": "eiba"
+    },
+    "Inbox": {
+      "Title": "rolan"
+    }
+  }
+}

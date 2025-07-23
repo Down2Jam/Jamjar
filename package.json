@@ -50,13 +50,17 @@
     "@wavesurfer/react": "^1.0.9",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "framer-motion": "^11.11.9",
+    "framer-motion": "^12.23.7",
     "i": "^0.3.7",
     "install": "^0.13.0",
+    "js-cookie": "^3.0.5",
+    "lodash": "^4.17.21",
     "lucide-react": "^0.453.0",
     "next": "^15.3.4",
+    "next-intl": "^4.3.4",
     "next-themes": "^0.4.4",
     "npm": "^11.0.0",
+    "papaparse": "^5.5.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hotkeys-hook": "^4.6.1",
@@ -67,13 +71,16 @@
     "sanitize-html": "^2.14.0",
     "tiptap-extension-resize-image": "^1.2.1",
     "tiptap-markdown": "^0.8.10",
-    "wavesurfer.js": "^7.9.1"
+    "wavesurfer.js": "^7.9.1",
+    "yaml": "^2.8.0"
   },
   "overrides": {
     "@internationalized/date": "^3.7.0"
   },
   "devDependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
+    "@types/papaparse": "^5.3.16",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/sanitize-html": "^2.13.0",

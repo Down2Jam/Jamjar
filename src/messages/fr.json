@@ -1,0 +1,13 @@
+{
+  "Splash": {
+    "Title": "Down2Jam"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Jeux"
+    },
+    "Results": {
+      "Title": "Résultats"
+    }
+  }
+}

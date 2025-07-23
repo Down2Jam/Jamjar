@@ -1188,7 +1188,7 @@ export default function CreateGame() {
           </Button>
         </div>
 
-        {/* <Spacer />
+        <Spacer />
 
         <div className="flex flex-col gap-2">
           <p className="text-[#333] dark:text-white">Soundtrack</p>
@@ -1241,7 +1241,7 @@ export default function CreateGame() {
           >
             Add Song
           </Button>
-        </div> */}
+        </div>
 
         <Spacer />
 

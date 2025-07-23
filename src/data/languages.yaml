@@ -1,0 +1,98 @@
+- key: en
+  label: English
+  gradient: from-blue-500 to-blue-300
+  bg: bg-blue-500
+  hoverBg: hover:!bg-blue-900
+  colorPrimary: blue
+  colorSecondary: blueLight
+  colorBg: blueDark
+
+- key: fr
+  label: Français
+  gradient: from-indigo-500 to-indigo-300
+  bg: bg-indigo-500
+  hoverBg: hover:!bg-indigo-900
+  colorPrimary: indigo
+  colorSecondary: indigoLight
+  colorBg: indigoDark
+
+- key: it
+  label: Italiano
+  gradient: from-green-500 to-green-300
+  bg: bg-green-500
+  hoverBg: hover:!bg-green-900
+  colorPrimary: green
+  colorSecondary: greenLight
+  colorBg: greenDark
+
+- key: de
+  label: Deutsch
+  gradient: from-yellow-500 to-yellow-300
+  bg: bg-yellow-500
+  hoverBg: hover:!bg-yellow-800
+  colorPrimary: yellow
+  colorSecondary: yellowLight
+  colorBg: yellowDark
+
+- key: es
+  label: Español
+  gradient: from-red-500 to-yellow-300
+  bg: bg-red-500
+  hoverBg: hover:!bg-red-900
+  colorPrimary: red
+  colorSecondary: yellowLight
+  colorBg: redDark
+
+- key: tr
+  label: Türkçe
+  gradient: from-rose-500 to-pink-300
+  bg: bg-rose-500
+  hoverBg: hover:!bg-rose-900
+  colorPrimary: pink
+  colorSecondary: magentaLight
+  colorBg: pinkDark
+
+- key: tl
+  label: Tagalog
+  gradient: from-purple-500 to-purple-300
+  bg: bg-purple-500
+  hoverBg: hover:!bg-purple-900
+  colorPrimary: purple
+  colorSecondary: purpleLight
+  colorBg: purpleDark
+
+- key: ja
+  label: 日本語
+  gradient: from-amber-500 to-amber-300
+  bg: bg-amber-500
+  hoverBg: hover:!bg-amber-800
+  colorPrimary: orange
+  colorSecondary: orangeLight
+  colorBg: orangeDark
+
+- key: tok
+  label: Toki Pona
+  gradient: from-neutral-500 to-neutral-300
+  bg: bg-neutral-500
+  hoverBg: hover:!bg-neutral-800
+  colorPrimary: gray
+  colorSecondary: grayLight
+  colorBg: grayDark
+
+- key: mis-edikan
+  label: Edikan
+  gradient: from-cyan-500 to-cyan-300
+  bg: bg-cyan-500
+  hoverBg: hover:!bg-cyan-900
+  colorPrimary: cyan
+  colorSecondary: cyanLight
+  colorBg: cyanDark
+
+- key: mis-meow
+  label: Meow
+  gradient: from-pink-500 to-purple-400
+  bg: bg-pink-500
+  hoverBg: hover:!bg-pink-900
+  colorPrimary: pink
+  colorSecondary: purpleLight
+  colorBg: pinkDark

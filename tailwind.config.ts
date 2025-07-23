@@ -20,6 +20,7 @@ const config: Config = {
       },
       animation: {
         wiggle: "wiggle 0.3s ease-in-out",
+        smallwave: "smallwave 1.2s ease-in-out infinite",
       },
       keyframes: {
         wiggle: {
@@ -27,6 +28,13 @@ const config: Config = {
           "25%": { transform: "rotate(10deg)" },
           "50%": { transform: "rotate(-10deg)" },
           "75%": { transform: "rotate(5deg)" },
+        },
+        smallwave: {
+          "0%": { transform: "translateY(0)" },
+          "10%": { transform: "translateY(-4px)" },
+          "25%": { transform: "translateY(2px)" },
+          "35%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(0)" },
         },
       },
     },

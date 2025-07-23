@@ -1,0 +1,117 @@
+{
+  "Splash": {
+    "Title": "Down2Jam",
+    "Description": "Topluluk odaklı game jam",
+    "Join": "Katıl",
+    "About": "Hakkında",
+    "Why": "Neden jam yaparız?",
+    "Logo": "Down2Jam logosu"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Oyunlar",
+      "Description": "Web sitesine gönderilen tüm oyunlar"
+    },
+    "Results": {
+      "Title": "Sonuçlar",
+      "Description": "Son D2Jam'in sonuçları"
+    },
+    "Forum": {
+      "Title": "Forum",
+      "Description": "Topluluk üyelerinin birbirleriyle konuşabileceği bir forum"
+    },
+    "Join": {
+      "Title": "Katıl",
+      "Description": "Giriş yaparak veya hesap yaratarak web sitesini görüntüle"
+    },
+    "About": {
+      "Title": "Hakkında",
+      "Description": "Game Jam hakkında bilgiler"
+    },
+    "Donate": {
+      "Title": "Bağış",
+      "Description": "Bağış ve destek sayfasını görüntüle"
+    },
+    "Lucky": {
+      "Title": "Şanslı Hissediyorum",
+      "Description": "Rasgele bir oyun sayfasına git"
+    },
+    "RSS": {
+      "Title": "RSS",
+      "Description": "Mevcut RSS bildirimlerini görüntüle"
+    },
+    "Light": {
+      "Title": "Aydınlık Tema",
+      "Description": "Sayfa renklerini aydınlık yapar"
+    },
+    "Dark": {
+      "Title": "Karanlık Tema",
+      "Description": "Sayfa renklerini karanlık yapar"
+    },
+    "Home": {
+      "Title": "Anasayfa",
+      "Description": "Anasayfa'ya git"
+    },
+    "Brand": {
+      "Name": "D2Jam",
+      "Alt": "Down2Jam logosu"
+    },
+    "Language": {
+      "Title": "Dil Seç",
+      "Select": "Seç"
+    },
+    "JoinJam": {
+      "Title": "Jam'e Katıl",
+      "Description": "Jam'e katıldığının izini düş"
+    },
+    "NoJamToast": {
+      "Title": "Jam'e katılırken bir hata oluştu",
+      "Description": "Katılacak bir jam yok"
+    },
+    "MyGame": {
+      "Title": "Oyunum",
+      "Description": "Oyununun sayfasını görüntüle"
+    },
+    "CreateGame": {
+      "Title": "Oyun Yarat",
+      "Description": "Oyunun için bir sayfa oluştur"
+    },
+    "CreatePost": {
+      "Title": "Gönderi Yarat",
+      "Description": "Forum'da gönderi yarat"
+    },
+    "MyTeam": {
+      "Title": "Takımım",
+      "Description": "Jam Takımı'nı görüntüle!"
+    },
+    "TeamFinder": {
+      "Title": "Takım Bulucu",
+      "Description": "Jam'e katılmak için bir takım bul!"
+    },
+    "Profile": {
+      "Title": "Profil",
+      "Description": "Profilini görüntüle"
+    },
+    "Settings": {
+      "Title": "Ayarlar",
+      "Description": "Tercihlerini görüntüle"
+    },
+    "ReportBug": {
+      "Title": "Bug Raporu",
+      "Description": "Github Depo'suna git"
+    },
+    "Logout": {
+      "Title": "Çıkış Yap",
+      "Description": "Hesaptan çıkış yap"
+    },
+    "Inbox": {
+      "Title": "Gelen Kutusu",
+      "Description": "Bildirimleri görüntüle"
+    },
+    "Search": "Ara",
+    "Music": {
+      "Title": "Müzik",
+      "Description": "Web sitesine gönderilen tüm müzikler"
+    }
+  }
+}
