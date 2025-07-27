@@ -33,7 +33,6 @@ import TableRow from "@tiptap/extension-table-row";
 import Youtube from "@tiptap/extension-youtube";
 import CodeBlock from "@tiptap/extension-code-block";
 import { Spacer } from "@heroui/react";
-import { useTheme } from "next-themes";
 import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";
 import { toast } from "react-toastify";
@@ -46,14 +45,13 @@ type EditorProps = {
 };
 
 const limit = 32767;
+const theme = "dark";
 
 export default function Editor({
   content,
   setContent,
   gameEditor,
 }: EditorProps) {
-  const { theme } = useTheme();
-
   const editor = useEditor({
     extensions: [
       Document,

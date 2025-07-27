@@ -30,7 +30,7 @@ export default function Timers() {
       activeJamResponse.phase == "Upcoming Jam"
     ) {
       return (
-        <div className="text-[#333] dark:text-white transition-color duration-250">
+        <div className="text-[#333] dark:text-white  transition-color duration-250">
           <Timer
             name="Jam starts in"
             targetDate={new Date(activeJamResponse.jam.startTime)}

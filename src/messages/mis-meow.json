@@ -1,0 +1,111 @@
+{
+  "Splash": {
+    "Title": "Meow",
+    "Description": "Meow meow meow meow meow",
+    "Join": "Meow",
+    "About": "Meow",
+    "Why": "Meow meow?",
+    "Logo": "Meow meow"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow meow"
+    },
+    "Results": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow Meow"
+    },
+    "Forum": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow meow meow meow meow meow"
+    },
+    "Join": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow meow meow meow meow meow"
+    },
+    "About": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow"
+    },
+    "Donate": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow meow"
+    },
+    "Lucky": {
+      "Title": "Meow meow meow",
+      "Description": "Meow meow meow meow meow meow meow meow meow meow meow meow"
+    },
+    "RSS": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow"
+    },
+    "Light": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow meow"
+    },
+    "Dark": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow meow"
+    },
+    "Home": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow"
+    },
+    "Brand": {
+      "Name": "Meow",
+      "Alt": "Meow meow"
+    },
+    "Language": {
+      "Title": "Meow meow"
+    },
+    "JoinJam": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow meow meow!"
+    },
+    "NoJamToast": {
+      "Title": "Meow meow meow",
+      "Description": "Meow meow meow meow meow meow"
+    },
+    "MyGame": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow"
+    },
+    "CreateGame": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow meow"
+    },
+    "CreatePost": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow"
+    },
+    "MyTeam": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow!"
+    },
+    "TeamFinder": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow meow meow meow meow!"
+    },
+    "Profile": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow"
+    },
+    "Settings": {
+      "Title": "Meow",
+      "Description": "Meow meow meow"
+    },
+    "ReportBug": {
+      "Title": "Meow meow",
+      "Description": "Meow meow meow meow meow"
+    },
+    "Logout": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow"
+    },
+    "Inbox": {
+      "Title": "Meow",
+      "Description": "Meow meow meow"
+    }
+  }
+}

@@ -1,0 +1,60 @@
+key,en,fr,it,de,es,tr,tl,ja,tok,mis-edikan,mis-meow
+Splash.Title,Down2Jam,Down2Jam,,,,Down2Jam,Down2Jam,ダウン2ジャム,,,Meow
+Splash.Description,The community centered game jam,,,,,Topluluk odaklı game jam,Game Jam para sa komunidad,,,,Meow meow meow meow meow
+Splash.Join,Join,,,,,Katıl,Salin na,,,kyo,Meow
+Splash.About,About,,,,,Hakkında,About,,,,Meow
+Splash.Why,Why Jam?,,,,,Neden jam yaparız?,Bakit hindi mag jam?,,,,Meow meow?
+Splash.Logo,Down2Jam logo,,,,,Down2Jam logosu,Down2Jam logo,,,,Meow meow
+Navbar.Games.Title,Games,Jeux,,,,Oyunlar,Games,,,loka,Meow
+Navbar.Games.Description,All submitted games to the website,,,,,Web sitesine gönderilen tüm oyunlar,Lahat nang games na sumali sa website,,,,Meow meow meow meow meow meow
+Navbar.Results.Title,Results,Résultats,,,,Sonuçlar,Resulta,,,nema,Meow
+Navbar.Results.Description,The results of the last D2Jam,,,,,Son D2Jam'in sonuçları,Lahat nang resulta galing sa huling D2Jam,,,,Meow meow meow meow meow Meow
+Navbar.Forum.Title,Forum,,,,,Forum,Forum,,,makona,Meow
+Navbar.Forum.Description,A forum for members of the community to chat with each other in,,,,,Topluluk üyelerinin birbirleriyle konuşabileceği bir forum,Lugar kung saan makakapag-chat ang mga miyembro nang komunidad,,,,Meow meow meow meow meow meow meow meow meow meow
+Navbar.Join.Title,Join,,,,,Katıl,Salin na,,,kyo,Meow
+Navbar.Join.Description,Join the website by making or logging into an account,,,,,Giriş yaparak veya hesap yaratarak web sitesini görüntüle,Mag log-in o gumawa nang bagong account para sumama sa website,,,,Meow meow meow meow meow meow meow meow meow meow
+Navbar.About.Title,About,,,,,Hakkında,About,,,ivera,Meow
+Navbar.About.Description,Information about the game jam,,,,,Game Jam hakkında bilgiler,Impormasyon tungkol sa game jam,,,,Meow meow meow meow meow
+Navbar.Donate.Title,Donate,,,,,Bağış,Donate,寄付,,zeba,Meow
+Navbar.Donate.Description,View the donation and support page,,,,,Bağış ve destek sayfasını görüntüle,Tignan ang donate at support page,寄付するとサポートページを見る,,,Meow meow meow meow meow meow
+Navbar.Lucky.Title,I'm Feeling Lucky,,,,,Şanslı Hissediyorum,Ala-suwete,,,go'ka,Meow meow meow
+Navbar.Lucky.Description,Get sent to the page for a random game on the website,,,,,Rasgele bir oyun sayfasına git,Dadalhin ka sa isang random page ng game sa loob nang website,,,,Meow meow meow meow meow meow meow meow meow meow meow meow
+Navbar.RSS.Title,RSS,,,,,RSS,RSS,,,RSS,Meow
+Navbar.RSS.Description,View available RSS feeds,,,,,Mevcut RSS bildirimlerini görüntüle,Tignan ang mga RSS feeds,,,,Meow meow meow meow
+Navbar.Light.Title,Light Theme,,,,,Aydınlık Tema,Light Theme,,,sol,Meow meow
+Navbar.Light.Description,Change the page colours to be lighter,,,,,Sayfa renklerini aydınlık yapar,Palitan ang kulay ng page para mas maaliwalas,,,,Meow meow meow meow meow meow meow
+Navbar.Dark.Title,Dark Theme,,,,,Karanlık Tema,Dark Theme,,,nalo,Meow meow
+Navbar.Dark.Description,Change the page colours to be darker,,,,,Sayfa renklerini karanlık yapar,Palitan ang kulay ng page para mas madilim,,,,Meow meow meow meow meow meow meow
+Navbar.Home.Title,Home,,,,,Anasayfa,Home,,,,Meow
+Navbar.Home.Description,Go to the home page,,,,,Anasayfa'ya git,Bumalik sa home page,,,,Meow meow meow meow meow
+Navbar.Brand.Name,D2Jam,,,,,D2Jam,D2Jam,,,,Meow
+Navbar.Brand.Alt,Down2Jam logo,,,,,Down2Jam logosu,D2jam logo,,,,Meow meow
+Navbar.Language.Title,Select Language,,,,,Dil Seç,Pumili ng lengguahe,,,,Meow meow
+Navbar.Language.Select,Select,,,,,Seç,,,,,
+Navbar.JoinJam.Title,Join Jam,,,,,Jam'e Katıl,Sumalin sa Jam,,,,Meow meow
+Navbar.JoinJam.Description,Mark that you are participating in the jam!,,,,,Jam'e katıldığının izini düş,Ipakita mo na sasalin ka sa jam,,,,Meow meow meow meow meow meow meow meow!
+Navbar.NoJamToast.Title,Error joining jam,,,,,Jam'e katılırken bir hata oluştu,May pagkakamali sa pagsasalin sa jam,,,,Meow meow meow
+Navbar.NoJamToast.Description,There is no jam to join,,,,,Katılacak bir jam yok,Walang jam na sasalihan,,,,Meow meow meow meow meow meow
+Navbar.MyGame.Title,My Game,,,,,Oyunum,Aking Game,,,,Meow meow
+Navbar.MyGame.Description,View the page for your game,,,,,Oyununun sayfasını görüntüle,Tignan ang page para sa iyong game,,,,Meow meow meow meow meow meow
+Navbar.CreateGame.Title,Create Game,,,,,Oyun Yarat,Gumawa ng Game,,,,Meow meow
+Navbar.CreateGame.Description,Create a site page for your game,,,,,Oyunun için bir sayfa oluştur,Gumawa ng site page para sa iyong game,,,,Meow meow meow meow meow meow meow
+Navbar.CreatePost.Title,Create Post,,,,,Gönderi Yarat,Gumawa ng post,,,,Meow meow
+Navbar.CreatePost.Description,Create a post in the forum,,,,,Forum'da gönderi yarat,Gumawa ng post sa forum,,,,Meow meow meow meow meow meow
+Navbar.MyTeam.Title,My Team,,,,,Takımım,Aking Team,,,,Meow meow
+Navbar.MyTeam.Description,View your team for the jam!,,,,,Jam Takımı'nı görüntüle!,Tignan ang Team nyo para sa jam!,,,,Meow meow meow meow meow meow!
+Navbar.TeamFinder.Title,Team Finder,,,,,Takım Bulucu,Hanapan ng Team,チームを探す,,,Meow meow
+Navbar.TeamFinder.Description,Find a team to participate in the jam with!,,,,,Jam'e katılmak için bir takım bul!,Maghanap ng team para makisalin para sa jam,,,,Meow meow meow meow meow meow meow meow meow!
+Navbar.Profile.Title,Profile,,,,,Profil,Profile,プロフィール,,,Meow
+Navbar.Profile.Description,View your profile page,,,,,Profilini görüntüle,Tignan ang iyong profile page,,,,Meow meow meow meow
+Navbar.Settings.Title,Settings,,,,,Ayarlar,Settings,設定,,eiba,Meow
+Navbar.Settings.Description,Manage your preferences,,,,,Tercihlerini görüntüle,Ayusin ang sariling kagustuhan,,,,Meow meow meow
+Navbar.ReportBug.Title,Report Bug,,,,,Bug Raporu,Report Bug,,,,Meow meow
+Navbar.ReportBug.Description,Go to the Github Repository,,,,,Github Depo'suna git,Puntahan ang Github Repository,,,,Meow meow meow meow meow
+Navbar.Logout.Title,Logout,,,,,Çıkış Yap,Logout,ログアウト,,,Meow
+Navbar.Logout.Description,Log out of your account,,,,,Hesaptan çıkış yap,Mag log-out sa sariling account,アカウントからログアウトする,,,Meow meow meow meow meow
+Navbar.Inbox.Title,Inbox,,,,,Gelen Kutusu,Inbox,受信トレイ,,rolan,Meow
+Navbar.Inbox.Description,View your notifications,,,,,Bildirimleri görüntüle,Tignan ang mga pagpapaunawa,通知を見る,,,Meow meow meow
+Navbar.Search,Search,,,,,Ara,Search,探す,,,
+Navbar.Music.Title,Music,,,,,Müzik,,,,,
+Navbar.Music.Description,All submitted music to the website,,,,,Web sitesine gönderilen tüm müzikler,,,,,

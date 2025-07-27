@@ -1,4 +1,4 @@
-import { Image } from "@heroui/react";
+import { Image } from "@heroui/image";
 import NextImage from "next/image";
 
 export default function SidebarBanner() {

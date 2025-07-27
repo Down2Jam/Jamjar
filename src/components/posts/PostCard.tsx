@@ -38,6 +38,7 @@ import { toast } from "react-toastify";
 import { TagType } from "@/types/TagType";
 import { deletePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function PostCard({
   post,
@@ -57,6 +58,7 @@ export default function PostCard({
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
+  const { siteTheme } = useTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -75,7 +77,12 @@ export default function PostCard({
   return (
     <Card
       className="!duration-250 !ease-linear !transition-all"
-      style={{ display: hidden ? "none" : "flex" }}
+      style={{
+        display: hidden ? "none" : "flex",
+        backgroundColor: siteTheme.colors["base"],
+        color: siteTheme.colors["text"],
+        borderColor: siteTheme.colors["crust"],
+      }}
     >
       <CardBody className="p-5">
         {(style == "cozy" || style == "adaptive") &&

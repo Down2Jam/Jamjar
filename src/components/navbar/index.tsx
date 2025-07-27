@@ -1,20 +1,15 @@
-"use client";
+"use server";
 
-import { useEffect, useState } from "react";
-import PCNavbar from "./PCNavbar";
-import MobileNavbar from "./MobileNavbar";
+import { cookies } from "next/headers";
+import ClientNavbar from "./ClientNavbar";
+import { loadLanguages } from "@/lib/loadLanguages";
+const languages = loadLanguages();
 
-export default function Navbar() {
-  const [isMobile, setIsMobile] = useState<boolean>(false);
+export default async function Navbar() {
+  const cookiesStore = await cookies();
+  const token = cookiesStore.get("user");
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isLoggedIn = !!token;
 
-  return isMobile ? <MobileNavbar /> : <PCNavbar />;
+  return <ClientNavbar isLoggedIn={isLoggedIn} languages={languages} />;
 }

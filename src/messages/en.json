@@ -1,0 +1,117 @@
+{
+  "Splash": {
+    "Title": "Down2Jam",
+    "Description": "The community centered game jam",
+    "Join": "Join",
+    "About": "About",
+    "Why": "Why Jam?",
+    "Logo": "Down2Jam logo"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Games",
+      "Description": "All submitted games to the website"
+    },
+    "Results": {
+      "Title": "Results",
+      "Description": "The results of the last D2Jam"
+    },
+    "Forum": {
+      "Title": "Forum",
+      "Description": "A forum for members of the community to chat with each other in"
+    },
+    "Join": {
+      "Title": "Join",
+      "Description": "Join the website by making or logging into an account"
+    },
+    "About": {
+      "Title": "About",
+      "Description": "Information about the game jam"
+    },
+    "Donate": {
+      "Title": "Donate",
+      "Description": "View the donation and support page"
+    },
+    "Lucky": {
+      "Title": "I'm Feeling Lucky",
+      "Description": "Get sent to the page for a random game on the website"
+    },
+    "RSS": {
+      "Title": "RSS",
+      "Description": "View available RSS feeds"
+    },
+    "Light": {
+      "Title": "Light Theme",
+      "Description": "Change the page colours to be lighter"
+    },
+    "Dark": {
+      "Title": "Dark Theme",
+      "Description": "Change the page colours to be darker"
+    },
+    "Home": {
+      "Title": "Home",
+      "Description": "Go to the home page"
+    },
+    "Brand": {
+      "Name": "D2Jam",
+      "Alt": "Down2Jam logo"
+    },
+    "Language": {
+      "Title": "Select Language",
+      "Select": "Select"
+    },
+    "JoinJam": {
+      "Title": "Join Jam",
+      "Description": "Mark that you are participating in the jam!"
+    },
+    "NoJamToast": {
+      "Title": "Error joining jam",
+      "Description": "There is no jam to join"
+    },
+    "MyGame": {
+      "Title": "My Game",
+      "Description": "View the page for your game"
+    },
+    "CreateGame": {
+      "Title": "Create Game",
+      "Description": "Create a site page for your game"
+    },
+    "CreatePost": {
+      "Title": "Create Post",
+      "Description": "Create a post in the forum"
+    },
+    "MyTeam": {
+      "Title": "My Team",
+      "Description": "View your team for the jam!"
+    },
+    "TeamFinder": {
+      "Title": "Team Finder",
+      "Description": "Find a team to participate in the jam with!"
+    },
+    "Profile": {
+      "Title": "Profile",
+      "Description": "View your profile page"
+    },
+    "Settings": {
+      "Title": "Settings",
+      "Description": "Manage your preferences"
+    },
+    "ReportBug": {
+      "Title": "Report Bug",
+      "Description": "Go to the Github Repository"
+    },
+    "Logout": {
+      "Title": "Logout",
+      "Description": "Log out of your account"
+    },
+    "Inbox": {
+      "Title": "Inbox",
+      "Description": "View your notifications"
+    },
+    "Search": "Search",
+    "Music": {
+      "Title": "Music",
+      "Description": "All submitted music to the website"
+    }
+  }
+}

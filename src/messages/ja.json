@@ -1,0 +1,29 @@
+{
+  "Splash": {
+    "Title": "ダウン2ジャム"
+  },
+  "Navbar": {
+    "Donate": {
+      "Title": "寄付",
+      "Description": "寄付するとサポートページを見る"
+    },
+    "TeamFinder": {
+      "Title": "チームを探す"
+    },
+    "Profile": {
+      "Title": "プロフィール"
+    },
+    "Settings": {
+      "Title": "設定"
+    },
+    "Logout": {
+      "Title": "ログアウト",
+      "Description": "アカウントからログアウトする"
+    },
+    "Inbox": {
+      "Title": "受信トレイ",
+      "Description": "通知を見る"
+    },
+    "Search": "探す"
+  }
+}

@@ -12,7 +12,7 @@ export default async function SidebarStats() {
   const ratingCategories = (await ratingResponse.json()).data;
 
   return (
-    <div className="border rounded-xl p-4 text-[#333] dark:text-white text-center bg-[#ffffff] dark:bg-[#18181a] border-[#dbdbdb] dark:border-[#1f1f21] shadow-2xl z-10">
+    <div className="border rounded-xl p-4 text-white text-center bg-[#18181a] border-[#1f1f21] shadow-2xl z-10">
       <Timers />
       <Spacer />
       <div className="flex items-center gap-4 justify-center">

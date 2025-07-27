@@ -1,0 +1,112 @@
+{
+  "Splash": {
+    "Title": "Down2Jam",
+    "Description": "Game Jam para sa komunidad",
+    "Join": "Salin na",
+    "About": "About",
+    "Why": "Bakit hindi mag jam?",
+    "Logo": "Down2Jam logo"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Games",
+      "Description": "Lahat nang games na sumali sa website"
+    },
+    "Results": {
+      "Title": "Resulta",
+      "Description": "Lahat nang resulta galing sa huling D2Jam"
+    },
+    "Forum": {
+      "Title": "Forum",
+      "Description": "Lugar kung saan makakapag-chat ang mga miyembro nang komunidad"
+    },
+    "Join": {
+      "Title": "Salin na",
+      "Description": "Mag log-in o gumawa nang bagong account para sumama sa website"
+    },
+    "About": {
+      "Title": "About",
+      "Description": "Impormasyon tungkol sa game jam"
+    },
+    "Donate": {
+      "Title": "Donate",
+      "Description": "Tignan ang donate at support page"
+    },
+    "Lucky": {
+      "Title": "Ala-suwete",
+      "Description": "Dadalhin ka sa isang random page ng game sa loob nang website"
+    },
+    "RSS": {
+      "Title": "RSS",
+      "Description": "Tignan ang mga RSS feeds"
+    },
+    "Light": {
+      "Title": "Light Theme",
+      "Description": "Palitan ang kulay ng page para mas maaliwalas"
+    },
+    "Dark": {
+      "Title": "Dark Theme",
+      "Description": "Palitan ang kulay ng page para mas madilim"
+    },
+    "Home": {
+      "Title": "Home",
+      "Description": "Bumalik sa home page"
+    },
+    "Brand": {
+      "Name": "D2Jam",
+      "Alt": "D2jam logo"
+    },
+    "Language": {
+      "Title": "Pumili ng lengguahe"
+    },
+    "JoinJam": {
+      "Title": "Sumalin sa Jam",
+      "Description": "Ipakita mo na sasalin ka sa jam"
+    },
+    "NoJamToast": {
+      "Title": "May pagkakamali sa pagsasalin sa jam",
+      "Description": "Walang jam na sasalihan"
+    },
+    "MyGame": {
+      "Title": "Aking Game",
+      "Description": "Tignan ang page para sa iyong game"
+    },
+    "CreateGame": {
+      "Title": "Gumawa ng Game",
+      "Description": "Gumawa ng site page para sa iyong game"
+    },
+    "CreatePost": {
+      "Title": "Gumawa ng post",
+      "Description": "Gumawa ng post sa forum"
+    },
+    "MyTeam": {
+      "Title": "Aking Team",
+      "Description": "Tignan ang Team nyo para sa jam!"
+    },
+    "TeamFinder": {
+      "Title": "Hanapan ng Team",
+      "Description": "Maghanap ng team para makisalin para sa jam"
+    },
+    "Profile": {
+      "Title": "Profile",
+      "Description": "Tignan ang iyong profile page"
+    },
+    "Settings": {
+      "Title": "Settings",
+      "Description": "Ayusin ang sariling kagustuhan"
+    },
+    "ReportBug": {
+      "Title": "Report Bug",
+      "Description": "Puntahan ang Github Repository"
+    },
+    "Logout": {
+      "Title": "Logout",
+      "Description": "Mag log-out sa sariling account"
+    },
+    "Inbox": {
+      "Title": "Inbox",
+      "Description": "Tignan ang mga pagpapaunawa"
+    },
+    "Search": "Search"
+  }
+}

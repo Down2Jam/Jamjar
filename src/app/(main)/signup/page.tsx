@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { signup } from "@/requests/auth";
 import { Button, Form, Input, Link } from "@heroui/react";
 import { redirect } from "next/navigation";
@@ -12,6 +13,7 @@ export default function UserPage() {
   const [password2, setPassword2] = useState("");
   const [errors, setErrors] = useState({});
   const [email, setEmail] = useState("");
+  const { siteTheme } = useTheme();
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
@@ -87,6 +89,7 @@ export default function UserPage() {
         }}
       >
         <Input
+          classNames={{ label: "!text-white" }}
           isRequired
           label="Username"
           labelPlacement="outside"
@@ -98,6 +101,7 @@ export default function UserPage() {
         />
 
         <Input
+          classNames={{ label: "!text-white" }}
           label="Email"
           labelPlacement="outside"
           name="email"
@@ -108,6 +112,7 @@ export default function UserPage() {
         />
 
         <Input
+          classNames={{ label: "!text-white" }}
           isRequired
           label="Password"
           labelPlacement="outside"
@@ -119,6 +124,7 @@ export default function UserPage() {
           autoComplete="new-password"
         />
         <Input
+          classNames={{ label: "!text-white" }}
           isRequired
           label="Password Confirmation"
           labelPlacement="outside"
@@ -137,7 +143,12 @@ export default function UserPage() {
             Reset
           </Button>
         </div>
-        <p className="text-[#333] dark:text-white transition-color duration-250">
+        <p
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           Already have an account? <Link href="/login">Log In</Link>
         </p>
       </Form>
