@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { useTranslations } from "next-intl";
 import { useId, useEffect, useState } from "react";
 
@@ -7,8 +8,8 @@ type RoundedProgressRingProps = {
   height?: number;
   stroke?: number;
   hovered?: boolean;
-  baseGradient?: [string, string];
-  hoverGradient?: [string, string];
+  hoverPrimary?: string;
+  hoverSecondary?: string;
 };
 
 export default function ProgressCircle({
@@ -17,8 +18,8 @@ export default function ProgressCircle({
   height = 24,
   stroke = 1.5,
   hovered = false,
-  baseGradient,
-  hoverGradient,
+  hoverPrimary,
+  hoverSecondary,
 }: RoundedProgressRingProps) {
   const radius = (height - stroke) / 2;
   const arcLength = Math.PI * radius;
@@ -33,6 +34,7 @@ export default function ProgressCircle({
 
   const gradientId = useId();
   const t = useTranslations("Navbar");
+  const { siteTheme } = useTheme();
 
   useEffect(() => {
     // Animate ring fill
@@ -64,14 +66,19 @@ export default function ProgressCircle({
 
   // Choose gradient colors based on progress
   const getGradient = () => {
-    if (percent <= 2) return ["#e06680", "#e06666"];
-    if (percent <= 6) return ["#e06666", "#e08766"];
-    if (percent <= 12) return ["#e08766", "#e0a366"];
-    if (percent <= 25) return ["#e0a366", "#e0c866"];
-    if (percent <= 55) return ["#e0c866", "#d2e066"];
-    if (percent <= 75) return ["#d2e066", "#ade066"];
-    if (percent <= 87) return ["#ade066", "#7ee066"];
-    return ["#7ee066", "#7ee066"]; // final green
+    if (percent <= 2) return [siteTheme.colors["red"], siteTheme.colors["red"]];
+    if (percent <= 6) return [siteTheme.colors["red"], siteTheme.colors["red"]];
+    if (percent <= 12)
+      return [siteTheme.colors["red"], siteTheme.colors["red"]];
+    if (percent <= 25)
+      return [siteTheme.colors["red"], siteTheme.colors["orange"]];
+    if (percent <= 55)
+      return [siteTheme.colors["orange"], siteTheme.colors["yellow"]];
+    if (percent <= 75)
+      return [siteTheme.colors["yellow"], siteTheme.colors["lime"]];
+    if (percent <= 87)
+      return [siteTheme.colors["lime"], siteTheme.colors["green"]];
+    return [siteTheme.colors["green"], siteTheme.colors["green"]]; // final green
   };
 
   const [startColor, endColor] = getGradient();
@@ -92,7 +99,10 @@ export default function ProgressCircle({
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className="shrink-0 transition-transform duration-300 group-hover:rotate-[5deg] transform"
+      className="shrink-0 transition-transform duration-300 transform"
+      style={{
+        transform: hovered ? "rotate(5deg)" : "rotate(0deg)",
+      }}
     >
       {/* Unique gradient definition */}
       <defs>
@@ -104,19 +114,18 @@ export default function ProgressCircle({
           y2="0%"
           className="transition-all duration-300"
         >
-          <stop
-            offset="0%"
-            stopColor={hovered ? hoverGradient[0] : startColor}
-          />
-          <stop
-            offset="100%"
-            stopColor={hovered ? hoverGradient[1] : endColor}
-          />
+          <stop offset="0%" stopColor={hovered ? hoverPrimary : startColor} />
+          <stop offset="100%" stopColor={hovered ? hoverSecondary : endColor} />
         </linearGradient>
       </defs>
 
       {/* Background ring */}
-      <path d={pathData} fill="none" stroke="#0a0a0a" strokeWidth={stroke} />
+      <path
+        d={pathData}
+        fill="none"
+        stroke={siteTheme.colors["base"]}
+        strokeWidth={stroke}
+      />
 
       {/* Foreground progress ring using gradient */}
       <path
@@ -140,7 +149,11 @@ export default function ProgressCircle({
         fontSize="10"
         fontWeight="bold"
         fill={`url(#${gradientId})`}
-        className="duration-300 group-hover:rotate-[70deg] transform group-hover:opacity-0 transition-all"
+        className="transition-all duration-300 transform"
+        style={{
+          rotate: hovered ? "70deg" : "0deg",
+          opacity: hovered ? 0 : 1,
+        }}
       >
         {countedPercent}%
       </text>
@@ -152,7 +165,11 @@ export default function ProgressCircle({
         fontSize="10"
         fontWeight="bold"
         fill={`url(#${gradientId})`}
-        className="transition-all duration-300 group-hover:rotate-[0deg] opacity-0 group-hover:opacity-100 rotate-[70deg] transform"
+        className="transition-all duration-300 transform"
+        style={{
+          rotate: hovered ? "0deg" : "70deg",
+          opacity: hovered ? 1 : 0,
+        }}
       >
         {t("Language.Select")}
       </text>

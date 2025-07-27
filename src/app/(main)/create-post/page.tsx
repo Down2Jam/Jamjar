@@ -2,20 +2,12 @@
 
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
-import {
-  Avatar,
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Spacer,
-} from "@heroui/react";
+import { Avatar, Button, Checkbox, Form, Input, Spacer } from "@heroui/react";
 import { LoaderCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Select, { MultiValue, StylesConfig } from "react-select";
-import { useTheme } from "next-themes";
 import Timers from "@/components/timers";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -23,6 +15,8 @@ import { getTags } from "@/requests/tag";
 import { postPost } from "@/requests/post";
 import { sanitize } from "@/helpers/sanitize";
 import SidebarStreams from "@/components/sidebar/SidebarStreams";
+
+const theme = "dark";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
@@ -51,7 +45,6 @@ export default function CreatePostPage() {
       isFixed: boolean;
     }[]
   >();
-  const { theme } = useTheme();
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);

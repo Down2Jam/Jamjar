@@ -58,7 +58,8 @@ import { GameTagType } from "@/types/GameTagType";
 import { FlagType } from "@/types/FlagType";
 import { getIcon } from "@/helpers/icon";
 import Select, { StylesConfig } from "react-select";
-import { useTheme } from "next-themes";
+
+const theme = "dark";
 
 export default function CreateGame() {
   const router = useRouter();
@@ -106,7 +107,6 @@ export default function CreateGame() {
   const [tags, setTags] = useState<number[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
-  const { theme } = useTheme();
 
   const sanitizeSlug = (value: string): string => {
     return value

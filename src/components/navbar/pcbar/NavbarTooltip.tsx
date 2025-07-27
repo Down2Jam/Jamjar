@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
-import { Tooltip } from "@heroui/tooltip";
 import { Kbd } from "@heroui/kbd";
+import Tooltip from "@/components/tooltip";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 interface NavbarButtonProps {
   icon?: ReactNode;
@@ -17,24 +18,35 @@ export default function NavbarTooltip({
   hotkey,
   children,
 }: NavbarButtonProps) {
+  const { siteTheme } = useTheme();
+
   return (
     <Tooltip
       delay={1000}
-      className="bg-white dark:bg-black border-2 border-gray-100 dark:border-gray-900"
       content={
-        <div className="flex items-center flex-col">
-          <div className="flex items-center gap-2 text-black dark:text-white">
+        <div
+          className="flex items-center flex-col"
+          style={{
+            backgroundColor: siteTheme.colors["crust"],
+            borderColor: siteTheme.colors["base"],
+            color: siteTheme.colors["text"],
+          }}
+        >
+          <div className="flex items-center gap-2 ">
             {icon}
             <p>{name}</p>
             {hotkey && (
-              <Kbd className="bg-gray-100 dark:bg-gray-900">
+              <Kbd
+                style={{
+                  backgroundColor: siteTheme.colors["mantle"],
+                  color: siteTheme.colors["text"],
+                }}
+              >
                 {hotkey?.join(" ")}
               </Kbd>
             )}
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            {description}
-          </p>
+          <p className="text-xs opacity-50">{description}</p>
         </div>
       }
     >

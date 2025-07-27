@@ -1,12 +1,12 @@
 "use client";
 
-import NextImage from "next/image";
 import { useRef } from "react";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
+import Logo from "@/components/logo";
 
 export default function SplashLogo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  const imageRef = useRef<SVGSVGElement>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -45,12 +45,8 @@ export default function SplashLogo() {
       className="hidden lg:block perspective-[1000px]"
       style={{ width: "256px", height: "256px" }}
     >
-      <NextImage
+      <Logo
         ref={imageRef}
-        src="/images/D2J_Icon.png"
-        width={256}
-        height={256}
-        alt="D2Jam Logo"
         className={`min-h-64 min-w-64 rounded-xl ${
           reducedMotion
             ? ""

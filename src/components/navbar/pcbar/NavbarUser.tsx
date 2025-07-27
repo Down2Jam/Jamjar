@@ -10,7 +10,6 @@ import {
   DropdownTrigger,
   Kbd,
   NavbarItem,
-  Spacer,
 } from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import {
@@ -34,7 +33,7 @@ interface NavbarUserProps {
 
 export default function NavbarUser({ user }: NavbarUserProps) {
   const t = useTranslations("Navbar");
-  const { isSmDown, isMdDown, isLgDown } = useBreakpoint();
+  const { isLgDown } = useBreakpoint();
 
   return (
     <NavbarItem>

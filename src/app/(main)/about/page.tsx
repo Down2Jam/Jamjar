@@ -2,11 +2,12 @@
 
 import { getCurrentJam } from "@/helpers/jam";
 import { JamType } from "@/types/JamType";
-import { Accordion, AccordionItem, Image } from "@heroui/react";
+import { Accordion, AccordionItem } from "@heroui/react";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toZonedTime } from "date-fns-tz";
+import Logo from "@/components/logo";
 
 export default function AboutPage() {
   const [jam, setJam] = useState<JamType | null>();
@@ -27,14 +28,7 @@ export default function AboutPage() {
   return (
     <>
       <div className="flex w-full justify-center items-center pt-4">
-        <Image
-          isBlurred
-          isZoomed
-          alt="Event image"
-          className="aspect-square w-full hover:scale-110"
-          height={300}
-          src="/images/D2J_Icon.png"
-        />
+        <Logo width={300} />
       </div>
       <div className="flex flex-col gap-2 py-4 text-[#333] dark:text-white">
         <h1 className="text-2xl fint-bold leading-7">{jam?.name}</h1>

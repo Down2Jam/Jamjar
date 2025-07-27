@@ -6,6 +6,7 @@ import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
 import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 const events = [
   { name: "Theme Submission", date: "AUG 15" },
@@ -27,6 +28,7 @@ export default function JamHeader() {
     useState<ActiveJamResponse | null>(null);
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { siteTheme } = useTheme();
 
   const getClassesForDateDisplay = (
     index: number,
@@ -159,11 +161,22 @@ export default function JamHeader() {
 
   return (
     <>
-      <div className="bg-[#7090b9] z-10 relative dark:bg-[#124a88] ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden text-white transition-color duration-250 shadow-2xl">
+      <div
+        style={{
+          backgroundColor: siteTheme.colors["blueDark"],
+          color: siteTheme.colors["text"],
+        }}
+        className="z-10 relative ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden transition-color duration-250 shadow-2xl"
+      >
         {/* Jam Header */}
         <a href="/about" className="relative">
           <div className="flex">
-            <div className="bg-[#85bdd2] dark:bg-[#1892b3] p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250">
+            <div
+              style={{
+                backgroundColor: siteTheme.colors["blue"],
+              }}
+              className="p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250"
+            >
               <Calendar />
               <p>
                 {activeJamResponse?.jam && activeJamResponse.phase ? (
@@ -245,12 +258,15 @@ export default function JamHeader() {
         {sortedEvents.map((event, index) => (
           <div
             key={event.name}
-            className={`grow snap-start rounded-md p-2 text-center min-w-36 text-[#333] dark:text-white ${getClassesForDateDisplay(
+            className={`grow snap-start rounded-md p-2 text-center min-w-36 ${getClassesForDateDisplay(
               index,
               nextEventIndex,
               event.dateObj,
               currentDate
             )}`}
+            style={{
+              color: siteTheme.colors["text"],
+            }}
           >
             <p className="text-xs">{event.name}</p>
             <p className="font-bold text-lg">{event.date}</p>

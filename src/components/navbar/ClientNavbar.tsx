@@ -4,10 +4,11 @@ import useBreakpoint from "@/hooks/useBreakpoint";
 import PCbar from "./pcbar";
 import useHasMounted from "@/hooks/useHasMounted";
 import Mobilebar from "./mobilebar/Mobilebar";
+import { LanguageInfo } from "@/types/LanguageInfoType";
 
 type ClientNavbarProps = {
   isLoggedIn: boolean;
-  languages: any;
+  languages: LanguageInfo[];
 };
 
 export default function ClientNavbar({

@@ -1,11 +1,11 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+const resolvedTheme = "dark";
+
 export default function BackgroundFade() {
-  const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const reducedMotion = useReducedMotion();
 

@@ -50,7 +50,6 @@ import {
 } from "lucide-react";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
-import { useTheme } from "next-themes";
 import StickyPostCard from "./StickyPostCard";
 import { getTags } from "@/requests/tag";
 import { getSelf } from "@/requests/user";
@@ -62,10 +61,12 @@ import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
 import CommentCard from "./CommentCard";
 import ButtonAction from "../link-components/ButtonAction";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function Posts() {
   const searchParams = useSearchParams();
 
+  const { siteTheme } = useTheme();
   const [posts, setPosts] = useState<PostType[]>();
   const [stickyPosts, setStickyPosts] = useState<PostType[]>();
   const [sort, setSort] = useState<PostSort>(
@@ -108,7 +109,6 @@ export default function Posts() {
   }>();
   const [tagRules, setTagRules] = useState<{ [key: number]: number }>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  const { theme } = useTheme();
   const router = useRouter();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [currentPost, setCurrentPost] = useState<number>(0);
@@ -339,8 +339,13 @@ export default function Posts() {
             <DropdownTrigger>
               <Button
                 size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                className="text-xs !duration-250 !ease-linear !transition-all"
                 variant="faded"
+                style={{
+                  backgroundColor: siteTheme.colors["base"],
+                  color: siteTheme.colors["text"],
+                  borderColor: siteTheme.colors["crust"],
+                }}
               >
                 {sorts[sort]?.name}
               </Button>
@@ -367,8 +372,13 @@ export default function Posts() {
             <DropdownTrigger>
               <Button
                 size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                className="text-xs !duration-250 !ease-linear !transition-all"
                 variant="faded"
+                style={{
+                  backgroundColor: siteTheme.colors["base"],
+                  color: siteTheme.colors["text"],
+                  borderColor: siteTheme.colors["crust"],
+                }}
               >
                 {times[time]?.name}
               </Button>
@@ -395,8 +405,13 @@ export default function Posts() {
             <PopoverTrigger>
               <Button
                 size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                className="text-xs !duration-250 !ease-linear !transition-all"
                 variant="faded"
+                style={{
+                  backgroundColor: siteTheme.colors["base"],
+                  color: siteTheme.colors["text"],
+                  borderColor: siteTheme.colors["crust"],
+                }}
               >
                 {tagRules && Object.keys(tagRules).length > 0
                   ? "Custom Tags"
@@ -455,22 +470,14 @@ export default function Posts() {
                                 color:
                                   tagRules && tag.id in tagRules
                                     ? tagRules[tag.id] === 1
-                                      ? theme == "dark"
-                                        ? "#5ed4f7"
-                                        : "#05b7eb"
-                                      : theme == "dark"
-                                      ? "#f78e5e"
-                                      : "#eb2b05"
+                                      ? siteTheme.colors["blue"]
+                                      : siteTheme.colors["orange"]
                                     : "",
                                 borderColor:
                                   tagRules && tag.id in tagRules
                                     ? tagRules[tag.id] === 1
-                                      ? theme == "dark"
-                                        ? "#5ed4f7"
-                                        : "#05b7eb"
-                                      : theme == "dark"
-                                      ? "#f78e5e"
-                                      : "#eb2b05"
+                                      ? siteTheme.colors["blue"]
+                                      : siteTheme.colors["orange"]
                                     : "",
                               }}
                               endContent={
@@ -501,8 +508,13 @@ export default function Posts() {
             <DropdownTrigger>
               <Button
                 size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                className="text-xs !duration-250 !ease-linear !transition-all"
                 variant="faded"
+                style={{
+                  backgroundColor: siteTheme.colors["base"],
+                  color: siteTheme.colors["text"],
+                  borderColor: siteTheme.colors["crust"],
+                }}
               >
                 {style.charAt(0).toUpperCase() + style.slice(1)}
               </Button>

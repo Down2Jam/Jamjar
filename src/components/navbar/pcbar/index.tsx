@@ -14,13 +14,11 @@ import NavbarButton from "./NavbarButton";
 import {
   Bell,
   CalendarPlus,
-  ChevronDown,
   Dice3,
   Gamepad,
   Gamepad2,
   Heart,
   Info,
-  Languages,
   LogIn,
   MessageCircle,
   Music,
@@ -30,18 +28,8 @@ import {
   Users,
 } from "lucide-react";
 import { useJam } from "@/hooks/useJam";
-import {
-  addToast,
-  Button,
-  Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-} from "@heroui/react";
-import Cookies from "js-cookie";
+import { addToast, Button } from "@heroui/react";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
-import ThemeToggle from "@/components/navbar/pcbar/ThemeToggle";
 import {
   SiBluesky,
   SiDiscord,
@@ -59,11 +47,14 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
-import ThemeDropdown from "./ThemeDropdown";
+import SiteThemeDropdown from "./SiteThemeDropdown";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import Popover from "@/components/popover";
+import { LanguageInfo } from "@/types/LanguageInfoType";
 
 type PCbarProps = {
   isLoggedIn: boolean;
-  languages: any;
+  languages: LanguageInfo[];
 };
 
 export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
@@ -74,6 +65,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const [user, setUser] = useState<UserType>();
   const [hasGame, setHasGame] = useState<GameType | null>();
   const pathname = usePathname();
+  const { siteTheme } = useTheme();
 
   const t = useTranslations("Navbar");
 
@@ -121,7 +113,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   return (
     <NavbarBase
       maxWidth="2xl"
-      className="bg-white dark:bg-black p-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="p-1 duration-500 ease-in-out transition-color shadow-2xl"
       style={{
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
@@ -129,10 +121,20 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         backgroundPositionX: "45px, right 45px",
         backgroundSize: "210px",
         backgroundRepeat: "no-repeat",
+        backgroundColor: siteTheme.colors["crust"],
       }}
       isBordered
       height={40}
     >
+      <Popover
+        position="bottom-right"
+        className="text-right text-xs"
+        shown
+        showCloseButton
+      >
+        <p>⚠️ The site is currently transitioning to a custom theme system</p>
+        <p>Some colors may be incorrect as components are moved over</p>
+      </Popover>
       {/* Navbar Left */}
       <NavbarContent justify="start">
         <Brand userLoggedIn={isLoggedIn} />
@@ -317,7 +319,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" />
             {/* <ThemeToggle /> */}
-            <ThemeDropdown />
+            <SiteThemeDropdown />
           </>
         )}
         {!user && (
@@ -329,18 +331,27 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 startContent={<SiDiscord size={16} />}
                 isIconOnly
                 variant="light"
+                style={{
+                  color: siteTheme.colors["text"],
+                }}
               />
               <Button
                 size="sm"
                 startContent={<SiBluesky size={16} />}
                 isIconOnly
                 variant="light"
+                style={{
+                  color: siteTheme.colors["text"],
+                }}
               />
               <Button
                 size="sm"
                 startContent={<SiYoutube size={16} />}
                 isIconOnly
                 variant="light"
+                style={{
+                  color: siteTheme.colors["text"],
+                }}
               />
             </div>
           </>

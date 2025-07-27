@@ -1,15 +1,12 @@
 "use client";
 
 import useBreakpoint from "@/hooks/useBreakpoint";
-import {
-  LanguagePreviewProvider,
-  useLanguagePreview,
-} from "@/providers/LanguagePreviewProvider";
-import { ThemeProvider } from "@/providers/ThemeProvider";
+import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
+import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
 import { HeroUIProvider } from "@heroui/react";
 import { ToastProvider } from "@heroui/toast";
 import { merge } from "lodash";
-import { NextIntlClientProvider } from "next-intl";
+import { AbstractIntlMessages, NextIntlClientProvider } from "next-intl";
 import { useEffect, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
 
@@ -20,7 +17,7 @@ export default function Providers({
 }: Readonly<{
   children: React.ReactNode;
   locale: string;
-  messages: Record<string, any>;
+  messages: AbstractIntlMessages;
 }>) {
   const { isMobile } = useBreakpoint();
   const { previewLocale } = useLanguagePreview();
@@ -57,7 +54,7 @@ export default function Providers({
   return (
     <HeroUIProvider>
       <ShortcutProvider>
-        <ThemeProvider>
+        <SiteThemeProvider>
           <NextIntlClientProvider
             locale={activeLocale}
             messages={activeMessages}
@@ -67,7 +64,7 @@ export default function Providers({
             />
             {children}
           </NextIntlClientProvider>
-        </ThemeProvider>
+        </SiteThemeProvider>
       </ShortcutProvider>
     </HeroUIProvider>
   );

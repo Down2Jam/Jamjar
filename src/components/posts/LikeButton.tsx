@@ -6,8 +6,9 @@ import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { postLike } from "@/requests/like";
+
+const theme = "dark";
 
 export default function LikeButton({
   likes,
@@ -20,7 +21,6 @@ export default function LikeButton({
   parentId: number;
   isComment?: boolean;
 }) {
-  const { theme } = useTheme();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);

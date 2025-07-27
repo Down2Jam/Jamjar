@@ -1,7 +1,8 @@
 "use client";
 
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { Button, Kbd, Tooltip } from "@heroui/react";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 
 interface ButtonActionProps {
   icon?: ReactNode;
@@ -23,28 +24,12 @@ export default function ButtonAction({
   name,
   kbd,
   tooltip,
-  color = "blue",
   isIconOnly = false,
   size = "md",
   iconPosition = "end",
   isDisabled = false,
-  important = false,
 }: ButtonActionProps) {
-  const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches);
-    };
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
+  const { siteTheme } = useTheme();
 
   if (tooltip) {
     return (
@@ -61,25 +46,12 @@ export default function ButtonAction({
               </div>
             )
           }
-          className={`text-[#333] dark:text-white ${
-            important
-              ? color == "blue"
-                ? "border-[#85bdd2] bg-[#c0d9e2] dark:border-[#1892b3] dark:bg-[#1d232b]"
-                : color == "green"
-                ? "border-[#a8d285] bg-[#d1e5c2] dark:border-[#18b325] dark:bg-[#1d2b21]"
-                : color == "red"
-                ? "border-[#d29485] bg-[#e4c4bc] dark:border-[#b31820] dark:bg-[#2b1d22]"
-                : color == "yellow"
-                ? "border-[#d2cd85] bg-[#dfdcb7] dark:border-[#a9b318] dark:bg-[#2b281d]"
-                : "border-[#b1b1b1] bg-[#d4d4d4] dark:border-[#8f8f8f] dark:bg-[#303030]"
-              : "border-[#d9d9da] bg-white dark:border-[#444] dark:bg-[#222222]"
-          } transition-all transform duration-500 ease-in-out ${
-            !reduceMotion
-              ? size == "sm"
-                ? "hover:scale-105"
-                : "hover:scale-110"
-              : ""
-          }`}
+          style={{
+            backgroundColor: siteTheme.colors["base"],
+            color: siteTheme.colors["text"],
+            borderColor: siteTheme.colors["crust"],
+          }}
+          className={`transition-all transform duration-500 ease-in-out`}
           size={size}
           variant="bordered"
           onPress={onPress}
@@ -102,25 +74,12 @@ export default function ButtonAction({
             </div>
           )
         }
-        className={`text-[#333] dark:text-white ${
-          important
-            ? color == "blue"
-              ? "border-[#85bdd2] bg-[#c0d9e2] dark:border-[#1892b3] dark:bg-[#1d232b]"
-              : color == "green"
-              ? "border-[#a8d285] bg-[#d1e5c2] dark:border-[#18b325] dark:bg-[#1d2b21]"
-              : color == "red"
-              ? "border-[#d29485] bg-[#e4c4bc] dark:border-[#b31820] dark:bg-[#2b1d22]"
-              : color == "yellow"
-              ? "border-[#d2cd85] bg-[#dfdcb7] dark:border-[#a9b318] dark:bg-[#2b281d]"
-              : "border-[#b1b1b1] bg-[#d4d4d4] dark:border-[#8f8f8f] dark:bg-[#303030]"
-            : "border-[#d9d9da] bg-white dark:border-[#444] dark:bg-[#222222]"
-        } transition-all transform duration-500 ease-in-out ${
-          !reduceMotion
-            ? size == "sm"
-              ? "hover:scale-105"
-              : "hover:scale-110"
-            : ""
-        }`}
+        className={`transition-all transform duration-500 ease-in-out`}
+        style={{
+          backgroundColor: siteTheme.colors["base"],
+          color: siteTheme.colors["text"],
+          borderColor: siteTheme.colors["crust"],
+        }}
         size={size}
         variant="bordered"
         onPress={onPress}

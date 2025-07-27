@@ -1,15 +1,16 @@
 "use client";
 
-import { Image } from "@heroui/image";
 import { Link } from "@heroui/link";
 import { NavbarBrand } from "@heroui/navbar";
-import NextImage from "next/image";
 import NavbarTooltip from "./NavbarTooltip";
 import Hotkey from "../../hotkey";
 import { useTranslations } from "next-intl";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import Logo from "@/components/logo";
 
 export default function Brand({ userLoggedIn }: { userLoggedIn: boolean }) {
   const t = useTranslations("Navbar");
+  const { siteTheme } = useTheme();
 
   return (
     <NavbarBrand className="flex-grow-0 mr-2">
@@ -22,19 +23,12 @@ export default function Brand({ userLoggedIn }: { userLoggedIn: boolean }) {
           href={userLoggedIn ? "/home" : "/"}
           className={`duration-500 ease-in-out transition-all transform flex gap-2 text-white`}
         >
-          <Image
-            as={NextImage}
-            src="/images/D2J_Icon.png"
-            className="min-w-[40px]"
-            alt={t("Brand.Alt")}
-            width={40}
-            height={40}
-          />
+          <Logo width={40} />
           <p className="w-fit text-xl">
             <span
-              className="bg-clip-text text-transparent"
+              className="bg-clip-text text-transparent transition-all duration-500"
               style={{
-                backgroundImage: "linear-gradient(to right, #46c2e1, #d84f7b)",
+                backgroundImage: `linear-gradient(to right, ${siteTheme.colors["blue"]}, ${siteTheme.colors["pink"]})`,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}

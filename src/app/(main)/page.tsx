@@ -1,13 +1,8 @@
-import { Button } from "@heroui/button";
 import { Spacer } from "@heroui/react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { BookCopy, Info, LogIn } from "lucide-react";
 
 import SplashBackground from "./SplashBackground";
-import NextLink from "next/link";
-import SplashLogo from "./SplashLogo";
 import SplashClient from "./SplashClient";
 
 export default async function Home() {

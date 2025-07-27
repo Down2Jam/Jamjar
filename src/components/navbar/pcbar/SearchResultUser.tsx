@@ -1,3 +1,6 @@
+"use cllient";
+
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { UserType } from "@/types/UserType";
 import { Card, CardBody } from "@heroui/card";
 import { User } from "lucide-react";
@@ -10,6 +13,8 @@ export default function SearchResultUser({
   user: UserType;
   onPress: () => void;
 }) {
+  const { siteTheme } = useTheme();
+
   return (
     <Card
       key={user.id}
@@ -18,15 +23,15 @@ export default function SearchResultUser({
       href={`/u/${user.slug}`}
       onPress={onPress}
     >
-      <CardBody className="flex flex-row items-center gap-2">
+      <CardBody
+        className="flex flex-row items-center gap-2"
+        style={{
+          backgroundColor: siteTheme.colors["mantle"],
+          borderColor: siteTheme.colors["base"],
+          color: siteTheme.colors["text"],
+        }}
+      >
         <User /> {user.name}
-        <div
-          className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
-          dangerouslySetInnerHTML={{
-            __html:
-              user.bio && user.bio != "<p></p>" ? user.bio : "No user bio",
-          }}
-        />
       </CardBody>
     </Card>
   );

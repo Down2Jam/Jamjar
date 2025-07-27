@@ -18,10 +18,12 @@ export default function Hotkey({
   title: string;
   description: string;
 }) {
-  const { registerShortcut, unregisterShortcut } = useShortcut();
+  const shortcuts = useShortcut();
+  const registerShortcut = shortcuts?.registerShortcut;
+  const unregisterShortcut = shortcuts?.unregisterShortcut;
 
   useEffect(() => {
-    if (hotkey) {
+    if (hotkey && registerShortcut && unregisterShortcut) {
       registerShortcut(
         () => {
           if (onPress) {
