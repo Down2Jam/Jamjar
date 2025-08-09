@@ -9,8 +9,6 @@ import { useState, useEffect } from "react";
 import { postLike } from "@/requests/like";
 import { useTheme } from "@/providers/SiteThemeProvider";
 
-const theme = "dark";
-
 export default function LikeButton({
   likes,
   liked,
