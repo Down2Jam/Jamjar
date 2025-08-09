@@ -7,6 +7,7 @@ import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import { postLike } from "@/requests/like";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 const theme = "dark";
 
@@ -25,6 +26,7 @@ export default function LikeButton({
   const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
+  const { siteTheme } = useTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -45,12 +47,12 @@ export default function LikeButton({
       size="sm"
       variant="bordered"
       style={{
-        color: updatedLiked ? (theme == "dark" ? "#5ed4f7" : "#05b7eb") : "",
+        color: updatedLiked
+          ? siteTheme.colors["blue"]
+          : siteTheme.colors["text"],
         borderColor: updatedLiked
-          ? theme == "dark"
-            ? "#5ed4f744"
-            : "#05b7eb44"
-          : "",
+          ? siteTheme.colors["blue"]
+          : siteTheme.colors["text"],
       }}
       onPress={async () => {
         if (!getCookie("token")) {

@@ -28,7 +28,7 @@ export default function SplashClient() {
         <p
           className="text-2xl font-semibold transition-all duration-500"
           style={{
-            color: siteTheme.colors["text"],
+            color: siteTheme.colors["textLight"],
           }}
         >
           {t("Description")}
@@ -36,7 +36,7 @@ export default function SplashClient() {
         <p
           className="transition-all duration-500"
           style={{
-            color: siteTheme.colors["text"],
+            color: siteTheme.colors["textLight"],
             opacity: 0.5,
           }}
         >

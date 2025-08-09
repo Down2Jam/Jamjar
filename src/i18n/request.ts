@@ -19,6 +19,7 @@ export default getRequestConfig(async () => {
 
   return {
     locale,
+    timeZone: "America/Toronto",
     messages: merge({}, fallbackMessages, messages),
   };
 });

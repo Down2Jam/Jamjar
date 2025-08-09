@@ -130,6 +130,9 @@ export default function PostCard({
                 variant="light"
                 isIconOnly
                 onPress={() => setMinimized(false)}
+                style={{
+                  color: siteTheme.colors["text"],
+                }}
               >
                 <Plus size={16} />
               </Button>
@@ -154,6 +157,9 @@ export default function PostCard({
                   variant="light"
                   isIconOnly
                   onPress={() => setMinimized(true)}
+                  style={{
+                    color: siteTheme.colors["text"],
+                  }}
                 >
                   <Minus size={16} />
                 </Button>
@@ -235,13 +241,28 @@ export default function PostCard({
                   parentId={post.id}
                 />
                 <Link href={`/p/${post.slug}#create-comment`}>
-                  <Button size="sm" variant="bordered">
+                  <Button
+                    size="sm"
+                    variant="bordered"
+                    style={{
+                      color: siteTheme.colors["text"],
+                      borderColor: siteTheme.colors["text"],
+                    }}
+                  >
                     <MessageCircle size={16} /> {post.comments.length}
                   </Button>
                 </Link>
                 <Dropdown backdrop="opaque">
                   <DropdownTrigger>
-                    <Button size="sm" variant="bordered" isIconOnly>
+                    <Button
+                      size="sm"
+                      variant="bordered"
+                      isIconOnly
+                      style={{
+                        color: siteTheme.colors["text"],
+                        borderColor: siteTheme.colors["text"],
+                      }}
+                    >
                       <MoreVertical size={16} />
                     </Button>
                   </DropdownTrigger>

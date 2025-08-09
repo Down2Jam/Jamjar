@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { TimerIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -14,6 +15,7 @@ export default function Timer({
 }) {
   const [timeLeft, setTimeLeft] = useState(targetDate.getTime() - Date.now());
   const [mounted, setMounted] = useState<boolean>(false);
+  const { siteTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
@@ -62,9 +64,19 @@ export default function Timer({
   return (
     <div>
       <div className="flex items-center gap-4 justify-center">
-        <TimerIcon className="text-[#666]" />
+        <TimerIcon
+          style={{
+            color: siteTheme.colors["textFaded"],
+          }}
+        />
         <p>{name}</p>
-        <p className="text-[#1687a7]">{formatTime(timeLeft)}</p>
+        <p
+          style={{
+            color: siteTheme.colors["blue"],
+          }}
+        >
+          {formatTime(timeLeft)}
+        </p>
       </div>
     </div>
   );

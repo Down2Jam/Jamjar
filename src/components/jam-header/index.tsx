@@ -164,7 +164,7 @@ export default function JamHeader() {
       <div
         style={{
           backgroundColor: siteTheme.colors["blueDark"],
-          color: siteTheme.colors["text"],
+          color: siteTheme.colors["textLight"],
         }}
         className="z-10 relative ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden transition-color duration-250 shadow-2xl"
       >

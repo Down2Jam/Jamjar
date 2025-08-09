@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "@/components/link-components/Link";
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
 import {
@@ -87,6 +88,8 @@ export default function Results() {
     getData();
   }, [category, contentType, sort]);
 
+  const { siteTheme } = useTheme();
+
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
     if (value) {
@@ -113,10 +116,20 @@ export default function Results() {
   }
 
   return (
-    <main className="pl-4 pr-4 text-[#333] dark:text-white">
+    <main
+      className="pl-4 pr-4"
+      style={{
+        color: siteTheme.colors["text"],
+      }}
+    >
       <section className="mb-4">
         <h1 className="text-3xl mb-4">Results</h1>
-        <p className="text-sm text-default-500">
+        <p
+          className="text-sm"
+          style={{
+            color: siteTheme.colors["textFaded"],
+          }}
+        >
           Here are the overall results from the jam
         </p>
       </section>
@@ -129,8 +142,13 @@ export default function Results() {
               <DropdownTrigger>
                 <Button
                   size="sm"
-                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                  className="text-xs !duration-250 !ease-linear !transition-all"
                   variant="faded"
+                  style={{
+                    backgroundColor: siteTheme.colors["base"],
+                    color: siteTheme.colors["text"],
+                    borderColor: siteTheme.colors["crust"],
+                  }}
                 >
                   {category}
                 </Button>
@@ -140,7 +158,10 @@ export default function Results() {
                   setCategory(key as "REGULAR" | "ODA");
                   updateQueryParam("category", key as string);
                 }}
-                className="text-[#333] dark:text-white"
+                style={{
+                  backgroundColor: siteTheme.colors["base"],
+                  color: siteTheme.colors["text"],
+                }}
               >
                 <DropdownItem
                   key="REGULAR"
@@ -163,8 +184,13 @@ export default function Results() {
                 <DropdownTrigger>
                   <Button
                     size="sm"
-                    className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                    className="text-xs !duration-250 !ease-linear !transition-all"
                     variant="faded"
+                    style={{
+                      backgroundColor: siteTheme.colors["base"],
+                      color: siteTheme.colors["text"],
+                      borderColor: siteTheme.colors["crust"],
+                    }}
                   >
                     {contentType}
                   </Button>
@@ -197,8 +223,13 @@ export default function Results() {
               <DropdownTrigger>
                 <Button
                   size="sm"
-                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
+                  className="text-xs !duration-250 !ease-linear !transition-all"
                   variant="faded"
+                  style={{
+                    backgroundColor: siteTheme.colors["base"],
+                    color: siteTheme.colors["text"],
+                    borderColor: siteTheme.colors["crust"],
+                  }}
                 >
                   {sort}
                 </Button>
@@ -237,7 +268,13 @@ export default function Results() {
       <div className="pt-4 flex flex-col gap-4">
         {games &&
           games.map((game) => (
-            <Card key={game.id}>
+            <Card
+              key={game.id}
+              className="duration-500"
+              style={{
+                backgroundColor: siteTheme.colors["mantle"],
+              }}
+            >
               <CardBody className="flex-row items-center gap-4">
                 <Image
                   removeWrapper

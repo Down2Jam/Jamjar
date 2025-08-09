@@ -71,6 +71,7 @@ import {
   Legend,
 } from "recharts";
 import CreateComment from "@/components/create-comment";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function GamePage({
   params,
@@ -107,6 +108,8 @@ export default function GamePage({
   >([]);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
+
+  const { siteTheme } = useTheme();
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -190,8 +193,20 @@ export default function GamePage({
 
   return (
     <>
-      <div className="border-2 border-[#dddddd] dark:border-[#222224] relative rounded-xl overflow-hidden bg-white dark:bg-[#18181a] text-[#333] dark:text-white">
-        <div className="bg-[#e4e4e4] dark:bg-[#222222] h-60 relative">
+      <div
+        style={{
+          background: siteTheme.colors["mantle"],
+          borderColor: siteTheme.colors["base"],
+          color: siteTheme.colors["text"],
+        }}
+        className="border-2 relative rounded-xl overflow-hidden"
+      >
+        <div
+          className="h-60 relative"
+          style={{
+            background: siteTheme.colors["base"],
+          }}
+        >
           {(game.thumbnail || game.banner) && (
             <Image
               src={game.banner || game.thumbnail || ""}
@@ -201,7 +216,12 @@ export default function GamePage({
             />
           )}
         </div>
-        <div className="flex -mt-2 backdrop-blur-md border-t-1 border-white/50 dark:border-[#333]/50">
+        <div
+          className="flex -mt-2 backdrop-blur-md border-t-1"
+          style={{
+            borderColor: siteTheme.colors["crust"],
+          }}
+        >
           <div className="w-2/3 p-4 flex flex-col gap-4">
             <div>
               <p className="text-4xl">{game.name}</p>

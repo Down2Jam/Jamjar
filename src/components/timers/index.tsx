@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Timer from "./Timer";
 import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function Timers() {
   const [activeJamResponse, setActiveJamResponse] =
@@ -22,6 +23,8 @@ export default function Timers() {
     fetchCurrentJamPhase();
   }, []);
 
+  const { siteTheme } = useTheme();
+
   if (activeJamResponse && activeJamResponse.jam) {
     if (
       activeJamResponse.phase == "Suggestion" ||
@@ -30,7 +33,12 @@ export default function Timers() {
       activeJamResponse.phase == "Upcoming Jam"
     ) {
       return (
-        <div className="text-[#333] dark:text-white  transition-color duration-250">
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           <Timer
             name="Jam starts in"
             targetDate={new Date(activeJamResponse.jam.startTime)}
@@ -39,7 +47,12 @@ export default function Timers() {
       );
     } else if (activeJamResponse.phase == "Jamming") {
       return (
-        <div className="text-[#333] dark:text-white transition-color duration-250">
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           <Timer
             name="Jam ends in"
             targetDate={
@@ -53,7 +66,12 @@ export default function Timers() {
       );
     } else if (activeJamResponse.phase == "Submission") {
       return (
-        <div className="text-[#333] dark:text-white transition-color duration-250">
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           <Timer
             name="Submissions ends in"
             targetDate={
@@ -68,7 +86,12 @@ export default function Timers() {
       );
     } else if (activeJamResponse.phase == "Rating") {
       return (
-        <div className="text-[#333] dark:text-white transition-color duration-250">
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           <Timer
             name="Rating ends in"
             targetDate={
@@ -84,7 +107,12 @@ export default function Timers() {
       );
     } else {
       return (
-        <div className="text-[#333] dark:text-white transition-color duration-250">
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
           No upcoming jams
         </div>
       );
