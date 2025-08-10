@@ -4,8 +4,8 @@ import { ReactNode, useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
 import {
+  addToast,
   Avatar,
-  Button,
   Chip,
   Divider,
   Drawer,
@@ -13,10 +13,6 @@ import {
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -60,13 +56,14 @@ import Link from "next/link";
 import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
 import CommentCard from "./CommentCard";
-import ButtonAction from "../link-components/ButtonAction";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Button } from "@/framework/Button";
+import Dropdown from "@/framework/Dropdown";
 
 export default function Posts() {
   const searchParams = useSearchParams();
 
-  const { siteTheme } = useTheme();
+  const { siteTheme, colors } = useTheme();
   const [posts, setPosts] = useState<PostType[]>();
   const [stickyPosts, setStickyPosts] = useState<PostType[]>();
   const [sort, setSort] = useState<PostSort>(
@@ -335,84 +332,45 @@ export default function Posts() {
 
       <div className="flex justify-between p-4 pb-0">
         <div className="flex gap-2">
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs !duration-250 !ease-linear !transition-all"
-                variant="faded"
-                style={{
-                  backgroundColor: siteTheme.colors["base"],
-                  color: siteTheme.colors["text"],
-                  borderColor: siteTheme.colors["crust"],
-                }}
+          <Dropdown
+            trigger={<Button>{sorts[sort]?.name}</Button>}
+            onSelect={(key) => {
+              setSort(key as PostSort);
+              updateQueryParam("sort", key as string);
+            }}
+          >
+            {Object.entries(sorts).map(([key, sort]) => (
+              <Dropdown.Item
+                key={key}
+                value={key}
+                icon={sort.icon}
+                description={sort.description}
               >
-                {sorts[sort]?.name}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              onAction={(key) => {
-                setSort(key as PostSort);
-                updateQueryParam("sort", key as string);
-              }}
-              className="text-[#333] dark:text-white"
-            >
-              {Object.entries(sorts).map(([key, sort]) => (
-                <DropdownItem
-                  key={key}
-                  startContent={sort.icon}
-                  description={sort.description}
-                >
-                  {sort.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
+                {sort.name}
+              </Dropdown.Item>
+            ))}
           </Dropdown>
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs !duration-250 !ease-linear !transition-all"
-                variant="faded"
-                style={{
-                  backgroundColor: siteTheme.colors["base"],
-                  color: siteTheme.colors["text"],
-                  borderColor: siteTheme.colors["crust"],
-                }}
+          <Dropdown
+            trigger={<Button>{times[time]?.name}</Button>}
+            onSelect={(key) => {
+              setTime(key as PostTime);
+              updateQueryParam("time", key as string);
+            }}
+          >
+            {Object.entries(times).map(([key, sort]) => (
+              <Dropdown.Item
+                key={key}
+                value={key}
+                icon={sort.icon}
+                description={sort.description}
               >
-                {times[time]?.name}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              onAction={(key) => {
-                setTime(key as PostTime);
-                updateQueryParam("time", key as string);
-              }}
-              className="text-[#333] dark:text-white"
-            >
-              {Object.entries(times).map(([key, sort]) => (
-                <DropdownItem
-                  key={key}
-                  startContent={sort.icon}
-                  description={sort.description}
-                >
-                  {sort.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
+                {sort.name}
+              </Dropdown.Item>
+            ))}
           </Dropdown>
           <Popover placement="bottom" showArrow backdrop="opaque">
             <PopoverTrigger>
-              <Button
-                size="sm"
-                className="text-xs !duration-250 !ease-linear !transition-all"
-                variant="faded"
-                style={{
-                  backgroundColor: siteTheme.colors["base"],
-                  color: siteTheme.colors["text"],
-                  borderColor: siteTheme.colors["crust"],
-                }}
-              >
+              <Button>
                 {tagRules && Object.keys(tagRules).length > 0
                   ? "Custom Tags"
                   : "All Tags"}
@@ -504,33 +462,19 @@ export default function Posts() {
           </Popover>
         </div>
         <div>
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs !duration-250 !ease-linear !transition-all"
-                variant="faded"
-                style={{
-                  backgroundColor: siteTheme.colors["base"],
-                  color: siteTheme.colors["text"],
-                  borderColor: siteTheme.colors["crust"],
-                }}
-              >
-                {style.charAt(0).toUpperCase() + style.slice(1)}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              onAction={(key) => {
-                setStyle(key as PostStyle);
-                updateQueryParam("style", key as string);
-              }}
-              className="text-[#333] dark:text-white"
-            >
-              <DropdownItem key="cozy">Cozy</DropdownItem>
-              <DropdownItem key="compact">Compact</DropdownItem>
-              <DropdownItem key="ultra">Ultra Compact</DropdownItem>
-              <DropdownItem key="adaptive">Adaptive</DropdownItem>
-            </DropdownMenu>
+          <Dropdown
+            trigger={
+              <Button>{style.charAt(0).toUpperCase() + style.slice(1)}</Button>
+            }
+            onSelect={(key) => {
+              setStyle(key as PostStyle);
+              updateQueryParam("style", key as string);
+            }}
+          >
+            <Dropdown.Item value="cozy">Cozy</Dropdown.Item>
+            <Dropdown.Item value="compact">Compact</Dropdown.Item>
+            <Dropdown.Item value="ultra">Ultra Compact</Dropdown.Item>
+            <Dropdown.Item value="adaptive">Adaptive</Dropdown.Item>
           </Dropdown>
         </div>
       </div>
@@ -538,7 +482,10 @@ export default function Posts() {
       {loading ? (
         <div className="flex justify-center p-6">
           <LoaderCircle
-            className="animate-spin text-[#333] dark:text-[#999]"
+            className="animate-spin"
+            style={{
+              color: colors["text"],
+            }}
             size={24}
           />
         </div>
@@ -557,18 +504,30 @@ export default function Posts() {
               />
             ))
           ) : (
-            <p className="text-center text-[#333] dark:text-white transition-color duration-250 ease-linear">
+            <p
+              className="text-center transition-color duration-250 ease-linear"
+              style={{
+                color: colors["text"],
+              }}
+            >
               No posts match your filters
             </p>
           )}
           <div>
             {posts && (
-              <ButtonAction
-                name="Load More Posts"
-                onPress={() => {
-                  toast.warning("Post pagination coming soon");
+              <Button
+                name=""
+                onClick={() => {
+                  addToast({
+                    title: "Post pagination coming soon",
+                    color: "warning",
+                    variant: "bordered",
+                    timeout: 3000,
+                  });
                 }}
-              />
+              >
+                Load More Posts
+              </Button>
             )}
           </div>
         </div>
@@ -593,21 +552,23 @@ export default function Posts() {
             },
           },
         }}
+        style={{
+          backgroundColor: colors["mantle"],
+        }}
       >
         <DrawerContent>
           {(onClose) => (
             <>
               {posts && (
                 <>
-                  <DrawerHeader className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 border-b border-default-200/50 justify-between bg-content1/50 backdrop-saturate-150 backdrop-blur-lg">
+                  <DrawerHeader
+                    className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 border-b border-default-200/50 justify-between backdrop-blur-lg"
+                    style={{
+                      backgroundColor: colors["mantle"],
+                    }}
+                  >
                     <Tooltip content="Close">
-                      <Button
-                        isIconOnly
-                        className="text-default-400"
-                        size="sm"
-                        variant="light"
-                        onPress={onClose}
-                      >
+                      <Button onClick={onClose}>
                         <svg
                           fill="none"
                           height="20"
@@ -627,7 +588,7 @@ export default function Posts() {
                       <Button
                         className="font-medium text-small text-default-500"
                         size="sm"
-                        startContent={
+                        leftIcon={
                           <svg
                             height="16"
                             viewBox="0 0 16 16"
@@ -641,8 +602,7 @@ export default function Posts() {
                             />
                           </svg>
                         }
-                        variant="flat"
-                        onPress={() => {
+                        onClick={() => {
                           navigator.clipboard.writeText(
                             `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
                           );
@@ -652,8 +612,8 @@ export default function Posts() {
                         Copy Link
                       </Button>
                       <Button
-                        className="font-medium text-small text-default-500"
-                        endContent={
+                        className="font-medium text-small"
+                        rightIcon={
                           <svg
                             fill="none"
                             height="16"
@@ -669,8 +629,7 @@ export default function Posts() {
                           </svg>
                         }
                         size="sm"
-                        variant="flat"
-                        onPress={() => {
+                        onClick={() => {
                           redirect(`/p/${posts[currentPost].slug}`);
                         }}
                       >
@@ -680,12 +639,9 @@ export default function Posts() {
                     <div className="flex gap-1 items-center">
                       <Tooltip content="Previous">
                         <Button
-                          isIconOnly
-                          className="text-default-500"
                           size="sm"
-                          variant="flat"
-                          isDisabled={currentPost <= 0}
-                          onPress={() => {
+                          disabled={currentPost <= 0}
+                          onClick={() => {
                             setCurrentPost(currentPost - 1);
                           }}
                         >
@@ -706,12 +662,9 @@ export default function Posts() {
                       </Tooltip>
                       <Tooltip content="Next">
                         <Button
-                          isIconOnly
-                          className="text-default-500"
                           size="sm"
-                          variant="flat"
-                          isDisabled={currentPost >= posts.length - 1}
-                          onPress={() => {
+                          disabled={currentPost >= posts.length - 1}
+                          onClick={() => {
                             setCurrentPost(currentPost + 1);
                           }}
                         >
@@ -783,7 +736,7 @@ export default function Posts() {
                         <Link
                           href={`/p/${posts[currentPost].slug}#create-comment`}
                         >
-                          <Button size="sm" variant="bordered">
+                          <Button size="sm">
                             <MessageCircle size={16} />{" "}
                             {posts[currentPost].comments.length}
                           </Button>
@@ -806,7 +759,7 @@ export default function Posts() {
                     </div>
                   </DrawerBody>
                   <DrawerFooter>
-                    <Button color="danger" variant="light" onPress={onClose}>
+                    <Button color="danger" onClick={onClose}>
                       Close
                     </Button>
                   </DrawerFooter>

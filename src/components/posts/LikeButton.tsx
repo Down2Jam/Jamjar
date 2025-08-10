@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@heroui/react";
 import { Heart } from "lucide-react";
 import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
@@ -8,6 +7,7 @@ import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import { postLike } from "@/requests/like";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Button } from "@/framework/Button";
 
 export default function LikeButton({
   likes,
@@ -43,16 +43,15 @@ export default function LikeButton({
   return (
     <Button
       size="sm"
-      variant="bordered"
       style={{
         color: updatedLiked
           ? siteTheme.colors["blue"]
           : siteTheme.colors["text"],
         borderColor: updatedLiked
           ? siteTheme.colors["blue"]
-          : siteTheme.colors["text"],
+          : siteTheme.colors["base"],
       }}
-      onPress={async () => {
+      onClick={async () => {
         if (!getCookie("token")) {
           redirect("/login");
         }

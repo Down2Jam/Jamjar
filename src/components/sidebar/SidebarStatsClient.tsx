@@ -4,6 +4,7 @@ import { Spacer } from "@heroui/react";
 import Timers from "../timers";
 import { Gamepad2, Star, Users } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Card } from "@/framework/Card";
 
 export default function SidebarStatsClient({
   users,
@@ -16,14 +17,7 @@ export default function SidebarStatsClient({
 }) {
   const { siteTheme } = useTheme();
   return (
-    <div
-      className="border rounded-xl p-4 text-center shadow-2xl z-10 duration-500 transition-all"
-      style={{
-        background: siteTheme.colors["base"],
-        borderColor: siteTheme.colors["mantle"],
-        color: siteTheme.colors["text"],
-      }}
-    >
+    <Card>
       <Timers />
       <Spacer />
       <div className="flex items-center gap-4 justify-center">
@@ -84,6 +78,6 @@ export default function SidebarStatsClient({
           </div>
         </>
       )}
-    </div>
+    </Card>
   );
 }

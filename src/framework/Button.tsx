@@ -43,7 +43,7 @@ export function Button({
   return (
     <button
       className={[
-        "inline-flex items-center justify-center font-medium border transition-colors duration-200 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        "p-4 inline-flex items-center justify-center font-medium border transition-colors duration-200 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         sizeClasses[size],
         fullWidth ? "w-full" : "",
         disabled || loading ? "opacity-60 cursor-not-allowed" : "",
@@ -60,7 +60,7 @@ export function Button({
     >
       {loading && <Loader2 className="animate-spin" size={16} />}
       {!loading && leftIcon}
-      <span>{children}</span>
+      <span className="flex gap-2">{children}</span>
       {rightIcon}
     </button>
   );

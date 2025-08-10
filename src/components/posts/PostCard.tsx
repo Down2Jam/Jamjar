@@ -2,7 +2,6 @@
 
 import {
   Avatar,
-  Button,
   Chip,
   Dropdown,
   DropdownItem,
@@ -36,8 +35,9 @@ import { toast } from "react-toastify";
 import { TagType } from "@/types/TagType";
 import { deletePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
-import { useTheme } from "@/providers/SiteThemeProvider";
 import { Card } from "@/framework/Card";
+import { Button } from "@/framework/Button";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function PostCard({
   post,
@@ -57,7 +57,7 @@ export default function PostCard({
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  const { siteTheme } = useTheme();
+  const { colors } = useTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -119,20 +119,12 @@ export default function PostCard({
                 </p>
               </div>
             </div>
-            <Button
-              size="sm"
-              variant="light"
-              isIconOnly
-              onPress={() => setMinimized(false)}
-              style={{
-                color: siteTheme.colors["text"],
-              }}
-            >
+            <Button size="sm" onClick={() => setMinimized(false)}>
               <Plus size={16} />
             </Button>
           </div>
         ) : (
-          <div>
+          <div className="w-full">
             <div className="flex justify-between items-center">
               <Link
                 href={`/p/${post.slug}`}
@@ -146,15 +138,7 @@ export default function PostCard({
               >
                 <p className="text-2xl">{post.title}</p>
               </Link>
-              <Button
-                size="sm"
-                variant="light"
-                isIconOnly
-                onPress={() => setMinimized(true)}
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-              >
+              <Button size="sm" onClick={() => setMinimized(false)}>
                 <Minus size={16} />
               </Button>
             </div>
@@ -185,7 +169,10 @@ export default function PostCard({
             <Spacer y={4} />
 
             <div
-              className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
+              className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+              style={{
+                color: colors["textFaded"],
+              }}
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
@@ -235,28 +222,13 @@ export default function PostCard({
                 parentId={post.id}
               />
               <Link href={`/p/${post.slug}#create-comment`}>
-                <Button
-                  size="sm"
-                  variant="bordered"
-                  style={{
-                    color: siteTheme.colors["text"],
-                    borderColor: siteTheme.colors["text"],
-                  }}
-                >
+                <Button size="sm">
                   <MessageCircle size={16} /> {post.comments.length}
                 </Button>
               </Link>
               <Dropdown backdrop="opaque">
                 <DropdownTrigger>
-                  <Button
-                    size="sm"
-                    variant="bordered"
-                    isIconOnly
-                    style={{
-                      color: siteTheme.colors["text"],
-                      borderColor: siteTheme.colors["text"],
-                    }}
-                  >
+                  <Button size="sm">
                     <MoreVertical size={16} />
                   </Button>
                 </DropdownTrigger>
