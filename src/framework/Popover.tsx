@@ -5,24 +5,27 @@ import useHasMounted from "@/hooks/useHasMounted";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+
+type Position =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "center";
 
 interface PopoverProps {
   children: React.ReactNode;
   className?: string;
-  position?:
-    | "top-left"
-    | "top-right"
-    | "bottom-left"
-    | "bottom-right"
-    | "top"
-    | "bottom"
-    | "left"
-    | "right"
-    | "center";
+  position?: Position;
   anchorToScreen?: boolean;
   shown: boolean;
   showCloseButton?: boolean;
+  offset?: number;
 }
 
 export default function Popover({
@@ -32,38 +35,15 @@ export default function Popover({
   anchorToScreen = true,
   shown,
   showCloseButton = false,
+  offset = 8,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
+  const [hovered, setHovered] = useState(false);
+  const [closed, setClosed] = useState(false);
 
-  const [closed, setClosed] = useState<boolean>(false);
-
-  const screenPositionClasses: Record<string, string> = {
-    "top-left": "fixed top-4 left-4",
-    "top-right": "fixed top-4 right-4",
-    "bottom-left": "fixed bottom-4 left-4",
-    "bottom-right": "fixed bottom-4 right-4",
-    top: "fixed top-4 left-1/2 -translate-x-1/2",
-    bottom: "fixed bottom-4 left-1/2",
-    left: "fixed top-1/2 left-4 -translate-y-1/2",
-    right: "fixed top-1/2 right-4 -translate-y-1/2",
-    center: "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-  };
-
-  const relativePositionClasses: Record<string, string> = {
-    "top-left": "absolute bottom-full left-0 mb-2",
-    "top-right": "absolute bottom-full right-0 mb-2",
-    "bottom-left": "absolute top-full left-0 mt-2",
-    "bottom-right": "absolute top-full right-0 mt-2",
-    top: "absolute bottom-full left-1/2 -translate-x-1/2 mb-2",
-    bottom: "absolute left-1/2 mt-2",
-    left: "absolute right-full top-1/2 -translate-y-1/2 mr-2",
-    right: "absolute left-full top-1/2 -translate-y-1/2 ml-2",
-    center: "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
-  };
-
-  const getTransformOrigin = (position: string): string => {
-    switch (position) {
+  const getTransformOrigin = (p: Position) => {
+    switch (p) {
       case "top-left":
         return "bottom left";
       case "top-right":
@@ -80,63 +60,195 @@ export default function Popover({
         return "center right";
       case "right":
         return "center left";
-      case "center":
       default:
         return "center";
     }
   };
 
-  const positionClass = anchorToScreen
-    ? screenPositionClasses[position]
-    : relativePositionClasses[position];
+  // ----- Positioner (no animation, no transforms from Framer)
+  const positionerStyle: React.CSSProperties = useMemo(() => {
+    if (anchorToScreen) {
+      const base: React.CSSProperties = {
+        position: "fixed",
+        zIndex: 50,
+        pointerEvents: "none",
+      };
+      switch (position) {
+        case "top-left":
+          return { ...base, top: offset, left: offset };
+        case "top-right":
+          return { ...base, top: offset, right: offset };
+        case "bottom-left":
+          return { ...base, bottom: offset, left: offset };
+        case "bottom-right":
+          return { ...base, bottom: offset, right: offset };
+        case "top":
+          return {
+            ...base,
+            top: offset,
+            left: "50%",
+            transform: "translateX(-50%)",
+          };
+        case "bottom":
+          return {
+            ...base,
+            bottom: offset,
+            left: "50%",
+            transform: "translateX(-50%)",
+          };
+        case "left":
+          return {
+            ...base,
+            left: offset,
+            top: "50%",
+            transform: "translateY(-50%)",
+          };
+        case "right":
+          return {
+            ...base,
+            right: offset,
+            top: "50%",
+            transform: "translateY(-50%)",
+          };
+        default:
+          return {
+            ...base,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          };
+      }
+    } else {
+      // Relative to trigger container (parent must be position: relative)
+      const base: React.CSSProperties = {
+        position: "absolute",
+        zIndex: 50,
+        pointerEvents: "none",
+      };
+      switch (position) {
+        case "top-left":
+          return { ...base, bottom: "100%", left: 0, marginBottom: offset };
+        case "top-right":
+          return { ...base, bottom: "100%", right: 0, marginBottom: offset };
+        case "bottom-left":
+          return { ...base, top: "100%", left: 0, marginTop: offset };
+        case "bottom-right":
+          return { ...base, top: "100%", right: 0, marginTop: offset };
+        case "top":
+          return {
+            ...base,
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginBottom: offset,
+          };
+        case "bottom":
+          return {
+            ...base,
+            top: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            marginTop: offset,
+          };
+        case "left":
+          return {
+            ...base,
+            right: "100%",
+            top: "50%",
+            transform: "translateY(-50%)",
+            marginRight: offset,
+          };
+        case "right":
+          return {
+            ...base,
+            left: "100%",
+            top: "50%",
+            transform: "translateY(-50%)",
+            marginLeft: offset,
+          };
+        default:
+          return {
+            ...base,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          };
+      }
+    }
+  }, [anchorToScreen, position, offset]);
 
   if (!hasMounted) return null;
 
   const content = (
-    <AnimatePresence>
-      {shown && !closed && (
-        <motion.div
-          key="popover"
-          initial={{ opacity: 0, scale: 0.95, padding: 0 }}
-          animate={{ opacity: 1, scale: 1, padding: 0 }}
-          exit={{ opacity: 0, scale: 0.95, padding: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          style={{ transformOrigin: getTransformOrigin(position) }}
-          className={`z-50 ${positionClass}`}
-        >
+    <div style={positionerStyle}>
+      <AnimatePresence initial={false}>
+        {shown && !closed && (
           <motion.div
-            className={`relative w-max group shadow-lg ${className || ""}`}
+            key="popover"
+            layout
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             style={{
+              transformOrigin: getTransformOrigin(position),
+              pointerEvents: "auto",
+              position: "relative",
+              // sizing fixes
+              display: "inline-block",
+              width: "max-content",
+              minWidth: "max-content",
+              // optional: keep from blowing past viewport when anchored to screen
+              maxWidth: anchorToScreen
+                ? `calc(100vw - ${offset * 2}px)`
+                : undefined,
               backgroundColor: colors["mantle"],
               borderColor: colors["base"],
               color: colors["text"],
-              borderWidth: "1px",
+              borderWidth: 1,
               borderStyle: "solid",
-              borderRadius: "0.5rem",
-              // base padding = 8px
-              padding: 8,
+              borderRadius: 8,
+              boxShadow:
+                "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+              padding: hovered && showCloseButton ? 12 : 8,
+              transition: "padding 150ms ease-out",
             }}
-            whileHover={showCloseButton ? { padding: 12 } : {}}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            className={className}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
           >
+            {/* wrapper to ensure absolutely-positioned children don't collapse the parent */}
+            <div style={{ position: "relative" }}>{children}</div>
+
             {showCloseButton && (
               <button
-                className="absolute -top-2 -right-2 p-1 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                onClick={() => setClosed(true)}
                 style={{
+                  position: "absolute",
+                  top: -8,
+                  right: -8,
+                  padding: 4,
+                  borderRadius: 8,
                   backgroundColor: colors["mantle"],
                   color: colors["text"],
+                  boxShadow:
+                    "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+                  transform: hovered ? "scale(1.05)" : "scale(1)",
+                  opacity: hovered ? 1 : 0,
+                  transition: "opacity 200ms ease, transform 200ms ease",
+                  cursor: "pointer",
+                  border: "none",
                 }}
-                onClick={() => setClosed(true)}
+                aria-label="Close"
+                type="button"
               >
                 <X size={16} />
               </button>
             )}
-
-            {children}
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </div>
   );
 
   return anchorToScreen ? createPortal(content, document.body) : content;
