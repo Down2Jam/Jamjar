@@ -13,10 +13,12 @@ import {
   Eye,
   Play,
 } from "lucide-react";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function SidebarStreams() {
   const [streamers, setStreamers] = useState<FeaturedStreamerType[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
+  const { colors } = useTheme();
 
   useEffect(() => {
     const fetchStreamers = async () => {
@@ -73,7 +75,7 @@ export default function SidebarStreams() {
 
   return (
     <a href={`https://twitch.tv/${currentStreamer.userName}`} target="_blank">
-      <div className="text-[#333] dark:text-white transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer h-[320px]">
+      <div className="transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer h-[320px]">
         <div className="absolute z-0">
           <Image
             as={NextImage}
@@ -102,7 +104,12 @@ export default function SidebarStreams() {
                 }}
                 size="sm"
               >
-                <ChevronsLeft size={16} className="text-[#999]" />
+                <ChevronsLeft
+                  size={16}
+                  style={{
+                    color: colors["textLightFaded"],
+                  }}
+                />
               </Button>
             </Tooltip>
           )}
@@ -216,7 +223,12 @@ export default function SidebarStreams() {
                 onPress={handleNextPage}
                 size="sm"
               >
-                <ChevronsRight size={16} className="text-[#999]" />
+                <ChevronsRight
+                  size={16}
+                  style={{
+                    color: colors["textLightFaded"],
+                  }}
+                />
               </Button>
             </Tooltip>
           )}
@@ -234,10 +246,19 @@ export default function SidebarStreams() {
               }}
               onPress={handlePrev}
             >
-              <ChevronLeft className="text-white" />
+              <ChevronLeft
+                style={{
+                  color: colors["textLight"],
+                }}
+              />
             </Button>
           </Tooltip>
-          <Play size={32} className="text-white" />
+          <Play
+            size={32}
+            style={{
+              color: colors["textLight"],
+            }}
+          />
           <Tooltip content="Next Stream" className="text-black dark:text-white">
             <Button
               isIconOnly
@@ -247,13 +268,21 @@ export default function SidebarStreams() {
               }}
               onPress={handleNext}
             >
-              <ChevronRight className="text-white" />
+              <ChevronRight
+                style={{
+                  color: colors["textLight"],
+                }}
+              />
             </Button>
           </Tooltip>
         </div>
         <div className="relative z-10 p-2">
           <div className="flex flex-col gap-1">
-            <p className="text-white">
+            <p
+              style={{
+                color: colors["textLight"],
+              }}
+            >
               {currentStreamer.userName} - {currentStreamer.streamTitle}
             </p>
             <div className="flex gap-2 pl-4 items-center">
@@ -261,7 +290,15 @@ export default function SidebarStreams() {
                 content="Viewer Count"
                 className="text-black dark:text-white"
               >
-                <Chip size="sm" variant="faded">
+                <Chip
+                  size="sm"
+                  variant="faded"
+                  style={{
+                    color: colors["text"],
+                    backgroundColor: colors["mantle"],
+                    borderColor: colors["base"],
+                  }}
+                >
                   <div className="flex gap-1 items-center">
                     <Eye size={16} />
                     <p className="text-sm">{currentStreamer.viewerCount}</p>
@@ -292,7 +329,16 @@ export default function SidebarStreams() {
                   )
                   .slice(0, 3)
                   .map((tag) => (
-                    <Chip size="sm" key={tag} variant="faded">
+                    <Chip
+                      size="sm"
+                      key={tag}
+                      variant="faded"
+                      style={{
+                        color: colors["text"],
+                        backgroundColor: colors["mantle"],
+                        borderColor: colors["base"],
+                      }}
+                    >
                       {tag}
                     </Chip>
                   ))}

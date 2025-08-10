@@ -47,9 +47,9 @@ export default function ButtonAction({
             )
           }
           style={{
-            backgroundColor: siteTheme.colors["base"],
+            backgroundColor: siteTheme.colors["mantle"],
             color: siteTheme.colors["text"],
-            borderColor: siteTheme.colors["crust"],
+            borderColor: siteTheme.colors["base"],
           }}
           className={`transition-all transform duration-500 ease-in-out`}
           size={size}
@@ -76,9 +76,9 @@ export default function ButtonAction({
         }
         className={`transition-all transform duration-500 ease-in-out`}
         style={{
-          backgroundColor: siteTheme.colors["base"],
+          backgroundColor: siteTheme.colors["mantle"],
           color: siteTheme.colors["text"],
-          borderColor: siteTheme.colors["crust"],
+          borderColor: siteTheme.colors["base"],
         }}
         size={size}
         variant="bordered"

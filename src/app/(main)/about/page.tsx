@@ -8,9 +8,11 @@ import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toZonedTime } from "date-fns-tz";
 import Logo from "@/components/logo";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function AboutPage() {
   const [jam, setJam] = useState<JamType | null>();
+  const { colors } = useTheme();
 
   useEffect(() => {
     loadUser();
@@ -30,26 +32,62 @@ export default function AboutPage() {
       <div className="flex w-full justify-center items-center pt-4">
         <Logo width={300} />
       </div>
-      <div className="flex flex-col gap-2 py-4 text-[#333] dark:text-white">
+      <div
+        className="flex flex-col gap-2 py-4"
+        style={{
+          color: colors["text"],
+        }}
+      >
         <h1 className="text-2xl fint-bold leading-7">{jam?.name}</h1>
-        <p className="text-sm text-default-500">
+        <p
+          className="text-sm"
+          style={{
+            color: colors["textFaded"],
+          }}
+        >
           The community centered game jam
         </p>
         <div className="mt-4 flex flex-col gap-3">
           <div className="flex gap-3 items-center">
-            <div className="flex-none border-1 border-default-200/50 rounded-small text-center w-11 overflow-hidden">
-              <div className="text-tiny bg-default-100 py-0.5 text-default-500">
+            <div
+              className="flex-none border-1 rounded-small text-center w-11 overflow-hidden"
+              style={{
+                borderColor: colors["textFaded"],
+              }}
+            >
+              <div
+                className="text-tiny py-0.5"
+                style={{
+                  color: colors["mantle"],
+                  backgroundColor: colors["textFaded"],
+                }}
+              >
                 {jam ? format(new Date(jam.startTime), "MMM") : ""}
               </div>
-              <div className="flex items-center justify-center font-semibold text-medium h-6 text-default-500">
+              <div
+                className="flex items-center justify-center font-semibold text-medium h-6"
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
                 {jam ? format(new Date(jam.startTime), "dd") : ""}
               </div>
             </div>
             <div className="flex flex-col gap-0.5">
-              <p className="text-medium text-foreground font-medium">
+              <p
+                className="text-medium font-medium"
+                style={{
+                  color: colors["text"],
+                }}
+              >
                 {jam ? format(new Date(jam.startTime), "EEEE, MMMM do") : ""}
               </p>
-              <p className="text-small text-default-500">
+              <p
+                className="text-small"
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
                 {jam
                   ? format(
                       toZonedTime(
@@ -63,14 +101,33 @@ export default function AboutPage() {
             </div>
           </div>
           <div className="flex gap-3 items-center">
-            <div className="flex items-center justify-center border-1 border-default-200/50 rounded-small w-11 h-11">
-              <Users className="text-[#999]" />
+            <div
+              className="flex items-center justify-center border-1 rounded-small w-11 h-11"
+              style={{
+                borderColor: colors["textFaded"],
+              }}
+            >
+              <Users
+                style={{
+                  color: colors["textFaded"],
+                }}
+              />
             </div>
             <div className="flex flex-col gap-0.5">
-              <p className="text-medium text-foreground font-medium">
+              <p
+                className="text-medium font-medium"
+                style={{
+                  color: colors["text"],
+                }}
+              >
                 Entrants
               </p>
-              <p className="text-small text-default-500">
+              <p
+                className="text-small"
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
                 {jam?.users.length ?? "..."} and counting
               </p>
             </div>
@@ -78,7 +135,12 @@ export default function AboutPage() {
         </div>
         <div className="flex flex-col mt-4 gap-3 items-start">
           <span className="text-medium font-medium">About the event</span>
-          <div className="text-medium text-default-500 flex flex-col gap-2">
+          <div
+            className="text-medium flex flex-col gap-2"
+            style={{
+              color: colors["textFaded"],
+            }}
+          >
             <p>
               D2Jam is a community centered game jam with a emphasis on
               supporting things constructed by the community! We wanted a jam
@@ -106,14 +168,20 @@ export default function AboutPage() {
             <AccordionItem
               title="Q1"
               subtitle="How long do I have to make the game?"
-              className="text-medium text-default-500 flex flex-col gap-2"
+              className="text-medium flex flex-col gap-2"
+              style={{
+                color: colors["textFaded"],
+              }}
             >
               <p>3 Days. From Friday to Monday (depending on the time zone).</p>
             </AccordionItem>
             <AccordionItem
               title="Q2"
               subtitle="Can I use premade code and assets (art, graphics, music, SFX, etc)?"
-              className="text-medium text-default-500 flex flex-col gap-2"
+              className="text-medium flex flex-col gap-2"
+              style={{
+                color: colors["textFaded"],
+              }}
             >
               <p>
                 <b>Regular</b>: Yes! Anything goes, as long as the game&apos;s
@@ -131,7 +199,10 @@ export default function AboutPage() {
             <AccordionItem
               title="Q3"
               subtitle="Can I use Generative AI to make aspects of the game?"
-              className="text-medium text-default-500 flex flex-col gap-2"
+              className="text-medium flex flex-col gap-2"
+              style={{
+                color: colors["textFaded"],
+              }}
             >
               <p>
                 <b>Regular</b>: Yes. However, you cannot opt in to be rated on

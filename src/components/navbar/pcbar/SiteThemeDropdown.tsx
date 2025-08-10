@@ -119,7 +119,7 @@ export default function SiteThemeDropdown() {
                   className="w-4 h-4 border"
                   style={{
                     backgroundColor: siteThemeOption.colors[key],
-                    borderColor: siteThemeOption.colors["mantle"],
+                    borderColor: siteThemeOption.colors["gray"],
                   }}
                 />
               ))}

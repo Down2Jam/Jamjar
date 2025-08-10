@@ -38,7 +38,7 @@ export default function SearchBar() {
   >({ games: [], users: [], posts: [] });
   const [loadingResults, setLoadingResults] = useState<boolean>(false);
   const t = useTranslations("Navbar");
-  const { siteTheme } = useTheme();
+  const { siteTheme, colors } = useTheme();
 
   const shortcuts = useShortcut();
   const registerShortcut = shortcuts?.registerShortcut;
@@ -92,12 +92,24 @@ export default function SearchBar() {
       <NavbarItem>
         <Button
           size="sm"
-          className=" text-gray-500 text-xs !duration-500"
+          className=" text-xs !duration-500"
           startContent={<Search size={16} />}
           onPress={onOpen}
-          endContent={<Kbd className="text-xs !duration-500">S</Kbd>}
+          endContent={
+            <Kbd
+              className="text-xs !duration-500 border-1 shadow-md"
+              style={{
+                backgroundColor: colors["base"],
+                borderColor: colors["base"],
+                color: colors["text"],
+              }}
+            >
+              S
+            </Kbd>
+          }
           style={{
             backgroundColor: siteTheme.colors["mantle"],
+            color: colors["textFaded"],
           }}
         >
           {t("Search")}

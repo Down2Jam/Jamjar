@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "@/providers/SiteThemeProvider";
 import { login } from "@/requests/auth";
 import { Button, Form, Input, Link } from "@heroui/react";
 import { redirect } from "next/navigation";
@@ -10,6 +11,7 @@ export default function UserPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
+  const { colors } = useTheme();
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
@@ -67,6 +69,7 @@ export default function UserPage() {
         }}
       >
         <Input
+          classNames={{ label: "!text-white" }}
           isRequired
           label="Username"
           labelPlacement="outside"
@@ -78,6 +81,7 @@ export default function UserPage() {
         />
 
         <Input
+          classNames={{ label: "!text-white" }}
           isRequired
           label="Password"
           labelPlacement="outside"
@@ -95,7 +99,12 @@ export default function UserPage() {
             Reset
           </Button>
         </div>
-        <p className="text-[#333] dark:text-white transition-color duration-250">
+        <p
+          className="transition-color duration-250"
+          style={{
+            color: colors["text"],
+          }}
+        >
           Don&apos;t have an account? <Link href="/signup">Sign up</Link>
         </p>
       </Form>

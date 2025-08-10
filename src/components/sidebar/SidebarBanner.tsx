@@ -1,21 +1,23 @@
-import { Image } from "@heroui/image";
-import NextImage from "next/image";
+"use client";
+
+import { useTheme } from "@/providers/SiteThemeProvider";
+import Banner from "../banner";
 
 export default function SidebarBanner() {
+  const { colors } = useTheme();
+
   return (
     <a href="/about">
-      <div className="absolute z-10 flex items-center justify-center w-[480px] h-[160px] flex-col text-white">
+      <div
+        className="absolute z-10 flex items-center justify-center w-[480px] h-[160px] flex-col"
+        style={{
+          color: colors["textLight"],
+        }}
+      >
         <p className="text-6xl">Down2Jam</p>
-        <p className="text-gray-400">The community centered game jam</p>
+        <p>The community centered game jam</p>
       </div>
-      <Image
-        as={NextImage}
-        src="/images/D2J_Banner.png"
-        width={480}
-        height={160}
-        className="z-0 shadow-2xl"
-        alt="Down2Jam Banner"
-      />
+      <Banner width={480} className="z-0 shadow-2xl" />
     </a>
   );
 }

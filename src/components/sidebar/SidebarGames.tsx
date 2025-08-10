@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, Image, Link, Spacer } from "@heroui/react";
+import { Link, Spacer } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { GameType } from "@/types/GameType";
 import { getGames } from "@/requests/game";
@@ -8,10 +8,13 @@ import ButtonAction from "../link-components/ButtonAction";
 import { ExternalLink, MoreHorizontal } from "lucide-react";
 import { toast } from "react-toastify";
 import ButtonLink from "../link-components/ButtonLink";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import Image from "next/image";
 
 export default function SidebarGames() {
   const [games, setGames] = useState<GameType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { colors } = useTheme();
 
   useEffect(() => {
     const fetchGameData = async () => {
@@ -36,45 +39,52 @@ export default function SidebarGames() {
     <>
       <Spacer y={20} />
       <div className="flex flex-col gap-2">
-        <p className="text-center text-2xl">Featured Games</p>
+        <p
+          className="text-center text-2xl"
+          style={{
+            color: colors["textLight"],
+          }}
+        >
+          Featured Games
+        </p>
         <div className="flex flex-wrap w-[496px] gap-2 justify-center">
           {games.slice(0, 6).map((game, index) => (
             <Link key={game.name + index} href={`/g/${game.slug}`}>
-              <Card
-                radius="lg"
-                isFooterBlurred
-                className="bg-[#212121] w-[128px] h-[72px]"
+              <div
+                className="w-[128px] h-[72px] rounded-xl border-1 overflow-hidden"
+                style={{
+                  backgroundColor: colors["mantle"],
+                  borderColor: colors["base"],
+                }}
               >
                 <Image
-                  removeWrapper
                   alt={`${game.name}'s thumbnail`}
-                  className="z-0 w-full h-full object-cover scale-110"
+                  className="z-0 w-full h-full object-cover"
                   height={72}
-                  width="100%"
-                  isZoomed
+                  width={128}
                   src={game.thumbnail ?? "/images/D2J_Icon.png"}
                 />
-              </Card>
+              </div>
             </Link>
           ))}
           {games.length > 6 &&
             games.slice(6, 10).map((game, index) => (
               <Link key={game.name + index} href={`/g/${game.slug}`}>
-                <Card
-                  radius="lg"
-                  isFooterBlurred
-                  className="bg-[#212121] w-[96px] h-[54px]"
+                <div
+                  className="w-[96px] h-[54px] rounded-xl border-1 overflow-hidden"
+                  style={{
+                    backgroundColor: colors["mantle"],
+                    borderColor: colors["base"],
+                  }}
                 >
                   <Image
-                    removeWrapper
                     alt={`${game.name}'s thumbnail`}
-                    className="z-0 w-full h-full object-cover scale-110"
+                    className="z-0 w-full h-full object-cover"
                     height={54}
-                    width="100%"
-                    isZoomed
+                    width={96}
                     src={game.thumbnail ?? "/images/D2J_Icon.png"}
                   />
-                </Card>
+                </div>
               </Link>
             ))}
         </div>

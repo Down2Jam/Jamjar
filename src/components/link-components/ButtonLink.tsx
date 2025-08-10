@@ -33,11 +33,11 @@ export default function ButtonLink({
         <Button
           endContent={icon}
           style={{
-            backgroundColor: siteTheme.colors["crust"],
+            backgroundColor: siteTheme.colors["mantle"],
             color: siteTheme.colors["text"],
-            borderColor: siteTheme.colors["crust"],
+            borderColor: siteTheme.colors["base"],
           }}
-          className={`transition-all transform duration-500 ease-in-out`}
+          className={`transition-all transform duration-500 ease-in-out border-1 shadow-md`}
           variant="bordered"
           isIconOnly={isIconOnly}
           size={size}
@@ -54,9 +54,9 @@ export default function ButtonLink({
         endContent={iconPosition == "end" ? icon : undefined}
         startContent={iconPosition == "start" ? icon : undefined}
         style={{
-          backgroundColor: siteTheme.colors["base"],
+          backgroundColor: siteTheme.colors["mantle"],
           color: siteTheme.colors["text"],
-          borderColor: siteTheme.colors["crust"],
+          borderColor: siteTheme.colors["base"],
         }}
         className={`transition-all transform duration-500 ease-in-out`}
         variant="bordered"

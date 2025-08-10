@@ -28,30 +28,53 @@ export default function JamHeader() {
     useState<ActiveJamResponse | null>(null);
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const { siteTheme } = useTheme();
+  const { siteTheme, colors } = useTheme();
 
-  const getClassesForDateDisplay = (
+  const getStyleForDateDisplay = (
     index: number,
     nextEventIndex: number,
     eventDateObj: Date,
     currentDate: Date
   ) => {
     if (index === nextEventIndex - 1 && eventDateObj < currentDate) {
-      return "bg-[#81b8cc] dark:bg-[#1891b2]";
+      return {
+        backgroundColor: colors["blueDark"],
+      };
     }
     if (index === nextEventIndex) {
-      return "border-2 border-[#c087ae] dark:border-[#a1598a]";
+      return {
+        borderWidth: "2px",
+        borderStyle: "solid",
+        borderColor: colors["pinkDark"],
+      };
     }
     if (index === nextEventIndex + 1) {
-      return "border-2 border-[#8f7daf] dark:border-[#634e89]";
+      return {
+        borderWidth: "2px",
+        borderStyle: "solid",
+        borderColor: colors["magentaDark"],
+      };
     }
     if (index === nextEventIndex + 2) {
-      return "border-2 border-[#7b7799] dark:border-[#4c4872]";
+      return {
+        borderWidth: "2px",
+        borderStyle: "solid",
+        borderColor: colors["purpleDark"],
+      };
     }
     if (eventDateObj < currentDate) {
-      return "border-2 border-[#fff] dark:border-[#222222] opacity-20";
+      return {
+        borderWidth: "2px",
+        borderStyle: "solid",
+        borderColor: colors["base"],
+        opacity: 0.2,
+      };
     }
-    return "border-2 border-[#5e6a83] dark:border-[#33405d]";
+    return {
+      borderWidth: "2px",
+      borderStyle: "solid",
+      borderColor: colors["violetDark"],
+    };
   };
 
   const getPhaseObj = (jamPhase: JamPhase) => {
@@ -236,7 +259,10 @@ export default function JamHeader() {
           getPhaseObj(activeJamResponse.phase).href ? (
             <a
               href={getPhaseObj(activeJamResponse.phase).href}
-              className="hover:underline text-blue-300 dark:text-blue-500"
+              className="hover:underline"
+              style={{
+                color: colors["blue"],
+              }}
             >
               <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
                 <p className="font-semibold ">
@@ -246,7 +272,12 @@ export default function JamHeader() {
             </a>
           ) : (
             <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <p className="font-semibold text-blue-300 dark:text-blue-500">
+              <p
+                className="font-semibold"
+                style={{
+                  color: colors["blue"],
+                }}
+              >
                 {getPhaseObj(activeJamResponse.phase).text}
               </p>
             </div>
@@ -258,14 +289,15 @@ export default function JamHeader() {
         {sortedEvents.map((event, index) => (
           <div
             key={event.name}
-            className={`grow snap-start rounded-md p-2 text-center min-w-36 ${getClassesForDateDisplay(
-              index,
-              nextEventIndex,
-              event.dateObj,
-              currentDate
-            )}`}
+            className={`grow snap-start rounded-md p-2 text-center min-w-36`}
             style={{
               color: siteTheme.colors["text"],
+              ...getStyleForDateDisplay(
+                index,
+                nextEventIndex,
+                event.dateObj,
+                currentDate
+              ),
             }}
           >
             <p className="text-xs">{event.name}</p>

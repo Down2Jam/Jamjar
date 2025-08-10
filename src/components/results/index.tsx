@@ -209,7 +209,7 @@ export default function Results() {
       <Vstack className="pt-4" align="stretch">
         {games &&
           games.map((game) => (
-            <Card key={game.id} className="flex items-center gap-2">
+            <Card key={game.id} className="flex items-center gap-4">
               <Image
                 removeWrapper
                 alt={`${game.name}'s thumbnail`}
