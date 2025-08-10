@@ -14,8 +14,8 @@ import { useRef, useState } from "react";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
 import rawCoverage from "../../../messages/coverage.json";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Popover from "@/components/popover";
-import Dropdown from "@/components/dropdown";
+import Popover from "@/framework/Popover";
+import Dropdown from "@/framework/Dropdown";
 import { Button } from "@heroui/react";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 

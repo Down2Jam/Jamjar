@@ -4,8 +4,8 @@ import { Button } from "@heroui/react";
 import { ChevronDown, PaintBucket } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Dropdown from "@/components/dropdown"; // <-- your custom Dropdown
-import Popover from "@/components/popover";
+import Dropdown from "@/framework/Dropdown"; // <-- your custom Dropdown
+import Popover from "@/framework/Popover";
 
 function waveText(label: string, shouldAnimate: boolean) {
   return (

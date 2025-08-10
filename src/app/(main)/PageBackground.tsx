@@ -18,7 +18,7 @@ export default function PageBackground({
       }}
     >
       <div
-        className="fixed top-0 left-0 w-screen h-screen opacity-10 dark:opacity-5 pointer-events-none"
+        className="fixed top-0 left-0 w-screen h-screen opacity-10 dark:opacity-5 pointer-events-none z-10"
         style={{
           backgroundImage: `repeating-linear-gradient(135deg, ${siteTheme.colors["mantle"]} 0px, ${siteTheme.colors["mantle"]} 40px, ${siteTheme.colors["crust"]} 40px, ${siteTheme.colors["crust"]} 80px)`,
         }}

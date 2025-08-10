@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { Kbd } from "@heroui/kbd";
-import Tooltip from "@/components/tooltip";
+import Tooltip from "@/framework/Tooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
 
 interface NavbarButtonProps {

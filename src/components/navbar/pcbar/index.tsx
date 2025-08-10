@@ -49,7 +49,7 @@ import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Popover from "@/components/popover";
+import Popover from "@/framework/Popover";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 
 type PCbarProps = {

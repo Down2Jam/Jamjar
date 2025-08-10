@@ -33,7 +33,7 @@ export default function Popover({
   shown,
   showCloseButton = false,
 }: PopoverProps) {
-  const { siteTheme } = useTheme();
+  const { colors } = useTheme();
   const hasMounted = useHasMounted();
 
   const [closed, setClosed] = useState<boolean>(false);
@@ -97,51 +97,43 @@ export default function Popover({
       {shown && !closed && (
         <motion.div
           key="popover"
-          initial={{
-            opacity: 0,
-            scale: 0.95,
-            padding: 8,
-            x: anchorToScreen ? undefined : "-50%",
-          }}
-          animate={{
-            opacity: 1,
-            scale: 1,
-            padding: 8,
-            x: anchorToScreen ? undefined : "-50%",
-          }}
-          exit={{
-            opacity: 0,
-            scale: 0.95,
-            padding: 8,
-            x: anchorToScreen ? undefined : "-50%",
-          }}
-          {...(showCloseButton ? { whileHover: { padding: 12 } } : {})}
+          initial={{ opacity: 0, scale: 0.95, padding: 0 }}
+          animate={{ opacity: 1, scale: 1, padding: 0 }}
+          exit={{ opacity: 0, scale: 0.95, padding: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          style={{
-            backgroundColor: siteTheme.colors["crust"],
-            borderColor: siteTheme.colors["mantle"],
-            color: siteTheme.colors["text"],
-            transformOrigin: getTransformOrigin(position),
-            borderWidth: "1px",
-            borderStyle: "solid",
-            borderRadius: "0.5rem",
-          }}
-          className={`w-fit group z-50 shadow-lg transition-colors duration-500 ${positionClass} ${
-            className || ""
-          }`}
+          style={{ transformOrigin: getTransformOrigin(position) }}
+          className={`z-50 ${positionClass}`}
         >
-          {showCloseButton && (
-            <button
-              onClick={() => {
-                setClosed(true);
-              }}
-              className="absolute -top-3 -right-3 bg-black text-white p-1 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 hover:bg-neutral-800"
-              aria-label="Close popover"
-            >
-              <X size={16} />
-            </button>
-          )}
-          {children}
+          <motion.div
+            className={`relative w-max group shadow-lg ${className || ""}`}
+            style={{
+              backgroundColor: colors["mantle"],
+              borderColor: colors["base"],
+              color: colors["text"],
+              borderWidth: "1px",
+              borderStyle: "solid",
+              borderRadius: "0.5rem",
+              // base padding = 8px
+              padding: 8,
+            }}
+            whileHover={showCloseButton ? { padding: 12 } : {}}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+          >
+            {showCloseButton && (
+              <button
+                className="absolute -top-2 -right-2 p-1 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110"
+                style={{
+                  backgroundColor: colors["mantle"],
+                  color: colors["text"],
+                }}
+                onClick={() => setClosed(true)}
+              >
+                <X size={16} />
+              </button>
+            )}
+
+            {children}
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>

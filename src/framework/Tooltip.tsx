@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Popover from "@/components/popover";
+import Popover from "@/framework/Popover";
 
 interface TooltipProps {
   content: React.ReactNode;

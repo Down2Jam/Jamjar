@@ -42,7 +42,7 @@ export default function Link({
       } flex ${
         center ? "justify-center" : ""
       } duration-500 ease-in-out transition-all transform ${
-        !reduceMotion ? "hover:scale-110" : ""
+        !reduceMotion ? "hover:scale-105" : ""
       } transition-color`}
     >
       {name}

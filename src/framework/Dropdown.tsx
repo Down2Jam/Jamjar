@@ -1,0 +1,229 @@
+"use client";
+
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import Popover from "@/framework/Popover";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import { Backdrop } from "./Backdrop";
+
+type Position =
+  | "top-left"
+  | "top-right"
+  | "bottom-left"
+  | "bottom-right"
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "center";
+
+interface DropdownContextValue {
+  closeOnSelect: boolean;
+  onItemSelect?: (value: unknown) => void;
+  setOpen: (v: boolean) => void;
+}
+
+const DropdownCtx = createContext<DropdownContextValue | null>(null);
+const useDropdownCtx = () => {
+  const ctx = useContext(DropdownCtx);
+  if (!ctx) throw new Error("Dropdown.Item must be used inside Dropdown");
+  return ctx;
+};
+
+interface DropdownProps {
+  trigger: React.ReactNode;
+  children: React.ReactNode;
+  position?: Position;
+  className?: string;
+  openOn?: "hover" | "click" | "both";
+  hoverDelay?: number;
+  onOpenChange?: (open: boolean) => void;
+  isOpen?: boolean; // controlled
+  defaultOpen?: boolean; // uncontrolled
+  onSelect?: (value: unknown) => void;
+  closeOnSelect?: boolean;
+  backdrop?: boolean;
+  closeOnOutsideClick?: boolean;
+}
+
+function Dropdown({
+  trigger,
+  children,
+  position = "bottom-left",
+  className,
+  openOn = "click",
+  hoverDelay = 150,
+  onOpenChange,
+  isOpen,
+  defaultOpen = false,
+  onSelect,
+  closeOnSelect = true,
+  backdrop = true,
+  closeOnOutsideClick = true,
+}: DropdownProps) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  const open = isOpen ?? internalOpen;
+
+  const supportsClick = openOn === "click" || openOn === "both";
+  const supportsHover = openOn === "hover" || openOn === "both";
+
+  const setOpenAndNotify = useCallback(
+    (value: boolean) => {
+      if (isOpen === undefined) setInternalOpen(value);
+      onOpenChange?.(value);
+    },
+    [isOpen, onOpenChange]
+  );
+
+  useEffect(() => {
+    if (!open || !closeOnOutsideClick) return;
+    const onDown = (e: MouseEvent) => {
+      const root = rootRef.current;
+      if (!root) return;
+      if (!root.contains(e.target as Node)) {
+        setOpenAndNotify(false);
+      }
+    };
+    // Use capture so it runs before other handlers
+    document.addEventListener("mousedown", onDown, true);
+    return () => document.removeEventListener("mousedown", onDown, true);
+  }, [open, closeOnOutsideClick, setOpenAndNotify]);
+
+  const handleMouseEnter = () => {
+    if (!supportsHover) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setOpenAndNotify(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!supportsHover) return;
+    hoverTimeoutRef.current = setTimeout(
+      () => setOpenAndNotify(false),
+      hoverDelay
+    );
+  };
+
+  const handleClick = () => {
+    if (!supportsClick) return;
+    setOpenAndNotify(!open);
+  };
+
+  return (
+    <div
+      ref={rootRef}
+      className="relative inline-block"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div onClick={handleClick} className="cursor-pointer">
+        {trigger}
+      </div>
+
+      {backdrop && (
+        <Backdrop shown={open} onClick={() => setOpenAndNotify(false)} />
+      )}
+
+      <DropdownCtx.Provider
+        value={{
+          closeOnSelect,
+          onItemSelect: onSelect,
+          setOpen: (v) => setOpenAndNotify(v),
+        }}
+      >
+        <Popover
+          shown={open}
+          position={position}
+          anchorToScreen={false}
+          className={className}
+        >
+          <div role="menu" aria-orientation="vertical">
+            {children}
+          </div>
+        </Popover>
+      </DropdownCtx.Provider>
+    </div>
+  );
+}
+
+interface ItemProps<T = unknown> {
+  value: T;
+  children: React.ReactNode; // main label
+  description?: React.ReactNode; // NEW - secondary text
+  icon?: React.ReactNode; // NEW - left icon
+  disabled?: boolean;
+  className?: string;
+  onSelect?: (value: T) => void; // per-item handler
+}
+
+function Item<T = unknown>({
+  value,
+  children,
+  description,
+  icon,
+  disabled = false,
+  className = "",
+  onSelect,
+}: ItemProps<T>) {
+  const { closeOnSelect, onItemSelect, setOpen } = useDropdownCtx();
+  const { colors } = useTheme();
+
+  const handleSelect = () => {
+    if (disabled) return;
+    onSelect?.(value);
+    onItemSelect?.(value);
+    if (closeOnSelect) setOpen(false);
+  };
+
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      onClick={handleSelect}
+      disabled={disabled}
+      className={[
+        "flex w-full select-none items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className,
+      ].join(" ")}
+      style={{
+        color: colors["text"],
+        backgroundColor: "transparent",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+          colors["base"];
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.backgroundColor =
+          "transparent";
+      }}
+    >
+      {icon && <span className="mt-0.5 flex-shrink-0">{icon}</span>}
+
+      <span className="flex flex-col">
+        {children}
+        {description && (
+          <span
+            className="text-xs"
+            style={{
+              color: colors["textFaded"],
+            }}
+          >
+            {description}
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
+
+export default Object.assign(Dropdown, { Item });

@@ -11,8 +11,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { BASE_URL } from "@/requests/config";
 
+type ColorsMap = SiteThemeType["colors"];
+
 interface SiteThemeContextType {
   siteTheme: SiteThemeType;
+  colors: ColorsMap;
   allSiteThemes: SiteThemeType[];
   setSiteTheme: (name: string) => void;
   setPreviewedSiteTheme: (name: string | null) => void;
@@ -83,10 +86,13 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const effectiveTheme = previewedSiteTheme ?? siteTheme;
+
   return (
     <SiteThemeContext.Provider
       value={{
-        siteTheme: previewedSiteTheme ?? siteTheme,
+        siteTheme: effectiveTheme,
+        colors: effectiveTheme.colors,
         allSiteThemes: allSiteThemes.filter((theme) => !theme.hidden),
         setSiteTheme,
         setPreviewedSiteTheme,
