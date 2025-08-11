@@ -6,7 +6,6 @@ import { getCookie } from "@/helpers/cookie";
 import {
   Avatar,
   Button,
-  Chip,
   Modal,
   ModalBody,
   ModalContent,
@@ -38,7 +37,7 @@ import ButtonLink from "@/components/link-components/ButtonLink";
 import {
   AlertTriangle,
   Award,
-  Badge,
+  Badge as LucideBadge,
   CircleHelp,
   Edit,
   Eye,
@@ -72,6 +71,8 @@ import {
 } from "recharts";
 import CreateComment from "@/components/create-comment";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Badge } from "@/framework/Badge";
+import { Hstack, Vstack } from "@/framework/Stack";
 
 export default function GamePage({
   params,
@@ -109,7 +110,7 @@ export default function GamePage({
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
 
-  const { siteTheme } = useTheme();
+  const { siteTheme, colors } = useTheme();
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -204,7 +205,7 @@ export default function GamePage({
         <div
           className="h-60 relative"
           style={{
-            background: siteTheme.colors["base"],
+            background: colors["base"],
           }}
         >
           {(game.thumbnail || game.banner) && (
@@ -219,13 +220,17 @@ export default function GamePage({
         <div
           className="flex -mt-2 backdrop-blur-md border-t-1"
           style={{
-            borderColor: siteTheme.colors["crust"],
+            borderColor: colors["crust"],
           }}
         >
           <div className="w-2/3 p-4 flex flex-col gap-4">
             <div>
               <p className="text-4xl">{game.name}</p>
-              <p className="text-[#666] dark:text-[#ccc]">
+              <p
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
                 By{" "}
                 {game.team.name ||
                   (game.team.users.length == 1
@@ -252,76 +257,86 @@ export default function GamePage({
               </div>
             )}
             <>
-              <p className="text-[#666] dark:text-[#ccc] text-xs">AUTHORS</p>
+              <p
+                className="text-xs"
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
+                AUTHORS
+              </p>
               <div className="flex flex-wrap gap-2">
                 {game.team.users.map((user) => (
-                  <Chip
-                    radius="sm"
-                    size="sm"
-                    className="!duration-250 !ease-linear !transition-all"
-                    variant="faded"
-                    avatar={
-                      <Avatar
-                        src={user.profilePicture}
-                        classNames={{ base: "bg-transparent" }}
-                      />
-                    }
-                    key={user.id}
-                  >
-                    {user.name}
-                  </Chip>
+                  <Badge key={user.id}>
+                    <Avatar
+                      size="sm"
+                      className="w-4 h-4"
+                      src={user.profilePicture}
+                      classNames={{ base: "bg-transparent" }}
+                    />
+                    <p>{user.name}</p>
+                  </Badge>
                 ))}
               </div>
             </>
 
             {game.tags && game.tags.length > 0 && (
               <>
-                <p className="text-[#666] dark:text-[#ccc] text-xs">TAGS</p>
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  TAGS
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
-                    <Chip
-                      radius="sm"
-                      size="sm"
-                      className="!duration-250 !ease-linear !transition-all"
-                      variant="faded"
-                      avatar={
-                        tag.icon && (
-                          <Avatar
-                            src={tag.icon}
-                            classNames={{ base: "bg-transparent" }}
-                          />
-                        )
-                      }
-                      key={tag.id}
-                    >
-                      {tag.name}
-                    </Chip>
+                    <Badge key={tag.id}>
+                      {tag.icon && (
+                        <Avatar
+                          size="sm"
+                          className="w-4 h-4"
+                          src={tag.icon}
+                          classNames={{ base: "bg-transparent" }}
+                        />
+                      )}
+                      <p>{tag.name}</p>
+                    </Badge>
                   ))}
                 </div>
               </>
             )}
             {game.flags && game.flags.length > 0 && (
               <>
-                <p className="text-[#666] dark:text-[#ccc] text-xs">FLAGS</p>
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  FLAGS
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {game.flags.map((flag) => (
-                    <Chip
-                      radius="sm"
-                      size="sm"
-                      className="!duration-250 !ease-linear !transition-all"
-                      variant="faded"
-                      avatar={flag.icon && getIcon(flag.icon)}
-                      key={flag.id}
-                    >
-                      {flag.name}
-                    </Chip>
+                    <Badge key={flag.id}>
+                      {flag.icon && getIcon(flag.icon, 14)}
+                      <p>{flag.name}</p>
+                    </Badge>
                   ))}
                 </div>
               </>
             )}
             {game.downloadLinks && game.downloadLinks.length > 0 && (
               <>
-                <p className="text-[#666] dark:text-[#ccc] text-xs">LINKS</p>
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  LINKS
+                </p>
                 <div className="flex flex-col gap-2 items-start">
                   {game.downloadLinks.map((link) => (
                     <Link
@@ -343,7 +358,14 @@ export default function GamePage({
               </Card>
             </div> */}
             <div className="flex flex-col gap-3">
-              <p className="text-[#666] dark:text-[#ccc] text-xs">RATINGS</p>
+              <p
+                className="text-xs"
+                style={{
+                  color: colors["textFaded"],
+                }}
+              >
+                RATINGS
+              </p>
               {((activeJamResponse &&
                 activeJamResponse?.jam?.id != game.jamId) ||
                 user?.id == 3) && (
@@ -359,51 +381,86 @@ export default function GamePage({
                         key={score}
                         className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                       >
-                        <span className="text-default-500 text-sm">
+                        <span
+                          className="text-sm"
+                          style={{
+                            color: colors["textFaded"],
+                          }}
+                        >
                           {score}:
                         </span>
                         <span
-                          className={
-                            game.scores[score].placement == 1
-                              ? "text-yellow-500"
-                              : game.scores[score].placement == 2
-                              ? "text-slate-500"
-                              : game.scores[score].placement == 3
-                              ? "text-orange-700"
-                              : game.scores[score].placement >= 4 &&
-                                game.scores[score].placement <= 5
-                              ? "text-blue-500"
-                              : game.scores[score].placement >= 6 &&
-                                game.scores[score].placement <= 10
-                              ? "text-purple-500"
-                              : "text-[#666] dark:text-[#ccc]"
-                          }
+                          style={{
+                            color:
+                              game.scores[score].placement == 1
+                                ? colors["yellow"]
+                                : game.scores[score].placement == 2
+                                ? colors["gray"]
+                                : game.scores[score].placement == 3
+                                ? colors["orange"]
+                                : game.scores[score].placement >= 4 &&
+                                  game.scores[score].placement <= 5
+                                ? colors["blue"]
+                                : game.scores[score].placement >= 6 &&
+                                  game.scores[score].placement <= 10
+                                ? colors["purple"]
+                                : colors["textFaded"],
+                          }}
                         >
                           {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
                           stars
                         </span>
                         {game.scores[score].placement && (
-                          <span className="text-default-500">
+                          <span
+                            style={{
+                              color: colors["textFaded"],
+                            }}
+                          >
                             ({ordinal_suffix_of(game.scores[score].placement)})
                           </span>
                         )}
                         <span className="flex items-center justify-center">
                           {game.scores[score].placement == 1 && (
-                            <Award size={16} className="text-yellow-500" />
+                            <Award
+                              size={16}
+                              style={{
+                                color: colors["yellow"],
+                              }}
+                            />
                           )}
                           {game.scores[score].placement == 2 && (
-                            <Award size={16} className="text-slate-500" />
+                            <Award
+                              size={16}
+                              style={{
+                                color: colors["gray"],
+                              }}
+                            />
                           )}
                           {game.scores[score].placement == 3 && (
-                            <Award size={16} className="text-orange-700" />
+                            <Award
+                              size={16}
+                              style={{
+                                color: colors["orange"],
+                              }}
+                            />
                           )}
                           {game.scores[score].placement >= 4 &&
                             game.scores[score].placement <= 5 && (
-                              <Badge size={12} className="text-blue-500" />
+                              <LucideBadge
+                                size={12}
+                                style={{
+                                  color: colors["blue"],
+                                }}
+                              />
                             )}
                           {game.scores[score].placement >= 6 &&
                             game.scores[score].placement <= 10 && (
-                              <Badge size={12} className="text-purple-500" />
+                              <LucideBadge
+                                size={12}
+                                style={{
+                                  color: colors["purple"],
+                                }}
+                              />
                             )}
                         </span>
                       </div>
@@ -421,8 +478,11 @@ export default function GamePage({
                           fullMark: 5,
                         }))}
                       >
-                        <PolarGrid />
-                        <PolarAngleAxis dataKey="subject" />
+                        <PolarGrid stroke={colors["crust"]} />
+                        <PolarAngleAxis
+                          dataKey="subject"
+                          tick={{ fill: colors["textFaded"], fontSize: 14 }}
+                        />
                         <PolarRadiusAxis
                           domain={[0, 5]}
                           axisLine={false}
@@ -431,15 +491,15 @@ export default function GamePage({
                         <Radar
                           name="All"
                           dataKey="B"
-                          stroke="#d884c7"
-                          fill="#d884c7"
+                          stroke={colors["magenta"]}
+                          fill={colors["magentaDark"]}
                           fillOpacity={0.6}
                         />
                         <Radar
                           name="Ranked"
                           dataKey="A"
-                          stroke="#8884d8"
-                          fill="#8884d8"
+                          stroke={colors["blue"]}
+                          fill={colors["blueDark"]}
                           fillOpacity={0.6}
                         />
                         <Legend />
@@ -511,7 +571,14 @@ export default function GamePage({
             </div>
             {game.leaderboards && game.leaderboards.length > 0 && (
               <div className="flex flex-col gap-2">
-                <p className="text-default-500 text-xs">LEADERBOARD</p>
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  LEADERBOARD
+                </p>
 
                 <Tabs variant="bordered">
                   {game.leaderboards.map((leaderboard) => (
@@ -618,7 +685,11 @@ export default function GamePage({
                               )
                               .map((score, i) => (
                                 <TableRow key={score.id}>
-                                  <TableCell className="text-[#ccc] dark:text-[#666]">
+                                  <TableCell
+                                    style={{
+                                      color: colors["textFaded"],
+                                    }}
+                                  >
                                     {i +
                                       1 +
                                       leaderboard.maxUsersShown * (page - 1)}
@@ -634,7 +705,11 @@ export default function GamePage({
                                       }}
                                     />
                                   </TableCell>
-                                  <TableCell className="text-[#94d4df] dark:text-[#4092b3]">
+                                  <TableCell
+                                    style={{
+                                      color: colors["blue"],
+                                    }}
+                                  >
                                     {leaderboard.type == "GOLF" ||
                                     leaderboard.type == "SCORE"
                                       ? score.data /
@@ -724,27 +799,24 @@ export default function GamePage({
                 </Tabs>
               </div>
             )}
-            <div className="flex flex-col gap-2">
-              <p className="text-default-500 text-xs">STATS</p>
-              <Chip
-                radius="sm"
-                size="sm"
-                className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
-                variant="faded"
+            <Vstack align="start">
+              <p
+                className="text-xs"
+                style={{
+                  color: colors["textFaded"],
+                }}
               >
+                STATS
+              </p>
+              <Badge>
                 Ratings Received:{" "}
                 {Math.round(
                   game.ratings.length /
                     (game.ratingCategories.length + ratingCategories.length)
                 )}
-              </Chip>
-              <div className="flex items-center gap-2">
-                <Chip
-                  radius="sm"
-                  size="sm"
-                  className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
-                  variant="faded"
-                >
+              </Badge>
+              <Hstack>
+                <Badge>
                   Ranked Ratings Received:{" "}
                   {Math.round(
                     game.ratings.filter(
@@ -755,7 +827,7 @@ export default function GamePage({
                     ).length /
                       (game.ratingCategories.length + ratingCategories.length)
                   )}
-                </Chip>
+                </Badge>
                 {Math.round(
                   game.ratings.filter(
                     (rating) =>
@@ -772,14 +844,9 @@ export default function GamePage({
                     <AlertTriangle size={16} className="text-red-500" />
                   </Tooltip>
                 )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Chip
-                  radius="sm"
-                  size="sm"
-                  className="!duration-250 !ease-linear !transition-all bg-opacity-20 border-opacity-20"
-                  variant="faded"
-                >
+              </Hstack>
+              <Hstack>
+                <Badge>
                   Ratings Given:{" "}
                   {Math.round(
                     game.team.users.reduce(
@@ -796,7 +863,7 @@ export default function GamePage({
                       0
                     )
                   )}
-                </Chip>
+                </Badge>
                 {Math.round(
                   game.team.users.reduce(
                     (prev, cur) =>
@@ -816,11 +883,16 @@ export default function GamePage({
                     content="This game needs 5 ratings given in order to be ranked after the rating period"
                     className="text-red-500"
                   >
-                    <AlertTriangle size={16} className="text-red-500" />
+                    <AlertTriangle
+                      size={16}
+                      style={{
+                        color: colors["red"],
+                      }}
+                    />
                   </Tooltip>
                 )}
-              </div>
-            </div>
+              </Hstack>
+            </Vstack>
             <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
               <ModalContent>
                 {(onClose) => (

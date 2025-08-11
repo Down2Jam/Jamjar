@@ -45,6 +45,14 @@ export function Button({
     };
   }
 
+  if (disabled) {
+    variantStyles.standard = {
+      borderColor: colors["mantle"],
+      color: colors["textFaded"],
+      backgroundColor: colors["crust"],
+    };
+  }
+
   const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
     standard: { backgroundColor: colors["base"] },
   };

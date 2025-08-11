@@ -37,6 +37,7 @@ import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";
 import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 type EditorProps = {
   content: string;
@@ -45,13 +46,14 @@ type EditorProps = {
 };
 
 const limit = 32767;
-const theme = "dark";
 
 export default function Editor({
   content,
   setContent,
   gameEditor,
 }: EditorProps) {
+  const { colors } = useTheme();
+
   const editor = useEditor({
     extensions: [
       Document,
@@ -223,13 +225,15 @@ export default function Editor({
       <Spacer y={3} />
       {editor && (
         <div
-          className={`${
-            editor.storage.characterCount.characters() === limit
-              ? "text-red-500"
-              : editor.storage.characterCount.characters() > limit / 2
-              ? "text-yellow-500"
-              : "text-[#888] dark:text-[#555]"
-          } transform-color duration-250 ease-linear flex items-center gap-3`}
+          className={`transform-color duration-250 ease-linear flex items-center gap-3`}
+          style={{
+            color:
+              editor.storage.characterCount.characters() === limit
+                ? colors["red"]
+                : editor.storage.characterCount.characters() > limit / 2
+                ? colors["yellow"]
+                : colors["textFaded"],
+          }}
         >
           <svg width="30" height="30" viewBox="0 0 36 36">
             <circle
@@ -237,7 +241,7 @@ export default function Editor({
               cy="18"
               r="15.915"
               fill="none"
-              stroke={theme === "dark" ? "#333" : "#eee"}
+              stroke={colors["base"]}
               strokeWidth="3"
               className="!duration-250 !ease-linear !transition-all"
             />
@@ -249,10 +253,10 @@ export default function Editor({
               fill="none"
               stroke={
                 editor.storage.characterCount.characters() === limit
-                  ? "#de362a"
+                  ? colors["red"]
                   : editor.storage.characterCount.characters() > limit / 2
-                  ? "#eab308"
-                  : "#26d1ff"
+                  ? colors["yellow"]
+                  : colors["textFaded"]
               }
               strokeWidth="3"
               strokeDasharray="100, 100"
