@@ -81,7 +81,7 @@ export default function PostCard({
     >
       {(style == "cozy" || style == "adaptive") &&
         (minimized ? (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4">
               <Link
                 href={`/p/${post.slug}`}
@@ -138,7 +138,7 @@ export default function PostCard({
               >
                 <p className="text-2xl">{post.title}</p>
               </Link>
-              <Button size="sm" onClick={() => setMinimized(false)}>
+              <Button size="sm" onClick={() => setMinimized(true)}>
                 <Minus size={16} />
               </Button>
             </div>

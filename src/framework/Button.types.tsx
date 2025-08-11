@@ -9,4 +9,5 @@ export interface ButtonProps
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  color?: "default" | "blue";
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@heroui/react";
+import { Button } from "@/framework/Button";
 
 type EditorMenuButtonProps = {
   onClick: () => void;
@@ -17,14 +17,10 @@ export default function EditorMenuButton({
 }: EditorMenuButtonProps) {
   return (
     <Button
-      variant="light"
-      onPress={onClick}
-      isDisabled={disabled}
+      onClick={onClick}
+      disabled={disabled}
       size="sm"
-      isIconOnly
-      className={`${
-        isActive ? "bg-blue-500 data-[hover=true]:bg-blue-400" : ""
-      }`}
+      color={isActive ? "blue" : "default"}
     >
       {children}
     </Button>

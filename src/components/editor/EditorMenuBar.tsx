@@ -23,6 +23,7 @@ import {
 import EditorMenuButton from "./EditorMenuButton";
 import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
+import { Hstack } from "@/framework/Stack";
 
 type EditorMenuProps = {
   editor: Editor | null;
@@ -217,7 +218,7 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
   ];
 
   return (
-    <div className="mb-2 flex space-x-2 flex-wrap">
+    <Hstack className="mb-2">
       {buttons.map(({ icon, onClick, disabled, isActive }, index) => (
         <EditorMenuButton
           key={index}
@@ -228,6 +229,6 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
           {icon}
         </EditorMenuButton>
       ))}
-    </div>
+    </Hstack>
   );
 }

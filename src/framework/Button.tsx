@@ -15,6 +15,7 @@ export function Button({
   fullWidth = false,
   leftIcon,
   rightIcon,
+  color = "default",
   ...props
 }: ButtonProps) {
   const { colors } = useTheme();
@@ -36,9 +37,24 @@ export function Button({
     },
   };
 
+  if (color === "blue") {
+    variantStyles.standard = {
+      color: colors["blue"],
+      borderColor: colors["blueLight"],
+      backgroundColor: colors["blueDark"],
+    };
+  }
+
   const hoverStyles: Record<ButtonVariant, React.CSSProperties> = {
     standard: { backgroundColor: colors["base"] },
   };
+
+  if (color === "blue") {
+    hoverStyles.standard = {
+      backgroundColor: colors["blue"],
+      color: colors["blueLight"],
+    };
+  }
 
   return (
     <button

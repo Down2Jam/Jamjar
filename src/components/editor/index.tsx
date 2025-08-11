@@ -126,6 +126,21 @@ export default function Editor({
             : "min-h-[150px] max-h-[400px]") +
           " overflow-y-auto cursor-text rounded-md border p-5 focus-within:outline-none focus-within:border-blue-500 !duration-250 !ease-linear !transition-all",
       },
+      handleDOMEvents: {
+        keydown: (_view, event) => {
+          // Prevent site-wide hotkeys from seeing editor keystrokes
+          event.stopPropagation();
+          return false;
+        },
+        keypress: (_view, event) => {
+          event.stopPropagation();
+          return false;
+        },
+        keyup: (_view, event) => {
+          event.stopPropagation();
+          return false;
+        },
+      },
       handleDrop: (view, event, slice, moved) => {
         if (
           !moved &&

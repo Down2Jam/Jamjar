@@ -759,9 +759,7 @@ export default function Posts() {
                     </div>
                   </DrawerBody>
                   <DrawerFooter>
-                    <Button color="danger" onClick={onClose}>
-                      Close
-                    </Button>
+                    <Button onClick={onClose}>Close</Button>
                   </DrawerFooter>
                 </>
               )}
