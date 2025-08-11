@@ -41,7 +41,7 @@ export function Button({
     variantStyles.standard = {
       color: colors["blue"],
       borderColor: colors["blueLight"],
-      backgroundColor: colors["blueDark"],
+      backgroundColor: colors["blueDarkDarkDark"],
     };
   }
 
@@ -59,7 +59,7 @@ export function Button({
 
   if (color === "blue") {
     hoverStyles.standard = {
-      backgroundColor: colors["blue"],
+      backgroundColor: colors["blueDarkDark"],
       color: colors["blueLight"],
     };
   }

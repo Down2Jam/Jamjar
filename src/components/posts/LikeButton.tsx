@@ -43,14 +43,7 @@ export default function LikeButton({
   return (
     <Button
       size="sm"
-      style={{
-        color: updatedLiked
-          ? siteTheme.colors["blue"]
-          : siteTheme.colors["text"],
-        borderColor: updatedLiked
-          ? siteTheme.colors["blue"]
-          : siteTheme.colors["base"],
-      }}
+      color={updatedLiked ? "blue" : "default"}
       onClick={async () => {
         if (!getCookie("token")) {
           redirect("/login");
