@@ -276,11 +276,11 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             name={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
                 ? t("MyTeam.Title")
-                : t("MyTeam.Description")
+                : t("TeamFinder.Description")
             }
             description={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
-                ? t("TeamFinder.Title")
+                ? t("MyTeam.Description")
                 : t("TeamFinder.Description")
             }
             color="green"
