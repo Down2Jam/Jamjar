@@ -2,6 +2,7 @@
 
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
+import { MusicProvider } from "@/providers/MusicProvider";
 import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
 import { HeroUIProvider } from "@heroui/react";
 import { ToastProvider } from "@heroui/toast";
@@ -59,10 +60,12 @@ export default function Providers({
             locale={activeLocale}
             messages={activeMessages}
           >
-            <ToastProvider
-              placement={isMobile ? "top-center" : "bottom-right"}
-            />
-            {children}
+            <MusicProvider>
+              <ToastProvider
+                placement={isMobile ? "top-center" : "bottom-right"}
+              />
+              {children}
+            </MusicProvider>
           </NextIntlClientProvider>
         </SiteThemeProvider>
       </ShortcutProvider>

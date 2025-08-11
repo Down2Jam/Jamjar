@@ -70,7 +70,7 @@ export function Button({
         "p-4 inline-flex items-center justify-center font-medium border transition-colors duration-200 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         sizeClasses[size],
         fullWidth ? "w-full" : "",
-        disabled || loading ? "opacity-60 cursor-not-allowed" : "",
+        disabled || loading ? "opacity-20 cursor-not-allowed" : "",
         className,
       ].join(" ")}
       style={{
