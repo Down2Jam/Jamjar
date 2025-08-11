@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
-import { Button, Chip, Image, Tooltip } from "@heroui/react";
+import { Button, Chip, Image } from "@heroui/react";
 import NextImage from "next/image";
 import { getStreamers } from "@/requests/streamer";
 import {
@@ -14,11 +14,12 @@ import {
   Play,
 } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import Tooltip from "@/framework/Tooltip";
 
 export default function SidebarStreams() {
   const [streamers, setStreamers] = useState<FeaturedStreamerType[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
 
   useEffect(() => {
     const fetchStreamers = async () => {
@@ -86,13 +87,18 @@ export default function SidebarStreams() {
             className="brightness-75 rounded-2xl"
           />
         </div>
-        <div className="hidden dark:block absolute z-10 bg-gradient-radial from-40% from-transparent to-black rounded-2xl w-[480px] min-w-[480px] max-w-[480px] h-[270px] min-h-[270px]" />
+
+        {siteTheme.type === "Dark" && (
+          <div
+            style={{
+              backgroundImage: `radial-gradient(transparent 40%, color-mix(in srgb, ${colors["crust"]} 50%, transparent) 100%)`,
+            }}
+            className="absolute z-10 rounded-2xl w-[480px] min-w-[480px] max-w-[480px] h-[270px] min-h-[270px]"
+          />
+        )}
         <div className="absolute mt-60 flex z-20 gap-2 justify-center w-[480px] min-w-[480px] max-w-[480px] items-center">
           {streamers.length > 3 && (
-            <Tooltip
-              content="Previous Page"
-              className="text-black dark:text-white"
-            >
+            <Tooltip content="Previous Page" position="top">
               <Button
                 isIconOnly
                 variant="light"
@@ -114,106 +120,106 @@ export default function SidebarStreams() {
             </Tooltip>
           )}
           {streamers.length > 0 + 3 * Math.floor(currentIndex / 3.0) && (
-            <Tooltip
-              className="text-black dark:text-white"
-              content={`${
+            // <Tooltip
+            //   position="top"
+            //   content={`${
+            //     streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
+            //   } - ${
+            //     streamers[0 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+            //   }`}
+            // >
+            <Image
+              as={NextImage}
+              src={
+                streamers[0 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+              }
+              width={120}
+              height={67.5}
+              alt={`${
                 streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
-              } - ${
-                streamers[0 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+              }'s thumbnail`}
+              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+                currentIndex === 0 + 3 * Math.floor(currentIndex / 3.0)
+                  ? "brightness-100 hover:brightness-[1.25]"
+                  : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-            >
-              <Image
-                as={NextImage}
-                src={
-                  streamers[0 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
-                }
-                width={120}
-                height={67.5}
-                alt={`${
-                  streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
-                }'s thumbnail`}
-                className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
-                  currentIndex === 0 + 3 * Math.floor(currentIndex / 3.0)
-                    ? "brightness-100 hover:brightness-[1.25]"
-                    : "brightness-[0.25] hover:brightness-[0.75]"
-                }`}
-                classNames={{ wrapper: "w-full h-[67.5px]" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setCurrentIndex(0 + 3 * Math.floor(currentIndex / 3.0));
-                }}
-              />
-            </Tooltip>
+              classNames={{ wrapper: "w-full h-[67.5px]" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setCurrentIndex(0 + 3 * Math.floor(currentIndex / 3.0));
+              }}
+            />
+            // </Tooltip>
           )}
           {streamers.length > 1 + 3 * Math.floor(currentIndex / 3.0) && (
-            <Tooltip
-              className="text-black dark:text-white"
-              content={`${
+            // <Tooltip
+            //   position="top"
+            //   content={`${
+            //     streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
+            //   } - ${
+            //     streamers[1 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+            //   }`}
+            // >
+            <Image
+              as={NextImage}
+              src={
+                streamers[1 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+              }
+              width={120}
+              height={67.5}
+              alt={`${
                 streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
-              } - ${
-                streamers[1 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+              }'s thumbnail`}
+              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+                currentIndex === 1 + 3 * Math.floor(currentIndex / 3.0)
+                  ? "brightness-100 hover:brightness-[1.25]"
+                  : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-            >
-              <Image
-                as={NextImage}
-                src={
-                  streamers[1 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
-                }
-                width={120}
-                height={67.5}
-                alt={`${
-                  streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
-                }'s thumbnail`}
-                className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
-                  currentIndex === 1 + 3 * Math.floor(currentIndex / 3.0)
-                    ? "brightness-100 hover:brightness-[1.25]"
-                    : "brightness-[0.25] hover:brightness-[0.75]"
-                }`}
-                classNames={{ wrapper: "w-full h-[67.5px]" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setCurrentIndex(1 + 3 * Math.floor(currentIndex / 3.0));
-                }}
-              />
-            </Tooltip>
+              classNames={{ wrapper: "w-full h-[67.5px]" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setCurrentIndex(1 + 3 * Math.floor(currentIndex / 3.0));
+              }}
+            />
+            // </Tooltip>
           )}
           {streamers.length > 2 + 3 * Math.floor(currentIndex / 3.0) && (
-            <Tooltip
-              className="text-black dark:text-white"
-              content={`${
+            // <Tooltip
+            //   position="top"
+            //   content={`${
+            //     streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
+            //   } - ${
+            //     streamers[2 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+            //   }`}
+            // >
+            <Image
+              as={NextImage}
+              src={
+                streamers[2 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+              }
+              width={120}
+              height={67.5}
+              alt={`${
                 streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
-              } - ${
-                streamers[2 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
+              }'s thumbnail`}
+              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+                currentIndex === 2 + 3 * Math.floor(currentIndex / 3.0)
+                  ? "brightness-100 hover:brightness-[1.25]"
+                  : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-            >
-              <Image
-                as={NextImage}
-                src={
-                  streamers[2 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
-                }
-                width={120}
-                height={67.5}
-                alt={`${
-                  streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
-                }'s thumbnail`}
-                className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
-                  currentIndex === 2 + 3 * Math.floor(currentIndex / 3.0)
-                    ? "brightness-100 hover:brightness-[1.25]"
-                    : "brightness-[0.25] hover:brightness-[0.75]"
-                }`}
-                classNames={{ wrapper: "w-full h-[67.5px]" }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  setCurrentIndex(2 + 3 * Math.floor(currentIndex / 3.0));
-                }}
-              />
-            </Tooltip>
+              classNames={{ wrapper: "w-full h-[67.5px]" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setCurrentIndex(2 + 3 * Math.floor(currentIndex / 3.0));
+              }}
+            />
+            // </Tooltip>
           )}
           {streamers.length > 3 && (
-            <Tooltip content="Next Page" className="text-black dark:text-white">
+            <Tooltip content="Next Page" position="top">
               <Button
                 isIconOnly
                 variant="light"
@@ -234,10 +240,7 @@ export default function SidebarStreams() {
           )}
         </div>
         <div className="absolute z-20 mt-[120px] justify-between flex items-center w-[480px] min-w-[480px] max-w-[480px] px-2">
-          <Tooltip
-            content="Previous Stream"
-            className="text-black dark:text-white"
-          >
+          <Tooltip content="Previous Stream" position="top">
             <Button
               isIconOnly
               variant="light"
@@ -259,7 +262,7 @@ export default function SidebarStreams() {
               color: colors["textLight"],
             }}
           />
-          <Tooltip content="Next Stream" className="text-black dark:text-white">
+          <Tooltip content="Next Stream" position="top">
             <Button
               isIconOnly
               variant="light"
@@ -286,10 +289,7 @@ export default function SidebarStreams() {
               {currentStreamer.userName} - {currentStreamer.streamTitle}
             </p>
             <div className="flex gap-2 pl-4 items-center">
-              <Tooltip
-                content="Viewer Count"
-                className="text-black dark:text-white"
-              >
+              <Tooltip content="Viewer Count" position="top">
                 <Chip
                   size="sm"
                   variant="faded"

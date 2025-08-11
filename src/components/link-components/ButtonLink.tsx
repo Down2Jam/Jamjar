@@ -1,7 +1,8 @@
 "use client";
 
+import Tooltip from "@/framework/Tooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Button, Link, Tooltip } from "@heroui/react";
+import { Button, Link } from "@heroui/react";
 import { ReactNode } from "react";
 
 interface ButtonLinkProps {
@@ -29,7 +30,7 @@ export default function ButtonLink({
 
   if (tooltip) {
     return (
-      <Tooltip content={tooltip}>
+      <Tooltip content={tooltip} position="top">
         <Button
           endContent={icon}
           style={{

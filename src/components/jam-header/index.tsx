@@ -186,7 +186,7 @@ export default function JamHeader() {
     <>
       <div
         style={{
-          backgroundColor: siteTheme.colors["blueDarkDark"],
+          backgroundColor: siteTheme.colors["blueDark"],
           color: siteTheme.colors["textLight"],
         }}
         className="z-10 relative ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden transition-color duration-250 shadow-2xl"
@@ -196,7 +196,7 @@ export default function JamHeader() {
           <div className="flex">
             <div
               style={{
-                backgroundColor: siteTheme.colors["blueDark"],
+                backgroundColor: siteTheme.colors["blue"],
               }}
               className="p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250"
             >

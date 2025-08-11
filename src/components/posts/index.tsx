@@ -17,7 +17,6 @@ import {
   PopoverContent,
   PopoverTrigger,
   Spacer,
-  Tooltip,
   useDisclosure,
 } from "@heroui/react";
 import { PostSort } from "@/types/PostSort";
@@ -39,10 +38,14 @@ import {
   ClockArrowDown,
   ClockArrowUp,
   LoaderCircle,
+  Maximize2,
   MessageCircle,
+  Minimize2,
   Sparkles,
   Trophy,
+  Variable,
   X,
+  ZoomOut,
 } from "lucide-react";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
@@ -59,6 +62,8 @@ import CommentCard from "./CommentCard";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Button } from "@/framework/Button";
 import Dropdown from "@/framework/Dropdown";
+import Tooltip from "@/framework/Tooltip";
+import { Vstack } from "@/framework/Stack";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -322,11 +327,11 @@ export default function Posts() {
       ) : (
         stickyPosts &&
         stickyPosts.length > 0 && (
-          <div className="flex flex-col gap-3 p-4">
+          <Vstack align="stretch" className="p-4">
             {stickyPosts.map((post) => (
               <StickyPostCard key={post.id} post={post} />
             ))}
-          </div>
+          </Vstack>
         )
       )}
 
@@ -471,10 +476,34 @@ export default function Posts() {
               updateQueryParam("style", key as string);
             }}
           >
-            <Dropdown.Item value="cozy">Cozy</Dropdown.Item>
-            <Dropdown.Item value="compact">Compact</Dropdown.Item>
-            <Dropdown.Item value="ultra">Ultra Compact</Dropdown.Item>
-            <Dropdown.Item value="adaptive">Adaptive</Dropdown.Item>
+            <Dropdown.Item
+              value="cozy"
+              description="Large cards, displays all post content"
+              icon={<Maximize2 size={16} />}
+            >
+              Cozy
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="compact"
+              description="Small cards to show more on screen at once"
+              icon={<ZoomOut size={16} />}
+            >
+              Compact
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="ultra"
+              description="Very small cards"
+              icon={<Minimize2 size={16} />}
+            >
+              Ultra Compact
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="adaptive"
+              description="Cozy but posts you have read start minimized"
+              icon={<Variable size={16} />}
+            >
+              Adaptive
+            </Dropdown.Item>
           </Dropdown>
         </div>
       </div>
@@ -490,7 +519,7 @@ export default function Posts() {
           />
         </div>
       ) : (
-        <div className="flex flex-col gap-3 p-4">
+        <Vstack align="stretch" className="p-4">
           {posts && posts.length > 0 ? (
             posts.map((post, index) => (
               <PostCard
@@ -530,7 +559,7 @@ export default function Posts() {
               </Button>
             )}
           </div>
-        </div>
+        </Vstack>
       )}
       <Drawer
         isOpen={isOpen}

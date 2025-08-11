@@ -6,7 +6,6 @@ import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
 import { useState, useEffect } from "react";
 import { postLike } from "@/requests/like";
-import { useTheme } from "@/providers/SiteThemeProvider";
 import { Button } from "@/framework/Button";
 
 export default function LikeButton({
@@ -24,7 +23,6 @@ export default function LikeButton({
   const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
-  const { siteTheme } = useTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
