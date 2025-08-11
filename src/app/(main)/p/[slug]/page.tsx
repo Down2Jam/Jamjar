@@ -42,6 +42,7 @@ import { postComment } from "@/requests/comment";
 import { sanitize } from "@/helpers/sanitize";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
+import ThemedProse from "@/components/themed-prose";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -134,10 +135,12 @@ export default function PostPage() {
 
                   <Spacer y={4} />
 
-                  <div
-                    className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
-                  />
+                  <ThemedProse>
+                    <div
+                      className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                      dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
+                  </ThemedProse>
 
                   <Spacer y={4} />
 

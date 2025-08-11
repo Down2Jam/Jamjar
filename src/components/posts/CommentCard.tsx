@@ -13,6 +13,7 @@ import { sanitize } from "@/helpers/sanitize";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import ThemedProse from "../themed-prose";
 
 export default function CommentCard({ comment }: { comment: CommentType }) {
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -53,10 +54,12 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
 
         <Spacer y={4} />
 
-        <div
-          className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
-          dangerouslySetInnerHTML={{ __html: comment.content }}
-        />
+        <ThemedProse>
+          <div
+            className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+            dangerouslySetInnerHTML={{ __html: comment.content }}
+          />
+        </ThemedProse>
 
         <Spacer y={4} />
 

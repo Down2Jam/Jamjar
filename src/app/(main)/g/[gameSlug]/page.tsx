@@ -73,6 +73,7 @@ import CreateComment from "@/components/create-comment";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Badge } from "@/framework/Badge";
 import { Hstack, Vstack } from "@/framework/Stack";
+import ThemedProse from "@/components/themed-prose";
 
 export default function GamePage({
   params,
@@ -238,12 +239,13 @@ export default function GamePage({
                     : `${game.team.owner.name}'s team`)}
               </p>
             </div>
-            <div
-              className="prose-neutral prose-lg"
-              dangerouslySetInnerHTML={{
-                __html: game.description || "No Description",
-              }}
-            />
+            <ThemedProse>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: game.description || "No Description",
+                }}
+              />
+            </ThemedProse>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
             {isEditable && activeJamResponse?.jam?.id == game.jamId && (

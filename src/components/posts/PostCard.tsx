@@ -37,7 +37,7 @@ import { deletePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import ThemedProse from "../themed-prose";
 
 export default function PostCard({
   post,
@@ -57,7 +57,6 @@ export default function PostCard({
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  const { colors } = useTheme();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -168,13 +167,12 @@ export default function PostCard({
 
             <Spacer y={4} />
 
-            <div
-              className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-              style={{
-                color: colors["textFaded"],
-              }}
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <ThemedProse>
+              <div
+                className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+            </ThemedProse>
 
             <Spacer y={4} />
 

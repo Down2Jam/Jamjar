@@ -1,5 +1,6 @@
 "use client";
 
+import ThemedProse from "@/components/themed-prose";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
@@ -104,18 +105,17 @@ export default function UserPage() {
                   </div>
                 </div>
               )}
-              <div
-                className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-                dangerouslySetInnerHTML={{
-                  __html:
-                    user.bio && user.bio != "<p></p>"
-                      ? user.bio
-                      : "No user bio",
-                }}
-              />
+              <ThemedProse>
+                <div
+                  className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      user.bio && user.bio != "<p></p>"
+                        ? user.bio
+                        : "No user bio",
+                  }}
+                />
+              </ThemedProse>
             </div>
           </div>
           <Spacer y={5} />

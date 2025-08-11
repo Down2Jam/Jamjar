@@ -64,6 +64,7 @@ import { Button } from "@/framework/Button";
 import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
 import { Vstack } from "@/framework/Stack";
+import ThemedProse from "../themed-prose";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -747,12 +748,14 @@ export default function Posts() {
                       </div>
                       <Spacer y={4} />
 
-                      <div
-                        className="prose dark:prose-invert !duration-250 !ease-linear !transition-all max-w-full break-words"
-                        dangerouslySetInnerHTML={{
-                          __html: posts[currentPost].content,
-                        }}
-                      />
+                      <ThemedProse>
+                        <div
+                          className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                          dangerouslySetInnerHTML={{
+                            __html: posts[currentPost].content,
+                          }}
+                        />
+                      </ThemedProse>
 
                       <Spacer y={4} />
 
