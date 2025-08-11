@@ -4,6 +4,7 @@ import SidebarStats from "./SidebarStats";
 import SidebarStreams from "./SidebarStreams";
 import SidebarEvents from "./SidebarEvents";
 import SidebarGames from "./SidebarGames";
+import SidebarMusic from "./SidebarMusic";
 
 export default function Sidebar() {
   return (
@@ -14,8 +15,7 @@ export default function Sidebar() {
       <SidebarStreams />
       <SidebarEvents />
       <SidebarGames />
-      {/*<Spacer y={20} />
-      <SidebarMusic /> */}
+      <SidebarMusic />
     </div>
   );
 }

@@ -1,10 +1,10 @@
 "use client";
 
-import { Spacer } from "@heroui/react";
 import Timers from "../timers";
-import { Gamepad2, Star, Users } from "lucide-react";
-import { useTheme } from "@/providers/SiteThemeProvider";
 import { Card } from "@/framework/Card";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Icon from "@/framework/Icon";
+import Text from "@/framework/Text";
 
 export default function SidebarStatsClient({
   users,
@@ -15,69 +15,30 @@ export default function SidebarStatsClient({
   games: number;
   ratings: number;
 }) {
-  const { siteTheme } = useTheme();
   return (
     <Card>
-      <Timers />
-      <Spacer />
-      <div className="flex items-center gap-4 justify-center">
-        <Users
-          style={{
-            color: siteTheme.colors["textFaded"],
-          }}
-          className="transition-all duration-500"
-        />
-        <p>Entrants</p>
-        <p
-          style={{
-            color: siteTheme.colors["blue"],
-          }}
-        >
-          {users}
-        </p>
-      </div>
-      {games != 0 && (
-        <>
-          <Spacer />
-          <div className="flex items-center gap-4 justify-center">
-            <Gamepad2
-              className="transition-all duration-500"
-              style={{
-                color: siteTheme.colors["textFaded"],
-              }}
-            />
-            <p>Games</p>
-            <p
-              style={{
-                color: siteTheme.colors["blue"],
-              }}
-            >
-              {games}
-            </p>
-          </div>
-        </>
-      )}
-      {ratings != 0 && (
-        <>
-          <Spacer />
-          <div className="flex items-center gap-4 justify-center">
-            <Star
-              style={{
-                color: siteTheme.colors["textFaded"],
-              }}
-              className="transition-all duration-500"
-            />
-            <p>Ratings</p>
-            <p
-              style={{
-                color: siteTheme.colors["blue"],
-              }}
-            >
-              {ratings}
-            </p>
-          </div>
-        </>
-      )}
+      <Vstack>
+        <Timers />
+        <Hstack>
+          <Icon name="users" color="textFaded" />
+          <Text>Entrants</Text>
+          <Text color="blue">{users}</Text>
+        </Hstack>
+        {games != 0 && (
+          <Hstack>
+            <Icon name="gamepad2" color="textFaded" />
+            <Text>Games</Text>
+            <Text color="blue">{games}</Text>
+          </Hstack>
+        )}
+        {ratings != 0 && (
+          <Hstack>
+            <Icon name="star" color="textFaded" />
+            <Text>Ratings</Text>
+            <Text color="blue">{ratings}</Text>
+          </Hstack>
+        )}
+      </Vstack>
     </Card>
   );
 }

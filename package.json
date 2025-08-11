@@ -47,7 +47,7 @@
     "@tiptap/pm": "^2.11.2",
     "@tiptap/react": "^2.11.2",
     "@tiptap/starter-kit": "^2.11.2",
-    "@wavesurfer/react": "^1.0.9",
+    "@wavesurfer/react": "^1.0.11",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "framer-motion": "^12.23.7",
@@ -70,7 +70,7 @@
     "sanitize-html": "^2.14.0",
     "tiptap-extension-resize-image": "^1.2.1",
     "tiptap-markdown": "^0.8.10",
-    "wavesurfer.js": "^7.9.1",
+    "wavesurfer.js": "^7.10.1",
     "yaml": "^2.8.0"
   },
   "overrides": {

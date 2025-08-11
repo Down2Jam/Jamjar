@@ -4,9 +4,7 @@ import { Link, Spacer } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { GameType } from "@/types/GameType";
 import { getGames } from "@/requests/game";
-import ButtonAction from "../link-components/ButtonAction";
-import { ExternalLink, MoreHorizontal } from "lucide-react";
-import { toast } from "react-toastify";
+import { ExternalLink } from "lucide-react";
 import ButtonLink from "../link-components/ButtonLink";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Image from "next/image";
@@ -42,7 +40,7 @@ export default function SidebarGames() {
         <p
           className="text-center text-2xl"
           style={{
-            color: colors["textLight"],
+            color: colors["text"],
           }}
         >
           Featured Games
@@ -89,13 +87,13 @@ export default function SidebarGames() {
             ))}
         </div>
         <div className="flex justify-center gap-2">
-          <ButtonAction
+          {/* <ButtonAction
             icon={<MoreHorizontal />}
             name="Load More"
             onPress={() => {
               toast.warning("Game pagination coming soon");
             }}
-          />
+          /> */}
           <ButtonLink
             icon={<ExternalLink />}
             name="To Games Page"
