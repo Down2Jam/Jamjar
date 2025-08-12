@@ -21,7 +21,8 @@ export function Button({
   const { colors } = useTheme();
 
   const sizeClasses: Record<ButtonSize, string> = {
-    sm: "h-6 px-3 text-xs rounded-md gap-2",
+    xs: "h-4 px-2 text-[8px] rounded-sm gap-1",
+    sm: "h-6 px-3 text-[10px] rounded-md gap-2",
     md: "h-8 px-4 text-xs rounded-lg gap-2",
     lg: "h-10 px-5 text-sm rounded-xl gap-3",
   };

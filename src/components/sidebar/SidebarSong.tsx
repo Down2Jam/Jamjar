@@ -13,7 +13,7 @@ interface SidebarSongProps {
   name: string;
   artist: string;
   thumbnail: string;
-  song: string; // server path
+  song: string;
   game: string;
 }
 
@@ -24,23 +24,7 @@ export default function SidebarSong({
   game,
   artist,
 }: SidebarSongProps) {
-  //const [audioBlobUrl, setAudioBlobUrl] = useState<string | null>(null);
-  //const { colors } = useTheme();
   const { playItem } = useMusic();
-
-  // useEffect(() => {
-  //   let revoked = false;
-  //   (async () => {
-  //     const res = await fetch(`${BASE_URL}/music/${song}`);
-  //     const blob = await res.blob();
-  //     const url = URL.createObjectURL(blob);
-  //     if (!revoked) setAudioBlobUrl(url);
-  //   })();
-  //   return () => {
-  //     revoked = true;
-  //     if (audioBlobUrl) URL.revokeObjectURL(audioBlobUrl);
-  //   };
-  // }, [song, audioBlobUrl]);
 
   return (
     <Card>
@@ -63,16 +47,6 @@ export default function SidebarSong({
           <Text size={16}>{artist}</Text>
         </Vstack>
 
-        {/* <div className="w-full">
-          {audioBlobUrl && (
-            <WavesurferPlayer
-              height={80}
-              waveColor={colors["base"]}
-              progressColor={colors["base"]}
-              url={audioBlobUrl}
-            />
-          )}
-        </div> */}
         <div className="w-full"></div>
 
         <Vstack>

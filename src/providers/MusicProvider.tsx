@@ -16,6 +16,7 @@ import {
 } from "react";
 import { useTheme } from "./SiteThemeProvider";
 import Text from "@/framework/Text";
+import { Hstack, Vstack } from "@/framework/Stack";
 
 type Track = {
   name: string;
@@ -136,63 +137,63 @@ const music = [
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "01_Rocket Mobilization.mp3",
   },
   {
     name: "Global Technical Progress",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "02_Global Technical Progress.mp3",
   },
   {
     name: "Celestial Simulations",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "03_Celestial Simulations.mp3",
   },
   {
     name: "Training Complexities",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "04_Training Complexities.mp3",
   },
   {
     name: "Last Moments on Terra",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "05_Last Moments on Terra.mp3",
   },
   {
     name: "Launch Anticipation",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "06_Launch Anticipation.mp3",
   },
   {
     name: "Leaving Terra",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "07_Leaving Terra.mp3",
   },
   {
     name: "Traveling Through Local Space",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "08_Traveling Through Local Space.mp3",
   },
   {
     name: "Positive Reflections",
     artist: "Conduit",
     thumbnail: "/images/test-images/conduit.png",
     game: "Leaving Terra",
-    song: "Very Hard Ante.ogg",
+    song: "09_Positive Reflections.mp3",
   },
   {
     name: "Mission Completion",
@@ -216,6 +217,11 @@ type MusicContextValue = {
   canPrev: boolean;
   seek: (time: number) => void;
   setVolume: (v: number) => void;
+  repeatState: "none" | "repeat" | "autoplay";
+  toggleRepeatState: () => void;
+  stop: () => void;
+  shown: boolean;
+  setShown: (val: boolean) => void;
 };
 
 const MusicContext = createContext<MusicContextValue | null>(null);
@@ -229,6 +235,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const nextRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [backStack, setBackStack] = useState<number[]>([]);
   const [fwdStack, setFwdStack] = useState<number[]>([]);
+  const [repeatState, setRepeatState] = useState<
+    "none" | "repeat" | "autoplay"
+  >("autoplay");
+  const repeatStateRef = useRef(repeatState);
+  const [shown, setShown] = useState<boolean>(true);
 
   const playIndex = useCallback(
     async (i: number) => {
@@ -240,16 +251,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       audio.volume = volume;
       setCurrentIndex(i);
       await audio.play();
+
+      setShown(true);
     },
     [volume]
   );
+
+  useEffect(() => {
+    repeatStateRef.current = repeatState;
+  }, [repeatState]);
 
   const next = useCallback(async () => {
     // forward replay path
     if (fwdStack.length > 0) {
       setFwdStack((fs) => {
         const nextIdx = fs[fs.length - 1];
-        if (currentIndex != null) setBackStack((bs) => [...bs, currentIndex]);
+        if (currentIndex != null) {
+          setBackStack((bs) =>
+            bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex]
+          );
+        }
         setTimeout(() => void playIndex(nextIdx), 0);
         return fs.slice(0, -1);
       });
@@ -264,13 +285,28 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       do nextIdx = Math.floor(Math.random() * music.length);
       while (nextIdx === cur);
     }
-    if (currentIndex != null) setBackStack((bs) => [...bs, currentIndex]);
+
+    if (currentIndex != null) {
+      setBackStack((bs) =>
+        bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex]
+      );
+    }
+    setFwdStack([]);
     await playIndex(nextIdx);
   }, [currentIndex, fwdStack.length, playIndex]);
 
   useEffect(() => {
     nextRef.current = next;
   }, [next]);
+
+  const seek = useCallback(
+    (t: number) => {
+      const a = audioRef.current;
+      if (!a) return;
+      a.currentTime = Math.min(Math.max(0, t), duration || 0);
+    },
+    [duration]
+  );
 
   useEffect(() => {
     const audio = new Audio();
@@ -282,7 +318,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     const onPause = () => setIsPlaying(false);
     const onLoaded = () => setDuration(audio.duration || 0);
     const onEnd = () => {
-      void nextRef.current();
+      if (repeatStateRef.current === "autoplay") {
+        nextRef.current?.();
+      } else if (repeatStateRef.current === "repeat" && audioRef.current) {
+        audioRef.current.play();
+      }
     };
 
     audio.addEventListener("play", onPlay);
@@ -309,20 +349,17 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     setBackStack((bs) => {
       if (bs.length === 0) return bs;
       const target = bs[bs.length - 1];
-      if (currentIndex != null) setFwdStack((fs) => [...fs, currentIndex]);
+
+      setFwdStack((fs) =>
+        currentIndex == null || fs[fs.length - 1] === currentIndex
+          ? fs
+          : [...fs, currentIndex]
+      );
+
       setTimeout(() => void playIndex(target), 0);
       return bs.slice(0, -1);
     });
   }, [currentIndex, playIndex]);
-
-  const seek = useCallback(
-    (t: number) => {
-      const a = audioRef.current;
-      if (!a) return;
-      a.currentTime = Math.min(Math.max(0, t), duration || 0);
-    },
-    [duration]
-  );
 
   const toggle = () => {
     const a = audioRef.current;
@@ -330,6 +367,26 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (a.paused) a.play();
     else a.pause();
   };
+
+  const stop = useCallback(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    a.pause();
+  }, []);
+
+  const toggleRepeatState = useCallback(() => {
+    switch (repeatState) {
+      case "autoplay":
+        setRepeatState("repeat");
+        return;
+      case "repeat":
+        setRepeatState("none");
+        return;
+      case "none":
+        setRepeatState("autoplay");
+        return;
+    }
+  }, [repeatState]);
 
   const srcFor = (t: Track) =>
     `${BASE_URL}/music/${encodeURIComponent(t.song)}`;
@@ -340,7 +397,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     async (t: Track) => {
       const i = music.findIndex((x) => x.song === t.song);
       if (i >= 0) {
-        if (currentIndex != null) setBackStack((bs) => [...bs, currentIndex]);
+        setBackStack((bs) =>
+          currentIndex == null || bs[bs.length - 1] === currentIndex
+            ? bs
+            : [...bs, currentIndex]
+        );
         setFwdStack([]);
         await playIndex(i);
         return;
@@ -349,7 +410,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       const audio = audioRef.current;
       audio.src = srcFor(t);
       audio.volume = volume;
-      if (currentIndex != null) setBackStack((bs) => [...bs, currentIndex]);
+      setBackStack((bs) =>
+        currentIndex == null || bs[bs.length - 1] === currentIndex
+          ? bs
+          : [...bs, currentIndex]
+      );
       setFwdStack([]);
       setCurrentIndex(null);
       await audio.play();
@@ -368,9 +433,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       toggle,
       next,
       prev,
-      canPrev: backStack.length > 1,
+      canPrev: backStack.length >= 1,
       seek,
       setVolume,
+      toggleRepeatState,
+      repeatState,
+      stop,
+      shown,
+      setShown,
     }),
     [
       audioRef,
@@ -384,6 +454,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       seek,
       setVolume,
       backStack.length,
+      toggleRepeatState,
+      repeatState,
+      stop,
+      shown,
     ]
   );
 
@@ -414,9 +488,15 @@ function MiniPlayer() {
     prev,
     canPrev,
     audioEl,
+    repeatState,
+    toggleRepeatState,
+    stop,
+    shown,
+    setShown,
   } = useMusic();
   const [progress, setProgress] = useState({ time: 0, duration: 0 });
   const { colors } = useTheme();
+  const [minimized, setMinimized] = useState<boolean>(false);
 
   useEffect(() => {
     if (!audioEl) return;
@@ -435,107 +515,173 @@ function MiniPlayer() {
   if (!current) return null;
 
   return (
-    <Popover position="bottom-left" shown>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Image
-          src={current.thumbnail}
-          width={56}
-          height={56}
-          style={{ borderRadius: 8, objectFit: "cover" }}
-          alt=""
-        />
-        <div style={{ minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {current.name}
-          </div>
-          <div
-            style={{
-              fontSize: 12,
-              color: colors["textFaded"],
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {current.game} — {current.artist}
-          </div>
-        </div>
+    <Popover
+      position="bottom-left"
+      showCloseButton
+      closeButtonPosition="top-left"
+      onClose={stop}
+      startsShown={true}
+      shown={shown}
+      onShownChange={setShown}
+    >
+      <Hstack>
+        <Vstack align="stretch">
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Image
+              src={current.thumbnail}
+              width={minimized ? 28 : 56}
+              height={minimized ? 28 : 56}
+              style={{ borderRadius: 8, objectFit: "cover" }}
+              alt=""
+            />
+            <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: minimized ? 12 : 14,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {current.name}
+              </div>
+              <div
+                style={{
+                  fontSize: minimized ? 10 : 12,
+                  color: colors["textFaded"],
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {current.game} — {current.artist}
+              </div>
+            </div>
 
-        {/* Controls */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <Button onClick={prev} disabled={!canPrev}>
-            <Icon name="skipback" color={canPrev ? "text" : "textFaded"} />
-          </Button>
-          <Button onClick={toggle}>
-            {isPlaying ? <Icon name="pause" /> : <Icon name="play" />}
-          </Button>
-          <Button onClick={next}>
-            <Icon name="skipforward" />
-          </Button>
-        </div>
-      </div>
+            {/* Controls */}
+            <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+              <Button
+                onClick={prev}
+                disabled={!canPrev}
+                size={minimized ? "xs" : "md"}
+              >
+                <Icon
+                  name="skipback"
+                  color={canPrev ? "text" : "textFaded"}
+                  size={minimized ? 16 : 24}
+                />
+              </Button>
+              <Button
+                onClick={() => {
+                  toggle();
+                  if (!shown) {
+                    setShown(true);
+                  }
+                }}
+                size={minimized ? "xs" : "md"}
+              >
+                <Icon
+                  name={isPlaying ? "pause" : "play"}
+                  size={minimized ? 16 : 24}
+                />
+              </Button>
+              <Button onClick={next} size={minimized ? "xs" : "md"}>
+                <Icon name="skipforward" size={minimized ? 16 : 24} />
+              </Button>
+            </div>
+          </div>
 
-      {/* Seek */}
-      <input
-        type="range"
-        min={0}
-        max={progress.duration || 0}
-        step={0.01}
-        value={Number.isFinite(progress.time) ? progress.time : 0}
-        onChange={(e) => seek(parseFloat(e.target.value))}
-        style={{
-          width: "100%",
-          marginTop: 8,
-          WebkitAppearance: "none",
-          height: "4px",
-          borderRadius: "4px",
-          background: `linear-gradient(to right, 
+          {!minimized && (
+            <Hstack>
+              <Vstack className="w-full" align="stretch">
+                {/* Seek */}
+                <input
+                  type="range"
+                  min={0}
+                  max={progress.duration || 0}
+                  step={0.01}
+                  value={Number.isFinite(progress.time) ? progress.time : 0}
+                  onChange={(e) => seek(parseFloat(e.target.value))}
+                  style={{
+                    width: "100%",
+                    marginTop: 8,
+                    WebkitAppearance: "none",
+                    height: "4px",
+                    borderRadius: "4px",
+                    background: `linear-gradient(to right, 
       ${colors["blue"]} 0%, 
       ${colors["indigo"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
       ${colors["base"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
       ${colors["base"]} 100%)`,
-          outline: "none",
-        }}
-      />
+                    outline: "none",
+                  }}
+                />
 
-      {/* Volume */}
-      <div
-        style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}
-      >
-        <Text color="text" size={12}>
-          Volume
-        </Text>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          aria-label="Volume"
-          style={{
-            width: "100%",
-            marginTop: 8,
-            WebkitAppearance: "none",
-            height: "4px",
-            borderRadius: "4px",
-            background: `linear-gradient(to right, 
+                {/* Volume */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 6,
+                  }}
+                >
+                  <Text color="text" size={12}>
+                    Volume
+                  </Text>
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    value={volume}
+                    onChange={(e) => setVolume(parseFloat(e.target.value))}
+                    aria-label="Volume"
+                    style={{
+                      width: "100%",
+                      marginTop: 8,
+                      WebkitAppearance: "none",
+                      height: "4px",
+                      borderRadius: "4px",
+                      background: `linear-gradient(to right, 
       ${colors["yellow"]} 0%, 
       ${colors["orange"]} ${(volume / 1) * 100}%, 
       ${colors["base"]} ${(volume / 1) * 100}%, 
       ${colors["base"]} 100%)`,
-            outline: "none",
-          }}
-        />
-      </div>
+                      outline: "none",
+                    }}
+                  />
+                </div>
+              </Vstack>
+            </Hstack>
+          )}
+        </Vstack>
+        <Vstack>
+          <Button
+            onClick={() => setMinimized(!minimized)}
+            size={minimized ? "xs" : "md"}
+          >
+            <Icon
+              name={minimized ? "maximize2" : "minimize2"}
+              size={minimized ? 16 : 24}
+            />
+          </Button>
+          {!minimized && (
+            <Button onClick={toggleRepeatState}>
+              <Icon
+                name={
+                  repeatState === "autoplay"
+                    ? "infinity"
+                    : repeatState === "repeat"
+                    ? "repeat"
+                    : "refreshcwoff"
+                }
+              />
+            </Button>
+          )}
+        </Vstack>
+      </Hstack>
     </Popover>
   );
 }

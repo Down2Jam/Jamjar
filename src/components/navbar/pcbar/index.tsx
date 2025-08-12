@@ -129,7 +129,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
       <Popover
         position="bottom-right"
         className="text-right text-xs"
-        shown
+        startsShown
         showCloseButton
       >
         <p>⚠️ The site is currently transitioning to a custom theme system</p>
@@ -276,7 +276,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             name={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
                 ? t("MyTeam.Title")
-                : t("TeamFinder.Description")
+                : t("TeamFinder.Title")
             }
             description={
               user.teams.filter((team) => team.jamId == jam.id).length > 0

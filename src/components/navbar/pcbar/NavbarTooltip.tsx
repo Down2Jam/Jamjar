@@ -27,7 +27,6 @@ export default function NavbarTooltip({
         <div
           className="flex items-center flex-col"
           style={{
-            backgroundColor: siteTheme.colors["crust"],
             borderColor: siteTheme.colors["base"],
             color: siteTheme.colors["text"],
           }}

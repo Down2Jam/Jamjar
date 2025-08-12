@@ -5,7 +5,7 @@ import useHasMounted from "@/hooks/useHasMounted";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 
 type Position =
   | "top-left"
@@ -23,9 +23,14 @@ interface PopoverProps {
   className?: string;
   position?: Position;
   anchorToScreen?: boolean;
-  shown: boolean;
+  startsShown?: boolean;
+  shown?: boolean;
   showCloseButton?: boolean;
+  closeButtonPosition?: Position;
   offset?: number;
+  onClose?: () => void;
+  onShownChange?: (val: boolean) => void;
+  onHoverChange?: (val: boolean) => void;
 }
 
 export default function Popover({
@@ -33,14 +38,34 @@ export default function Popover({
   className,
   position = "bottom",
   anchorToScreen = true,
-  shown,
+  startsShown = false,
+  shown: controlledShown,
   showCloseButton = false,
+  closeButtonPosition = "top-right",
   offset = 8,
+  onClose,
+  onShownChange,
+  onHoverChange,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
   const [hovered, setHovered] = useState(false);
-  const [closed, setClosed] = useState(false);
+  const [internalShown, setInternalShown] = useState<boolean>(startsShown);
+
+  const isControlled = controlledShown === undefined;
+  const shown = isControlled ? internalShown : controlledShown;
+
+  const setShown = useCallback(
+    (val: boolean) => {
+      setInternalShown(val);
+      onShownChange?.(val);
+    },
+    [onShownChange]
+  );
+
+  useEffect(() => {
+    onHoverChange?.(hovered);
+  }, [hovered, onHoverChange]);
 
   const getTransformOrigin = (p: Position) => {
     switch (p) {
@@ -64,6 +89,18 @@ export default function Popover({
         return "center";
     }
   };
+
+  const closeStyle: React.CSSProperties = useMemo(() => {
+    const closeOffset = -8;
+
+    switch (closeButtonPosition) {
+      case "top-right":
+        return { top: closeOffset, right: closeOffset };
+      case "top-left":
+      default:
+        return { top: closeOffset, left: closeOffset };
+    }
+  }, [closeButtonPosition]);
 
   // ----- Positioner (no animation, no transforms from Framer)
   const positionerStyle: React.CSSProperties = useMemo(() => {
@@ -222,11 +259,14 @@ export default function Popover({
 
             {showCloseButton && (
               <button
-                onClick={() => setClosed(true)}
+                onClick={() => {
+                  if (onClose) {
+                    onClose();
+                  }
+                  setShown(false);
+                }}
                 style={{
                   position: "absolute",
-                  top: -8,
-                  right: -8,
                   padding: 4,
                   borderRadius: 8,
                   backgroundColor: colors["mantle"],
@@ -238,6 +278,7 @@ export default function Popover({
                   transition: "opacity 200ms ease, transform 200ms ease",
                   cursor: "pointer",
                   border: "none",
+                  ...closeStyle,
                 }}
                 aria-label="Close"
                 type="button"

@@ -1,10 +1,10 @@
-import { Link } from "@heroui/link";
 import { NavbarItem } from "@heroui/navbar";
 import { Button } from "@heroui/button";
 import { ReactNode } from "react";
 import Hotkey from "../../hotkey";
 import NavbarTooltip from "./NavbarTooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import Link from "next/link";
 
 interface NavbarButtonProps {
   icon?: ReactNode;
@@ -46,7 +46,7 @@ export default function NavbarButton({
           }}
           isIconOnly={isIconOnly}
           href={href}
-          as={Link}
+          as={href ? Link : undefined}
           startContent={icon}
           size="sm"
           variant="light"
