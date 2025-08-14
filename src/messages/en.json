@@ -5,7 +5,8 @@
     "Join": "Join",
     "About": "About",
     "Why": "Why Jam?",
-    "Logo": "Down2Jam logo"
+    "Logo": "Down2Jam logo",
+    "Explore": "Explore"
   },
   "Navbar": {
     "Games": {
@@ -113,5 +114,433 @@
       "Title": "Music",
       "Description": "All submitted music to the website"
     }
+  },
+  "PostStyle": {
+    "Cozy": {
+      "Title": "Cozy",
+      "Description": "Large cards, displays all post content"
+    },
+    "Compact": {
+      "Title": "Compact",
+      "Description": "Small cards to show more on screen at once"
+    },
+    "Ultra": {
+      "Title": "Ultra Compact",
+      "Description": "Very small cards for maximum compactness"
+    }
+  },
+  "PostSort": {
+    "Top": {
+      "Title": "Top",
+      "Description": "Shows the most liked posts first"
+    },
+    "Newest": {
+      "Title": "Newest",
+      "Description": "Shows the newest posts first"
+    },
+    "Oldest": {
+      "Title": "Oldest",
+      "Description": "Shows the oldest posts first"
+    }
+  },
+  "PostTime": {
+    "Hour": {
+      "Title": "Hour",
+      "Description": "Shows posts from the last hour"
+    },
+    "ThreeHours": {
+      "Title": "Three Hours",
+      "Description": "Shows posts from the last three hours"
+    },
+    "SixHours": {
+      "Title": "Six Hours",
+      "Description": "Shows posts from the last six hours"
+    },
+    "TwelveHours": {
+      "Title": "Twelve Hours",
+      "Description": "Shows posts from the last twelve hours"
+    },
+    "Day": {
+      "Title": "Day",
+      "Description": "Shows posts from the last day"
+    },
+    "Week": {
+      "Title": "Week",
+      "Description": "Shows posts from the last week"
+    },
+    "Month": {
+      "Title": "Month",
+      "Description": "Shows posts from the last month"
+    },
+    "ThreeMonths": {
+      "Title": "Three Months",
+      "Description": "Shows posts from the last three months"
+    },
+    "SixMonths": {
+      "Title": "Six Months",
+      "Description": "Shows posts from the last six months"
+    },
+    "NineMonths": {
+      "Title": "Nine Months",
+      "Description": "Shows posts from the last nine month"
+    },
+    "Year": {
+      "Title": "Year",
+      "Description": "Shows posts from the last year"
+    },
+    "All": {
+      "Title": "All Time",
+      "Description": "Shows all posts"
+    }
+  },
+  "Settings": {
+    "Name": {
+      "Title": "Name",
+      "Description": "The name that displays for you on the site"
+    },
+    "Email": {
+      "Title": "Email",
+      "Description": "The email associated with your account (for password reset, notifications, etc.)",
+      "Show": "Show Email",
+      "Hide": "Hide Email"
+    },
+    "Short": {
+      "Title": "Short",
+      "Description": "A short description that appears in spots such as search instead of the bio"
+    },
+    "Bio": {
+      "Title": "Bio",
+      "Description": "A large description that shows on your profile page"
+    },
+    "ProfilePicture": {
+      "Title": "Profile Picture",
+      "Description": "The image that represents you on the website (usually displays next to your name)"
+    },
+    "BannerPicture": {
+      "Title": "Banner Picture",
+      "Description": "A picture that shows at the top of your profile and as the background of your search result"
+    },
+    "PrimaryRoles": {
+      "Title": "Primary Roles",
+      "Description": "Roles you usually do on a jam team"
+    },
+    "SecondaryRoles": {
+      "Title": "Secondary Roles",
+      "Description": "Things you are capable of doing (or are willing to do if you can't do your primary role)"
+    },
+    "Save": {
+      "Title": "Save",
+      "Description": "Save your settings changes"
+    },
+    "Reset": {
+      "Title": "Reset",
+      "Description": "Reset your settings to the last save (discards changes)"
+    }
+  },
+  "Markdown": {
+    "Characters": "characters",
+    "Words": "words",
+    "Bold": {
+      "Title": "Bold",
+      "Description": "Make text darker and thicker (used to emphasize key words)"
+    },
+    "Italic": {
+      "Title": "Italic",
+      "Description": "Slant text to the right (used to indicate the text is vocally stressed)"
+    },
+    "Highlight": {
+      "Title": "Highlight",
+      "Description": "Emphasize text by giving it a colored background (used to draw attention)"
+    },
+    "Strikethrough": {
+      "Title": "Strikethrough",
+      "Description": "Draw a line through text to indicate deletion, inaccuracy, or irrelevance"
+    },
+    "Subscript": {
+      "Title": "Subscript",
+      "Description": "Display text slightly below the normal line (used for chemical formulas, math, and footnotes)"
+    },
+    "Superscript": {
+      "Title": "Superscript",
+      "Description": "Display text slightly above the normal line (used for exponents, ordinal indicators, and references)"
+    },
+    "Link": {
+      "Title": "Link",
+      "Description": "Add a clickable hyperlink to link to other content"
+    },
+    "Image": {
+      "Title": "Image",
+      "Description": "Insert an image into the content"
+    },
+    "HorizontalRule": {
+      "Title": "Horizontal Rule",
+      "Description": "Add a horizontal rule (a thematic break between paragraph-level elements)"
+    },
+    "Quote": {
+      "Title": "Quote",
+      "Description": "Insert a quote block (used to highlight sections of directly quoted text)"
+    },
+    "CodeBlock": {
+      "Title": "CodeBlock",
+      "Description": "Insert a code block to color and stylize inserted code"
+    },
+    "AlignLeft": {
+      "Title": "Align Left",
+      "Description": "Align text to the left"
+    },
+    "AlignCenter": {
+      "Title": "Align Center",
+      "Description": "Center text"
+    },
+    "AlignRight": {
+      "Title": "Align Right",
+      "Description": "Align text to the right"
+    },
+    "Justify": {
+      "Title": "Justify",
+      "Description": "Stretch text to so edges align evenly"
+    },
+    "Undo": {
+      "Title": "Undo",
+      "Description": "Undo the last action"
+    },
+    "Redo": {
+      "Title": "Redo",
+      "Description": "Redo the last undone action"
+    }
+  },
+  "GameSort": {
+    "Random": {
+      "Title": "Random",
+      "Description": "Shows games in a random order"
+    },
+    "LeastRatings": {
+      "Title": "Least Ratings",
+      "Description": "Shows games that have the least amount of ratings first"
+    },
+    "Danger": {
+      "Title": "Danger",
+      "Description": "Shows games closest to being able to be ranked"
+    }
+  },
+  "Games": {
+    "Title": "Games",
+    "Description": "Explore the collection of games uploaded to the site"
+  },
+  "About": {
+    "Title": "About the event",
+    "Description": "D2Jam is a community centered game jam with a emphasis on supporting things constructed by the community! We wanted a jam which celebrated post-submission events, encouraged discourse and reflection, and provided tools for developers to find and share games.\n\nD2Jam is an online game jam that anyone is free to join and that lasts for 3 days (Somewhere between Friday and Monday depending on timezones). There is a 2 hour submission window at the end as a time to make sure you get your game submitted before the jam fully ends. After the jam there is a 2 week rating period to play, rate, and give feedback to other entries in the jam. In addition any post jam events such as the Score Chasers tournament will be run in the post jam period.\n\nWe have 2 categories: Regular and O.D.A (One Dev Army). Both happen at the same time."
+  },
+  "GameFAQ": {
+    "Title": "Game FAQ",
+    "Description": "Questions relating to creating and submitting games to the jam",
+    "Q1": {
+      "Number": "Q1",
+      "Question": "How long do I have to make the game?",
+      "Answer": "3 Days. From Friday to Monday (depending on the time zone)."
+    },
+    "Q2": {
+      "Number": "Q2",
+      "Question": "Can I use premade code and assets (art, graphics, music, SFX, etc)?",
+      "Answer": "Regular: Yes! Anything goes, as long as the game's core experience is crafted during the allowed time.\n\nO.D.A: In general, no. This category focuses on creating a game from scratch. However, it's OK to use pre-existing assets from the following categories: fonts, code (engine, shaders, etc.) and logos. This means you cannot use any premade art, music, or SFX. Additionally, the game's core experience must be crafted during the allowed time."
+    },
+    "Q3": {
+      "Number": "Q3",
+      "Question": "Can I use generative AI to make aspects of the game?",
+      "Answer": "Regular: Yes. However, you cannot opt in to be rated on the categories related to what it was used for: If you use it for art/graphics, you must not opt in to Graphics. If you use it for any form of audio (music, SFX, voice acting, etc), you must not opt in to Audio. If you use it for writing dialogue and/or jokes, you must not opt in to Emotional Delivery.\n\nO.D.A: No. Any use of generative AI is explicitly prohibited."
+    },
+    "Q4": {
+      "Number": "Q4",
+      "Question": "How do I submit a game?",
+      "Answer": "You will need to upload your game to a site such as Itch.io to host the game files. Then you can make a game page on the d2jam site (by clicking the create game button) and create a link on that page to where you hosted the game files.\n\nA page on the d2jam site is required to let people browse games in the jam easily and to let you be rated. Eventually we may support game hosting directly on the d2jam site in a future jam but it would require the jam being supported by donations due to storage costs."
+    },
+    "Q5": {
+      "Number": "Q5",
+      "Question": "Can I update the game after submission?",
+      "Answer": "You cannot make edits to the jam build of the game during the rating period apart from game breaking bug fixes and porting. (For example if you want to make a mac build during the rating period without changing anything about the game thats fine. If you have a bug that prevents someone from playing your game due to a crash that would be a game breaking bug and can be fixed).\n\nYou can make and post a post-jam version of the game during the rating period but the jam version of the game must be more prominent and you cannot trick people into playing the post-jam version of the game. You can use jampack to have 2 web builds on the same page."
+    },
+    "Q6": {
+      "Number": "Q6",
+      "Question": "What happens if I don't submit before the end of the jam",
+      "Answer": "There is a 2 hour window after the jam ends that you can still upload a game within in order to catch any people that might be having last minute issues with builds. This is meant to be a period to upload within rather than work on the game more within and attempts to submit after the 2 hour submission window will not be accepted."
+    },
+    "Q7": {
+      "Number": "Q7",
+      "Question": "Can I edit the game page during the rating period?",
+      "Answer": "Yes you can edit the game page and make marketing materials (e.g. a game trailer, advertising for your game) within the rating period. The sooner you make it the more people would end up seeing your game page changes though."
+    },
+    "Q8": {
+      "Number": "Q8",
+      "Question": "Are there restrictions on game content (NSFW, extreme violence, etc.)?",
+      "Answer": "If you include things such as NSFW content you must mark your game as containing it so anybody who does not want to see that content can filter it out."
+    },
+    "Q9": {
+      "Number": "Q9",
+      "Question": "What operating systems do I need to make my game for?",
+      "Answer": "Any operating systems you want. Note however that the more you support the more people are able to play your game. In addition supporting windows or having a web build is recommended as that allows the vast majority of people to play your game."
+    },
+    "Q10": {
+      "Number": "Q10",
+      "Question": "Is there limitations on what game engine, etc. I can use?",
+      "Answer": "You can use whatever you want to make the game as long as it does not require the people playing the game to download something other than the game itself. For example games on roblox would not be allowed as that requires people to download roblox instead of downloading the game itself."
+    }
+  },
+  "RatingsFAQ": {
+    "Title": "Ratings FAQ",
+    "Description": "Questions relating to the rating period of the jam",
+    "Q1": {
+      "Number": "Q1",
+      "Question": "How are games rated?",
+      "Answer": "Games are rated by other participants in the following categories:\n\n- OVERALL: Your overall opinion of the game, how well all the categories are sticking together.\n- GAMEPLAY: How much you enjoy playing the game, and how satisfying the mechanics are.\n- AUDIO: How good the game sounds, or how effective the sound design is.\n- GRAPHICS: How good the game looks, and how effective the visual style is.\n- CREATIVITY: Uniqueness, Originality, Innovation, and the surprise element.\n- EMOTIONAL DELIVERY: How effectively the emotional or humorous elements are delivered.\n- THEME: The game’s take on the theme, and how well it was used and executed."
+    },
+    "Q2": {
+      "Number": "Q2",
+      "Question": "Can I opt out of receiving ratings for any category?",
+      "Answer": "Only the Overall and Theme ratings will be initially opted in and cannot be opted out. You must select and opt-in to any other rating category you wish to be rated and/or compete in."
+    },
+    "Q3": {
+      "Number": "Q3",
+      "Question": "Can people who did not participate rate games?",
+      "Answer": "Yes but any ratings they give do not contribute to the rankings."
+    },
+    "Q4": {
+      "Number": "Q4",
+      "Question": "What are the rankings?",
+      "Answer": "After the rating period games will be ranked in each category based on their average rating in that category. For example the game with the highest average theme score will be rank #1 in the theme category."
+    },
+    "Q5": {
+      "Number": "Q5",
+      "Question": "How many ratings do I need to give/receive to be included in the rankings",
+      "Answer": "For the current edition of the jam you need to both rate 5 games and receive 5 ratings. This prevents a game with only 1 5 star rating from instantly winning the jam."
+    },
+    "Q6": {
+      "Number": "Q6",
+      "Question": "Does this jam have a prize?",
+      "Answer": "The prize is having a game that you've managed to build and release. Theres nothing like a cash prize so the jam has more of a community feel instead of becoming competitive."
+    }
+  },
+  "StreamsFAQ": {
+    "Title": "Streams FAQ",
+    "Description": "Questions relating to livestreaming the jam",
+    "Q1": {
+      "Number": "Q1",
+      "Question": "Can I livestream the jam?",
+      "Answer": "Yes you can stream anything relating to the jam you want. e.g. making progress on your game, playing games made by other people, etc."
+    },
+    "Q2": {
+      "Number": "Q2",
+      "Question": "How do I show up in the featured streamers section on the sidebar?",
+      "Answer": "There is 3 priority tiers in the featured streamers section. The higher priority you are the further ahead in the featured streamers you show. Streams with the same priority are ordered by viewers with some randomness. Only livestreams from twitch show due to youtube not providing an equivalent api.\n\nThe lowest priority (that only ever has 3 streams show from) is any gamedev stream on twitch. The medium priority is anyone that has been marked as a streamer on the site (a.k.a streamers who have an account on the d2jam site). The highest priority is streams that use the d2jam tag (to show that they are streaming something related to the jam).\n\nOnly streams within the following categories will be shown: Software and Game Development, Art, Co-working & Studying, and Games + Demos."
+    },
+    "Q3": {
+      "Number": "Q3",
+      "Question": "How can I be marked as a streamer on the site?",
+      "Answer": "For now just let Ategon know your d2jam username and your twitch account."
+    },
+    "Q4": {
+      "Number": "Q4",
+      "Question": "How can I let people know about my stream?",
+      "Answer": "The site has a built in event system that shows upcoming and active events. If you are marked as a streamer you can go to the events page and then add a new event for your stream to make it show there. The events are located in the sidebar."
+    }
+  },
+  "MetaFAQ": {
+    "Title": "Meta FAQ",
+    "Description": "Questions relating to the organization of the jam",
+    "Q1": {
+      "Number": "Q1",
+      "Question": "Who is organizing the jam?",
+      "Answer": "The jam is organized primarily by a group of 11 people who make sure things run smoothly and who run things like the social media accounts for the jam for marketing. Decisions however are typically voted on by the community to let the community control how the jam is run and anybody is free to start running something related to the jam such as a tournament, community keynote, or other event.\n\nThe 11 core organizers are Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, and Tobugis."
+    },
+    "Q2": {
+      "Number": "Q2",
+      "Question": "Where are the servers hosted?",
+      "Answer": "The server that hosts the jam is in Canada. In the future various things such as the email service, DNS, etc. will be swapped to have as many Canadian-based technologies as possible."
+    },
+    "Q3": {
+      "Number": "Q3",
+      "Question": "How can I donate to the jam?",
+      "Answer": "There is currently no way to donate to the jam but it will be made in the future once it gets popular enough that it makes sense to spend the funds to make a non-profit for the jam."
+    },
+    "Q4": {
+      "Number": "Q4",
+      "Question": "How can I help code the site?",
+      "Answer": "The site is currently open source with the repositories available in our github organization. Jamcore is the backend of the site while jamjar is the frontend. Each repository has instructions on how to set it up locally and a project board with tasks that need to be made for the site. If you have any questions relating to contributing feel free to chat in the site development channel in our discord."
+    },
+    "Q5": {
+      "Number": "Q5",
+      "Question": "Where can I report a bug?",
+      "Answer": "You can currently reports bugs in our code repositories until a bug report feature is built into the site itself. You click on the relevant repository (e.g. if its a frontend issue you would go to Jamjar), go to the issues tab, and then create a new issue."
+    },
+    "Q6": {
+      "Number": "Q6",
+      "Question": "How often does the jam happen?",
+      "Answer": "The jam happens twice a year, typically around 6 months apart."
+    }
+  },
+  "Phases": {
+    "ThemeSubmission": {
+      "Title": "Theme Submission",
+      "Description": "Submitting possible jam themes"
+    },
+    "ThemeElimination": {
+      "Title": "Theme Elimination",
+      "Description": "Going through submitted jam themes and voting yes or no to them"
+    },
+    "ThemeVoting": {
+      "Title": "Theme Voting",
+      "Description": "Voting from a list of top themes for the final theme"
+    },
+    "GameJam": {
+      "Title": "Game Jam",
+      "Description": "The core event! Making a game in a small period of time"
+    },
+    "Rating": {
+      "Title": "Rating Period",
+      "Description": "Playing and giving feedback to other people's games"
+    },
+    "Results": {
+      "Title": "Results",
+      "Description": "Viewing the results of the jam and how you were rated"
+    },
+    "PostRating": {
+      "Title": "Post Jam Rating Period",
+      "Description": "Playing and giving feedback to other people's post jam improvements"
+    },
+    "PostResults": {
+      "Title": "Post Jam Results",
+      "Description": "Viewing the results of the post jam and how you were rated compared to the jam"
+    }
+  },
+  "JamHeader": {
+    "Suggestions": "Go to Theme Suggestions",
+    "Elimination": "Go to Theme Elimination",
+    "Voting": "Go to Theme Voting",
+    "JamSoon": "Theme will be revealed on jam start",
+    "NoTheme": "No top-scoring theme available",
+    "Submissions": "Submissions close soon",
+    "Rate": "Go rate games!"
+  },
+  "Stats": {
+    "Timer": "Jam starts in",
+    "Entrants": "Entrants",
+    "Games": "Games",
+    "Ratings": "Ratings"
+  },
+  "SidebarGames": {
+    "Title": "Featured Games",
+    "Link": "To Games Page"
+  },
+  "SidebarMusic": {
+    "Title": "Featured Music",
+    "Link": "To Music Page"
+  },
+  "SidebarEvents": {
+    "Active": {
+      "Title": "Active Events"
+    },
+    "Upcoming": {
+      "Title": "Upcoming Events"
+    },
+    "Link": "To Events Page"
   }
 }

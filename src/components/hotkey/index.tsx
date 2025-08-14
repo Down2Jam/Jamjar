@@ -1,6 +1,6 @@
 "use client";
 
-import { addToast } from "@heroui/react";
+import { useTranslations } from "next-intl";
 import { redirect } from "next/navigation";
 import { useEffect } from "react";
 import { useShortcut } from "react-keybind";
@@ -21,6 +21,7 @@ export default function Hotkey({
   const shortcuts = useShortcut();
   const registerShortcut = shortcuts?.registerShortcut;
   const unregisterShortcut = shortcuts?.unregisterShortcut;
+  const t = useTranslations();
 
   useEffect(() => {
     if (hotkey && registerShortcut && unregisterShortcut) {
@@ -30,15 +31,15 @@ export default function Hotkey({
             onPress();
           }
           if (href) {
-            addToast({
-              title: `Navigated to ${href}`,
-            });
+            // addToast({
+            //   title: `Navigated to ${href}`,
+            // });
             redirect(href);
           }
         },
         [hotkey.join("+")],
-        title,
-        description
+        t(title),
+        t(description)
       );
       return () => {
         unregisterShortcut([hotkey.join("+")]);
@@ -52,6 +53,7 @@ export default function Hotkey({
     onPress,
     title,
     description,
+    t,
   ]);
 
   return <></>;

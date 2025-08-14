@@ -42,9 +42,9 @@ export default function SidebarSong({
           align="start"
           gap={0}
         >
-          <Text size={18}>{name}</Text>
-          <Text size={12}>{game}</Text>
-          <Text size={16}>{artist}</Text>
+          <Text>{name}</Text>
+          <Text size="xs">{game}</Text>
+          <Text size="sm">{artist}</Text>
         </Vstack>
 
         <div className="w-full"></div>

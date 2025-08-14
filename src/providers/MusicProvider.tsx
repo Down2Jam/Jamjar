@@ -627,7 +627,7 @@ function MiniPlayer() {
                     marginTop: 6,
                   }}
                 >
-                  <Text color="text" size={12}>
+                  <Text color="text" size="xs">
                     Volume
                   </Text>
                   <input

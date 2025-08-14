@@ -17,12 +17,10 @@ import {
   Dice3,
   Gamepad,
   Gamepad2,
-  Heart,
   Info,
   LogIn,
   MessageCircle,
   Music,
-  Rss,
   SquarePen,
   Trophy,
   Users,
@@ -33,6 +31,7 @@ import { getCurrentJam, joinJam } from "@/helpers/jam";
 import {
   SiBluesky,
   SiDiscord,
+  SiInstagram,
   SiYoutube,
 } from "@icons-pack/react-simple-icons";
 import NavbarUser from "./NavbarUser";
@@ -44,13 +43,12 @@ import { getSelf } from "@/requests/user";
 import { getCurrentGame } from "@/requests/game";
 import { JamType } from "@/types/JamType";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Popover from "@/framework/Popover";
 import { LanguageInfo } from "@/types/LanguageInfoType";
+import Link from "next/link";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -66,8 +64,6 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const [hasGame, setHasGame] = useState<GameType | null>();
   const pathname = usePathname();
   const { siteTheme } = useTheme();
-
-  const t = useTranslations("Navbar");
 
   useEffect(() => {
     loadData();
@@ -126,15 +122,6 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
       isBordered
       height={40}
     >
-      <Popover
-        position="bottom-right"
-        className="text-right text-xs"
-        startsShown
-        showCloseButton
-      >
-        <p>⚠️ The site is currently transitioning to a custom theme system</p>
-        <p>Some colors may be incorrect as components are moved over</p>
-      </Popover>
       {/* Navbar Left */}
       <NavbarContent justify="start">
         <Brand userLoggedIn={isLoggedIn} />
@@ -144,38 +131,38 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" />
             <div className="flex items-center">
-              <NavbarButton
+              {/* <NavbarButton
                 icon={<Heart size={16} />}
                 href="/donate"
-                name={t("Donate.Title")}
-                description={t("Donate.Description")}
+                name="Navbar.Donate.Title"
+                description="Navbar.Donate.Description"
                 hotkey={["G", "D"]}
                 isIconOnly
                 color="green"
-              />
+              /> */}
               <NavbarButton
                 icon={<Dice3 size={16} />}
                 href="/lucky"
-                name={t("Lucky.Title")}
-                description={t("Lucky.Description")}
+                name="Navbar.Lucky.Title"
+                description="Navbar.Lucky.Description"
                 hotkey={["G", "L"]}
                 isIconOnly
                 color="lime"
               />
-              <NavbarButton
+              {/* <NavbarButton
                 icon={<Rss size={16} />}
                 href="/rss"
-                name={t("RSS.Title")}
-                description={t("RSS.Description")}
+                name="Navbar.RSS.Title"
+                description="Navbar.RSS.Description"
                 hotkey={["G", "S"]}
                 isIconOnly
                 color="yellow"
-              />
+              /> */}
               <NavbarButton
                 icon={<Music size={16} />}
                 href="/music"
-                name={t("Music.Title")}
-                description={t("Music.Description")}
+                name="Navbar.Music.Title"
+                description="Navbar.Music.Description"
                 hotkey={["G", "M"]}
                 isIconOnly
                 color="orange"
@@ -191,8 +178,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon={<Info size={16} />}
             href="/about"
-            name={t("About.Title")}
-            description={t("About.Description")}
+            name="Navbar.About.Title"
+            description="Navbar.About.Description"
             hotkey={["G", "A"]}
             color="red"
           />
@@ -200,8 +187,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         <NavbarButton
           icon={<Gamepad size={16} />}
           href="/games"
-          name={t("Games.Title")}
-          description={t("Games.Description")}
+          name="Navbar.Games.Title"
+          description="Navbar.Games.Description"
           hotkey={["G", "E"]}
           color="orange"
         />
@@ -209,8 +196,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon={<Trophy size={16} />}
             href="/results"
-            name={t("Results.Title")}
-            description={t("Results.Description")}
+            name="Navbar.Results.Title"
+            description="Navbar.Results.Description"
             hotkey={["G", "R"]}
             color="yellow"
           />
@@ -224,10 +211,12 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             jamPhase == "Rating") && (
             <NavbarButton
               icon={<Gamepad2 />}
-              name={hasGame ? t("MyGame.Title") : t("CreateGame.Title")}
+              name={hasGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
               href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
               description={
-                hasGame ? t("MyGame.Description") : t("CreateGame.Description")
+                hasGame
+                  ? "Navbar.MyGame.Description"
+                  : "Navbar.CreateGame.Description"
               }
               color="yellow"
               hotkey={["G", "F"]}
@@ -238,8 +227,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon={<MessageCircle size={16} />}
             href="/home"
-            name={t("Forum.Title")}
-            description={t("Forum.Description")}
+            name="Navbar.Forum.Title"
+            description="Navbar.Forum.Description"
             hotkey={["G", "H"]}
             color="lime"
           />
@@ -248,8 +237,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon={<LogIn size={16} />}
             href="/signup"
-            name={t("Join.Title")}
-            description={t("Join.Description")}
+            name="Navbar.Join.Title"
+            description="Navbar.Join.Description"
             hotkey={["G", "J"]}
             color="green"
           />
@@ -259,8 +248,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon={<SquarePen size={16} />}
             href="/create-post"
-            name={t("CreatePost.Title")}
-            description={t("CreatePost.Description")}
+            name="Navbar.CreatePost.Title"
+            description="Navbar.CreatePost.Description"
             hotkey={["G", "C"]}
             color="lime"
           />
@@ -275,13 +264,13 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             }
             name={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
-                ? t("MyTeam.Title")
-                : t("TeamFinder.Title")
+                ? "Navbar.MyTeam.Title"
+                : "Navbar.TeamFinder.Title"
             }
             description={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
-                ? t("MyTeam.Description")
-                : t("TeamFinder.Description")
+                ? "Navbar.MyTeam.Description"
+                : "Navbar.TeamFinder.Description"
             }
             color="green"
             hotkey={["G", "T"]}
@@ -295,8 +284,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               const currentJam = currentJamResponse?.jam;
               if (!currentJam) {
                 addToast({
-                  title: t("NoJamToast.Title"),
-                  description: t("NoJamToast.Description"),
+                  title: "Navbar.NoJamToast.Title",
+                  description: "Navbar.NoJamToast.Description",
                   color: "danger",
                   variant: "bordered",
                   timeout: 3000,
@@ -307,8 +296,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 setIsInJam(true);
               }
             }}
-            name={t("JoinJam.Title")}
-            description={t("JoinJam.Description")}
+            name="Navbar.JoinJam.Title"
+            description="Navbar.JoinJam.Description"
             color="green"
             hotkey={["G", "J"]}
           />
@@ -334,6 +323,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 style={{
                   color: siteTheme.colors["text"],
                 }}
+                as={Link}
+                href="https://discord.d2jam.com"
               />
               <Button
                 size="sm"
@@ -343,6 +334,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 style={{
                   color: siteTheme.colors["text"],
                 }}
+                as={Link}
+                href="https://bluesky.d2jam.com"
               />
               <Button
                 size="sm"
@@ -352,6 +345,19 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 style={{
                   color: siteTheme.colors["text"],
                 }}
+                as={Link}
+                href="https://youtube.d2jam.com"
+              />
+              <Button
+                size="sm"
+                startContent={<SiInstagram size={16} />}
+                isIconOnly
+                variant="light"
+                style={{
+                  color: siteTheme.colors["text"],
+                }}
+                as={Link}
+                href="https://instagram.d2jam.com"
               />
             </div>
           </>
@@ -363,8 +369,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               <NavbarButton
                 icon={<Bell size={16} />}
                 href="/inbox"
-                name={t("Inbox.Title")}
-                description={t("Inbox.Description")}
+                name="Navbar.Inbox.Title"
+                description="Navbar.Inbox.Description"
                 hotkey={["G", "I"]}
                 color="green"
                 isIconOnly

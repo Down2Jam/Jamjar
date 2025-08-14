@@ -18,7 +18,6 @@ import {
 } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import {
-  Flag,
   LoaderCircle,
   MessageCircle,
   MoreVertical,
@@ -203,7 +202,7 @@ export default function PostPage() {
                           showDivider={user?.mod}
                           title="Actions"
                         >
-                          <DropdownItem
+                          {/* <DropdownItem
                             key="report"
                             startContent={<Flag />}
                             description="Report this post to moderators to handle"
@@ -212,7 +211,7 @@ export default function PostPage() {
                             }}
                           >
                             Create Report
-                          </DropdownItem>
+                          </DropdownItem> */}
                           {user?.slug == post.author.slug ? (
                             <DropdownItem
                               key="delete"

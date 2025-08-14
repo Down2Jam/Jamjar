@@ -1,13 +1,29 @@
+import { IconName } from "./Icon";
+
 export type ButtonVariant = "standard";
 export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+type Shared = {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
   fullWidth?: boolean;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  color?: "default" | "blue";
-}
+  icon?: IconName;
+  color?: "default" | "blue" | "green" | "pink" | "red";
+  externalIcon?: boolean;
+  disabled?: boolean;
+  className?: string;
+  style?: React.CSSProperties;
+};
+
+export type ButtonAsButton = Shared &
+  React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: undefined;
+  };
+
+export type ButtonAsLink = Shared &
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
+    href: string;
+  };
+
+export type ButtonProps = ButtonAsButton | ButtonAsLink;

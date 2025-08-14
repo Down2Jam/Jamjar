@@ -1,1 +1,1 @@
-export type PostStyle = "cozy" | "compact" | "ultra" | "adaptive";
+export type PostStyle = "cozy" | "compact" | "ultra";

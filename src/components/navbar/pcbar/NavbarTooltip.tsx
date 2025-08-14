@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Kbd } from "@heroui/kbd";
 import Tooltip from "@/framework/Tooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTranslations } from "next-intl";
 
 interface NavbarButtonProps {
   icon?: ReactNode;
@@ -19,6 +20,7 @@ export default function NavbarTooltip({
   children,
 }: NavbarButtonProps) {
   const { siteTheme } = useTheme();
+  const t = useTranslations();
 
   return (
     <Tooltip
@@ -33,7 +35,7 @@ export default function NavbarTooltip({
         >
           <div className="flex items-center gap-2 ">
             {icon}
-            <p>{name}</p>
+            {name && <p>{t(name)}</p>}
             {hotkey && (
               <Kbd
                 style={{
@@ -45,7 +47,9 @@ export default function NavbarTooltip({
               </Kbd>
             )}
           </div>
-          <p className="text-xs opacity-50">{description}</p>
+          {description && (
+            <p className="text-xs opacity-50">{t(description)}</p>
+          )}
         </div>
       }
     >

@@ -1,8 +1,10 @@
 "use client";
 
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { Button } from "@/framework/Button";
+import { Input } from "@/framework/Input";
+import Text from "@/framework/Text";
 import { login } from "@/requests/auth";
-import { Button, Form, Input, Link } from "@heroui/react";
+import { Form, Link } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -11,7 +13,6 @@ export default function UserPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
-  const { colors } = useTheme();
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
@@ -69,8 +70,7 @@ export default function UserPage() {
         }}
       >
         <Input
-          classNames={{ label: "!text-white" }}
-          isRequired
+          required
           label="Username"
           labelPlacement="outside"
           name="username"
@@ -81,8 +81,7 @@ export default function UserPage() {
         />
 
         <Input
-          classNames={{ label: "!text-white" }}
-          isRequired
+          required
           label="Password"
           labelPlacement="outside"
           name="password"
@@ -92,21 +91,14 @@ export default function UserPage() {
           onValueChange={setPassword}
         />
         <div className="flex gap-2">
-          <Button color="primary" type="submit">
+          <Button color="blue" type="submit">
             Submit
           </Button>
-          <Button type="reset" variant="flat">
-            Reset
-          </Button>
+          <Button type="reset">Reset</Button>
         </div>
-        <p
-          className="transition-color duration-250"
-          style={{
-            color: colors["text"],
-          }}
-        >
+        <Text color="text">
           Don&apos;t have an account? <Link href="/signup">Sign up</Link>
-        </p>
+        </Text>
       </Form>
     </div>
   );

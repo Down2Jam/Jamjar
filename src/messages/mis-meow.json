@@ -5,7 +5,8 @@
     "Join": "Meow",
     "About": "Meow",
     "Why": "Meow meow?",
-    "Logo": "Meow meow"
+    "Logo": "Meow meow",
+    "Explore": "Meow"
   },
   "Navbar": {
     "Games": {
@@ -57,7 +58,8 @@
       "Alt": "Meow meow"
     },
     "Language": {
-      "Title": "Meow meow"
+      "Title": "Meow meow",
+      "Select": "Meow"
     },
     "JoinJam": {
       "Title": "Meow meow",
@@ -106,6 +108,11 @@
     "Inbox": {
       "Title": "Meow",
       "Description": "Meow meow meow"
+    },
+    "Search": "Meow",
+    "Music": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow meow meow"
     }
   }
 }

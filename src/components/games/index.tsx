@@ -1,32 +1,23 @@
 "use client";
 
 import { GameType } from "@/types/GameType";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  Button,
   Card,
   CardFooter,
   CardHeader,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Image,
   Link,
   Spinner,
 } from "@heroui/react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  ChevronsDown,
-  CircleAlert,
-  ClockArrowDown,
-  ClockArrowUp,
-  Dice5,
-} from "lucide-react";
 import { getGames } from "@/requests/game";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
+import { IconName } from "@/framework/Icon";
+import { Button } from "@/framework/Button";
+import Dropdown from "@/framework/Dropdown";
 
 export default function Games() {
   const searchParams = useSearchParams();
@@ -44,32 +35,22 @@ export default function Games() {
 
   const sorts: Record<
     GameSort,
-    { name: string; icon: ReactNode; description: string }
+    { name: string; icon: IconName; description: string }
   > = {
     random: {
-      name: "Random",
-      icon: <Dice5 />,
-      description: "Shows games in a random order",
+      name: "GameSort.Random.Title",
+      icon: "dice3",
+      description: "GameSort.Random.Description",
     },
     leastratings: {
-      name: "Least Ratings",
-      icon: <ChevronsDown />,
-      description: "Shows games that have the least amount of ratings first",
+      name: "GameSort.LeastRatings.Title",
+      icon: "chevronsdown",
+      description: "GameSort.LeastRatings.Description",
     },
     danger: {
-      name: "Danger",
-      icon: <CircleAlert />,
-      description: "Shows games closest to being able to be ranked",
-    },
-    newest: {
-      name: "Newest",
-      icon: <ClockArrowUp />,
-      description: "Shows the newest game first",
-    },
-    oldest: {
-      name: "Oldest",
-      icon: <ClockArrowDown />,
-      description: "Shows the oldest game first",
+      name: "GameSort.Danger.Title",
+      icon: "circlealert",
+      description: "GameSort.Danger.Description",
     },
   };
 
@@ -114,33 +95,23 @@ export default function Games() {
       <section className="mt-4 mb-4">
         <div className="flex justify-between pb-0">
           <div className="flex gap-2">
-            <Dropdown backdrop="opaque">
-              <DropdownTrigger>
-                <Button
-                  size="sm"
-                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                  variant="faded"
+            <Dropdown
+              trigger={<Button size="sm">{sorts[sort]?.name}</Button>}
+              onSelect={(key) => {
+                setSort(key as GameSort);
+                updateQueryParam("sort", key as string);
+              }}
+            >
+              {Object.entries(sorts).map(([key, sort]) => (
+                <Dropdown.Item
+                  key={key}
+                  value={key}
+                  icon={sort.icon}
+                  description={sort.description}
                 >
-                  {sorts[sort]?.name}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                onAction={(key) => {
-                  setSort(key as GameSort);
-                  updateQueryParam("sort", key as string);
-                }}
-                className="text-[#333] dark:text-white"
-              >
-                {Object.entries(sorts).map(([key, sort]) => (
-                  <DropdownItem
-                    key={key}
-                    startContent={sort.icon}
-                    description={sort.description}
-                  >
-                    {sort.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
+                  {sort.name}
+                </Dropdown.Item>
+              ))}
             </Dropdown>
           </div>
         </div>

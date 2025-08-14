@@ -1,11 +1,10 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
 import SidebarSong from "./SidebarSong";
 import { Spacer } from "@heroui/react";
-import ButtonLink from "../link-components/ButtonLink";
-import { useTheme } from "@/providers/SiteThemeProvider";
 import useHasMounted from "@/hooks/useHasMounted";
+import Text from "@/framework/Text";
+import { Button } from "@/framework/Button";
 
 const music = [
   {
@@ -186,7 +185,6 @@ const music = [
 ];
 
 export default function SidebarMusic() {
-  const { colors } = useTheme();
   const hasMounted = useHasMounted();
 
   if (!hasMounted) return;
@@ -196,15 +194,10 @@ export default function SidebarMusic() {
   return (
     <>
       <Spacer y={20} />
-      <div className="flex flex-col gap-2">
-        <p
-          className="text-center text-2xl"
-          style={{
-            color: colors["text"],
-          }}
-        >
-          Featured Music
-        </p>
+      <div className="flex flex-col gap-2 items-center">
+        <Text size="2xl" color="text">
+          SidebarMusic.Title
+        </Text>
         <div className="flex flex-col w-[488px] gap-2">
           {featured.map((track, index) => (
             <SidebarSong
@@ -217,18 +210,9 @@ export default function SidebarMusic() {
             />
           ))}
         </div>
-        <div className="flex justify-center gap-2">
-          {/* <ButtonAction
-            icon={<MoreHorizontal />}
-            name="Load More"
-            onPress={() => {}}
-          /> */}
-          <ButtonLink
-            icon={<ExternalLink />}
-            name="To Music Page"
-            href="/music"
-          />
-        </div>
+        <Button icon="moveupright" href="/music">
+          SidebarMusic.Link
+        </Button>
       </div>
     </>
   );

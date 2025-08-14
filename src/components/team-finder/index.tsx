@@ -4,14 +4,6 @@ import { useEffect, useState } from "react";
 import {
   Avatar,
   AvatarGroup,
-  Button,
-  Card,
-  CardBody,
-  Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Modal,
   ModalBody,
   ModalContent,
@@ -19,21 +11,22 @@ import {
   ModalHeader,
   Spinner,
   Textarea,
-  Tooltip,
   useDisclosure,
 } from "@heroui/react";
-import { Clipboard, Settings, Settings2, Star, Users2 } from "lucide-react";
 import { TeamType } from "@/types/TeamType";
 import { getTeams } from "@/requests/team";
-import ButtonAction from "../link-components/ButtonAction";
 import { applyToTeam, createTeam } from "@/helpers/team";
-import ButtonLink from "../link-components/ButtonLink";
 import { redirect } from "next/navigation";
-import { getIcon } from "@/helpers/icon";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { getCurrentJam } from "@/helpers/jam";
 import { JamType } from "@/types/JamType";
+import { Card } from "@/framework/Card";
+import { Button } from "@/framework/Button";
+import Text from "@/framework/Text";
+import { Badge } from "@/framework/Badge";
+import Dropdown from "@/framework/Dropdown";
+import Tooltip from "@/framework/Tooltip";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -139,78 +132,53 @@ export default function TeamFinder() {
       <section className="mt-4 mb-4 flex flex-col gap-3">
         <div className="flex gap-3">
           {user.teams.filter((team) => team.jamId == jam?.id).length > 0 && (
-            <ButtonLink name="My Team" icon={<Users2 />} href="/team" />
+            <Button icon="users2" href="/team">
+              My Team
+            </Button>
           )}
-          <ButtonAction
-            name="Create Team"
-            icon={<Users2 />}
-            onPress={async () => {
+          <Button
+            icon="users2"
+            onClick={async () => {
               const successful = await createTeam();
               if (successful) {
                 redirect("/team");
               }
             }}
-          />
+          >
+            Create Team
+          </Button>
         </div>
         <div className="flex gap-2">
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                variant="faded"
-              >
-                {teamType}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              className="text-[#333] dark:text-white"
-              onAction={(key) => {
-                setTeamType(key as "Open to Applications" | "All");
-              }}
-            >
-              <DropdownItem
-                key="Open to Applications"
-                startContent={<Clipboard />}
-              >
-                Open to Applications
-              </DropdownItem>
-              <DropdownItem key="All" startContent={<Star />}>
-                All
-              </DropdownItem>
-            </DropdownMenu>
+          <Dropdown
+            trigger={<Button size="sm">{teamType}</Button>}
+            onSelect={(key) => {
+              setTeamType(key as "Open to Applications" | "All");
+            }}
+          >
+            <Dropdown.Item value="Open to Applications" icon="clipboard">
+              Open to Applications
+            </Dropdown.Item>
+            <Dropdown.Item value="All" icon="star">
+              All
+            </Dropdown.Item>
           </Dropdown>
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                variant="faded"
-              >
-                {filter}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              className="text-[#333] dark:text-white"
-              onAction={(key) => {
-                setFilter(
-                  key as "Primary Role" | "Primary or Secondary Role" | "All"
-                );
-              }}
-            >
-              <DropdownItem key="Primary Role" startContent={<Settings2 />}>
-                Primary Role
-              </DropdownItem>
-              <DropdownItem
-                key="Primary or Secondary Role"
-                startContent={<Settings />}
-              >
-                Primary or Secondary Role
-              </DropdownItem>
-              <DropdownItem key="All" startContent={<Star />}>
-                All
-              </DropdownItem>
-            </DropdownMenu>
+          <Dropdown
+            trigger={<Button size="sm">{filter}</Button>}
+            onSelect={(key) => {
+              setFilter(
+                key as "Primary Role" | "Primary or Secondary Role" | "All"
+              );
+            }}
+          >
+            <Dropdown.Item value="Primary Role" icon="settings2">
+              Primary Role
+            </Dropdown.Item>
+            <Dropdown.Item value="Primary or Secondary Role" icon="settings">
+              Primary or Secondary Role
+            </Dropdown.Item>
+            <Dropdown.Item value="All" icon="star">
+              All
+            </Dropdown.Item>
           </Dropdown>
         </div>
       </section>
@@ -219,60 +187,60 @@ export default function TeamFinder() {
         {teams && teams.length > 0 ? (
           teams.map((team) => (
             <Card key={team.id}>
-              <CardBody className="p-6 gap-3">
-                <div className="flex items-center justify-between flex-row gap-3">
-                  <div className="flex items-center gap-3">
-                    <AvatarGroup
-                      renderCount={(count) => <p>+{count}</p>}
-                      max={10}
-                    >
-                      {team.users.map((user) => (
-                        <Tooltip key={user.id} content={user.name}>
-                          <Avatar
-                            size="sm"
-                            className="w-6 h-6"
-                            src={user.profilePicture}
-                          />
-                        </Tooltip>
-                      ))}
-                    </AvatarGroup>
-                    {team.name ? team.name : `${team.owner.name}'s Team`}
-                  </div>
-                  <div>
-                    {team.applicationsOpen &&
-                      (!team.game || team.game.category != "ODA") && (
-                        <ButtonAction
-                          name="Apply"
-                          icon={<Clipboard />}
-                          onPress={() => {
-                            setBody("");
-                            setSelectedTeam(team.id);
-                            onOpen();
-                          }}
+              <div className="flex items-center justify-between flex-row gap-3">
+                <div className="flex items-center gap-3">
+                  <AvatarGroup
+                    renderCount={(count) => <p>+{count}</p>}
+                    max={10}
+                  >
+                    {team.users.map((user) => (
+                      <Tooltip key={user.id} content={user.name} position="top">
+                        <Avatar
+                          size="sm"
+                          className="w-6 h-6"
+                          src={user.profilePicture}
                         />
-                      )}
-                  </div>
-                </div>
-                {team.description && <p>{team.description}</p>}
-                {team.rolesWanted.length > 0 && (
-                  <div className="flex items-center gap-3">
-                    <p>Roles Wanted:</p>
-                    {team.rolesWanted.map((role) => (
-                      <Chip
-                        startContent={getIcon(role.icon, 16)}
-                        key={role.id}
-                        className="pl-2"
-                      >
-                        {role.name}
-                      </Chip>
+                      </Tooltip>
                     ))}
-                  </div>
-                )}
-              </CardBody>
+                  </AvatarGroup>
+                  {team.name ? team.name : `${team.owner.name}'s Team`}
+                </div>
+                <div>
+                  {team.applicationsOpen &&
+                    (!team.game || team.game.category != "ODA") && (
+                      <Button
+                        icon="clipboard"
+                        onClick={() => {
+                          setBody("");
+                          setSelectedTeam(team.id);
+                          onOpen();
+                        }}
+                      >
+                        Apply
+                      </Button>
+                    )}
+                </div>
+              </div>
+              {team.description && <p>{team.description}</p>}
+              {team.rolesWanted.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <p>Roles Wanted:</p>
+                  {team.rolesWanted.map((role) => (
+                    <Badge
+                      // startContent={getIcon(role.icon, 16)}
+                      key={role.id}
+                    >
+                      {role.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </Card>
           ))
         ) : (
-          <p>No teams were found with the given filters</p>
+          <Text color="textFaded">
+            No teams were found with the given filters
+          </Text>
         )}
       </section>
       <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
@@ -288,12 +256,12 @@ export default function TeamFinder() {
                 />
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="flat" onPress={onClose}>
+                <Button color="red" onClick={onClose}>
                   Close
                 </Button>
                 <Button
-                  color="primary"
-                  onPress={() => {
+                  color="blue"
+                  onClick={() => {
                     onClose();
                     if (!selectedTeam) return;
                     applyToTeam(selectedTeam, body);

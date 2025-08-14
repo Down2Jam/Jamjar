@@ -5,6 +5,7 @@ import Hotkey from "../../hotkey";
 import NavbarTooltip from "./NavbarTooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 interface NavbarButtonProps {
   icon?: ReactNode;
@@ -30,6 +31,7 @@ export default function NavbarButton({
   className,
 }: NavbarButtonProps) {
   const { siteTheme } = useTheme();
+  const t = useTranslations();
 
   return (
     <NavbarItem>
@@ -52,7 +54,7 @@ export default function NavbarButton({
           variant="light"
           onPress={onPress}
         >
-          {isIconOnly ? "" : name}
+          {isIconOnly ? "" : t(name)}
           {hotkey && (
             <Hotkey
               href={href}

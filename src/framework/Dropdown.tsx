@@ -11,6 +11,11 @@ import React, {
 import Popover from "@/framework/Popover";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Backdrop } from "./Backdrop";
+import Icon, { IconName } from "./Icon";
+import { useTranslations } from "next-intl";
+import { Badge } from "./Badge";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
 
 type Position =
   | "top-left"
@@ -155,13 +160,19 @@ function Dropdown({
 }
 
 interface ItemProps<T = unknown> {
-  value: T;
-  children: React.ReactNode; // main label
-  description?: React.ReactNode; // NEW - secondary text
-  icon?: React.ReactNode; // NEW - left icon
+  value?: T;
+  children: string;
+  description?: string;
+  icon?: IconName;
   disabled?: boolean;
   className?: string;
-  onSelect?: (value: T) => void; // per-item handler
+  onSelect?: (value: T) => void;
+  onClick?: (e: React.MouseEvent) => void;
+  kbd?: string;
+  href?: string;
+  externalIcon?: boolean;
+  target?: React.HTMLAttributeAnchorTarget;
+  rel?: string;
 }
 
 function Item<T = unknown>({
@@ -172,32 +183,110 @@ function Item<T = unknown>({
   disabled = false,
   className = "",
   onSelect,
+  onClick,
+  kbd,
+  href,
+  externalIcon = true,
+  target,
+  rel,
 }: ItemProps<T>) {
   const { closeOnSelect, onItemSelect, setOpen } = useDropdownCtx();
   const { colors } = useTheme();
+  const t = useTranslations();
 
   const handleSelect = () => {
-    if (disabled) return;
-    onSelect?.(value);
+    onSelect?.(value as T);
     onItemSelect?.(value);
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+    onClick?.(e);
+    if (e.defaultPrevented) return;
+
+    handleSelect();
     if (closeOnSelect) setOpen(false);
   };
 
+  const commonClass = [
+    "flex w-full select-none items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors",
+    "disabled:cursor-not-allowed disabled:opacity-50 justify-between",
+    className,
+  ].join(" ");
+
+  const commonStyle: React.CSSProperties = {
+    color: colors["text"],
+    backgroundColor: "transparent",
+  };
+
+  const content = (
+    <>
+      <div className="flex items-center gap-3">
+        {icon && <Icon size={16} name={icon} />}
+        <span className="flex flex-col">
+          {t(children)}
+          {description && (
+            <span className="text-xs" style={{ color: colors["textFaded"] }}>
+              {t(description)}
+            </span>
+          )}
+        </span>
+      </div>
+      {kbd && <Badge>{kbd}</Badge>}
+    </>
+  );
+
+  // Link mode
+  if (href) {
+    const isExternal =
+      typeof window !== "undefined" &&
+      (() => {
+        try {
+          const url = new URL(href, window.location.origin);
+          return url.origin !== window.location.origin;
+        } catch {
+          return false;
+        }
+      })();
+
+    const relValue =
+      rel ??
+      (target === "_blank" && isExternal ? "noopener noreferrer" : undefined);
+
+    return (
+      <Link
+        href={href}
+        className={commonClass}
+        style={commonStyle}
+        onClick={handleClick}
+        target={target}
+        rel={relValue}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.backgroundColor =
+            colors["base"];
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.backgroundColor =
+            "transparent";
+        }}
+      >
+        {content}
+        {isExternal && externalIcon && !kbd && (
+          <ExternalLink size={16} className="ml-2 shrink-0" />
+        )}
+      </Link>
+    );
+  }
+
+  // Button mode
   return (
     <button
       type="button"
       role="menuitem"
-      onClick={handleSelect}
+      onClick={handleClick}
       disabled={disabled}
-      className={[
-        "flex w-full select-none items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        className,
-      ].join(" ")}
-      style={{
-        color: colors["text"],
-        backgroundColor: "transparent",
-      }}
+      className={commonClass}
+      style={commonStyle}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLButtonElement).style.backgroundColor =
           colors["base"];
@@ -207,21 +296,7 @@ function Item<T = unknown>({
           "transparent";
       }}
     >
-      {icon && <span className="mt-0.5 flex-shrink-0">{icon}</span>}
-
-      <span className="flex flex-col">
-        {children}
-        {description && (
-          <span
-            className="text-xs"
-            style={{
-              color: colors["textFaded"],
-            }}
-          >
-            {description}
-          </span>
-        )}
-      </span>
+      {content}
     </button>
   );
 }

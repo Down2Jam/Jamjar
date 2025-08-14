@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Banner from "../banner";
+import Text from "@/framework/Text";
 
 export default function SidebarBanner() {
   const { colors } = useTheme();
@@ -14,8 +15,8 @@ export default function SidebarBanner() {
           color: colors["textLight"],
         }}
       >
-        <p className="text-6xl">Down2Jam</p>
-        <p>The community centered game jam</p>
+        <Text size="6xl">Splash.Title</Text>
+        <Text>Splash.Description</Text>
       </div>
       <Banner width={480} className="z-0 shadow-2xl" />
     </a>

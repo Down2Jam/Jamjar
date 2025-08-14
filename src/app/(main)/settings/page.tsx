@@ -5,13 +5,11 @@ import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
 import {
   Avatar,
-  Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
   Form,
-  Input,
   Spacer,
 } from "@heroui/react";
 import { redirect, usePathname } from "next/navigation";
@@ -24,6 +22,12 @@ import { sanitize } from "@/helpers/sanitize";
 import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
 import { getIcon } from "@/helpers/icon";
+import { Input } from "@/framework/Input";
+import { Button } from "@/framework/Button";
+import Text from "@/framework/Text";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Icon from "@/framework/Icon";
+import { Card } from "@/framework/Card";
 
 export default function UserPage() {
   const [user, setUser] = useState<UserType>();
@@ -90,10 +94,10 @@ export default function UserPage() {
   return (
     <div className="flex items-center justify-center">
       {!user ? (
-        "Loading settings..."
+        <Text>Loading settings...</Text>
       ) : (
         <Form
-          className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
+          className="w-full max-w-2xl flex flex-col gap-4"
           validationErrors={errors}
           onReset={() => {
             setProfilePicture(user.profilePicture ?? "");
@@ -139,246 +143,310 @@ export default function UserPage() {
             }
           }}
         >
-          <p className="text-3xl">Settings</p>
+          <Card>
+            <Vstack align="start">
+              <Hstack>
+                <Icon name="cog" color="text" />
+                <Text size="xl" color="text" weight="semibold">
+                  Settings
+                </Text>
+              </Hstack>
+              <Text size="sm" color="textFaded">
+                Manage your preferences
+              </Text>
+            </Vstack>
+          </Card>
 
-          <Input
-            label="Name"
-            labelPlacement="outside"
-            name="name"
-            placeholder="Enter a name"
-            type="text"
-            value={name}
-            onValueChange={setName}
-          />
-
-          <p>Email</p>
-          {showEmail && (
-            <Input
-              label="Email"
-              name="email"
-              placeholder="Enter an email"
-              type="text"
-              value={email}
-              onValueChange={setEmail}
-            />
-          )}
-          <Button size="sm" onPress={() => setShowEmail(!showEmail)}>
-            {showEmail ? "Hide Email" : "Show Email"}
-          </Button>
-
-          <p>Bio</p>
-          <Editor content={bio} setContent={setBio} />
-
-          <p>Profile Picture</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-
-              const formData = new FormData();
-              formData.append("upload", file);
-
-              try {
-                const response = await fetch(
-                  process.env.NEXT_PUBLIC_MODE === "PROD"
-                    ? "https://d2jam.com/api/v1/image"
-                    : "http://localhost:3005/api/v1/image",
-                  {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                      authorization: `Bearer ${getCookie("token")}`,
-                    },
-                    credentials: "include",
-                  }
-                );
-
-                if (response.ok) {
-                  const data = await response.json();
-                  setProfilePicture(data.data);
-                  toast.success(data.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
-              } catch (error) {
-                console.error(error);
-                toast.error("Error uploading image");
-              }
-            }}
-          />
-
-          {profilePicture && (
-            <div>
-              <Avatar src={profilePicture} />
-              <Spacer y={3} />
-              <Button
-                color="danger"
-                size="sm"
-                onPress={() => {
-                  setProfilePicture(null);
-                }}
-              >
-                Remove Profile Picture
-              </Button>
-            </div>
-          )}
-
-          <p>Banner Picture</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={async (e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-
-              const formData = new FormData();
-              formData.append("upload", file);
-
-              try {
-                const response = await fetch(
-                  process.env.NEXT_PUBLIC_MODE === "PROD"
-                    ? "https://d2jam.com/api/v1/image"
-                    : "http://localhost:3005/api/v1/image",
-                  {
-                    method: "POST",
-                    body: formData,
-                    headers: {
-                      authorization: `Bearer ${getCookie("token")}`,
-                    },
-                    credentials: "include",
-                  }
-                );
-
-                if (response.ok) {
-                  const data = await response.json();
-                  setBannerPicture(data.data);
-                  toast.success(data.message);
-                } else {
-                  toast.error("Failed to upload image");
-                }
-              } catch (error) {
-                console.error(error);
-                toast.error("Error uploading image");
-              }
-            }}
-          />
-
-          {bannerPicture && (
-            <div className="w-full">
-              <div className="bg-[#222222] h-28 w-full relative">
-                <Image
-                  src={bannerPicture}
-                  alt={`${user.name}'s profile banner`}
-                  className="object-cover"
-                  fill
+          <Hstack align="start">
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.Name.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.Name.Description
+                  </Text>
+                </div>
+                <Input
+                  value={name}
+                  onValueChange={setName}
+                  name="name"
+                  placeholder="Enter a name"
+                  type="text"
                 />
+              </Vstack>
+            </Card>
+
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.Email.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.Email.Description
+                  </Text>
+                </div>
+                {showEmail && (
+                  <Input
+                    value={email}
+                    onValueChange={setEmail}
+                    name="email"
+                    placeholder="Enter an email"
+                    type="text"
+                  />
+                )}
+                <Button size="sm" onClick={() => setShowEmail(!showEmail)}>
+                  {showEmail ? "Settings.Email.Hide" : "Settings.Email.Show"}
+                </Button>
+              </Vstack>
+            </Card>
+          </Hstack>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Settings.Bio.Title</Text>
+                <Text color="textFaded" size="xs">
+                  Settings.Bio.Description
+                </Text>
               </div>
-              <Spacer y={3} />
-              <Button
-                color="danger"
-                size="sm"
-                onPress={() => {
-                  setBannerPicture(null);
-                }}
-              >
-                Remove Banner Picture
-              </Button>
-            </div>
-          )}
+              <Editor content={bio} setContent={setBio} />
+            </Vstack>
+          </Card>
 
-          <p>Primary Roles</p>
-          <p className="text-xs">Things you usually do</p>
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                variant="faded"
-              >
-                {primaryRoles.size > 0
-                  ? Array.from(primaryRoles)
-                      .map(
-                        (role) =>
-                          roles.find((findrole) => findrole.slug == role)
-                            ?.name || "Unknown"
-                      )
-                      .join(", ")
-                  : "No Roles"}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              selectionMode="multiple"
-              className="text-[#333] dark:text-white"
-              selectedKeys={primaryRoles}
-              onSelectionChange={(selection) => {
-                setPrimaryRoles(selection as Set<string>);
-              }}
-            >
-              {roles.map((primaryRole) => (
-                <DropdownItem
-                  key={primaryRole.slug}
-                  startContent={getIcon(primaryRole.icon)}
-                  description={primaryRole.description}
-                >
-                  {primaryRole.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+          <Card>
+            <Hstack>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.ProfilePicture.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.ProfilePicture.Description
+                  </Text>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
 
-          <p>Secondary Roles</p>
-          <p className="text-xs">Things you are capable of doing</p>
-          <Dropdown backdrop="opaque">
-            <DropdownTrigger>
-              <Button
-                size="sm"
-                className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                variant="faded"
-              >
-                {secondaryRoles.size > 0
-                  ? Array.from(secondaryRoles)
-                      .map(
-                        (role) =>
-                          roles.find((findrole) => findrole.slug == role)
-                            ?.name || "Unknown"
-                      )
-                      .join(", ")
-                  : "No Roles"}
-              </Button>
-            </DropdownTrigger>
-            <DropdownMenu
-              selectionMode="multiple"
-              className="text-[#333] dark:text-white"
-              selectedKeys={secondaryRoles}
-              onSelectionChange={(selection) => {
-                setSecondaryRoles(selection as Set<string>);
-              }}
-            >
-              {roles.map((secondaryRole) => (
-                <DropdownItem
-                  key={secondaryRole.slug}
-                  startContent={getIcon(secondaryRole.icon)}
-                  description={secondaryRole.description}
-                >
-                  {secondaryRole.name}
-                </DropdownItem>
-              ))}
-            </DropdownMenu>
-          </Dropdown>
+                    const formData = new FormData();
+                    formData.append("upload", file);
+
+                    try {
+                      const response = await fetch(
+                        process.env.NEXT_PUBLIC_MODE === "PROD"
+                          ? "https://d2jam.com/api/v1/image"
+                          : "http://localhost:3005/api/v1/image",
+                        {
+                          method: "POST",
+                          body: formData,
+                          headers: {
+                            authorization: `Bearer ${getCookie("token")}`,
+                          },
+                          credentials: "include",
+                        }
+                      );
+
+                      if (response.ok) {
+                        const data = await response.json();
+                        setProfilePicture(data.data);
+                        toast.success(data.message);
+                      } else {
+                        toast.error("Failed to upload image");
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      toast.error("Error uploading image");
+                    }
+                  }}
+                />
+              </Vstack>
+              {profilePicture && (
+                <Vstack>
+                  <Avatar src={profilePicture} />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setProfilePicture(null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </Vstack>
+              )}
+            </Hstack>
+          </Card>
+
+          <Card>
+            <Hstack>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.BannerPicture.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.BannerPicture.Description
+                  </Text>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append("upload", file);
+
+                    try {
+                      const response = await fetch(
+                        process.env.NEXT_PUBLIC_MODE === "PROD"
+                          ? "https://d2jam.com/api/v1/image"
+                          : "http://localhost:3005/api/v1/image",
+                        {
+                          method: "POST",
+                          body: formData,
+                          headers: {
+                            authorization: `Bearer ${getCookie("token")}`,
+                          },
+                          credentials: "include",
+                        }
+                      );
+
+                      if (response.ok) {
+                        const data = await response.json();
+                        setBannerPicture(data.data);
+                        toast.success(data.message);
+                      } else {
+                        toast.error("Failed to upload image");
+                      }
+                    } catch (error) {
+                      console.error(error);
+                      toast.error("Error uploading image");
+                    }
+                  }}
+                />
+              </Vstack>
+
+              {bannerPicture && (
+                <Vstack>
+                  <div className="bg-[#222222] h-28 w-full relative">
+                    <Image
+                      src={bannerPicture}
+                      alt={`${user.name}'s profile banner`}
+                      className="object-cover"
+                      fill
+                    />
+                  </div>
+                  <Spacer y={3} />
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setBannerPicture(null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </Vstack>
+              )}
+            </Hstack>
+          </Card>
+          <Hstack>
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.PrimaryRoles.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.PrimaryRoles.Description
+                  </Text>
+                </div>
+                <Dropdown backdrop="opaque">
+                  <DropdownTrigger>
+                    <Button size="sm">
+                      {primaryRoles.size > 0
+                        ? Array.from(primaryRoles)
+                            .map(
+                              (role) =>
+                                roles.find((findrole) => findrole.slug == role)
+                                  ?.name || "Unknown"
+                            )
+                            .join(", ")
+                        : "No Roles"}
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    selectionMode="multiple"
+                    className="text-[#333] dark:text-white"
+                    selectedKeys={primaryRoles}
+                    onSelectionChange={(selection) => {
+                      setPrimaryRoles(selection as Set<string>);
+                    }}
+                  >
+                    {roles.map((primaryRole) => (
+                      <DropdownItem
+                        key={primaryRole.slug}
+                        startContent={getIcon(primaryRole.icon)}
+                        description={primaryRole.description}
+                      >
+                        {primaryRole.name}
+                      </DropdownItem>
+                    ))}
+                  </DropdownMenu>
+                </Dropdown>
+              </Vstack>
+            </Card>
+
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Settings.SecondaryRoles.Title</Text>
+                  <Text color="textFaded" size="xs">
+                    Settings.SecondaryRoles.Description
+                  </Text>
+                </div>
+                <Dropdown backdrop="opaque">
+                  <DropdownTrigger>
+                    <Button size="sm">
+                      {secondaryRoles.size > 0
+                        ? Array.from(secondaryRoles)
+                            .map(
+                              (role) =>
+                                roles.find((findrole) => findrole.slug == role)
+                                  ?.name || "Unknown"
+                            )
+                            .join(", ")
+                        : "No Roles"}
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    selectionMode="multiple"
+                    className="text-[#333] dark:text-white"
+                    selectedKeys={secondaryRoles}
+                    onSelectionChange={(selection) => {
+                      setSecondaryRoles(selection as Set<string>);
+                    }}
+                  >
+                    {roles.map((secondaryRole) => (
+                      <DropdownItem
+                        key={secondaryRole.slug}
+                        startContent={getIcon(secondaryRole.icon)}
+                        description={secondaryRole.description}
+                      >
+                        {secondaryRole.name}
+                      </DropdownItem>
+                    ))}
+                  </DropdownMenu>
+                </Dropdown>
+              </Vstack>
+            </Card>
+          </Hstack>
 
           <div className="flex gap-2">
-            <Button color="primary" type="submit">
+            <Button type="submit">
               {waitingSave ? (
                 <LoaderCircle className="animate-spin" size={16} />
               ) : (
                 <p>Save</p>
               )}
             </Button>
-            <Button type="reset" variant="flat">
-              Reset
-            </Button>
+            <Button type="reset">Reset</Button>
           </div>
         </Form>
       )}

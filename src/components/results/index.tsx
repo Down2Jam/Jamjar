@@ -9,7 +9,7 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
 import { Image } from "@heroui/react";
-import { Award, Badge, Gamepad2, Layers, Sparkles, Swords } from "lucide-react";
+import { Award, Badge } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -140,14 +140,14 @@ export default function Results() {
           <Dropdown.Item
             value={"REGULAR"}
             description="The regular jam category"
-            icon={<Gamepad2 />}
+            icon="gamepad2"
           >
             Regular
           </Dropdown.Item>
           <Dropdown.Item
             value={"ODA"}
             description="1 Dev, No third party assets"
-            icon={<Swords />}
+            icon="swords"
           >
             One Dev Army (O.D.A)
           </Dropdown.Item>
@@ -164,14 +164,14 @@ export default function Results() {
             <Dropdown.Item
               value="MAJORITYCONTENT"
               description="Majority of art, audio, etc. made in the jam time"
-              icon={<Sparkles />}
+              icon="sparkles"
             >
               Majority Content
             </Dropdown.Item>
             <Dropdown.Item
               value="ALL"
               description="All art, audio regardless of when it was made"
-              icon={<Layers />}
+              icon="layers"
             >
               All
             </Dropdown.Item>

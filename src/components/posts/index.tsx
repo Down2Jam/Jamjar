@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
 import {
@@ -13,48 +13,20 @@ import {
   DrawerContent,
   DrawerFooter,
   DrawerHeader,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   Spacer,
   useDisclosure,
 } from "@heroui/react";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import {
-  Calendar,
-  Calendar1,
-  CalendarArrowDown,
-  CalendarCog,
-  CalendarDays,
-  CalendarFold,
-  CalendarRange,
-  Check,
-  Clock1,
-  Clock2,
-  Clock3,
-  Clock4,
-  ClockArrowDown,
-  ClockArrowUp,
-  LoaderCircle,
-  Maximize2,
-  MessageCircle,
-  Minimize2,
-  Sparkles,
-  Trophy,
-  Variable,
-  X,
-  ZoomOut,
-} from "lucide-react";
+import { Check, LoaderCircle, MessageCircle, X } from "lucide-react";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
 import { getTags } from "@/requests/tag";
 import { getSelf } from "@/requests/user";
 import { getPosts } from "@/requests/post";
-import { redirect, useRouter, useSearchParams } from "next/navigation";
-import { toast } from "react-toastify";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
@@ -65,6 +37,7 @@ import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
 import { Vstack } from "@/framework/Stack";
 import ThemedProse from "../themed-prose";
+import { IconName } from "@/framework/Icon";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -98,7 +71,7 @@ export default function Posts() {
       "all"
   );
   const [style, setStyle] = useState<PostStyle>(
-    (["cozy", "compact", "ultra", "adaptive"].includes(
+    (["cozy", "compact", "ultra"].includes(
       searchParams.get("style") as PostStyle
     ) &&
       (searchParams.get("style") as PostStyle)) ||
@@ -231,88 +204,88 @@ export default function Posts() {
 
   const sorts: Record<
     PostSort,
-    { name: string; icon: ReactNode; description: string }
+    { name: string; icon: IconName; description: string }
   > = {
     top: {
-      name: "Top",
-      icon: <Trophy />,
-      description: "Shows the most liked posts first",
+      name: "PostSort.Top.Title",
+      icon: "trophy",
+      description: "PostSort.Top.Description",
     },
     newest: {
-      name: "Newest",
-      icon: <ClockArrowUp />,
-      description: "Shows the newest posts first",
+      name: "PostSort.Newest.Title",
+      icon: "clockarrowup",
+      description: "PostSort.Newest.Description",
     },
     oldest: {
-      name: "Oldest",
-      icon: <ClockArrowDown />,
-      description: "Shows the oldest posts first",
+      name: "PostSort.Oldest.Title",
+      icon: "clockarrowdown",
+      description: "PostSort.Oldest.Description",
     },
   };
 
   const times: Record<
     PostTime,
-    { name: string; icon: ReactNode; description: string }
+    { name: string; icon: IconName; description: string }
   > = {
     hour: {
-      name: "Hour",
-      icon: <Clock1 />,
-      description: "Shows posts from the last hour",
+      name: "PostTime.Hour.Title",
+      icon: "clock1",
+      description: "PostTime.Hour.Description",
     },
     three_hours: {
-      name: "Three Hours",
-      icon: <Clock2 />,
-      description: "Shows posts from the last three hours",
+      name: "PostTime.ThreeHours.Title",
+      icon: "clock2",
+      description: "PostTime.ThreeHours.Description",
     },
     six_hours: {
-      name: "Six Hours",
-      icon: <Clock3 />,
-      description: "Shows posts from the last six hours",
+      name: "PostTime.SixHours.Title",
+      icon: "clock3",
+      description: "PostTime.SixHours.Description",
     },
     twelve_hours: {
-      name: "Twelve Hours",
-      icon: <Clock4 />,
-      description: "Shows posts from the last twelve hours",
+      name: "PostTime.TwelveHours.Title",
+      icon: "clock4",
+      description: "PostTime.TwelveHours.Description",
     },
     day: {
-      name: "Day",
-      icon: <Calendar />,
-      description: "Shows posts from the last day",
+      name: "PostTime.Day.Title",
+      icon: "calendar",
+      description: "PostTime.Day.Description",
     },
     week: {
-      name: "Week",
-      icon: <CalendarDays />,
-      description: "Shows posts from the last week",
+      name: "PostTime.Week.Title",
+      icon: "calendardays",
+      description: "PostTime.Week.Description",
     },
     month: {
-      name: "Month",
-      icon: <CalendarRange />,
-      description: "Shows posts from the last month",
+      name: "PostTime.Month.Title",
+      icon: "calendarrange",
+      description: "PostTime.Month.Description",
     },
     three_months: {
-      name: "Three Months",
-      icon: <CalendarFold />,
-      description: "Shows posts from the last three months",
+      name: "PostTime.ThreeMonths.Title",
+      icon: "calendarfold",
+      description: "PostTime.ThreeMonths.Description",
     },
     six_months: {
-      name: "Six Months",
-      icon: <CalendarCog />,
-      description: "Shows posts from the last six months",
+      name: "PostTime.SixMonths.Title",
+      icon: "calendarcog",
+      description: "PostTime.SixMonths.Description",
     },
     nine_months: {
-      name: "Nine Months",
-      icon: <CalendarArrowDown />,
-      description: "Shows posts from the last nine months",
+      name: "PostTime.NineMonths.Title",
+      icon: "calendararrowdown",
+      description: "PostTime.NineMonths.Description",
     },
     year: {
-      name: "Year",
-      icon: <Calendar1 />,
-      description: "Shows posts from the last year",
+      name: "PostTime.Year.Title",
+      icon: "calendar1",
+      description: "PostTime.Year.Description",
     },
     all: {
-      name: "All Time",
-      icon: <Sparkles />,
-      description: "Shows all posts",
+      name: "PostTime.All.Title",
+      icon: "sparkles",
+      description: "PostTime.All.Description",
     },
   };
 
@@ -374,98 +347,97 @@ export default function Posts() {
               </Dropdown.Item>
             ))}
           </Dropdown>
-          <Popover placement="bottom" showArrow backdrop="opaque">
-            <PopoverTrigger>
+          <Dropdown
+            trigger={
               <Button>
                 {tagRules && Object.keys(tagRules).length > 0
                   ? "Custom Tags"
                   : "All Tags"}
               </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className="p-4 max-w-[800px] max-h-[400px] overflow-y-scroll">
-                <p className="text-2xl">Tag Filtering</p>
-                {tags && Object.keys(tags).length > 0 ? (
-                  Object.keys(tags)
-                    .sort(
-                      (tag1, tag2) => tags[tag2].priority - tags[tag1].priority
-                    )
-                    .map((category: string) => (
-                      <div key={category} className="w-full">
-                        <p>{category}</p>
-                        <div className="flex gap-1 flex-wrap p-4 w-full">
-                          {tags[category].tags.map((tag) => (
-                            <Chip
-                              size="sm"
-                              variant="faded"
-                              avatar={
-                                tag.icon && (
-                                  <Avatar
-                                    src={tag.icon}
-                                    classNames={{ base: "bg-transparent" }}
-                                  />
-                                )
-                              }
-                              key={tag.id}
-                              onClick={() => {
-                                if (!tagRules) {
-                                  setTagRules({ [tag.id]: 1 });
-                                } else {
-                                  if (tag.id in tagRules) {
-                                    if (tagRules[tag.id] === 1) {
-                                      setTagRules({
-                                        ...tagRules,
-                                        [tag.id]: -1,
-                                      });
-                                    } else {
-                                      const updatedRules = { ...tagRules };
-                                      delete updatedRules[tag.id];
-                                      setTagRules(updatedRules);
-                                    }
+            }
+          >
+            <div className="p-4 max-w-[800px] max-h-[400px] overflow-y-scroll">
+              <p className="text-2xl">Tag Filtering</p>
+              {tags && Object.keys(tags).length > 0 ? (
+                Object.keys(tags)
+                  .sort(
+                    (tag1, tag2) => tags[tag2].priority - tags[tag1].priority
+                  )
+                  .map((category: string) => (
+                    <div key={category} className="w-full">
+                      <p>{category}</p>
+                      <div className="flex gap-1 flex-wrap p-4 w-full">
+                        {tags[category].tags.map((tag) => (
+                          <Chip
+                            size="sm"
+                            variant="faded"
+                            avatar={
+                              tag.icon && (
+                                <Avatar
+                                  src={tag.icon}
+                                  classNames={{ base: "bg-transparent" }}
+                                />
+                              )
+                            }
+                            key={tag.id}
+                            onClick={() => {
+                              if (!tagRules) {
+                                setTagRules({ [tag.id]: 1 });
+                              } else {
+                                if (tag.id in tagRules) {
+                                  if (tagRules[tag.id] === 1) {
+                                    setTagRules({
+                                      ...tagRules,
+                                      [tag.id]: -1,
+                                    });
                                   } else {
-                                    setTagRules({ ...tagRules, [tag.id]: 1 });
+                                    const updatedRules = { ...tagRules };
+                                    delete updatedRules[tag.id];
+                                    setTagRules(updatedRules);
                                   }
+                                } else {
+                                  setTagRules({ ...tagRules, [tag.id]: 1 });
                                 }
-                              }}
-                              className={`transition-all transform duration-500 ease-in-out cursor-pointer ${
-                                !reduceMotion ? "hover:scale-110" : ""
-                              }`}
-                              style={{
-                                color:
-                                  tagRules && tag.id in tagRules
-                                    ? tagRules[tag.id] === 1
-                                      ? siteTheme.colors["blue"]
-                                      : siteTheme.colors["orange"]
-                                    : "",
-                                borderColor:
-                                  tagRules && tag.id in tagRules
-                                    ? tagRules[tag.id] === 1
-                                      ? siteTheme.colors["blue"]
-                                      : siteTheme.colors["orange"]
-                                    : "",
-                              }}
-                              endContent={
-                                tagRules &&
-                                tag.id in tagRules &&
-                                (tagRules[tag.id] === 1 ? (
-                                  <Check size={16} />
-                                ) : (
-                                  <X size={16} />
-                                ))
                               }
-                            >
-                              {tag.name}
-                            </Chip>
-                          ))}
-                        </div>
+                            }}
+                            className={`transition-all transform duration-500 ease-in-out cursor-pointer ${
+                              !reduceMotion ? "hover:scale-110" : ""
+                            }`}
+                            style={{
+                              color:
+                                tagRules && tag.id in tagRules
+                                  ? tagRules[tag.id] === 1
+                                    ? siteTheme.colors["blue"]
+                                    : siteTheme.colors["orange"]
+                                  : "",
+                              borderColor:
+                                tagRules && tag.id in tagRules
+                                  ? tagRules[tag.id] === 1
+                                    ? siteTheme.colors["blue"]
+                                    : siteTheme.colors["orange"]
+                                  : "",
+                            }}
+                            endContent={
+                              tagRules &&
+                              tag.id in tagRules &&
+                              (tagRules[tag.id] === 1 ? (
+                                <Check size={16} />
+                              ) : (
+                                <X size={16} />
+                              ))
+                            }
+                          >
+                            {tag.name}
+                          </Chip>
+                        ))}
                       </div>
-                    ))
-                ) : (
-                  <p>No tags could be found</p>
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
+                    </div>
+                  ))
+              ) : (
+                <p>No tags could be found</p>
+              )}
+            </div>
+          </Dropdown>
         </div>
         <div>
           <Dropdown
@@ -479,31 +451,24 @@ export default function Posts() {
           >
             <Dropdown.Item
               value="cozy"
-              description="Large cards, displays all post content"
-              icon={<Maximize2 size={16} />}
+              description="PostStyle.Cozy.Description"
+              icon="maximize2"
             >
-              Cozy
+              PostStyle.Cozy.Title
             </Dropdown.Item>
             <Dropdown.Item
               value="compact"
-              description="Small cards to show more on screen at once"
-              icon={<ZoomOut size={16} />}
+              description="PostStyle.Compact.Description"
+              icon="zoomout"
             >
-              Compact
+              PostStyle.Compact.Title
             </Dropdown.Item>
             <Dropdown.Item
               value="ultra"
-              description="Very small cards"
-              icon={<Minimize2 size={16} />}
+              description="PostStyle.Ultra.Description"
+              icon="minimize2"
             >
-              Ultra Compact
-            </Dropdown.Item>
-            <Dropdown.Item
-              value="adaptive"
-              description="Cozy but posts you have read start minimized"
-              icon={<Variable size={16} />}
-            >
-              Adaptive
+              PostStyle.Ultra.Title
             </Dropdown.Item>
           </Dropdown>
         </div>
@@ -616,52 +581,22 @@ export default function Posts() {
                     </Tooltip>
                     <div className="w-full flex justify-start gap-2">
                       <Button
-                        className="font-medium text-small text-default-500"
-                        size="sm"
-                        leftIcon={
-                          <svg
-                            height="16"
-                            viewBox="0 0 16 16"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M3.85.75c-.908 0-1.702.328-2.265.933-.558.599-.835 1.41-.835 2.29V7.88c0 .801.23 1.548.697 2.129.472.587 1.15.96 1.951 1.06a.75.75 0 1 0 .185-1.489c-.435-.054-.752-.243-.967-.51-.219-.273-.366-.673-.366-1.19V3.973c0-.568.176-.993.433-1.268.25-.27.632-.455 1.167-.455h4.146c.479 0 .828.146 1.071.359.246.215.43.54.497.979a.75.75 0 0 0 1.483-.23c-.115-.739-.447-1.4-.99-1.877C9.51 1 8.796.75 7.996.75zM7.9 4.828c-.908 0-1.702.326-2.265.93-.558.6-.835 1.41-.835 2.29v3.905c0 .879.275 1.69.833 2.289.563.605 1.357.931 2.267.931h4.144c.91 0 1.705-.326 2.268-.931.558-.599.833-1.41.833-2.289V8.048c0-.879-.275-1.69-.833-2.289-.563-.605-1.357-.931-2.267-.931zm-1.6 3.22c0-.568.176-.992.432-1.266.25-.27.632-.454 1.168-.454h4.145c.54 0 .92.185 1.17.453.255.274.43.698.43 1.267v3.905c0 .569-.175.993-.43 1.267-.25.268-.631.453-1.17.453H7.898c-.54 0-.92-.185-1.17-.453-.255-.274-.43-.698-.43-1.267z"
-                              fill="currentColor"
-                              fillRule="evenodd"
-                            />
-                          </svg>
-                        }
+                        icon="link"
                         onClick={() => {
                           navigator.clipboard.writeText(
                             `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
                           );
-                          toast.success("Copied Link");
+                          addToast({
+                            title: "Copied Link",
+                          });
                         }}
                       >
                         Copy Link
                       </Button>
                       <Button
-                        className="font-medium text-small"
-                        rightIcon={
-                          <svg
-                            fill="none"
-                            height="16"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="M7 17 17 7M7 7h10v10" />
-                          </svg>
-                        }
+                        icon="arrowupright"
                         size="sm"
-                        onClick={() => {
-                          redirect(`/p/${posts[currentPost].slug}`);
-                        }}
+                        href={`/p/${posts[currentPost].slug}`}
                       >
                         Post Page
                       </Button>
@@ -697,21 +632,8 @@ export default function Posts() {
                           onClick={() => {
                             setCurrentPost(currentPost + 1);
                           }}
-                        >
-                          <svg
-                            fill="none"
-                            height="16"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="m6 9 6 6 6-6" />
-                          </svg>
-                        </Button>
+                          icon="chevrondown"
+                        ></Button>
                       </Tooltip>
                     </div>
                   </DrawerHeader>

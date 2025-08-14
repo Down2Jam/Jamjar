@@ -1,5 +1,6 @@
 "use client";
 
+import Text from "@/framework/Text";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { TimerIcon } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -69,7 +70,7 @@ export default function Timer({
             color: siteTheme.colors["textFaded"],
           }}
         />
-        <p>{name}</p>
+        <Text>{name}</Text>
         <p
           style={{
             color: siteTheme.colors["blue"],

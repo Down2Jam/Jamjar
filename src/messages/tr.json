@@ -5,7 +5,8 @@
     "Join": "Katıl",
     "About": "Hakkında",
     "Why": "Neden jam yaparız?",
-    "Logo": "Down2Jam logosu"
+    "Logo": "Down2Jam logosu",
+    "Explore": "Keşfet"
   },
   "Navbar": {
     "Games": {
@@ -113,5 +114,433 @@
       "Title": "Müzik",
       "Description": "Web sitesine gönderilen tüm müzikler"
     }
+  },
+  "PostStyle": {
+    "Cozy": {
+      "Title": "Rahat",
+      "Description": "Geniş kartlar, bütün gönderi içeriğini gösterir"
+    },
+    "Compact": {
+      "Title": "Kompakt",
+      "Description": "Ekranda daha çok kart göstermek için kartlar küçülür"
+    },
+    "Ultra": {
+      "Title": "Ekstra Kompakt",
+      "Description": "Maksimum kompaktlık için küçücük kartlar"
+    }
+  },
+  "PostSort": {
+    "Top": {
+      "Title": "Beğeni",
+      "Description": "En çok beğeni almış postlar önce gösterilir"
+    },
+    "Newest": {
+      "Title": "En Yeni",
+      "Description": "En yeni gönderiler önce gösterilir."
+    },
+    "Oldest": {
+      "Title": "En Eski",
+      "Description": "En eski gönderiler önce gösterilir"
+    }
+  },
+  "PostTime": {
+    "Hour": {
+      "Title": "Saat",
+      "Description": "Son 1 saatten gönderileri gösterir"
+    },
+    "ThreeHours": {
+      "Title": "Üç Saat",
+      "Description": "Son 3 saatten gönderileri gösterir"
+    },
+    "SixHours": {
+      "Title": "Altı Saat",
+      "Description": "Son 6 saatten gönderileri gösterir"
+    },
+    "TwelveHours": {
+      "Title": "On İki Saat",
+      "Description": "Son 12 saatten gönderileri gösterir"
+    },
+    "Day": {
+      "Title": "Gün",
+      "Description": "Son günün gönderilerini gösterir"
+    },
+    "Week": {
+      "Title": "Hafta",
+      "Description": "Son haftanın gönderilerini gösterir"
+    },
+    "Month": {
+      "Title": "Ay",
+      "Description": "Son ayın gönderilerini gösterir"
+    },
+    "ThreeMonths": {
+      "Title": "Üç Ay",
+      "Description": "Son 3 ayın gönderilerini gösterir"
+    },
+    "SixMonths": {
+      "Title": "Altı Ay",
+      "Description": "Son 6 ayın gönderilerini gösterir"
+    },
+    "NineMonths": {
+      "Title": "Dokuz Ay",
+      "Description": "Son 9 ayın gönderilerini gösterir"
+    },
+    "Year": {
+      "Title": "Yıl",
+      "Description": "Son 1 yılın gönderilerini gösterir"
+    },
+    "All": {
+      "Title": "Tüm Zamanlar",
+      "Description": "Bütün gönderileri gösterir"
+    }
+  },
+  "Settings": {
+    "Name": {
+      "Title": "İsim",
+      "Description": "Sitede gösterilen isminiz"
+    },
+    "Email": {
+      "Title": "Eposta",
+      "Description": "Hesabınıza bağlı eposta (şifre yenileme, bildirim vb. için)",
+      "Show": "Eposta Göster",
+      "Hide": "Eposta Gizle"
+    },
+    "Short": {
+      "Title": "Kısa",
+      "Description": "Arama kısmı gibi yerlerde çıkan kısa açıklama"
+    },
+    "Bio": {
+      "Title": "Bio",
+      "Description": "Profil sayfanızda gözüken daha uzun açıklama"
+    },
+    "ProfilePicture": {
+      "Title": "Profil Resmi",
+      "Description": "Sizi web sitesinde temsil eden resim ( genelde isminizin yanında çıkar)"
+    },
+    "BannerPicture": {
+      "Title": "Afiş Resmi",
+      "Description": "Profil sayfanızın üstünde ve arama sonucunuzun arkaplanında gösterilen resim"
+    },
+    "PrimaryRoles": {
+      "Title": "Öncelikli Roller",
+      "Description": "Bir jam takımında öncelikli olarak aldığınız roller"
+    },
+    "SecondaryRoles": {
+      "Title": "İkincil Roller",
+      "Description": "Yeteneğinizin olduğu işler (ya da öncelikli rolünüzü gerçekleştiremeyecekseniz tercih ettiğiniz şeyler)"
+    },
+    "Save": {
+      "Title": "Kaydet",
+      "Description": "Ayarlardaki değişiklikleri kaydedin"
+    },
+    "Reset": {
+      "Title": "Sıfırla",
+      "Description": "Ayarlarınızı son kayda sıfırlayın (yapılan değişiklikleri sıfırla)"
+    }
+  },
+  "Markdown": {
+    "Characters": "karakter",
+    "Words": "kelime",
+    "Bold": {
+      "Title": "Kalın",
+      "Description": "Yazıyı daha koyu ve kalın yapar (kelimelere dikkat çekmek için kullanılır)"
+    },
+    "Italic": {
+      "Title": "İtalik",
+      "Description": "Yazıyı sağa doğru yatırır"
+    },
+    "Highlight": {
+      "Title": "Vurgula",
+      "Description": "Yazının arkaplanına renk vererek vurgular"
+    },
+    "Strikethrough": {
+      "Title": "Üstü Çizili",
+      "Description": "Sanki silinmişçesine yazının üstüne çizgi çeker"
+    },
+    "Subscript": {
+      "Title": "Alt Simge",
+      "Description": "Bir yazının azıcık altında başka bir yazı gösterir (formüller ve dipnotlar için kullanılır)"
+    },
+    "Superscript": {
+      "Title": "Üst Simge",
+      "Description": "Bir yazının azıcık üstüne başka bir yazı gösterir (üslü sayılar, göstergeler ve referanslarda kullanılır)"
+    },
+    "Link": {
+      "Title": "Bağlantı",
+      "Description": "Başka bir sayfaya bağlantı oluştur"
+    },
+    "Image": {
+      "Title": "Resim",
+      "Description": "İçeriğe bir resim ekle"
+    },
+    "HorizontalRule": {
+      "Title": "Yatay Ayraç",
+      "Description": "Yatay bir çizgi ekle"
+    },
+    "Quote": {
+      "Title": "Alıntı",
+      "Description": "Bir alıntı bloğu ekle"
+    },
+    "CodeBlock": {
+      "Title": "Kod Bloğu",
+      "Description": "Kod bloğu ekleyerek kodu renklendir ve stilize et"
+    },
+    "AlignLeft": {
+      "Title": "Sola Hizala",
+      "Description": "Yazıyı sola hizala"
+    },
+    "AlignCenter": {
+      "Title": "Ortaya Hizala",
+      "Description": "Yazıyı ortaya hizala"
+    },
+    "AlignRight": {
+      "Title": "Sağa Hizala",
+      "Description": "Yazıyı sağa hizala"
+    },
+    "Justify": {
+      "Title": "Yasla",
+      "Description": "Kenarlar yaslanacak şekilde yazıyı genişlet"
+    },
+    "Undo": {
+      "Title": "Geri Al",
+      "Description": "Son yapılanı geri al"
+    },
+    "Redo": {
+      "Title": "Tekrar Et",
+      "Description": "Geri alınanı tekrar et"
+    }
+  },
+  "GameSort": {
+    "Random": {
+      "Title": "Rasgele",
+      "Description": "Oyunları rasgele bir sırada göster"
+    },
+    "LeastRatings": {
+      "Title": "En Düşük Derece",
+      "Description": "Oyunları en düşükleri önceleyerek göster"
+    },
+    "Danger": {
+      "Title": "Tehlike",
+      "Description": "Derecelendirmeye girmeye yakın oyunları göster"
+    }
+  },
+  "Games": {
+    "Title": "Oyunlar",
+    "Description": "Siteye yüklenmiş oyun koleksiyonunu keşfet"
+  },
+  "About": {
+    "Title": "Etkinlik Hakkında",
+    "Description": "D2Jam, topluluk odaklı bir game jam etkinliğidir ve topluluk tarafından oluşturulan şeyleri desteklemeye özellikle önem verir! Biz, jam sonrası etkinliklerin kutlandığı, tartışmanın ve düşünmenin teşvik edildiği ve geliştiricilerin oyun bulup paylaşmaları için araçlar sunan bir jam yapmak istedik.\r\n\r\nD2Jam, herkesin katılmakta özgür olduğu ve 3 gün süren (zaman dilimlerine göre Cuma ile Pazartesi arasında değişen) çevrim içi bir game jam'dir. Jam’in sonunda, oyununuzu tamamlayıp gönderebilmeniz için 2 saatlik ek bir gönderim penceresi bulunur. Jam bittikten sonra katılımcıların oyunları oynayıp değerlendirebileceği ve geri bildirim verebileceği 2 haftalık bir oylama dönemi başlar. Ayrıca Score Chasers turnuvası gibi gönderim sonrası tüm etkinlikler de bu dönemde gerçekleşir.\r\n\r\n2 kategorimiz var: Regular (Normal) ve O.D.A (One Dev Army - Tek Geliştirici Ordusu). Her ikisi de aynı anda gerçekleşir."
+  },
+  "GameFAQ": {
+    "Title": "Oyun S.S.S",
+    "Description": "Jam'e oyun yaratma ve yükleme hakkında sorualr",
+    "Q1": {
+      "Number": "S1",
+      "Question": "Oyunu ne kadar sürede yapmam gerekiyor?",
+      "Answer": "3 Gün. Cuma'dan Pazartesi'ye ( zaman dilimine göre değişiklik gösterebilir)"
+    },
+    "Q2": {
+      "Number": "S2",
+      "Question": "Hazır kod veya asset(sanat,grafik, müzik, ses efekti, vb...) kullanabilir miyim?",
+      "Answer": "Regular: Evet! Yani, oyunun ana deneyimi jam süresi içinde yapıldığı sürece bir sıkıntı yok.\n\nO.D.A: Genel olarak hayır. Bu kategori oyunu sıfırdan yaratmanız için düzenlenmiştir. Ancak, şu kategorilerdeki önceden yaratılmış asset'ler kabul edilir:\nFont'lar, kod (oyun motoru, shader'lar, vb...) ve logolar.\nBu daha önceden yaratılmış sanat, müzik ve ses efekti kullanamayacağınız anlamına geliyor.\nEk olarak, oyunun ana deneyimi verilen sürede yapılmış olmalıdır."
+    },
+    "Q3": {
+      "Number": "S3",
+      "Question": "Oyunu yaparken üretken Yapay Zeka kullanabilir miyim?",
+      "Answer": "Hayır. Herhangi bir üretken Yapay Zeka kullanımı yasaktır."
+    },
+    "Q4": {
+      "Number": "S4",
+      "Question": "Oyunumu nasıl yüklerim?",
+      "Answer": "Oyununuzu Itch.io gibi bir siteye yükleyerek oyun dosyalarını barındırabilirsiniz. Daha sonra d2jam sitesinde bir oyun sayfası yaratın(Oyun Yarat tuşuna basarak) ve buradan dosyaları barındırdığınız sayfaya bir bağlantı oluşturun.\n\nİnsanların sizin oyununuzu puanlayıp yorum atabilmesi için d2jam sitesinde bir oyun sayfanız olması gerekiyor.\nEğer ileride bağışlarla yeterince destek alırsak dosya barındırma işini de direkt sitemize taşımayı planlıyoruz."
+    },
+    "Q5": {
+      "Number": "S5",
+      "Question": "Oyunumu yükledikten sonra güncelleyebilir miyim?",
+      "Answer": "Oyunu oynanamaz hale getiren ve bozan hataları düzeltebilirsiniz. Oyunun başka platformlara(linux,mac) portlama işini de daha sonra yapabilirsiniz.\nBiz oyunlarınızın oynanabilir olmasını ve katıldığınız etkinlikten zevk almanızı istiyoruz, bu yüzden 3 gün uğraşıp hiç çalışmayan bir oyunla ortada kalmanızı istemiyoruz. \n\nEğer oyununuza yeni özellikler eklemek istiyorsanız, bunları net bir şekilde sayfanıza changelog ekleyerek belirtip ekstra bir \"post jam versiyonu\" yükleyin.\nİnsanlar iki versionu da deneyerek sizi değerlendirecektir.\nAyrıca jampack adlı uygulamayı kullanarak tek sayfada iki versiyon gösterebilirsiniz."
+    },
+    "Q6": {
+      "Number": "S6",
+      "Question": "Eğer oyunumu jam bittiğinde yükleyemezsem ne olur?",
+      "Answer": "Jam bittikten sonra 2 saatlik bir penceremiz var. Son dakika build yaratırken sıkıntı yaşayan katılımcılar için düşündüğümüz bir pencere bu.\nBu süre oyuna yeni şeyler eklemenizdense, oyunu çalışır hale getirmek ve bir yere yükleyebilmeniz için verilen bir süredir."
+    },
+    "Q7": {
+      "Number": "S7",
+      "Question": "Oyun sayfasını oylama sırasında değiştirebilir miyim?",
+      "Answer": "Evet, oyun sayfanızı değiştirebilir, trailer veya resim gibi materyaller ekleyebilirsiniz. \nBu işi ne kadar erken yaparsanız diğer insanların daha düzgün bir sayfayla karşılaşma ihtimalini artırırsınız."
+    },
+    "Q8": {
+      "Number": "S8",
+      "Question": "Oyun içerikleri konusunda bir kısıtlama var mıdır?(NSFW, aşırı vahşet,vb...)",
+      "Answer": "Oyununuz NSFW gibi içeriklere sahipse oyunu bu şekilde işaretlemeniz gerekir. \nBöylece başkaları bu oyunları görmek istemiyorsa oyun onlara gösterilmez."
+    },
+    "Q9": {
+      "Number": "S9",
+      "Question": "Oyunum hangi işletim sistemlerinde çalışmalıdır?",
+      "Answer": "Hangi işletim sistemini istiyorsan onda çalışmalıdır. Ancak bilmelisiniz ki, ne kadar çok işletim sistemi destekleyebilirseniz o kadar insan oyununuzu oynayabilir.\nWindows'u desteklemenin yanı sıra bir Web Build'e sahip olmanız en geniş kitleye ulaşabilmenizi sağlar."
+    },
+    "Q10": {
+      "Number": "S10",
+      "Question": "Hangi oyun motorunu veya framework'ü kullanabilmemiz konusunda bir kısıtlama var mıdır?",
+      "Answer": "Kullanıcılar oyunun sadece kendisini indirmesi gerektiği sürece istediğiniz oyun motorunda oyunu yapabilirsiniz.\nÖrnek olarak bir Roblox oyunu Roblox indirmenizi gerektireceği için bu oyun geçerli olmayacaktır."
+    }
+  },
+  "RatingsFAQ": {
+    "Title": "Oylama S.S.S",
+    "Description": "Jam'in oylama süreci hakkında sorular",
+    "Q1": {
+      "Number": "S1",
+      "Question": "Oyunlar nasıl oylanır?",
+      "Answer": "Oyunlar diğer katılımcılar tarafından şu kategorilerde değerlendirilir:\n\n-GENEL: Oyunun genel değerlendirmesi, tüm kategorilerin ne kadar iyi bir araya geldiği.\r\n- OYNANIŞ: Oyunu oynarken ne kadar eğlendiğiniz ve mekaniklerin ne kadar tatmin edici olduğu.\r\n- SES: Oyunun ses kalitesi veya ses tasarımının ne kadar etkili olduğu.\r\n- GRAFİK: Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu.\r\n- YARATICILIK: Benzersizlik, özgünlük, yenilik ve sürpriz unsuru.\r\n- DUYGUSAL AKTARIM: Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı.\r\n- TEMA: Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı."
+    },
+    "Q2": {
+      "Number": "S2",
+      "Question": "Herhangi bir kategoride oy almaktan çekilebilir miyim?",
+      "Answer": "Sadece \"Genel\" ve \"Tema\" kategorileri otomatik olarak seçili başlar.\nOyunu yaratırken yarışmak istediğiniz diğer kategorileri seçerek eklemeniz gerekir."
+    },
+    "Q3": {
+      "Number": "S3",
+      "Question": "Jam'e katılmamış kişiler oyunları oylayabilir mi?",
+      "Answer": "Evet ama bu oylar oyunun derecelendirmesine yansımaz.\nBu oylarla birlikte tüm oyların derecesi ayrı gösterilir."
+    },
+    "Q4": {
+      "Number": "S4",
+      "Question": "Derecelendirmeler nedir?",
+      "Answer": "Oylama süreci sonunda oyunlar her bir kategori altında oylarına bakılarak derecelendirilir.\nMesela Tema kategorisinde en yüksek puanı almış oyun o kategorinin birincisi olacaktır."
+    },
+    "Q5": {
+      "Number": "S5",
+      "Question": "Derecelendirmeye girebilmek için oyunumun kaç oy alması gerekiyor?",
+      "Answer": "Şu anki jam için en az 5 oyun oylayıp, oyununuzun da en az 5 oy alması gerekmektedir.\nBu yaklaşım, sadece 1 kişi tarafından oylanan bir oyunun jam'i kazanmasını engeller."
+    },
+    "Q6": {
+      "Number": "S6",
+      "Question": "Jam'in bir ödülü var mıdır?",
+      "Answer": "Ödül, bir oyun yapabilmiş ve yayınlamış olmanızdır. \nHerhangi bir para ödülü bulunmamaktadır. Böylece jam'de birbirini yenmeye çalışma yerine daha çok topluluk hissiyatı olur."
+    }
+  },
+  "StreamsFAQ": {
+    "Title": "Yayınlar S.S.S",
+    "Description": "Canlı yayınlar hakkında sorular",
+    "Q1": {
+      "Number": "S1",
+      "Question": "Jam sırasında canlı yayın açabilir miyim?",
+      "Answer": "Evet jam sırasında jam hakkında herhangi bir şey için canlı yayın açabilirsiniz.\nÖrnek olarak; oyunu yaparken yayın açmak veya başkalarının oyununu oynamak."
+    },
+    "Q2": {
+      "Number": "S3",
+      "Question": "Yandaki \"öne çıkan yayıncılar\" kısmında nasıl gözükürüm?",
+      "Answer": "Burada 3 öncelik aşaması bulunur. En yüksek önceliğe sahipseniz diğer yayıncılardan önde gösterilirsiniz.\nAynı önceliğe sahip yayınlar arasında rasgele seçim yapılır. Youtube bir API sağlamadığı için şimdilik sadece Twitch yayınlarını çekebiliyoruz.\n\nEn düşük öncelik yayının Twitch'te herhangi bir Yazılım ve Oyun Geliştirme yayını olmasıdır.\nOrta öncelik ise yayıncının s2jam sayfasında yayıncı olarak işaretlenmiş olmasıdır(yayıncının d2jam web sitesinde bir hesabı olmalı). En yüksek öncelik ise yayının #d2jam tag'ine sahip olmasıdır.\n\nSadece aşağıdaki kategorilerdeki yayınlar dikkate alınır:\nYazılım ve Oyun Geliştirme, Sanat, Ortak Çalışma ve Ders Çalışma, Games + Demos"
+    },
+    "Q3": {
+      "Number": "S3",
+      "Question": "Web sitesinde nasıl yayıncı olarak işaretlenirim?",
+      "Answer": "Şimdilik Ategon'a d2jam kullanıcı adınızı ve twitch hesabınızı bildirin."
+    },
+    "Q4": {
+      "Number": "S4",
+      "Question": "İnsanlara yayınımı nasıl bildirebilirim?",
+      "Answer": "Gelecek etkinlikler ve aktif etkinlikler için sitenin özel bir bölümü bulunmaktadır.\nEğer sitede işaretlenmiş bir yayıncıysanız, etkinlikler sayfasına gidip yeni bir etkinlik ekleyebilirsiniz.\nEtkinlikler sitenin sağ tarafında yer alır."
+    }
+  },
+  "MetaFAQ": {
+    "Title": "Meta S.S.S",
+    "Description": "Jam'in organizasyonu hakkında sorular",
+    "Q1": {
+      "Number": "S1",
+      "Question": "Jam'i kim organize ediyor?",
+      "Answer": "Jam her şeyin düzgün yürütülebilmesi için 11 kişlilik bir öncü grup tarafından organize ediliyor.\nTopluluğun Jam'in nasıl işleyeceğine düzgün etki edebilmesi için kararlar alınırken genelde topluluğa sorularak hareket edilir. Herhangi biri jam için turnuva, keynote vebazı etkinlikler düzenleyebilir.\nÇekirdek 11 kişi şöyledir:\nAtegon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, ve Tobugis."
+    },
+    "Q2": {
+      "Number": "S2",
+      "Question": "Sunucular nerededir?",
+      "Answer": "Sunucularımız Kanada'dadır. İleride ekleyeceğimiz eposta servisleri, DNS, vebazı özelliklerin de Kanada'da olması muhtemeldir."
+    },
+    "Q3": {
+      "Number": "S3",
+      "Question": "Jam'e nasıl bağış yaparım",
+      "Answer": "Henüz jam'e bağış yapmanız mümkün değildir ama ileride Bağış sayfamızı açacağız."
+    },
+    "Q4": {
+      "Number": "S4",
+      "Question": "Sitenin koduna nasıl yardım edebilirim?",
+      "Answer": "Websitesi şu anda açık kaynak kodlu ve github'da kodlarımız ulaşılır haldedir. Jamcore sitenin backend'i, jamjar ise frontend'idir. Her iki repo'da da lokal olarak sitenin nasıl kurulacağına dair direktifler mevcuttur.\nHerhangi bir sorunuz olursa discord'da #site-development kanalına sorabilirsiniz."
+    },
+    "Q5": {
+      "Number": "S5",
+      "Question": "Hataları nereye rapor edebilirim?",
+      "Answer": "Siteye bir hata bildirimi desteği getirene kadar şimdilik hataları kod repo'larımıza bildirebilirsiniz.\nAlakalı repository'e gidip Issues kısmından yeni bir hata bildirimi ekleyebilirsiniz."
+    },
+    "Q6": {
+      "Number": "S6",
+      "Question": "Jam ne kadar sıklıkla gerçekleşiyor?",
+      "Answer": "Jam senede iki kez, çoğunlukla birbirinden 6 ay arayla gerçekleşir."
+    }
+  },
+  "Phases": {
+    "ThemeSubmission": {
+      "Title": "Tema Gönderimi",
+      "Description": "Potansiyel tema gönderim süreci"
+    },
+    "ThemeElimination": {
+      "Title": "Tema Eliminasyonu",
+      "Description": "Gönderilen jam temalarına bakıp evet veya hayır diye oylama süreci"
+    },
+    "ThemeVoting": {
+      "Title": "Tema Oylaması",
+      "Description": "En çok oy alan temaların seçildiği bir listede tek temaya indirmek için oylama süreci"
+    },
+    "GameJam": {
+      "Title": "Game Jam",
+      "Description": "Asıl etkinlik! Kısa bir zamanda oyun çıkarma süreci"
+    },
+    "Rating": {
+      "Title": "Oyun Oylaması",
+      "Description": "Diğer katılımcıların oyunlarını oynayıp onlara yorum atma süreci"
+    },
+    "Results": {
+      "Title": "Sonuçlar",
+      "Description": "Diğer oyunların sonuçlarını ve senin oyununun derecesini gör"
+    },
+    "PostRating": {
+      "Title": "Jam Sonrası Oylama Süreci",
+      "Description": "Diğer katılımcıların post jam versiyonlarını oynayıp yorum atma süreci"
+    },
+    "PostResults": {
+      "Title": "Post Jam Sonuçları",
+      "Description": "Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma"
+    }
+  },
+  "JamHeader": {
+    "Suggestions": "Tema Gönderimi'ne Git",
+    "Elimination": "Tema Eliminasyonu'na Git",
+    "Voting": "Tema Oylaması'na Git",
+    "JamSoon": "Jam başlarken tema görünür olacaktır",
+    "NoTheme": "Seçilebilmiş bir tema yoktur",
+    "Submissions": "Gönderimler yakında kapanıyor",
+    "Rate": "Hadi oyunları oylayın!"
+  },
+  "Stats": {
+    "Timer": "Jam başlama zamanı:",
+    "Entrants": "Katılımcılar",
+    "Games": "Oyunlar",
+    "Ratings": "Oylamalar"
+  },
+  "SidebarGames": {
+    "Title": "Öne Çıkan Oyunlar",
+    "Link": "Oyunlar Sayfası'na Git"
+  },
+  "SidebarMusic": {
+    "Title": "Öne Çıkan Müzikler",
+    "Link": "Müzik Sayfası'na Git"
+  },
+  "SidebarEvents": {
+    "Active": {
+      "Title": "Aktif Etkinlikler"
+    },
+    "Upcoming": {
+      "Title": "Gelecek Etkinlikler"
+    },
+    "Link": "Etkinlikler Sayfası'na Git"
   }
 }

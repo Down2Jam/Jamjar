@@ -40,7 +40,7 @@ export default function Timers() {
           }}
         >
           <Timer
-            name="Jam starts in"
+            name="Stats.Timer"
             targetDate={new Date(activeJamResponse.jam.startTime)}
           />
         </div>

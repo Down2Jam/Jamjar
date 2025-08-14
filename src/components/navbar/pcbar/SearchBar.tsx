@@ -132,7 +132,7 @@ export default function SearchBar() {
               <ModalBody className="py-4">
                 <Input
                   ref={inputRef}
-                  placeholder="Search"
+                  placeholder={t("Search")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   classNames={{

@@ -14,6 +14,101 @@ import {
   getThemeSuggestions,
   postThemeSuggestion,
 } from "@/requests/theme";
+import { Card } from "@/framework/Card";
+import Text from "@/framework/Text";
+import { Hstack, Vstack } from "@/framework/Stack";
+import { Button } from "@/framework/Button";
+import { Input } from "@/framework/Input";
+import Icon from "@/framework/Icon";
+
+const bannedThemes = [
+  "pgorley",
+  "depths",
+  "tinycreatures",
+  "summoning",
+  "limitedspace",
+  "delivery",
+  "harvest",
+  "every10seconds",
+  "everytenseconds",
+  "delaytheinevitable",
+  "unstable",
+  "deeperanddeeper",
+  "stuckinaloop",
+  "keepitalive",
+  "startwithnothing",
+  "yourlifeiscurrency",
+  "sacrificesmustbemade",
+  "runningoutofspace",
+  "combinetwoincompatiblegenres",
+  "themoreyouhavetheworseitis",
+  "runningoutofpower",
+  "asmallworld",
+  "oneroom",
+  "ancienttechnology",
+  "shapeshift",
+  "growing",
+  "twobuttoncontrols",
+  "youarethemonster",
+  "genrewithoutmechanic",
+  "onlyone",
+  "outofcontrol",
+  "joinedtogether",
+  "rollofthedice",
+  "rolesreversed",
+  "builttoscale",
+  "loop",
+  "train",
+  "trains",
+  "whatdowedonow",
+  "ritual",
+  "waves",
+  "transmission",
+  "whathomemeanstoyou",
+  "repair",
+  "lostandfound",
+  "duality",
+  "roots",
+  "makemelaugh",
+  "bubble",
+  "gravity",
+  "inaloop",
+  "floatingislands",
+  "labyrinth",
+  "river",
+  "islands",
+  "books",
+  "fungi",
+  "robots",
+  "caves",
+  "ancientruins",
+  "maps",
+  "chaos",
+  "ships",
+  "nothingcangowrong",
+  "calmbeforethestorm",
+  "whatsbehindthedoor",
+  "divingdeeper",
+  "anendisanewbeginning",
+  "yourenotalone",
+  "itisnotreal",
+  "lettherebechaos",
+  "strongertogether",
+  "rewind",
+  "holes",
+  "loveisblind",
+  "light",
+  "onlyone",
+  "youaretheweapon",
+  "shadowsandalchemy",
+  "cliche",
+  "cliché",
+  "scale",
+  "spin",
+  "bug",
+  "power",
+  "thegameisaliar",
+];
 
 export default function ThemeSuggestions() {
   const [suggestion, setSuggestion] = useState("");
@@ -75,6 +170,14 @@ export default function ThemeSuggestions() {
 
     if (!suggestion.trim()) {
       setErrorMessage("Suggestion cannot be empty.");
+      setLoading(false);
+      return;
+    }
+
+    if (bannedThemes.includes(suggestion.toLowerCase().replaceAll(/\W/g, ""))) {
+      setErrorMessage(
+        "That suggestion cannot be used (it likely has been used recently for another jam)."
+      );
       setLoading(false);
       return;
     }
@@ -143,32 +246,40 @@ export default function ThemeSuggestions() {
 
   if (!token) {
     return (
-      <div className="text-[#333] dark:text-white">
-        Sign in to be able to suggest themes
-      </div>
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack align="start">
+            <Text>Sign in to be able to suggest themes</Text>
+            <Hstack>
+              <Button href="/signup">Sign up</Button>
+              <Button href="/login">Login</Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+      </Vstack>
     );
   }
 
   if (!hasJoined) {
     return (
-      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+      <Card>
+        <Text size="2xl" weight="bold">
           Join the Jam First
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
+        </Text>
+        <Text color="textFaded">
           You need to join the current jam before you can suggest themes.
-        </p>
-        <button
+        </Text>
+        <Button
           onClick={() => {
             if (activeJamResponse?.jam?.id !== undefined) {
               joinJam(activeJamResponse.jam.id);
             }
           }}
-          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          color="blue"
         >
           Join Jam
-        </button>
-      </div>
+        </Button>
+      </Card>
     );
   }
 
@@ -189,76 +300,91 @@ export default function ThemeSuggestions() {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-        Submit Your Theme Suggestion
-      </h2>
+    <Card className="max-w-md mx-auto mt-8">
+      <Vstack align="stretch">
+        <Text weight="bold" size="xl">
+          Submit Your Theme Suggestion
+        </Text>
 
-      {/* Hide form if user has reached their limit */}
-      {userSuggestions.length < themeLimit ? (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <textarea
-            className="w-full p-3 border rounded-lg focus:outline-none text-gray-600 focus:ring focus:ring-blue-300 dark:bg-gray-700 dark:text-white"
-            placeholder="Enter your theme suggestion..."
-            value={suggestion}
-            onChange={(e) => {
-              if (e.target.value.length <= 32) {
-                setSuggestion(e.target.value);
-              }
-            }}
-            rows={1}
-            maxLength={32}
-          ></textarea>
-          {errorMessage && (
-            <p className="text-red-500 text-sm">{errorMessage}</p>
-          )}
-          {successMessage && (
-            <p className="text-green-500 text-sm">{successMessage}</p>
-          )}
-          <button
-            type="submit"
-            className={`w-full py-2 px-4 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 ${
-              loading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Submitting..." : "Submit Suggestion"}
-          </button>
-        </form>
-      ) : (
-        <p className="text-yellow-500 text-sm">
-          You&apos;ve reached your theme suggestion limit for this jam!
-        </p>
-      )}
-
-      {/* List of user's suggestions */}
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-          Your Suggestions
-        </h3>
-        {userSuggestions.length > 0 ? (
-          <ul className="space-y-4">
-            {userSuggestions.map((suggestion) => (
-              <li
-                key={suggestion.id}
-                className="flex justify-between items-center text-gray-400 bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm"
-              >
-                <span>{suggestion.suggestion}</span>
-                <button
-                  onClick={() => handleDelete(suggestion.id)}
-                  className="text-red-500 hover:text-red-700 font-semibold"
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
+        {/* Hide form if user has reached their limit */}
+        {userSuggestions.length < themeLimit ? (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input
+              className="w-full"
+              placeholder="Enter your theme suggestion..."
+              value={suggestion}
+              onChange={(e) => {
+                if (e.target.value.length <= 32) {
+                  setSuggestion(e.target.value);
+                }
+              }}
+              maxLength={64}
+            ></Input>
+            {errorMessage && (
+              <Text color="red" size="sm">
+                {errorMessage}
+              </Text>
+            )}
+            {successMessage && (
+              <Text color="green" size="sm">
+                {successMessage}
+              </Text>
+            )}
+            <Button type="submit" color="blue" icon="send">
+              {loading ? "Submitting..." : "Submit Suggestion"}
+            </Button>
+          </form>
         ) : (
-          <p className="text-gray-600 dark:text-gray-400">
-            You haven&apos;t submitted any suggestions yet.
-          </p>
+          <Text color="yellow" size="sm">
+            You&apos;ve reached your theme suggestion limit for this jam!
+          </Text>
         )}
-      </div>
-    </div>
+
+        {/* List of user's suggestions */}
+        <Vstack align="start">
+          <Text weight="semibold" size="lg">
+            Your Suggestions
+          </Text>
+          {userSuggestions.length > 0 ? (
+            <Vstack className="w-full">
+              {userSuggestions.map((suggestion) => (
+                <Card key={suggestion.id} className="w-full">
+                  <Hstack justify="between" className="w-full">
+                    <Hstack>
+                      <Icon name="lightbulb" color="textFaded" />
+                      <Vstack align="start" gap={0}>
+                        <Text>{suggestion.suggestion}</Text>
+                        <Text size="xs" color="textFaded">
+                          No description
+                        </Text>
+                      </Vstack>
+                    </Hstack>
+                    <Hstack>
+                      <Button
+                        onClick={() => handleDelete(suggestion.id)}
+                        icon="pencil"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        onClick={() => handleDelete(suggestion.id)}
+                        color="red"
+                        icon="trash"
+                      >
+                        Delete
+                      </Button>
+                    </Hstack>
+                  </Hstack>
+                </Card>
+              ))}
+            </Vstack>
+          ) : (
+            <Text color="textFaded">
+              You haven&apos;t submitted any suggestions yet.
+            </Text>
+          )}
+        </Vstack>
+      </Vstack>
+    </Card>
   );
 }

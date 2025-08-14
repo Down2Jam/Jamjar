@@ -1,10 +1,9 @@
 "use client";
 
-import { Heart } from "lucide-react";
 import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { postLike } from "@/requests/like";
 import { Button } from "@/framework/Button";
 
@@ -19,29 +18,30 @@ export default function LikeButton({
   parentId: number;
   isComment?: boolean;
 }) {
-  const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  const [likeEffect, setLikeEffect] = useState<boolean>(false);
+  // const [reduceMotion, setReduceMotion] = useState<boolean>(false);
+  // const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mediaQuery.matches);
+  // useEffect(() => {
+  //   const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  //   setReduceMotion(mediaQuery.matches);
 
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches);
-    };
-    mediaQuery.addEventListener("change", handleChange);
+  //   const handleChange = (event: MediaQueryListEvent) => {
+  //     setReduceMotion(event.matches);
+  //   };
+  //   mediaQuery.addEventListener("change", handleChange);
 
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
+  //   return () => {
+  //     mediaQuery.removeEventListener("change", handleChange);
+  //   };
+  // }, []);
 
   return (
     <Button
       size="sm"
       color={updatedLiked ? "blue" : "default"}
+      icon="heart"
       onClick={async () => {
         if (!getCookie("token")) {
           redirect("/login");
@@ -50,11 +50,11 @@ export default function LikeButton({
         const response = await postLike(parentId, isComment);
 
         if (!updatedLiked) {
-          setLikeEffect(true);
-          setTimeout(() => setLikeEffect(false), 1000);
+          //setLikeEffect(true);
+          //setTimeout(() => setLikeEffect(false), 1000);
           setUpdatedLikes(updatedLikes + 1);
         } else {
-          setLikeEffect(false);
+          //setLikeEffect(false);
           setUpdatedLikes(updatedLikes - 1);
         }
 
@@ -71,8 +71,13 @@ export default function LikeButton({
         }
       }}
     >
-      <div className="flex gap-2 items-center" style={{ position: "relative" }}>
-        <Heart size={16} />
+      {updatedLikes}
+    </Button>
+  );
+}
+
+/*
+<div className="flex gap-2 items-center" style={{ position: "relative" }}>
         <Heart
           size={16}
           className={
@@ -87,8 +92,5 @@ export default function LikeButton({
             zIndex: "10",
           }}
         />
-        <p>{updatedLikes}</p>
       </div>
-    </Button>
-  );
-}
+*/

@@ -7,14 +7,15 @@ import { getTheme } from "@/requests/theme";
 import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import Text from "@/framework/Text";
 
 const events = [
-  { name: "Theme Submission", date: "AUG 15" },
-  { name: "Theme Elimination", date: "AUG 22" },
-  { name: "Theme Voting", date: "AUG 29" },
-  { name: "Game Jam", date: "SEP 5" },
-  { name: "Rating Period", date: "SEP 8" },
-  { name: "Results", date: "SEP 21" },
+  { name: "Phases.ThemeSubmission.Title", date: "AUG 15" },
+  { name: "Phases.ThemeElimination.Title", date: "AUG 22" },
+  { name: "Phases.ThemeVoting.Title", date: "AUG 29" },
+  { name: "Phases.GameJam.Title", date: "SEP 5" },
+  { name: "Phases.Rating.Title", date: "SEP 8" },
+  { name: "Phases.Results.Title", date: "SEP 21" },
 ];
 
 const getDateObject = (dateString: string) => {
@@ -80,12 +81,12 @@ export default function JamHeader() {
   const getPhaseObj = (jamPhase: JamPhase) => {
     if (jamPhase === "Suggestion")
       return {
-        text: "Go to Theme Suggestion",
+        text: "JamHeader.Suggestions",
         href: "/theme-suggestions",
       };
     if (jamPhase === "Elimination")
       return {
-        text: "Go to Theme Elimination",
+        text: "JamHeader.Elimination",
         href: "/theme-elimination",
       };
     if (jamPhase === "Voting") {
@@ -97,27 +98,25 @@ export default function JamHeader() {
           60 * 60 * 1000
       )
         return {
-          text: "Theme will be revealed on jam start",
+          text: "JamHeader.JamSoon",
         };
       else
         return {
-          text: "Go to Theme Voting",
+          text: "JamHeader.Voting",
           href: "/theme-voting",
         };
     }
     if (jamPhase === "Jamming")
       return {
-        text: topTheme
-          ? `Theme: ${topTheme}`
-          : "No top-scoring theme available.",
+        text: topTheme ? `Theme: ${topTheme}` : "JamHeader.NoTheme",
       };
     if (jamPhase === "Submission")
       return {
-        text: "Submissions close soon",
+        text: "JamHeader.Submissions",
       };
     if (jamPhase === "Rating")
       return {
-        text: "Go rate games!",
+        text: "JamHeader.Rate",
         href: "/games",
       };
     return { text: "" };
@@ -264,23 +263,26 @@ export default function JamHeader() {
                 color: colors["blue"],
               }}
             >
-              <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-                <p className="font-semibold ">
+              <div
+                className="p-4 text-center rounded-b-2x flex justify-center"
+                style={{
+                  backgroundColor: colors["blueDarkDark"],
+                }}
+              >
+                <Text weight="semibold">
                   {getPhaseObj(activeJamResponse.phase).text}
-                </p>
+                </Text>
               </div>
             </a>
           ) : (
-            <div className="bg-slate-100 dark:bg-gray-800 p-4 text-center rounded-b-2x">
-              <p
-                className="font-semibold"
-                style={{
-                  color: colors["blue"],
-                }}
-              >
-                {getPhaseObj(activeJamResponse.phase).text}
-              </p>
-            </div>
+            <Text
+              weight="semibold"
+              style={{
+                backgroundColor: colors["blueDarkDark"],
+              }}
+            >
+              {getPhaseObj(activeJamResponse.phase).text}
+            </Text>
           ))}
       </div>
 
@@ -289,7 +291,7 @@ export default function JamHeader() {
         {sortedEvents.map((event, index) => (
           <div
             key={event.name}
-            className={`grow snap-start rounded-md p-2 text-center min-w-36`}
+            className={`grow snap-start rounded-md p-2 text-center min-w-36 flex flex-col items-center`}
             style={{
               color: siteTheme.colors["text"],
               ...getStyleForDateDisplay(
@@ -300,8 +302,8 @@ export default function JamHeader() {
               ),
             }}
           >
-            <p className="text-xs">{event.name}</p>
-            <p className="font-bold text-lg">{event.date}</p>
+            <Text size="xs">{event.name}</Text>
+            <Text weight="bold">{event.date}</Text>
           </div>
         ))}
       </div>
