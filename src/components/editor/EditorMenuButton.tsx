@@ -17,6 +17,7 @@ export default function EditorMenuButton({
 }: EditorMenuButtonProps) {
   return (
     <Button
+      type="button"
       onClick={onClick}
       disabled={disabled}
       size="sm"
