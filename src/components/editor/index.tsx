@@ -38,6 +38,7 @@ import ImageResize from "tiptap-extension-resize-image";
 import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import ThemedProse from "../themed-prose";
 
 type EditorProps = {
   content: string;
@@ -122,7 +123,6 @@ export default function Editor({
     editorProps: {
       attributes: {
         class:
-          "prose dark:prose-invert " +
           (gameEditor
             ? "min-h-[600px] max-h-[600px]"
             : "min-h-[150px] max-h-[400px]") +
@@ -221,7 +221,9 @@ export default function Editor({
   return (
     <div className="w-full">
       <EditorMenuBar editor={editor} />
-      <EditorContent editor={editor} />
+      <ThemedProse>
+        <EditorContent editor={editor} />
+      </ThemedProse>
       <Spacer y={3} />
       {editor && (
         <div

@@ -90,7 +90,7 @@ const Text = forwardRef<HTMLParagraphElement, TextProps>(function Text(
         ...gradientStyles,
         ...(style || {}),
       }}
-      className={["w-fit", className].join(" ")}
+      className={["w-fit transition-all duration-300", className].join(" ")}
       {...rest}
     >
       {content}

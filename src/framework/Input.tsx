@@ -54,7 +54,7 @@ export function Input({
   const inputElement = (
     <label
       className={[
-        "inline-flex items-center border transition-colors duration-150",
+        "inline-flex items-center border transition-colors duration-300",
         sizeClasses[size],
         fullWidth ? "w-full" : "",
         disabled ? "opacity-50 cursor-not-allowed" : "",
@@ -84,7 +84,7 @@ export function Input({
     >
       {label && labelPlacement === "outside" && (
         <span
-          className="mb-1 text-sm font-medium"
+          className={`mb-1 text-sm font-medium ${disabled ? "opacity-50" : ""}`}
           style={{ color: colors.text }}
         >
           {label}

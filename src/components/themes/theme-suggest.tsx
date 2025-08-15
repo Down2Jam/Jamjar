@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
   getCurrentJam,
@@ -20,6 +20,7 @@ import { Hstack, Vstack } from "@/framework/Stack";
 import { Button } from "@/framework/Button";
 import { Input } from "@/framework/Input";
 import Icon from "@/framework/Icon";
+import { addToast, Spinner } from "@heroui/react";
 
 const bannedThemes = [
   "pgorley",
@@ -112,15 +113,15 @@ const bannedThemes = [
 
 export default function ThemeSuggestions() {
   const [suggestion, setSuggestion] = useState("");
+  const [examples, setExamples] = useState("");
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [userSuggestions, setUserSuggestions] = useState<ThemeType[]>([]);
   const [themeLimit, setThemeLimit] = useState(0);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [phaseLoading, setPhaseLoading] = useState(true); // Loading state for fetching phase
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Fetch the current jam phase using helpers/jam
   useEffect(() => {
@@ -147,7 +148,9 @@ export default function ThemeSuggestions() {
       const response = await getThemeSuggestions();
       if (response.ok) {
         const data = await response.json();
-        setUserSuggestions(data);
+        if (data.data) {
+          setUserSuggestions(data.data);
+        }
       }
     } catch (error) {
       console.error("Error fetching suggestions:", error);
@@ -161,58 +164,81 @@ export default function ThemeSuggestions() {
     }
   }, [activeJamResponse]);
 
-  // Handle form submission to add a new suggestion
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
 
     if (!suggestion.trim()) {
-      setErrorMessage("Suggestion cannot be empty.");
+      addToast({ title: "Suggestion cannot be empty" });
       setLoading(false);
       return;
     }
 
     if (bannedThemes.includes(suggestion.toLowerCase().replaceAll(/\W/g, ""))) {
-      setErrorMessage(
-        "That suggestion cannot be used (it likely has been used recently for another jam)."
-      );
+      addToast({
+        title:
+          "That suggestion cannot be used (it likely has been used recently for another jam)",
+      });
       setLoading(false);
       return;
     }
 
     try {
       const token = getCookie("token");
+      if (!token) throw new Error("User is not authenticated. Please log in.");
 
-      if (!token) {
-        throw new Error("User is not authenticated. Please log in.");
-      }
-
-      const response = await postThemeSuggestion(suggestion);
+      const response = await postThemeSuggestion(
+        suggestion,
+        examples.trim() || null
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to submit suggestion.");
       }
 
-      setSuccessMessage("Suggestion added successfully!");
-      setSuggestion(""); // Clear input field
-      fetchSuggestions(); // Refresh suggestions list
+      addToast({ title: "Suggestion added successfully!" });
+      setSuggestion("");
+      setExamples(""); // clear examples too
+      fetchSuggestions();
     } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error submitting suggestion:", error.message);
-        setErrorMessage(error.message || "An unexpected error occurred.");
-      } else {
-        console.error("Unknown error:", error);
-        setErrorMessage("An unexpected error occurred.");
-      }
+      addToast({
+        title:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle deleting a suggestion
+  const handleEdit = async (t: ThemeType) => {
+    try {
+      const response = await deleteThemeSuggestion(t.id);
+      if (!response.ok) throw new Error("Failed to delete suggestion.");
+
+      addToast({ title: "Suggestion removed and populated input" });
+
+      setSuggestion(t.suggestion);
+      setExamples(t.description || "");
+
+      requestAnimationFrame(() => {
+        inputRef.current?.focus();
+        const el = inputRef.current;
+        if (el) {
+          const end = el.value.length;
+          el.setSelectionRange(end, end);
+        }
+      });
+
+      fetchSuggestions();
+    } catch (error) {
+      console.error("Error editing suggestion:", error);
+      addToast({ title: "Error deleting suggestion for edit" });
+    }
+  };
+
   const handleDelete = async (id: number) => {
     try {
       const response = await deleteThemeSuggestion(id);
@@ -221,6 +247,9 @@ export default function ThemeSuggestions() {
         throw new Error("Failed to delete suggestion.");
       }
 
+      addToast({
+        title: "Deleted theme suggestion",
+      });
       fetchSuggestions(); // Refresh suggestions list
     } catch (error) {
       console.error("Error deleting suggestion:", error);
@@ -239,7 +268,19 @@ export default function ThemeSuggestions() {
 
   // Render loading state while fetching phase
   if (phaseLoading || loading) {
-    return <div>Loading...</div>;
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Hstack>
+              <Spinner />
+              <Text size="xl">ThemeSuggestions.Loading.Title</Text>
+            </Hstack>
+            <Text color="textFaded">ThemeSuggestions.Loading.Description</Text>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
   }
 
   const token = getCookie("token");
@@ -248,11 +289,21 @@ export default function ThemeSuggestions() {
     return (
       <Vstack>
         <Card className="max-w-96">
-          <Vstack align="start">
-            <Text>Sign in to be able to suggest themes</Text>
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userx" />
+                <Text size="xl">ThemeSuggestions.SignIn.Title</Text>
+              </Hstack>
+              <Text color="textFaded">ThemeSuggestions.SignIn.Description</Text>
+            </Vstack>
             <Hstack>
-              <Button href="/signup">Sign up</Button>
-              <Button href="/login">Login</Button>
+              <Button href="/signup" color="blue" icon="userplus">
+                Themes.Signup
+              </Button>
+              <Button href="/login" color="pink" icon="login">
+                Themes.Login
+              </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -262,56 +313,87 @@ export default function ThemeSuggestions() {
 
   if (!hasJoined) {
     return (
-      <Card>
-        <Text size="2xl" weight="bold">
-          Join the Jam First
-        </Text>
-        <Text color="textFaded">
-          You need to join the current jam before you can suggest themes.
-        </Text>
-        <Button
-          onClick={() => {
-            if (activeJamResponse?.jam?.id !== undefined) {
-              joinJam(activeJamResponse.jam.id);
-            }
-          }}
-          color="blue"
-        >
-          Join Jam
-        </Button>
-      </Card>
+      <Vstack>
+        <Card>
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userplus" />
+                <Text size="xl">ThemeSuggestions.JoinJam.Title</Text>
+              </Hstack>
+              <Text color="textFaded">
+                ThemeSuggestions.JoinJam.Description
+              </Text>
+            </Vstack>
+            <Button
+              onClick={async () => {
+                if (activeJamResponse?.jam?.id !== undefined) {
+                  const ok = await joinJam(activeJamResponse.jam.id);
+
+                  if (ok) {
+                    setHasJoined(true);
+                  }
+                }
+              }}
+              icon="calendarplus"
+              color="green"
+            >
+              Navbar.JoinJam.Title
+            </Button>
+          </Vstack>
+        </Card>
+      </Vstack>
     );
   }
 
   // Render message if not in Suggestion phase
   if (activeJamResponse?.phase !== "Suggestion") {
     return (
-      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Not in Suggestion Phase
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          The current phase is{" "}
-          <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please come
-          back during the Suggestion phase.
-        </p>
-      </div>
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="x" />
+                <Text size="xl">Not in Suggestion Phase</Text>
+              </Hstack>
+              <Text color="textFaded">
+                The current phase is{" "}
+                <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please
+                come back during the Suggestion phase.
+              </Text>
+            </Vstack>
+          </Vstack>
+        </Card>
+      </Vstack>
     );
   }
 
   return (
-    <Card className="max-w-md mx-auto mt-8">
-      <Vstack align="stretch">
-        <Text weight="bold" size="xl">
-          Submit Your Theme Suggestion
-        </Text>
-
-        {/* Hide form if user has reached their limit */}
-        {userSuggestions.length < themeLimit ? (
+    <Vstack>
+      <Card>
+        <Vstack align="stretch">
+          <Vstack align="center" gap={0}>
+            <Hstack>
+              <Icon name="sparkles" />
+              <Text size="xl">ThemeSuggestions.Title</Text>
+            </Hstack>
+            <Text color="textFaded" size="sm">
+              ThemeSuggestions.Description
+            </Text>
+          </Vstack>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Vstack gap={0} align="start">
+              <Text color="text">Theme</Text>
+              <Text color="textFaded" size="xs">
+                The theme idea that people would build their games around
+              </Text>
+            </Vstack>
             <Input
               className="w-full"
               placeholder="Enter your theme suggestion..."
+              required
+              disabled={userSuggestions.length >= themeLimit}
               value={suggestion}
               onChange={(e) => {
                 if (e.target.value.length <= 32) {
@@ -320,48 +402,84 @@ export default function ThemeSuggestions() {
               }}
               maxLength={64}
             ></Input>
-            {errorMessage && (
-              <Text color="red" size="sm">
-                {errorMessage}
+            <Vstack gap={0} align="start">
+              <Text color="text">Clarification</Text>
+              <Text color="textFaded" size="xs" className="max-w-96">
+                You can optionally detail why do you think this is a good theme
+                and/or give examples of games that can be made with it. For
+                example, with the theme echoes people might take that as things
+                bouncing, audio repetition, visual repetition, story echoes,
+                previous actions affecting future situations, areas that change
+                over time, etc.
               </Text>
-            )}
-            {successMessage && (
-              <Text color="green" size="sm">
-                {successMessage}
-              </Text>
-            )}
-            <Button type="submit" color="blue" icon="send">
+            </Vstack>
+            <Input
+              className="w-full"
+              placeholder="Enter clarification... (optional)"
+              disabled={userSuggestions.length >= themeLimit}
+              value={examples}
+              onChange={(e) => {
+                if (e.target.value.length <= 256) setExamples(e.target.value);
+              }}
+              maxLength={256}
+            />
+            <Button
+              type="submit"
+              disabled={userSuggestions.length >= themeLimit}
+              color={userSuggestions.length >= themeLimit ? "yellow" : "blue"}
+              icon="send"
+            >
               {loading ? "Submitting..." : "Submit Suggestion"}
             </Button>
           </form>
-        ) : (
-          <Text color="yellow" size="sm">
-            You&apos;ve reached your theme suggestion limit for this jam!
-          </Text>
-        )}
 
+          {userSuggestions.length >= themeLimit && (
+            <Vstack>
+              <Text color="yellow" size="sm">
+                You&apos;ve reached your theme suggestion limit for this jam!
+              </Text>
+              <Text color="textFaded" size="sm">
+                Theme voting will start once the theme submission phase ends.
+              </Text>
+              <Text color="textFaded" size="sm">
+                Feel free to make a post on the forum introducing yourself!
+              </Text>
+              <Hstack>
+                <Button icon="messagessquare" href="/home">
+                  To Forum
+                </Button>
+                <Button icon="squarepen" href="/create-post">
+                  Create Post
+                </Button>
+              </Hstack>
+            </Vstack>
+          )}
+        </Vstack>
+      </Card>
+      <Card>
         {/* List of user's suggestions */}
-        <Vstack align="start">
-          <Text weight="semibold" size="lg">
-            Your Suggestions
-          </Text>
+        <Vstack align="center">
+          <Text size="xl">Your Suggestions</Text>
           {userSuggestions.length > 0 ? (
             <Vstack className="w-full">
               {userSuggestions.map((suggestion) => (
                 <Card key={suggestion.id} className="w-full">
-                  <Hstack justify="between" className="w-full">
+                  <Hstack justify="between" className="w-full" gap={12}>
                     <Hstack>
                       <Icon name="lightbulb" color="textFaded" />
                       <Vstack align="start" gap={0}>
                         <Text>{suggestion.suggestion}</Text>
-                        <Text size="xs" color="textFaded">
-                          No description
+
+                        <Text size="xs" color="textFaded" className="max-w-96">
+                          {suggestion.description
+                            ? suggestion.description
+                            : "No clarification"}
                         </Text>
                       </Vstack>
                     </Hstack>
                     <Hstack>
                       <Button
-                        onClick={() => handleDelete(suggestion.id)}
+                        onClick={() => handleEdit(suggestion)}
                         icon="pencil"
                       >
                         Edit
@@ -384,7 +502,7 @@ export default function ThemeSuggestions() {
             </Text>
           )}
         </Vstack>
-      </Vstack>
-    </Card>
+      </Card>
+    </Vstack>
   );
 }

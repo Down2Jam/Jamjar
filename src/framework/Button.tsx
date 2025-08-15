@@ -59,29 +59,35 @@ export function Button(props: ButtonProps) {
     variantStyles.standard = {
       color: colors["blue"],
       borderColor: colors["blue"],
-      backgroundColor: colors["blueDarkDark"],
+      backgroundColor: colors["blueDarkDark"] + "88",
     };
   } else if (color === "green") {
     variantStyles.standard = {
       color: colors["green"],
       borderColor: colors["green"],
-      backgroundColor: colors["greenDarkDark"],
+      backgroundColor: colors["greenDarkDark"] + "88",
     };
   } else if (color === "pink") {
     variantStyles.standard = {
       color: colors["pink"],
       borderColor: colors["pink"],
-      backgroundColor: colors["pinkDarkDark"],
+      backgroundColor: colors["pinkDarkDark"] + "88",
     };
   } else if (color === "red") {
     variantStyles.standard = {
       color: colors["red"],
       borderColor: colors["red"],
-      backgroundColor: colors["redDarkDark"],
+      backgroundColor: colors["redDarkDark"] + "88",
+    };
+  } else if (color === "yellow") {
+    variantStyles.standard = {
+      color: colors["yellow"],
+      borderColor: colors["yellow"],
+      backgroundColor: colors["yellowDarkDark"] + "88",
     };
   }
 
-  if (disabled) {
+  if (disabled && color === "default") {
     variantStyles.standard = {
       borderColor: colors["mantle"],
       color: colors["textFaded"],
@@ -113,10 +119,15 @@ export function Button(props: ButtonProps) {
       backgroundColor: colors["redDark"],
       color: colors["redLight"],
     };
+  } else if (color === "yellow") {
+    hoverStyles.standard = {
+      backgroundColor: colors["yellowDark"],
+      color: colors["yellowLight"],
+    };
   }
 
   const commonClass = [
-    "inline-flex items-center justify-center font-medium border transition-colors duration-500 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+    "inline-flex items-center justify-center font-medium border transition-colors duration-300 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     sizeClasses[size],
     fullWidth ? "w-full" : "",
     disabled || loading ? "opacity-20 cursor-not-allowed" : "",

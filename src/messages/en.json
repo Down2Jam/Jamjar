@@ -194,6 +194,8 @@
     }
   },
   "Settings": {
+    "Title": "Settings",
+    "Description": "Manage your preferences",
     "Name": {
       "Title": "Name",
       "Description": "The name that displays for you on the site"
@@ -542,5 +544,48 @@
       "Title": "Upcoming Events"
     },
     "Link": "To Events Page"
+  },
+  "ThemeSuggestions": {
+    "YourSuggestions": {
+      "Title": "Your Suggestions",
+      "Description": "Themes you have submitted to the voting rounds"
+    },
+    "PastSuggestions": {
+      "Title": "Past Suggestions",
+      "Description": "Themes you have submitted to the previous jam"
+    },
+    "Edit": {
+      "Title": "Edit",
+      "Description": "Edit the theme suggestion"
+    },
+    "Delete": {
+      "Title": "Delete",
+      "Description": "Delete the theme suggestion"
+    },
+    "Conflict": "That suggestion cannot be used (it likely has been used recently for another jam).",
+    "Added": "Suggestion added successfully!",
+    "ErrorDeleting": "Error deleting suggestion:",
+    "FailedDelete": "Failed to delete suggestion.",
+    "SignIn": {
+      "Title": "Not signed in",
+      "Description": "Sign in to be able to suggest themes"
+    },
+    "JoinJam": {
+      "Title": "Join the Jam First",
+      "Description": "You need to join the current jam before you can suggest themes."
+    },
+    "Title": "Submit Your Theme Suggestion",
+    "Description": "Submit themes to the voting rounds to possibly be used in the jam",
+    "LimitReached": "You've reached your theme suggestion limit for this jam!",
+    "NoDescription": "No description",
+    "NoSuggestions": "You haven't submitted any suggestions yet.",
+    "Loading": {
+      "Title": "Loading...",
+      "Description": "Getting info from the backend"
+    }
+  },
+  "Themes": {
+    "Signup": "Sign up",
+    "Login": "Login"
   }
 }

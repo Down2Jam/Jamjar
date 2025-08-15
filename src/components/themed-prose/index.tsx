@@ -1,4 +1,3 @@
-// ThemedProse.tsx
 "use client";
 import * as React from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";

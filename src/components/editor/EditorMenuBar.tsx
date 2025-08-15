@@ -218,7 +218,7 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
   ];
 
   return (
-    <Hstack className="mb-2">
+    <Hstack className="mb-2" wrap>
       {buttons.map(({ icon, onClick, disabled, isActive }, index) => (
         <EditorMenuButton
           key={index}

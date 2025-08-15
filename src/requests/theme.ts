@@ -26,7 +26,10 @@ export async function getThemeVotes() {
   });
 }
 
-export async function postThemeSuggestion(suggestion: string) {
+export async function postThemeSuggestion(
+  suggestion: string,
+  description: string | null
+) {
   return fetch(`${BASE_URL}/themes/suggestion`, {
     method: "POST",
     headers: {
@@ -34,7 +37,10 @@ export async function postThemeSuggestion(suggestion: string) {
       Authorization: `Bearer ${getCookie("token")}`,
     },
     credentials: "include",
-    body: JSON.stringify({ suggestionText: suggestion }),
+    body: JSON.stringify({
+      suggestionText: suggestion,
+      description: description,
+    }),
   });
 }
 

@@ -9,7 +9,7 @@ type Shared = {
   loading?: boolean;
   fullWidth?: boolean;
   icon?: IconName;
-  color?: "default" | "blue" | "green" | "pink" | "red";
+  color?: "default" | "blue" | "green" | "pink" | "red" | "yellow";
   externalIcon?: boolean;
   disabled?: boolean;
   className?: string;
