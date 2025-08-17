@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, Chip, Spacer } from "@heroui/react";
+import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
@@ -218,6 +218,21 @@ export default function PostCard({
                   </Button>
                 }
               >
+                <Dropdown.Item
+                  key="copy"
+                  icon="link"
+                  description="Copy the post link to your clipboard"
+                  onClick={async () => {
+                    navigator.clipboard.writeText(
+                      `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
+                    );
+                    addToast({
+                      title: "Copied Link",
+                    });
+                  }}
+                >
+                  Copy Link
+                </Dropdown.Item>
                 {user?.slug == post.author.slug ? (
                   <Dropdown.Item
                     key="delete"

@@ -37,7 +37,7 @@ export default function SplashDate() {
   }
 
   return (
-    <Text color="textLightFaded">
+    <Text color="textLightFaded" className="mx-auto sm:mx-0">
       {new Date(activeJamResponse.jam.startTime).toLocaleDateString("en-US", {
         month: "long",
       })}{" "}

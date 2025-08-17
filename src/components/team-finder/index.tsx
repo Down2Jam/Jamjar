@@ -9,7 +9,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Spinner,
   Textarea,
   useDisclosure,
 } from "@heroui/react";
@@ -27,6 +26,8 @@ import Text from "@/framework/Text";
 import { Badge } from "@/framework/Badge";
 import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
+import { Hstack, Vstack } from "@/framework/Stack";
+import { Spinner } from "@/framework/Spinner";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -123,7 +124,21 @@ export default function TeamFinder() {
     fetchData();
   }, [teamType, filter, user, sortSet, jam]);
 
-  if (isLoading) return <Spinner />;
+  if (isLoading) {
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Hstack>
+              <Spinner />
+              <Text size="xl">Loading</Text>
+            </Hstack>
+            <Text color="textFaded">Loading team finder...</Text>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
 
   if (!user) return <p>You are not logged in</p>;
 
@@ -137,7 +152,7 @@ export default function TeamFinder() {
             </Button>
           )}
           <Button
-            icon="users2"
+            icon="userplus"
             onClick={async () => {
               const successful = await createTeam();
               if (successful) {

@@ -6,29 +6,9 @@ import { PostType } from "@/types/PostType";
 import { TagType } from "@/types/TagType";
 import { UserType } from "@/types/UserType";
 import Link from "next/link";
-import {
-  Avatar,
-  Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownSection,
-  DropdownTrigger,
-  Spacer,
-} from "@heroui/react";
+import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
 import { formatDistance } from "date-fns";
-import {
-  LoaderCircle,
-  MessageCircle,
-  MoreVertical,
-  Shield,
-  ShieldAlert,
-  ShieldX,
-  Star,
-  StarOff,
-  Trash,
-  X,
-} from "lucide-react";
+import { LoaderCircle, MoreVertical } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -42,6 +22,10 @@ import { sanitize } from "@/helpers/sanitize";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
 import ThemedProse from "@/components/themed-prose";
+import Dropdown from "@/framework/Dropdown";
+import { Hstack } from "@/framework/Stack";
+import { Spinner } from "@/framework/Spinner";
+import Text from "@/framework/Text";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -186,227 +170,223 @@ export default function PostPage() {
                       liked={post.hasLiked}
                       parentId={post.id}
                     />
-                    <Link href="#create-comment">
-                      <Button size="sm">
-                        <MessageCircle size={16} /> {post.comments.length}
+                    <Link href={`/p/${post.slug}#create-comment`}>
+                      <Button size="sm" icon="messagecircle">
+                        {post.comments.length}
                       </Button>
                     </Link>
-                    <Dropdown backdrop="opaque">
-                      <DropdownTrigger>
+                    <Dropdown
+                      trigger={
                         <Button size="sm">
                           <MoreVertical size={16} />
                         </Button>
-                      </DropdownTrigger>
-                      <DropdownMenu className="text-[#333] dark:text-white">
-                        <DropdownSection
-                          showDivider={user?.mod}
-                          title="Actions"
+                      }
+                    >
+                      <Dropdown.Item
+                        key="copy"
+                        icon="link"
+                        description="Copy the post link to your clipboard"
+                        onClick={async () => {
+                          navigator.clipboard.writeText(
+                            `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
+                          );
+                          addToast({
+                            title: "Copied Link",
+                          });
+                        }}
+                      >
+                        Copy Link
+                      </Dropdown.Item>
+                      {user?.slug == post.author.slug ? (
+                        <Dropdown.Item
+                          key="delete"
+                          icon="trash"
+                          description="Delete your post"
+                          onClick={async () => {
+                            const response = await deletePost(post.id);
+
+                            if (response.ok) {
+                              toast.success("Deleted post");
+                              redirect("/");
+                            } else {
+                              toast.error("Error while deleting post");
+                            }
+                          }}
                         >
-                          {/* <DropdownItem
-                            key="report"
-                            startContent={<Flag />}
-                            description="Report this post to moderators to handle"
-                            onPress={() => {
-                              toast.warning("Report functionality coming soon");
+                          Delete
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      {user?.mod ? (
+                        <>
+                          <Dropdown.Item
+                            key="remove"
+                            icon="x"
+                            description="Remove this post"
+                            onClick={async () => {
+                              const response = await deletePost(post.id);
+
+                              if (response.ok) {
+                                toast.success("Removed post");
+                                redirect("/");
+                              } else {
+                                toast.error("Error while removing post");
+                              }
                             }}
                           >
-                            Create Report
-                          </DropdownItem> */}
-                          {user?.slug == post.author.slug ? (
-                            <DropdownItem
-                              key="delete"
-                              startContent={<Trash />}
-                              description="Delete your post"
-                              onPress={async () => {
-                                const response = await deletePost(post.id);
+                            Remove
+                          </Dropdown.Item>
+                          {post.sticky ? (
+                            <Dropdown.Item
+                              key="unsticky"
+                              icon="staroff"
+                              description="Unsticky post"
+                              onClick={async () => {
+                                const response = await stickPost(
+                                  post.id,
+                                  false
+                                );
 
                                 if (response.ok) {
-                                  toast.success("Deleted post");
+                                  toast.success("Unsticked post");
                                   redirect("/");
                                 } else {
-                                  toast.error("Error while deleting post");
+                                  toast.error("Error while unstickying post");
                                 }
                               }}
                             >
-                              Delete
-                            </DropdownItem>
+                              Unsticky
+                            </Dropdown.Item>
+                          ) : (
+                            <Dropdown.Item
+                              key="sticky"
+                              icon="star"
+                              description="Sticky post"
+                              onClick={async () => {
+                                const response = await stickPost(post.id, true);
+
+                                if (response.ok) {
+                                  toast.success("Unsticked post");
+                                  redirect("/");
+                                } else {
+                                  toast.error("Error while stickying post");
+                                }
+                              }}
+                            >
+                              Sticky
+                            </Dropdown.Item>
+                          )}
+                          {user?.admin && !post.author.mod ? (
+                            <Dropdown.Item
+                              key="promote-mod"
+                              icon="shield"
+                              description="Promote user to Mod"
+                              onClick={async () => {
+                                const response = await assignMod(
+                                  post.author.slug,
+                                  true
+                                );
+
+                                if (response.ok) {
+                                  toast.success("Promoted User to Mod");
+                                  window.location.reload();
+                                } else {
+                                  toast.error(
+                                    "Error while promoting user to Mod"
+                                  );
+                                }
+                              }}
+                            >
+                              Appoint as mod
+                            </Dropdown.Item>
                           ) : (
                             <></>
                           )}
-                        </DropdownSection>
-                        {user?.mod ? (
-                          <DropdownSection title="Mod Zone">
-                            <DropdownItem
-                              key="remove"
-                              startContent={<X />}
-                              description="Remove this post"
-                              onPress={async () => {
-                                const response = await deletePost(post.id);
+                          {user?.admin &&
+                          post.author.mod &&
+                          !post.author.admin ? (
+                            <Dropdown.Item
+                              key="demote-mod"
+                              icon="shieldx"
+                              description="Demote user from Mod"
+                              onClick={async () => {
+                                const response = await assignMod(
+                                  post.author.slug,
+                                  false
+                                );
 
                                 if (response.ok) {
-                                  toast.success("Removed post");
-                                  redirect("/");
+                                  toast.success("Demoted User");
+                                  window.location.reload();
                                 } else {
-                                  toast.error("Error while removing post");
+                                  toast.error("Error while demoting user");
                                 }
                               }}
                             >
-                              Remove
-                            </DropdownItem>
-                            {post.sticky ? (
-                              <DropdownItem
-                                key="unsticky"
-                                startContent={<StarOff />}
-                                description="Unsticky post"
-                                onPress={async () => {
-                                  const response = await stickPost(
-                                    post.id,
-                                    false
-                                  );
+                              Remove as mod
+                            </Dropdown.Item>
+                          ) : (
+                            <></>
+                          )}
+                          {user?.admin && !post.author.admin ? (
+                            <Dropdown.Item
+                              key="promote-admin"
+                              icon="shieldalert"
+                              description="Promote user to Admin"
+                              onClick={async () => {
+                                const response = await assignAdmin(
+                                  post.author.slug,
+                                  true
+                                );
 
-                                  if (response.ok) {
-                                    toast.success("Unsticked post");
-                                    redirect("/");
-                                  } else {
-                                    toast.error("Error while unstickying post");
-                                  }
-                                }}
-                              >
-                                Unsticky
-                              </DropdownItem>
-                            ) : (
-                              <DropdownItem
-                                key="sticky"
-                                startContent={<Star />}
-                                description="Sticky post"
-                                onPress={async () => {
-                                  const response = await stickPost(
-                                    post.id,
-                                    true
+                                if (response.ok) {
+                                  toast.success("Promoted User to Admin");
+                                  window.location.reload();
+                                } else {
+                                  toast.error(
+                                    "Error while promoting user to Admin"
                                   );
+                                }
+                              }}
+                            >
+                              Appoint as admin
+                            </Dropdown.Item>
+                          ) : (
+                            <></>
+                          )}
+                          {user?.admin &&
+                          post.author.admin &&
+                          post.author.id !== user.id ? (
+                            <Dropdown.Item
+                              key="demote-admin"
+                              icon="shieldx"
+                              description="Demote user to mod"
+                              onClick={async () => {
+                                const response = await assignAdmin(
+                                  post.author.slug,
+                                  false
+                                );
 
-                                  if (response.ok) {
-                                    toast.success("Unsticked post");
-                                    redirect("/");
-                                  } else {
-                                    toast.error("Error while stickying post");
-                                  }
-                                }}
-                              >
-                                Sticky
-                              </DropdownItem>
-                            )}
-                            {user?.admin && !post.author.mod ? (
-                              <DropdownItem
-                                key="promote-mod"
-                                startContent={<Shield />}
-                                description="Promote user to Mod"
-                                onPress={async () => {
-                                  const response = await assignMod(
-                                    post.author.slug,
-                                    true
+                                if (response.ok) {
+                                  toast.success("Demoted User to Mod");
+                                  window.location.reload();
+                                } else {
+                                  toast.error(
+                                    "Error while demoting user to mod"
                                   );
-
-                                  if (response.ok) {
-                                    toast.success("Promoted User to Mod");
-                                    window.location.reload();
-                                  } else {
-                                    toast.error(
-                                      "Error while promoting user to Mod"
-                                    );
-                                  }
-                                }}
-                              >
-                                Appoint as mod
-                              </DropdownItem>
-                            ) : (
-                              <></>
-                            )}
-                            {user?.admin &&
-                            post.author.mod &&
-                            !post.author.admin ? (
-                              <DropdownItem
-                                key="demote-mod"
-                                startContent={<ShieldX />}
-                                description="Demote user from Mod"
-                                onPress={async () => {
-                                  const response = await assignMod(
-                                    post.author.slug,
-                                    false
-                                  );
-
-                                  if (response.ok) {
-                                    toast.success("Demoted User");
-                                    window.location.reload();
-                                  } else {
-                                    toast.error("Error while demoting user");
-                                  }
-                                }}
-                              >
-                                Remove as mod
-                              </DropdownItem>
-                            ) : (
-                              <></>
-                            )}
-                            {user?.admin && !post.author.admin ? (
-                              <DropdownItem
-                                key="promote-admin"
-                                startContent={<ShieldAlert />}
-                                description="Promote user to Admin"
-                                onPress={async () => {
-                                  const response = await assignAdmin(
-                                    post.author.slug,
-                                    true
-                                  );
-
-                                  if (response.ok) {
-                                    toast.success("Promoted User to Admin");
-                                    window.location.reload();
-                                  } else {
-                                    toast.error(
-                                      "Error while promoting user to Admin"
-                                    );
-                                  }
-                                }}
-                              >
-                                Appoint as admin
-                              </DropdownItem>
-                            ) : (
-                              <></>
-                            )}
-                            {user?.admin &&
-                            post.author.admin &&
-                            post.author.id !== user.id ? (
-                              <DropdownItem
-                                key="demote-admin"
-                                startContent={<ShieldX />}
-                                description="Demote user to mod"
-                                onPress={async () => {
-                                  const response = await assignAdmin(
-                                    post.author.slug,
-                                    false
-                                  );
-
-                                  if (response.ok) {
-                                    toast.success("Demoted User to Mod");
-                                    window.location.reload();
-                                  } else {
-                                    toast.error(
-                                      "Error while demoting user to mod"
-                                    );
-                                  }
-                                }}
-                              >
-                                Remove as admin
-                              </DropdownItem>
-                            ) : (
-                              <></>
-                            )}
-                          </DropdownSection>
-                        ) : (
-                          <></>
-                        )}
-                      </DropdownMenu>
+                                }
+                              }}
+                            >
+                              Remove as admin
+                            </Dropdown.Item>
+                          ) : (
+                            <></>
+                          )}
+                        </>
+                      ) : (
+                        <></>
+                      )}
                     </Dropdown>
                   </div>
                 </div>
@@ -415,47 +395,50 @@ export default function PostPage() {
           </Card>
           <div id="create-comment" />
           <Spacer y={10} />
-          <Editor content={content} setContent={setContent} />
-          <Spacer />
-          <Button
-            onClick={async () => {
-              if (!content) {
-                toast.error("Please enter valid content");
-                return;
-              }
-
-              if (!hasCookie("token")) {
-                toast.error("You are not logged in");
-                return;
-              }
-
-              const sanitizedHtml = sanitize(content);
-              setWaitingPost(true);
-
-              const response = await postComment(sanitizedHtml, post!.id);
-
-              if (response.status == 401) {
-                toast.error("Invalid User");
-                setWaitingPost(false);
-                return;
-              }
-
-              if (response.ok) {
-                toast.success("Successfully created comment");
-                setWaitingPost(false);
-                window.location.reload();
-              } else {
-                toast.error("An error occured");
-                setWaitingPost(false);
-              }
-            }}
-          >
-            {waitingPost ? (
-              <LoaderCircle className="animate-spin" size={16} />
+          {hasCookie("token") &&
+            (waitingPost ? (
+              <Card>
+                <Hstack>
+                  <Spinner />
+                  <Text>Loading...</Text>
+                </Hstack>
+              </Card>
             ) : (
-              <p>Create Comment</p>
-            )}
-          </Button>
+              <>
+                <Editor content={content} setContent={setContent} />
+                <Spacer />
+                <Button
+                  onClick={async () => {
+                    if (!content) {
+                      toast.error("Please enter valid content");
+                      return;
+                    }
+
+                    const sanitizedHtml = sanitize(content);
+                    setWaitingPost(true);
+
+                    const response = await postComment(sanitizedHtml, post!.id);
+
+                    if (response.status == 401) {
+                      toast.error("Invalid User");
+                      setWaitingPost(false);
+                      return;
+                    }
+
+                    if (response.ok) {
+                      toast.success("Successfully created comment");
+                      //setWaitingPost(false);
+                      window.location.reload();
+                    } else {
+                      toast.error("An error occured");
+                      setWaitingPost(false);
+                    }
+                  }}
+                >
+                  Create Comment
+                </Button>
+              </>
+            ))}
           <Spacer y={10} />
 
           <div className="flex flex-col gap-3">

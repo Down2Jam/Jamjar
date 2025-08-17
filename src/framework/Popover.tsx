@@ -168,9 +168,9 @@ export default function Popover({
         case "top-right":
           return { ...base, bottom: "100%", right: 0, marginBottom: offset };
         case "bottom-left":
-          return { ...base, top: "100%", left: 0, marginTop: offset };
-        case "bottom-right":
           return { ...base, top: "100%", right: 0, marginTop: offset };
+        case "bottom-right":
+          return { ...base, top: "100%", left: 0, marginTop: offset };
         case "top":
           return {
             ...base,
@@ -256,7 +256,6 @@ export default function Popover({
           >
             {/* wrapper to ensure absolutely-positioned children don't collapse the parent */}
             <div style={{ position: "relative" }}>{children}</div>
-
             {showCloseButton && (
               <button
                 onClick={() => {

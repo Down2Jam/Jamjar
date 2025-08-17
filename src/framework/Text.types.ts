@@ -6,7 +6,8 @@ type TextColor =
   | "blue"
   | "green"
   | "red"
-  | "yellow";
+  | "yellow"
+  | "orange";
 export type TextSize =
   | "xs"
   | "sm"

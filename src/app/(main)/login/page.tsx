@@ -1,10 +1,14 @@
 "use client";
 
 import { Button } from "@/framework/Button";
+import { Card } from "@/framework/Card";
+import Icon from "@/framework/Icon";
 import { Input } from "@/framework/Input";
+import { Link } from "@/framework/Link";
+import { Hstack, Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
 import { login } from "@/requests/auth";
-import { Form, Link } from "@heroui/react";
+import { Form } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
@@ -69,36 +73,61 @@ export default function UserPage() {
           redirect("/");
         }}
       >
-        <Input
-          required
-          label="Username"
-          labelPlacement="outside"
-          name="username"
-          placeholder="Enter your username"
-          type="text"
-          value={username}
-          onValueChange={setUsername}
-        />
+        <Card>
+          <Vstack align="start">
+            <Hstack>
+              <Icon name="login" />
+              <Text size="xl" weight="semibold" color="text">
+                Log In
+              </Text>
+            </Hstack>
+            <Text size="sm" color="textFaded">
+              Log into an existing account on the site
+            </Text>
+          </Vstack>
+        </Card>
+        <Card>
+          <Vstack align="start">
+            <Input
+              required
+              label="Username"
+              labelPlacement="outside"
+              name="username"
+              placeholder="Enter your username"
+              type="text"
+              value={username}
+              onValueChange={setUsername}
+            />
 
-        <Input
-          required
-          label="Password"
-          labelPlacement="outside"
-          name="password"
-          placeholder="Enter your password"
-          type="password"
-          value={password}
-          onValueChange={setPassword}
-        />
-        <div className="flex gap-2">
-          <Button color="blue" type="submit">
-            Submit
-          </Button>
-          <Button type="reset">Reset</Button>
-        </div>
-        <Text color="text">
-          Don&apos;t have an account? <Link href="/signup">Sign up</Link>
-        </Text>
+            <Input
+              required
+              label="Password"
+              labelPlacement="outside"
+              name="password"
+              placeholder="Enter your password"
+              type="password"
+              value={password}
+              onValueChange={setPassword}
+            />
+
+            <div className="flex gap-2">
+              <Button color="blue" type="submit" icon="login">
+                Submit
+              </Button>
+              <Button type="reset" icon="rotateccw">
+                Reset
+              </Button>
+            </div>
+          </Vstack>
+        </Card>
+        <Card>
+          <Text color="text">
+            Don&apos;t have an account? <Link href="/signup">Sign up</Link>
+          </Text>
+        </Card>
+        <Card>
+          <Link href="/forgot-password">Forgot Password?</Link>
+        </Card>
       </Form>
     </div>
   );

@@ -2,9 +2,10 @@
 
 import { Button } from "@/framework/Button";
 import { Input } from "@/framework/Input";
+import { Link } from "@/framework/Link";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { signup } from "@/requests/auth";
-import { addToast, Form, Link } from "@heroui/react";
+import { addToast, Form } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";

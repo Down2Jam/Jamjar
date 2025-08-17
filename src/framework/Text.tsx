@@ -82,6 +82,7 @@ const Text = forwardRef<HTMLParagraphElement, TextProps>(function Text(
     <p
       ref={ref}
       style={{
+        whiteSpace: "pre-line",
         fontSize,
         lineHeight,
         textAlign: align,

@@ -23,7 +23,7 @@ const justifyClass = {
 export function Stack({
   children,
   className = "",
-  direction = "row",
+  direction = "flex-row",
   gap = 2,
   align = "center",
   justify = "start",
@@ -37,7 +37,7 @@ export function Stack({
     <div
       className={[
         "flex",
-        direction === "col" ? "flex-col" : "flex-row",
+        direction,
         alignClass[align],
         justifyClass[justify],
         wrap ? "flex-wrap" : "flex-nowrap",
@@ -53,9 +53,9 @@ export function Stack({
 }
 
 export function Hstack(props: HstackProps) {
-  return <Stack direction="row" {...props} />;
+  return <Stack direction="flex-row" {...props} />;
 }
 
 export function Vstack(props: VstackProps) {
-  return <Stack direction="col" {...props} />;
+  return <Stack direction="flex-col" {...props} />;
 }

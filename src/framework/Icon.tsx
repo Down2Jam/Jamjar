@@ -4,6 +4,8 @@ import React, { forwardRef } from "react";
 import type { LucideProps, LucideIcon } from "lucide-react";
 import {
   ALargeSmall,
+  ArrowLeft,
+  ArrowRight,
   ArrowUpRight,
   Ban,
   Banana,
@@ -18,6 +20,7 @@ import {
   CalendarFold,
   CalendarPlus,
   CalendarRange,
+  Check,
   ChevronDown,
   ChevronsDown,
   CircleAlert,
@@ -47,6 +50,7 @@ import {
   Info,
   Layers,
   Lightbulb,
+  LineChart,
   Link,
   LogIn,
   LogOut,
@@ -71,7 +75,9 @@ import {
   Rat,
   RefreshCwOff,
   Repeat,
+  RotateCcw,
   Rss,
+  Save,
   Search,
   Send,
   Settings,
@@ -92,6 +98,7 @@ import {
   Syringe,
   Trash,
   Trophy,
+  Tv,
   User,
   UserPlus,
   Users,
@@ -106,11 +113,14 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 
 const iconMap = {
   alargesmall: ALargeSmall,
+  arrowleft: ArrowLeft,
+  arrowright: ArrowRight,
   arrowupright: ArrowUpRight,
   ban: Ban,
   banana: Banana,
   book: Book,
   bookcopy: BookCopy,
+  broadcast: Tv,
   bug: Bug,
   calendar: Calendar,
   calendar1: Calendar1,
@@ -120,6 +130,7 @@ const iconMap = {
   calendarfold: CalendarFold,
   calendarplus: CalendarPlus,
   calendarrange: CalendarRange,
+  check: Check,
   chevrondown: ChevronDown,
   chevronsdown: ChevronsDown,
   circlealert: CircleAlert,
@@ -149,6 +160,7 @@ const iconMap = {
   info: Info,
   layers: Layers,
   lightbulb: Lightbulb,
+  linechart: LineChart,
   link: Link,
   login: LogIn,
   logout: LogOut,
@@ -173,7 +185,9 @@ const iconMap = {
   rat: Rat,
   refreshcwoff: RefreshCwOff,
   repeat: Repeat,
+  rotateccw: RotateCcw,
   rss: Rss,
+  save: Save,
   search: Search,
   send: Send,
   settings: Settings,
@@ -206,7 +220,14 @@ const iconMap = {
 } as const satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof iconMap;
-type Color = "text" | "textFaded";
+type Color =
+  | "text"
+  | "textFaded"
+  | "red"
+  | "orange"
+  | "yellow"
+  | "green"
+  | "blue";
 
 export interface IconProps extends Omit<LucideProps, "color" | "size"> {
   name?: IconName;

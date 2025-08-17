@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -12,10 +13,11 @@ import Popover from "@/framework/Popover";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Backdrop } from "./Backdrop";
 import Icon, { IconName } from "./Icon";
-import { useTranslations } from "next-intl";
 import { Badge } from "./Badge";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
+import Text from "./Text";
+import { Hstack } from "./Stack";
 
 type Position =
   | "top-left"
@@ -32,6 +34,9 @@ interface DropdownContextValue {
   closeOnSelect: boolean;
   onItemSelect?: (value: unknown) => void;
   setOpen: (v: boolean) => void;
+  multiple: boolean;
+  selectedValues: Set<unknown>;
+  setSelectedValues: (set: Set<unknown>) => void;
 }
 
 const DropdownCtx = createContext<DropdownContextValue | null>(null);
@@ -55,12 +60,16 @@ interface DropdownProps {
   closeOnSelect?: boolean;
   backdrop?: boolean;
   closeOnOutsideClick?: boolean;
+  multiple?: boolean;
+  selectedValues?: Set<unknown>;
+  onSelectionChange?: (selected: Set<unknown>) => void;
+  disabled?: boolean;
 }
 
 function Dropdown({
   trigger,
   children,
-  position = "bottom-left",
+  position = "bottom",
   className,
   openOn = "click",
   hoverDelay = 150,
@@ -71,12 +80,31 @@ function Dropdown({
   closeOnSelect = true,
   backdrop = true,
   closeOnOutsideClick = true,
+  multiple = false,
+  selectedValues: controlledSelectedValues,
+  onSelectionChange,
+  disabled = false,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [internalSelectedValues, setInternalSelectedValues] = useState<
+    Set<unknown>
+  >(new Set());
 
-  const open = isOpen ?? internalOpen;
+  const selectedValues = useMemo(
+    () => controlledSelectedValues ?? internalSelectedValues,
+    [controlledSelectedValues, internalSelectedValues]
+  );
+
+  const setSelectedValues = (newValues: Set<unknown>) => {
+    if (!controlledSelectedValues) {
+      setInternalSelectedValues(new Set(newValues));
+    }
+    onSelectionChange?.(new Set(newValues));
+  };
+
+  const open = (isOpen ?? internalOpen) && !disabled;
 
   const supportsClick = openOn === "click" || openOn === "both";
   const supportsHover = openOn === "hover" || openOn === "both";
@@ -142,6 +170,9 @@ function Dropdown({
           closeOnSelect,
           onItemSelect: onSelect,
           setOpen: (v) => setOpenAndNotify(v),
+          multiple,
+          selectedValues,
+          setSelectedValues,
         }}
       >
         <Popover
@@ -190,22 +221,40 @@ function Item<T = unknown>({
   target,
   rel,
 }: ItemProps<T>) {
-  const { closeOnSelect, onItemSelect, setOpen } = useDropdownCtx();
+  const {
+    closeOnSelect,
+    onItemSelect,
+    setOpen,
+    multiple,
+    selectedValues,
+    setSelectedValues,
+  } = useDropdownCtx();
   const { colors } = useTheme();
-  const t = useTranslations();
 
-  const handleSelect = () => {
-    onSelect?.(value as T);
-    onItemSelect?.(value);
-  };
+  const isSelected = value !== undefined && selectedValues.has(value);
 
   const handleClick = (e: React.MouseEvent) => {
     if (disabled) return;
     onClick?.(e);
     if (e.defaultPrevented) return;
 
-    handleSelect();
-    if (closeOnSelect) setOpen(false);
+    if (multiple && value !== undefined) {
+      const newSet = new Set(selectedValues);
+      if (isSelected) newSet.delete(value);
+      else newSet.add(value);
+      setSelectedValues(newSet);
+    } else {
+      handleSelect();
+      if (closeOnSelect) setOpen(false);
+    }
+
+    onSelect?.(value as T);
+    onItemSelect?.(value);
+  };
+
+  const handleSelect = () => {
+    onSelect?.(value as T);
+    onItemSelect?.(value);
   };
 
   const commonClass = [
@@ -216,7 +265,7 @@ function Item<T = unknown>({
 
   const commonStyle: React.CSSProperties = {
     color: colors["text"],
-    backgroundColor: "transparent",
+    backgroundColor: isSelected ? colors["blueDarkDark"] + "55" : "transparent",
   };
 
   const content = (
@@ -224,11 +273,11 @@ function Item<T = unknown>({
       <div className="flex items-center gap-3">
         {icon && <Icon size={16} name={icon} />}
         <span className="flex flex-col">
-          {t(children)}
+          <Text>{children}</Text>
           {description && (
-            <span className="text-xs" style={{ color: colors["textFaded"] }}>
-              {t(description)}
-            </span>
+            <Text color="textFaded" size="xs">
+              {description}
+            </Text>
           )}
         </span>
       </div>
@@ -262,12 +311,14 @@ function Item<T = unknown>({
         target={target}
         rel={relValue}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor =
-            colors["base"];
+          (e.currentTarget as HTMLElement).style.backgroundColor = isSelected
+            ? colors["blueDark"] + "55"
+            : colors["base"];
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.backgroundColor =
-            "transparent";
+          (e.currentTarget as HTMLElement).style.backgroundColor = isSelected
+            ? colors["blueDarkDark"] + "55"
+            : "transparent";
         }}
       >
         {content}
@@ -286,17 +337,33 @@ function Item<T = unknown>({
       onClick={handleClick}
       disabled={disabled}
       className={commonClass}
-      style={commonStyle}
+      style={{
+        ...commonStyle,
+        color: isSelected ? colors["blue"] : colors["text"],
+      }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-          colors["base"];
+          isSelected ? colors["blueDark"] + "55" : colors["base"];
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLButtonElement).style.backgroundColor =
-          "transparent";
+          isSelected ? colors["blueDarkDark"] + "55" : "transparent";
       }}
     >
-      {content}
+      <Hstack justify="between" className="w-full">
+        <Hstack>
+          {icon && <Icon size={16} name={icon} />}
+          <span className="flex flex-col">
+            <Text>{children}</Text>
+            {description && (
+              <Text color="textFaded" size="xs">
+                {description}
+              </Text>
+            )}
+          </span>
+        </Hstack>
+        {multiple && isSelected && <Icon name="check" className="ml-auto" />}
+      </Hstack>
     </button>
   );
 }

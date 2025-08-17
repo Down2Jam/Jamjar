@@ -7,7 +7,6 @@ import {
   addToast,
   Avatar,
   Chip,
-  Divider,
   Drawer,
   DrawerBody,
   DrawerContent,
@@ -19,7 +18,7 @@ import {
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import { Check, LoaderCircle, MessageCircle, X } from "lucide-react";
+import { Check, LoaderCircle, X } from "lucide-react";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
@@ -38,6 +37,7 @@ import Tooltip from "@/framework/Tooltip";
 import { Vstack } from "@/framework/Stack";
 import ThemedProse from "../themed-prose";
 import { IconName } from "@/framework/Icon";
+import { Card } from "@/framework/Card";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -639,67 +639,64 @@ export default function Posts() {
                   </DrawerHeader>
                   <DrawerBody className="pt-16">
                     <div className="flex flex-col gap-2 py-4">
-                      <Link href={`/p/${posts[currentPost].slug}`}>
-                        <p className="text-2xl">{posts[currentPost].title}</p>
-                      </Link>
-                      <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-                        <p>By</p>
-                        <Link
-                          href={`/u/${posts[currentPost].author.slug}`}
-                          className="flex items-center gap-2"
-                        >
-                          <Avatar
-                            size="sm"
-                            className="w-6 h-6"
-                            src={posts[currentPost].author.profilePicture}
-                            classNames={{
-                              base: "bg-transparent",
+                      <Card>
+                        <Link href={`/p/${posts[currentPost].slug}`}>
+                          <p className="text-2xl">{posts[currentPost].title}</p>
+                        </Link>
+                        <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+                          <p>By</p>
+                          <Link
+                            href={`/u/${posts[currentPost].author.slug}`}
+                            className="flex items-center gap-2"
+                          >
+                            <Avatar
+                              size="sm"
+                              className="w-6 h-6"
+                              src={posts[currentPost].author.profilePicture}
+                              classNames={{
+                                base: "bg-transparent",
+                              }}
+                            />
+                            <p>{posts[currentPost].author.name}</p>
+                          </Link>
+                          <p>
+                            {formatDistance(
+                              new Date(posts[currentPost].createdAt),
+                              new Date(),
+                              {
+                                addSuffix: true,
+                              }
+                            )}
+                          </p>
+                        </div>
+                        <Spacer y={4} />
+
+                        <ThemedProse>
+                          <div
+                            className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                            dangerouslySetInnerHTML={{
+                              __html: posts[currentPost].content,
                             }}
                           />
-                          <p>{posts[currentPost].author.name}</p>
-                        </Link>
-                        <p>
-                          {formatDistance(
-                            new Date(posts[currentPost].createdAt),
-                            new Date(),
-                            {
-                              addSuffix: true,
-                            }
-                          )}
-                        </p>
-                      </div>
-                      <Spacer y={4} />
+                        </ThemedProse>
 
-                      <ThemedProse>
-                        <div
-                          className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                          dangerouslySetInnerHTML={{
-                            __html: posts[currentPost].content,
-                          }}
-                        />
-                      </ThemedProse>
+                        <Spacer y={4} />
 
-                      <Spacer y={4} />
-
-                      <div className="flex gap-3">
-                        <LikeButton
-                          likes={posts[currentPost].likes.length}
-                          liked={posts[currentPost].hasLiked}
-                          parentId={posts[currentPost].id}
-                        />
-                        <Link
-                          href={`/p/${posts[currentPost].slug}#create-comment`}
-                        >
-                          <Button size="sm">
-                            <MessageCircle size={16} />{" "}
-                            {posts[currentPost].comments.length}
-                          </Button>
-                        </Link>
-                      </div>
-
-                      <Spacer y={4} />
-
-                      <Divider />
+                        <div className="flex gap-3">
+                          <LikeButton
+                            likes={posts[currentPost].likes.length}
+                            liked={posts[currentPost].hasLiked}
+                            parentId={posts[currentPost].id}
+                          />
+                          <Link
+                            href={`/p/${posts[currentPost].slug}#create-comment`}
+                          >
+                            <Button size="sm" icon="messagecircle">
+                              {posts[currentPost].comments.length}
+                            </Button>
+                          </Link>
+                        </div>
+                      </Card>
 
                       <Spacer y={4} />
 

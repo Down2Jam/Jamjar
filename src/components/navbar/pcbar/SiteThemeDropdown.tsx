@@ -46,7 +46,6 @@ export default function SiteThemeDropdown() {
       <Popover shown={!!hoveredKey}>Previewing {hoveredKey}</Popover>
       <Dropdown
         openOn="hover"
-        position="bottom-left"
         onOpenChange={setIsOpen}
         isOpen={isOpen}
         className="gap-1 flex flex-col"

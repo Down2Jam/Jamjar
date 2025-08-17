@@ -181,7 +181,7 @@ export function Button(props: ButtonProps) {
   }
 
   // Button mode
-  const { ...buttonProps } = props as ButtonAsButton;
+  const { type = "button", ...buttonProps } = props as ButtonAsButton;
   return (
     <button
       className={commonClass}
@@ -189,6 +189,7 @@ export function Button(props: ButtonProps) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       disabled={disabled || loading}
+      type={type}
       {...buttonProps}
     >
       {content}

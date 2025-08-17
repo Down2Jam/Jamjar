@@ -349,7 +349,7 @@
     "Q3": {
       "Number": "Q3",
       "Question": "Can I use generative AI to make aspects of the game?",
-      "Answer": "Regular: Yes. However, you cannot opt in to be rated on the categories related to what it was used for: If you use it for art/graphics, you must not opt in to Graphics. If you use it for any form of audio (music, SFX, voice acting, etc), you must not opt in to Audio. If you use it for writing dialogue and/or jokes, you must not opt in to Emotional Delivery.\n\nO.D.A: No. Any use of generative AI is explicitly prohibited."
+      "Answer": "The use of generative AI is restricted.\n\nAs a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand the that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.\n\nThe restriction focuses on tech that is widely considered \"not in the spirit of game jamming\". Most of this is based around generating content for your game that would otherwise be created by a hypothetical team mate. The restriction is less focused on AI tech that is not replacing creativity, such as auto-complete coding or searching for information on the web. \nTo clarify, asking an AI Agent to write a chunk of code for you or asking it to fix your code is still forbidden.\n\nEnforcement of rules in a game jam, around AI or otherwise, is challenging. We will be adding the ability to report entries that have clearly breached any jam rules. Reports will be manually reviewed by the jam organizers."
     },
     "Q4": {
       "Number": "Q4",
@@ -385,6 +385,35 @@
       "Number": "Q10",
       "Question": "Is there limitations on what game engine, etc. I can use?",
       "Answer": "You can use whatever you want to make the game as long as it does not require the people playing the game to download something other than the game itself. For example games on roblox would not be allowed as that requires people to download roblox instead of downloading the game itself."
+    }
+  },
+  "TeamFAQ": {
+    "Title": "Team FAQ",
+    "Description": "Questions relating to making a team for the jam",
+    "Q1": {
+      "Number": "Q1",
+      "Question": "How many people can make the game?",
+      "Answer": "Regular: Any number of people.\n\nO.D.A: Only one developer."
+    },
+    "Q2": {
+      "Number": "Q2",
+      "Question": "Can I be a part of multiple teams / make multiple games?",
+      "Answer": "Yes. It is typically better to focus on one game though so you can give it a higher level of polish within the limited timeframe."
+    },
+    "Q3": {
+      "Number": "Q3",
+      "Question": "How can I find a team?",
+      "Answer": "We have a team finder built into the site you can use to find a team on. In the site settings you can set what roles you have on a team and then in the team finder you can limit results to only show teams that need your role.\n\nIn addition you can use other locations such as on social media or in the team finding channel on our discord server."
+    },
+    "Q4": {
+      "Number": "Q4",
+      "Question": "Can I edit a team during the jam / after submission?",
+      "Answer": "Yes you can edit teams at any time before the rating period ends. So if you forgot to add a teammate before the jam ended and they want to be able to contribute to the rankings you can invite them into the team during the rating period."
+    },
+    "Q5": {
+      "Number": "Q5",
+      "Question": "Does every team member need an account on the site?",
+      "Answer": "No but they cannot rate games or be credited directly in the site UI without an account."
     }
   },
   "RatingsFAQ": {
@@ -479,40 +508,6 @@
       "Answer": "The jam happens twice a year, typically around 6 months apart."
     }
   },
-  "Phases": {
-    "ThemeSubmission": {
-      "Title": "Theme Submission",
-      "Description": "Submitting possible jam themes"
-    },
-    "ThemeElimination": {
-      "Title": "Theme Elimination",
-      "Description": "Going through submitted jam themes and voting yes or no to them"
-    },
-    "ThemeVoting": {
-      "Title": "Theme Voting",
-      "Description": "Voting from a list of top themes for the final theme"
-    },
-    "GameJam": {
-      "Title": "Game Jam",
-      "Description": "The core event! Making a game in a small period of time"
-    },
-    "Rating": {
-      "Title": "Rating Period",
-      "Description": "Playing and giving feedback to other people's games"
-    },
-    "Results": {
-      "Title": "Results",
-      "Description": "Viewing the results of the jam and how you were rated"
-    },
-    "PostRating": {
-      "Title": "Post Jam Rating Period",
-      "Description": "Playing and giving feedback to other people's post jam improvements"
-    },
-    "PostResults": {
-      "Title": "Post Jam Results",
-      "Description": "Viewing the results of the post jam and how you were rated compared to the jam"
-    }
-  },
   "JamHeader": {
     "Suggestions": "Go to Theme Suggestions",
     "Elimination": "Go to Theme Elimination",
@@ -577,7 +572,7 @@
     "Title": "Submit Your Theme Suggestion",
     "Description": "Submit themes to the voting rounds to possibly be used in the jam",
     "LimitReached": "You've reached your theme suggestion limit for this jam!",
-    "NoDescription": "No description",
+    "NoExamples": "No examples",
     "NoSuggestions": "You haven't submitted any suggestions yet.",
     "Loading": {
       "Title": "Loading...",
@@ -587,5 +582,39 @@
   "Themes": {
     "Signup": "Sign up",
     "Login": "Login"
+  },
+  "Phases": {
+    "ThemeSubmission": {
+      "Title": "Theme Submission",
+      "Description": "Submitting possible jam themes"
+    },
+    "ThemeElimination": {
+      "Title": "Theme Elimination",
+      "Description": "Going through submitted jam themes and voting yes or no to them"
+    },
+    "ThemeVoting": {
+      "Title": "Theme Voting",
+      "Description": "Voting from a list of top themes for the final theme"
+    },
+    "GameJam": {
+      "Title": "Game Jam",
+      "Description": "The core event! Making a game in a small period of time"
+    },
+    "Rating": {
+      "Title": "Rating Period",
+      "Description": "Playing and giving feedback to other people's games"
+    },
+    "Results": {
+      "Title": "Results",
+      "Description": "Viewing the results of the jam and how you were rated"
+    },
+    "PostRating": {
+      "Title": "Post Jam Rating Period",
+      "Description": "Playing and giving feedback to other people's post jam improvements"
+    },
+    "PostResults": {
+      "Title": "Post Jam Results",
+      "Description": "Viewing the results of the post jam and how you were rated compared to the jam"
+    }
   }
 }

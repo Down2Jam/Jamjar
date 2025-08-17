@@ -18,13 +18,8 @@ export interface StackBaseProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export interface StackProps extends StackBaseProps {
-  direction?: "row" | "col";
+  direction?: string;
 }
 
-export interface HstackProps extends StackBaseProps {
-  direction?: "row";
-}
-
-export interface VstackProps extends StackBaseProps {
-  direction?: "col";
-}
+export type HstackProps = Omit<StackProps, "direction">;
+export type VstackProps = Omit<StackProps, "direction">;

@@ -7,6 +7,7 @@ import Hotkey from "../../hotkey";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import Dropdown from "@/framework/Dropdown";
 import { Button } from "@/framework/Button";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 interface NavbarUserProps {
   user?: UserType;
@@ -14,6 +15,7 @@ interface NavbarUserProps {
 
 export default function NavbarUser({ user }: NavbarUserProps) {
   const { isLgDown } = useBreakpoint();
+  const { colors } = useTheme();
 
   return (
     <NavbarItem className="flex items-center">
@@ -48,9 +50,12 @@ export default function NavbarUser({ user }: NavbarUserProps) {
             <Avatar
               size="sm"
               src={user.profilePicture}
-              className="!duration-500 transition-all cursor-pointer outline-2 outline-[#cacaca] dark:outline-green-300/40 bg-[#fff] dark:bg-[#1d232b]"
+              className="!duration-300 transition-all cursor-pointer outline-2"
               classNames={{
                 base: "bg-transparent",
+              }}
+              style={{
+                outlineColor: colors["base"],
               }}
             />
           ) : (

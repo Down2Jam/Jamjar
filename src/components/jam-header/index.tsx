@@ -8,6 +8,7 @@ import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Text from "@/framework/Text";
+import Link from "next/link";
 
 const events = [
   { name: "Phases.ThemeSubmission.Title", date: "AUG 15" },
@@ -256,8 +257,8 @@ export default function JamHeader() {
           activeJamResponse.phase != "Upcoming Jam" &&
           (getPhaseObj(activeJamResponse.phase) &&
           getPhaseObj(activeJamResponse.phase).href ? (
-            <a
-              href={getPhaseObj(activeJamResponse.phase).href}
+            <Link
+              href={getPhaseObj(activeJamResponse.phase).href || "/"}
               className="hover:underline"
               style={{
                 color: colors["blue"],
@@ -273,7 +274,7 @@ export default function JamHeader() {
                   {getPhaseObj(activeJamResponse.phase).text}
                 </Text>
               </div>
-            </a>
+            </Link>
           ) : (
             <Text
               weight="semibold"

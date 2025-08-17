@@ -194,6 +194,8 @@
     }
   },
   "Settings": {
+    "Title": "Ayarlar",
+    "Description": "Ayarlarınızı yönetin",
     "Name": {
       "Title": "İsim",
       "Description": "Sitede gösterilen isminiz"
@@ -347,7 +349,7 @@
     "Q3": {
       "Number": "S3",
       "Question": "Oyunu yaparken üretken Yapay Zeka kullanabilir miyim?",
-      "Answer": "Hayır. Herhangi bir üretken Yapay Zeka kullanımı yasaktır."
+      "Answer": "Üretici Yapay Zeka kullanımı kısıtlanmıştır.\n\nTopluluk olarak, üretici yapay zekanın uzman becerilere sahip yaratıcılar üzerindeki olumsuz etkisinin farkındayız. Birçok üretici yapay zeka aracının etik olmayan yöntemlerle eğitildiğini biliyoruz. Jam etkinliğimiz, yaratıcıları ve onların işlerini kutlamak için düzenlenmiştir. D2J organizatörleri, oyun geliştirmede geleneksel rolleri üretici yapay zeka ile değiştirmenin game jam ruhuna uygun olmadığını düşünüyor.\n\nKısıtlama, genel olarak \"game jam ruhuna uygun olmayan\" olarak değerlendirilen teknolojilere odaklanmaktadır. Bunun büyük bölümü, normalde olası bir ekip arkadaşı tarafından yapılacak içerikleri oyununuza üretici yapay zeka ile eklemekle ilgilidir. Kısıtlama, yaratıcılığın yerini almasa da otomatik kod tamamlama veya internette bilgi arama gibi yapay zeka teknolojilerine odaklanmamaktadır.\nAçıklık getirmek gerekirse, bir Yapay Zeka Agentından sizin için bir kod parçası yazmasını veya kodunuzu düzeltmesini istemek yasaktır.\n\nBir game jam’de, yapay zeka veya başka bir konuda kuralları uygulamak zordur. Jam kurallarını açıkça ihlal eden girişleri rapor etme imkanı ekleyeceğiz. Raporlar, jam organizatörleri tarafından manuel olarak incelenecektir."
     },
     "Q4": {
       "Number": "S4",
@@ -477,6 +479,81 @@
       "Answer": "Jam senede iki kez, çoğunlukla birbirinden 6 ay arayla gerçekleşir."
     }
   },
+  "JamHeader": {
+    "Suggestions": "Tema Gönderimi'ne Git",
+    "Elimination": "Tema Eliminasyonu'na Git",
+    "Voting": "Tema Oylaması'na Git",
+    "JamSoon": "Jam başlarken tema görünür olacaktır",
+    "NoTheme": "Seçilebilmiş bir tema yoktur",
+    "Submissions": "Gönderimler yakında kapanıyor",
+    "Rate": "Hadi oyunları oylayın!"
+  },
+  "Stats": {
+    "Timer": "Jam başlama zamanı:",
+    "Entrants": "Katılımcılar",
+    "Games": "Oyunlar",
+    "Ratings": "Oylamalar"
+  },
+  "SidebarGames": {
+    "Title": "Öne Çıkan Oyunlar",
+    "Link": "Oyunlar Sayfası'na Git"
+  },
+  "SidebarMusic": {
+    "Title": "Öne Çıkan Müzikler",
+    "Link": "Müzik Sayfası'na Git"
+  },
+  "SidebarEvents": {
+    "Active": {
+      "Title": "Aktif Etkinlikler"
+    },
+    "Upcoming": {
+      "Title": "Gelecek Etkinlikler"
+    },
+    "Link": "Etkinlikler Sayfası'na Git"
+  },
+  "ThemeSuggestions": {
+    "YourSuggestions": {
+      "Title": "Önerileriniz",
+      "Description": "Oylama turu için gönderdiğiniz temalar"
+    },
+    "PastSuggestions": {
+      "Title": "Önceki Temalarınız",
+      "Description": "Önceki Jam'lere gönderdiğniz temalar"
+    },
+    "Edit": {
+      "Title": "Düzenle",
+      "Description": "Tema önerisini düzenle"
+    },
+    "Delete": {
+      "Title": "Sil",
+      "Description": "Tema önerisini sil"
+    },
+    "Conflict": "Bu öneri kullanılamaz(muhtemelen başka bir yakın jam'de kullanıldı)",
+    "Added": "Öneri başarıyla eklendi!",
+    "ErrorDeleting": "Öneriyi silerken hata oluştu:",
+    "FailedDelete": "Öneri silinemedi.",
+    "SignIn": {
+      "Title": "Giriş yapılmamış",
+      "Description": "Tema önerebilmek için siteye giriş yap"
+    },
+    "JoinJam": {
+      "Title": "Önce Jam'e Katıl",
+      "Description": "Tema önermeden önce şu anki jam'e katılmalısınız."
+    },
+    "Title": "Tema Önerini Gönder",
+    "Description": "Jam'de kullanılabilecek muhtemel temaları gönder",
+    "LimitReached": "Maksimum yollanabilecek tema sayısına ulaştın!",
+    "NoExamples": "Örnek yok",
+    "NoSuggestions": "Henüz bir tema göndermedin.",
+    "Loading": {
+      "Title": "Yükleniyor...",
+      "Description": "Sunucudan bilgi alınıyor"
+    }
+  },
+  "Themes": {
+    "Signup": "Üye Ol",
+    "Login": "Giriş Yap"
+  },
   "Phases": {
     "ThemeSubmission": {
       "Title": "Tema Gönderimi",
@@ -510,37 +587,5 @@
       "Title": "Post Jam Sonuçları",
       "Description": "Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma"
     }
-  },
-  "JamHeader": {
-    "Suggestions": "Tema Gönderimi'ne Git",
-    "Elimination": "Tema Eliminasyonu'na Git",
-    "Voting": "Tema Oylaması'na Git",
-    "JamSoon": "Jam başlarken tema görünür olacaktır",
-    "NoTheme": "Seçilebilmiş bir tema yoktur",
-    "Submissions": "Gönderimler yakında kapanıyor",
-    "Rate": "Hadi oyunları oylayın!"
-  },
-  "Stats": {
-    "Timer": "Jam başlama zamanı:",
-    "Entrants": "Katılımcılar",
-    "Games": "Oyunlar",
-    "Ratings": "Oylamalar"
-  },
-  "SidebarGames": {
-    "Title": "Öne Çıkan Oyunlar",
-    "Link": "Oyunlar Sayfası'na Git"
-  },
-  "SidebarMusic": {
-    "Title": "Öne Çıkan Müzikler",
-    "Link": "Müzik Sayfası'na Git"
-  },
-  "SidebarEvents": {
-    "Active": {
-      "Title": "Aktif Etkinlikler"
-    },
-    "Upcoming": {
-      "Title": "Gelecek Etkinlikler"
-    },
-    "Link": "Etkinlikler Sayfası'na Git"
   }
 }

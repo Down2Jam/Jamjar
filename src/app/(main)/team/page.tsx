@@ -2,51 +2,46 @@
 
 import { hasCookie } from "@/helpers/cookie";
 import {
+  addToast,
   Avatar,
-  Button,
-  Card,
-  CardBody,
   Chip,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
   Form,
-  Input,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   Spacer,
-  Spinner,
-  Switch,
-  Textarea,
   useDisclosure,
 } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 import { getSelf, searchUsers } from "@/requests/user";
-import { getIcon } from "@/helpers/icon";
 import { RoleType } from "@/types/RoleType";
 import { getTeamRoles, getTeamsUser, updateTeam } from "@/requests/team";
 import { TeamType } from "@/types/TeamType";
-import {
-  ArrowLeft,
-  ArrowRight,
-  LoaderCircle,
-  LogOut,
-  Trash,
-  User,
-  Users,
-} from "lucide-react";
-import ButtonAction from "@/components/link-components/ButtonAction";
+import { LoaderCircle } from "lucide-react";
 import { toast } from "react-toastify";
-import { deleteTeam, inviteToTeam, leaveTeam } from "@/helpers/team";
+import {
+  createTeam,
+  deleteTeam,
+  inviteToTeam,
+  leaveTeam,
+} from "@/helpers/team";
 import { TeamInviteType } from "@/types/TeamInviteType";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import ButtonLink from "@/components/link-components/ButtonLink";
+import { Card } from "@/framework/Card";
+import Text from "@/framework/Text";
+import { Button } from "@/framework/Button";
+import { Hstack, Vstack } from "@/framework/Stack";
+import { Input } from "@/framework/Input";
+import Dropdown from "@/framework/Dropdown";
+import Icon from "@/framework/Icon";
+import { Textarea } from "@/framework/Textarea";
+import { Spinner } from "@/framework/Spinner";
+import { Switch } from "@/framework/Switch";
+import { useTheme } from "@/providers/SiteThemeProvider";
 
 export default function EditTeamPage() {
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
@@ -68,6 +63,7 @@ export default function EditTeamPage() {
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [name, setName] = useState<string>("");
+  const { colors } = useTheme();
 
   // Fetch the current jam phase using helpers/jam
   useEffect(() => {
@@ -172,16 +168,87 @@ export default function EditTeamPage() {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (!user)
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userx" />
+                <Text size="xl">User not found</Text>
+              </Hstack>
+              <Text color="textFaded">Please sign in to view your team</Text>
+            </Vstack>
+            <Hstack>
+              <Button href="/signup" color="blue" icon="userplus">
+                Themes.Signup
+              </Button>
+              <Button href="/login" color="pink" icon="login">
+                Themes.Login
+              </Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
 
-  if (!user) return <p>User not found (are you logged in?)</p>;
+  if (loading) {
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Hstack>
+              <Spinner />
+              <Text size="xl">Loading</Text>
+            </Hstack>
+            <Text color="textFaded">Loading team page...</Text>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
 
-  if (!teams || teams.length == 0) return <p>You are not part of a team</p>;
+  if (!teams || teams.length == 0)
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userx" />
+                <Text size="xl">No Team Found</Text>
+              </Hstack>
+              <Text color="textFaded">
+                You are not part of a team, please join or create one
+              </Text>
+            </Vstack>
+            <Hstack>
+              <Button
+                onClick={async () => {
+                  const successful = await createTeam();
+                  if (successful) {
+                    redirect("/team");
+                  }
+                }}
+                color="green"
+                icon="users"
+              >
+                Go to Team Finder
+              </Button>
+              <Button href="/login" color="yellow" icon="userplus">
+                Create Team
+              </Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
 
   return (
     <div className="flex items-center justify-center">
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
+        className="w-full max-w-2xl flex flex-col gap-4"
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);
@@ -210,99 +277,109 @@ export default function EditTeamPage() {
           );
 
           if (response.ok) {
-            toast.success("Changed settings");
+            addToast({
+              title: "Changed settings",
+            });
             setWaitingSave(false);
           } else {
-            toast.error("Failed to update settings");
+            addToast({
+              title: "Failed to update settings",
+            });
             setWaitingSave(false);
           }
         }}
       >
-        <p className="text-3xl">Team</p>
+        <Card>
+          <Vstack align="start">
+            <Hstack>
+              <Icon name="users" color="text" />
+              <Text size="xl" color="text" weight="semibold">
+                Team
+              </Text>
+            </Hstack>
+            <Text size="sm" color="textFaded">
+              View and manage your team for the jam
+            </Text>
+          </Vstack>
+        </Card>
         {teams[selectedTeam].ownerId != user.id && (
           <p>You cannot edit the team if you are not the owner</p>
         )}
         {teams.length > 1 && (
           <div className="flex gap-2">
-            <ButtonAction
-              iconPosition="start"
-              name="Previous Team"
-              icon={<ArrowLeft />}
-              onPress={() => {
+            <Button
+              icon="arrowleft"
+              onClick={() => {
                 changeTeam(selectedTeam - 1);
               }}
-              isDisabled={selectedTeam == 0}
-            />
-            <ButtonAction
-              name="Next Team"
-              icon={<ArrowRight />}
-              onPress={() => {
+              disabled={selectedTeam == 0}
+            >
+              Previous Team
+            </Button>
+            <Button
+              icon="arrowright"
+              onClick={() => {
                 changeTeam(selectedTeam + 1);
               }}
-              isDisabled={selectedTeam == teams.length - 1}
-            />
+              disabled={selectedTeam == teams.length - 1}
+            >
+              Next Team
+            </Button>
           </div>
         )}
         {(!teams[selectedTeam].game ||
           teams[selectedTeam].game.category != "ODA") && (
           <div className="flex gap-2">
-            <ButtonAction
-              name="Invite User"
-              icon={<User />}
-              onPress={onOpen}
-              isDisabled={teams[selectedTeam].ownerId != user.id}
-            />
-            <ButtonLink
-              icon={<Users />}
-              name={"Go to Team Finder"}
-              href={"/team-finder"}
-            />
+            <Button
+              icon="user"
+              onClick={onOpen}
+              disabled={teams[selectedTeam].ownerId != user.id}
+            >
+              Invite User
+            </Button>
+            <Button icon="users" href="/team-finder">
+              Go to Team Finder
+            </Button>
           </div>
         )}
         {users?.map((user2) => (
-          <Card key={user2.id}>
-            <CardBody className="gap-3 min-w-96">
-              <div className="flex items-center gap-3">
+          <Card key={user2.id} className="min-w-96">
+            <Hstack justify="between">
+              <Hstack>
                 <Avatar src={user2.profilePicture} />
-                <p>{user2.name}</p>
-                {teams[selectedTeam].ownerId == user.id &&
-                  teams[selectedTeam].ownerId != user2.id && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setUsers(users.filter((a) => a.id !== user2.id))
-                      }
-                      className="text-sm hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  )}
-              </div>
-            </CardBody>
+                <Text>{user2.name}</Text>
+              </Hstack>
+              {teams[selectedTeam].ownerId == user.id &&
+                teams[selectedTeam].ownerId != user2.id && (
+                  <Button
+                    onClick={() =>
+                      setUsers(users.filter((a) => a.id !== user2.id))
+                    }
+                    icon="x"
+                  />
+                )}
+            </Hstack>
           </Card>
         ))}
         {invitations?.map((invite) => (
-          <Card key={user.id}>
-            <CardBody className="gap-3 min-w-96">
-              <div className="flex items-center gap-3">
+          <Card key={user.id} className="min-w-96">
+            <Hstack justify="between">
+              <Hstack>
                 <Avatar src={invite.user.profilePicture} />
-                <p>{invite.user.name}</p>
-                <p>(invited)</p>
-                {teams[selectedTeam].ownerId == user.id && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setInvitations(
-                        invitations.filter((a) => a.id !== invite.id)
-                      );
-                    }}
-                    className="text-sm hover:text-red-500"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-            </CardBody>
+                <Text>{invite.user.name}</Text>
+                <Text>(invited)</Text>
+              </Hstack>
+              {teams[selectedTeam].ownerId == user.id && (
+                <Button
+                  onClick={() =>
+                    setInvitations(
+                      invitations.filter((a) => a.id !== invite.id)
+                    )
+                  }
+                  icon="x"
+                />
+              )}
+            </Hstack>
           </Card>
         ))}
         <Modal
@@ -312,10 +389,23 @@ export default function EditTeamPage() {
             onOpenChange();
           }}
         >
-          <ModalContent>
+          <ModalContent
+            style={{
+              backgroundColor: colors["mantle"],
+            }}
+          >
             {(onClose) => (
               <>
-                <ModalHeader>Invitation</ModalHeader>
+                <ModalHeader>
+                  <Vstack align="start">
+                    <Text size="xl" color="text">
+                      Invitation
+                    </Text>
+                    <Text size="sm" color="textFaded">
+                      Invite a user to your jam team
+                    </Text>
+                  </Vstack>
+                </ModalHeader>
                 <ModalBody>
                   <Input
                     placeholder="Search users..."
@@ -350,12 +440,12 @@ export default function EditTeamPage() {
                   />
                 </ModalBody>
                 <ModalFooter>
-                  <Button color="danger" variant="flat" onPress={onClose}>
+                  <Button color="red" onClick={onClose}>
                     Close
                   </Button>
                   <Button
-                    color="primary"
-                    onPress={async () => {
+                    color="blue"
+                    onClick={async () => {
                       if (!selectedAuthor) {
                         toast.error("You did not select a user to invite");
                         return;
@@ -380,49 +470,76 @@ export default function EditTeamPage() {
             )}
           </ModalContent>
         </Modal>
-        <Input
-          label="Name"
-          labelPlacement="outside"
-          placeholder="Enter a team name"
-          isDisabled={teams[selectedTeam].ownerId != user.id}
-          onValueChange={setName}
-          value={name || ""}
-        />
-        <Textarea
-          label="Description"
-          labelPlacement="outside"
-          placeholder="Enter a description of your team (and a way to contact you) that displays on the team finder"
-          isDisabled={teams[selectedTeam].ownerId != user.id}
-          onValueChange={setDescription}
-          value={description || ""}
-        />
-        <Switch
-          isSelected={applicationsOpen}
-          onValueChange={setApplicationsOpen}
-          isDisabled={teams[selectedTeam].ownerId != user.id}
-        >
-          <div className="text-[#333] dark:text-white">
-            <p>Open Applications</p>
-            <p className="text-sm">
-              Lets people apply for your team on the team finder
-            </p>
-          </div>
-        </Switch>
-        <div className="text-[#333] dark:text-white flex flex-col gap-3">
-          <p>Wanted Roles</p>
-          <p className="text-sm">
-            Roles that the team finder shows that you need
-          </p>
-          <div>
+        <Card>
+          <Vstack align="start">
+            <div>
+              <Text color="text">Team Name</Text>
+              <Text color="textFaded" size="xs">
+                The team name that displays as the game author (and for your
+                team on the team finder)
+              </Text>
+            </div>
+            <Input
+              placeholder="Enter a team name... (optional)"
+              disabled={teams[selectedTeam].ownerId != user.id}
+              onValueChange={setName}
+              value={name || ""}
+            />
+          </Vstack>
+        </Card>
+        <Card>
+          <Vstack align="start">
+            <div>
+              <Text color="text">Description</Text>
+              <Text color="textFaded" size="xs">
+                A description of the team (and a way to contact you if needed)
+                that shows in the team finder
+              </Text>
+            </div>
+            <Textarea
+              placeholder="Enter a description... (optional)"
+              disabled={teams[selectedTeam].ownerId != user.id}
+              onValueChange={setDescription}
+              value={description || ""}
+              fullWidth={true}
+            />
+          </Vstack>
+        </Card>
+        <Card>
+          <Hstack>
+            <Switch
+              checked={applicationsOpen}
+              onChange={setApplicationsOpen}
+              disabled={teams[selectedTeam].ownerId != user.id}
+            />
+            <Vstack align="start" gap={0}>
+              <Text color="text">Open Applications</Text>
+              <Text color="textFaded" size="xs">
+                Lets people apply for your team on the team finder
+              </Text>
+            </Vstack>
+          </Hstack>
+        </Card>
+        <Card>
+          <Vstack align="start">
+            <div>
+              <Text color="text">Wanted Roles</Text>
+              <Text color="textFaded" size="xs">
+                Roles that the team finder shows that you need
+              </Text>
+            </div>
             <Dropdown
-              backdrop="opaque"
-              isDisabled={teams[selectedTeam].ownerId != user.id}
-            >
-              <DropdownTrigger>
+              position="top"
+              multiple
+              disabled={teams[selectedTeam].ownerId != user.id}
+              selectedValues={wantedRoles}
+              onSelectionChange={(selection) => {
+                setWantedRoles(selection as Set<string>);
+              }}
+              trigger={
                 <Button
                   size="sm"
-                  className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-                  variant="faded"
+                  disabled={teams[selectedTeam].ownerId != user.id}
                 >
                   {wantedRoles.size > 0
                     ? Array.from(wantedRoles)
@@ -434,40 +551,34 @@ export default function EditTeamPage() {
                         .join(", ")
                     : "No Roles"}
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                selectionMode="multiple"
-                className="text-[#333] dark:text-white"
-                selectedKeys={wantedRoles}
-                onSelectionChange={(selection) => {
-                  setWantedRoles(selection as Set<string>);
-                }}
-              >
-                {roles.map((secondaryRole) => (
-                  <DropdownItem
-                    key={secondaryRole.slug}
-                    startContent={getIcon(secondaryRole.icon)}
-                    description={secondaryRole.description}
-                  >
-                    {secondaryRole.name}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
+              }
+            >
+              {roles.map((secondaryRole) => (
+                <Dropdown.Item
+                  key={secondaryRole.slug}
+                  value={secondaryRole.slug}
+                  description={secondaryRole.description}
+                >
+                  {secondaryRole.name}
+                </Dropdown.Item>
+              ))}
             </Dropdown>
-          </div>
-        </div>
+          </Vstack>
+        </Card>
         {teams[selectedTeam].ownerId == user.id && (
           <div className="flex gap-2">
-            <Button color="primary" type="submit">
-              {waitingSave ? (
-                <LoaderCircle className="animate-spin" size={16} />
-              ) : (
-                <p>Save</p>
-              )}
-            </Button>
-            <Button type="reset" variant="flat">
-              Reset
-            </Button>
+            {waitingSave ? (
+              <LoaderCircle className="animate-spin" size={16} />
+            ) : (
+              <>
+                <Button color="blue" type="submit" icon="save">
+                  Save
+                </Button>
+                <Button type="reset" icon="rotateccw">
+                  Reset
+                </Button>
+              </>
+            )}
           </div>
         )}
         <Spacer />
@@ -475,28 +586,30 @@ export default function EditTeamPage() {
           {teams[selectedTeam].ownerId == user.id &&
             activeJamResponse?.jam?.id == teams[selectedTeam].jamId &&
             activeJamResponse.phase != "Rating" && (
-              <ButtonAction
-                name="Delete Team"
-                icon={<Trash />}
-                onPress={async () => {
+              <Button
+                icon="trash"
+                onClick={async () => {
                   const successful = await deleteTeam(teams[selectedTeam].id);
                   if (successful) {
                     redirect("/team-finder");
                   }
                 }}
-              />
+              >
+                Delete Team
+              </Button>
             )}
           {teams[selectedTeam].ownerId != user.id && (
-            <ButtonAction
-              name="Leave Team"
-              icon={<LogOut />}
-              onPress={async () => {
+            <Button
+              icon="logout"
+              onClick={async () => {
                 const successful = await leaveTeam(teams[selectedTeam].id);
                 if (successful) {
                   redirect("/team-finder");
                 }
               }}
-            />
+            >
+              Leave Team
+            </Button>
           )}
         </div>
       </Form>

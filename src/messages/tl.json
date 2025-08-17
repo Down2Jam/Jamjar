@@ -5,7 +5,8 @@
     "Join": "Salin na",
     "About": "About",
     "Why": "Bakit hindi mag jam?",
-    "Logo": "Down2Jam logo"
+    "Logo": "Down2Jam logo",
+    "Explore": "Tuklasin"
   },
   "Navbar": {
     "Games": {
@@ -57,7 +58,8 @@
       "Alt": "D2jam logo"
     },
     "Language": {
-      "Title": "Pumili ng lengguahe"
+      "Title": "Pumili ng lengguahe",
+      "Select": "Pumili"
     },
     "JoinJam": {
       "Title": "Sumalin sa Jam",
@@ -107,6 +109,237 @@
       "Title": "Inbox",
       "Description": "Tignan ang mga pagpapaunawa"
     },
-    "Search": "Search"
+    "Search": "Search",
+    "Music": {
+      "Title": "Musika",
+      "Description": "Lahat nang musika na sinalin sa website"
+    }
+  },
+  "PostStyle": {
+    "Cozy": {
+      "Title": "Maaliwalas",
+      "Description": "Malalaking cards, nakikita ang laman ng buong post"
+    },
+    "Compact": {
+      "Title": "Compact",
+      "Description": "Malilit na cards para mas mariming makikita sa screen"
+    },
+    "Ultra": {
+      "Title": "Ultra Compact",
+      "Description": "Pinakamaliit na card para talagang napaka-compact"
+    }
+  },
+  "PostSort": {
+    "Top": {
+      "Title": "Pinakamataas",
+      "Description": "Pinakikita ang post na may pinakamataas na like sa unahan"
+    },
+    "Newest": {
+      "Title": "Pinakabago",
+      "Description": "Pinakikita ang masbagong post sa unahan"
+    },
+    "Oldest": {
+      "Title": "Pinakaluma",
+      "Description": "Pinakikita ang masmalumahing post sa unahan"
+    }
+  },
+  "PostTime": {
+    "Hour": {
+      "Title": "Oras",
+      "Description": "Pinakikita ang post galing sa huling nakaraang oras"
+    },
+    "ThreeHours": {
+      "Title": "Tatlong Oras",
+      "Description": "Pinakikita ang post galing sa nakaraang tatlong oras"
+    },
+    "SixHours": {
+      "Title": "Anim na Oras",
+      "Description": "Pinakikita ang post galing sa nakaraang anim na oras"
+    },
+    "TwelveHours": {
+      "Title": "Labing-dalawang Oras",
+      "Description": "Pinakikita ang post galing sa nakaraang labing-dalawang oras"
+    },
+    "Day": {
+      "Title": "Araw",
+      "Description": "Pinakikita ang post galing sa nakaraang araw"
+    },
+    "Week": {
+      "Title": "Linggo",
+      "Description": "Pinakikita ang post galing sa nakaraang linggo"
+    },
+    "Month": {
+      "Title": "Buwan",
+      "Description": "Pinakikita ang post galing sa nakaraang buwan"
+    },
+    "ThreeMonths": {
+      "Title": "Tatlong Buwan",
+      "Description": "Pinakikita ang post galing sa nakaraang tatlong buwan"
+    },
+    "SixMonths": {
+      "Title": "Anim na Buwan",
+      "Description": "Pinakikita ang post galing sa nakaraang anim na buwan"
+    },
+    "NineMonths": {
+      "Title": "Siyam na Buwan",
+      "Description": "Pinakikita ang post galing sa nakaraang siyam na buwan"
+    },
+    "Year": {
+      "Title": "Taon",
+      "Description": "Pinakikita ang post galing sa nakaraang taon"
+    },
+    "All": {
+      "Title": "Lahat",
+      "Description": "Pinakikita ang lahat ng post"
+    }
+  },
+  "Settings": {
+    "Title": "Settings",
+    "Description": "Ayusin ang sariling kagustuhan",
+    "Name": {
+      "Title": "Pangalan",
+      "Description": "Ang pangalan na ipakikita sayo sa loob ng site"
+    },
+    "Email": {
+      "Title": "Email",
+      "Description": "Ang email na konektado sa iyong account (para ayusin ang password, at notipikasyon, atbp.)",
+      "Show": "Ipakita ang email",
+      "Hide": "Itago and email"
+    },
+    "Short": {
+      "Title": "Maikling bio",
+      "Description": "Maikling bio na pinapakita sa ibang lugar, tulad ng search, kaysasa buong bio"
+    },
+    "Bio": {
+      "Title": "Bio",
+      "Description": "Ang buong bio na makikita sa iyong profile page"
+    },
+    "ProfilePicture": {
+      "Title": "Profile Picture",
+      "Description": "Ang litrato na representasyon nyo sa website (makikitang katabi ng iyong pangalan)"
+    },
+    "BannerPicture": {
+      "Title": "Banner Picture",
+      "Description": "Litrato na pinapakita sa taas ng iyong profile page, at sa likod ng resulta ng search"
+    },
+    "PrimaryRoles": {
+      "Title": "Pangunahing Tungkulin",
+      "Description": "Mga papel na karaniwang ginagawa nyo sa isang jam team"
+    },
+    "SecondaryRoles": {
+      "Title": "Pangalawang Tungkulin",
+      "Description": "Mga papel na kaya nyong gawin (o handang gawin kung hindi magawa ang panunahing tungkulin)"
+    },
+    "Save": {
+      "Title": "Save",
+      "Description": "I-save ang mga pagbabago sa setting"
+    },
+    "Reset": {
+      "Title": "Reset",
+      "Description": "Ibalik ang settings sa huling save (itatapon ang mga pagbabago)"
+    }
+  },
+  "Markdown": {
+    "Characters": "mga texto",
+    "Words": "mga salita",
+    "Bold": {
+      "Title": "Bold",
+      "Description": "Gawing mas madidilim at mas makapal ang teksto (ginagamit upang bigyang-diin ang mga mahahalagang salita)"
+    },
+    "Italic": {
+      "Title": "Italic",
+      "Description": "I-slant ang teksto sa kanan (ginagamit upang ipahiwatig na ang teksto ay may importansya kung wikain)"
+    },
+    "Highlight": {
+      "Title": "Highlight",
+      "Description": "Lagyan ng kulay ang background para mag-bigyang diin ang texto (ginagamit para mag-bigay atensyon)"
+    },
+    "Strikethrough": {
+      "Title": "Strikethrough",
+      "Description": "Guhitan ng texto gamit ang linya upang ipahiwatig ang pagtanggal, kawalan ng katumpakan, o kawalan ng kabuluhan"
+    },
+    "Subscript": {
+      "Title": "Subscript",
+      "Description": "Ipakita ang texto sa ilalim ng normal na linya (gamit sa chemical formula, matimatika, at mga footnotes)"
+    },
+    "Superscript": {
+      "Title": "Superscript",
+      "Description": "Ipakita ang texto sa ibabaw ng normal na linya (gamit sa exponents, ordinal indicators at references)"
+    },
+    "Link": {
+      "Title": "Link",
+      "Description": "Lagyan ng isang na-click na hyperlink upang mag-link sa iba pang nilalaman"
+    },
+    "Image": {
+      "Title": "Litrato",
+      "Description": "Lagyan ng imahe sa loob ng sulatin"
+    },
+    "HorizontalRule": {
+      "Title": "Horizontal Rule",
+      "Description": "Magdagdag ng horizontal rule (isang temang pahinga sa pagitan ng mga talata)"
+    },
+    "Quote": {
+      "Title": "Quote",
+      "Description": "Magdagdag ng quote block  (pinahihiwatig ang mga grupo na kinopyang texto)"
+    },
+    "CodeBlock": {
+      "Title": "CodeBlock",
+      "Description": "Lagyan ng code block para kulayin at istilyohin ang nilagyang code"
+    },
+    "AlignLeft": {
+      "Title": "Ihanay sa kaliwa",
+      "Description": "Ihanay ang teksto sa kaliwa"
+    },
+    "AlignCenter": {
+      "Title": "Ihanay sa gitna",
+      "Description": "Ihanay ang teksto sa gitna"
+    },
+    "AlignRight": {
+      "Title": "Ihanay sa kanan",
+      "Description": "Ihanay ang teksto sa kanan"
+    },
+    "Justify": {
+      "Title": "Justify",
+      "Description": "Pahabain ang texto para ang gilid ay pantay-pantay"
+    },
+    "Undo": {
+      "Title": "Undo",
+      "Description": "Tanggalin ang huling gawain"
+    },
+    "Redo": {
+      "Title": "Redo",
+      "Description": "Uliting ang huling tinanggal na gawain"
+    }
+  },
+  "GameSort": {
+    "Random": {
+      "Title": "Random",
+      "Description": "Ipakita ang mga games sa isang random order"
+    },
+    "LeastRatings": {
+      "Title": "Least Ratings",
+      "Description": "Ang may pinakamababang numero ng rating ay ang unang makikita"
+    },
+    "Danger": {
+      "Title": "Danger",
+      "Description": "Ipakita ang mga games na hindi pa ranked, pero malapit na, sa ibabaw ng listahan"
+    }
+  },
+  "Games": {
+    "Title": "Games",
+    "Description": "Tignan ang lahat ng games na inupload sa site"
+  },
+  "About": {
+    "Title": "Tungkol sa event"
+  },
+  "ThemeSuggestions": {
+    "Loading": {
+      "Title": "Loading...",
+      "Description": "Kinukuha ang impormasyon sa backend"
+    }
+  },
+  "Themes": {
+    "Signup": "Sign up",
+    "Login": "Log in"
   }
 }
