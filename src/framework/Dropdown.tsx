@@ -13,7 +13,7 @@ import Popover from "@/framework/Popover";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Backdrop } from "./Backdrop";
 import Icon, { IconName } from "./Icon";
-import { Badge } from "./Badge";
+import { Chip } from "./Chip";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import Text from "./Text";
@@ -281,7 +281,7 @@ function Item<T = unknown>({
           )}
         </span>
       </div>
-      {kbd && <Badge>{kbd}</Badge>}
+      {kbd && <Chip>{kbd}</Chip>}
     </>
   );
 

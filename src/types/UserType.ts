@@ -8,6 +8,7 @@ export interface UserType {
   slug: string;
   name: string;
   bio: string;
+  short: string;
   profilePicture: string;
   bannerPicture: string;
   createdAt: Date;

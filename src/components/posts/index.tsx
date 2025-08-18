@@ -3,18 +3,7 @@
 import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
-import {
-  addToast,
-  Avatar,
-  Chip,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerFooter,
-  DrawerHeader,
-  Spacer,
-  useDisclosure,
-} from "@heroui/react";
+import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
@@ -34,10 +23,11 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { Button } from "@/framework/Button";
 import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
-import { Vstack } from "@/framework/Stack";
+import { Hstack, Vstack } from "@/framework/Stack";
 import ThemedProse from "../themed-prose";
 import { IconName } from "@/framework/Icon";
 import { Card } from "@/framework/Card";
+import Drawer from "@/framework/Drawer";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -86,7 +76,7 @@ export default function Posts() {
   const [tagRules, setTagRules] = useState<{ [key: number]: number }>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const router = useRouter();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<number>(0);
 
   useEffect(() => {
@@ -105,24 +95,24 @@ export default function Posts() {
 
   useEffect(() => {
     if (oldIsOpen == null) {
-      setOldIsOpen(isOpen);
+      setOldIsOpen(open);
       return;
     }
 
-    if (isOpen == oldIsOpen) {
+    if (open == oldIsOpen) {
       return;
     }
 
-    setOldIsOpen(isOpen);
+    setOldIsOpen(open);
 
     if (posts) {
-      if (isOpen) {
+      if (open) {
         window.history.pushState(null, "", `/p/${posts[currentPost].slug}`);
       } else {
         window.history.back();
       }
     }
-  }, [isOpen, currentPost, posts, oldIsOpen]);
+  }, [open, currentPost, posts, oldIsOpen]);
 
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -495,7 +485,7 @@ export default function Posts() {
                 user={user}
                 index={index}
                 setCurrentPost={setCurrentPost}
-                onOpen={onOpen}
+                onOpen={setOpen}
               />
             ))
           ) : (
@@ -527,197 +517,132 @@ export default function Posts() {
           </div>
         </Vstack>
       )}
-      <Drawer
-        isOpen={isOpen}
-        hideCloseButton
-        onOpenChange={onOpenChange}
-        classNames={{
-          base: "data-[placement=right]:sm:m-2 data-[placement=left]:sm:m-2  rounded-medium",
-        }}
-        size="4xl"
-        motionProps={{
-          variants: {
-            enter: {
-              opacity: 1,
-              x: 0,
-            },
-            exit: {
-              x: 500,
-              opacity: 0,
-            },
-          },
-        }}
-        style={{
-          backgroundColor: colors["mantle"],
-        }}
-      >
-        <DrawerContent>
-          {(onClose) => (
+      {posts && (
+        <Drawer
+          isOpen={open}
+          onClose={() => setOpen(false)}
+          hideClose
+          header={
             <>
-              {posts && (
-                <>
-                  <DrawerHeader
-                    className="absolute top-0 inset-x-0 z-50 flex flex-row gap-2 px-2 py-2 border-b border-default-200/50 justify-between backdrop-blur-lg"
-                    style={{
-                      backgroundColor: colors["mantle"],
+              <Hstack>
+                <Tooltip content="Close">
+                  <Button onClick={() => setOpen(false)} icon="chevronsleft" />
+                </Tooltip>
+                <Button
+                  icon="link"
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
+                    );
+                    addToast({
+                      title: "Copied Link",
+                    });
+                  }}
+                >
+                  Copy Link
+                </Button>
+                <Button
+                  icon="arrowupright"
+                  size="sm"
+                  href={`/p/${posts[currentPost].slug}`}
+                >
+                  Post Page
+                </Button>
+              </Hstack>
+              <div className="flex gap-1 items-center">
+                <Tooltip content="Previous">
+                  <Button
+                    disabled={currentPost <= 0}
+                    onClick={() => {
+                      setCurrentPost(currentPost - 1);
                     }}
-                  >
-                    <Tooltip content="Close">
-                      <Button onClick={onClose}>
-                        <svg
-                          fill="none"
-                          height="20"
-                          stroke="currentColor"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
-                          width="20"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path d="m13 17 5-5-5-5M6 17l5-5-5-5" />
-                        </svg>
-                      </Button>
-                    </Tooltip>
-                    <div className="w-full flex justify-start gap-2">
-                      <Button
-                        icon="link"
-                        onClick={() => {
-                          navigator.clipboard.writeText(
-                            `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
-                          );
-                          addToast({
-                            title: "Copied Link",
-                          });
-                        }}
-                      >
-                        Copy Link
-                      </Button>
-                      <Button
-                        icon="arrowupright"
-                        size="sm"
-                        href={`/p/${posts[currentPost].slug}`}
-                      >
-                        Post Page
-                      </Button>
-                    </div>
-                    <div className="flex gap-1 items-center">
-                      <Tooltip content="Previous">
-                        <Button
-                          size="sm"
-                          disabled={currentPost <= 0}
-                          onClick={() => {
-                            setCurrentPost(currentPost - 1);
-                          }}
-                        >
-                          <svg
-                            fill="none"
-                            height="16"
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                            width="16"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path d="m18 15-6-6-6 6" />
-                          </svg>
-                        </Button>
-                      </Tooltip>
-                      <Tooltip content="Next">
-                        <Button
-                          size="sm"
-                          disabled={currentPost >= posts.length - 1}
-                          onClick={() => {
-                            setCurrentPost(currentPost + 1);
-                          }}
-                          icon="chevrondown"
-                        ></Button>
-                      </Tooltip>
-                    </div>
-                  </DrawerHeader>
-                  <DrawerBody className="pt-16">
-                    <div className="flex flex-col gap-2 py-4">
-                      <Card>
-                        <Link href={`/p/${posts[currentPost].slug}`}>
-                          <p className="text-2xl">{posts[currentPost].title}</p>
-                        </Link>
-                        <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-                          <p>By</p>
-                          <Link
-                            href={`/u/${posts[currentPost].author.slug}`}
-                            className="flex items-center gap-2"
-                          >
-                            <Avatar
-                              size="sm"
-                              className="w-6 h-6"
-                              src={posts[currentPost].author.profilePicture}
-                              classNames={{
-                                base: "bg-transparent",
-                              }}
-                            />
-                            <p>{posts[currentPost].author.name}</p>
-                          </Link>
-                          <p>
-                            {formatDistance(
-                              new Date(posts[currentPost].createdAt),
-                              new Date(),
-                              {
-                                addSuffix: true,
-                              }
-                            )}
-                          </p>
-                        </div>
-                        <Spacer y={4} />
-
-                        <ThemedProse>
-                          <div
-                            className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                            dangerouslySetInnerHTML={{
-                              __html: posts[currentPost].content,
-                            }}
-                          />
-                        </ThemedProse>
-
-                        <Spacer y={4} />
-
-                        <div className="flex gap-3">
-                          <LikeButton
-                            likes={posts[currentPost].likes.length}
-                            liked={posts[currentPost].hasLiked}
-                            parentId={posts[currentPost].id}
-                          />
-                          <Link
-                            href={`/p/${posts[currentPost].slug}#create-comment`}
-                          >
-                            <Button size="sm" icon="messagecircle">
-                              {posts[currentPost].comments.length}
-                            </Button>
-                          </Link>
-                        </div>
-                      </Card>
-
-                      <Spacer y={4} />
-
-                      <div className="flex flex-col gap-3">
-                        {posts[currentPost]?.comments.map((comment) => (
-                          <div key={comment.id}>
-                            <CommentCard comment={comment} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </DrawerBody>
-                  <DrawerFooter>
-                    <Button onClick={onClose}>Close</Button>
-                  </DrawerFooter>
-                </>
-              )}
+                    icon="chevronup"
+                  />
+                </Tooltip>
+                <Tooltip content="Next">
+                  <Button
+                    disabled={currentPost >= posts.length - 1}
+                    onClick={() => {
+                      setCurrentPost(currentPost + 1);
+                    }}
+                    icon="chevrondown"
+                  />
+                </Tooltip>
+              </div>
             </>
-          )}
-        </DrawerContent>
-      </Drawer>
+          }
+          footer={<Button onClick={() => setOpen(false)}>Close</Button>}
+        >
+          <div className="flex flex-col gap-2 py-4">
+            <Card>
+              <Link href={`/p/${posts[currentPost].slug}`}>
+                <p className="text-2xl">{posts[currentPost].title}</p>
+              </Link>
+              <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+                <p>By</p>
+                <Link
+                  href={`/u/${posts[currentPost].author.slug}`}
+                  className="flex items-center gap-2"
+                >
+                  <Avatar
+                    size="sm"
+                    className="w-6 h-6"
+                    src={posts[currentPost].author.profilePicture}
+                    classNames={{
+                      base: "bg-transparent",
+                    }}
+                  />
+                  <p>{posts[currentPost].author.name}</p>
+                </Link>
+                <p>
+                  {formatDistance(
+                    new Date(posts[currentPost].createdAt),
+                    new Date(),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
+                </p>
+              </div>
+              <Spacer y={4} />
+
+              <ThemedProse>
+                <div
+                  className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                  dangerouslySetInnerHTML={{
+                    __html: posts[currentPost].content,
+                  }}
+                />
+              </ThemedProse>
+
+              <Spacer y={4} />
+
+              <div className="flex gap-3">
+                <LikeButton
+                  likes={posts[currentPost].likes.length}
+                  liked={posts[currentPost].hasLiked}
+                  parentId={posts[currentPost].id}
+                />
+                <Link href={`/p/${posts[currentPost].slug}#create-comment`}>
+                  <Button size="sm" icon="messagecircle">
+                    {posts[currentPost].comments.length}
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            <Spacer y={4} />
+
+            <div className="flex flex-col gap-3">
+              {posts[currentPost]?.comments.map((comment) => (
+                <div key={comment.id}>
+                  <CommentCard comment={comment} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </Drawer>
+      )}
     </div>
   );
 }

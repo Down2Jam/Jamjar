@@ -23,7 +23,7 @@ import { JamType } from "@/types/JamType";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
 import Text from "@/framework/Text";
-import { Badge } from "@/framework/Badge";
+import { Chip } from "@/framework/Chip";
 import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
 import { Hstack, Vstack } from "@/framework/Stack";
@@ -241,12 +241,12 @@ export default function TeamFinder() {
                 <div className="flex items-center gap-3">
                   <p>Roles Wanted:</p>
                   {team.rolesWanted.map((role) => (
-                    <Badge
+                    <Chip
                       // startContent={getIcon(role.icon, 16)}
                       key={role.id}
                     >
                       {role.name}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               )}

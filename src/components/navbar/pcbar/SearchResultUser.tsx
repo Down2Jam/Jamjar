@@ -1,10 +1,12 @@
-"use cllient";
+"use client";
 
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { Avatar } from "@/framework/Avatar";
+import { Badge } from "@/framework/Badge";
+import { Card } from "@/framework/Card";
+import Icon from "@/framework/Icon";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Text from "@/framework/Text";
 import { UserType } from "@/types/UserType";
-import { Card, CardBody } from "@heroui/card";
-import { User } from "lucide-react";
-import NextLink from "next/link";
 
 export default function SearchResultUser({
   user,
@@ -13,26 +15,28 @@ export default function SearchResultUser({
   user: UserType;
   onPress: () => void;
 }) {
-  const { siteTheme } = useTheme();
-
   return (
     <Card
       key={user.id}
-      isPressable
-      as={NextLink}
       href={`/u/${user.slug}`}
       onPress={onPress}
+      backgroundImage={user.bannerPicture}
     >
-      <CardBody
-        className="flex flex-row items-center gap-2"
-        style={{
-          backgroundColor: siteTheme.colors["mantle"],
-          borderColor: siteTheme.colors["base"],
-          color: siteTheme.colors["text"],
-        }}
-      >
-        <User /> {user.name}
-      </CardBody>
+      <Hstack>
+        <Badge
+          content={<Icon size={12} name="user" />}
+          position="bottom-right"
+          offset={4}
+        >
+          <Avatar size={40} src={user.profilePicture} />
+        </Badge>{" "}
+        <Vstack gap={0} align="start">
+          <Text color="text">{user.name}</Text>
+          <Text color="textFaded" size="sm">
+            {user.short || "No Description"}
+          </Text>
+        </Vstack>
+      </Hstack>
     </Card>
   );
 }

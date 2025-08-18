@@ -17,6 +17,7 @@ import MobileLogo from "./MobileLogo";
 export default async function SplashPage() {
   const cookiesStore = await cookies();
   const token = cookiesStore.get("user");
+  const hasLoggedIn = cookiesStore.get("hasLoggedIn");
 
   // If the user is logged in they should be on the forum instead
   if (token) {
@@ -56,9 +57,15 @@ export default async function SplashPage() {
               align="stretch"
               className="mx-auto mt-4 sm:mt-0"
             >
-              <Button href="/signup" icon="login" color="blue">
-                Splash.Join
-              </Button>
+              {hasLoggedIn ? (
+                <Button href="/login" icon="login" color="blue">
+                  Themes.Login
+                </Button>
+              ) : (
+                <Button href="/signup" icon="login" color="blue">
+                  Splash.Join
+                </Button>
+              )}
               <Button href="/home" icon="map" color="pink">
                 Splash.Explore
               </Button>

@@ -92,7 +92,10 @@ export default function Editor({
       TableHeader,
       TableRow,
       TableCell,
-      Youtube,
+      Youtube.configure({
+        width: 320,
+        height: 180,
+      }),
       CodeBlock,
       Link,
       ImageResize.configure({

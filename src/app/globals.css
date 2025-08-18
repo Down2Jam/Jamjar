@@ -28,3 +28,8 @@ pre {
   word-wrap: break-word;
   overflow-x: auto;
 }
+
+html,
+body {
+  overflow-x: hidden;
+}

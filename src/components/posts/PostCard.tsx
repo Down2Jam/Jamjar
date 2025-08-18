@@ -32,7 +32,7 @@ export default function PostCard({
   user?: UserType;
   index: number;
   setCurrentPost: Dispatch<SetStateAction<number>>;
-  onOpen: () => void;
+  onOpen: (val1: boolean) => void;
 }) {
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
@@ -69,7 +69,7 @@ export default function PostCard({
                   if (window.innerWidth > 500) {
                     e.preventDefault();
                     setCurrentPost(index);
-                    onOpen();
+                    onOpen(true);
                   }
                 }}
               >
@@ -115,7 +115,7 @@ export default function PostCard({
                   if (window.innerWidth > 500) {
                     e.preventDefault();
                     setCurrentPost(index);
-                    onOpen();
+                    onOpen(true);
                   }
                 }}
               >
@@ -424,7 +424,7 @@ export default function PostCard({
               if (window.innerWidth > 500) {
                 e.preventDefault();
                 setCurrentPost(index);
-                onOpen();
+                onOpen(true);
               }
             }}
           >
@@ -463,7 +463,7 @@ export default function PostCard({
               if (window.innerWidth > 500) {
                 e.preventDefault();
                 setCurrentPost(index);
-                onOpen();
+                onOpen(true);
               }
             }}
           >

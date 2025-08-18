@@ -122,8 +122,8 @@ export default function SearchBar() {
         size="2xl"
         backdrop="opaque"
         style={{
-          backgroundColor: siteTheme.colors["crust"],
-          borderColor: siteTheme.colors["mantle"],
+          backgroundColor: siteTheme.colors["mantle"],
+          borderColor: siteTheme.colors["base"],
         }}
       >
         <ModalContent>

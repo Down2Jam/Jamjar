@@ -1,14 +1,12 @@
 "use client";
 
-import ButtonAction from "@/components/link-components/ButtonAction";
 import ButtonLink from "@/components/link-components/ButtonLink";
 import { getEvent } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { Image, Spacer, Spinner } from "@heroui/react";
-import { BadgePlus, Bell, ExternalLink, TimerIcon } from "lucide-react";
+import { Image, Spinner } from "@heroui/react";
+import { BadgePlus, ExternalLink, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 export default function EventPage() {
   const [event, setEvent] = useState<EventType>();
@@ -89,16 +87,7 @@ export default function EventPage() {
             </div>
           </div>
         )}
-        <Spacer />
-        <div className="flex flex-row items-center gap-3">
-          <ButtonAction
-            icon={<Bell />}
-            name=""
-            onPress={() => {
-              toast.warning("Event notifications coming soon");
-            }}
-            isIconOnly
-          />
+        <div>
           {event?.link && (
             <ButtonLink
               icon={<ExternalLink />}

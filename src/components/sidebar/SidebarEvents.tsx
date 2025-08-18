@@ -1,16 +1,18 @@
 "use client";
 
-import { Avatar, Badge, Card, CardBody, Spacer } from "@heroui/react";
-import ButtonAction from "../link-components/ButtonAction";
-import { Bell, ExternalLink, MoreHorizontal } from "lucide-react";
+import { Avatar, Badge } from "@heroui/react";
+import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
 import ButtonLink from "../link-components/ButtonLink";
 import Timer from "../timers/Timer";
-import { toast } from "react-toastify";
 import Link from "next/link";
 import { getIcon } from "@/helpers/icon";
+import Text from "@/framework/Text";
+import { Card } from "@/framework/Card";
+import { Hstack } from "@/framework/Stack";
+import { Button } from "@/framework/Button";
 
 export default function SidebarEvents() {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -44,17 +46,16 @@ export default function SidebarEvents() {
 
   return (
     <>
-      <Spacer y={20} />
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-12 mt-10">
         {events.filter(
           (event) =>
             new Date(event.endTime) > new Date() &&
             new Date(event.startTime) <= new Date()
         ).length > 0 && (
-          <div className="flex flex-col gap-2">
-            <p className="text-center text-2xl text-[#333] dark:text-white">
+          <div className="flex flex-col gap-2 items-center">
+            <Text size="2xl" color="text">
               Active Events
-            </p>
+            </Text>
             <div className="flex flex-col w-[488px] gap-2">
               {events
                 .filter(
@@ -63,8 +64,8 @@ export default function SidebarEvents() {
                     new Date(event.startTime) <= new Date()
                 )
                 ?.map((event) => (
-                  <Card key={event.id} className="p-2">
-                    <CardBody className="flex-row justify-between items-center">
+                  <Card key={event.id}>
+                    <Hstack justify="center" gap={4}>
                       <Badge
                         content={getIcon(event.icon, 16)}
                         size="sm"
@@ -90,38 +91,27 @@ export default function SidebarEvents() {
                           />
                         )}
                       </div>
-                    </CardBody>
+                    </Hstack>
                   </Card>
                 ))}
             </div>
-            <div className="flex justify-center gap-2">
-              <ButtonAction
-                icon={<MoreHorizontal />}
-                name="Load More"
-                onPress={() => {
-                  toast.warning("Event pagination coming soon");
-                }}
-              />
-              <ButtonLink
-                icon={<ExternalLink />}
-                name="To Events Page"
-                href={`/events?filter=current`}
-              />
-            </div>
+            <Button icon="moveupright" href="/events?filter=current">
+              To Events Page
+            </Button>
           </div>
         )}
         {events.filter((event) => new Date(event.startTime) > new Date())
           .length > 0 && (
-          <div className="flex flex-col gap-2">
-            <p className="text-center text-2xl text-[#333] dark:text-white">
+          <div className="flex flex-col gap-2 items-center">
+            <Text size="2xl" color="text">
               Upcoming Events
-            </p>
+            </Text>
             <div className="flex flex-col w-[488px] gap-2">
               {events
                 .filter((event) => new Date(event.startTime) > new Date())
                 ?.map((event) => (
-                  <Card key={event.id} className="p-2">
-                    <CardBody className="flex-row justify-between items-center">
+                  <Card key={event.id}>
+                    <Hstack justify="center" gap={4}>
                       <Badge
                         content={getIcon(event.icon, 16)}
                         size="sm"
@@ -137,14 +127,6 @@ export default function SidebarEvents() {
                         />
                       </div>
                       <div className="flex flex-row items-center gap-3">
-                        <ButtonAction
-                          icon={<Bell />}
-                          name=""
-                          onPress={() => {
-                            toast.warning("Event notifications coming soon");
-                          }}
-                          isIconOnly
-                        />
                         {event.link && (
                           <ButtonLink
                             icon={<ExternalLink />}
@@ -154,24 +136,13 @@ export default function SidebarEvents() {
                           />
                         )}
                       </div>
-                    </CardBody>
+                    </Hstack>
                   </Card>
                 ))}
             </div>
-            <div className="flex justify-center gap-2">
-              <ButtonAction
-                icon={<MoreHorizontal />}
-                name="Load More"
-                onPress={() => {
-                  toast.warning("Event pagination coming soon");
-                }}
-              />
-              <ButtonLink
-                icon={<ExternalLink />}
-                name="To Events Page"
-                href={`/events?filter=upcoming`}
-              />
-            </div>
+            <Button icon="moveupright" href="/events?filter=upcoming">
+              To Events Page
+            </Button>
           </div>
         )}
       </div>

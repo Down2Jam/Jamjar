@@ -8,21 +8,19 @@ import { Link } from "@/framework/Link";
 import { Hstack, Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
 import { login } from "@/requests/auth";
-import { Form } from "@heroui/react";
+import { addToast, Form } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 export default function UserPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState({});
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
       <Form
         className="w-full max-w-xs flex flex-col gap-4"
-        validationErrors={errors}
         onReset={() => {
           setUsername("");
           setPassword("");
@@ -31,27 +29,32 @@ export default function UserPage() {
           e.preventDefault();
 
           if (!username && !password) {
-            setErrors({
-              username: "Please enter a valid username",
-              password: "Please enter a valid password",
+            addToast({
+              title: "Please enter a valid username and password",
             });
             return;
           }
 
           if (!username) {
-            setErrors({ username: "Please enter a valid username" });
+            addToast({
+              title: "Please enter a valid username",
+            });
             return;
           }
 
           if (!password) {
-            setErrors({ password: "Please enter a valid password" });
+            addToast({
+              title: "Please enter a valid password",
+            });
             return;
           }
 
           const response = await login(username, password);
 
           if (response.status == 401) {
-            setErrors({ password: "Invalid username or password" });
+            addToast({
+              title: "Invalid username or password",
+            });
             setPassword("");
             return;
           }
@@ -60,15 +63,20 @@ export default function UserPage() {
           const token = response.headers.get("Authorization");
 
           if (!token) {
-            toast.error("Failed to retreive access token");
+            addToast({
+              title: "Failed to retrieve access token",
+            });
             setPassword("");
             return;
           }
 
           document.cookie = `token=${token}`;
           document.cookie = `user=${user.slug}`;
+          Cookies.set("hasLoggedIn", "true", { expires: 36500 });
 
-          toast.success("Successfully logged in");
+          addToast({
+            title: "Successfully logged in",
+          });
 
           redirect("/");
         }}

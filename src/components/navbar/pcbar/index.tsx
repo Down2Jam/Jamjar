@@ -233,16 +233,27 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             color="lime"
           />
         )}
-        {!user && isMdUp && (
-          <NavbarButton
-            icon={<LogIn size={16} />}
-            href="/signup"
-            name="Navbar.Join.Title"
-            description="Navbar.Join.Description"
-            hotkey={["G", "J"]}
-            color="green"
-          />
-        )}
+        {!user &&
+          isMdUp &&
+          (hasCookie("hasLoggedIn") ? (
+            <NavbarButton
+              icon={<LogIn size={16} />}
+              href="/login"
+              name="Navbar.Login.Title"
+              description="Navbar.Login.Description"
+              hotkey={["G", "J"]}
+              color="green"
+            />
+          ) : (
+            <NavbarButton
+              icon={<LogIn size={16} />}
+              href="/signup"
+              name="Navbar.Join.Title"
+              description="Navbar.Join.Description"
+              hotkey={["G", "J"]}
+              color="green"
+            />
+          ))}
         {/* Logged in */}
         {user && isLgUp && (
           <NavbarButton

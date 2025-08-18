@@ -59,6 +59,8 @@ Navbar.Inbox.Description,View your notifications,,,,,Bildirimleri görüntüle,T
 Navbar.Search,Search,,,,,Ara,Search,探す,,,Meow
 Navbar.Music.Title,Music,,,,,Müzik,Musika,,,,Meow
 Navbar.Music.Description,All submitted music to the website,,,,,Web sitesine gönderilen tüm müzikler,Lahat nang musika na sinalin sa website,,,,Meow meow meow meow meow meow
+Navbar.Login.Title,Login,,,,,,,,,,
+Navbar.Login.Description,Log into the website,,,,,,,,,,
 PostStyle.Cozy.Title,Cozy,,,,,Rahat,Maaliwalas,,,,
 PostStyle.Cozy.Description,"Large cards, displays all post content",,,,,"Geniş kartlar, bütün gönderi içeriğini gösterir","Malalaking cards, nakikita ang laman ng buong post",,,,
 PostStyle.Compact.Title,Compact,,,,,Kompakt,Compact,,,,
@@ -104,7 +106,7 @@ Settings.Email.Description,"The email associated with your account (for password
 Settings.Email.Show,Show Email,,,,,Eposta Göster,Ipakita ang email,,,,
 Settings.Email.Hide,Hide Email,,,,,Eposta Gizle,Itago and email,,,,
 Settings.Short.Title,Short,,,,,Kısa,Maikling bio,,,,
-Settings.Short.Description,A short description that appears in spots such as search instead of the bio,,,,,Arama kısmı gibi yerlerde çıkan kısa açıklama,"Maikling bio na pinapakita sa ibang lugar, tulad ng search, kaysasa buong bio",,,,
+Settings.Short.Description,A short description that appears in spots such as search instead of the bio (max 32 characters),,,,,Arama kısmı gibi yerlerde çıkan kısa açıklama,"Maikling bio na pinapakita sa ibang lugar, tulad ng search, kaysasa buong bio",,,,
 Settings.Bio.Title,Bio,,,,,Bio,Bio,,,,
 Settings.Bio.Description,A large description that shows on your profile page,,,,,Profil sayfanızda gözüken daha uzun açıklama,Ang buong bio na makikita sa iyong profile page,,,,
 Settings.ProfilePicture.Title,Profile Picture,,,,,Profil Resmi,Profile Picture,,,,
@@ -249,7 +251,6 @@ TeamFAQ.Description,Questions relating to making a team for the jam,,,,,,,,,,
 TeamFAQ.Q1.Number,Q1,,,,,,,,,,
 TeamFAQ.Q1.Question,How many people can make the game?,,,,,,,,,,
 TeamFAQ.Q1.Answer,"Regular: Any number of people.
-
 O.D.A: Only one developer.",,,,,,,,,,
 TeamFAQ.Q2.Number,Q2,,,,,,,,,,
 TeamFAQ.Q2.Question,Can I be a part of multiple teams / make multiple games?,,,,,,,,,,
@@ -257,7 +258,6 @@ TeamFAQ.Q2.Answer,Yes. It is typically better to focus on one game though so you
 TeamFAQ.Q3.Number,Q3,,,,,,,,,,
 TeamFAQ.Q3.Question,How can I find a team?,,,,,,,,,,
 TeamFAQ.Q3.Answer,"We have a team finder built into the site you can use to find a team on. In the site settings you can set what roles you have on a team and then in the team finder you can limit results to only show teams that need your role.
-
 In addition you can use other locations such as on social media or in the team finding channel on our discord server.",,,,,,,,,,
 TeamFAQ.Q4.Number,Q4,,,,,,,,,,
 TeamFAQ.Q4.Question,Can I edit a team during the jam / after submission?,,,,,,,,,,

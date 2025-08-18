@@ -71,7 +71,7 @@ import {
 } from "recharts";
 import CreateComment from "@/components/create-comment";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Badge } from "@/framework/Badge";
+import { Chip } from "@/framework/Chip";
 import { Hstack, Vstack } from "@/framework/Stack";
 import ThemedProse from "@/components/themed-prose";
 
@@ -269,7 +269,7 @@ export default function GamePage({
               </p>
               <div className="flex flex-wrap gap-2">
                 {game.team.users.map((user) => (
-                  <Badge key={user.id}>
+                  <Chip key={user.id}>
                     <Avatar
                       size="sm"
                       className="w-4 h-4"
@@ -277,7 +277,7 @@ export default function GamePage({
                       classNames={{ base: "bg-transparent" }}
                     />
                     <p>{user.name}</p>
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             </>
@@ -294,7 +294,7 @@ export default function GamePage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
-                    <Badge key={tag.id}>
+                    <Chip key={tag.id}>
                       {tag.icon && (
                         <Avatar
                           size="sm"
@@ -304,7 +304,7 @@ export default function GamePage({
                         />
                       )}
                       <p>{tag.name}</p>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </>
@@ -321,10 +321,10 @@ export default function GamePage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {game.flags.map((flag) => (
-                    <Badge key={flag.id}>
+                    <Chip key={flag.id}>
                       {flag.icon && getIcon(flag.icon, 14)}
                       <p>{flag.name}</p>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </>
@@ -810,15 +810,15 @@ export default function GamePage({
               >
                 STATS
               </p>
-              <Badge>
+              <Chip>
                 Ratings Received:{" "}
                 {Math.round(
                   game.ratings.length /
                     (game.ratingCategories.length + ratingCategories.length)
                 )}
-              </Badge>
+              </Chip>
               <Hstack>
-                <Badge>
+                <Chip>
                   Ranked Ratings Received:{" "}
                   {Math.round(
                     game.ratings.filter(
@@ -829,7 +829,7 @@ export default function GamePage({
                     ).length /
                       (game.ratingCategories.length + ratingCategories.length)
                   )}
-                </Badge>
+                </Chip>
                 {Math.round(
                   game.ratings.filter(
                     (rating) =>
@@ -848,7 +848,7 @@ export default function GamePage({
                 )}
               </Hstack>
               <Hstack>
-                <Badge>
+                <Chip>
                   Ratings Given:{" "}
                   {Math.round(
                     game.team.users.reduce(
@@ -865,7 +865,7 @@ export default function GamePage({
                       0
                     )
                   )}
-                </Badge>
+                </Chip>
                 {Math.round(
                   game.team.users.reduce(
                     (prev, cur) =>

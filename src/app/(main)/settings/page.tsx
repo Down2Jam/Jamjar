@@ -28,6 +28,7 @@ export default function UserPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [bannerPicture, setBannerPicture] = useState<string | null>(null);
+  const [short, setShort] = useState("");
   const [bio, setBio] = useState("");
   const [errors] = useState({});
   const pathname = usePathname();
@@ -69,6 +70,7 @@ export default function UserPage() {
           setProfilePicture(data.profilePicture ?? "");
           setBannerPicture(data.bannerPicture ?? "");
           setBio(data.bio ?? "");
+          setShort(data.short ?? "");
           setName(data.name ?? "");
           setEmail(data.email ?? "");
           setPrimaryRoles(
@@ -122,6 +124,7 @@ export default function UserPage() {
           setProfilePicture(user.profilePicture ?? "");
           setBannerPicture(user.bannerPicture ?? "");
           setBio(user.bio ?? "");
+          setShort(user.short ?? "");
           setName(user.name ?? "");
           setPrimaryRoles(
             new Set(user.primaryRoles.map((role) => role.slug)) ?? new Set()
@@ -148,6 +151,7 @@ export default function UserPage() {
             user.slug,
             name,
             sanitizedBio,
+            short,
             profilePicture,
             bannerPicture,
             Array.from(primaryRoles),
@@ -230,6 +234,25 @@ export default function UserPage() {
               </Text>
             </div>
             <Editor content={bio} setContent={setBio} />
+          </Vstack>
+        </Card>
+
+        <Card>
+          <Vstack align="start">
+            <div>
+              <Text color="text">Settings.Short.Title</Text>
+              <Text color="textFaded" size="xs">
+                Settings.Short.Description
+              </Text>
+            </div>
+            <Input
+              value={short}
+              onValueChange={setShort}
+              name="short"
+              placeholder="Enter a short bio"
+              type="text"
+              maxLength={32}
+            />
           </Vstack>
         </Card>
 

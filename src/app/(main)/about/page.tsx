@@ -37,7 +37,7 @@ export default function AboutPage() {
         <AboutLogo />
       </div>
       <Stack direction="flex-col lg:flex-row" align="stretch">
-        <Card className="min-w-96">
+        <Card className="lg:min-w-96">
           <Vstack align="start">
             <Text size="2xl">Splash.Title</Text>
             <Text size="sm" color="textFaded">

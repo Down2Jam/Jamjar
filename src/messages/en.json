@@ -113,6 +113,10 @@
     "Music": {
       "Title": "Music",
       "Description": "All submitted music to the website"
+    },
+    "Login": {
+      "Title": "Login",
+      "Description": "Log into the website"
     }
   },
   "PostStyle": {
@@ -208,7 +212,7 @@
     },
     "Short": {
       "Title": "Short",
-      "Description": "A short description that appears in spots such as search instead of the bio"
+      "Description": "A short description that appears in spots such as search instead of the bio (max 32 characters)"
     },
     "Bio": {
       "Title": "Bio",
@@ -393,7 +397,7 @@
     "Q1": {
       "Number": "Q1",
       "Question": "How many people can make the game?",
-      "Answer": "Regular: Any number of people.\n\nO.D.A: Only one developer."
+      "Answer": "Regular: Any number of people.\nO.D.A: Only one developer."
     },
     "Q2": {
       "Number": "Q2",
@@ -403,7 +407,7 @@
     "Q3": {
       "Number": "Q3",
       "Question": "How can I find a team?",
-      "Answer": "We have a team finder built into the site you can use to find a team on. In the site settings you can set what roles you have on a team and then in the team finder you can limit results to only show teams that need your role.\n\nIn addition you can use other locations such as on social media or in the team finding channel on our discord server."
+      "Answer": "We have a team finder built into the site you can use to find a team on. In the site settings you can set what roles you have on a team and then in the team finder you can limit results to only show teams that need your role.\nIn addition you can use other locations such as on social media or in the team finding channel on our discord server."
     },
     "Q4": {
       "Number": "Q4",
