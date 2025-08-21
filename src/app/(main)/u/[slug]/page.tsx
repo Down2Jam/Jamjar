@@ -11,7 +11,7 @@ import { getUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { SiHtml5, SiLinux } from "@icons-pack/react-simple-icons";
-import { Apple, Grid2X2, Smartphone } from "lucide-react";
+import { Grid2X2, Smartphone } from "lucide-react";
 import Image from "next/image";
 import NextImage from "next/image";
 import Link from "next/link";

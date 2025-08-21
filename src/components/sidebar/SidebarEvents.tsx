@@ -1,7 +1,6 @@
 "use client";
 
 import { Avatar, Badge } from "@heroui/react";
-import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
