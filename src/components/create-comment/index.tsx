@@ -1,11 +1,10 @@
-import { Spacer } from "@heroui/react";
 import Editor from "../editor";
-import ButtonAction from "../link-components/ButtonAction";
 import { toast } from "react-toastify";
 import { hasCookie } from "@/helpers/cookie";
 import { sanitize } from "@/helpers/sanitize";
 import { postComment } from "@/requests/comment";
 import { useState } from "react";
+import { Button } from "@/framework/Button";
 
 // CreateComment.tsx
 export default function CreateComment({ gameId }: { gameId: number }) {
@@ -15,9 +14,9 @@ export default function CreateComment({ gameId }: { gameId: number }) {
   return (
     <>
       <Editor content={content} setContent={setContent} />
-      <Spacer y={5} />
-      <ButtonAction
-        onPress={async () => {
+      <div className="p-4" />
+      <Button
+        onClick={async () => {
           if (!content) {
             toast.error("Please enter valid content");
             return;

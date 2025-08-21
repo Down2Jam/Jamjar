@@ -1,65 +1,35 @@
-import ButtonLink from "../link-components/ButtonLink";
-import {
-  SiBluesky,
-  SiDiscord,
-  SiForgejo,
-  SiGithub,
-  SiInstagram,
-  SiYoutube,
-} from "@icons-pack/react-simple-icons";
+import { Button } from "@/framework/Button";
 
 export default function SidebarButtons() {
   return (
     <div className="flex justify-center w-[480px]">
       <div className="flex flex-wrap w-[400px] gap-3 items-center justify-center">
-        <ButtonLink
-          icon={<SiDiscord size={16} />}
+        <Button
+          icon="sidiscord"
           href="https://discord.d2jam.com"
-          name=""
-          tooltip="Discord"
-          isIconOnly
-          size="sm"
+          // tooltip="Discord"
         />
-        <ButtonLink
-          icon={<SiBluesky size={16} />}
+        <Button
+          icon="sibluesky"
           href="https://bluesky.d2jam.com"
-          name=""
-          tooltip="Bluesky"
-          isIconOnly
-          size="sm"
+          // tooltip="Bluesky"
         />
-        <ButtonLink
-          icon={<SiYoutube size={16} />}
+        <Button
+          icon="siyoutube"
           href="https://youtube.d2jam.com"
-          name=""
-          tooltip="YouTube"
-          isIconOnly
-          size="sm"
+          // tooltip="YouTube"
         />
-        <ButtonLink
-          icon={<SiInstagram size={16} />}
+        <Button
+          icon="siinstagram"
           href="https://instagram.d2jam.com"
-          name=""
-          tooltip="Instagram"
-          isIconOnly
-          size="sm"
+          // tooltip="Instagram"
         />
-        <ButtonLink
-          icon={<SiGithub size={16} />}
+        <Button
+          icon="sigithub"
           href="https://github.d2jam.com"
-          name=""
-          tooltip="GitHub"
-          isIconOnly
-          size="sm"
+          // tooltip="GitHub"
         />
-        <ButtonLink
-          icon={<SiForgejo size={16} />}
-          href="https://forgejo.d2jam.com"
-          name=""
-          tooltip="Forgejo"
-          isIconOnly
-          size="sm"
-        />
+        <Button icon="siforgejo" href="https://forgejo.d2jam.com" />
       </div>
     </div>
   );

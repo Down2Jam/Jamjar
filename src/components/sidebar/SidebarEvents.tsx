@@ -5,7 +5,6 @@ import { ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import ButtonLink from "../link-components/ButtonLink";
 import Timer from "../timers/Timer";
 import Link from "next/link";
 import { getIcon } from "@/helpers/icon";
@@ -82,14 +81,7 @@ export default function SidebarEvents() {
                       </div>
 
                       <div className="flex flex-row items-center gap-3">
-                        {event.link && (
-                          <ButtonLink
-                            icon={<ExternalLink />}
-                            name=""
-                            isIconOnly
-                            href={event.link}
-                          />
-                        )}
+                        {event.link && <Button href={event.link} />}
                       </div>
                     </Hstack>
                   </Card>
@@ -127,14 +119,7 @@ export default function SidebarEvents() {
                         />
                       </div>
                       <div className="flex flex-row items-center gap-3">
-                        {event.link && (
-                          <ButtonLink
-                            icon={<ExternalLink />}
-                            name=""
-                            isIconOnly
-                            href={event.link}
-                          />
-                        )}
+                        {event.link && <Button href={event.link} />}
                       </div>
                     </Hstack>
                   </Card>

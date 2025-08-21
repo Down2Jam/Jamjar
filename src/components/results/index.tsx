@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "@/components/link-components/Link";
 import { Button } from "@/framework/Button";
 import { Card } from "@/framework/Card";
 import Dropdown from "@/framework/Dropdown";
+import { Link } from "@/framework/Link";
 import { Hstack, Vstack } from "@/framework/Stack";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
@@ -219,12 +219,7 @@ export default function Results() {
                 src={game.thumbnail ?? "/images/D2J_Icon.png"}
               />
               <div className="flex flex-col">
-                <Link
-                  name={game.name}
-                  href={`/g/${game.slug}`}
-                  color="blue"
-                  center={false}
-                />
+                <Link href={`/g/${game.slug}`}>{game.name}</Link>
                 {game.categoryAverages
                   .sort((a, b) => a.placement - b.placement)
                   .map((category) => {

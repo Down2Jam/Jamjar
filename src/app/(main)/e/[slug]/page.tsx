@@ -1,10 +1,10 @@
 "use client";
 
-import ButtonLink from "@/components/link-components/ButtonLink";
+import { Button } from "@/framework/Button";
 import { getEvent } from "@/requests/event";
 import { EventType } from "@/types/EventType";
 import { Image, Spinner } from "@heroui/react";
-import { BadgePlus, ExternalLink, TimerIcon } from "lucide-react";
+import { BadgePlus, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -87,16 +87,7 @@ export default function EventPage() {
             </div>
           </div>
         )}
-        <div>
-          {event?.link && (
-            <ButtonLink
-              icon={<ExternalLink />}
-              name=""
-              isIconOnly
-              href={event.link}
-            />
-          )}
-        </div>
+        <div>{event?.link && <Button href={event.link} />}</div>
       </div>
     </>
   );

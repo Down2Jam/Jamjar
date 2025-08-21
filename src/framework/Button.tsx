@@ -153,6 +153,7 @@ export function Button(props: ButtonProps) {
     const { href, externalIcon = true, ...linkProps } = props as ButtonAsLink;
 
     const isExternal =
+      !isIconOnly &&
       typeof window !== "undefined" &&
       (() => {
         try {

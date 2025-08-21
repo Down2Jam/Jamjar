@@ -1,11 +1,11 @@
 "use client";
 
-import ButtonAction from "@/components/link-components/ButtonAction";
+import { Button } from "@/framework/Button";
+import { Card } from "@/framework/Card";
+import { Vstack } from "@/framework/Stack";
 import { handleApplication, handleInvite } from "@/helpers/team";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
-import { Card, CardBody } from "@heroui/react";
-import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function InboxPage() {
@@ -32,26 +32,28 @@ export default function InboxPage() {
         <div className="flex flex-col gap-3">
           {user?.teamInvites.map((invite) => (
             <Card key={invite.id}>
-              <CardBody className="gap-3">
+              <Vstack>
                 <p>{invite.team.owner.name}&apos;s Team</p>
                 <p>{invite.content}</p>
                 <div className="flex gap-3">
-                  <ButtonAction
-                    name="Accept"
-                    onPress={() => {
+                  <Button
+                    onClick={() => {
                       handleInvite(invite.id, true);
                     }}
-                    icon={<Check />}
-                  />
-                  <ButtonAction
-                    name="Reject"
-                    onPress={() => {
+                    icon="check"
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    onClick={() => {
                       handleInvite(invite.id, false);
                     }}
-                    icon={<X />}
-                  />
+                    icon="x"
+                  >
+                    Reject
+                  </Button>
                 </div>
-              </CardBody>
+              </Vstack>
             </Card>
           ))}
         </div>
@@ -65,26 +67,28 @@ export default function InboxPage() {
           {user?.ownedTeams.map((team) =>
             team.applications.map((application) => (
               <Card key={application.id}>
-                <CardBody className="gap-3">
+                <Vstack>
                   <p>{application.user.name}</p>
                   <p>{application.content}</p>
                   <div className="flex gap-3">
-                    <ButtonAction
-                      name="Accept"
-                      onPress={() => {
+                    <Button
+                      onClick={() => {
                         handleApplication(application.id, true);
                       }}
-                      icon={<Check />}
-                    />
-                    <ButtonAction
-                      name="Reject"
-                      onPress={() => {
+                      icon="check"
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      onClick={() => {
                         handleApplication(application.id, false);
                       }}
-                      icon={<X />}
-                    />
+                      icon="x"
+                    >
+                      Reject
+                    </Button>
                   </div>
-                </CardBody>
+                </Vstack>
               </Card>
             ))
           )}

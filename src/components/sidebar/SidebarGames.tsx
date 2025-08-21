@@ -82,13 +82,6 @@ export default function SidebarGames() {
             ))}
         </div>
         <div className="flex justify-center gap-2">
-          {/* <ButtonAction
-            icon={<MoreHorizontal />}
-            name="Load More"
-            onPress={() => {
-              toast.warning("Game pagination coming soon");
-            }}
-          /> */}
           <Button icon="moveupright" href="/games">
             SidebarGames.Link
           </Button>

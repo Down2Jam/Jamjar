@@ -1,7 +1,6 @@
 import TeamFinder from "@/components/team-finder";
 import { Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
-import { Divider } from "@heroui/react";
 import { Suspense } from "react";
 
 export default function GamesPage() {
@@ -15,7 +14,6 @@ export default function GamesPage() {
           This is a spot to find teammates to make games with for the jam!
         </Text>
       </Vstack>
-      <Divider />
 
       <Suspense fallback={<div>Loading...</div>}>
         <TeamFinder />

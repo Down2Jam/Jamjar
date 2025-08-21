@@ -2,14 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Avatar, Badge } from "@heroui/react";
-import { Calendar } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EventFilter } from "@/types/EventFilter";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
 import Link from "next/link";
 import Timer from "../timers/Timer";
-import ButtonLink from "../link-components/ButtonLink";
 import { UserType } from "@/types/UserType";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
@@ -102,11 +100,9 @@ export default function Events() {
   return (
     <div>
       {!loading && user?.twitch && (
-        <ButtonLink
-          name="Create Event"
-          icon={<Calendar />}
-          href="create-event"
-        />
+        <Button icon="calendar" href="create-event">
+          Create Event
+        </Button>
       )}
 
       <div className="flex justify-between p-4 pb-0">

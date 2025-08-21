@@ -4,16 +4,12 @@ import { use } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
-  Avatar,
-  Button,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  NumberInput,
   Pagination,
-  Spacer,
   Tab,
   Table,
   TableBody,
@@ -32,25 +28,18 @@ import { getGame, getRatingCategories } from "@/requests/game";
 import { getSelf } from "@/requests/user";
 import Image from "next/image";
 import { getIcon } from "@/helpers/icon";
-import Link from "@/components/link-components/Link";
-import ButtonLink from "@/components/link-components/ButtonLink";
 import {
   AlertTriangle,
   Award,
   Badge as LucideBadge,
   CircleHelp,
-  Edit,
-  Eye,
   LandPlot,
   MessageCircleMore,
-  Plus,
   Rabbit,
   Star,
-  Trash,
   Trophy,
   Turtle,
 } from "lucide-react";
-import ButtonAction from "@/components/link-components/ButtonAction";
 import { toast } from "react-toastify";
 import CommentCard from "@/components/posts/CommentCard";
 import { LeaderboardType } from "@/types/LeaderboardType";
@@ -74,6 +63,10 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { Chip } from "@/framework/Chip";
 import { Hstack, Vstack } from "@/framework/Stack";
 import ThemedProse from "@/components/themed-prose";
+import { Button } from "@/framework/Button";
+import { Input } from "@/framework/Input";
+import { Avatar } from "@/framework/Avatar";
+import { Link } from "@/framework/Link";
 
 export default function GamePage({
   params,
@@ -250,12 +243,9 @@ export default function GamePage({
           <div className="flex flex-col w-1/3 gap-4 p-4">
             {isEditable && activeJamResponse?.jam?.id == game.jamId && (
               <div>
-                <ButtonLink
-                  icon={<Edit />}
-                  important
-                  href="/create-game"
-                  name="Edit"
-                />
+                <Button icon="squarepen" href="/create-game">
+                  Edit
+                </Button>
               </div>
             )}
             <>
@@ -270,12 +260,7 @@ export default function GamePage({
               <div className="flex flex-wrap gap-2">
                 {game.team.users.map((user) => (
                   <Chip key={user.id}>
-                    <Avatar
-                      size="sm"
-                      className="w-4 h-4"
-                      src={user.profilePicture}
-                      classNames={{ base: "bg-transparent" }}
-                    />
+                    <Avatar src={user.profilePicture} />
                     <p>{user.name}</p>
                   </Chip>
                 ))}
@@ -295,14 +280,7 @@ export default function GamePage({
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
                     <Chip key={tag.id}>
-                      {tag.icon && (
-                        <Avatar
-                          size="sm"
-                          className="w-4 h-4"
-                          src={tag.icon}
-                          classNames={{ base: "bg-transparent" }}
-                        />
-                      )}
+                      {tag.icon && <Avatar src={tag.icon} />}
                       <p>{tag.name}</p>
                     </Chip>
                   ))}
@@ -341,12 +319,9 @@ export default function GamePage({
                 </p>
                 <div className="flex flex-col gap-2 items-start">
                   {game.downloadLinks.map((link) => (
-                    <Link
-                      key={link.id}
-                      name={link.platform}
-                      href={link.url}
-                      color="blue"
-                    />
+                    <Link key={link.id} href={link.url}>
+                      {link.platform}
+                    </Link>
                   ))}
                 </div>
               </>
@@ -747,11 +722,9 @@ export default function GamePage({
                                         })()}
                                   </TableCell>
                                   <TableCell className="flex gap-2">
-                                    <ButtonAction
-                                      name=""
-                                      isIconOnly
-                                      icon={<Eye size={16} />}
-                                      onPress={() => {
+                                    <Button
+                                      icon="eye"
+                                      onClick={() => {
                                         setSelectedScore(score.evidence);
                                         onOpen();
                                       }}
@@ -760,13 +733,10 @@ export default function GamePage({
                                     {(isEditable ||
                                       score.user.id == user?.id ||
                                       user?.mod) && (
-                                      <ButtonAction
-                                        important
+                                      <Button
                                         color="red"
-                                        name=""
-                                        isIconOnly
-                                        icon={<Trash size={16} />}
-                                        onPress={async () => {
+                                        icon="trash"
+                                        onClick={async () => {
                                           const success = await deleteScore(
                                             score.id
                                           );
@@ -783,18 +753,18 @@ export default function GamePage({
                           </TableBody>
                         </Table>
                       )}
-                      <Spacer y={5} />
-                      <div>
-                        <ButtonAction
-                          name="Submit Score"
-                          icon={<Plus />}
-                          onPress={() => {
+                      <div className="mt-4">
+                        <Button
+                          icon="plus"
+                          onClick={() => {
                             setSelectedLeaderboard(leaderboard);
                             setScore(0);
                             setEvidenceUrl(undefined);
                             onOpen2();
                           }}
-                        />
+                        >
+                          Submit Score
+                        </Button>
                       </div>
                     </Tab>
                   ))}
@@ -908,7 +878,7 @@ export default function GamePage({
                       />
                     </ModalBody>
                     <ModalFooter>
-                      <Button color="danger" variant="light" onPress={onClose}>
+                      <Button color="red" onClick={onClose}>
                         Close
                       </Button>
                     </ModalFooter>
@@ -936,58 +906,49 @@ export default function GamePage({
                       {(selectedLeaderboard?.type == "SPEEDRUN" ||
                         selectedLeaderboard?.type == "ENDURANCE") && (
                         <>
-                          <NumberInput
-                            className="text-[#333] dark:text-white"
+                          <Input
                             label="Hours"
                             placeholder="Enter hours"
                             value={hours}
-                            minValue={0}
-                            maxValue={24}
-                            onValueChange={setHours}
-                            variant="bordered"
+                            min={0}
+                            max={24}
+                            onValueChange={(e) => setHours(parseInt(e))}
                           />
-                          <NumberInput
-                            className="text-[#333] dark:text-white"
+                          <Input
                             label="Minutes"
                             placeholder="Enter minutes"
                             value={minutes}
-                            minValue={0}
-                            maxValue={59}
-                            onValueChange={setMinutes}
-                            variant="bordered"
+                            min={0}
+                            max={59}
+                            onValueChange={(e) => setMinutes(parseInt(e))}
                           />
-                          <NumberInput
-                            className="text-[#333] dark:text-white"
+                          <Input
                             label="Seconds"
                             placeholder="Enter seconds"
                             value={seconds}
-                            minValue={0}
-                            maxValue={59}
-                            onValueChange={setSeconds}
-                            variant="bordered"
+                            min={0}
+                            max={59}
+                            onValueChange={(e) => setSeconds(parseInt(e))}
                           />
-                          <NumberInput
-                            className="text-[#333] dark:text-white"
+                          <Input
                             label="Milliseconds"
-                            description="Milliseconds are out of 1000. e.g. if its 0.23 seconds enter 230"
+                            // description="Milliseconds are out of 1000. e.g. if its 0.23 seconds enter 230"
                             placeholder="Enter milliseconds"
                             value={milliseconds}
-                            minValue={0}
-                            maxValue={999}
-                            onValueChange={setMilliseconds}
-                            variant="bordered"
+                            min={0}
+                            max={999}
+                            onValueChange={(e) => setMilliseconds(parseInt(e))}
                           />
                         </>
                       )}
                       {(selectedLeaderboard?.type == "SCORE" ||
                         selectedLeaderboard?.type == "GOLF") && (
-                        <NumberInput
-                          className="text-[#333] dark:text-white"
+                        <Input
+                          type="number"
                           label="Score"
                           placeholder="Enter your score"
                           value={score}
-                          onValueChange={setScore}
-                          variant="bordered"
+                          onValueChange={(e) => setScore(parseInt(e))}
                         />
                       )}
                       <p>Evidence Picture</p>
@@ -1044,12 +1005,12 @@ export default function GamePage({
                       )}
                     </ModalBody>
                     <ModalFooter>
-                      <Button color="danger" variant="light" onPress={onClose}>
+                      <Button color="red" onClick={onClose}>
                         Close
                       </Button>
                       <Button
-                        color="primary"
-                        onPress={async () => {
+                        color="red"
+                        onClick={async () => {
                           if (!evidenceUrl) {
                             toast.error("No evidence image provided");
                             return;
@@ -1094,9 +1055,9 @@ export default function GamePage({
           </div>
         </div>
       </div>
-      <Spacer y={10} />
-      <CreateComment gameId={game.id} />
-      <Spacer y={10} />
+      <div className="my-10 w-fit">
+        <CreateComment gameId={game.id} />
+      </div>
 
       <div className="flex flex-col gap-3">
         {game?.comments

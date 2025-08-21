@@ -21,9 +21,12 @@ import {
   LogIn,
   MessageCircle,
   Music,
+  Sparkles,
   SquarePen,
+  Swords,
   Trophy,
   Users,
+  Vote,
 } from "lucide-react";
 import { useJam } from "@/hooks/useJam";
 import { addToast, Button } from "@heroui/react";
@@ -89,7 +92,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         }
         if (
           jam &&
-          user.jams.filter((jam: JamType) => jam.id == jam.id).length > 0
+          user.jams.filter((userjam: JamType) => userjam.id == jam.id).length >
+            0
         ) {
           setIsInJam(true);
         } else {
@@ -202,6 +206,36 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             color="yellow"
           />
         )}
+        {jamPhase == "Suggestion" && isLgUp && (
+          <NavbarButton
+            icon={<Sparkles size={16} />}
+            href="/theme-suggestions"
+            name="Navbar.ThemeSuggestions.Title"
+            description="Navbar.ThemeSuggestions.Description"
+            hotkey={["G", "F"]}
+            color="yellow"
+          />
+        )}
+        {jamPhase == "Elimination" && isLgUp && (
+          <NavbarButton
+            icon={<Swords size={16} />}
+            href="/theme-elimination"
+            name="Navbar.ThemeElimination.Title"
+            description="Navbar.ThemeElimination.Description"
+            hotkey={["G", "F"]}
+            color="yellow"
+          />
+        )}
+        {jamPhase == "Voting" && isLgUp && (
+          <NavbarButton
+            icon={<Vote size={16} />}
+            href="/theme-voting"
+            name="Navbar.ThemeVoting.Title"
+            description="Navbar.ThemeVoting.Description"
+            hotkey={["G", "F"]}
+            color="yellow"
+          />
+        )}
         {user &&
           jam &&
           isInJam &&
@@ -210,7 +244,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             jamPhase == "Submission" ||
             jamPhase == "Rating") && (
             <NavbarButton
-              icon={<Gamepad2 />}
+              icon={<Gamepad2 size={16} />}
               name={hasGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
               href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
               description={

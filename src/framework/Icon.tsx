@@ -1,7 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
-import type { LucideProps, LucideIcon } from "lucide-react";
+import type { LucideProps } from "lucide-react";
 import {
   ALargeSmall,
   ArrowLeft,
@@ -41,6 +41,7 @@ import {
   Cog,
   Dice3,
   Droplet,
+  Eye,
   Fan,
   FileCode,
   Flame,
@@ -115,6 +116,14 @@ import {
   ZoomOut,
 } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import {
+  SiBluesky,
+  SiDiscord,
+  SiForgejo,
+  SiGithub,
+  SiInstagram,
+  SiYoutube,
+} from "@icons-pack/react-simple-icons";
 
 const iconMap = {
   alargesmall: ALargeSmall,
@@ -156,6 +165,7 @@ const iconMap = {
   cog: Cog,
   dice3: Dice3,
   droplet: Droplet,
+  eye: Eye,
   fan: Fan,
   filecode: FileCode,
   flame: Flame,
@@ -227,7 +237,14 @@ const iconMap = {
   waves: Waves,
   x: X,
   zoomout: ZoomOut,
-} as const satisfies Record<string, LucideIcon>;
+
+  sibluesky: SiBluesky,
+  sidiscord: SiDiscord,
+  siforgejo: SiForgejo,
+  sigithub: SiGithub,
+  siinstagram: SiInstagram,
+  siyoutube: SiYoutube,
+} as const;
 
 export type IconName = keyof typeof iconMap;
 type Color =
@@ -251,7 +268,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
 ) {
   const { colors } = useTheme();
 
-  const IconComponent: LucideIcon = iconMap[name];
+  const IconComponent = iconMap[name];
 
   return (
     <IconComponent

@@ -9,10 +9,10 @@ import {
 } from "@/helpers/jam";
 import { ThemeType } from "@/types/ThemeType";
 import { Card, CardBody, Spinner } from "@heroui/react";
-import { Star, Vote } from "lucide-react";
+import { Vote } from "lucide-react";
 import { useEffect, useState } from "react";
-import ButtonAction from "../link-components/ButtonAction";
 import { getThemes, postThemeVotingVote } from "@/requests/theme";
+import { Button } from "@/framework/Button";
 
 export default function VotingPage() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
@@ -240,52 +240,49 @@ export default function VotingPage() {
                           {theme.suggestion}
                         </p>
                         <div className="items-center flex gap-3">
-                          <ButtonAction
-                            color="gray"
+                          <Button
                             size="sm"
-                            tooltip="Skip"
-                            isIconOnly
-                            onPress={() => {
+                            // tooltip="Skip"
+                            onClick={() => {
                               voteSkip(i);
                             }}
-                            name="0"
-                            important={
-                              themes[i].votes2 &&
-                              themes[i].votes2.length > 0 &&
-                              themes[i].votes2[0].voteScore == 0
-                            }
-                          />
-                          <ButtonAction
+                            // important={
+                            //   themes[i].votes2 &&
+                            //   themes[i].votes2.length > 0 &&
+                            //   themes[i].votes2[0].voteScore == 0
+                            // }
+                          >
+                            0
+                          </Button>
+                          <Button
                             color="green"
                             size="sm"
-                            tooltip="Like (+1)"
-                            isIconOnly
-                            onPress={() => {
+                            // tooltip="Like (+1)"
+                            onClick={() => {
                               voteLike(i);
                             }}
-                            name="1"
-                            important={
-                              themes[i].votes2 &&
-                              themes[i].votes2.length > 0 &&
-                              themes[i].votes2[0].voteScore == 1
-                            }
-                          />
-                          <ButtonAction
+                            // important={
+                            //   themes[i].votes2 &&
+                            //   themes[i].votes2.length > 0 &&
+                            //   themes[i].votes2[0].voteScore == 1
+                            // }
+                          >
+                            1
+                          </Button>
+                          <Button
                             color="yellow"
                             size="sm"
-                            tooltip="Star (+3)"
-                            isIconOnly
-                            icon={<Star size={14} />}
-                            onPress={() => {
+                            // tooltip="Star (+3)"
+                            icon="star"
+                            onClick={() => {
                               voteStar(i);
                             }}
-                            name=""
-                            important={
-                              themes[i].votes2 &&
-                              themes[i].votes2.length > 0 &&
-                              themes[i].votes2[0].voteScore == 3
-                            }
-                            isDisabled={
+                            // important={
+                            //   themes[i].votes2 &&
+                            //   themes[i].votes2.length > 0 &&
+                            //   themes[i].votes2[0].voteScore == 3
+                            // }
+                            disabled={
                               themes.reduce(
                                 (prev, curr) =>
                                   prev +

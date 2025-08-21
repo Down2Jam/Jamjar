@@ -117,6 +117,18 @@
     "Login": {
       "Title": "Login",
       "Description": "Log into the website"
+    },
+    "ThemeSuggestions": {
+      "Title": "Theme Suggestions",
+      "Description": "Submit possible jam themes to the jam. These will be voted on by participants in the future"
+    },
+    "ThemeElimination": {
+      "Title": "Theme Elimination",
+      "Description": "Vote on themes you would or would not want to do for the jam. You can vote on as may as you want"
+    },
+    "ThemeVoting": {
+      "Title": "Theme Voting",
+      "Description": "Vote on the top themes to determine the theme for the jam"
     }
   },
   "PostStyle": {

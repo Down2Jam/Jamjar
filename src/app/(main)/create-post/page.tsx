@@ -2,7 +2,7 @@
 
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
-import { Avatar, Checkbox, Form, Spacer } from "@heroui/react";
+import { Form } from "@heroui/react";
 import { LoaderCircle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
@@ -19,6 +19,8 @@ import Text from "@/framework/Text";
 import Icon from "@/framework/Icon";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
+import { Avatar } from "@/framework/Avatar";
+import { Switch } from "@/framework/Switch";
 
 const theme = "dark";
 
@@ -81,14 +83,7 @@ export default function CreatePostPage() {
               id: tag.id,
               label: (
                 <div className="flex gap-2 items-center">
-                  {tag.icon && (
-                    <Avatar
-                      className="w-6 h-6 min-w-6 min-h-6"
-                      size="sm"
-                      src={tag.icon}
-                      classNames={{ base: "bg-transparent" }}
-                    />
-                  )}
+                  {tag.icon && <Avatar src={tag.icon} />}
                   <p>
                     {tag.name}
                     {tag.modOnly ? " (Mod Only)" : ""}
@@ -279,9 +274,7 @@ export default function CreatePostPage() {
             </div>
             <Editor content={content} setContent={setContent} />
 
-            <Spacer />
-
-            <div>
+            <div className="mt-2">
               <Text color="text">Tags</Text>
               <Text color="textFaded" size="xs">
                 Tags attached to the post to mark what type of content it is
@@ -302,15 +295,18 @@ export default function CreatePostPage() {
             )}
 
             {user && user.mod && (
-              <div>
-                <Spacer />
-                <Checkbox isSelected={sticky} onValueChange={setSticky}>
-                  Sticky
-                </Checkbox>
-              </div>
+              <Hstack>
+                <Switch checked={sticky} onChange={setSticky} />
+                <Vstack align="start" gap={0}>
+                  <Text color="text" size="sm">
+                    Sticky
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    make the post appear at the top of the post feed
+                  </Text>
+                </Vstack>
+              </Hstack>
             )}
-
-            <Spacer />
 
             <div className="flex gap-2">
               <Button color="blue" type="submit" icon="plus">

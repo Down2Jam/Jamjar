@@ -2,34 +2,9 @@
 
 import Editor from "@/components/editor";
 import { getCookie } from "@/helpers/cookie";
-import {
-  Avatar,
-  Button,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Form,
-  Input,
-  NumberInput,
-  Spacer,
-  Switch,
-  Textarea,
-} from "@heroui/react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Calendar,
-  Gamepad2,
-  LandPlot,
-  LoaderCircle,
-  Rabbit,
-  Swords,
-  Trophy,
-  Turtle,
-} from "lucide-react";
+import { addToast, Avatar, Form } from "@heroui/react";
+import { LandPlot, Rabbit, Trophy, Turtle } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { Select as NextSelect, SelectItem } from "@heroui/react";
 import { UserType } from "@/types/UserType";
 import { redirect, useRouter } from "next/navigation";
@@ -48,7 +23,6 @@ import Image from "next/image";
 import { createTeam } from "@/helpers/team";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { GameType } from "@/types/GameType";
-import ButtonAction from "../link-components/ButtonAction";
 import { TeamType } from "@/types/TeamType";
 import { getTeamsUser } from "@/requests/team";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
@@ -58,6 +32,16 @@ import { GameTagType } from "@/types/GameTagType";
 import { FlagType } from "@/types/FlagType";
 import { getIcon } from "@/helpers/icon";
 import Select, { StylesConfig } from "react-select";
+import { Button } from "@/framework/Button";
+import Dropdown from "@/framework/Dropdown";
+import { Input } from "@/framework/Input";
+import { Switch } from "@/framework/Switch";
+import { Textarea } from "@/framework/Textarea";
+import { Card } from "@/framework/Card";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Icon from "@/framework/Icon";
+import Text from "@/framework/Text";
+import { Spinner } from "@/framework/Spinner";
 
 const theme = "dark";
 
@@ -67,7 +51,6 @@ export default function CreateGame() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [themeJustification, setThemeJustification] = useState("");
-  const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
   const [editGame, setEditGame] = useState(false);
   const [mounted, setMounted] = useState<boolean>(false);
@@ -148,7 +131,9 @@ export default function CreateGame() {
           const successful = await createTeam();
           if (successful) {
           } else {
-            toast.error("Error while creating team");
+            addToast({
+              title: "Error while creating team",
+            });
             redirect("/");
           }
         }
@@ -283,7 +268,9 @@ export default function CreateGame() {
           changeGame(0, gameData);
         } else {
           if (teams.length == 0) {
-            toast.error("No available teams");
+            addToast({
+              title: "No available teams",
+            });
             redirect("/");
           }
         }
@@ -295,1003 +282,1127 @@ export default function CreateGame() {
     }
   }, [teams, mounted, changeGame, dataLoaded]);
 
+  const token = getCookie("token");
+
+  if (!token) {
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userx" />
+                <Text size="xl">ThemeSuggestions.SignIn.Title</Text>
+              </Hstack>
+              <Text color="textFaded">ThemeSuggestions.SignIn.Description</Text>
+            </Vstack>
+            <Hstack>
+              <Button href="/signup" color="blue" icon="userplus">
+                Themes.Signup
+              </Button>
+              <Button href="/login" color="pink" icon="login">
+                Themes.Login
+              </Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
+
   return (
-    <Form
-      className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
-      validationErrors={errors}
-      onSubmit={async (e) => {
-        e.preventDefault();
+    <Vstack>
+      <Form
+        className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
+        onSubmit={async (e) => {
+          e.preventDefault();
 
-        if (!title) {
-          setErrors({
-            title: "Please enter a valid title",
-          });
-          return;
-        }
-
-        const userSlug = getCookie("user"); // Retrieve user slug from cookies
-        if (!userSlug) {
-          toast.error("You are not logged in.");
-          return;
-        }
-
-        const sanitizedHtml = sanitize(content);
-        setWaitingPost(true);
-
-        const submitter = (e.nativeEvent as SubmitEvent)
-          .submitter as HTMLButtonElement;
-
-        let publishValue = games[currentGame]
-          ? games[currentGame].published
-          : false;
-
-        if (submitter.value === "publish") {
-          publishValue = true;
-        }
-
-        if (submitter.value === "unpublish") {
-          publishValue = false;
-        }
-
-        try {
-          const links = downloadLinks.map((link) => ({
-            url: link.url,
-            platform: link.platform,
-          }));
-
-          const request = editGame
-            ? updateGame(
-                prevSlug,
-                title,
-                gameSlug,
-                sanitizedHtml,
-                thumbnailUrl,
-                bannerUrl,
-                links,
-                userSlug,
-                category,
-                chosenRatingCategories,
-                chosenMajRatingCategories,
-                publishValue,
-                themeJustification,
-                achievements,
-                Array.from(flags).map((thing) => allFlags[thing].id),
-                Array.from(tags).map((thing) => allTags[thing].id),
-                leaderboards
-              )
-            : postGame(
-                title,
-                gameSlug,
-                sanitizedHtml,
-                thumbnailUrl,
-                bannerUrl,
-                links,
-                userSlug,
-                category,
-                teams[currentTeam].id,
-                chosenRatingCategories,
-                chosenMajRatingCategories,
-                publishValue,
-                themeJustification,
-                achievements,
-                Array.from(flags).map((thing) => allFlags[thing].id),
-                Array.from(tags).map((thing) => allTags[thing].id),
-                leaderboards
-              );
-
-          const response = await request;
-
-          if (response.ok) {
-            toast.success(
-              prevSlug
-                ? "Game updated successfully!"
-                : "Game created successfully!"
-            );
-            setWaitingPost(false);
-            router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
-          } else {
-            const error = await response.text();
-            toast.error(error || "Failed to create game");
-            setWaitingPost(false);
+          if (!title) {
+            addToast({
+              title: "Please enter a valid title",
+            });
+            return;
           }
-        } catch (error) {
-          console.error("Error creating game:", error);
-          toast.error("Failed to create game.");
-        }
-      }}
-    >
-      <div>
-        <h1 className="text-2xl font-bold mb-4 flex">
-          {prevSlug ? "Edit Game" : "Create New Game"}
-        </h1>
-      </div>
-      {games.length > 1 && (
-        <div className="flex gap-2">
-          <ButtonAction
-            iconPosition="start"
-            name="Previous Game"
-            icon={<ArrowLeft />}
-            onPress={() => {
-              changeGame(currentGame - 1, games);
-            }}
-            isDisabled={currentGame == 0}
-          />
-          <ButtonAction
-            name="Next Game"
-            icon={<ArrowRight />}
-            onPress={() => {
-              changeGame(currentGame + 1, games);
-            }}
-            isDisabled={currentGame == games.length - 1}
-          />
-        </div>
-      )}
-      {teams.length > 0 && prevSlug && (
-        <ButtonAction
-          onPress={() => {
-            setGames([]);
-            setEditGame(false);
-            setTitle("");
-            setGameSlug("");
-            setPrevGameSlug("");
-            setContent("");
-            setThemeJustification("");
-            setEditorKey((prev) => prev + 1);
-            setThumbnailUrl(null);
-            setBannerUrl(null);
-            setDownloadLinks([]);
-            setAchievements([]);
-            setTags([]);
-            setFlags([]);
-            setLeaderboards([]);
-            setCategory(
-              activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR"
-            );
-            setChosenRatingCategories([]);
-            setChosenMajRatingCategories([]);
-          }}
-          name="Create New Game"
-        />
-      )}
-      <Input
-        isRequired
-        label="Game Name"
-        labelPlacement="outside"
-        name="title"
-        placeholder="Enter your game name"
-        type="text"
-        value={title}
-        onValueChange={(value) => {
-          setTitle(value);
-          if (!isSlugManuallyEdited) {
-            setGameSlug(sanitizeSlug(value));
+
+          const userSlug = getCookie("user"); // Retrieve user slug from cookies
+          if (!userSlug) {
+            addToast({
+              title: "You are not logged in",
+            });
+            return;
           }
-        }}
-      />
 
-      <Input
-        label="Game Slug"
-        labelPlacement="outside"
-        placeholder="your-game-name"
-        value={gameSlug}
-        onValueChange={(value) => {
-          setGameSlug(sanitizeSlug(value));
-          setIsSlugManuallyEdited(true);
-        }}
-        description="This will be used in the URL: d2jam.com/g/your-game-name"
-      />
+          const sanitizedHtml = sanitize(content);
+          setWaitingPost(true);
 
-      {activeJamResponse &&
-        (activeJamResponse.phase == "Jamming" ||
-          activeJamResponse.phase == "Submission" ||
-          (activeJamResponse.phase == "Rating" && !prevSlug)) && (
-          <>
-            <p>Game Category</p>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button>
-                  {category == "REGULAR"
-                    ? "Regular"
-                    : category == "ODA"
-                    ? "One Dev Army"
-                    : "Extra"}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                onAction={(key) => {
-                  setCategory(key as "REGULAR" | "ODA" | "EXTRA");
-                }}
-              >
-                {activeJamResponse.phase != "Rating" ? (
-                  <DropdownItem
-                    key="REGULAR"
-                    description="The regular jam category"
-                    startContent={<Gamepad2 />}
-                  >
-                    Regular
-                  </DropdownItem>
-                ) : (
-                  <></>
-                )}
-                {teams &&
-                teams.length > 0 &&
-                teams[currentTeam].users.length == 1 &&
-                activeJamResponse.phase != "Rating" ? (
-                  <DropdownItem
-                    key="ODA"
-                    description="1 Dev, No third party assets"
-                    startContent={<Swords />}
-                  >
-                    One Dev Army (O.D.A)
-                  </DropdownItem>
-                ) : (
-                  <></>
-                )}
-                <DropdownItem
-                  key="EXTRA"
-                  description="Can be submitted during the rating period. Will not be ranked"
-                  startContent={<Calendar />}
-                >
-                  Extra
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </>
-        )}
+          const submitter = (e.nativeEvent as SubmitEvent)
+            .submitter as HTMLButtonElement;
 
-      <label className="text-sm font-medium">Game Description</label>
-      <Editor
-        key={editorKey}
-        content={content}
-        setContent={setContent}
-        gameEditor
-      />
+          let publishValue = games[currentGame]
+            ? games[currentGame].published
+            : false;
 
-      <Spacer />
+          if (submitter.value === "publish") {
+            publishValue = true;
+          }
 
-      <Textarea
-        label="Theme Justification"
-        labelPlacement="outside"
-        placeholder="Why your game follows the theme"
-        value={themeJustification}
-        onValueChange={setThemeJustification}
-        description="This will be shown to people as they rate you for theme"
-      />
+          if (submitter.value === "unpublish") {
+            publishValue = false;
+          }
 
-      <Spacer />
+          try {
+            const links = downloadLinks.map((link) => ({
+              url: link.url,
+              platform: link.platform,
+            }));
 
-      <div className="flex flex-col gap-2">
-        <p>Thumbnail</p>
-        <p className="text-sm text-[#777] dark:text-[#bbb]">
-          Shows when people are browsing through games (384x216)
-        </p>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
+            const request = editGame
+              ? updateGame(
+                  prevSlug,
+                  title,
+                  gameSlug,
+                  sanitizedHtml,
+                  thumbnailUrl,
+                  bannerUrl,
+                  links,
+                  userSlug,
+                  category,
+                  chosenRatingCategories,
+                  chosenMajRatingCategories,
+                  publishValue,
+                  themeJustification,
+                  achievements,
+                  Array.from(flags).map((thing) => allFlags[thing].id),
+                  Array.from(tags).map((thing) => allTags[thing].id),
+                  leaderboards
+                )
+              : postGame(
+                  title,
+                  gameSlug,
+                  sanitizedHtml,
+                  thumbnailUrl,
+                  bannerUrl,
+                  links,
+                  userSlug,
+                  category,
+                  teams[currentTeam].id,
+                  chosenRatingCategories,
+                  chosenMajRatingCategories,
+                  publishValue,
+                  themeJustification,
+                  achievements,
+                  Array.from(flags).map((thing) => allFlags[thing].id),
+                  Array.from(tags).map((thing) => allTags[thing].id),
+                  leaderboards
+                );
 
-            const formData = new FormData();
-            formData.append("upload", file);
+            const response = await request;
 
-            try {
-              const response = await fetch(
-                process.env.NEXT_PUBLIC_MODE === "PROD"
-                  ? "https://d2jam.com/api/v1/image"
-                  : "http://localhost:3005/api/v1/image",
-                {
-                  method: "POST",
-                  body: formData,
-                  headers: {
-                    authorization: `Bearer ${getCookie("token")}`,
-                  },
-                  credentials: "include",
-                }
-              );
-
-              if (response.ok) {
-                const data = await response.json();
-                setThumbnailUrl(data.data);
-                toast.success(data.message);
-              } else {
-                toast.error("Failed to upload image");
-              }
-            } catch (error) {
-              console.error(error);
-              toast.error("Error uploading image");
+            if (response.ok) {
+              addToast({
+                title: prevSlug
+                  ? "Game updated successfully!"
+                  : "Game created successfully!",
+              });
+              setWaitingPost(false);
+              router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
+            } else {
+              const error = await response.text();
+              addToast({
+                title: error || "Failed to create game",
+              });
+              setWaitingPost(false);
             }
-          }}
-        />
-
-        {thumbnailUrl && (
-          <div className="w-full">
-            <div className="bg-[#222222] h-[216px] w-[384px] relative">
-              <Image
-                src={thumbnailUrl}
-                alt={`${title}'s thumbnail`}
-                className="object-cover"
-                fill
-              />
+          } catch (error) {
+            console.error("Error creating game:", error);
+            addToast({
+              title: "Failed to create game.",
+            });
+          }
+        }}
+      >
+        <Vstack align="start">
+          <Card>
+            <Vstack align="start">
+              <Hstack>
+                <Icon name="gamepad2" color="text" />
+                <Text size="xl" color="text" weight="semibold">
+                  {prevSlug ? "Edit Game" : "Create New Game"}
+                </Text>
+              </Hstack>
+              <Text size="sm" color="textFaded">
+                {prevSlug
+                  ? "Edit the page for a game you've made"
+                  : "Create a new page for a game on the site"}
+              </Text>
+            </Vstack>
+          </Card>
+          {games.length > 1 && (
+            <div className="flex gap-2">
+              <Button
+                icon="arrowleft"
+                onClick={() => {
+                  changeGame(currentGame - 1, games);
+                }}
+                disabled={currentGame == 0}
+              >
+                Previous Game
+              </Button>
+              <Button
+                icon="arrowright"
+                onClick={() => {
+                  changeGame(currentGame + 1, games);
+                }}
+                disabled={currentGame == games.length - 1}
+              >
+                Next Game
+              </Button>
             </div>
-            <Spacer y={3} />
+          )}
+          {teams.length > 0 && prevSlug && (
             <Button
-              color="danger"
-              size="sm"
-              onPress={() => {
+              onClick={() => {
+                setGames([]);
+                setEditGame(false);
+                setTitle("");
+                setGameSlug("");
+                setPrevGameSlug("");
+                setContent("");
+                setThemeJustification("");
+                setEditorKey((prev) => prev + 1);
                 setThumbnailUrl(null);
-              }}
-            >
-              Remove Thumbnail
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <Spacer />
-
-      <div className="flex flex-col gap-2">
-        <p>Banner</p>
-        <p className="text-sm text-[#777] dark:text-[#bbb]">
-          Shows on the game page (1468 x 240)
-        </p>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-
-            const formData = new FormData();
-            formData.append("upload", file);
-
-            try {
-              const response = await fetch(
-                process.env.NEXT_PUBLIC_MODE === "PROD"
-                  ? "https://d2jam.com/api/v1/image"
-                  : "http://localhost:3005/api/v1/image",
-                {
-                  method: "POST",
-                  body: formData,
-                  headers: {
-                    authorization: `Bearer ${getCookie("token")}`,
-                  },
-                  credentials: "include",
-                }
-              );
-
-              if (response.ok) {
-                const data = await response.json();
-                setBannerUrl(data.data);
-                toast.success(data.message);
-              } else {
-                toast.error("Failed to upload image");
-              }
-            } catch (error) {
-              console.error(error);
-              toast.error("Error uploading image");
-            }
-          }}
-        />
-
-        {bannerUrl && (
-          <div className="w-full">
-            <div className="bg-[#222222] h-[110px] w-[734px] relative">
-              <Image
-                src={bannerUrl}
-                alt={`${title}'s banner`}
-                className="object-cover"
-                fill
-              />
-            </div>
-            <Spacer y={3} />
-            <Button
-              color="danger"
-              size="sm"
-              onPress={() => {
                 setBannerUrl(null);
+                setDownloadLinks([]);
+                setAchievements([]);
+                setTags([]);
+                setFlags([]);
+                setLeaderboards([]);
+                setCategory(
+                  activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR"
+                );
+                setChosenRatingCategories([]);
+                setChosenMajRatingCategories([]);
               }}
-            >
-              Remove Banner
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <Spacer />
-
-      <div className="flex flex-col gap-2">
-        <p>Links</p>
-        <p className="text-sm text-[#777] dark:text-[#bbb]">
-          Upload your game to a hosting site (such as itch.io) and link it here
-          for people to play on or download from
-        </p>
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            {Array.isArray(downloadLinks) &&
-              downloadLinks.map((link, index) => (
-                <div key={link.id} className="flex gap-2">
-                  <Input
-                    className="flex-grow"
-                    placeholder="https://example.com"
-                    value={link.url}
-                    onValueChange={(value) => {
-                      const newLinks = [...downloadLinks];
-                      newLinks[index].url = value;
-                      setDownloadLinks(newLinks);
-                    }}
-                    onBlur={() => {
-                      if (!urlRegex.test(downloadLinks[index].url)) {
-                        toast.error(
-                          "Please enter a valid URL starting with http:// or https://"
-                        );
-
-                        if (
-                          !downloadLinks[index].url.startsWith("http://") &&
-                          !downloadLinks[index].url.startsWith("https://")
-                        ) {
-                          const newUrl = "https://" + downloadLinks[index].url;
-                          const newLinks = [...downloadLinks];
-                          newLinks[index].url = newUrl;
-                          setDownloadLinks(newLinks);
-                          const input =
-                            document.querySelector<HTMLInputElement>(
-                              `#download-link-${index}`
-                            );
-                          if (input) {
-                            input.value = newUrl;
-                          }
-                        }
-                      }
-                    }}
-                  />
-                  <NextSelect
-                    className="w-96"
-                    defaultSelectedKeys={["Web"]}
-                    aria-label="Select platform" // Add this to fix accessibility warning
-                    onSelectionChange={(value) => {
-                      const newLinks = [...downloadLinks];
-                      newLinks[index].platform =
-                        value.currentKey as unknown as PlatformType;
-                      setDownloadLinks(newLinks);
-                    }}
-                    selectedKeys={[link.platform]}
-                  >
-                    <SelectItem
-                      key="Web"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Web
-                    </SelectItem>
-                    <SelectItem
-                      key="SourceCode"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Source Code
-                    </SelectItem>
-                    <SelectItem
-                      key="Windows"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Windows
-                    </SelectItem>
-                    <SelectItem
-                      key="MacOS"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      MacOS
-                    </SelectItem>
-                    <SelectItem
-                      key="Linux"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Linux
-                    </SelectItem>
-                    <SelectItem
-                      key="iOS"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Apple iOS
-                    </SelectItem>
-                    <SelectItem
-                      key="Android"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Android
-                    </SelectItem>
-                    <SelectItem
-                      key="Other"
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Other
-                    </SelectItem>
-                  </NextSelect>
-                  <Button
-                    color="danger"
-                    variant="light"
-                    onPress={() => {
-                      setDownloadLinks(
-                        downloadLinks.filter((l) => l.id !== link.id)
-                      );
-                    }}
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
-          </div>
-
-          <Button
-            variant="solid"
-            onPress={() => {
-              setDownloadLinks([
-                ...downloadLinks,
-                {
-                  id: Date.now(),
-                  url: "",
-                  platform: "Web",
-                },
-              ]);
-            }}
-          >
-            Add Link
-          </Button>
-        </div>
-
-        <Spacer />
-
-        {teams.length > 1 && !prevSlug && (
-          <>
-            <p>Team</p>
-            <Dropdown>
-              <DropdownTrigger>
-                <Button>
-                  {teams && teams[currentTeam]
-                    ? teams[currentTeam].name
-                      ? teams[currentTeam].name
-                      : `${teams[currentTeam].owner.name}'s Team`
-                    : "Unknown"}
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu
-                onAction={(i) => {
-                  changeTeam(i as number);
-                }}
-              >
-                {teams.map((team, i) => (
-                  <DropdownItem
-                    key={i}
-                    description={`${team.users.length} members`}
-                  >
-                    {teams && teams[i]
-                      ? teams[i].name
-                        ? teams[i].name
-                        : `${teams[i].owner.name}'s Team`
-                      : "Unknown"}
-                  </DropdownItem>
-                ))}
-              </DropdownMenu>
-            </Dropdown>
-          </>
-        )}
-
-        <Spacer />
-
-        <div className="flex flex-col gap-2">
-          <p className="text-[#333] dark:text-white">Tags</p>
-          <p className="text-sm text-[#777] dark:text-[#bbb]">
-            Tags for game engine, genre, etc. for people to filter by
-          </p>
-          {mounted && (
-            <Select
-              styles={styles}
-              isMulti
-              isClearable={false}
-              onChange={(value) => setTags(value.map((i) => i.id))}
-              value={tags.map((index) => ({
-                value: allTags[index].name,
-                id: index,
-                label: (
-                  <div className="flex gap-2 items-center">
-                    {allTags[index].icon && (
-                      <Avatar
-                        className="w-6 h-6 min-w-6 min-h-6"
-                        size="sm"
-                        src={allTags[index].icon}
-                        classNames={{ base: "bg-transparent" }}
-                      />
-                    )}
-                    <p>{allTags[index].name}</p>
-                  </div>
-                ),
-              }))}
-              isOptionDisabled={() => tags != null && tags.length >= 10}
-              options={allTags.map((tag, i) => ({
-                value: tag.name,
-                id: i,
-                label: (
-                  <div className="flex gap-2 items-center">
-                    {tag.icon && (
-                      <Avatar
-                        className="w-6 h-6 min-w-6 min-h-6"
-                        size="sm"
-                        src={tag.icon}
-                        classNames={{ base: "bg-transparent" }}
-                      />
-                    )}
-                    <p>{tag.name}</p>
-                  </div>
-                ),
-              }))}
+              name="Create New Game"
             />
           )}
-        </div>
-
-        <Spacer />
-
-        <div className="flex flex-col gap-2">
-          <p className="text-[#333] dark:text-white">Content Flags</p>
-          <p className="text-sm text-[#777] dark:text-[#bbb]">
-            Warnings about what content your game contains
-          </p>
-          {mounted && (
-            <Select
-              styles={styles}
-              isMulti
-              isClearable={false}
-              onChange={(value) => setFlags(value.map((i) => i.id))}
-              value={flags.map((index) => ({
-                value: allFlags[index].name,
-                id: index,
-                label: (
-                  <div className="flex gap-2 items-center">
-                    {allFlags[index].icon && getIcon(allFlags[index].icon)}
-                    <p>{allFlags[index].name}</p>
-                  </div>
-                ),
-              }))}
-              options={allFlags.map((flag, i) => ({
-                value: flag.name,
-                id: i,
-                label: (
-                  <div className="flex gap-2 items-center">
-                    {flag.icon && getIcon(flag.icon)}
-                    <p>{flag.name}</p>
-                  </div>
-                ),
-              }))}
-            />
-          )}
-        </div>
-
-        <Spacer />
-
-        <div className="flex flex-col gap-2">
-          <p className="text-[#333] dark:text-white">
-            Opt-In Rating Categories
-          </p>
-          <p className="text-sm text-[#777] dark:text-[#bbb]">
-            Any optional categories you want to get a rating & rank in
-          </p>
-          <Spacer />
-          {ratingCategories.map((category3) => (
-            <div key={category3.id}>
-              <Switch
-                isSelected={
-                  chosenRatingCategories.filter(
-                    (category2) => category2 == category3.id
-                  ).length > 0
-                }
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Game Name</Text>
+                <Text color="textFaded" size="xs">
+                  The name your game is called
+                </Text>
+              </div>
+              <Input
+                required
+                name="title"
+                placeholder="Enter your game name"
+                type="text"
+                value={title}
                 onValueChange={(value) => {
-                  if (value) {
-                    setChosenRatingCategories([
-                      ...chosenRatingCategories,
-                      category3.id,
-                    ]);
-                  } else {
-                    setChosenRatingCategories(
-                      chosenRatingCategories.filter(
-                        (category2) => category2 != category3.id
-                      )
-                    );
+                  setTitle(value);
+                  if (!isSlugManuallyEdited) {
+                    setGameSlug(sanitizeSlug(value));
                   }
                 }}
-              >
-                <div className="text-[#333] dark:text-white">
-                  <p>{category3.name}</p>
-                  <p className="text-sm text-[#777] dark:text-[#bbb]">
-                    {category3.description}
-                  </p>
-                </div>
-              </Switch>
-              {category3.askMajorityContent &&
-                category == "REGULAR" &&
-                chosenRatingCategories.filter(
-                  (category2) => category2 == category3.id
-                ).length > 0 && (
-                  <Switch
-                    key={category3.id + "maj"}
-                    isSelected={
-                      chosenMajRatingCategories.filter(
-                        (category2) => category2 == category3.id
-                      ).length > 0
-                    }
-                    className="pl-5 pt-2"
-                    onValueChange={(value) => {
-                      if (value) {
-                        setChosenMajRatingCategories([
-                          ...chosenMajRatingCategories,
-                          category3.id,
-                        ]);
-                      } else {
-                        setChosenMajRatingCategories(
-                          chosenMajRatingCategories.filter(
-                            (category2) => category2 != category3.id
-                          )
-                        );
+              />
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Game Slug</Text>
+                <Text color="textFaded" size="xs">
+                  {`This will be used in the URL: d2jam.com/g/${
+                    gameSlug || "your-game-name"
+                  }`}
+                </Text>
+              </div>
+              <Input
+                placeholder="your-game-name"
+                value={gameSlug}
+                onValueChange={(value) => {
+                  setGameSlug(sanitizeSlug(value));
+                  setIsSlugManuallyEdited(true);
+                }}
+              />
+            </Vstack>
+          </Card>
+
+          {activeJamResponse &&
+            (activeJamResponse.phase == "Jamming" ||
+              activeJamResponse.phase == "Submission" ||
+              (activeJamResponse.phase == "Rating" && !prevSlug)) && (
+              <>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Game Category</Text>
+                      <Text color="textFaded" size="xs">
+                        The category you are submitting your game to in the jam
+                      </Text>
+                    </div>
+                    <Dropdown
+                      trigger={
+                        <Button>
+                          {category == "REGULAR"
+                            ? "Regular"
+                            : category == "ODA"
+                            ? "One Dev Army"
+                            : "Extra"}
+                        </Button>
                       }
-                    }}
-                  >
-                    <p className="text-sm text-[#777] dark:text-[#bbb]">
-                      Did you make the majority of the {category3.name} content
-                    </p>
-                  </Switch>
-                )}
-            </div>
-          ))}
-        </div>
-
-        <Spacer />
-
-        <div className="flex flex-col gap-2">
-          <p className="text-[#333] dark:text-white">Leaderboards</p>
-          <p className="text-sm text-[#777] dark:text-[#bbb]">
-            Leaderboards for people to submit high scores for your game (scores
-            will be reported manually with pictures for evidence)
-          </p>
-          {leaderboards.map((lb, index) => (
-            <div key={index} className="flex flex-col gap-2">
-              <div className="flex flex-col gap-2 ">
-                <div className="flex gap-2 items-center">
-                  <Input
-                    label="Leaderboard Name"
-                    placeholder="Enter name here"
-                    value={lb.name}
-                    onChange={(e) => {
-                      const updated = [...leaderboards];
-                      updated[index].name = e.target.value;
-                      setLeaderboards(updated);
-                    }}
-                  />
-
-                  <NumberInput
-                    label="Users per page"
-                    placeholder="Enter a user amount"
-                    value={lb.maxUsersShown}
-                    minValue={0}
-                    maxValue={100}
-                    onValueChange={(e) => {
-                      const updated = [...leaderboards];
-                      updated[index].maxUsersShown = e;
-                      setLeaderboards(updated);
-                    }}
-                  />
-                </div>
-
-                <div className="flex gap-2 items-center">
-                  <NextSelect
-                    label="Leaderboard Type"
-                    defaultSelectedKeys={["SCORE"]}
-                    onChange={(e) => {
-                      const updated = [...leaderboards];
-                      updated[index].type = e.target
-                        .value as LeaderboardTypeType;
-                      setLeaderboards(updated);
-                    }}
-                  >
-                    <SelectItem
-                      key="SCORE"
-                      description="Highest Score"
-                      startContent={<Trophy />}
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Score
-                    </SelectItem>
-                    <SelectItem
-                      key="GOLF"
-                      description="Lowest Score"
-                      startContent={<LandPlot />}
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Golf
-                    </SelectItem>
-                    <SelectItem
-                      key="SPEEDRUN"
-                      description="Lowest Time"
-                      startContent={<Rabbit />}
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Speedrun
-                    </SelectItem>
-                    <SelectItem
-                      key="ENDURANCE"
-                      description="Highest Time"
-                      startContent={<Turtle />}
-                      classNames={{ base: "text-[#333] dark:text-white" }}
-                    >
-                      Endurance
-                    </SelectItem>
-                  </NextSelect>
-                  {(lb.type == "SCORE" || lb.type == "GOLF") && (
-                    <NumberInput
-                      label="Decimal places"
-                      placeholder="Enter the scores decimal places"
-                      value={lb.decimalPlaces}
-                      minValue={0}
-                      maxValue={3}
-                      onValueChange={(e) => {
-                        const updated = [...leaderboards];
-                        updated[index].decimalPlaces = e;
-                        setLeaderboards(updated);
+                      onSelect={(key) => {
+                        setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                       }}
+                    >
+                      {activeJamResponse.phase != "Rating" ? (
+                        <Dropdown.Item
+                          value="REGULAR"
+                          description="The regular jam category"
+                          icon="gamepad2"
+                        >
+                          Regular
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      {teams &&
+                      teams.length > 0 &&
+                      teams[currentTeam].users.length == 1 &&
+                      activeJamResponse.phase != "Rating" ? (
+                        <Dropdown.Item
+                          value="ODA"
+                          description="1 Dev, No third party assets"
+                          icon="swords"
+                        >
+                          One Dev Army (O.D.A)
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      <Dropdown.Item
+                        value="EXTRA"
+                        description="Can be submitted during the rating period. Will not be ranked"
+                        icon="calendar"
+                      >
+                        Extra
+                      </Dropdown.Item>
+                    </Dropdown>
+                  </Vstack>
+                </Card>
+              </>
+            )}
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Game Description</Text>
+                <Text color="textFaded" size="xs">
+                  The content of your game page. Visible when people look at
+                  your game
+                </Text>
+              </div>
+              <Editor
+                key={editorKey}
+                content={content}
+                setContent={setContent}
+                gameEditor
+              />
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Theme Justification</Text>
+                <Text color="textFaded" size="xs">
+                  This will be shown to people as they rate you for theme. Why
+                  your game follows the theme
+                </Text>
+              </div>
+              <Textarea
+                placeholder="Enter a justification (optional)"
+                value={themeJustification}
+                onValueChange={setThemeJustification}
+              />
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Thumbnail</Text>
+                <Text color="textFaded" size="xs">
+                  Shows when people are browsing through games (384x216)
+                </Text>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const formData = new FormData();
+                  formData.append("upload", file);
+
+                  try {
+                    const response = await fetch(
+                      process.env.NEXT_PUBLIC_MODE === "PROD"
+                        ? "https://d2jam.com/api/v1/image"
+                        : "http://localhost:3005/api/v1/image",
+                      {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                          authorization: `Bearer ${getCookie("token")}`,
+                        },
+                        credentials: "include",
+                      }
+                    );
+
+                    if (response.ok) {
+                      const data = await response.json();
+                      setThumbnailUrl(data.data);
+                      addToast({
+                        title: data.message,
+                      });
+                    } else {
+                      addToast({
+                        title: "Failed to upload image",
+                      });
+                    }
+                  } catch (error) {
+                    console.error(error);
+                    addToast({
+                      title: "Error uploading image",
+                    });
+                  }
+                }}
+              />
+
+              {thumbnailUrl && (
+                <div className="w-full">
+                  <div className="bg-[#222222] h-[216px] w-[384px] relative">
+                    <Image
+                      src={thumbnailUrl}
+                      alt={`${title}'s thumbnail`}
+                      className="object-cover"
+                      fill
                     />
-                  )}
+                  </div>
+                  <Button
+                    color="red"
+                    size="sm"
+                    onClick={() => {
+                      setThumbnailUrl(null);
+                    }}
+                  >
+                    Remove Thumbnail
+                  </Button>
                 </div>
-                <Switch
-                  isSelected={lb.onlyBest}
-                  onValueChange={(value) => {
-                    const updated = [...leaderboards];
-                    updated[index].onlyBest = value;
-                    setLeaderboards(updated);
+              )}
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Banner</Text>
+                <Text color="textFaded" size="xs">
+                  Shows on the game page (1468 x 240)
+                </Text>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+
+                  const formData = new FormData();
+                  formData.append("upload", file);
+
+                  try {
+                    const response = await fetch(
+                      process.env.NEXT_PUBLIC_MODE === "PROD"
+                        ? "https://d2jam.com/api/v1/image"
+                        : "http://localhost:3005/api/v1/image",
+                      {
+                        method: "POST",
+                        body: formData,
+                        headers: {
+                          authorization: `Bearer ${getCookie("token")}`,
+                        },
+                        credentials: "include",
+                      }
+                    );
+
+                    if (response.ok) {
+                      const data = await response.json();
+                      setBannerUrl(data.data);
+                      addToast({
+                        title: data.message,
+                      });
+                    } else {
+                      addToast({
+                        title: "Failed to upload image",
+                      });
+                    }
+                  } catch (error) {
+                    console.error(error);
+                    addToast({
+                      title: "Error uploading image",
+                    });
+                  }
+                }}
+              />
+
+              {bannerUrl && (
+                <div className="w-full">
+                  <div className="bg-[#222222] h-[110px] w-[734px] relative">
+                    <Image
+                      src={bannerUrl}
+                      alt={`${title}'s banner`}
+                      className="object-cover"
+                      fill
+                    />
+                  </div>
+                  <Button
+                    color="red"
+                    size="sm"
+                    onClick={() => {
+                      setBannerUrl(null);
+                    }}
+                  >
+                    Remove Banner
+                  </Button>
+                </div>
+              )}
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Links</Text>
+                <Text color="textFaded" size="xs">
+                  Upload your game to a hosting site (such as itch.io) and link
+                  it here for people to play on or download from
+                </Text>
+              </div>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  {Array.isArray(downloadLinks) &&
+                    downloadLinks.map((link, index) => (
+                      <div key={link.id} className="flex gap-2">
+                        <Input
+                          className="flex-grow"
+                          placeholder="https://example.com"
+                          value={link.url}
+                          onValueChange={(value) => {
+                            const newLinks = [...downloadLinks];
+                            newLinks[index].url = value;
+                            setDownloadLinks(newLinks);
+                          }}
+                          onBlur={() => {
+                            if (!urlRegex.test(downloadLinks[index].url)) {
+                              addToast({
+                                title:
+                                  "Please enter a valid URL starting with http:// or https://",
+                              });
+
+                              if (
+                                !downloadLinks[index].url.startsWith(
+                                  "http://"
+                                ) &&
+                                !downloadLinks[index].url.startsWith("https://")
+                              ) {
+                                const newUrl =
+                                  "https://" + downloadLinks[index].url;
+                                const newLinks = [...downloadLinks];
+                                newLinks[index].url = newUrl;
+                                setDownloadLinks(newLinks);
+                                const input =
+                                  document.querySelector<HTMLInputElement>(
+                                    `#download-link-${index}`
+                                  );
+                                if (input) {
+                                  input.value = newUrl;
+                                }
+                              }
+                            }
+                          }}
+                        />
+                        <NextSelect
+                          className="w-96"
+                          defaultSelectedKeys={["Web"]}
+                          aria-label="Select platform" // Add this to fix accessibility warning
+                          onSelectionChange={(value) => {
+                            const newLinks = [...downloadLinks];
+                            newLinks[index].platform =
+                              value.currentKey as unknown as PlatformType;
+                            setDownloadLinks(newLinks);
+                          }}
+                          selectedKeys={[link.platform]}
+                        >
+                          <SelectItem
+                            key="Web"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Web
+                          </SelectItem>
+                          <SelectItem
+                            key="SourceCode"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Source Code
+                          </SelectItem>
+                          <SelectItem
+                            key="Windows"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Windows
+                          </SelectItem>
+                          <SelectItem
+                            key="MacOS"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            MacOS
+                          </SelectItem>
+                          <SelectItem
+                            key="Linux"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Linux
+                          </SelectItem>
+                          <SelectItem
+                            key="iOS"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Apple iOS
+                          </SelectItem>
+                          <SelectItem
+                            key="Android"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Android
+                          </SelectItem>
+                          <SelectItem
+                            key="Other"
+                            classNames={{ base: "text-[#333] dark:text-white" }}
+                          >
+                            Other
+                          </SelectItem>
+                        </NextSelect>
+                        <Button
+                          color="red"
+                          onClick={() => {
+                            setDownloadLinks(
+                              downloadLinks.filter((l) => l.id !== link.id)
+                            );
+                          }}
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setDownloadLinks([
+                      ...downloadLinks,
+                      {
+                        id: Date.now(),
+                        url: "",
+                        platform: "Web",
+                      },
+                    ]);
                   }}
                 >
-                  <div className="text-[#333] dark:text-white">
-                    <p>Only Highest</p>
-                    <p className="text-sm text-[#777] dark:text-[#bbb]">
-                      Only shows each users highest score
-                    </p>
-                  </div>
-                </Switch>
-                <div>
-                  <Button
-                    color="danger"
-                    onPress={() =>
-                      setLeaderboards(
-                        leaderboards.filter((_, i) => i !== index)
-                      )
-                    }
-                  >
-                    Remove
-                  </Button>
-                </div>
+                  Add Link
+                </Button>
               </div>
-            </div>
-          ))}
-          <Button
-            onPress={() =>
-              setLeaderboards([
-                ...leaderboards,
-                {
-                  id: -1,
-                  name: "",
-                  type: "SCORE",
-                  onlyBest: true,
-                  game: {} as GameType,
-                  scores: [],
-                  maxUsersShown: 10,
-                  decimalPlaces: 0,
-                },
-              ])
-            }
-          >
-            Add Leaderboard
-          </Button>
-        </div>
-
-        <Spacer />
-
-        <div className="flex flex-col gap-2">
-          <p className="text-[#333] dark:text-white">Soundtrack</p>
-          <p className="text-sm text-[#777] dark:text-[#bbb]">
-            The soundtrack of your game for people to listen to when browsing
-            your game page.
-          </p>
-          <Button
-            onPress={async () => {
-              const input = document.createElement("input");
-              input.type = "file";
-              input.accept = "audio/*";
-              input.onchange = async (e: Event) => {
-                const file = (e.target as HTMLInputElement)?.files?.[0];
-                if (!file) return;
-
-                const formData = new FormData();
-                formData.append("upload", file);
-
-                try {
-                  const response = await fetch(
-                    process.env.NEXT_PUBLIC_MODE === "PROD"
-                      ? "https://d2jam.com/api/v1/music"
-                      : "http://localhost:3005/api/v1/music",
-                    {
-                      method: "POST",
-                      body: formData,
-                      headers: {
-                        authorization: `Bearer ${getCookie("token")}`,
-                      },
-                      credentials: "include",
-                    }
-                  );
-
-                  const result = await response.json();
-                  if (response.ok) {
-                    toast.error("Song uploaded");
-                    console.log("Upload successful:", result);
-                  } else {
-                    toast.error("Upload failed");
-                    console.error("Upload failed:", result);
+            </Vstack>
+          </Card>
+          {teams.length > 1 && !prevSlug && (
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Team</Text>
+                  <Text color="textFaded" size="xs">
+                    Set the team associated with the game
+                  </Text>
+                </div>
+                <Dropdown
+                  trigger={
+                    <Button>
+                      {teams && teams[currentTeam]
+                        ? teams[currentTeam].name
+                          ? teams[currentTeam].name
+                          : `${teams[currentTeam].owner.name}'s Team`
+                        : "Unknown"}
+                    </Button>
                   }
-                } catch (error) {
-                  toast.error("Error uploading file");
-                  console.error("Error uploading file:", error);
+                  onSelect={(i) => {
+                    changeTeam(i as number);
+                  }}
+                >
+                  {teams.map((team, i) => (
+                    <Dropdown.Item
+                      key={i}
+                      value={i}
+                      description={`${team.users.length} members`}
+                    >
+                      {teams && teams[i]
+                        ? teams[i].name
+                          ? teams[i].name
+                          : `${teams[i].owner.name}'s Team`
+                        : "Unknown"}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              </Vstack>
+            </Card>
+          )}
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Tags</Text>
+                <Text color="textFaded" size="xs">
+                  Tags for game engine, genre, etc. for people to filter by
+                </Text>
+              </div>
+              {mounted && (
+                <Select
+                  styles={styles}
+                  isMulti
+                  isClearable={false}
+                  onChange={(value) => setTags(value.map((i) => i.id))}
+                  value={tags.map((index) => ({
+                    value: allTags[index].name,
+                    id: index,
+                    label: (
+                      <div className="flex gap-2 items-center">
+                        {allTags[index].icon && (
+                          <Avatar
+                            className="w-6 h-6 min-w-6 min-h-6"
+                            size="sm"
+                            src={allTags[index].icon}
+                            classNames={{ base: "bg-transparent" }}
+                          />
+                        )}
+                        <p>{allTags[index].name}</p>
+                      </div>
+                    ),
+                  }))}
+                  isOptionDisabled={() => tags != null && tags.length >= 10}
+                  options={allTags.map((tag, i) => ({
+                    value: tag.name,
+                    id: i,
+                    label: (
+                      <div className="flex gap-2 items-center">
+                        {tag.icon && (
+                          <Avatar
+                            className="w-6 h-6 min-w-6 min-h-6"
+                            size="sm"
+                            src={tag.icon}
+                            classNames={{ base: "bg-transparent" }}
+                          />
+                        )}
+                        <p>{tag.name}</p>
+                      </div>
+                    ),
+                  }))}
+                />
+              )}
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Content Flags</Text>
+                <Text color="textFaded" size="xs">
+                  Warnings about what content your game contains
+                </Text>
+              </div>
+              {mounted && (
+                <Select
+                  styles={styles}
+                  isMulti
+                  isClearable={false}
+                  onChange={(value) => setFlags(value.map((i) => i.id))}
+                  value={flags.map((index) => ({
+                    value: allFlags[index].name,
+                    id: index,
+                    label: (
+                      <div className="flex gap-2 items-center">
+                        {allFlags[index].icon && getIcon(allFlags[index].icon)}
+                        <p>{allFlags[index].name}</p>
+                      </div>
+                    ),
+                  }))}
+                  options={allFlags.map((flag, i) => ({
+                    value: flag.name,
+                    id: i,
+                    label: (
+                      <div className="flex gap-2 items-center">
+                        {flag.icon && getIcon(flag.icon)}
+                        <p>{flag.name}</p>
+                      </div>
+                    ),
+                  }))}
+                />
+              )}
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Opt-In Rating Categories</Text>
+                <Text color="textFaded" size="xs">
+                  Any optional categories you want to get a rating & rank in
+                </Text>
+              </div>
+              {ratingCategories.map((category3) => (
+                <div key={category3.id}>
+                  <Hstack>
+                    <Switch
+                      checked={
+                        chosenRatingCategories.filter(
+                          (category2) => category2 == category3.id
+                        ).length > 0
+                      }
+                      onChange={(value) => {
+                        if (value) {
+                          setChosenRatingCategories([
+                            ...chosenRatingCategories,
+                            category3.id,
+                          ]);
+                        } else {
+                          setChosenRatingCategories(
+                            chosenRatingCategories.filter(
+                              (category2) => category2 != category3.id
+                            )
+                          );
+                        }
+                      }}
+                    />
+                    <Vstack gap={0} align="start">
+                      <Text color="text" size="sm">
+                        {category3.name}
+                      </Text>
+                      <Text color="textFaded" size="xs">
+                        {category3.description}
+                      </Text>
+                    </Vstack>
+                  </Hstack>
+                  {category3.askMajorityContent &&
+                    category == "REGULAR" &&
+                    chosenRatingCategories.filter(
+                      (category2) => category2 == category3.id
+                    ).length > 0 && (
+                      <Hstack className="pl-5 pt-2">
+                        <Switch
+                          key={category3.id + "maj"}
+                          checked={
+                            chosenMajRatingCategories.filter(
+                              (category2) => category2 == category3.id
+                            ).length > 0
+                          }
+                          onChange={(value) => {
+                            if (value) {
+                              setChosenMajRatingCategories([
+                                ...chosenMajRatingCategories,
+                                category3.id,
+                              ]);
+                            } else {
+                              setChosenMajRatingCategories(
+                                chosenMajRatingCategories.filter(
+                                  (category2) => category2 != category3.id
+                                )
+                              );
+                            }
+                          }}
+                        />
+                        <Text color="textFaded" size="xs">
+                          Did you make the majority of the {category3.name}{" "}
+                          content
+                        </Text>
+                      </Hstack>
+                    )}
+                </div>
+              ))}
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Leaderboards</Text>
+                <Text color="textFaded" size="xs">
+                  Leaderboards for people to submit high scores for your game
+                  (scores will be reported manually with pictures for evidence)
+                </Text>
+              </div>
+              {leaderboards.map((lb, index) => (
+                <div key={index} className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 ">
+                    <Hstack>
+                      <Input
+                        label="Leaderboard Name"
+                        placeholder="Enter name here"
+                        value={lb.name}
+                        onChange={(e) => {
+                          const updated = [...leaderboards];
+                          updated[index].name = e.target.value;
+                          setLeaderboards(updated);
+                        }}
+                      />
+
+                      <Input
+                        type="number"
+                        label="Users per page"
+                        placeholder="Enter a user amount"
+                        value={lb.maxUsersShown}
+                        min={0}
+                        max={100}
+                        onValueChange={(e) => {
+                          const updated = [...leaderboards];
+                          updated[index].maxUsersShown = parseInt(e);
+                          setLeaderboards(updated);
+                        }}
+                      />
+                      <NextSelect
+                        label="Leaderboard Type"
+                        defaultSelectedKeys={["SCORE"]}
+                        onChange={(e) => {
+                          const updated = [...leaderboards];
+                          updated[index].type = e.target
+                            .value as LeaderboardTypeType;
+                          setLeaderboards(updated);
+                        }}
+                      >
+                        <SelectItem
+                          key="SCORE"
+                          description="Highest Score"
+                          startContent={<Trophy />}
+                          classNames={{ base: "text-[#333] dark:text-white" }}
+                        >
+                          Score
+                        </SelectItem>
+                        <SelectItem
+                          key="GOLF"
+                          description="Lowest Score"
+                          startContent={<LandPlot />}
+                          classNames={{ base: "text-[#333] dark:text-white" }}
+                        >
+                          Golf
+                        </SelectItem>
+                        <SelectItem
+                          key="SPEEDRUN"
+                          description="Lowest Time"
+                          startContent={<Rabbit />}
+                          classNames={{ base: "text-[#333] dark:text-white" }}
+                        >
+                          Speedrun
+                        </SelectItem>
+                        <SelectItem
+                          key="ENDURANCE"
+                          description="Highest Time"
+                          startContent={<Turtle />}
+                          classNames={{ base: "text-[#333] dark:text-white" }}
+                        >
+                          Endurance
+                        </SelectItem>
+                      </NextSelect>
+                      {(lb.type == "SCORE" || lb.type == "GOLF") && (
+                        <Input
+                          type="number"
+                          label="Decimal places"
+                          placeholder="Enter the scores decimal places"
+                          value={lb.decimalPlaces}
+                          min={0}
+                          max={3}
+                          onValueChange={(e) => {
+                            const updated = [...leaderboards];
+                            updated[index].decimalPlaces = parseInt(e);
+                            setLeaderboards(updated);
+                          }}
+                        />
+                      )}
+                    </Hstack>
+                    <Hstack>
+                      <Switch
+                        checked={lb.onlyBest}
+                        onChange={(value) => {
+                          const updated = [...leaderboards];
+                          updated[index].onlyBest = value;
+                          setLeaderboards(updated);
+                        }}
+                      />
+                      <Vstack gap={0} align="start">
+                        <Text size="sm">Only Highest</Text>
+                        <Text size="xs" color="textFaded">
+                          Only shows each users highest score
+                        </Text>
+                      </Vstack>
+                    </Hstack>
+                    <div>
+                      <Button
+                        color="red"
+                        onClick={() =>
+                          setLeaderboards(
+                            leaderboards.filter((_, i) => i !== index)
+                          )
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Button
+                color="green"
+                onClick={() =>
+                  setLeaderboards([
+                    ...leaderboards,
+                    {
+                      id: -1,
+                      name: "",
+                      type: "SCORE",
+                      onlyBest: true,
+                      game: {} as GameType,
+                      scores: [],
+                      maxUsersShown: 10,
+                      decimalPlaces: 0,
+                    },
+                  ])
                 }
-              };
-              input.click();
-            }}
-          >
-            Add Song
-          </Button>
-        </div>
+              >
+                Add Leaderboard
+              </Button>
+            </Vstack>
+          </Card>
 
-        <Spacer />
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Soundtrack</Text>
+                <Text color="textFaded" size="xs">
+                  The soundtrack of your game for people to listen to when
+                  browsing your game page.
+                </Text>
+              </div>
+              <Button
+                onClick={async () => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "audio/*";
+                  input.onchange = async (e: Event) => {
+                    const file = (e.target as HTMLInputElement)?.files?.[0];
+                    if (!file) return;
 
-        <div className="flex gap-2">
-          <Button color="primary" type="submit" name="action" value="save">
+                    const formData = new FormData();
+                    formData.append("upload", file);
+
+                    try {
+                      const response = await fetch(
+                        process.env.NEXT_PUBLIC_MODE === "PROD"
+                          ? "https://d2jam.com/api/v1/music"
+                          : "http://localhost:3005/api/v1/music",
+                        {
+                          method: "POST",
+                          body: formData,
+                          headers: {
+                            authorization: `Bearer ${getCookie("token")}`,
+                          },
+                          credentials: "include",
+                        }
+                      );
+
+                      const result = await response.json();
+                      if (response.ok) {
+                        addToast({
+                          title: "Song uploaded",
+                        });
+                        console.log("Upload successful:", result);
+                      } else {
+                        addToast({
+                          title: "Upload failed",
+                        });
+                        console.error("Upload failed:", result);
+                      }
+                    } catch (error) {
+                      addToast({
+                        title: "Error uploading file",
+                      });
+                      console.error("Error uploading file:", error);
+                    }
+                  };
+                  input.click();
+                }}
+                color="yellow"
+              >
+                Add Song
+              </Button>
+            </Vstack>
+          </Card>
+
+          <Hstack>
             {waitingPost ? (
-              <LoaderCircle className="animate-spin" size={16} />
+              <Spinner />
             ) : (
-              <p>{prevSlug ? "Update" : "Create"}</p>
-            )}
-          </Button>
-          {(!games[currentGame] || !games[currentGame].published) &&
-            (activeJamResponse?.phase == "Jamming" ||
-              activeJamResponse?.phase == "Submission" ||
-              (activeJamResponse?.phase == "Rating" &&
-                category == "EXTRA")) && (
-              <Button
-                color="secondary"
-                type="submit"
-                name="action"
-                value="publish"
-              >
-                {waitingPost ? (
-                  <LoaderCircle className="animate-spin" size={16} />
-                ) : (
-                  <p>{prevSlug ? "Publish" : "Create & Publish"}</p>
-                )}
+              <Button color="blue" type="submit" name="action" value="save">
+                {prevSlug ? "Update" : "Create"}
               </Button>
             )}
-          {games[currentGame] &&
-            games[currentGame].published &&
-            (activeJamResponse?.phase == "Jamming" ||
-              activeJamResponse?.phase == "Submission" ||
-              (activeJamResponse?.phase == "Rating" &&
-                category == "EXTRA")) && (
-              <Button
-                color="danger"
-                type="submit"
-                name="action"
-                value="unpublish"
-              >
-                {waitingPost ? (
-                  <LoaderCircle className="animate-spin" size={16} />
-                ) : (
-                  <p>{"Unpublish"}</p>
-                )}
-              </Button>
-            )}
-        </div>
-      </div>
-    </Form>
+            {(!games[currentGame] || !games[currentGame].published) &&
+              (activeJamResponse?.phase == "Jamming" ||
+                activeJamResponse?.phase == "Submission" ||
+                (activeJamResponse?.phase == "Rating" &&
+                  category == "EXTRA")) &&
+              (waitingPost ? (
+                <Spinner />
+              ) : (
+                <Button
+                  color="pink"
+                  type="submit"
+                  name="action"
+                  value="publish"
+                >
+                  {prevSlug ? "Publish" : "Create & Publish"}
+                </Button>
+              ))}
+            {games[currentGame] &&
+              games[currentGame].published &&
+              (activeJamResponse?.phase == "Jamming" ||
+                activeJamResponse?.phase == "Submission" ||
+                (activeJamResponse?.phase == "Rating" &&
+                  category == "EXTRA")) &&
+              (waitingPost ? (
+                <Spinner />
+              ) : (
+                <Button
+                  color="red"
+                  type="submit"
+                  name="action"
+                  value="unpublish"
+                >
+                  {"Unpublish"}
+                </Button>
+              ))}
+          </Hstack>
+        </Vstack>
+      </Form>
+    </Vstack>
   );
 }

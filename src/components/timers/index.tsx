@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Timer from "./Timer";
 import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import useHasMounted from "@/hooks/useHasMounted";
 
 export default function Timers() {
   const [activeJamResponse, setActiveJamResponse] =
@@ -24,6 +25,11 @@ export default function Timers() {
   }, []);
 
   const { siteTheme } = useTheme();
+  const hasMounted = useHasMounted();
+
+  if (!hasMounted) {
+    return <></>;
+  }
 
   if (activeJamResponse && activeJamResponse.jam) {
     if (

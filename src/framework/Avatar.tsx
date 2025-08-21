@@ -22,6 +22,20 @@ export function Avatar({
   ...props
 }: AvatarProps) {
   const { colors } = useTheme();
+  const [isError, setIsError] = React.useState(false);
+
+  // check if src is a valid URL
+  const isValidUrl = React.useMemo(() => {
+    if (!src) return false;
+    try {
+      new URL(src);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [src]);
+
+  const showImage = src && isValidUrl && !isError;
 
   return (
     <div
@@ -39,9 +53,15 @@ export function Avatar({
       }}
       {...props}
     >
-      {src ? (
+      {showImage ? (
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          <Image src={src} alt={alt} fill style={{ objectFit: "cover" }} />
+          <Image
+            src={src}
+            alt={alt}
+            fill
+            style={{ objectFit: "cover" }}
+            onError={() => setIsError(true)}
+          />
         </div>
       ) : (
         fallback?.slice(0, 2).toUpperCase() ?? "?"

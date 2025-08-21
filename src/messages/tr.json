@@ -113,6 +113,10 @@
     "Music": {
       "Title": "Müzik",
       "Description": "Web sitesine gönderilen tüm müzikler"
+    },
+    "Login": {
+      "Title": "Giriş Yap",
+      "Description": "Web sayfasına giriş yap"
     }
   },
   "PostStyle": {
@@ -385,6 +389,35 @@
       "Number": "S10",
       "Question": "Hangi oyun motorunu veya framework'ü kullanabilmemiz konusunda bir kısıtlama var mıdır?",
       "Answer": "Kullanıcılar oyunun sadece kendisini indirmesi gerektiği sürece istediğiniz oyun motorunda oyunu yapabilirsiniz.\nÖrnek olarak bir Roblox oyunu Roblox indirmenizi gerektireceği için bu oyun geçerli olmayacaktır."
+    }
+  },
+  "TeamFAQ": {
+    "Title": "Takım S.S.S",
+    "Description": "Jam için takım oluşturma hakkında sorular",
+    "Q1": {
+      "Number": "S1",
+      "Question": "Oyunu kaç kişiyle beraber yapabilirim?",
+      "Answer": "Normal Jam: İstediğin kadar kişiyle.\nO.D.A: Tek kişi."
+    },
+    "Q2": {
+      "Number": "S2",
+      "Question": "Birden fazla takımda / oyunda yer alabilir miyim?",
+      "Answer": "Evet ancak tek oyuna odaklanırsanız onu cilalayacak daha çok zamanınız olur."
+    },
+    "Q3": {
+      "Number": "S3",
+      "Question": "Nasıl takım bulabilirim?",
+      "Answer": "Takım bulabilmeniz için siteye Takım Bulucu sayfasını ekledik. Bu sayfada takımınızda hangi roller olduğunu belirtebilir ve ne aradığınızı girebilirsiniz.\nBunun dışında sosyal medyaları veya discord sunucumuzun takım bulma kanalını deneyebilirsiniz."
+    },
+    "Q4": {
+      "Number": "S4",
+      "Question": "Takımımı jam sırasında ve sonrasında güncelleyebilir miyim?",
+      "Answer": "Evet oylama periodu bitmeden önce takımınızı güncelleyebilirsiniz. Yani jam sırasında bir takım arkadaşınızı eklemeyi unuttuysanız, oylama süresi boyunca da bunu yapabilirsiniz."
+    },
+    "Q5": {
+      "Number": "S5",
+      "Question": "Bütün takım üyelerinin sayfada bir hesabı olması lazım mıdır?",
+      "Answer": "Hayır ama eğer hesapları yoksa diğer oyunları oylayamazlar ve oyununuzun altında kredi alamazlar"
     }
   },
   "RatingsFAQ": {

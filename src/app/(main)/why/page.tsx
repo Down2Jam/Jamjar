@@ -1,4 +1,4 @@
-import { Link } from "@heroui/link";
+import { Link } from "@/framework/Link";
 
 export default function WhyPage() {
   return (

@@ -8,13 +8,18 @@ import {
 } from "@/helpers/jam";
 import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
-import { Card, CardBody, Chip, Spinner, Tooltip } from "@heroui/react";
-import { Check, SkipForward, Vote, X } from "lucide-react";
+import { Tooltip } from "@heroui/react";
+import { Vote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import ButtonAction from "../link-components/ButtonAction";
 import { useHotkeys } from "react-hotkeys-hook";
 import { getCookie } from "@/helpers/cookie";
 import { useMemo } from "react";
+import { Spinner } from "@/framework/Spinner";
+import { Card } from "@/framework/Card";
+import { Chip } from "@/framework/Chip";
+import { Button } from "@/framework/Button";
+import Icon from "@/framework/Icon";
+import Text from "@/framework/Text";
 
 function VoteCircle({ themes }: { themes: ThemeType[] }) {
   const voteCounts = useMemo(() => {
@@ -385,11 +390,11 @@ export default function ThemeSlaughter() {
   function getIconFromVote(vote: number) {
     switch (vote) {
       case -1:
-        return <X size={16} className="ml-1" />;
+        return "x";
       case 0:
-        return <SkipForward size={16} className="ml-1" />;
+        return "skipforward";
       case 1:
-        return <Check size={16} className="ml-1" />;
+        return "check";
     }
   }
 
@@ -444,46 +449,49 @@ export default function ThemeSlaughter() {
     );
   } else {
     return (
-      <div className="text-[#333] dark:text-white flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <Vote />
-          <p className="text-2xl">Theme Elimination</p>
+          <Text size="2xl" color="text">
+            Theme Elimination
+          </Text>
         </div>
-        <p>
+        <Text color="textFaded">
           Welcome to the Theme Elimination! This is a spot to say which
           submitted themes you like or dislike before they go to the voting
           rounds.
-        </p>
-        <p>
+        </Text>
+        <Text color="textFaded">
           You can vote on as many themes as you want and the themes with the
           most score (Positive votes - Negative Votes) will move to the voting
           rounds.
-        </p>
+        </Text>
 
         <div className="flex gap-2 items-center flex-wrap">
           <Card className="min-w-60 min-h-12">
-            <CardBody className="items-center">
-              <p>{themes[currentTheme]?.suggestion}</p>
-            </CardBody>
+            <Text>{themes[currentTheme]?.suggestion}</Text>
           </Card>
-          <ButtonAction
-            name="Yes"
-            kbd="Y/A"
-            onPress={voteYes}
-            isDisabled={currentTheme >= themes.length}
-          />
-          <ButtonAction
-            name="No"
-            kbd="N/D"
-            onPress={voteNo}
-            isDisabled={currentTheme >= themes.length}
-          />
-          <ButtonAction
-            name="Skip"
-            kbd="S"
-            onPress={voteSkip}
-            isDisabled={currentTheme >= themes.length}
-          />
+          <Button
+            // kbd="Y/A"
+            onClick={voteYes}
+            disabled={currentTheme >= themes.length}
+          >
+            Yes
+          </Button>
+          <Button
+            // kbd="N/D"
+            onClick={voteNo}
+            disabled={currentTheme >= themes.length}
+          >
+            No
+          </Button>
+          <Button
+            // kbd="S"
+            onClick={voteSkip}
+            disabled={currentTheme >= themes.length}
+          >
+            Skip
+          </Button>
           <VoteCircle themes={themes} />
         </div>
 
@@ -513,24 +521,24 @@ export default function ThemeSlaughter() {
                         : "border border-transparent"
                     } w-full`}
                   >
-                    <CardBody>
-                      <div className="flex justify-between">
-                        <p>{theme.suggestion}</p>
-                        {theme.votes && theme.votes.length > 0 && (
-                          <Chip
-                            className="items-center"
-                            startContent={getIconFromVote(
+                    <div className="flex justify-between">
+                      <p>{theme.suggestion}</p>
+                      {theme.votes && theme.votes.length > 0 && (
+                        <Chip
+                          className="items-center"
+                          style={getStyleFromVote(
+                            theme.votes[0].slaughterScore
+                          )}
+                        >
+                          <Icon
+                            name={getIconFromVote(
                               theme.votes[0].slaughterScore
                             )}
-                            style={getStyleFromVote(
-                              theme.votes[0].slaughterScore
-                            )}
-                          >
-                            {getTextFromVote(theme.votes[0].slaughterScore)}
-                          </Chip>
-                        )}
-                      </div>
-                    </CardBody>
+                          />
+                          {getTextFromVote(theme.votes[0].slaughterScore)}
+                        </Chip>
+                      )}
+                    </div>
                   </Card>
                 </div>
               ))
