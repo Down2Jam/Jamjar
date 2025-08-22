@@ -665,7 +665,7 @@ export default function ThemeSlaughter() {
           <VoteCircle themes={themes} />
         </Hstack>
         <div
-          className="overflow-y-auto p-4 min-h-[100px] max-h-[calc(100vh-500px)] hidden lg:block"
+          className="overflow-y-auto p-4 min-h-[100px] max-h-[calc(100vh-410px)] hidden lg:block"
           ref={scrollContainerRef}
         >
           <div className="flex flex-col gap-4">
