@@ -9,7 +9,6 @@ import {
   ZonedDateTime,
 } from "@internationalized/date";
 import {
-  Button,
   DateRangePicker,
   DateValue,
   Dropdown,
@@ -18,7 +17,6 @@ import {
   DropdownTrigger,
   Form,
   Input,
-  Spacer,
   Spinner,
 } from "@heroui/react";
 import {
@@ -26,7 +24,6 @@ import {
   Code,
   FileCode,
   Gamepad2,
-  LoaderCircle,
   Palette,
   Trophy,
 } from "lucide-react";
@@ -40,6 +37,7 @@ import { sanitize } from "@/helpers/sanitize";
 import SidebarStreams from "@/components/sidebar/SidebarStreams";
 import { postEvent } from "@/requests/event";
 import { EventIcon } from "@/types/EventIcon";
+import { Button } from "@/framework/Button";
 
 const icons = {
   palette: {
@@ -197,18 +195,10 @@ export default function CreatePostPage() {
 
         <Editor content={content} setContent={setContent} />
 
-        <Spacer />
-
-        <p>Icon</p>
+        <p className="mt-1">Icon</p>
         <Dropdown backdrop="opaque">
           <DropdownTrigger>
-            <Button
-              size="sm"
-              className="text-xs bg-white dark:bg-[#252525] !duration-250 !ease-linear !transition-all text-[#333] dark:text-white"
-              variant="faded"
-            >
-              {icons[icon]?.name}
-            </Button>
+            <Button size="sm">{icons[icon]?.name}</Button>
           </DropdownTrigger>
           <DropdownMenu
             onAction={(key) => {
@@ -254,16 +244,14 @@ export default function CreatePostPage() {
           labelPlacement="outside"
         />
 
-        <Spacer />
-
-        <div className="flex gap-2">
-          <Button color="primary" type="submit">
-            {waitingPost ? (
-              <LoaderCircle className="animate-spin" size={16} />
-            ) : (
-              <p>Create</p>
-            )}
-          </Button>
+        <div className="flex gap-2 mt-1">
+          {waitingPost ? (
+            <Spinner />
+          ) : (
+            <Button color="blue" type="submit">
+              Create
+            </Button>
+          )}
         </div>
       </Form>
       {!isMobile && (

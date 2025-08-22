@@ -3,7 +3,6 @@
 import {
   addToast,
   Avatar,
-  Button,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -11,21 +10,10 @@ import {
   Navbar,
   NavbarItem,
 } from "@heroui/react";
-import {
-  Bell,
-  Bug,
-  Gamepad,
-  Home,
-  Languages,
-  LogIn,
-  Menu,
-  Search,
-  Settings,
-  Trophy,
-} from "lucide-react";
+import { Bug, Languages, Settings, Trophy } from "lucide-react";
 import { redirect } from "next/navigation";
-import NextLink from "next/link";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { Button } from "@/framework/Button";
 
 type MobilebarProps = {
   isLoggedIn: boolean;
@@ -51,12 +39,8 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
       isBordered
       height={60}
     >
-      <Button isIconOnly variant="bordered" as={NextLink} href="/">
-        <Home />
-      </Button>
-      <Button isIconOnly variant="bordered" as={NextLink} href="/games">
-        <Gamepad />
-      </Button>
+      <Button href="/" icon="home"></Button>
+      <Button href="/games" icon="gamepad"></Button>
       <Dropdown className="bg-white dark:bg-black">
         <DropdownTrigger>
           {isLoggedIn ? (
@@ -64,10 +48,8 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           ) : (
             <Button
               className="w-14 h-14 max-h-14 max-w-14 min-w-14 min-h-1 rounded-full"
-              variant="faded"
-            >
-              <Menu />
-            </Button>
+              icon="menu"
+            ></Button>
           )}
         </DropdownTrigger>
         <DropdownMenu>
@@ -116,9 +98,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
       </Dropdown>
       <NavbarItem>
         <Button
-          isIconOnly
-          variant="bordered"
-          onPress={() => {
+          onClick={() => {
             addToast({
               title: "Mobile search coming soon",
               color: "warning",
@@ -126,19 +106,14 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
               timeout: 3000,
             });
           }}
-        >
-          <Search />
-        </Button>
+          icon="search"
+        />
       </NavbarItem>
       <NavbarItem>
         {!isLoggedIn ? (
-          <Button isIconOnly variant="bordered" as={NextLink} href="/signup">
-            <LogIn />
-          </Button>
+          <Button href="/signup" icon="login" />
         ) : (
-          <Button isIconOnly variant="bordered" as={NextLink} href="/inbox">
-            <Bell />
-          </Button>
+          <Button href="/inbox" icon="bell" />
         )}
       </NavbarItem>
     </Navbar>

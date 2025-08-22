@@ -8,8 +8,6 @@ import {
 } from "@/helpers/jam";
 import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
-import { Tooltip } from "@heroui/react";
-import { Vote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { getCookie } from "@/helpers/cookie";
@@ -20,148 +18,10 @@ import { Chip } from "@/framework/Chip";
 import { Button } from "@/framework/Button";
 import Icon from "@/framework/Icon";
 import Text from "@/framework/Text";
-
-function VoteCircle({ themes }: { themes: ThemeType[] }) {
-  const voteCounts = useMemo(() => {
-    let yes = 0,
-      no = 0,
-      skip = 0,
-      notVoted = 0;
-
-    themes.forEach((theme) => {
-      if (!theme.votes || theme.votes.length === 0) {
-        notVoted++;
-      } else {
-        switch (theme.votes[0].slaughterScore) {
-          case 1:
-            yes++;
-            break;
-          case -1:
-            no++;
-            break;
-          case 0:
-            skip++;
-            break;
-        }
-      }
-    });
-
-    const total = yes + no + skip + notVoted || 1; // Prevent division by zero
-    return {
-      amount: {
-        yes,
-        no,
-        skip,
-        notVoted,
-      },
-      percent: {
-        yes: (yes / total) * 100,
-        no: (no / total) * 100,
-        skip: (skip / total) * 100,
-        notVoted: (notVoted / total) * 100,
-      },
-    };
-  }, [themes]);
-
-  const circleSize = 30;
-  const radius = 45;
-  const circumference = 2 * Math.PI * radius;
-
-  return (
-    <Tooltip
-      content={
-        <div className="px-1 py-2 text-[#333] dark:text-white">
-          <div className="text-small font-bold">Elimination Stats</div>
-          <div className="text-tiny">
-            Voted <span className="text-[#2dcf50]">yes</span> on{" "}
-            <span className="text-[#3498db]">{voteCounts.amount.yes}</span>{" "}
-            themes{" "}
-            <span className="text-[#3252bd]">
-              ({Math.round(voteCounts.percent.yes)}%)
-            </span>
-          </div>
-          <div className="text-tiny">
-            Voted <span className="text-[#cc2936]">no</span> on{" "}
-            <span className="text-[#3498db]">{voteCounts.amount.no}</span>{" "}
-            themes{" "}
-            <span className="text-[#3252bd]">
-              ({Math.round(voteCounts.percent.no)}%)
-            </span>
-          </div>
-          <div className="text-tiny">
-            Voted <span className="text-[#8c8c8c]">skip</span> on{" "}
-            <span className="text-[#3498db]">{voteCounts.amount.skip}</span>{" "}
-            themes{" "}
-            <span className="text-[#3252bd]">
-              ({Math.round(voteCounts.percent.skip)}%)
-            </span>
-          </div>
-          <div className="text-tiny">
-            Did not vote on{" "}
-            <span className="text-[#3498db]">{voteCounts.amount.notVoted}</span>{" "}
-            themes{" "}
-            <span className="text-[#3252bd]">
-              ({Math.round(voteCounts.percent.notVoted)}%)
-            </span>
-          </div>
-        </div>
-      }
-    >
-      <svg width={circleSize} height={circleSize} viewBox="0 0 100 100">
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="#cc2936"
-          strokeWidth="10"
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="#3498db"
-          strokeWidth="10"
-          strokeDasharray={`${
-            (voteCounts.percent.notVoted / 100) * circumference
-          } ${
-            circumference - (voteCounts.percent.notVoted / 100) * circumference
-          }`}
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="#2dcf50"
-          strokeWidth="10"
-          strokeDasharray={`${(voteCounts.percent.yes / 100) * circumference} ${
-            circumference - (voteCounts.percent.yes / 100) * circumference
-          }`}
-          strokeDashoffset={
-            -(voteCounts.percent.notVoted / 100) * circumference
-          }
-        />
-        <circle
-          cx="50"
-          cy="50"
-          r={radius}
-          fill="none"
-          stroke="#8c8c8c"
-          strokeWidth="10"
-          strokeDasharray={`${
-            (voteCounts.percent.skip / 100) * circumference
-          } ${circumference - (voteCounts.percent.skip / 100) * circumference}`}
-          strokeDashoffset={
-            -(voteCounts.percent.yes / 100) * circumference -
-            (voteCounts.percent.notVoted / 100) * circumference
-          }
-        />
-      </svg>
-    </Tooltip>
-  );
-}
+import { Hstack, Vstack } from "@/framework/Stack";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import { Switch } from "@/framework/Switch";
+import Dropdown from "@/framework/Dropdown";
 
 export default function ThemeSlaughter() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
@@ -174,6 +34,8 @@ export default function ThemeSlaughter() {
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const themeRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const { colors } = useTheme();
+  const [descriptionShow, setDescriptionShown] = useState(true);
 
   useHotkeys("y", voteYes);
   useHotkeys("n", voteNo);
@@ -213,6 +75,236 @@ export default function ThemeSlaughter() {
     } catch (error) {
       console.error("Error submitting vote:", error);
     }
+  }
+
+  function VoteCircle({ themes }: { themes: ThemeType[] }) {
+    const voteCounts = useMemo(() => {
+      let yes = 0,
+        no = 0,
+        skip = 0,
+        notVoted = 0;
+
+      themes.forEach((theme) => {
+        if (!theme.votes || theme.votes.length === 0) {
+          notVoted++;
+        } else {
+          switch (theme.votes[0].slaughterScore) {
+            case 1:
+              yes++;
+              break;
+            case -1:
+              no++;
+              break;
+            case 0:
+              skip++;
+              break;
+          }
+        }
+      });
+
+      const total = yes + no + skip + notVoted || 1; // Prevent division by zero
+      return {
+        amount: {
+          yes,
+          no,
+          skip,
+          notVoted,
+        },
+        percent: {
+          yes: (yes / total) * 100,
+          no: (no / total) * 100,
+          skip: (skip / total) * 100,
+          notVoted: (notVoted / total) * 100,
+        },
+      };
+    }, [themes]);
+
+    const circleSize = 30;
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+
+    return (
+      <Dropdown
+        openOn="hover"
+        trigger={
+          <svg
+            width={circleSize}
+            height={circleSize}
+            viewBox="0 0 100 100"
+            className="hidden lg:block"
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={colors["red"]}
+              strokeWidth="10"
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={colors["blue"]}
+              strokeWidth="10"
+              strokeDasharray={`${
+                (voteCounts.percent.notVoted / 100) * circumference
+              } ${
+                circumference -
+                (voteCounts.percent.notVoted / 100) * circumference
+              }`}
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={colors["green"]}
+              strokeWidth="10"
+              strokeDasharray={`${
+                (voteCounts.percent.yes / 100) * circumference
+              } ${
+                circumference - (voteCounts.percent.yes / 100) * circumference
+              }`}
+              strokeDashoffset={
+                -(voteCounts.percent.notVoted / 100) * circumference
+              }
+            />
+            <circle
+              cx="50"
+              cy="50"
+              r={radius}
+              fill="none"
+              stroke={colors["gray"]}
+              strokeWidth="10"
+              strokeDasharray={`${
+                (voteCounts.percent.skip / 100) * circumference
+              } ${
+                circumference - (voteCounts.percent.skip / 100) * circumference
+              }`}
+              strokeDashoffset={
+                -(voteCounts.percent.yes / 100) * circumference -
+                (voteCounts.percent.notVoted / 100) * circumference
+              }
+            />
+          </svg>
+        }
+      >
+        <div
+          className="px-1 py-2"
+          style={{
+            color: colors["textFaded"],
+            backgroundColor: colors["mantle"],
+          }}
+        >
+          <div
+            className="text-small font-bold"
+            style={{
+              color: colors["text"],
+            }}
+          >
+            Elimination Stats
+          </div>
+          <div className="text-tiny">
+            Voted{" "}
+            <span
+              style={{
+                color: colors["green"],
+              }}
+            >
+              yes
+            </span>{" "}
+            on{" "}
+            <span
+              style={{
+                color: colors["blue"],
+              }}
+            >
+              {voteCounts.amount.yes}
+            </span>{" "}
+            themes{" "}
+            <span
+              style={{
+                color: colors["blueDark"],
+              }}
+            >
+              ({Math.round(voteCounts.percent.yes)}%)
+            </span>
+          </div>
+          <div className="text-tiny">
+            Voted{" "}
+            <span
+              style={{
+                color: colors["red"],
+              }}
+            >
+              no
+            </span>{" "}
+            on{" "}
+            <span
+              style={{
+                color: colors["blue"],
+              }}
+            >
+              {voteCounts.amount.no}
+            </span>{" "}
+            themes{" "}
+            <span
+              style={{
+                color: colors["blueDark"],
+              }}
+            >
+              ({Math.round(voteCounts.percent.no)}%)
+            </span>
+          </div>
+          <div className="text-tiny">
+            Voted{" "}
+            <span
+              style={{
+                color: colors["yellow"],
+              }}
+            >
+              skip
+            </span>{" "}
+            on{" "}
+            <span
+              style={{
+                color: colors["blue"],
+              }}
+            >
+              {voteCounts.amount.skip}
+            </span>{" "}
+            themes{" "}
+            <span
+              style={{
+                color: colors["blueDark"],
+              }}
+            >
+              ({Math.round(voteCounts.percent.skip)}%)
+            </span>
+          </div>
+          <div className="text-tiny">
+            Did not vote on{" "}
+            <span
+              style={{
+                color: colors["blue"],
+              }}
+            >
+              {voteCounts.amount.notVoted}
+            </span>{" "}
+            themes{" "}
+            <span
+              style={{
+                color: colors["blueDark"],
+              }}
+            >
+              ({Math.round(voteCounts.percent.notVoted)}%)
+            </span>
+          </div>
+        </div>
+      </Dropdown>
+    );
   }
 
   function voteNo() {
@@ -402,101 +494,178 @@ export default function ThemeSlaughter() {
 
   if (phaseLoading) {
     return (
-      <div className="text-[#333] dark:text-white flex items-center flex-col gap-4 py-20">
-        <p>Loading</p>
-        <Spinner />
-      </div>
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Hstack>
+              <Spinner />
+              <Text size="xl">ThemeSuggestions.Loading.Title</Text>
+            </Hstack>
+            <Text color="textFaded">ThemeSuggestions.Loading.Description</Text>
+          </Vstack>
+        </Card>
+      </Vstack>
     );
-  } else if (!token) {
-    return (
-      <div className="text-[#333] dark:text-white">
-        Sign in to be able to eliminate themes
-      </div>
-    );
-  } else if (!hasJoined) {
-    return (
-      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Join the Jam First
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          You need to join the current jam before you can eliminate themes.
-        </p>
-        <button
-          onClick={() => {
-            if (activeJamResponse?.jam?.id !== undefined) {
-              joinJam(activeJamResponse.jam.id);
-            }
-          }}
-          className="mt-4 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Join Jam
-        </button>
-      </div>
-    );
-  } else if (activeJamResponse?.phase !== "Elimination") {
-    return (
-      <div className="p-6 bg-gray-100 dark:bg-gray-800 min-h-screen">
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
-          Not in Theme Elimination Phase
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          The current phase is{" "}
-          <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please come
-          back during the Theme Elimination phase.
-        </p>
-      </div>
-    );
-  } else {
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-4">
-          <Vote />
-          <Text size="2xl" color="text">
-            Theme Elimination
-          </Text>
-        </div>
-        <Text color="textFaded">
-          Welcome to the Theme Elimination! This is a spot to say which
-          submitted themes you like or dislike before they go to the voting
-          rounds.
-        </Text>
-        <Text color="textFaded">
-          You can vote on as many themes as you want and the themes with the
-          most score (Positive votes - Negative Votes) will move to the voting
-          rounds.
-        </Text>
+  }
 
-        <div className="flex gap-2 items-center flex-wrap">
+  if (!token) {
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userx" />
+                <Text size="xl">Not signed in</Text>
+              </Hstack>
+              <Text color="textFaded">
+                Sign in to be able to eliminate themes
+              </Text>
+            </Vstack>
+            <Hstack>
+              <Button href="/signup" color="blue" icon="userplus">
+                Themes.Signup
+              </Button>
+              <Button href="/login" color="pink" icon="login">
+                Themes.Login
+              </Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
+
+  if (!hasJoined) {
+    return (
+      <Vstack>
+        <Card>
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="userplus" />
+                <Text size="xl">Join the Jam First</Text>
+              </Hstack>
+              <Text color="textFaded">
+                You need to join the current jam before you can eliminate
+                themes.
+              </Text>
+            </Vstack>
+            <Button
+              onClick={async () => {
+                if (activeJamResponse?.jam?.id !== undefined) {
+                  const ok = await joinJam(activeJamResponse.jam.id);
+
+                  if (ok) {
+                    setHasJoined(true);
+                  }
+                }
+              }}
+              icon="calendarplus"
+              color="green"
+            >
+              Navbar.JoinJam.Title
+            </Button>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
+
+  if (activeJamResponse?.phase !== "Elimination") {
+    return (
+      <Vstack>
+        <Card className="max-w-96">
+          <Vstack>
+            <Vstack gap={0}>
+              <Hstack>
+                <Icon name="x" />
+                <Text size="xl">Not in Theme Elimination Phase</Text>
+              </Hstack>
+              <Text color="textFaded">
+                The current phase is{" "}
+                <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please
+                come back during the Theme Elimination phase.
+              </Text>
+            </Vstack>
+          </Vstack>
+        </Card>
+      </Vstack>
+    );
+  }
+
+  return (
+    <Vstack align="stretch">
+      <Vstack>
+        <Card>
+          <Vstack align="center" gap={0}>
+            <Hstack>
+              <Icon name="swords" />
+              <Text size="xl">Theme Elimination</Text>
+            </Hstack>
+            <Text color="textFaded" size="sm">
+              Vote as much as you want on whether you like or dislike certain
+              themes.
+            </Text>
+          </Vstack>
+        </Card>
+        <Card>
+          <Text color="textFaded" size="sm">
+            Welcome to the Theme Elimination! This is a spot to say which
+            submitted themes you like or dislike before they go to the voting
+            rounds.
+          </Text>
+          <Text color="textFaded" size="sm">
+            You can vote on as many themes as you want and the themes with the
+            most score (Positive votes - Negative Votes) will move to the voting
+            rounds.
+          </Text>
+        </Card>
+        <Card>
+          <Hstack>
+            <Switch checked={descriptionShow} onChange={setDescriptionShown} />
+            <Vstack gap={0} align="start">
+              <Text color="text" size="sm">
+                Show Clarifications
+              </Text>
+              <Text color="textFaded" size="xs">
+                Show clarification text people have entered for their theme if
+                available
+              </Text>
+            </Vstack>
+          </Hstack>
+        </Card>
+      </Vstack>
+      <Card>
+        <Hstack wrap>
           <Card className="min-w-60 min-h-12">
             <Text>{themes[currentTheme]?.suggestion}</Text>
           </Card>
           <Button
-            // kbd="Y/A"
+            kbd="Y/A"
             onClick={voteYes}
             disabled={currentTheme >= themes.length}
           >
             Yes
           </Button>
           <Button
-            // kbd="N/D"
+            kbd="N/D"
             onClick={voteNo}
             disabled={currentTheme >= themes.length}
           >
             No
           </Button>
           <Button
-            // kbd="S"
+            kbd="S"
             onClick={voteSkip}
             disabled={currentTheme >= themes.length}
           >
             Skip
           </Button>
           <VoteCircle themes={themes} />
-        </div>
-
+        </Hstack>
         <div
-          className=" max-h-[600px] overflow-y-auto p-4"
+          className="overflow-y-auto p-4 min-h-[100px] max-h-[calc(100vh-500px)] hidden lg:block"
           ref={scrollContainerRef}
         >
           <div className="flex flex-col gap-4">
@@ -516,13 +685,22 @@ export default function ThemeSlaughter() {
                     className={`${
                       theme.votes && theme.votes.length > 0 ? "opacity-50" : ""
                     } ${
-                      i === currentTheme
-                        ? "border-2 border-blue-500 shadow-lg"
-                        : "border border-transparent"
+                      i === currentTheme ? "border-2 shadow-lg" : "t"
                     } w-full`}
+                    style={{
+                      backgroundColor:
+                        i === currentTheme ? colors["base"] : colors["mantle"],
+                    }}
                   >
-                    <div className="flex justify-between">
-                      <p>{theme.suggestion}</p>
+                    <Hstack justify="between">
+                      <Vstack align="start">
+                        <Text color="text">{theme.suggestion}</Text>
+                        {theme.description && descriptionShow && (
+                          <Text size="xs" color="textFaded">
+                            {theme.description}
+                          </Text>
+                        )}
+                      </Vstack>
                       {theme.votes && theme.votes.length > 0 && (
                         <Chip
                           className="items-center"
@@ -534,11 +712,14 @@ export default function ThemeSlaughter() {
                             name={getIconFromVote(
                               theme.votes[0].slaughterScore
                             )}
+                            size={16}
                           />
-                          {getTextFromVote(theme.votes[0].slaughterScore)}
+                          <Text size="sm">
+                            {getTextFromVote(theme.votes[0].slaughterScore)}
+                          </Text>
                         </Chip>
                       )}
-                    </div>
+                    </Hstack>
                   </Card>
                 </div>
               ))
@@ -547,7 +728,7 @@ export default function ThemeSlaughter() {
             )}
           </div>
         </div>
-      </div>
-    );
-  }
+      </Card>
+    </Vstack>
+  );
 }

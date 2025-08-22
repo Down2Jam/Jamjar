@@ -29,14 +29,8 @@ import {
   Vote,
 } from "lucide-react";
 import { useJam } from "@/hooks/useJam";
-import { addToast, Button } from "@heroui/react";
+import { addToast } from "@heroui/react";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
-import {
-  SiBluesky,
-  SiDiscord,
-  SiInstagram,
-  SiYoutube,
-} from "@icons-pack/react-simple-icons";
 import NavbarUser from "./NavbarUser";
 import { UserType } from "@/types/UserType";
 import { GameType } from "@/types/GameType";
@@ -51,7 +45,7 @@ import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { LanguageInfo } from "@/types/LanguageInfoType";
-import Link from "next/link";
+import { Button } from "@/framework/Button";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -360,50 +354,10 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" className="hidden xl:flex" />
             <div className="hidden xl:flex gap-1">
-              <Button
-                size="sm"
-                startContent={<SiDiscord size={16} />}
-                isIconOnly
-                variant="light"
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-                as={Link}
-                href="https://discord.d2jam.com"
-              />
-              <Button
-                size="sm"
-                startContent={<SiBluesky size={16} />}
-                isIconOnly
-                variant="light"
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-                as={Link}
-                href="https://bluesky.d2jam.com"
-              />
-              <Button
-                size="sm"
-                startContent={<SiYoutube size={16} />}
-                isIconOnly
-                variant="light"
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-                as={Link}
-                href="https://youtube.d2jam.com"
-              />
-              <Button
-                size="sm"
-                startContent={<SiInstagram size={16} />}
-                isIconOnly
-                variant="light"
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-                as={Link}
-                href="https://instagram.d2jam.com"
-              />
+              <Button icon="sidiscord" href="https://discord.d2jam.com" />
+              <Button icon="sibluesky" href="https://bluesky.d2jam.com" />
+              <Button icon="siyoutube" href="https://youtube.d2jam.com" />
+              <Button icon="siinstagram" href="https://instagram.d2jam.com" />
             </div>
           </>
         )}

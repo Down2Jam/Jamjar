@@ -13,6 +13,7 @@ import type {
   ButtonAsButton,
 } from "./Button.types";
 import Text from "./Text";
+import { Chip } from "./Chip";
 
 export function Button(props: ButtonProps) {
   const {
@@ -24,6 +25,7 @@ export function Button(props: ButtonProps) {
     icon,
     color = "default",
     className = "",
+    kbd,
     style,
   } = props;
 
@@ -145,6 +147,7 @@ export function Button(props: ButtonProps) {
       {loading && <Loader2 className="animate-spin" size={16} />}
       {!loading && icon && <Icon size={16} name={icon} />}
       <Text size="xs">{props.children}</Text>
+      {kbd && <Chip>{kbd}</Chip>}
     </>
   );
 

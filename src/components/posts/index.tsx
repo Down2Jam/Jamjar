@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
-import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
+import { addToast, Avatar, Chip } from "@heroui/react";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
@@ -578,7 +578,7 @@ export default function Posts() {
               <Link href={`/p/${posts[currentPost].slug}`}>
                 <p className="text-2xl">{posts[currentPost].title}</p>
               </Link>
-              <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+              <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
                 <p>By</p>
                 <Link
                   href={`/u/${posts[currentPost].author.slug}`}
@@ -604,7 +604,6 @@ export default function Posts() {
                   )}
                 </p>
               </div>
-              <Spacer y={4} />
 
               <ThemedProse>
                 <div
@@ -615,9 +614,7 @@ export default function Posts() {
                 />
               </ThemedProse>
 
-              <Spacer y={4} />
-
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-4">
                 <LikeButton
                   likes={posts[currentPost].likes.length}
                   liked={posts[currentPost].hasLiked}
@@ -631,9 +628,7 @@ export default function Posts() {
               </div>
             </Card>
 
-            <Spacer y={4} />
-
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 mt-4">
               {posts[currentPost]?.comments.map((comment) => (
                 <div key={comment.id}>
                   <CommentCard comment={comment} />

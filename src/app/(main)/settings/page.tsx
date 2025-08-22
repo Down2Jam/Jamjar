@@ -3,7 +3,7 @@
 import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
-import { addToast, Avatar, Form, Spacer } from "@heroui/react";
+import { addToast, Avatar, Form } from "@heroui/react";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
@@ -387,7 +387,7 @@ export default function UserPage() {
 
             {bannerPicture && (
               <Vstack>
-                <div className="bg-[#222222] h-28 w-full relative">
+                <div className="bg-[#222222] h-28 w-full relative mb-3">
                   <Image
                     src={bannerPicture}
                     alt={`${user.name}'s profile banner`}
@@ -395,7 +395,6 @@ export default function UserPage() {
                     fill
                   />
                 </div>
-                <Spacer y={3} />
                 <Button
                   size="sm"
                   onClick={() => {

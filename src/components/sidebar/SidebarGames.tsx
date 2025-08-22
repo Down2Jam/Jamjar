@@ -1,6 +1,5 @@
 "use client";
 
-import { Link, Spacer } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { GameType } from "@/types/GameType";
 import { getGames } from "@/requests/game";
@@ -8,6 +7,7 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import Image from "next/image";
 import Text from "@/framework/Text";
 import { Button } from "@/framework/Button";
+import Link from "next/link";
 
 export default function SidebarGames() {
   const [games, setGames] = useState<GameType[]>([]);
@@ -35,8 +35,7 @@ export default function SidebarGames() {
 
   return (
     <>
-      <Spacer y={20} />
-      <div className="flex flex-col gap-2 items-center">
+      <div className="flex flex-col gap-2 items-center mt-20">
         <Text size="2xl" color="text">
           SidebarGames.Title
         </Text>

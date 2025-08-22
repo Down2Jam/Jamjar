@@ -1,5 +1,4 @@
 import { CommentType } from "@/types/CommentType";
-import { Avatar, Spacer } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import { LoaderCircle, Reply } from "lucide-react";
 import Link from "next/link";
@@ -14,6 +13,7 @@ import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
+import { Avatar } from "@/framework/Avatar";
 
 export default function CommentCard({ comment }: { comment: CommentType }) {
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -35,14 +35,7 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
             href={`/u/${comment.author.slug}`}
             className="flex items-center gap-2"
           >
-            <Avatar
-              size="sm"
-              className="w-6 h-6"
-              src={comment.author.profilePicture}
-              classNames={{
-                base: "bg-transparent",
-              }}
-            />
+            <Avatar className="w-6 h-6" src={comment.author.profilePicture} />
             <p>{comment.author.name}</p>
           </Link>
           <p>
@@ -52,18 +45,14 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
           </p>
         </div>
 
-        <Spacer y={4} />
-
-        <ThemedProse>
+        <ThemedProse className="p-4">
           <div
             className="!duration-250 !ease-linear !transition-all max-w-full break-words"
             dangerouslySetInnerHTML={{ __html: comment.content }}
           />
         </ThemedProse>
 
-        <Spacer y={4} />
-
-        <div className="flex gap-3">
+        <div className="flex gap-3 mb-4">
           <LikeButton
             likes={comment.likes.length}
             liked={comment.hasLiked}
@@ -81,13 +70,10 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
           </Button>
         </div>
 
-        <Spacer y={4} />
-
         {creatingReply && (
           <>
             <Editor content={content} setContent={setContent} />
-            <div id="create-comment" />
-            <Spacer />
+            <div id="create-comment" className="mt-2" />
             <Button
               onClick={async () => {
                 if (!content) {
@@ -131,7 +117,7 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
                 <p>Create Reply</p>
               )}
             </Button>
-            <Spacer y={4} />
+            <div className="p-2" />
           </>
         )}
 

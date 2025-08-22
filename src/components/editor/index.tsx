@@ -32,7 +32,6 @@ import TableHeader from "@tiptap/extension-table-header";
 import TableRow from "@tiptap/extension-table-row";
 import Youtube from "@tiptap/extension-youtube";
 import CodeBlock from "@tiptap/extension-code-block";
-import { Spacer } from "@heroui/react";
 import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";
 import { toast } from "react-toastify";
@@ -227,7 +226,7 @@ export default function Editor({
       <ThemedProse>
         <EditorContent editor={editor} />
       </ThemedProse>
-      <Spacer y={3} />
+      <div className="mt-3" />
       {editor && (
         <div
           className={`transform-color duration-250 ease-linear flex items-center gap-3`}

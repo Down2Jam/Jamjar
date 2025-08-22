@@ -1,7 +1,6 @@
 "use client";
 
 import SidebarSong from "./SidebarSong";
-import { Spacer } from "@heroui/react";
 import useHasMounted from "@/hooks/useHasMounted";
 import Text from "@/framework/Text";
 import { Button } from "@/framework/Button";
@@ -193,8 +192,7 @@ export default function SidebarMusic() {
 
   return (
     <>
-      <Spacer y={20} />
-      <div className="flex flex-col gap-2 items-center">
+      <div className="flex flex-col gap-2 items-center mt-20">
         <Text size="2xl" color="text">
           SidebarMusic.Title
         </Text>

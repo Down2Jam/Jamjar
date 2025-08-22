@@ -14,6 +14,7 @@ type Shared = {
   disabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
+  kbd?: string;
 };
 
 export type ButtonAsButton = Shared &

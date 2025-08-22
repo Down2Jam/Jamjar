@@ -1,6 +1,6 @@
 "use client";
 
-import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
+import { addToast, Avatar, Chip } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
@@ -152,7 +152,7 @@ export default function PostCard({
               </p>
             </div>
 
-            <Spacer y={4} />
+            <div className="p-2" />
 
             <ThemedProse>
               <div
@@ -161,7 +161,7 @@ export default function PostCard({
               />
             </ThemedProse>
 
-            <Spacer y={4} />
+            <div className="p-2" />
 
             {post.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
               <div className="flex gap-1">
@@ -198,7 +198,7 @@ export default function PostCard({
               <></>
             )}
 
-            {post.tags.length > 0 && <Spacer y={4} />}
+            {post.tags.length > 0 && <div className="p-2" />}
 
             <div className="flex gap-3">
               <LikeButton

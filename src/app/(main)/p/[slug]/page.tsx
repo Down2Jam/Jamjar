@@ -6,7 +6,7 @@ import { PostType } from "@/types/PostType";
 import { TagType } from "@/types/TagType";
 import { UserType } from "@/types/UserType";
 import Link from "next/link";
-import { addToast, Avatar, Chip, Spacer } from "@heroui/react";
+import { addToast } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import { LoaderCircle, MoreVertical } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
@@ -26,6 +26,8 @@ import Dropdown from "@/framework/Dropdown";
 import { Hstack } from "@/framework/Stack";
 import { Spinner } from "@/framework/Spinner";
 import Text from "@/framework/Text";
+import { Avatar } from "@/framework/Avatar";
+import { Chip } from "@/framework/Chip";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -93,19 +95,15 @@ export default function PostPage() {
                     <p className="text-2xl">{post.title}</p>
                   </Link>
 
-                  <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+                  <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
                     <p>By</p>
                     <Link
                       href={`/u/${post.author.slug}`}
                       className="flex items-center gap-2"
                     >
                       <Avatar
-                        size="sm"
                         className="w-6 h-6"
                         src={post.author.profilePicture}
-                        classNames={{
-                          base: "bg-transparent",
-                        }}
                       />
                       <p>{post.author.name}</p>
                     </Link>
@@ -116,8 +114,6 @@ export default function PostPage() {
                     </p>
                   </div>
 
-                  <Spacer y={4} />
-
                   <ThemedProse>
                     <div
                       className="!duration-250 !ease-linear !transition-all max-w-full break-words"
@@ -125,7 +121,7 @@ export default function PostPage() {
                     />
                   </ThemedProse>
 
-                  <Spacer y={4} />
+                  <div className="p-2" />
 
                   {post.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
                     <div className="flex gap-1">
@@ -139,21 +135,11 @@ export default function PostPage() {
                               !reduceMotion ? "hover:scale-110" : ""
                             }`}
                           >
-                            <Chip
-                              radius="sm"
-                              size="sm"
-                              className="!duration-250 !ease-linear !transition-all"
-                              variant="faded"
-                              avatar={
-                                tag.icon && (
-                                  <Avatar
-                                    src={tag.icon}
-                                    classNames={{ base: "bg-transparent" }}
-                                  />
-                                )
-                              }
-                            >
-                              {tag.name}
+                            <Chip>
+                              <Hstack>
+                                {tag.icon && <Avatar src={tag.icon} />}
+                                {tag.name}
+                              </Hstack>
                             </Chip>
                           </Link>
                         ))}
@@ -162,7 +148,7 @@ export default function PostPage() {
                     <></>
                   )}
 
-                  {post.tags.length > 0 && <Spacer y={4} />}
+                  {post.tags.length > 0 && <div className="p-2" />}
 
                   <div className="flex gap-3">
                     <LikeButton
@@ -393,8 +379,7 @@ export default function PostPage() {
               )}
             </div>
           </Card>
-          <div id="create-comment" />
-          <Spacer y={10} />
+          <div id="create-comment" className="mb-10" />
           {hasCookie("token") &&
             (waitingPost ? (
               <Card>
@@ -406,7 +391,7 @@ export default function PostPage() {
             ) : (
               <>
                 <Editor content={content} setContent={setContent} />
-                <Spacer />
+                <div className="mt-1" />
                 <Button
                   onClick={async () => {
                     if (!content) {
@@ -439,9 +424,8 @@ export default function PostPage() {
                 </Button>
               </>
             ))}
-          <Spacer y={10} />
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 mt-10">
             {post?.comments.map((comment) => (
               <div key={comment.id}>
                 <CommentCard comment={comment} />

@@ -11,7 +11,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Spacer,
   useDisclosure,
 } from "@heroui/react";
 import { redirect } from "next/navigation";
@@ -581,8 +580,7 @@ export default function EditTeamPage() {
             )}
           </div>
         )}
-        <Spacer />
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-1">
           {teams[selectedTeam].ownerId == user.id &&
             activeJamResponse?.jam?.id == teams[selectedTeam].jamId &&
             activeJamResponse.phase != "Rating" && (

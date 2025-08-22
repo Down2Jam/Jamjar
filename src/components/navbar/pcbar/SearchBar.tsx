@@ -22,12 +22,14 @@ import SearchResultUser from "./SearchResultUser";
 import { UserType } from "@/types/UserType";
 import { useTranslations } from "next-intl";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { usePathname } from "next/navigation";
 
 export default function SearchBar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const pathname = usePathname();
   const [results, setResults] = useState<
     | {
         games: { id: number; name: string; slug: string }[];
@@ -47,11 +49,21 @@ export default function SearchBar() {
   useEffect(() => {
     if (!registerShortcut || !unregisterShortcut) return;
 
-    registerShortcut(onOpen, ["s"], "Save", "Save the file");
+    registerShortcut(
+      () => {
+        if (pathname.includes("theme-elimination")) {
+          return;
+        }
+        onOpen();
+      },
+      ["s"],
+      "Save",
+      "Save the file"
+    );
     return () => {
       unregisterShortcut(["s"]);
     };
-  }, [registerShortcut, unregisterShortcut, onOpen]);
+  }, [registerShortcut, unregisterShortcut, onOpen, pathname]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {

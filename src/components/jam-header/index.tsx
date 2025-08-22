@@ -4,7 +4,6 @@ import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
-import { Spacer } from "@heroui/react";
 import { JamPhase } from "@/types/JamType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Text from "@/framework/Text";
@@ -287,8 +286,7 @@ export default function JamHeader() {
           ))}
       </div>
 
-      <Spacer y={3} />
-      <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4">
+      <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4 mt-3">
         {sortedEvents.map((event, index) => (
           <div
             key={event.name}
