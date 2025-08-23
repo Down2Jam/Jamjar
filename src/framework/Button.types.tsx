@@ -9,7 +9,7 @@ type Shared = {
   loading?: boolean;
   fullWidth?: boolean;
   icon?: IconName;
-  color?: "default" | "blue" | "green" | "pink" | "red" | "yellow";
+  color?: "default" | "blue" | "green" | "pink" | "red" | "yellow" | "gray";
   externalIcon?: boolean;
   disabled?: boolean;
   className?: string;
@@ -25,6 +25,8 @@ export type ButtonAsButton = Shared &
 export type ButtonAsLink = Shared &
   Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
     href: string;
+    target?: "_blank" | "_self" | "_parent" | "_top";
+    rel?: string;
   };
 
 export type ButtonProps = ButtonAsButton | ButtonAsLink;

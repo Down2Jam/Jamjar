@@ -98,7 +98,7 @@ export default function Editor({
       CodeBlock,
       Link,
       ImageResize.configure({
-        allowBase64: true,
+        allowBase64: false,
       }).extend({
         addAttributes() {
           return {
@@ -144,6 +144,111 @@ export default function Editor({
           event.stopPropagation();
           return false;
         },
+      },
+      handlePaste: (view, event) => {
+        if (!event.clipboardData) return false;
+
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/apng",
+          "image/gif",
+          "image/webp",
+          "image/svg+xml",
+        ];
+
+        const uploadFile = async (file: File) => {
+          const filesizeMB = file.size / 1024 / 1024;
+          if (!allowedTypes.includes(file.type)) {
+            toast.error("Invalid file format");
+            return false;
+          }
+          if (filesizeMB > 8) {
+            toast.error("Image is too big");
+            return false;
+          }
+
+          const formData = new FormData();
+          formData.append("upload", file);
+
+          const res = await fetch(
+            process.env.NEXT_PUBLIC_MODE === "PROD"
+              ? "https://d2jam.com/api/v1/image"
+              : "http://localhost:3005/api/v1/image",
+            {
+              method: "POST",
+              body: formData,
+              headers: { authorization: `Bearer ${getCookie("token")}` },
+              credentials: "include",
+            }
+          );
+
+          if (!res.ok) {
+            toast.error("Failed to upload image");
+            return false;
+          }
+
+          const json = await res.json();
+          toast.success(json.message);
+
+          const { schema } = view.state;
+          const { tr } = view.state;
+          const pos = view.state.selection.from;
+
+          const node = schema.nodes.image.create({ src: json.data });
+          view.dispatch(tr.insert(pos, node));
+          return true;
+        };
+
+        // 1) Direct image files on the clipboard
+        const files = Array.from(event.clipboardData.files || []);
+        const imageFile = files.find((f) => allowedTypes.includes(f.type));
+        if (imageFile) {
+          event.preventDefault();
+          uploadFile(imageFile);
+          return true;
+        }
+
+        // 2) Data-URI <img> from rich HTML paste
+        const html = event.clipboardData.getData("text/html");
+        const match = html.match(
+          /<img[^>]+src=["'](data:image\/[a-zA-Z+]+;base64,[^"']+)["']/
+        );
+        if (match && match[1]) {
+          event.preventDefault();
+
+          const dataUrl = match[1];
+          // turn data URL into a Blob/File
+          const [meta, b64] = dataUrl.split(",");
+          const mime = meta.match(/data:([^;]+);/)?.[1] || "image/png";
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const blob = new Blob([bytes], { type: mime });
+          const ext = mime.split("/")[1] || "png";
+
+          uploadFile(new File([blob], `pasted.${ext}`, { type: mime }));
+          return true;
+        }
+
+        // 3) Plain text data-URI paste
+        const text = event.clipboardData.getData("text/plain");
+        if (text?.startsWith("data:image/")) {
+          event.preventDefault();
+
+          const [meta, b64] = text.split(",");
+          const mime = meta.match(/data:([^;]+);/)?.[1] || "image/png";
+          const bin = atob(b64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const blob = new Blob([bytes], { type: mime });
+          const ext = mime.split("/")[1] || "png";
+
+          uploadFile(new File([blob], `pasted.${ext}`, { type: mime }));
+          return true;
+        }
+
+        return false; // let non-image pastes proceed
       },
       handleDrop: (view, event, slice, moved) => {
         if (

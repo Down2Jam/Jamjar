@@ -62,7 +62,7 @@ export function Card({
           />
         </div>
       )}
-      <div className="relative z-10 w-full">{children}</div>
+      <div className="w-full">{children}</div>
     </div>
   );
 

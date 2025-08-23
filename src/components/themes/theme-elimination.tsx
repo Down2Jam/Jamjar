@@ -51,9 +51,20 @@ export default function ThemeSlaughter() {
     event.preventDefault();
     changeSelectedTheme(1);
   });
+  useHotkeys("ArrowRight", (event) => {
+    event.preventDefault();
+    if (themes[currentTheme] === undefined) return;
+    window.open(
+      `https://www.google.com/search?q=${encodeURIComponent(
+        themes[currentTheme]?.suggestion
+      )}`,
+      "_blank"
+    );
+  });
 
   function voteYes() {
     if (currentTheme >= themes.length) return;
+    if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
     newThemes[currentTheme] = {
       ...newThemes[currentTheme],
@@ -309,6 +320,7 @@ export default function ThemeSlaughter() {
 
   function voteNo() {
     if (currentTheme >= themes.length) return;
+    if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
     newThemes[currentTheme] = {
       ...newThemes[currentTheme],
@@ -334,6 +346,7 @@ export default function ThemeSlaughter() {
 
   function voteSkip() {
     if (currentTheme >= themes.length) return;
+    if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
     newThemes[currentTheme] = {
       ...newThemes[currentTheme],
@@ -638,30 +651,103 @@ export default function ThemeSlaughter() {
       </Vstack>
       <Card>
         <Hstack wrap>
-          <Card className="min-w-60 min-h-12">
-            <Text>{themes[currentTheme]?.suggestion}</Text>
+          <Card className="min-h-12 min-w-60">
+            <Hstack>
+              <Text color="text" className="capitalize min-h-6">
+                {themes[currentTheme]?.suggestion}
+              </Text>
+              {themes[currentTheme]?.votes &&
+                themes[currentTheme].votes.length > 0 && (
+                  <Chip
+                    className="items-center lg:hidden"
+                    style={getStyleFromVote(
+                      themes[currentTheme].votes[0].slaughterScore
+                    )}
+                  >
+                    <Icon
+                      name={getIconFromVote(
+                        themes[currentTheme].votes[0].slaughterScore
+                      )}
+                      size={16}
+                    />
+                    <Text size="sm">
+                      {getTextFromVote(
+                        themes[currentTheme].votes[0].slaughterScore
+                      )}
+                    </Text>
+                  </Chip>
+                )}
+            </Hstack>
+            <Text
+              color="textFaded"
+              size="xs"
+              className="capitalize block lg:hidden min-h-32"
+            >
+              {themes[currentTheme]?.description}
+            </Text>
           </Card>
-          <Button
-            kbd="Y/A"
-            onClick={voteYes}
-            disabled={currentTheme >= themes.length}
-          >
-            Yes
-          </Button>
-          <Button
-            kbd="N/D"
-            onClick={voteNo}
-            disabled={currentTheme >= themes.length}
-          >
-            No
-          </Button>
-          <Button
-            kbd="S"
-            onClick={voteSkip}
-            disabled={currentTheme >= themes.length}
-          >
-            Skip
-          </Button>
+          <Hstack wrap>
+            <Button
+              kbd="Y/A"
+              onClick={voteYes}
+              disabled={
+                currentTheme >= themes.length ||
+                themes[currentTheme] === undefined
+              }
+              color="green"
+            >
+              Yes
+            </Button>
+            <Button
+              kbd="N/D"
+              onClick={voteNo}
+              disabled={
+                currentTheme >= themes.length ||
+                themes[currentTheme] === undefined
+              }
+              color="red"
+            >
+              No
+            </Button>
+            <Button
+              kbd="S"
+              onClick={voteSkip}
+              disabled={
+                currentTheme >= themes.length ||
+                themes[currentTheme] === undefined
+              }
+              color="gray"
+            >
+              Skip
+            </Button>
+            <Button
+              kbd="↑"
+              onClick={() => {
+                changeSelectedTheme(-1);
+              }}
+            >
+              Prev
+            </Button>
+            <Button
+              kbd="↓"
+              onClick={() => {
+                changeSelectedTheme(1);
+              }}
+            >
+              Next
+            </Button>
+            <Button
+              icon="search"
+              target="_blank"
+              href={`https://www.google.com/search?q=${encodeURIComponent(
+                themes[currentTheme]?.suggestion
+              )}`}
+              disabled={themes[currentTheme] === undefined}
+              kbd="→"
+            >
+              Lookup
+            </Button>
+          </Hstack>
           <VoteCircle themes={themes} />
         </Hstack>
         <div
@@ -694,7 +780,9 @@ export default function ThemeSlaughter() {
                   >
                     <Hstack justify="between">
                       <Vstack align="start">
-                        <Text color="text">{theme.suggestion}</Text>
+                        <Text color="text" className="capitalize">
+                          {theme.suggestion}
+                        </Text>
                         {theme.description && descriptionShow && (
                           <Text size="xs" color="textFaded">
                             {theme.description}

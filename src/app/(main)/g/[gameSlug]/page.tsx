@@ -11,8 +11,8 @@ export async function generateMetadata({
 
   if (!res.ok) {
     return {
-      title: "Game not found | Down2Jam",
-      description: "This game could not be found.",
+      title: "Game not found",
+      description: "This game could not be found",
     };
   }
 

@@ -2,11 +2,9 @@
 
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
-import { Form } from "@heroui/react";
-import { LoaderCircle } from "lucide-react";
+import { addToast, Form } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import Select, { MultiValue, StylesConfig } from "react-select";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -21,13 +19,13 @@ import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
 import { Avatar } from "@/framework/Avatar";
 import { Switch } from "@/framework/Switch";
+import { Spinner } from "@/framework/Spinner";
 
 const theme = "dark";
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [errors, setErrors] = useState({});
   const [waitingPost, setWaitingPost] = useState(false);
   const [selectedTags, setSelectedTags] = useState<MultiValue<{
     value: string;
@@ -182,32 +180,34 @@ export default function CreatePostPage() {
         <Vstack>
           <Form
             className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
-            validationErrors={errors}
             onSubmit={async (e) => {
               e.preventDefault();
 
               if (!title && !content) {
-                setErrors({
-                  title: "Please enter a valid title",
-                  content: "Please enter valid content",
+                addToast({
+                  title: "Please enter valid content and a valid title",
                 });
-                toast.error("Please enter valid content");
                 return;
               }
 
               if (!title) {
-                setErrors({ title: "Please enter a valid title" });
+                addToast({
+                  title: "Please enter a valid title",
+                });
                 return;
               }
 
               if (!content) {
-                setErrors({ content: "Please enter valid content" });
-                toast.error("Please enter valid content");
+                addToast({
+                  title: "Please enter valid content",
+                });
                 return;
               }
 
               if (!hasCookie("token")) {
-                setErrors({ content: "You are not logged in" });
+                addToast({
+                  title: "You are not logged in",
+                });
                 return;
               }
 
@@ -236,17 +236,23 @@ export default function CreatePostPage() {
               );
 
               if (response.status == 401) {
-                setErrors({ content: "Invalid user" });
+                addToast({
+                  title: "Invalid user",
+                });
                 setWaitingPost(false);
                 return;
               }
 
               if (response.ok) {
-                toast.success("Successfully created post");
+                addToast({
+                  title: "Successfully created post",
+                });
                 setWaitingPost(false);
                 redirect("/");
               } else {
-                toast.error("An error occured");
+                addToast({
+                  title: "An error occurred",
+                });
                 setWaitingPost(false);
               }
             }}
@@ -309,13 +315,13 @@ export default function CreatePostPage() {
             )}
 
             <div className="flex gap-2">
-              <Button color="blue" type="submit" icon="plus">
-                {waitingPost ? (
-                  <LoaderCircle className="animate-spin" size={16} />
-                ) : (
-                  <p>Create</p>
-                )}
-              </Button>
+              {waitingPost ? (
+                <Spinner />
+              ) : (
+                <Button color="blue" type="submit" icon="plus">
+                  Create
+                </Button>
+              )}
             </div>
           </Form>
         </Vstack>

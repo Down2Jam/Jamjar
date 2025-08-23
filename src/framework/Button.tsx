@@ -87,6 +87,12 @@ export function Button(props: ButtonProps) {
       borderColor: colors["yellow"],
       backgroundColor: colors["yellowDarkDark"] + "88",
     };
+  } else if (color === "gray") {
+    variantStyles.standard = {
+      color: colors["gray"],
+      borderColor: colors["gray"],
+      backgroundColor: colors["grayDarkDark"] + "88",
+    };
   }
 
   if (disabled && color === "default") {
@@ -126,6 +132,11 @@ export function Button(props: ButtonProps) {
       backgroundColor: colors["yellowDark"],
       color: colors["yellowLight"],
     };
+  } else if (color === "gray") {
+    hoverStyles.standard = {
+      backgroundColor: colors["grayDark"],
+      color: colors["grayLight"],
+    };
   }
 
   const commonClass = [
@@ -147,13 +158,19 @@ export function Button(props: ButtonProps) {
       {loading && <Loader2 className="animate-spin" size={16} />}
       {!loading && icon && <Icon size={16} name={icon} />}
       <Text size="xs">{props.children}</Text>
-      {kbd && <Chip>{kbd}</Chip>}
+      {kbd && <Chip color={color}>{kbd}</Chip>}
     </>
   );
 
   // Link mode
   if ("href" in props && props.href) {
-    const { href, externalIcon = true, ...linkProps } = props as ButtonAsLink;
+    const {
+      href,
+      externalIcon = true,
+      target,
+      rel,
+      ...linkProps
+    } = props as ButtonAsLink;
 
     const isExternal =
       !isIconOnly &&
@@ -174,6 +191,8 @@ export function Button(props: ButtonProps) {
         style={commonStyle}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
+        target={target}
+        rel={rel ?? (target === "_blank" ? "noopener noreferrer" : undefined)}
         {...linkProps}
       >
         {content}
