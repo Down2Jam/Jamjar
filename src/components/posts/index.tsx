@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
-import { addToast, Avatar, Chip } from "@heroui/react";
+import { addToast, Avatar } from "@heroui/react";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import { Check, LoaderCircle, X } from "lucide-react";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
@@ -28,6 +27,8 @@ import ThemedProse from "../themed-prose";
 import { IconName } from "@/framework/Icon";
 import { Card } from "@/framework/Card";
 import Drawer from "@/framework/Drawer";
+import { Chip } from "@/framework/Chip";
+import { Spinner } from "@/framework/Spinner";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -283,10 +284,7 @@ export default function Posts() {
     <div>
       {loading ? (
         <div className="flex justify-center p-6">
-          <LoaderCircle
-            className="animate-spin text-[#333] dark:text-[#999]"
-            size={24}
-          />
+          <Spinner />
         </div>
       ) : (
         stickyPosts &&
@@ -359,16 +357,7 @@ export default function Posts() {
                       <div className="flex gap-1 flex-wrap p-4 w-full">
                         {tags[category].tags.map((tag) => (
                           <Chip
-                            size="sm"
-                            variant="faded"
-                            avatar={
-                              tag.icon && (
-                                <Avatar
-                                  src={tag.icon}
-                                  classNames={{ base: "bg-transparent" }}
-                                />
-                              )
-                            }
+                            avatarSrc={tag.icon ? tag.icon : undefined}
                             key={tag.id}
                             onClick={() => {
                               if (!tagRules) {
@@ -399,22 +388,20 @@ export default function Posts() {
                                   ? tagRules[tag.id] === 1
                                     ? siteTheme.colors["blue"]
                                     : siteTheme.colors["orange"]
-                                  : "",
+                                  : siteTheme.colors["text"],
                               borderColor:
                                 tagRules && tag.id in tagRules
                                   ? tagRules[tag.id] === 1
                                     ? siteTheme.colors["blue"]
                                     : siteTheme.colors["orange"]
-                                  : "",
+                                  : siteTheme.colors["base"],
                             }}
-                            endContent={
-                              tagRules &&
-                              tag.id in tagRules &&
-                              (tagRules[tag.id] === 1 ? (
-                                <Check size={16} />
-                              ) : (
-                                <X size={16} />
-                              ))
+                            icon={
+                              tagRules && tag.id in tagRules
+                                ? tagRules[tag.id] === 1
+                                  ? "check"
+                                  : "x"
+                                : undefined
                             }
                           >
                             {tag.name}
@@ -466,13 +453,7 @@ export default function Posts() {
 
       {loading ? (
         <div className="flex justify-center p-6">
-          <LoaderCircle
-            className="animate-spin"
-            style={{
-              color: colors["text"],
-            }}
-            size={24}
-          />
+          <Spinner />
         </div>
       ) : (
         <Vstack align="stretch" className="p-4">
@@ -517,7 +498,7 @@ export default function Posts() {
           </div>
         </Vstack>
       )}
-      {posts && (
+      {posts && posts[currentPost] && (
         <Drawer
           isOpen={open}
           onClose={() => setOpen(false)}

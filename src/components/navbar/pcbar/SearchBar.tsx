@@ -11,7 +11,6 @@ import {
   ModalBody,
   ModalContent,
   NavbarItem,
-  Spinner,
   useDisclosure,
 } from "@heroui/react";
 import { Gamepad, MessageCircle, Search } from "lucide-react";
@@ -23,6 +22,7 @@ import { UserType } from "@/types/UserType";
 import { useTranslations } from "next-intl";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { usePathname } from "next/navigation";
+import { Spinner } from "@/framework/Spinner";
 
 export default function SearchBar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -151,11 +151,7 @@ export default function SearchBar() {
                     inputWrapper: `!duration-500 ease-in-out transition-all bg-transparent !bg-black`,
                   }}
                   endContent={
-                    loadingResults ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <Search size={16} />
-                    )
+                    loadingResults ? <Spinner /> : <Search size={16} />
                   }
                   className="min-w-40"
                   style={{

@@ -1,10 +1,10 @@
 import Editor from "../editor";
-import { toast } from "react-toastify";
 import { hasCookie } from "@/helpers/cookie";
 import { sanitize } from "@/helpers/sanitize";
 import { postComment } from "@/requests/comment";
 import { useState } from "react";
 import { Button } from "@/framework/Button";
+import { addToast } from "@heroui/react";
 
 // CreateComment.tsx
 export default function CreateComment({ gameId }: { gameId: number }) {
@@ -18,12 +18,16 @@ export default function CreateComment({ gameId }: { gameId: number }) {
       <Button
         onClick={async () => {
           if (!content) {
-            toast.error("Please enter valid content");
+            addToast({
+              title: "Please enter valid content",
+            });
             return;
           }
 
           if (!hasCookie("token")) {
-            toast.error("You are not logged in");
+            addToast({
+              title: "You are not logged in",
+            });
             return;
           }
 
@@ -33,17 +37,23 @@ export default function CreateComment({ gameId }: { gameId: number }) {
           const response = await postComment(sanitizedHtml, null, null, gameId);
 
           if (response.status === 401) {
-            toast.error("Invalid User");
+            addToast({
+              title: "Invalid User",
+            });
             setWaitingPost(false);
             return;
           }
 
           if (response.ok) {
-            toast.success("Successfully created comment");
+            addToast({
+              title: "Successfully created comment",
+            });
             setWaitingPost(false);
             window.location.reload(); // Consider improving this too
           } else {
-            toast.error("An error occurred");
+            addToast({
+              title: "An error occurred",
+            });
             setWaitingPost(false);
           }
         }}

@@ -1,10 +1,9 @@
 import { CommentType } from "@/types/CommentType";
 import { formatDistance } from "date-fns";
-import { LoaderCircle, Reply } from "lucide-react";
+import { Reply } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import Editor from "../editor";
-import { toast } from "react-toastify";
 import { hasCookie } from "@/helpers/cookie";
 import LikeButton from "./LikeButton";
 import { postComment } from "@/requests/comment";
@@ -14,6 +13,8 @@ import { Button } from "@/framework/Button";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
 import { Avatar } from "@/framework/Avatar";
+import { Spinner } from "@/framework/Spinner";
+import { addToast } from "@heroui/react";
 
 export default function CommentCard({ comment }: { comment: CommentType }) {
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -77,12 +78,16 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
             <Button
               onClick={async () => {
                 if (!content) {
-                  toast.error("Please enter valid content");
+                  addToast({
+                    title: "Please enter valid content",
+                  });
                   return;
                 }
 
                 if (!hasCookie("token")) {
-                  toast.error("You are not logged in");
+                  addToast({
+                    title: "You are not logged in",
+                  });
                   return;
                 }
 
@@ -96,26 +101,28 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
                 );
 
                 if (response.status == 401) {
-                  toast.error("Invalid User");
+                  addToast({
+                    title: "Invalid User",
+                  });
                   setWaitingPost(false);
                   return;
                 }
 
                 if (response.ok) {
-                  toast.success("Successfully created comment");
+                  addToast({
+                    title: "Successfully created comment",
+                  });
                   setWaitingPost(false);
                   window.location.reload();
                 } else {
-                  toast.error("An error occured");
+                  addToast({
+                    title: "An error occured",
+                  });
                   setWaitingPost(false);
                 }
               }}
             >
-              {waitingPost ? (
-                <LoaderCircle className="animate-spin" size={16} />
-              ) : (
-                <p>Create Reply</p>
-              )}
+              {waitingPost ? <Spinner /> : <p>Create Reply</p>}
             </Button>
             <div className="p-2" />
           </>
@@ -131,7 +138,9 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
           ) : (
             <Button
               onClick={() => {
-                toast.warning("Feature coming soon");
+                addToast({
+                  title: "Feature coming soon",
+                });
               }}
             >
               Load replies

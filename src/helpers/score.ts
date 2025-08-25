@@ -1,5 +1,5 @@
-import { toast } from "react-toastify";
 import * as scoreRequests from "@/requests/score";
+import { addToast } from "@heroui/react";
 
 export async function postScore(
   value: number,
@@ -15,11 +15,15 @@ export async function postScore(
   const data = await response.json();
 
   if (response.ok) {
-    toast.success("Created score");
+    addToast({
+      title: "Created score",
+    });
     return data.data;
   }
 
-  toast.error(data.message);
+  addToast({
+    title: data.message,
+  });
   return false;
 }
 
@@ -29,10 +33,14 @@ export async function deleteScore(scoreId: number) {
   const data = await response.json();
 
   if (response.ok) {
-    toast.success("Deleted score");
+    addToast({
+      title: "Deleted score",
+    });
     return true;
   }
 
-  toast.error(data.message);
+  addToast({
+    title: data.message,
+  });
   return false;
 }

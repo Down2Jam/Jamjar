@@ -4,30 +4,31 @@ import { use } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
+  addToast,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Pagination,
-  Tab,
-  Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableHeader,
-  TableRow,
-  Tabs,
   Tooltip,
   useDisclosure,
   User,
 } from "@heroui/react";
+import { Tabs, Tab } from "@/framework/Tabs";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/framework/Table";
+import { Pagination } from "@/framework/Pagination";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
 import { getSelf } from "@/requests/user";
 import Image from "next/image";
-import { getIcon } from "@/helpers/icon";
 import {
   AlertTriangle,
   Award,
@@ -40,7 +41,6 @@ import {
   Trophy,
   Turtle,
 } from "lucide-react";
-import { toast } from "react-toastify";
 import CommentCard from "@/components/posts/CommentCard";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
@@ -65,7 +65,6 @@ import { Hstack, Vstack } from "@/framework/Stack";
 import ThemedProse from "@/components/themed-prose";
 import { Button } from "@/framework/Button";
 import { Input } from "@/framework/Input";
-import { Avatar } from "@/framework/Avatar";
 import { Link } from "@/framework/Link";
 
 export default function ClientGamePage({
@@ -259,9 +258,12 @@ export default function ClientGamePage({
               </p>
               <div className="flex flex-wrap gap-2">
                 {game.team.users.map((user) => (
-                  <Chip key={user.id}>
-                    <Avatar src={user.profilePicture} />
-                    <p>{user.name}</p>
+                  <Chip
+                    key={user.id}
+                    avatarSrc={user.profilePicture}
+                    href={`/u/${user.slug}`}
+                  >
+                    {user.name}
                   </Chip>
                 ))}
               </div>
@@ -279,9 +281,8 @@ export default function ClientGamePage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
-                    <Chip key={tag.id}>
-                      {tag.icon && <Avatar src={tag.icon} />}
-                      <p>{tag.name}</p>
+                    <Chip key={tag.id} avatarSrc={tag.icon}>
+                      {tag.name}
                     </Chip>
                   ))}
                 </div>
@@ -299,10 +300,7 @@ export default function ClientGamePage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {game.flags.map((flag) => (
-                    <Chip key={flag.id}>
-                      {flag.icon && getIcon(flag.icon, 14)}
-                      <p>{flag.name}</p>
-                    </Chip>
+                    <Chip key={flag.id}>{flag.name}</Chip>
                   ))}
                 </div>
               </>
@@ -557,201 +555,200 @@ export default function ClientGamePage({
                   LEADERBOARD
                 </p>
 
-                <Tabs variant="bordered">
+                <Tabs>
                   {game.leaderboards.map((leaderboard) => (
                     <Tab
                       key={leaderboard.id}
-                      title={
-                        <div className="flex items-center space-x-2">
-                          {leaderboard.type == "SCORE" ? (
-                            <Trophy size={12} />
-                          ) : leaderboard.type == "GOLF" ? (
-                            <LandPlot size={12} />
-                          ) : leaderboard.type == "SPEEDRUN" ? (
-                            <Rabbit size={12} />
-                          ) : (
-                            <Turtle size={12} />
-                          )}
-                          <p className="text-xs">{leaderboard.name}</p>
-                        </div>
+                      title={leaderboard.name}
+                      icon={
+                        leaderboard.type == "SCORE"
+                          ? "trophy"
+                          : leaderboard.type == "GOLF"
+                          ? "landplot"
+                          : leaderboard.type == "SPEEDRUN"
+                          ? "rabbit"
+                          : "turtle"
                       }
                     >
                       {leaderboard.scores && (
-                        <Table
-                          classNames={{ wrapper: "border-none" }}
-                          className="w-full"
-                          bottomContent={
-                            <div className="flex w-full justify-center">
-                              <Pagination
-                                showControls
-                                color="primary"
-                                variant="faded"
-                                page={page}
-                                total={Math.ceil(
-                                  (leaderboard.onlyBest
-                                    ? Array.from(
-                                        leaderboard.scores
-                                          .reduce((acc, score) => {
-                                            if (
-                                              !acc.has(score.user.id) ||
-                                              acc.get(score.user.id).data <
-                                                score.data
-                                            ) {
-                                              acc.set(score.user.id, score);
-                                            }
-                                            return acc;
-                                          }, new Map())
-                                          .values()
-                                      )
-                                    : leaderboard.scores
-                                  ).length / leaderboard.maxUsersShown
-                                )}
-                                onChange={(page) => setPage(page)}
-                              />
-                            </div>
-                          }
-                        >
-                          <TableHeader>
-                            <TableColumn>#</TableColumn>
-                            <TableColumn>User</TableColumn>
-                            <TableColumn>
-                              {leaderboard.type == "SCORE" ||
-                              leaderboard.type == "GOLF"
-                                ? "Score"
-                                : "Time"}
-                            </TableColumn>
-                            <TableColumn>Actions</TableColumn>
-                          </TableHeader>
-                          <TableBody>
-                            {(leaderboard.onlyBest
-                              ? Array.from(
-                                  leaderboard.scores
-                                    .reduce((acc, score) => {
-                                      if (
-                                        !acc.has(score.user.id) ||
-                                        (acc.get(score.user.id).data <
-                                          score.data &&
-                                          (leaderboard.type == "SCORE" ||
-                                            leaderboard.type == "ENDURANCE")) ||
-                                        (acc.get(score.user.id).data >
-                                          score.data &&
-                                          (leaderboard.type == "GOLF" ||
-                                            leaderboard.type == "SPEEDRUN"))
-                                      ) {
-                                        acc.set(score.user.id, score);
-                                      }
-                                      return acc;
-                                    }, new Map())
-                                    .values()
-                                )
-                              : leaderboard.scores
-                            )
-                              .sort((a, b) => {
-                                if (
-                                  leaderboard.type == "GOLF" ||
-                                  leaderboard.type == "SPEEDRUN"
-                                ) {
-                                  return a.data - b.data;
-                                } else {
-                                  return b.data - a.data;
-                                }
-                              })
-                              .slice(
-                                0 + leaderboard.maxUsersShown * (page - 1),
-                                leaderboard.maxUsersShown * page
+                        <>
+                          <div className="p-1" />
+                          <Table
+                            bottomContent={
+                              <div className="flex w-full justify-center">
+                                <Pagination
+                                  showControls
+                                  color="primary"
+                                  variant="faded"
+                                  page={page}
+                                  total={Math.ceil(
+                                    (leaderboard.onlyBest
+                                      ? Array.from(
+                                          leaderboard.scores
+                                            .reduce((acc, score) => {
+                                              if (
+                                                !acc.has(score.user.id) ||
+                                                acc.get(score.user.id).data <
+                                                  score.data
+                                              ) {
+                                                acc.set(score.user.id, score);
+                                              }
+                                              return acc;
+                                            }, new Map())
+                                            .values()
+                                        )
+                                      : leaderboard.scores
+                                    ).length / leaderboard.maxUsersShown
+                                  )}
+                                  onChange={(page) => setPage(page)}
+                                />
+                              </div>
+                            }
+                          >
+                            <TableHeader>
+                              <TableColumn>#</TableColumn>
+                              <TableColumn>User</TableColumn>
+                              <TableColumn>
+                                {leaderboard.type == "SCORE" ||
+                                leaderboard.type == "GOLF"
+                                  ? "Score"
+                                  : "Time"}
+                              </TableColumn>
+                              <TableColumn>Actions</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                              {(leaderboard.onlyBest
+                                ? Array.from(
+                                    leaderboard.scores
+                                      .reduce((acc, score) => {
+                                        if (
+                                          !acc.has(score.user.id) ||
+                                          (acc.get(score.user.id).data <
+                                            score.data &&
+                                            (leaderboard.type == "SCORE" ||
+                                              leaderboard.type ==
+                                                "ENDURANCE")) ||
+                                          (acc.get(score.user.id).data >
+                                            score.data &&
+                                            (leaderboard.type == "GOLF" ||
+                                              leaderboard.type == "SPEEDRUN"))
+                                        ) {
+                                          acc.set(score.user.id, score);
+                                        }
+                                        return acc;
+                                      }, new Map())
+                                      .values()
+                                  )
+                                : leaderboard.scores
                               )
-                              .map((score, i) => (
-                                <TableRow key={score.id}>
-                                  <TableCell
-                                    style={{
-                                      color: colors["textFaded"],
-                                    }}
-                                  >
-                                    {i +
-                                      1 +
-                                      leaderboard.maxUsersShown * (page - 1)}
-                                  </TableCell>
-                                  <TableCell>
-                                    <User
-                                      className="flex justify-start"
-                                      name={score.user.name}
-                                      avatarProps={{
-                                        src: score.user.profilePicture,
-                                        className: "w-6 h-6",
-                                        size: "sm",
+                                .sort((a, b) => {
+                                  if (
+                                    leaderboard.type == "GOLF" ||
+                                    leaderboard.type == "SPEEDRUN"
+                                  ) {
+                                    return a.data - b.data;
+                                  } else {
+                                    return b.data - a.data;
+                                  }
+                                })
+                                .slice(
+                                  0 + leaderboard.maxUsersShown * (page - 1),
+                                  leaderboard.maxUsersShown * page
+                                )
+                                .map((score, i) => (
+                                  <TableRow key={score.id}>
+                                    <TableCell
+                                      style={{
+                                        color: colors["textFaded"],
                                       }}
-                                    />
-                                  </TableCell>
-                                  <TableCell
-                                    style={{
-                                      color: colors["blue"],
-                                    }}
-                                  >
-                                    {leaderboard.type == "GOLF" ||
-                                    leaderboard.type == "SCORE"
-                                      ? score.data /
-                                        10 ** leaderboard.decimalPlaces
-                                      : (() => {
-                                          const totalMilliseconds = score.data;
-                                          const hours = Math.floor(
-                                            totalMilliseconds / 3600000
-                                          );
-                                          const minutes = Math.floor(
-                                            (totalMilliseconds % 3600000) /
-                                              60000
-                                          );
-                                          const seconds = Math.floor(
-                                            (totalMilliseconds % 60000) / 1000
-                                          );
-                                          const milliseconds =
-                                            totalMilliseconds % 1000;
+                                    >
+                                      {i +
+                                        1 +
+                                        leaderboard.maxUsersShown * (page - 1)}
+                                    </TableCell>
+                                    <TableCell>
+                                      <User
+                                        className="flex justify-start"
+                                        name={score.user.name}
+                                        avatarProps={{
+                                          src: score.user.profilePicture,
+                                          className: "w-6 h-6",
+                                          size: "sm",
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell
+                                      style={{
+                                        color: colors["blue"],
+                                      }}
+                                    >
+                                      {leaderboard.type == "GOLF" ||
+                                      leaderboard.type == "SCORE"
+                                        ? score.data /
+                                          10 ** leaderboard.decimalPlaces
+                                        : (() => {
+                                            const totalMilliseconds =
+                                              score.data;
+                                            const hours = Math.floor(
+                                              totalMilliseconds / 3600000
+                                            );
+                                            const minutes = Math.floor(
+                                              (totalMilliseconds % 3600000) /
+                                                60000
+                                            );
+                                            const seconds = Math.floor(
+                                              (totalMilliseconds % 60000) / 1000
+                                            );
+                                            const milliseconds =
+                                              totalMilliseconds % 1000;
 
-                                          return `${
-                                            hours > 0 ? `${hours}:` : ""
-                                          }${minutes
-                                            .toString()
-                                            .padStart(2, "0")}:${seconds
-                                            .toString()
-                                            .padStart(2, "0")}${
-                                            milliseconds > 0
-                                              ? `.${milliseconds
-                                                  .toString()
-                                                  .padStart(3, "0")}`
-                                              : ""
-                                          }`;
-                                        })()}
-                                  </TableCell>
-                                  <TableCell className="flex gap-2">
-                                    <Button
-                                      icon="eye"
-                                      onClick={() => {
-                                        setSelectedScore(score.evidence);
-                                        onOpen();
-                                      }}
-                                      size="sm"
-                                    />
-                                    {(isEditable ||
-                                      score.user.id == user?.id ||
-                                      user?.mod) && (
+                                            return `${
+                                              hours > 0 ? `${hours}:` : ""
+                                            }${minutes
+                                              .toString()
+                                              .padStart(2, "0")}:${seconds
+                                              .toString()
+                                              .padStart(2, "0")}${
+                                              milliseconds > 0
+                                                ? `.${milliseconds
+                                                    .toString()
+                                                    .padStart(3, "0")}`
+                                                : ""
+                                            }`;
+                                          })()}
+                                    </TableCell>
+                                    <TableCell className="flex gap-2">
                                       <Button
-                                        color="red"
-                                        icon="trash"
-                                        onClick={async () => {
-                                          const success = await deleteScore(
-                                            score.id
-                                          );
-                                          if (success) {
-                                            window.location.reload();
-                                          }
+                                        icon="eye"
+                                        onClick={() => {
+                                          setSelectedScore(score.evidence);
+                                          onOpen();
                                         }}
                                         size="sm"
                                       />
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                          </TableBody>
-                        </Table>
+                                      {(isEditable ||
+                                        score.user.id == user?.id ||
+                                        user?.mod) && (
+                                        <Button
+                                          color="red"
+                                          icon="trash"
+                                          onClick={async () => {
+                                            const success = await deleteScore(
+                                              score.id
+                                            );
+                                            if (success) {
+                                              window.location.reload();
+                                            }
+                                          }}
+                                          size="sm"
+                                        />
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </Table>
+                        </>
                       )}
                       <div className="mt-4">
                         <Button
@@ -980,13 +977,13 @@ export default function ClientGamePage({
                             if (response.ok) {
                               const data = await response.json();
                               setEvidenceUrl(data.data);
-                              toast.success(data.message);
+                              addToast({ title: data.message });
                             } else {
-                              toast.error("Failed to upload image");
+                              addToast({ title: "Failed to upload image" });
                             }
                           } catch (error) {
                             console.error(error);
-                            toast.error("Error uploading image");
+                            addToast({ title: "Error uploading image" });
                           }
                         }}
                       />
@@ -1012,12 +1009,12 @@ export default function ClientGamePage({
                         color="red"
                         onClick={async () => {
                           if (!evidenceUrl) {
-                            toast.error("No evidence image provided");
+                            addToast({ title: "No evidence image provided" });
                             return;
                           }
 
                           if (!selectedLeaderboard) {
-                            toast.error("No leaderboard selected");
+                            addToast({ title: "No leaderboard selected" });
                             return;
                           }
 

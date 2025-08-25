@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@/framework/Button";
+import { Spinner } from "@/framework/Spinner";
 import { getEvent } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { Image, Spinner } from "@heroui/react";
+import { Image } from "@heroui/react";
 import { BadgePlus, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";

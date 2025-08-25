@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
-import { Button, Chip, Image } from "@heroui/react";
+import { Image } from "@heroui/react";
 import NextImage from "next/image";
 import { getStreamers } from "@/requests/streamer";
 import {
@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Tooltip from "@/framework/Tooltip";
+import { Button } from "@/framework/Button";
+import { Chip } from "@/framework/Chip";
 
 export default function SidebarStreams() {
   const [streamers, setStreamers] = useState<FeaturedStreamerType[]>([]);
@@ -100,12 +102,8 @@ export default function SidebarStreams() {
           {streamers.length > 3 && (
             <Tooltip content="Previous Page" position="top">
               <Button
-                isIconOnly
-                variant="light"
                 onClick={(e) => {
                   e.preventDefault();
-                }}
-                onPress={() => {
                   handlePrevPage();
                 }}
                 size="sm"
@@ -221,12 +219,10 @@ export default function SidebarStreams() {
           {streamers.length > 3 && (
             <Tooltip content="Next Page" position="top">
               <Button
-                isIconOnly
-                variant="light"
                 onClick={(e) => {
                   e.preventDefault();
+                  handleNextPage();
                 }}
-                onPress={handleNextPage}
                 size="sm"
               >
                 <ChevronsRight
@@ -242,12 +238,10 @@ export default function SidebarStreams() {
         <div className="absolute z-20 mt-[120px] justify-between flex items-center w-[480px] min-w-[480px] max-w-[480px] px-2">
           <Tooltip content="Previous Stream" position="top">
             <Button
-              isIconOnly
-              variant="light"
               onClick={(e) => {
                 e.preventDefault();
+                handlePrev();
               }}
-              onPress={handlePrev}
             >
               <ChevronLeft
                 style={{
@@ -264,12 +258,10 @@ export default function SidebarStreams() {
           />
           <Tooltip content="Next Stream" position="top">
             <Button
-              isIconOnly
-              variant="light"
               onClick={(e) => {
                 e.preventDefault();
+                handleNext();
               }}
-              onPress={handleNext}
             >
               <ChevronRight
                 style={{
@@ -290,15 +282,7 @@ export default function SidebarStreams() {
             </p>
             <div className="flex gap-2 pl-4 items-center">
               <Tooltip content="Viewer Count" position="top">
-                <Chip
-                  size="sm"
-                  variant="faded"
-                  style={{
-                    color: colors["text"],
-                    backgroundColor: colors["mantle"],
-                    borderColor: colors["base"],
-                  }}
-                >
+                <Chip>
                   <div className="flex gap-1 items-center">
                     <Eye size={16} />
                     <p className="text-sm">{currentStreamer.viewerCount}</p>
@@ -329,18 +313,7 @@ export default function SidebarStreams() {
                   )
                   .slice(0, 3)
                   .map((tag) => (
-                    <Chip
-                      size="sm"
-                      key={tag}
-                      variant="faded"
-                      style={{
-                        color: colors["text"],
-                        backgroundColor: colors["mantle"],
-                        borderColor: colors["base"],
-                      }}
-                    >
-                      {tag}
-                    </Chip>
+                    <Chip key={tag}>{tag}</Chip>
                   ))}
               </div>
             </div>

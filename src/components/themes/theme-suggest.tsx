@@ -20,7 +20,8 @@ import { Hstack, Vstack } from "@/framework/Stack";
 import { Button } from "@/framework/Button";
 import { Input } from "@/framework/Input";
 import Icon from "@/framework/Icon";
-import { addToast, Spinner } from "@heroui/react";
+import { addToast } from "@heroui/react";
+import { Spinner } from "@/framework/Spinner";
 
 const bannedThemes = [
   "pgorley",

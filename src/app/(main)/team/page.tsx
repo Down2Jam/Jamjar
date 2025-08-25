@@ -20,8 +20,6 @@ import { getSelf, searchUsers } from "@/requests/user";
 import { RoleType } from "@/types/RoleType";
 import { getTeamRoles, getTeamsUser, updateTeam } from "@/requests/team";
 import { TeamType } from "@/types/TeamType";
-import { LoaderCircle } from "lucide-react";
-import { toast } from "react-toastify";
 import {
   createTeam,
   deleteTeam,
@@ -446,7 +444,9 @@ export default function EditTeamPage() {
                     color="blue"
                     onClick={async () => {
                       if (!selectedAuthor) {
-                        toast.error("You did not select a user to invite");
+                        addToast({
+                          title: "You did not select a user to invite",
+                        });
                         return;
                       }
                       onClose();
@@ -567,7 +567,7 @@ export default function EditTeamPage() {
         {teams[selectedTeam].ownerId == user.id && (
           <div className="flex gap-2">
             {waitingSave ? (
-              <LoaderCircle className="animate-spin" size={16} />
+              <Spinner />
             ) : (
               <>
                 <Button color="blue" type="submit" icon="save">

@@ -8,11 +8,12 @@ import {
   joinJam,
 } from "@/helpers/jam";
 import { ThemeType } from "@/types/ThemeType";
-import { Card, CardBody, Spinner } from "@heroui/react";
 import { Vote } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getThemes, postThemeVotingVote } from "@/requests/theme";
 import { Button } from "@/framework/Button";
+import { Spinner } from "@/framework/Spinner";
+import { Card } from "@/framework/Card";
 
 export default function VotingPage() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
@@ -231,78 +232,76 @@ export default function VotingPage() {
               themes.map((theme, i) => (
                 <div key={theme.id}>
                   <Card className={`border border-transparent w-full`}>
-                    <CardBody className="py-2">
-                      <div className="flex justify-between items-center">
-                        <p>
-                          <span className="text-xs text-gray-500">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>{" "}
-                          {theme.suggestion}
-                        </p>
-                        <div className="items-center flex gap-3">
-                          <Button
-                            size="sm"
-                            // tooltip="Skip"
-                            onClick={() => {
-                              voteSkip(i);
-                            }}
-                            // important={
-                            //   themes[i].votes2 &&
-                            //   themes[i].votes2.length > 0 &&
-                            //   themes[i].votes2[0].voteScore == 0
-                            // }
-                          >
-                            0
-                          </Button>
-                          <Button
-                            color="green"
-                            size="sm"
-                            // tooltip="Like (+1)"
-                            onClick={() => {
-                              voteLike(i);
-                            }}
-                            // important={
-                            //   themes[i].votes2 &&
-                            //   themes[i].votes2.length > 0 &&
-                            //   themes[i].votes2[0].voteScore == 1
-                            // }
-                          >
-                            1
-                          </Button>
-                          <Button
-                            color="yellow"
-                            size="sm"
-                            // tooltip="Star (+3)"
-                            icon="star"
-                            onClick={() => {
-                              voteStar(i);
-                            }}
-                            // important={
-                            //   themes[i].votes2 &&
-                            //   themes[i].votes2.length > 0 &&
-                            //   themes[i].votes2[0].voteScore == 3
-                            // }
-                            disabled={
-                              themes.reduce(
-                                (prev, curr) =>
-                                  prev +
-                                  (curr.votes2 &&
-                                  curr.votes2.length > 0 &&
-                                  curr.votes2[0].voteScore == 3
-                                    ? 1
-                                    : 0),
-                                0
-                              ) >= 2 &&
-                              !(
-                                themes[i].votes2 &&
-                                themes[i].votes2.length > 0 &&
-                                themes[i].votes2[0].voteScore == 3
-                              )
-                            }
-                          />
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <p>
+                        <span className="text-xs text-gray-500">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>{" "}
+                        {theme.suggestion}
+                      </p>
+                      <div className="items-center flex gap-3">
+                        <Button
+                          size="sm"
+                          // tooltip="Skip"
+                          onClick={() => {
+                            voteSkip(i);
+                          }}
+                          // important={
+                          //   themes[i].votes2 &&
+                          //   themes[i].votes2.length > 0 &&
+                          //   themes[i].votes2[0].voteScore == 0
+                          // }
+                        >
+                          0
+                        </Button>
+                        <Button
+                          color="green"
+                          size="sm"
+                          // tooltip="Like (+1)"
+                          onClick={() => {
+                            voteLike(i);
+                          }}
+                          // important={
+                          //   themes[i].votes2 &&
+                          //   themes[i].votes2.length > 0 &&
+                          //   themes[i].votes2[0].voteScore == 1
+                          // }
+                        >
+                          1
+                        </Button>
+                        <Button
+                          color="yellow"
+                          size="sm"
+                          // tooltip="Star (+3)"
+                          icon="star"
+                          onClick={() => {
+                            voteStar(i);
+                          }}
+                          // important={
+                          //   themes[i].votes2 &&
+                          //   themes[i].votes2.length > 0 &&
+                          //   themes[i].votes2[0].voteScore == 3
+                          // }
+                          disabled={
+                            themes.reduce(
+                              (prev, curr) =>
+                                prev +
+                                (curr.votes2 &&
+                                curr.votes2.length > 0 &&
+                                curr.votes2[0].voteScore == 3
+                                  ? 1
+                                  : 0),
+                              0
+                            ) >= 2 &&
+                            !(
+                              themes[i].votes2 &&
+                              themes[i].votes2.length > 0 &&
+                              themes[i].votes2[0].voteScore == 3
+                            )
+                          }
+                        />
                       </div>
-                    </CardBody>
+                    </div>
                   </Card>
                 </div>
               ))

@@ -21,9 +21,9 @@ import {
   Undo,
 } from "lucide-react";
 import EditorMenuButton from "./EditorMenuButton";
-import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { Hstack } from "@/framework/Stack";
+import { addToast } from "@heroui/react";
 
 type EditorMenuProps = {
   editor: Editor | null;
@@ -76,12 +76,16 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
     ];
 
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file format");
+      addToast({
+        title: "Invalid file format",
+      });
       return false;
     }
 
     if (filesize > 8) {
-      toast.error("Image is too big");
+      addToast({
+        title: "Image is too big",
+      });
       return false;
     }
 
@@ -103,11 +107,15 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
     ).then((response) => {
       if (response.ok) {
         response.json().then((data) => {
-          toast.success(data.message);
+          addToast({
+            title: data.message,
+          });
           editor?.commands.setImage({ src: data.data });
         });
       } else {
-        toast.error("Failed to upload image");
+        addToast({
+          title: "Failed to upload image",
+        });
       }
     });
   }

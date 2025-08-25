@@ -1,6 +1,6 @@
 "use client";
 
-import { addToast, Avatar, Chip } from "@heroui/react";
+import { addToast, Avatar } from "@heroui/react";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
@@ -8,8 +8,7 @@ import { MoreVertical } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { Dispatch, SetStateAction, useState } from "react";
 import { TagType } from "@/types/TagType";
 import { deletePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
@@ -18,6 +17,7 @@ import { Button } from "@/framework/Button";
 import ThemedProse from "../themed-prose";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Dropdown from "@/framework/Dropdown";
+import { Chip } from "@/framework/Chip";
 
 export default function PostCard({
   post,
@@ -36,22 +36,7 @@ export default function PostCard({
 }) {
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
-  const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const { colors } = useTheme();
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches);
-    };
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
 
   return (
     <Card
@@ -168,30 +153,12 @@ export default function PostCard({
                 {post.tags
                   .filter((tag) => tag.name != "D2Jam")
                   .map((tag: TagType) => (
-                    <Link
-                      href="/"
+                    <Chip
                       key={tag.id}
-                      className={`transition-all transform duration-500 ease-in-out ${
-                        !reduceMotion ? "hover:scale-110" : ""
-                      }`}
+                      avatarSrc={tag.icon ? tag.icon : undefined}
                     >
-                      <Chip
-                        radius="sm"
-                        size="sm"
-                        className="!duration-250 !ease-linear !transition-all"
-                        variant="faded"
-                        avatar={
-                          tag.icon && (
-                            <Avatar
-                              src={tag.icon}
-                              classNames={{ base: "bg-transparent" }}
-                            />
-                          )
-                        }
-                      >
-                        {tag.name}
-                      </Chip>
-                    </Link>
+                      {tag.name}
+                    </Chip>
                   ))}
               </div>
             ) : (
@@ -242,10 +209,14 @@ export default function PostCard({
                       const response = await deletePost(post.id);
 
                       if (response.ok) {
-                        toast.success("Deleted post");
+                        addToast({
+                          title: "Deleted post",
+                        });
                         setHidden(true);
                       } else {
-                        toast.error("Error while deleting post");
+                        addToast({
+                          title: "Error while deleting post",
+                        });
                       }
                     }}
                   >
@@ -264,10 +235,14 @@ export default function PostCard({
                         const response = await deletePost(post.id);
 
                         if (response.ok) {
-                          toast.success("Removed post");
+                          addToast({
+                            title: "Removed post",
+                          });
                           setHidden(true);
                         } else {
-                          toast.error("Error while removing post");
+                          addToast({
+                            title: "Error while removing post",
+                          });
                         }
                       }}
                     >
@@ -282,10 +257,14 @@ export default function PostCard({
                           const response = await stickPost(post.id, false);
 
                           if (response.ok) {
-                            toast.success("Unsticked post");
+                            addToast({
+                              title: "Unsticked post",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while unstickying post");
+                            addToast({
+                              title: "Error while unstickying post",
+                            });
                           }
                         }}
                       >
@@ -300,10 +279,14 @@ export default function PostCard({
                           const response = await stickPost(post.id, true);
 
                           if (response.ok) {
-                            toast.success("Stickied post");
+                            addToast({
+                              title: "Stickied post",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while stickying post");
+                            addToast({
+                              title: "Error while stickying post",
+                            });
                           }
                         }}
                       >
@@ -322,10 +305,14 @@ export default function PostCard({
                           );
 
                           if (response.ok) {
-                            toast.success("Promoted User to Mod");
+                            addToast({
+                              title: "Promoted User to Mod",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while promoting user to Mod");
+                            addToast({
+                              title: "Error while promoting user to Mod",
+                            });
                           }
                         }}
                       >
@@ -346,10 +333,14 @@ export default function PostCard({
                           );
 
                           if (response.ok) {
-                            toast.success("Demoted User");
+                            addToast({
+                              title: "Demoted User",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while demoting user");
+                            addToast({
+                              title: "Error while demoting user",
+                            });
                           }
                         }}
                       >
@@ -370,10 +361,14 @@ export default function PostCard({
                           );
 
                           if (response.ok) {
-                            toast.success("Promoted User to Admin");
+                            addToast({
+                              title: "Promoted User to Admin",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while promoting user to Admin");
+                            addToast({
+                              title: "Error while promoting user to Admin",
+                            });
                           }
                         }}
                       >
@@ -396,10 +391,14 @@ export default function PostCard({
                           );
 
                           if (response.ok) {
-                            toast.success("Demoted User to Mod");
+                            addToast({
+                              title: "Demoted User to Mod",
+                            });
                             window.location.reload();
                           } else {
-                            toast.error("Error while demoting user to mod");
+                            addToast({
+                              title: "Error while demoting user to mod",
+                            });
                           }
                         }}
                       >

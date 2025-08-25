@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import React, { useEffect } from "react";
-import { toast } from "react-toastify";
 import { logout as logoutUser } from "@/requests/auth";
+import { addToast } from "@heroui/react";
 
 export default function UserPage() {
   useEffect(() => {
@@ -16,10 +16,14 @@ export default function UserPage() {
         document.cookie =
           "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
-        toast.success("Successfully logged out");
+        addToast({
+          title: "Successfully logged out",
+        });
         redirect("/");
       } else {
-        toast.error("Error while trying to log out");
+        addToast({
+          title: "Error while trying to log out",
+        });
       }
     }
 

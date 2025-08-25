@@ -8,7 +8,6 @@ import { signup } from "@/requests/auth";
 import { addToast, Form } from "@heroui/react";
 import { redirect } from "next/navigation";
 import { useState } from "react";
-import { toast } from "react-toastify";
 import Cookies from "js-cookie";
 
 export default function UserPage() {
@@ -87,7 +86,9 @@ export default function UserPage() {
           document.cookie = `user=${user.slug}`;
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
 
-          toast.success("Successfully signed up");
+          addToast({
+            title: "Successfully signed up",
+          });
 
           redirect("/");
         }}

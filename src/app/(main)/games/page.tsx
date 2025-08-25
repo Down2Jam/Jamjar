@@ -1,5 +1,7 @@
 import Games from "@/components/games";
-import { Vstack } from "@/framework/Stack";
+import { Card } from "@/framework/Card";
+import Icon from "@/framework/Icon";
+import { Hstack, Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
 import { Metadata } from "next";
 import { Suspense } from "react";
@@ -32,13 +34,20 @@ export const metadata: Metadata = {
 export default function GamesPage() {
   return (
     <>
-      <Vstack align="start">
-        <Text size="3xl" color="text">
-          Games.Title
-        </Text>
-        <Text size="sm" color="textFaded">
-          Games.Description
-        </Text>
+      <Vstack>
+        <Card>
+          <Vstack align="start">
+            <Hstack>
+              <Icon name="gamepad2" color="text" />
+              <Text size="xl" color="text" weight="semibold">
+                Games.Title
+              </Text>
+            </Hstack>
+            <Text size="sm" color="textFaded">
+              Games.Description
+            </Text>
+          </Vstack>
+        </Card>
       </Vstack>
 
       <Suspense fallback={<div>Loading...</div>}>

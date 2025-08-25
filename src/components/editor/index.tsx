@@ -34,10 +34,10 @@ import Youtube from "@tiptap/extension-youtube";
 import CodeBlock from "@tiptap/extension-code-block";
 import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";
-import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
+import { addToast } from "@heroui/react";
 
 type EditorProps = {
   content: string;
@@ -160,11 +160,11 @@ export default function Editor({
         const uploadFile = async (file: File) => {
           const filesizeMB = file.size / 1024 / 1024;
           if (!allowedTypes.includes(file.type)) {
-            toast.error("Invalid file format");
+            addToast({ title: "Invalid file format" });
             return false;
           }
           if (filesizeMB > 8) {
-            toast.error("Image is too big");
+            addToast({ title: "Image is too big" });
             return false;
           }
 
@@ -184,12 +184,12 @@ export default function Editor({
           );
 
           if (!res.ok) {
-            toast.error("Failed to upload image");
+            addToast({ title: "Failed to upload image" });
             return false;
           }
 
           const json = await res.json();
-          toast.success(json.message);
+          addToast({ title: json.message });
 
           const { schema } = view.state;
           const { tr } = view.state;
@@ -272,12 +272,12 @@ export default function Editor({
           ];
 
           if (!allowedTypes.includes(file.type)) {
-            toast.error("Invalid file format");
+            addToast({ title: "Invalid file format" });
             return false;
           }
 
           if (filesize > 8) {
-            toast.error("Image is too big");
+            addToast({ title: "Image is too big" });
             return false;
           }
 
@@ -299,14 +299,14 @@ export default function Editor({
           ).then((response) => {
             if (response.ok) {
               response.json().then((data) => {
-                toast.success(data.message);
+                addToast({ title: data.message });
                 const { schema } = view.state;
                 const coordinates = view.posAtCoords({
                   left: event.clientX,
                   top: event.clientY,
                 });
                 if (!coordinates) {
-                  toast.error("Error getting coordinates");
+                  addToast({ title: "Error getting coordinates" });
                   return;
                 }
 
@@ -315,7 +315,7 @@ export default function Editor({
                 return view.dispatch(transaction);
               });
             } else {
-              toast.error("Failed to upload image");
+              addToast({ title: "Failed to upload image" });
             }
           });
         }

@@ -1,11 +1,11 @@
 "use client";
 
-import { toast } from "react-toastify";
 import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
 import { useState } from "react";
 import { postLike } from "@/requests/like";
 import { Button } from "@/framework/Button";
+import { addToast } from "@heroui/react";
 
 export default function LikeButton({
   likes,
@@ -65,7 +65,9 @@ export default function LikeButton({
             redirect("/login");
           } else {
             setUpdatedLiked(!updatedLiked);
-            toast.error("An error occurred");
+            addToast({
+              title: "An error occurred",
+            });
             return;
           }
         }

@@ -6,7 +6,6 @@ import { UserType } from "@/types/UserType";
 import { addToast, Avatar, Form } from "@heroui/react";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import Image from "next/image";
 import { getSelf, updateUser } from "@/requests/user";
 import { sanitize } from "@/helpers/sanitize";
@@ -293,13 +292,19 @@ export default function UserPage() {
                     if (response.ok) {
                       const data = await response.json();
                       setProfilePicture(data.data);
-                      toast.success(data.message);
+                      addToast({
+                        title: data.message,
+                      });
                     } else {
-                      toast.error("Failed to upload image");
+                      addToast({
+                        title: "Failed to upload image",
+                      });
                     }
                   } catch (error) {
                     console.error(error);
-                    toast.error("Error uploading image");
+                    addToast({
+                      title: "Error uploading image",
+                    });
                   }
                 }}
               />
@@ -373,13 +378,19 @@ export default function UserPage() {
                     if (response.ok) {
                       const data = await response.json();
                       setBannerPicture(data.data);
-                      toast.success(data.message);
+                      addToast({
+                        title: data.message,
+                      });
                     } else {
-                      toast.error("Failed to upload image");
+                      addToast({
+                        title: "Failed to upload image",
+                      });
                     }
                   } catch (error) {
                     console.error(error);
-                    toast.error("Error uploading image");
+                    addToast({
+                      title: "Error uploading image",
+                    });
                   }
                 }}
               />

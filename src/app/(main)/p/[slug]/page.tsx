@@ -8,10 +8,9 @@ import { UserType } from "@/types/UserType";
 import Link from "next/link";
 import { addToast } from "@heroui/react";
 import { formatDistance } from "date-fns";
-import { LoaderCircle, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import Editor from "@/components/editor";
 import CommentCard from "@/components/posts/CommentCard";
 import { getSelf } from "@/requests/user";
@@ -80,10 +79,7 @@ export default function PostPage() {
     <>
       {loading ? (
         <div className="flex justify-center p-6">
-          <LoaderCircle
-            className="animate-spin text-[#333] dark:text-[#999]"
-            size={24}
-          />
+          <Spinner />
         </div>
       ) : (
         <>
@@ -192,10 +188,10 @@ export default function PostPage() {
                             const response = await deletePost(post.id);
 
                             if (response.ok) {
-                              toast.success("Deleted post");
+                              addToast({ title: "Deleted post" });
                               redirect("/");
                             } else {
-                              toast.error("Error while deleting post");
+                              addToast({ title: "Error while deleting post" });
                             }
                           }}
                         >
@@ -214,10 +210,12 @@ export default function PostPage() {
                               const response = await deletePost(post.id);
 
                               if (response.ok) {
-                                toast.success("Removed post");
+                                addToast({ title: "Removed post" });
                                 redirect("/");
                               } else {
-                                toast.error("Error while removing post");
+                                addToast({
+                                  title: "Error while removing post",
+                                });
                               }
                             }}
                           >
@@ -235,10 +233,12 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  toast.success("Unsticked post");
+                                  addToast({ title: "Unstickied post" });
                                   redirect("/");
                                 } else {
-                                  toast.error("Error while unstickying post");
+                                  addToast({
+                                    title: "Error while unstickying post",
+                                  });
                                 }
                               }}
                             >
@@ -253,10 +253,12 @@ export default function PostPage() {
                                 const response = await stickPost(post.id, true);
 
                                 if (response.ok) {
-                                  toast.success("Unsticked post");
+                                  addToast({ title: "Stickied post" });
                                   redirect("/");
                                 } else {
-                                  toast.error("Error while stickying post");
+                                  addToast({
+                                    title: "Error while stickying post",
+                                  });
                                 }
                               }}
                             >
@@ -275,12 +277,12 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  toast.success("Promoted User to Mod");
+                                  addToast({ title: "Promoted user to mod" });
                                   window.location.reload();
                                 } else {
-                                  toast.error(
-                                    "Error while promoting user to Mod"
-                                  );
+                                  addToast({
+                                    title: "Error while promoting user to Mod",
+                                  });
                                 }
                               }}
                             >
@@ -303,10 +305,12 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  toast.success("Demoted User");
+                                  addToast({ title: "Demoted user" });
                                   window.location.reload();
                                 } else {
-                                  toast.error("Error while demoting user");
+                                  addToast({
+                                    title: "Error while demoting user",
+                                  });
                                 }
                               }}
                             >
@@ -327,12 +331,13 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  toast.success("Promoted User to Admin");
+                                  addToast({ title: "Promoted user to Admin" });
                                   window.location.reload();
                                 } else {
-                                  toast.error(
-                                    "Error while promoting user to Admin"
-                                  );
+                                  addToast({
+                                    title:
+                                      "Error while promoting user to Admin",
+                                  });
                                 }
                               }}
                             >
@@ -355,12 +360,12 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  toast.success("Demoted User to Mod");
+                                  addToast({ title: "Demoted user to mod" });
                                   window.location.reload();
                                 } else {
-                                  toast.error(
-                                    "Error while demoting user to mod"
-                                  );
+                                  addToast({
+                                    title: "Error while demoting user to mod",
+                                  });
                                 }
                               }}
                             >
@@ -395,7 +400,7 @@ export default function PostPage() {
                 <Button
                   onClick={async () => {
                     if (!content) {
-                      toast.error("Please enter valid content");
+                      addToast({ title: "Please enter valid content" });
                       return;
                     }
 
@@ -405,17 +410,17 @@ export default function PostPage() {
                     const response = await postComment(sanitizedHtml, post!.id);
 
                     if (response.status == 401) {
-                      toast.error("Invalid User");
+                      addToast({ title: "Invalid user" });
                       setWaitingPost(false);
                       return;
                     }
 
                     if (response.ok) {
-                      toast.success("Successfully created comment");
+                      addToast({ title: "Successfully created comment" });
                       //setWaitingPost(false);
                       window.location.reload();
                     } else {
-                      toast.error("An error occured");
+                      addToast({ title: "An error occured" });
                       setWaitingPost(false);
                     }
                   }}

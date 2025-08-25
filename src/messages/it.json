@@ -1,1 +1,636 @@
-{}
+{
+  "Splash": {
+    "Title": "Down2Jam",
+    "Description": "La game jam incentrata sulla comunità",
+    "Join": "Partecipa",
+    "About": "Info",
+    "Why": "Perché una Jam?",
+    "Logo": "Logo Down2Jam",
+    "Explore": "Esplora"
+  },
+  "Navbar": {
+    "Games": {
+      "Title": "Giochi",
+      "Description": "Tutti i giochi caricati sul sito"
+    },
+    "Results": {
+      "Title": "Risultati",
+      "Description": "I risultati dell'ultima D2Jam"
+    },
+    "Forum": {
+      "Title": "Forum",
+      "Description": "Un forum in cui i membri della community possono parlare tra loro"
+    },
+    "Join": {
+      "Title": "Unisciti",
+      "Description": "Unisciti al sito web creando un account o accedendo"
+    },
+    "About": {
+      "Title": "Info",
+      "Description": "Informazioni sulla game jam"
+    },
+    "Donate": {
+      "Title": "Dona",
+      "Description": "Visualizza la pagina delle donazioni e del supporto"
+    },
+    "Lucky": {
+      "Title": "Mi sento fortunato",
+      "Description": "Verrai mandato alla pagina di un gioco casuale sul sito"
+    },
+    "RSS": {
+      "Title": "RSS",
+      "Description": "Visualizza i feed RSS disponibili"
+    },
+    "Light": {
+      "Title": "Tema chiaro",
+      "Description": "Cambia i colori della pagina per essere più chiari"
+    },
+    "Dark": {
+      "Title": "Tema scuro",
+      "Description": "Cambia i colori della pagina per essere più scuri"
+    },
+    "Home": {
+      "Title": "Home",
+      "Description": "Vai alla home"
+    },
+    "Brand": {
+      "Name": "D2Jam",
+      "Alt": "Logo Down2Jam"
+    },
+    "Language": {
+      "Title": "Seleziona lingua",
+      "Select": "Seleziona"
+    },
+    "JoinJam": {
+      "Title": "Unisciti alla jam",
+      "Description": "Conferma la tua partecipazione alla jam!"
+    },
+    "NoJamToast": {
+      "Title": "Errore nell'unirsi alla jam",
+      "Description": "Non c'è una jam a cui unirsi"
+    },
+    "MyGame": {
+      "Title": "Il mio gioco",
+      "Description": "Visualizza la pagina del tuo gioco"
+    },
+    "CreateGame": {
+      "Title": "Crea un gioco",
+      "Description": "Crea una pagina del sito per il tuo gioco"
+    },
+    "CreatePost": {
+      "Title": "Crea un post",
+      "Description": "Crea un post nel forum"
+    },
+    "MyTeam": {
+      "Title": "Il mio team",
+      "Description": "Visualizza il tuo team per la jam!"
+    },
+    "TeamFinder": {
+      "Title": "Trova team",
+      "Description": "Trova un team con cui partecipare alla jam!"
+    },
+    "Profile": {
+      "Title": "Profilo",
+      "Description": "Visualizza la tua pagina profilo"
+    },
+    "Settings": {
+      "Title": "Impostazioni",
+      "Description": "Gestisci le tue preferenze"
+    },
+    "ReportBug": {
+      "Title": "Segnala un bug",
+      "Description": "Vai alla repository GitHub"
+    },
+    "Logout": {
+      "Title": "Esci",
+      "Description": "Esci dal tuo account"
+    },
+    "Inbox": {
+      "Title": "Notifiche",
+      "Description": "Visualizza le tue notifiche"
+    },
+    "Search": "Cerca",
+    "Music": {
+      "Title": "Musica",
+      "Description": "Tutta la musica caricata sul sito"
+    },
+    "Login": {
+      "Title": "Accedi",
+      "Description": "Accedi al sito"
+    },
+    "ThemeSuggestions": {
+      "Title": "Suggerimenti Tema",
+      "Description": "Proponi possibili temi per la jam. Verranno poi votati dai partecipanti"
+    },
+    "ThemeElimination": {
+      "Title": "Eliminazione Tema",
+      "Description": "Vota i temi che vorresti o non vorresti per la jam. Puoi votare tutti quelli che vuoi"
+    },
+    "ThemeVoting": {
+      "Title": "Votazione Tema",
+      "Description": "Vota i migliori temi per determinare il tema finale della jam"
+    }
+  },
+  "PostStyle": {
+    "Cozy": {
+      "Title": "Esteso",
+      "Description": "Schede grandi, mostra tutto il contenuto del post"
+    },
+    "Compact": {
+      "Title": "Compatto",
+      "Description": "Schede piccole per mostrare più contenuti sullo schermo contemporaneamente"
+    },
+    "Ultra": {
+      "Title": "Ultra compatto",
+      "Description": "Schede molto piccole per la massima compattezza"
+    }
+  },
+  "PostSort": {
+    "Top": {
+      "Title": "Top",
+      "Description": "Mostra prima i post più apprezzati"
+    },
+    "Newest": {
+      "Title": "Più recenti",
+      "Description": "Mostra prima i post più recenti"
+    },
+    "Oldest": {
+      "Title": "Meno recenti",
+      "Description": "Mostra prima i post più vecchi"
+    }
+  },
+  "PostTime": {
+    "Hour": {
+      "Title": "Ora",
+      "Description": "Mostra i post dell'ultima ora"
+    },
+    "ThreeHours": {
+      "Title": "Tre ore",
+      "Description": "Mostra i post delle ultime tre ore"
+    },
+    "SixHours": {
+      "Title": "Sei ore",
+      "Description": "Mostra i post delle ultime sei ore"
+    },
+    "TwelveHours": {
+      "Title": "Dodici ore",
+      "Description": "Mostra i post delle ultime dodici ore"
+    },
+    "Day": {
+      "Title": "Giorno",
+      "Description": "Mostra i post dell'ultimo giorno"
+    },
+    "Week": {
+      "Title": "Settimana",
+      "Description": "Mostra i post dell'ultima settimana"
+    },
+    "Month": {
+      "Title": "Mese",
+      "Description": "Mostra i post dell'ultimo mese"
+    },
+    "ThreeMonths": {
+      "Title": "Tre mesi",
+      "Description": "Mostra i post degli ultimi tre mesi"
+    },
+    "SixMonths": {
+      "Title": "Sei mesi",
+      "Description": "Mostra i post degli ultimi sei mesi"
+    },
+    "NineMonths": {
+      "Title": "Nove mesi",
+      "Description": "Mostra i post degli ultimi nove mesi"
+    },
+    "Year": {
+      "Title": "Anno",
+      "Description": "Mostra i post dell'ultimo anno"
+    },
+    "All": {
+      "Title": "Sempre",
+      "Description": "Mostra tutti i post"
+    }
+  },
+  "Settings": {
+    "Title": "Impostazioni",
+    "Description": "Gestisci le tue preferenze",
+    "Name": {
+      "Title": "Nome",
+      "Description": "Il nome che verrà mostrato sul sito"
+    },
+    "Email": {
+      "Title": "Email",
+      "Description": "L'email associata al tuo account (per reimpostare la password, notifiche, ecc.)",
+      "Show": "Mostra email",
+      "Hide": "Nascondi Email"
+    },
+    "Short": {
+      "Title": "Descrizione breve",
+      "Description": "Una breve descrizione che appare in punti come la ricerca al posto della bio (max 32 caratteri)"
+    },
+    "Bio": {
+      "Title": "Bio",
+      "Description": "Una descrizione estesa che viene mostrata sulla tua pagina del profilo"
+    },
+    "ProfilePicture": {
+      "Title": "Immagine del profilo",
+      "Description": "L'immagine che ti rappresenta sul sito (di solito appare accanto al tuo nome)"
+    },
+    "BannerPicture": {
+      "Title": "Immagine di copertina",
+      "Description": "Un'immagine che viene mostrata in cima al tuo profilo e come sfondo dei tuoi risultati di ricerca"
+    },
+    "PrimaryRoles": {
+      "Title": "Ruoli principali",
+      "Description": "I ruoli che di solito ricopri in un team durante una jam"
+    },
+    "SecondaryRoles": {
+      "Title": "Ruoli secondari",
+      "Description": "Le cose che sei in grado di fare (o che sei disposto a fare se non puoi ricoprire il tuo ruolo primario)"
+    },
+    "Save": {
+      "Title": "Salva",
+      "Description": "Salva le modifiche alle impostazioni"
+    },
+    "Reset": {
+      "Title": "Reset",
+      "Description": "Ripristina le impostazioni all'ultimo salvataggio (annulla le modifiche)"
+    }
+  },
+  "Markdown": {
+    "Characters": "caratteri",
+    "Words": "parole",
+    "Bold": {
+      "Title": "Grassetto",
+      "Description": "Rende il testo più scuro e spesso (usato per enfatizzare le parole chiave)"
+    },
+    "Italic": {
+      "Title": "Corsivo",
+      "Description": "Inclina il testo a destra (usato per indicare enfasi su una parola)"
+    },
+    "Highlight": {
+      "Title": "Evidenzia",
+      "Description": "Enfatizza il testo dandogli uno sfondo colorato (usato per attirare l'attenzione)"
+    },
+    "Strikethrough": {
+      "Title": "Barrato",
+      "Description": "Traccia una linea sul testo per indicare cancellazione, inesattezza o irrilevanza"
+    },
+    "Subscript": {
+      "Title": "Pedice",
+      "Description": "Visualizza il testo leggermente al di sotto della riga normale (usato per formule chimiche, matematica e note a piè di pagina)"
+    },
+    "Superscript": {
+      "Title": "Apice",
+      "Description": "Visualizza il testo leggermente al di sopra della riga normale (usato per esponenti, indicatori ordinali e riferimenti)"
+    },
+    "Link": {
+      "Title": "Collegamento",
+      "Description": "Aggiunge un link cliccabile per collegarsi ad altri contenuti"
+    },
+    "Image": {
+      "Title": "Immagine",
+      "Description": "Inserisce un'immagine nel contenuto"
+    },
+    "HorizontalRule": {
+      "Title": "Divisore orizzontale",
+      "Description": "Aggiunge una riga orizzontale (una separazione tematica tra elementi a livello di paragrafo)"
+    },
+    "Quote": {
+      "Title": "Citazione",
+      "Description": "Inserisce un blocco di citazione (usato per evidenziare sezioni di testo citato direttamente)"
+    },
+    "CodeBlock": {
+      "Title": "Codice",
+      "Description": "Inserisce un blocco di codice per colorare e stilizzare il codice inserito"
+    },
+    "AlignLeft": {
+      "Title": "Allinea a sinistra",
+      "Description": "Allinea il testo a sinistra"
+    },
+    "AlignCenter": {
+      "Title": "Allinea al centro",
+      "Description": "Allinea il testo al centro"
+    },
+    "AlignRight": {
+      "Title": "Allinea a destra",
+      "Description": "Allinea il testo a destra"
+    },
+    "Justify": {
+      "Title": "Giustificato",
+      "Description": "Allinea il testo in modo che i bordi si allineino in modo uniforme"
+    },
+    "Undo": {
+      "Title": "Annulla",
+      "Description": "Annulla l'ultima azione"
+    },
+    "Redo": {
+      "Title": "Ripeti",
+      "Description": "Ripeti l'ultima azione annullata"
+    }
+  },
+  "GameSort": {
+    "Random": {
+      "Title": "Casuale",
+      "Description": "Mostra i giochi in ordine casuale"
+    },
+    "LeastRatings": {
+      "Title": "Meno valutazioni",
+      "Description": "Mostra prima i giochi con il minor numero di valutazioni"
+    },
+    "Danger": {
+      "Title": "In pericolo",
+      "Description": "Mostra i giochi più vicini a poter essere classificati"
+    }
+  },
+  "Games": {
+    "Title": "Giochi",
+    "Description": "Esplora la collezione di giochi caricati sul sito"
+  },
+  "About": {
+    "Title": "Informazioni sull'evento",
+    "Description": "D2Jam è una game jam incentrata sulla community, con l'obiettivo di supportare i contenuti creati dalla comunità stessa! Volevamo una jam che valorizzasse gli eventi successivi alla consegna, incoraggiasse il dibattito e la riflessione e fornisse strumenti agli sviluppatori per trovare e condividere i giochi.\n\nD2Jam è una game jam online a cui chiunque può partecipare liberamente e che dura 3 giorni (di solito tra venerdì e lunedì, a seconda del fuso orario). Alla fine della jam è prevista una finestra di consegna di 2 ore, per assicurarsi che tutti riescano a caricare il proprio gioco prima della chiusura definitiva. Dopo la jam, inizia un periodo di votazione di 2 settimane, in cui si possono provare, votare e commentare i giochi degli altri partecipanti. Inoltre, qualsiasi evento post-jam, come il torneo Score Chasers, si svolgerà in questo periodo.\n\nAbbiamo 2 categorie: Regular e O.D.A (One Dev Army). Entrambe si svolgono contemporaneamente."
+  },
+  "GameFAQ": {
+    "Title": "FAQ sui Giochi",
+    "Description": "Domande relative alla creazione e alla consegna dei giochi per la jam",
+    "Q1": {
+      "Number": "D1",
+      "Question": "Quanto tempo ho per creare il gioco?",
+      "Answer": "Hai 3 giorni, da venerdì a lunedì (a seconda del fuso orario)"
+    },
+    "Q2": {
+      "Number": "D2",
+      "Question": "Posso usare codice e risorse (arte, grafica, musica, SFX, ecc.) già pronti?",
+      "Answer": "Regular: Sì! Vale tutto, a patto che l'esperienza di gioco principale venga creata durante il tempo stabilito.\n\nO.D.A: In generale, no. Questa categoria si concentra sulla creazione di un gioco da zero. Tuttavia, è permesso usare risorse già esistenti dalle seguenti categorie: font, codice (motore, shader, ecc.) e loghi. Ciò significa che non puoi usare arte, musica o SFX già pronti. Inoltre, l'esperienza di gioco principale deve essere creata durante il tempo stabilito."
+    },
+    "Q3": {
+      "Number": "D3",
+      "Question": "Posso usare l'IA generativa per creare parti del gioco?",
+      "Answer": "L'uso dell'IA generativa è limitato.\r\n\r\nCome community, comprendiamo l'impatto negativo dell'IA generativa sui creativi con competenze specialistiche. Sappiamo che molti strumenti di IA generativa sono stati sviluppati in modo non etico. La nostra jam celebra i creativi e il loro lavoro. Gli organizzatori di D2J ritengono che l'uso dell'IA generativa per sostituire i ruoli tradizionali nello sviluppo di videogiochi non sia nello spirito del game jamming.\r\n\r\nLa restrizione si concentra su tecnologie ampiamente considerate \"non nello spirito del game jamming\". La maggior parte di queste si basa sulla generazione di contenuti per il gioco che altrimenti verrebbero creati da un ipotetico compagno di squadra. La restrizione si concentra meno sulle tecnologie di IA che non sostituiscono la creatività, come il completamento automatico del codice o la ricerca di informazioni sul web.\r\nPer chiarire, chiedere a un agente di IA di scrivere una parte di codice per te o di correggerlo è ancora vietato.\r\n\r\nL'applicazione delle regole in una game jam, relative all'IA o altro, è impegnativa. Aggiungeremo la possibilità di segnalare i partecipanti che hanno chiaramente violato le regole della jam. I report saranno esaminati manualmente dagli organizzatori della jam."
+    },
+    "Q4": {
+      "Number": "D4",
+      "Question": "Come si consegna un gioco?",
+      "Answer": "Dovrai caricare il tuo gioco su un sito come Itch.io per ospitare i file di gioco. Successivamente, puoi creare la pagina del gioco sul sito d2jam (cliccando sul pulsante \"Crea gioco\") e inserire un link alla pagina dove hai caricato i file di gioco.\r\n\r\nUna pagina sul sito d2jam è necessaria per consentire agli utenti di sfogliare facilmente i giochi della jam e per ricevere una valutazione. In futuro, potremmo supportare l'hosting diretto dei giochi sul sito d2jam per una jam futura, ma ciò richiederebbe che la jam fosse finanziata tramite donazioni a causa dei costi di archiviazione."
+    },
+    "Q5": {
+      "Number": "D5",
+      "Question": "Posso aggiornare il gioco dopo la consegna?",
+      "Answer": "Non puoi apportare modifiche alla build jam del gioco durante il periodo di valutazione, a parte per correzioni di bug che ne impediscono il funzionamento e per il porting. (Ad esempio, se vuoi creare una versione per Mac durante il periodo di valutazione senza cambiare nulla del gioco, va bene. Se hai un bug che impedisce a qualcuno di giocare a causa di un crash, questo sarebbe un bug che ne impedisce il funzionamento e può essere corretto).\r\n\r\nPuoi creare e pubblicare una versione post-jam del gioco durante il periodo di valutazione, ma la versione della jam deve essere più evidente e non puoi indurre le persone a giocare alla versione post-jam del gioco. Puoi usare jampack per avere due versioni web sulla stessa pagina."
+    },
+    "Q6": {
+      "Number": "D6",
+      "Question": "Cosa succede se non consegno prima della fine della jam?",
+      "Answer": "C'è una finestra di 2 ore dopo la fine della jam in cui puoi ancora caricare un gioco, per aiutare chi potrebbe avere problemi dell'ultimo minuto con le versioni. Questo periodo è pensato per il caricamento piuttosto che per continuare a lavorare sul gioco e i tentativi di consegna dopo la finestra di 2 ore non saranno accettati."
+    },
+    "Q7": {
+      "Number": "D7",
+      "Question": "Posso modificare la pagina del gioco durante il periodo di valutazione?",
+      "Answer": "Sì, puoi modificare la pagina del gioco e creare materiali di marketing (ad esempio, un trailer del gioco, pubblicità per il tuo gioco) durante il periodo di valutazione. Prima lo fai, più persone vedranno le modifiche alla tua pagina del gioco."
+    },
+    "Q8": {
+      "Number": "D8",
+      "Question": "Ci sono restrizioni sui contenuti del gioco (NSFW, violenza estrema, ecc.)?",
+      "Answer": "Se includi contenuti come NSFW, devi contrassegnare il tuo gioco come tale in modo che chi non vuole vedere quel tipo di contenuto possa filtrarlo."
+    },
+    "Q9": {
+      "Number": "D9",
+      "Question": "Per quali sistemi operativi devo creare il mio gioco?",
+      "Answer": "Per qualsiasi sistema operativo tu voglia. Nota, tuttavia, che più sistemi supporti, più persone potranno giocare al tuo gioco. Inoltre, supportare Windows o avere una versione web è consigliato in quanto permette alla stragrande maggioranza delle persone di giocare al tuo gioco."
+    },
+    "Q10": {
+      "Number": "D10",
+      "Question": "Ci sono limitazioni su quale motore di gioco, ecc. posso usare?",
+      "Answer": "Puoi usare qualsiasi cosa tu voglia per creare il gioco, a patto che non richieda a chi gioca di scaricare qualcosa di diverso dal gioco stesso. Ad esempio, i giochi su Roblox non sarebbero consentiti, in quanto richiedono alle persone di scaricare Roblox invece di scaricare il gioco stesso."
+    }
+  },
+  "TeamFAQ": {
+    "Title": "FAQ sui Team",
+    "Description": "Domande relative alla creazione di team per la jam",
+    "Q1": {
+      "Number": "D1",
+      "Question": "Quante persone possono creare un gioco?",
+      "Answer": "Regular: Un numero qualsiasi di persone.\r\nO.D.A: Un solo sviluppatore."
+    },
+    "Q2": {
+      "Number": "D2",
+      "Question": "Posso far parte di più team / creare più giochi?",
+      "Answer": "Sì. Tuttavia, è solitamente meglio concentrarsi su un solo gioco per poterlo curare maggiormente e renderlo più rifinito nel tempo limitato."
+    },
+    "Q3": {
+      "Number": "D3",
+      "Question": "Come posso trovare un team?",
+      "Answer": "Abbiamo una funzione integrata per trovare team sul sito. Nelle impostazioni del tuo account, puoi specificare i ruoli che ricopri in un team e, nella funzione di ricerca team, puoi limitare i risultati per mostrare solo i team che cercano il tuo ruolo. Inoltre, puoi usare altri canali come i social media o il canale di ricerca team sul nostro server Discord."
+    },
+    "Q4": {
+      "Number": "D4",
+      "Question": "Posso modificare un team durante la jam / dopo la consegna?",
+      "Answer": "Sì, puoi modificare i team in qualsiasi momento prima della fine del periodo di valutazione. Quindi, se hai dimenticato di aggiungere un compagno di squadra prima che la jam finisse e vuoi che possa contribuire alle classifiche, puoi invitarlo a unirsi al team durante il periodo di valutazione."
+    },
+    "Q5": {
+      "Number": "D5",
+      "Question": "Ogni membro del team ha bisogno di un account sul sito?",
+      "Answer": "No, ma senza un account non possono votare i giochi o essere accreditati direttamente nell'interfaccia del sito."
+    }
+  },
+  "RatingsFAQ": {
+    "Title": "FAQ sulla Valutazione",
+    "Description": "Domande relative al periodo di valutazione della jam",
+    "Q1": {
+      "Number": "D1",
+      "Question": "Come vengono valutati i giochi?",
+      "Answer": "I giochi vengono valutati dagli altri partecipanti nelle seguenti categorie:\r\n\r\n- GENERALE: La tua opinione complessiva sul gioco, quanto bene tutte le categorie si fondono tra loro.\r\n- GAMEPLAY: Quanto ti diverti a giocare e quanto sono soddisfacenti le meccaniche.\r\n- AUDIO: Quanto è buono il suono di gioco o quanto è efficace il sound design.\r\n- GRAFICA: Quanto è bello il gioco visivamente e quanto è efficace lo stile visivo.\r\n- CREATIVITÀ: Unicità, Originalità, Innovazione ed elemento sorpresa.\r\n- IMPATTO EMOTIVO: Quanto sono efficaci gli elementi emozionali o umoristici.\r\n- TEMA: L'interpretazione del tema da parte del gioco e quanto bene è stato utilizzato e messo in pratica."
+    },
+    "Q2": {
+      "Number": "D2",
+      "Question": "Posso scegliere di non ricevere valutazioni per una categoria?",
+      "Answer": "Solo le valutazioni Generale e Tema sono attivate all'inizio e non possono essere disattivate. Devi selezionare e attivare qualsiasi altra categoria di valutazione in cui desideri essere valutato e/o competere."
+    },
+    "Q3": {
+      "Number": "D3",
+      "Question": "Le persone che non hanno partecipato possono votare i giochi?",
+      "Answer": "Sì, ma le votazioni che danno non contribuiscono alle classifiche."
+    },
+    "Q4": {
+      "Number": "D4",
+      "Question": "Cosa sono le classifiche?",
+      "Answer": "Dopo il periodo di valutazione, i giochi saranno classificati in ogni categoria in base al loro punteggio medio in quella categoria. Ad esempio, il gioco con il punteggio medio più alto nella categoria \"Tema\" sarà al primo posto in quella categoria."
+    },
+    "Q5": {
+      "Number": "D5",
+      "Question": "Quante valutazioni devo dare/ricevere per essere incluso nelle classifiche?",
+      "Answer": "Per l'edizione attuale della jam, devi sia votare 5 giochi sia ricevere 5 votazioni. Questo impedisce a un gioco con una sola votazione da 5 stelle di vincere immediatamente la jam."
+    },
+    "Q6": {
+      "Number": "D6",
+      "Question": "Questa jam ha un premio?",
+      "Answer": "Il premio è avere un gioco che sei riuscito a creare e pubblicare. Non c'è un premio in denaro, quindi la jam ha un'atmosfera più comunitaria che competitiva."
+    }
+  },
+  "StreamsFAQ": {
+    "Title": "FAQ sugli Stream",
+    "Description": "Domande relative alle dirette streaming della jam",
+    "Q1": {
+      "Number": "D1",
+      "Question": "Posso fare live streaming della jam?",
+      "Answer": "Sì, puoi trasmettere in streaming tutto ciò che riguarda la jam. Ad esempio, i progressi sul tuo gioco, giocare ai giochi realizzati da altre persone, ecc."
+    },
+    "Q2": {
+      "Number": "D2",
+      "Question": "Come faccio a comparire nella sezione degli \"Streamer in evidenza\" sulla barra laterale?",
+      "Answer": "Ci sono 3 livelli di priorità nella sezione degli streamer in evidenza. Più alta è la tua priorità, più avanti comparirai nell'elenco. Gli stream con la stessa priorità sono ordinati in base al numero di spettatori, con una certa casualità. Vengono mostrate solo le dirette di Twitch, in quanto YouTube non fornisce un'API equivalente.\r\n\r\nLa priorità più bassa (che mostra solo 3 stream) è per qualsiasi stream di sviluppo di giochi su Twitch. La priorità media è per chiunque sia stato segnato come streamer sul sito (ovvero gli streamer che hanno un account sul sito di D2Jam). La priorità più alta è per gli stream che usano il tag d2jam (per mostrare che stanno trasmettendo qualcosa relativo alla jam).\r\n\r\nVerranno mostrati solo gli stream che rientrano nelle seguenti categorie: Software and Game Development, Art, Co-working & Studying, e Games + Demos."
+    },
+    "Q3": {
+      "Number": "D3",
+      "Question": "Come posso essere segnato come streamer sul sito?",
+      "Answer": "Per ora, basta far sapere ad Ategon il tuo nome utente di D2Jam e il tuo account Twitch."
+    },
+    "Q4": {
+      "Number": "D4",
+      "Question": "Come posso far sapere alla gente del mio stream?",
+      "Answer": "Il sito ha un sistema di eventi integrato che mostra gli eventi imminenti e quelli attivi. Se sei stato segnato come streamer, puoi andare sulla pagina degli eventi e aggiungere un nuovo evento per il tuo stream in modo che venga mostrato lì. Gli eventi si trovano nella barra laterale."
+    }
+  },
+  "MetaFAQ": {
+    "Title": "FAQ Meta",
+    "Description": "Domande relative all'organizzazione della jam",
+    "Q1": {
+      "Number": "D1",
+      "Question": "Chi organizza la jam?",
+      "Answer": "La jam è organizzata principalmente da un gruppo di 11 persone che si assicurano che tutto funzioni senza intoppi e che gestiscono cose come gli account social media per il marketing della jam. Tuttavia, le decisioni sono tipicamente votate dalla comunità per lasciare che sia la comunità a controllare come la jam viene gestita, e chiunque è libero di iniziare a gestire qualcosa relativo alla jam, come un torneo, un evento principale della comunità, o un altro evento.\n\nGli 11 organizzatori principali sono Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, e Tobugis."
+    },
+    "Q2": {
+      "Number": "D2",
+      "Question": "Dove sono ospitati i server?",
+      "Answer": "Il server che ospita la jam si trova in Canada. In futuro, vari servizi come il servizio di posta elettronica, il DNS, ecc., saranno modificati per avere il maggior numero possibile di tecnologie basate in Canada."
+    },
+    "Q3": {
+      "Number": "D3",
+      "Question": "Come posso fare una donazione per la jam?",
+      "Answer": "Al momento non c'è un modo per donare alla jam, ma verrà creato in futuro quando diventerà abbastanza popolare da giustificare i fondi per creare un'organizzazione no-profit per la jam."
+    },
+    "Q4": {
+      "Number": "D4",
+      "Question": "Come posso aiutare a programmare il sito?",
+      "Answer": "Il sito è attualmente open source, con repository disponibili nella nostra organizzazione GitHub. Jamcore è il backend del sito, mentre jamjar è il frontend. Ogni repository ha istruzioni su come configurarla localmente e una board di progetto con i compiti che devono essere realizzati per il sito. Se hai domande a riguardo, sentiti libero di chattare nel canale di sviluppo del sito sul nostro Discord."
+    },
+    "Q5": {
+      "Number": "D5",
+      "Question": "Dove posso segnalare un bug?",
+      "Answer": "Attualmente puoi segnalare i bug nelle nostre repository di codice fino a quando una funzione di segnalazione bug non sarà integrata nel sito stesso. Devi cliccare sulla repository pertinente (ad esempio, se è un problema del frontend, vai su Jamjar), andare nella scheda \"Issues\" e creare una nuova issue."
+    },
+    "Q6": {
+      "Number": "D6",
+      "Question": "Quanto spesso si tiene la jam?",
+      "Answer": "La jam si svolge due volte all'anno, tipicamente a circa 6 mesi di distanza l'una dall'altra."
+    }
+  },
+  "JamHeader": {
+    "Suggestions": "Vai a \"Suggerimenti Tema\"",
+    "Elimination": "Vai a \"Eliminazione Tema\"",
+    "Voting": "Vai a \"Votazione Tema\"",
+    "JamSoon": "Il tema sarà svelato all'inizio della jam",
+    "NoTheme": "Nessun tema con il punteggio più alto disponibile",
+    "Submissions": "Le consegne si chiuderanno presto",
+    "Rate": "Vai a valutare i giochi!"
+  },
+  "Stats": {
+    "Timer": "La jam inizia tra",
+    "Entrants": "Partecipanti",
+    "Games": "Giochi",
+    "Ratings": "Valutazioni"
+  },
+  "SidebarGames": {
+    "Title": "Giochi in evidenza",
+    "Link": "Pagina dei giochi"
+  },
+  "SidebarMusic": {
+    "Title": "Musica in evidenza",
+    "Link": "Pagina della musica"
+  },
+  "SidebarEvents": {
+    "Active": {
+      "Title": "Eventi attivi"
+    },
+    "Upcoming": {
+      "Title": "Eventi in arrivo"
+    },
+    "Link": "Pagina degli eventi"
+  },
+  "ThemeSuggestions": {
+    "YourSuggestions": {
+      "Title": "I tuoi suggerimenti",
+      "Description": "Temi che hai inviato per i turni di votazione"
+    },
+    "PastSuggestions": {
+      "Title": "Suggerimenti passati",
+      "Description": "Temi che hai inviato per la jam precedente"
+    },
+    "Edit": {
+      "Title": "Modifica",
+      "Description": "Modifica il suggerimento del tema"
+    },
+    "Delete": {
+      "Title": "Elimina",
+      "Description": "Elimina il suggerimento del tema"
+    },
+    "Conflict": "Questo suggerimento non può essere usato (probabilmente è stato usato di recente per un'altra jam)",
+    "Added": "Suggerimento aggiunto con successo!",
+    "ErrorDeleting": "Errore durante l'eliminazione del suggerimento:",
+    "FailedDelete": "Impossibile eliminare il suggerimento.",
+    "SignIn": {
+      "Title": "Non hai effettuato l'accesso",
+      "Description": "Accedi per poter suggerire temi"
+    },
+    "JoinJam": {
+      "Title": "Unisciti prima alla jam",
+      "Description": "Devi unirti alla jam attuale prima di poter suggerire temi"
+    },
+    "Title": "Invia il tuo suggerimento per il tema",
+    "Description": "Invia temi ai turni di votazione per poterli usare nella jam",
+    "LimitReached": "Hai raggiunto il tuo limite di suggerimenti per il tema per questa jam!",
+    "NoExamples": "Nessun esempio",
+    "NoSuggestions": "Non hai ancora inviato nessun suggerimento.",
+    "Loading": {
+      "Title": "Caricamento...",
+      "Description": "Recupero informazioni dal backend"
+    }
+  },
+  "Themes": {
+    "Signup": "Registrati",
+    "Login": "Accedi"
+  },
+  "Phases": {
+    "ThemeSubmission": {
+      "Title": "Proposta Tema",
+      "Description": "Inviare possibili temi della jam"
+    },
+    "ThemeElimination": {
+      "Title": "Eliminazione Tema",
+      "Description": "Esaminare i temi della jam inviati e votare sì o no"
+    },
+    "ThemeVoting": {
+      "Title": "Votazione Tema",
+      "Description": "Votare da una lista di temi migliori per il tema finale"
+    },
+    "GameJam": {
+      "Title": "Game Jam",
+      "Description": "L'evento principale! Realizzare un gioco in un breve periodo di tempo"
+    },
+    "Rating": {
+      "Title": "Periodo di Valutazione",
+      "Description": "Giocare e dare feedback ai giochi degli altri"
+    },
+    "Results": {
+      "Title": "Risultati",
+      "Description": "Visualizzare i risultati della jam e come si è stati valutati"
+    },
+    "PostRating": {
+      "Title": "Periodo di Valutazione Post-Jam",
+      "Description": "Giocare e dare feedback ai miglioramenti post-jam fatti dagli altri"
+    },
+    "PostResults": {
+      "Title": "Risultati Post-Jam",
+      "Description": "Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam"
+    }
+  }
+}

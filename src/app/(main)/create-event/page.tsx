@@ -9,6 +9,7 @@ import {
   ZonedDateTime,
 } from "@internationalized/date";
 import {
+  addToast,
   DateRangePicker,
   DateValue,
   Dropdown,
@@ -17,7 +18,6 @@ import {
   DropdownTrigger,
   Form,
   Input,
-  Spinner,
 } from "@heroui/react";
 import {
   Calendar,
@@ -29,7 +29,6 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import Timers from "@/components/timers";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -38,6 +37,7 @@ import SidebarStreams from "@/components/sidebar/SidebarStreams";
 import { postEvent } from "@/requests/event";
 import { EventIcon } from "@/types/EventIcon";
 import { Button } from "@/framework/Button";
+import { Spinner } from "@/framework/Spinner";
 
 const icons = {
   palette: {
@@ -135,7 +135,9 @@ export default function CreatePostPage() {
 
           if (!date || !date.end || !date.start) {
             setErrors({ content: "Please enter valid dates" });
-            toast.error("Please enter valid dates");
+            addToast({
+              title: "Please enter valid dates",
+            });
             return;
           }
 
@@ -163,11 +165,15 @@ export default function CreatePostPage() {
           }
 
           if (response.ok) {
-            toast.success("Successfully created event");
+            addToast({
+              title: "Successfully created event",
+            });
             setWaitingPost(false);
             redirect("/events");
           } else {
-            toast.error("An error occured");
+            addToast({
+              title: "An error occured",
+            });
             setWaitingPost(false);
           }
         }}
