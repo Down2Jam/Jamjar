@@ -1,6 +1,5 @@
 import { JamPhase, JamType } from "@/types/JamType";
 import * as jamRequests from "@/requests/jam";
-import { addToast } from "@heroui/react";
 
 export interface ActiveJamResponse {
   phase: JamPhase;
@@ -31,19 +30,10 @@ export async function joinJam(jamId: number) {
   const response = await jamRequests.joinJam(jamId);
 
   if (response.status == 401) {
-    addToast({
-      title: "You have already joined the jam",
-    });
     return false;
   } else if (response.ok) {
-    addToast({
-      title: "Joined jam",
-    });
     return true;
   } else {
-    addToast({
-      title: "Error while trying to join jam",
-    });
     return false;
   }
 }
