@@ -1,5 +1,5 @@
-import CreateGame from "@/components/create-game";
+import GameEditingForm from "@/components/game-editing-form/GameEditingForm";
 
 export default function CreateGamePage() {
-  return <CreateGame />;
+  return <GameEditingForm />;
 }

@@ -13,7 +13,7 @@ import {
   NavbarItem,
   useDisclosure,
 } from "@heroui/react";
-import { Gamepad, MessageCircle, Search } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useShortcut } from "react-keybind";
@@ -23,6 +23,8 @@ import { useTranslations } from "next-intl";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { usePathname } from "next/navigation";
 import { Spinner } from "@/framework/Spinner";
+import SearchResultGame from "./SearchResultGame";
+import { GameType } from "@/types/GameType";
 
 export default function SearchBar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -32,7 +34,7 @@ export default function SearchBar() {
   const pathname = usePathname();
   const [results, setResults] = useState<
     | {
-        games: { id: number; name: string; slug: string }[];
+        games: GameType[];
         users: UserType[];
         posts: { id: number; title: string; slug: string }[];
       }
@@ -163,28 +165,15 @@ export default function SearchBar() {
                 {results &&
                   results.games?.length > 0 &&
                   results.games.map((game) => (
-                    <Card
+                    <SearchResultGame
                       key={game.id}
-                      isPressable
-                      as={Link}
-                      href={`/g/${game.slug}`}
+                      game={game}
                       onPress={() => {
                         onClose();
                         setSearch("");
                         setResults({ games: [], users: [], posts: [] });
                       }}
-                    >
-                      <CardBody
-                        className="flex flex-row items-center gap-2"
-                        style={{
-                          backgroundColor: siteTheme.colors["mantle"],
-                          borderColor: siteTheme.colors["base"],
-                          color: siteTheme.colors["text"],
-                        }}
-                      >
-                        <Gamepad /> {game.name}
-                      </CardBody>
-                    </Card>
+                    />
                   ))}
                 {results &&
                   results.users?.length > 0 &&

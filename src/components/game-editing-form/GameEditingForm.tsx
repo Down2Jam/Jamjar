@@ -1,60 +1,63 @@
 "use client";
 
-import Editor from "@/components/editor";
+import { Button } from "@/framework/Button";
+import { Card } from "@/framework/Card";
+import Dropdown from "@/framework/Dropdown";
+import Icon from "@/framework/Icon";
+import { Input } from "@/framework/Input";
+import { Spinner } from "@/framework/Spinner";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Text from "@/framework/Text";
 import { getCookie } from "@/helpers/cookie";
-import { addToast, Avatar, Form } from "@heroui/react";
-import { LandPlot, Rabbit, Trophy, Turtle } from "lucide-react";
-import { ReactNode, useCallback, useEffect, useState } from "react";
-import { Select as NextSelect, SelectItem } from "@heroui/react";
-import { UserType } from "@/types/UserType";
-import { redirect, useRouter } from "next/navigation";
-import { PlatformType, DownloadLinkType } from "@/types/DownloadLinkType";
-import { getSelf } from "@/requests/user";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { sanitize } from "@/helpers/sanitize";
+import useHasMounted from "@/hooks/useHasMounted";
 import {
-  getCurrentGame,
   getFlags,
   getGameTags,
   getRatingCategories,
   postGame,
   updateGame,
 } from "@/requests/game";
-import { sanitize } from "@/helpers/sanitize";
-import Image from "next/image";
-import { createTeam } from "@/helpers/team";
-import { RatingCategoryType } from "@/types/RatingCategoryType";
-import { GameType } from "@/types/GameType";
-import { TeamType } from "@/types/TeamType";
 import { getTeamsUser } from "@/requests/team";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { AchievementType } from "@/types/AchievementType";
-import { GameTagType } from "@/types/GameTagType";
+import { DownloadLinkType, PlatformType } from "@/types/DownloadLinkType";
 import { FlagType } from "@/types/FlagType";
-import { getIcon } from "@/helpers/icon";
+import { GameTagType } from "@/types/GameTagType";
+import { GameType } from "@/types/GameType";
+import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
+import { RatingCategoryType } from "@/types/RatingCategoryType";
+import { TeamType } from "@/types/TeamType";
+import { addToast, Avatar, Form } from "@heroui/react";
+import Image from "next/image";
+import { ReactNode, useEffect, useState } from "react";
 import Select, { StylesConfig } from "react-select";
-import { Button } from "@/framework/Button";
-import Dropdown from "@/framework/Dropdown";
-import { Input } from "@/framework/Input";
+import { Select as NextSelect, SelectItem } from "@heroui/react";
 import { Switch } from "@/framework/Switch";
+import { LandPlot, Rabbit, Trophy, Turtle } from "lucide-react";
+import { getIcon } from "@/helpers/icon";
 import { Textarea } from "@/framework/Textarea";
-import { Card } from "@/framework/Card";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Icon from "@/framework/Icon";
-import Text from "@/framework/Text";
-import { Spinner } from "@/framework/Spinner";
+import Editor from "@/components/editor";
+import { useRouter } from "next/navigation";
 
-const theme = "dark";
-
-export default function CreateGame() {
-  const router = useRouter();
-
+export default function GameEditingForm({
+  game = null,
+}: {
+  game?: GameType | null;
+}) {
+  const isMounted = useHasMounted();
+  const [ratingCategories, setRatingCategories] = useState<
+    RatingCategoryType[]
+  >([]);
+  const [allFlags, setAllFlags] = useState<FlagType[]>([]);
+  const [allTags, setAllTags] = useState<GameTagType[]>([]);
+  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
+    null
+  );
+  const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState("");
+  const [short, setShort] = useState("");
   const [content, setContent] = useState("");
-  const [themeJustification, setThemeJustification] = useState("");
-  const [waitingPost, setWaitingPost] = useState(false);
-  const [editGame, setEditGame] = useState(false);
-  const [mounted, setMounted] = useState<boolean>(false);
-
   const [gameSlug, setGameSlug] = useState("");
   const [prevSlug, setPrevGameSlug] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -62,51 +65,88 @@ export default function CreateGame() {
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
   const [editorKey, setEditorKey] = useState(0);
-  const [ratingCategories, setRatingCategories] = useState<
-    RatingCategoryType[]
-  >([]);
-  const urlRegex = /^(https?:\/\/)/;
-
-  const [games, setGames] = useState<GameType[]>([]);
-  const [currentGame, setCurrentGame] = useState<number>(0);
+  const [flags, setFlags] = useState<number[]>([]);
+  const [tags, setTags] = useState<number[]>([]);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
+  const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const [teams, setTeams] = useState<TeamType[]>([]);
   const [category, setCategory] = useState<"REGULAR" | "ODA" | "EXTRA">(
     "REGULAR"
   );
-  const [currentTeam, setCurrentTeam] = useState<number>(0);
-  const [teams, setTeams] = useState<TeamType[]>([]);
-  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
-    null
-  );
+  const [waitingPost, setWaitingPost] = useState(false);
   const [chosenRatingCategories, setChosenRatingCategories] = useState<
     number[]
   >([]);
   const [chosenMajRatingCategories, setChosenMajRatingCategories] = useState<
     number[]
   >([]);
-  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
-  const [allFlags, setAllFlags] = useState<FlagType[]>([]);
-  const [allTags, setAllTags] = useState<GameTagType[]>([]);
-  const [flags, setFlags] = useState<number[]>([]);
-  const [tags, setTags] = useState<number[]>([]);
-  const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
-  const [achievements, setAchievements] = useState<AchievementType[]>([]);
-
-  const sanitizeSlug = (value: string): string => {
-    return value
-      .toLowerCase() // Convert to lowercase
-      .replace(/\s+/g, "-") // Replace whitespace with hyphens
-      .replace(/[^a-z0-9-]/g, "") // Only allow lowercase letters, numbers, and hyphens
-      .substring(0, 50); // Limit length to 50 characters
-  };
+  const [themeJustification, setThemeJustification] = useState("");
+  const urlRegex = /^(https?:\/\/)/;
+  const [editGame, setEditGame] = useState(false);
+  const [currentTeam, setCurrentTeam] = useState<number>(0);
+  const router = useRouter();
 
   useEffect(() => {
-    setMounted(true);
+    setEditGame(!!game);
+    setTitle(game?.name || "");
+    setGameSlug(game?.slug || "");
+    setPrevGameSlug(game?.slug || "");
+    setContent(game?.description || "");
+    setShort(game?.short || "");
+    setThemeJustification(game?.themeJustification || "");
+    setEditorKey((prev) => prev + 1);
+    setThumbnailUrl(game?.thumbnail || null);
+    setBannerUrl(game?.banner || null);
+    setDownloadLinks(game?.downloadLinks || []);
+    setAchievements(game?.achievements || []);
+    setFlags(
+      game?.flags
+        ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
+        .filter((index) => index !== -1) || []
+    );
+    setTags(
+      game?.tags
+        ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
+        .filter((index) => index !== -1) || []
+    );
+    setLeaderboards(game?.leaderboards || []);
+    setCategory(
+      game?.category || activeJamResponse?.phase == "Rating"
+        ? "EXTRA"
+        : "REGULAR"
+    );
+    setChosenRatingCategories(
+      game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || []
+    );
+    setChosenMajRatingCategories(
+      game?.majRatingCategories?.map((ratingCategory) => ratingCategory.id) ||
+        []
+    );
 
+    async function loadData() {
+      const teamResponse = await getTeamsUser();
+
+      if (teamResponse.status == 200) {
+        const data = await teamResponse.json();
+        const filteredTeams = data.data.filter((team: TeamType) => !team.game);
+        const matchingSlugTeam = data.data.filter(
+          (team: TeamType) => game && team.game?.slug === game.slug
+        );
+
+        if (matchingSlugTeam.length !== 0) {
+          setTeams([matchingSlugTeam, ...filteredTeams]);
+        } else {
+          setTeams(filteredTeams);
+        }
+      }
+    }
+
+    loadData();
+  }, [game, allTags, allFlags, activeJamResponse]);
+
+  useEffect(() => {
     const load = async () => {
       try {
-        const response = await getSelf();
-        const localuser = (await response.json()) as UserType;
-
         const ratingResponse = await getRatingCategories();
         const ratingCategories = await ratingResponse.json();
         setRatingCategories(ratingCategories.data);
@@ -125,85 +165,13 @@ export default function CreateGame() {
 
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam);
-        setCategory(activeJam?.phase == "Rating" ? "EXTRA" : "REGULAR");
 
-        if (localuser.teams.length == 0) {
-          const successful = await createTeam();
-          if (successful) {
-          } else {
-            addToast({
-              title: "Error while creating team",
-            });
-            redirect("/");
-          }
-        }
-
-        const teamResponse = await getTeamsUser();
-
-        if (teamResponse.status == 200) {
-          const data = await teamResponse.json();
-          const filteredTeams = data.data.filter(
-            (team: TeamType) => !team.game
-          );
-
-          setTeams(filteredTeams);
-        } else {
-          setTeams([]);
-        }
-
-        setDataLoaded(true);
+        setLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
     load();
-  }, []);
-
-  const changeGame = useCallback(
-    (newid: number, games: GameType[]) => {
-      setCurrentGame(newid);
-
-      if (!games) return;
-      if (!allFlags || allFlags.length == 0) return;
-      if (!allTags || allTags.length == 0) return;
-      if (games.length == 0) return;
-
-      setTitle(games[newid].name);
-      setGameSlug(games[newid].slug);
-      setPrevGameSlug(games[newid].slug);
-      setContent(games[newid].description || "");
-      setThemeJustification(games[newid].themeJustification || "");
-      setEditorKey((prev) => prev + 1);
-      setThumbnailUrl(games[newid].thumbnail || null);
-      setBannerUrl(games[newid].banner || null);
-      setDownloadLinks(games[newid].downloadLinks || []);
-      setAchievements(games[newid].achievements || []);
-      setFlags(
-        games[newid].flags
-          ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
-          .filter((index) => index !== -1) || []
-      );
-      setTags(
-        games[newid].tags
-          ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
-          .filter((index) => index !== -1) || []
-      );
-      setLeaderboards(games[newid].leaderboards || []);
-      setCategory(games[newid].category);
-      setChosenRatingCategories(
-        games[newid].ratingCategories.map((ratingCategory) => ratingCategory.id)
-      );
-      setChosenMajRatingCategories(
-        games[newid].majRatingCategories.map(
-          (ratingCategory) => ratingCategory.id
-        )
-      );
-    },
-    [allFlags, allTags]
-  );
-
-  const changeTeam = useCallback((newid: number) => {
-    setCurrentTeam(newid);
   }, []);
 
   const styles: StylesConfig<
@@ -217,13 +185,13 @@ export default function CreateGame() {
     multiValue: (base) => {
       return {
         ...base,
-        backgroundColor: theme == "dark" ? "#444" : "#eee",
+        backgroundColor: "#444",
       };
     },
     multiValueLabel: (base) => {
       return {
         ...base,
-        color: theme == "dark" ? "#fff" : "#444",
+        color: "#fff",
         fontWeight: "bold",
         paddingRight: "2px",
       };
@@ -232,78 +200,46 @@ export default function CreateGame() {
       return {
         ...base,
         display: "flex",
-        color: theme == "dark" ? "#ddd" : "#222",
+        color: "#ddd",
       };
     },
     control: (styles) => ({
       ...styles,
-      backgroundColor: theme == "dark" ? "#181818" : "#fff",
+      backgroundColor: "#181818",
       minWidth: "300px",
     }),
     menu: (styles) => ({
       ...styles,
-      backgroundColor: theme == "dark" ? "#181818" : "#fff",
-      color: theme == "dark" ? "#fff" : "#444",
+      backgroundColor: "#181818",
+      color: "#fff",
       zIndex: 100,
     }),
     option: (styles, { isFocused }) => ({
       ...styles,
-      backgroundColor: isFocused
-        ? theme == "dark"
-          ? "#333"
-          : "#ddd"
-        : undefined,
+      backgroundColor: isFocused ? "#333" : undefined,
     }),
   };
 
-  useEffect(() => {
-    const checkExistingGame = async () => {
-      const response = await getCurrentGame();
+  const sanitizeSlug = (value: string): string => {
+    return value
+      .toLowerCase() // Convert to lowercase
+      .replace(/\s+/g, "-") // Replace whitespace with hyphens
+      .replace(/[^a-z0-9-]/g, "") // Only allow lowercase letters, numbers, and hyphens
+      .substring(0, 50); // Limit length to 50 characters
+  };
 
-      if (response.ok) {
-        const gameData = (await response.json()).data;
-        if (gameData.length > 0) {
-          setGames(gameData);
-          setEditGame(true);
-          changeGame(0, gameData);
-        } else {
-          if (teams.length == 0) {
-            addToast({
-              title: "No available teams",
-            });
-            redirect("/");
-          }
-        }
-      }
-    };
+  if (!isMounted) return;
 
-    if (mounted && dataLoaded) {
-      checkExistingGame();
-    }
-  }, [teams, mounted, changeGame, dataLoaded]);
-
-  const token = getCookie("token");
-
-  if (!token) {
+  if (loading) {
     return (
       <Vstack>
         <Card className="max-w-96">
           <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userx" />
-                <Text size="xl">ThemeSuggestions.SignIn.Title</Text>
-              </Hstack>
-              <Text color="textFaded">ThemeSuggestions.SignIn.Description</Text>
-            </Vstack>
             <Hstack>
-              <Button href="/signup" color="blue" icon="userplus">
-                Themes.Signup
-              </Button>
-              <Button href="/login" color="pink" icon="login">
-                Themes.Login
-              </Button>
+              <Spinner />
+              <Text size="xl">Loading</Text>
             </Hstack>
+            <Text color="textFaded">Loading edit form...</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -338,9 +274,7 @@ export default function CreateGame() {
           const submitter = (e.nativeEvent as SubmitEvent)
             .submitter as HTMLButtonElement;
 
-          let publishValue = games[currentGame]
-            ? games[currentGame].published
-            : false;
+          let publishValue = game ? game.published : false;
 
           if (submitter.value === "publish") {
             publishValue = true;
@@ -374,7 +308,8 @@ export default function CreateGame() {
                   achievements,
                   Array.from(flags).map((thing) => allFlags[thing].id),
                   Array.from(tags).map((thing) => allTags[thing].id),
-                  leaderboards
+                  leaderboards,
+                  short
                 )
               : postGame(
                   title,
@@ -393,7 +328,8 @@ export default function CreateGame() {
                   achievements,
                   Array.from(flags).map((thing) => allFlags[thing].id),
                   Array.from(tags).map((thing) => allTags[thing].id),
-                  leaderboards
+                  leaderboards,
+                  short
                 );
 
             const response = await request;
@@ -437,55 +373,6 @@ export default function CreateGame() {
               </Text>
             </Vstack>
           </Card>
-          {games.length > 1 && (
-            <div className="flex gap-2">
-              <Button
-                icon="arrowleft"
-                onClick={() => {
-                  changeGame(currentGame - 1, games);
-                }}
-                disabled={currentGame == 0}
-              >
-                Previous Game
-              </Button>
-              <Button
-                icon="arrowright"
-                onClick={() => {
-                  changeGame(currentGame + 1, games);
-                }}
-                disabled={currentGame == games.length - 1}
-              >
-                Next Game
-              </Button>
-            </div>
-          )}
-          {teams.length > 0 && prevSlug && (
-            <Button
-              onClick={() => {
-                setGames([]);
-                setEditGame(false);
-                setTitle("");
-                setGameSlug("");
-                setPrevGameSlug("");
-                setContent("");
-                setThemeJustification("");
-                setEditorKey((prev) => prev + 1);
-                setThumbnailUrl(null);
-                setBannerUrl(null);
-                setDownloadLinks([]);
-                setAchievements([]);
-                setTags([]);
-                setFlags([]);
-                setLeaderboards([]);
-                setCategory(
-                  activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR"
-                );
-                setChosenRatingCategories([]);
-                setChosenMajRatingCategories([]);
-              }}
-              name="Create New Game"
-            />
-          )}
           <Card>
             <Vstack align="start">
               <div>
@@ -532,6 +419,8 @@ export default function CreateGame() {
           </Card>
 
           {activeJamResponse &&
+            activeJamResponse.jam &&
+            (activeJamResponse.jam.id === game?.jam.id || !game) &&
             (activeJamResponse.phase == "Jamming" ||
               activeJamResponse.phase == "Submission" ||
               (activeJamResponse.phase == "Rating" && !prevSlug)) && (
@@ -610,6 +499,24 @@ export default function CreateGame() {
                 content={content}
                 setContent={setContent}
                 gameEditor
+              />
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Game Short</Text>
+                <Text color="textFaded" size="xs">
+                  A short description that shows on the games page and when
+                  someone searches for you game (max 155 characters)
+                </Text>
+              </div>
+              <Textarea
+                placeholder="Enter a short description"
+                value={short}
+                onValueChange={setShort}
+                maxLength={155}
               />
             </Vstack>
           </Card>
@@ -949,7 +856,7 @@ export default function CreateGame() {
                     </Button>
                   }
                   onSelect={(i) => {
-                    changeTeam(i as number);
+                    setCurrentTeam(i as number);
                   }}
                 >
                   {teams.map((team, i) => (
@@ -978,7 +885,7 @@ export default function CreateGame() {
                   Tags for game engine, genre, etc. for people to filter by
                 </Text>
               </div>
-              {mounted && (
+              {isMounted && (
                 <Select
                   styles={styles}
                   isMulti
@@ -1032,7 +939,7 @@ export default function CreateGame() {
                   Warnings about what content your game contains
                 </Text>
               </div>
-              {mounted && (
+              {isMounted && (
                 <Select
                   styles={styles}
                   isMulti
@@ -1063,85 +970,92 @@ export default function CreateGame() {
             </Vstack>
           </Card>
 
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">Opt-In Rating Categories</Text>
-                <Text color="textFaded" size="xs">
-                  Any optional categories you want to get a rating & rank in
-                </Text>
-              </div>
-              {ratingCategories.map((category3) => (
-                <div key={category3.id}>
-                  <Hstack>
-                    <Switch
-                      checked={
-                        chosenRatingCategories.filter(
-                          (category2) => category2 == category3.id
-                        ).length > 0
-                      }
-                      onChange={(value) => {
-                        if (value) {
-                          setChosenRatingCategories([
-                            ...chosenRatingCategories,
-                            category3.id,
-                          ]);
-                        } else {
-                          setChosenRatingCategories(
-                            chosenRatingCategories.filter(
-                              (category2) => category2 != category3.id
-                            )
-                          );
-                        }
-                      }}
-                    />
-                    <Vstack gap={0} align="start">
-                      <Text color="text" size="sm">
-                        {category3.name}
-                      </Text>
-                      <Text color="textFaded" size="xs">
-                        {category3.description}
-                      </Text>
-                    </Vstack>
-                  </Hstack>
-                  {category3.askMajorityContent &&
-                    category == "REGULAR" &&
-                    chosenRatingCategories.filter(
-                      (category2) => category2 == category3.id
-                    ).length > 0 && (
-                      <Hstack className="pl-5 pt-2">
+          {activeJamResponse &&
+            activeJamResponse.jam &&
+            (activeJamResponse.jam.id === game?.jam.id || !game) &&
+            (activeJamResponse.phase == "Jamming" ||
+              activeJamResponse.phase == "Submission" ||
+              (activeJamResponse.phase == "Rating" && !prevSlug)) && (
+              <Card>
+                <Vstack align="start">
+                  <div>
+                    <Text color="text">Opt-In Rating Categories</Text>
+                    <Text color="textFaded" size="xs">
+                      Any optional categories you want to get a rating & rank in
+                    </Text>
+                  </div>
+                  {ratingCategories.map((category3) => (
+                    <div key={category3.id}>
+                      <Hstack>
                         <Switch
-                          key={category3.id + "maj"}
                           checked={
-                            chosenMajRatingCategories.filter(
+                            chosenRatingCategories.filter(
                               (category2) => category2 == category3.id
                             ).length > 0
                           }
                           onChange={(value) => {
                             if (value) {
-                              setChosenMajRatingCategories([
-                                ...chosenMajRatingCategories,
+                              setChosenRatingCategories([
+                                ...chosenRatingCategories,
                                 category3.id,
                               ]);
                             } else {
-                              setChosenMajRatingCategories(
-                                chosenMajRatingCategories.filter(
+                              setChosenRatingCategories(
+                                chosenRatingCategories.filter(
                                   (category2) => category2 != category3.id
                                 )
                               );
                             }
                           }}
                         />
-                        <Text color="textFaded" size="xs">
-                          Did you make the majority of the {category3.name}{" "}
-                          content
-                        </Text>
+                        <Vstack gap={0} align="start">
+                          <Text color="text" size="sm">
+                            {category3.name}
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            {category3.description}
+                          </Text>
+                        </Vstack>
                       </Hstack>
-                    )}
-                </div>
-              ))}
-            </Vstack>
-          </Card>
+                      {category3.askMajorityContent &&
+                        category == "REGULAR" &&
+                        chosenRatingCategories.filter(
+                          (category2) => category2 == category3.id
+                        ).length > 0 && (
+                          <Hstack className="pl-5 pt-2">
+                            <Switch
+                              key={category3.id + "maj"}
+                              checked={
+                                chosenMajRatingCategories.filter(
+                                  (category2) => category2 == category3.id
+                                ).length > 0
+                              }
+                              onChange={(value) => {
+                                if (value) {
+                                  setChosenMajRatingCategories([
+                                    ...chosenMajRatingCategories,
+                                    category3.id,
+                                  ]);
+                                } else {
+                                  setChosenMajRatingCategories(
+                                    chosenMajRatingCategories.filter(
+                                      (category2) => category2 != category3.id
+                                    )
+                                  );
+                                }
+                              }}
+                            />
+                            <Text color="textFaded" size="xs">
+                              Did you make the majority of the {category3.name}{" "}
+                              content
+                            </Text>
+                          </Hstack>
+                        )}
+                    </div>
+                  ))}
+                </Vstack>
+              </Card>
+            )}
 
           <Card>
             <Vstack align="start">
@@ -1351,8 +1265,9 @@ export default function CreateGame() {
                   input.click();
                 }}
                 color="yellow"
+                disabled
               >
-                Add Song
+                Add Song (disabled for now, will be enabled soon)
               </Button>
             </Vstack>
           </Card>
@@ -1365,7 +1280,9 @@ export default function CreateGame() {
                 {prevSlug ? "Update" : "Create"}
               </Button>
             )}
-            {(!games[currentGame] || !games[currentGame].published) &&
+            {(!game || !game.published) &&
+              activeJamResponse?.jam &&
+              (activeJamResponse?.jam.id == game?.jam.id || !game) &&
               (activeJamResponse?.phase == "Jamming" ||
                 activeJamResponse?.phase == "Submission" ||
                 (activeJamResponse?.phase == "Rating" &&
@@ -1382,8 +1299,10 @@ export default function CreateGame() {
                   {prevSlug ? "Publish" : "Create & Publish"}
                 </Button>
               ))}
-            {games[currentGame] &&
-              games[currentGame].published &&
+            {game &&
+              game.published &&
+              activeJamResponse?.jam &&
+              activeJamResponse?.jam.id == game.jam.id &&
               (activeJamResponse?.phase == "Jamming" ||
                 activeJamResponse?.phase == "Submission" ||
                 (activeJamResponse?.phase == "Rating" &&
@@ -1403,6 +1322,7 @@ export default function CreateGame() {
           </Hstack>
         </Vstack>
       </Form>
+      <div className="p-2" />
     </Vstack>
   );
 }

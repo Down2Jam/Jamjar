@@ -1,177 +1,177 @@
-key,en,fr,it,de,es,tr,tl,ja,tok,mis-edikan,mis-meow
-Splash.Title,Down2Jam,Down2Jam,Down2Jam,,,Down2Jam,Down2Jam,ダウン2ジャム,,,Meow
-Splash.Description,The community centered game jam,,La game jam incentrata sulla comunità,,,Topluluk odaklı game jam,Game Jam para sa komunidad,,,,Meow meow meow meow meow
-Splash.Join,Join,,Partecipa,,,Katıl,Salin na,,,kyo,Meow
-Splash.About,About,,Info,,,Hakkında,About,,,,Meow
-Splash.Why,Why Jam?,,Perché una Jam?,,,Neden jam yaparız?,Bakit hindi mag jam?,,,,Meow meow?
-Splash.Logo,Down2Jam logo,,Logo Down2Jam,,,Down2Jam logosu,Down2Jam logo,,,,Meow meow
-Splash.Explore,Explore,,Esplora,,,Keşfet,Tuklasin,,,,Meow
-Navbar.Games.Title,Games,Jeux,Giochi,,,Oyunlar,Games,,,loka,Meow
-Navbar.Games.Description,All submitted games to the website,,Tutti i giochi caricati sul sito,,,Web sitesine gönderilen tüm oyunlar,Lahat nang games na sumali sa website,,,,Meow meow meow meow meow meow
-Navbar.Results.Title,Results,Résultats,Risultati,,,Sonuçlar,Resulta,,,nema,Meow
-Navbar.Results.Description,The results of the last D2Jam,,I risultati dell'ultima D2Jam,,,Son D2Jam'in sonuçları,Lahat nang resulta galing sa huling D2Jam,,,,Meow meow meow meow meow Meow
-Navbar.Forum.Title,Forum,,Forum,,,Forum,Forum,,,makona,Meow
-Navbar.Forum.Description,A forum for members of the community to chat with each other in,,Un forum in cui i membri della community possono parlare tra loro,,,Topluluk üyelerinin birbirleriyle konuşabileceği bir forum,Lugar kung saan makakapag-chat ang mga miyembro nang komunidad,,,,Meow meow meow meow meow meow meow meow meow meow
-Navbar.Join.Title,Join,,Unisciti,,,Katıl,Salin na,,,kyo,Meow
-Navbar.Join.Description,Join the website by making or logging into an account,,Unisciti al sito web creando un account o accedendo,,,Giriş yaparak veya hesap yaratarak web sitesini görüntüle,Mag log-in o gumawa nang bagong account para sumama sa website,,,,Meow meow meow meow meow meow meow meow meow meow
-Navbar.About.Title,About,,Info,,,Hakkında,About,,,ivera,Meow
-Navbar.About.Description,Information about the game jam,,Informazioni sulla game jam,,,Game Jam hakkında bilgiler,Impormasyon tungkol sa game jam,,,,Meow meow meow meow meow
-Navbar.Donate.Title,Donate,,Dona,,,Bağış,Donate,寄付,,zeba,Meow
-Navbar.Donate.Description,View the donation and support page,,Visualizza la pagina delle donazioni e del supporto,,,Bağış ve destek sayfasını görüntüle,Tignan ang donate at support page,寄付するとサポートページを見る,,,Meow meow meow meow meow meow
-Navbar.Lucky.Title,I'm Feeling Lucky,,Mi sento fortunato,,,Şanslı Hissediyorum,Ala-suwete,,,go'ka,Meow meow meow
-Navbar.Lucky.Description,Get sent to the page for a random game on the website,,Verrai mandato alla pagina di un gioco casuale sul sito,,,Rasgele bir oyun sayfasına git,Dadalhin ka sa isang random page ng game sa loob nang website,,,,Meow meow meow meow meow meow meow meow meow meow meow meow
-Navbar.RSS.Title,RSS,,RSS,,,RSS,RSS,,,RSS,Meow
-Navbar.RSS.Description,View available RSS feeds,,Visualizza i feed RSS disponibili,,,Mevcut RSS bildirimlerini görüntüle,Tignan ang mga RSS feeds,,,,Meow meow meow meow
-Navbar.Light.Title,Light Theme,,Tema chiaro,,,Aydınlık Tema,Light Theme,,,sol,Meow meow
-Navbar.Light.Description,Change the page colours to be lighter,,Cambia i colori della pagina per essere più chiari,,,Sayfa renklerini aydınlık yapar,Palitan ang kulay ng page para mas maaliwalas,,,,Meow meow meow meow meow meow meow
-Navbar.Dark.Title,Dark Theme,,Tema scuro,,,Karanlık Tema,Dark Theme,,,nalo,Meow meow
-Navbar.Dark.Description,Change the page colours to be darker,,Cambia i colori della pagina per essere più scuri,,,Sayfa renklerini karanlık yapar,Palitan ang kulay ng page para mas madilim,,,,Meow meow meow meow meow meow meow
-Navbar.Home.Title,Home,,Home,,,Anasayfa,Home,,,,Meow
-Navbar.Home.Description,Go to the home page,,Vai alla home,,,Anasayfa'ya git,Bumalik sa home page,,,,Meow meow meow meow meow
-Navbar.Brand.Name,D2Jam,,D2Jam,,,D2Jam,D2Jam,,,,Meow
-Navbar.Brand.Alt,Down2Jam logo,,Logo Down2Jam,,,Down2Jam logosu,D2jam logo,,,,Meow meow
-Navbar.Language.Title,Select Language,,Seleziona lingua,,,Dil Seç,Pumili ng lengguahe,,,,Meow meow
-Navbar.Language.Select,Select,,Seleziona,,,Seç,Pumili,,,,Meow
-Navbar.JoinJam.Title,Join Jam,,Unisciti alla jam,,,Jam'e Katıl,Sumalin sa Jam,,,,Meow meow
-Navbar.JoinJam.Description,Mark that you are participating in the jam!,,Conferma la tua partecipazione alla jam!,,,Jam'e katıldığının izini düş,Ipakita mo na sasalin ka sa jam,,,,Meow meow meow meow meow meow meow meow!
-Navbar.NoJamToast.Title,Error joining jam,,Errore nell'unirsi alla jam,,,Jam'e katılırken bir hata oluştu,May pagkakamali sa pagsasalin sa jam,,,,Meow meow meow
-Navbar.NoJamToast.Description,There is no jam to join,,Non c'è una jam a cui unirsi,,,Katılacak bir jam yok,Walang jam na sasalihan,,,,Meow meow meow meow meow meow
-Navbar.MyGame.Title,My Game,,Il mio gioco,,,Oyunum,Aking Game,,,,Meow meow
-Navbar.MyGame.Description,View the page for your game,,Visualizza la pagina del tuo gioco,,,Oyununun sayfasını görüntüle,Tignan ang page para sa iyong game,,,,Meow meow meow meow meow meow
-Navbar.CreateGame.Title,Create Game,,Crea un gioco,,,Oyun Yarat,Gumawa ng Game,,,,Meow meow
-Navbar.CreateGame.Description,Create a site page for your game,,Crea una pagina del sito per il tuo gioco,,,Oyunun için bir sayfa oluştur,Gumawa ng site page para sa iyong game,,,,Meow meow meow meow meow meow meow
-Navbar.CreatePost.Title,Create Post,,Crea un post,,,Gönderi Yarat,Gumawa ng post,,,,Meow meow
-Navbar.CreatePost.Description,Create a post in the forum,,Crea un post nel forum,,,Forum'da gönderi yarat,Gumawa ng post sa forum,,,,Meow meow meow meow meow meow
-Navbar.MyTeam.Title,My Team,,Il mio team,,,Takımım,Aking Team,,,,Meow meow
-Navbar.MyTeam.Description,View your team for the jam!,,Visualizza il tuo team per la jam!,,,Jam Takımı'nı görüntüle!,Tignan ang Team nyo para sa jam!,,,,Meow meow meow meow meow meow!
-Navbar.TeamFinder.Title,Team Finder,,Trova team,,,Takım Bulucu,Hanapan ng Team,チームを探す,,,Meow meow
-Navbar.TeamFinder.Description,Find a team to participate in the jam with!,,Trova un team con cui partecipare alla jam!,,,Jam'e katılmak için bir takım bul!,Maghanap ng team para makisalin para sa jam,,,,Meow meow meow meow meow meow meow meow meow!
-Navbar.Profile.Title,Profile,,Profilo,,,Profil,Profile,プロフィール,,,Meow
-Navbar.Profile.Description,View your profile page,,Visualizza la tua pagina profilo,,,Profilini görüntüle,Tignan ang iyong profile page,,,,Meow meow meow meow
-Navbar.Settings.Title,Settings,,Impostazioni,,,Ayarlar,Settings,設定,,eiba,Meow
-Navbar.Settings.Description,Manage your preferences,,Gestisci le tue preferenze,,,Tercihlerini görüntüle,Ayusin ang sariling kagustuhan,,,,Meow meow meow
-Navbar.ReportBug.Title,Report Bug,,Segnala un bug,,,Bug Raporu,Report Bug,,,,Meow meow
-Navbar.ReportBug.Description,Go to the Github Repository,,Vai alla repository GitHub,,,Github Depo'suna git,Puntahan ang Github Repository,,,,Meow meow meow meow meow
-Navbar.Logout.Title,Logout,,Esci,,,Çıkış Yap,Logout,ログアウト,,,Meow
-Navbar.Logout.Description,Log out of your account,,Esci dal tuo account,,,Hesaptan çıkış yap,Mag log-out sa sariling account,アカウントからログアウトする,,,Meow meow meow meow meow
-Navbar.Inbox.Title,Inbox,,Notifiche,,,Gelen Kutusu,Inbox,受信トレイ,,rolan,Meow
-Navbar.Inbox.Description,View your notifications,,Visualizza le tue notifiche,,,Bildirimleri görüntüle,Tignan ang mga pagpapaunawa,通知を見る,,,Meow meow meow
-Navbar.Search,Search,,Cerca,,,Ara,Search,探す,,,Meow
-Navbar.Music.Title,Music,,Musica,,,Müzik,Musika,,,,Meow
-Navbar.Music.Description,All submitted music to the website,,Tutta la musica caricata sul sito,,,Web sitesine gönderilen tüm müzikler,Lahat nang musika na sinalin sa website,,,,Meow meow meow meow meow meow
-Navbar.Login.Title,Login,,Accedi,,,Giriş Yap,,,,,
-Navbar.Login.Description,Log into the website,,Accedi al sito,,,Web sayfasına giriş yap,,,,,
-Navbar.ThemeSuggestions.Title,Theme Suggestions,,Suggerimenti Tema,,,,,,,,
-Navbar.ThemeSuggestions.Description,Submit possible jam themes to the jam. These will be voted on by participants in the future,,Proponi possibili temi per la jam. Verranno poi votati dai partecipanti,,,,,,,,
-Navbar.ThemeElimination.Title,Theme Elimination,,Eliminazione Tema,,,,,,,,
-Navbar.ThemeElimination.Description,Vote on themes you would or would not want to do for the jam. You can vote on as may as you want,,Vota i temi che vorresti o non vorresti per la jam. Puoi votare tutti quelli che vuoi,,,,,,,,
-Navbar.ThemeVoting.Title,Theme Voting,,Votazione Tema,,,,,,,,
-Navbar.ThemeVoting.Description,Vote on the top themes to determine the theme for the jam,,Vota i migliori temi per determinare il tema finale della jam,,,,,,,,
-PostStyle.Cozy.Title,Cozy,,Esteso,,,Rahat,Maaliwalas,,,,
-PostStyle.Cozy.Description,"Large cards, displays all post content",,"Schede grandi, mostra tutto il contenuto del post",,,"Geniş kartlar, bütün gönderi içeriğini gösterir","Malalaking cards, nakikita ang laman ng buong post",,,,
-PostStyle.Compact.Title,Compact,,Compatto,,,Kompakt,Compact,,,,
-PostStyle.Compact.Description,Small cards to show more on screen at once,,Schede piccole per mostrare più contenuti sullo schermo contemporaneamente,,,Ekranda daha çok kart göstermek için kartlar küçülür,Malilit na cards para mas mariming makikita sa screen,,,,
-PostStyle.Ultra.Title,Ultra Compact,,Ultra compatto,,,Ekstra Kompakt,Ultra Compact,,,,
-PostStyle.Ultra.Description,Very small cards for maximum compactness,,Schede molto piccole per la massima compattezza,,,Maksimum kompaktlık için küçücük kartlar,Pinakamaliit na card para talagang napaka-compact,,,,
-PostSort.Top.Title,Top,,Top,,,Beğeni,Pinakamataas,,,,
-PostSort.Top.Description,Shows the most liked posts first,,Mostra prima i post più apprezzati,,,En çok beğeni almış postlar önce gösterilir,Pinakikita ang post na may pinakamataas na like sa unahan,,,,
-PostSort.Newest.Title,Newest,,Più recenti,,,En Yeni,Pinakabago,,,,
-PostSort.Newest.Description,Shows the newest posts first,,Mostra prima i post più recenti,,,En yeni gönderiler önce gösterilir.,Pinakikita ang masbagong post sa unahan,,,,
-PostSort.Oldest.Title,Oldest,,Meno recenti,,,En Eski,Pinakaluma,,,,
-PostSort.Oldest.Description,Shows the oldest posts first,,Mostra prima i post più vecchi,,,En eski gönderiler önce gösterilir,Pinakikita ang masmalumahing post sa unahan,,,,
-PostTime.Hour.Title,Hour,,Ora,,,Saat,Oras,,,,
-PostTime.Hour.Description,Shows posts from the last hour,,Mostra i post dell'ultima ora,,,Son 1 saatten gönderileri gösterir,Pinakikita ang post galing sa huling nakaraang oras,,,,
-PostTime.ThreeHours.Title,Three Hours,,Tre ore,,,Üç Saat,Tatlong Oras,,,,
-PostTime.ThreeHours.Description,Shows posts from the last three hours,,Mostra i post delle ultime tre ore,,,Son 3 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang tatlong oras,,,,
-PostTime.SixHours.Title,Six Hours,,Sei ore,,,Altı Saat,Anim na Oras,,,,
-PostTime.SixHours.Description,Shows posts from the last six hours,,Mostra i post delle ultime sei ore,,,Son 6 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang anim na oras,,,,
-PostTime.TwelveHours.Title,Twelve Hours,,Dodici ore,,,On İki Saat,Labing-dalawang Oras,,,,
-PostTime.TwelveHours.Description,Shows posts from the last twelve hours,,Mostra i post delle ultime dodici ore,,,Son 12 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang labing-dalawang oras,,,,
-PostTime.Day.Title,Day,,Giorno,,,Gün,Araw,,,,
-PostTime.Day.Description,Shows posts from the last day,,Mostra i post dell'ultimo giorno,,,Son günün gönderilerini gösterir,Pinakikita ang post galing sa nakaraang araw,,,,
-PostTime.Week.Title,Week,,Settimana,,,Hafta,Linggo,,,,
-PostTime.Week.Description,Shows posts from the last week,,Mostra i post dell'ultima settimana,,,Son haftanın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang linggo,,,,
-PostTime.Month.Title,Month,,Mese,,,Ay,Buwan,,,,
-PostTime.Month.Description,Shows posts from the last month,,Mostra i post dell'ultimo mese,,,Son ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang buwan,,,,
-PostTime.ThreeMonths.Title,Three Months,,Tre mesi,,,Üç Ay,Tatlong Buwan,,,,
-PostTime.ThreeMonths.Description,Shows posts from the last three months,,Mostra i post degli ultimi tre mesi,,,Son 3 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang tatlong buwan,,,,
-PostTime.SixMonths.Title,Six Months,,Sei mesi,,,Altı Ay,Anim na Buwan,,,,
-PostTime.SixMonths.Description,Shows posts from the last six months,,Mostra i post degli ultimi sei mesi,,,Son 6 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang anim na buwan,,,,
-PostTime.NineMonths.Title,Nine Months,,Nove mesi,,,Dokuz Ay,Siyam na Buwan,,,,
-PostTime.NineMonths.Description,Shows posts from the last nine month,,Mostra i post degli ultimi nove mesi,,,Son 9 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang siyam na buwan,,,,
-PostTime.Year.Title,Year,,Anno,,,Yıl,Taon,,,,
-PostTime.Year.Description,Shows posts from the last year,,Mostra i post dell'ultimo anno,,,Son 1 yılın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang taon,,,,
-PostTime.All.Title,All Time,,Sempre,,,Tüm Zamanlar,Lahat,,,,
-PostTime.All.Description,Shows all posts,,Mostra tutti i post,,,Bütün gönderileri gösterir,Pinakikita ang lahat ng post,,,,
-Settings.Title,Settings,,Impostazioni,,,Ayarlar,Settings,,,,
-Settings.Description,Manage your preferences,,Gestisci le tue preferenze,,,Ayarlarınızı yönetin,Ayusin ang sariling kagustuhan,,,,
-Settings.Name.Title,Name,,Nome,,,İsim,Pangalan,,,,
-Settings.Name.Description,The name that displays for you on the site,,Il nome che verrà mostrato sul sito,,,Sitede gösterilen isminiz,Ang pangalan na ipakikita sayo sa loob ng site,,,,
-Settings.Email.Title,Email,,Email,,,Eposta,Email,,,,
-Settings.Email.Description,"The email associated with your account (for password reset, notifications, etc.)",,"L'email associata al tuo account (per reimpostare la password, notifiche, ecc.)",,,"Hesabınıza bağlı eposta (şifre yenileme, bildirim vb. için)","Ang email na konektado sa iyong account (para ayusin ang password, at notipikasyon, atbp.)",,,,
-Settings.Email.Show,Show Email,,Mostra email,,,Eposta Göster,Ipakita ang email,,,,
-Settings.Email.Hide,Hide Email,,Nascondi Email,,,Eposta Gizle,Itago and email,,,,
-Settings.Short.Title,Short,,Descrizione breve,,,Kısa,Maikling bio,,,,
-Settings.Short.Description,A short description that appears in spots such as search instead of the bio (max 32 characters),,Una breve descrizione che appare in punti come la ricerca al posto della bio (max 32 caratteri),,,Arama kısmı gibi yerlerde çıkan kısa açıklama,"Maikling bio na pinapakita sa ibang lugar, tulad ng search, kaysasa buong bio",,,,
-Settings.Bio.Title,Bio,,Bio,,,Bio,Bio,,,,
-Settings.Bio.Description,A large description that shows on your profile page,,Una descrizione estesa che viene mostrata sulla tua pagina del profilo,,,Profil sayfanızda gözüken daha uzun açıklama,Ang buong bio na makikita sa iyong profile page,,,,
-Settings.ProfilePicture.Title,Profile Picture,,Immagine del profilo,,,Profil Resmi,Profile Picture,,,,
-Settings.ProfilePicture.Description,The image that represents you on the website (usually displays next to your name),,L'immagine che ti rappresenta sul sito (di solito appare accanto al tuo nome),,,Sizi web sitesinde temsil eden resim ( genelde isminizin yanında çıkar),Ang litrato na representasyon nyo sa website (makikitang katabi ng iyong pangalan),,,,
-Settings.BannerPicture.Title,Banner Picture,,Immagine di copertina,,,Afiş Resmi,Banner Picture,,,,
-Settings.BannerPicture.Description,A picture that shows at the top of your profile and as the background of your search result,,Un'immagine che viene mostrata in cima al tuo profilo e come sfondo dei tuoi risultati di ricerca,,,Profil sayfanızın üstünde ve arama sonucunuzun arkaplanında gösterilen resim,"Litrato na pinapakita sa taas ng iyong profile page, at sa likod ng resulta ng search",,,,
-Settings.PrimaryRoles.Title,Primary Roles,,Ruoli principali,,,Öncelikli Roller,Pangunahing Tungkulin,,,,
-Settings.PrimaryRoles.Description,Roles you usually do on a jam team,,I ruoli che di solito ricopri in un team durante una jam,,,Bir jam takımında öncelikli olarak aldığınız roller,Mga papel na karaniwang ginagawa nyo sa isang jam team,,,,
-Settings.SecondaryRoles.Title,Secondary Roles,,Ruoli secondari,,,İkincil Roller,Pangalawang Tungkulin,,,,
-Settings.SecondaryRoles.Description,Things you are capable of doing (or are willing to do if you can't do your primary role),,Le cose che sei in grado di fare (o che sei disposto a fare se non puoi ricoprire il tuo ruolo primario),,,Yeteneğinizin olduğu işler (ya da öncelikli rolünüzü gerçekleştiremeyecekseniz tercih ettiğiniz şeyler),Mga papel na kaya nyong gawin (o handang gawin kung hindi magawa ang panunahing tungkulin),,,,
-Settings.Save.Title,Save,,Salva,,,Kaydet,Save,,,,
-Settings.Save.Description,Save your settings changes,,Salva le modifiche alle impostazioni,,,Ayarlardaki değişiklikleri kaydedin,I-save ang mga pagbabago sa setting,,,,
-Settings.Reset.Title,Reset,,Reset,,,Sıfırla,Reset,,,,
-Settings.Reset.Description,Reset your settings to the last save (discards changes),,Ripristina le impostazioni all'ultimo salvataggio (annulla le modifiche),,,Ayarlarınızı son kayda sıfırlayın (yapılan değişiklikleri sıfırla),Ibalik ang settings sa huling save (itatapon ang mga pagbabago),,,,
-Markdown.Characters,characters,,caratteri,,,karakter,mga texto,,,,
-Markdown.Words,words,,parole,,,kelime,mga salita,,,,
-Markdown.Bold.Title,Bold,,Grassetto,,,Kalın,Bold,,,,
-Markdown.Bold.Description,Make text darker and thicker (used to emphasize key words),,Rende il testo più scuro e spesso (usato per enfatizzare le parole chiave),,,Yazıyı daha koyu ve kalın yapar (kelimelere dikkat çekmek için kullanılır),Gawing mas madidilim at mas makapal ang teksto (ginagamit upang bigyang-diin ang mga mahahalagang salita),,,,
-Markdown.Italic.Title,Italic,,Corsivo,,,İtalik,Italic,,,,
-Markdown.Italic.Description,Slant text to the right (used to indicate the text is vocally stressed),,Inclina il testo a destra (usato per indicare enfasi su una parola),,,Yazıyı sağa doğru yatırır,I-slant ang teksto sa kanan (ginagamit upang ipahiwatig na ang teksto ay may importansya kung wikain),,,,
-Markdown.Highlight.Title,Highlight,,Evidenzia,,,Vurgula,Highlight,,,,
-Markdown.Highlight.Description,Emphasize text by giving it a colored background (used to draw attention),,Enfatizza il testo dandogli uno sfondo colorato (usato per attirare l'attenzione),,,Yazının arkaplanına renk vererek vurgular,Lagyan ng kulay ang background para mag-bigyang diin ang texto (ginagamit para mag-bigay atensyon),,,,
-Markdown.Strikethrough.Title,Strikethrough,,Barrato,,,Üstü Çizili,Strikethrough,,,,
-Markdown.Strikethrough.Description,"Draw a line through text to indicate deletion, inaccuracy, or irrelevance",,"Traccia una linea sul testo per indicare cancellazione, inesattezza o irrilevanza",,,Sanki silinmişçesine yazının üstüne çizgi çeker,"Guhitan ng texto gamit ang linya upang ipahiwatig ang pagtanggal, kawalan ng katumpakan, o kawalan ng kabuluhan",,,,
-Markdown.Subscript.Title,Subscript,,Pedice,,,Alt Simge,Subscript,,,,
-Markdown.Subscript.Description,"Display text slightly below the normal line (used for chemical formulas, math, and footnotes)",,"Visualizza il testo leggermente al di sotto della riga normale (usato per formule chimiche, matematica e note a piè di pagina)",,,Bir yazının azıcık altında başka bir yazı gösterir (formüller ve dipnotlar için kullanılır),"Ipakita ang texto sa ilalim ng normal na linya (gamit sa chemical formula, matimatika, at mga footnotes)",,,,
-Markdown.Superscript.Title,Superscript,,Apice,,,Üst Simge,Superscript,,,,
-Markdown.Superscript.Description,"Display text slightly above the normal line (used for exponents, ordinal indicators, and references)",,"Visualizza il testo leggermente al di sopra della riga normale (usato per esponenti, indicatori ordinali e riferimenti)",,,"Bir yazının azıcık üstüne başka bir yazı gösterir (üslü sayılar, göstergeler ve referanslarda kullanılır)","Ipakita ang texto sa ibabaw ng normal na linya (gamit sa exponents, ordinal indicators at references)",,,,
-Markdown.Link.Title,Link,,Collegamento,,,Bağlantı,Link,,,,
-Markdown.Link.Description,Add a clickable hyperlink to link to other content,,Aggiunge un link cliccabile per collegarsi ad altri contenuti,,,Başka bir sayfaya bağlantı oluştur,Lagyan ng isang na-click na hyperlink upang mag-link sa iba pang nilalaman,,,,
-Markdown.Image.Title,Image,,Immagine,,,Resim,Litrato,,,,
-Markdown.Image.Description,Insert an image into the content,,Inserisce un'immagine nel contenuto,,,İçeriğe bir resim ekle,Lagyan ng imahe sa loob ng sulatin,,,,
-Markdown.HorizontalRule.Title,Horizontal Rule,,Divisore orizzontale,,,Yatay Ayraç,Horizontal Rule,,,,
-Markdown.HorizontalRule.Description,Add a horizontal rule (a thematic break between paragraph-level elements),,Aggiunge una riga orizzontale (una separazione tematica tra elementi a livello di paragrafo),,,Yatay bir çizgi ekle,Magdagdag ng horizontal rule (isang temang pahinga sa pagitan ng mga talata),,,,
-Markdown.Quote.Title,Quote,,Citazione,,,Alıntı,Quote,,,,
-Markdown.Quote.Description,Insert a quote block (used to highlight sections of directly quoted text),,Inserisce un blocco di citazione (usato per evidenziare sezioni di testo citato direttamente),,,Bir alıntı bloğu ekle,Magdagdag ng quote block  (pinahihiwatig ang mga grupo na kinopyang texto),,,,
-Markdown.CodeBlock.Title,CodeBlock,,Codice,,,Kod Bloğu,CodeBlock,,,,
-Markdown.CodeBlock.Description,Insert a code block to color and stylize inserted code,,Inserisce un blocco di codice per colorare e stilizzare il codice inserito,,,Kod bloğu ekleyerek kodu renklendir ve stilize et,Lagyan ng code block para kulayin at istilyohin ang nilagyang code,,,,
-Markdown.AlignLeft.Title,Align Left,,Allinea a sinistra,,,Sola Hizala,Ihanay sa kaliwa,,,,
-Markdown.AlignLeft.Description,Align text to the left,,Allinea il testo a sinistra,,,Yazıyı sola hizala,Ihanay ang teksto sa kaliwa,,,,
-Markdown.AlignCenter.Title,Align Center,,Allinea al centro,,,Ortaya Hizala,Ihanay sa gitna,,,,
-Markdown.AlignCenter.Description,Center text,,Allinea il testo al centro,,,Yazıyı ortaya hizala,Ihanay ang teksto sa gitna,,,,
-Markdown.AlignRight.Title,Align Right,,Allinea a destra,,,Sağa Hizala,Ihanay sa kanan,,,,
-Markdown.AlignRight.Description,Align text to the right,,Allinea il testo a destra,,,Yazıyı sağa hizala,Ihanay ang teksto sa kanan,,,,
-Markdown.Justify.Title,Justify,,Giustificato,,,Yasla,Justify,,,,
-Markdown.Justify.Description,Stretch text to so edges align evenly,,Allinea il testo in modo che i bordi si allineino in modo uniforme,,,Kenarlar yaslanacak şekilde yazıyı genişlet,Pahabain ang texto para ang gilid ay pantay-pantay,,,,
-Markdown.Undo.Title,Undo,,Annulla,,,Geri Al,Undo,,,,
-Markdown.Undo.Description,Undo the last action,,Annulla l'ultima azione,,,Son yapılanı geri al,Tanggalin ang huling gawain,,,,
-Markdown.Redo.Title,Redo,,Ripeti,,,Tekrar Et,Redo,,,,
-Markdown.Redo.Description,Redo the last undone action,,Ripeti l'ultima azione annullata,,,Geri alınanı tekrar et,Uliting ang huling tinanggal na gawain,,,,
-GameSort.Random.Title,Random,,Casuale,,,Rasgele,Random,,,,
-GameSort.Random.Description,Shows games in a random order,,Mostra i giochi in ordine casuale,,,Oyunları rasgele bir sırada göster,Ipakita ang mga games sa isang random order,,,,
-GameSort.LeastRatings.Title,Least Ratings,,Meno valutazioni,,,En Düşük Derece,Least Ratings,,,,
-GameSort.LeastRatings.Description,Shows games that have the least amount of ratings first,,Mostra prima i giochi con il minor numero di valutazioni,,,Oyunları en düşükleri önceleyerek göster,Ang may pinakamababang numero ng rating ay ang unang makikita,,,,
-GameSort.Danger.Title,Danger,,In pericolo,,,Tehlike,Danger,,,,
-GameSort.Danger.Description,Shows games closest to being able to be ranked,,Mostra i giochi più vicini a poter essere classificati,,,Derecelendirmeye girmeye yakın oyunları göster,"Ipakita ang mga games na hindi pa ranked, pero malapit na, sa ibabaw ng listahan",,,,
-Games.Title,Games,,Giochi,,,Oyunlar,Games,,,,
-Games.Description,Explore the collection of games uploaded to the site,,Esplora la collezione di giochi caricati sul sito,,,Siteye yüklenmiş oyun koleksiyonunu keşfet,Tignan ang lahat ng games na inupload sa site,,,,
-About.Title,About the event,,Informazioni sull'evento,,,Etkinlik Hakkında,Tungkol sa event,,,,
+key,en,fr,it,de,es,tr,tl,ru,ja,tok,mis-edikan,mis-meow
+Splash.Title,Down2Jam,Down2Jam,Down2Jam,,,Down2Jam,Down2Jam,Down2Jam,ダウン2ジャム,,,Meow
+Splash.Description,The community centered game jam,,La game jam incentrata sulla comunità,,,Topluluk odaklı game jam,Game Jam para sa komunidad,Комьюнити-центричный геймджем,,,,Meow meow meow meow meow
+Splash.Join,Join,,Partecipa,,,Katıl,Salin na,Участвовать,,,kyo,Meow
+Splash.About,About,,Info,,,Hakkında,About,О джеме,,,,Meow
+Splash.Why,Why Jam?,,Perché una Jam?,,,Neden jam yaparız?,Bakit hindi mag jam?,Зачем джемить?,,,,Meow meow?
+Splash.Logo,Down2Jam logo,,Logo Down2Jam,,,Down2Jam logosu,Down2Jam logo,Лого Down2Jam,,,,Meow meow
+Splash.Explore,Explore,,Esplora,,,Keşfet,Tuklasin,Исследовать,,,,Meow
+Navbar.Games.Title,Games,Jeux,Giochi,,,Oyunlar,Games,Игры,,,loka,Meow
+Navbar.Games.Description,All submitted games to the website,,Tutti i giochi caricati sul sito,,,Web sitesine gönderilen tüm oyunlar,Lahat nang games na sumali sa website,Все игры поданные на сайт,,,,Meow meow meow meow meow meow
+Navbar.Results.Title,Results,Résultats,Risultati,,,Sonuçlar,Resulta,Результаты,,,nema,Meow
+Navbar.Results.Description,The results of the last D2Jam,,I risultati dell'ultima D2Jam,,,Son D2Jam'in sonuçları,Lahat nang resulta galing sa huling D2Jam,Результаты последнего D2Jam,,,,Meow meow meow meow meow Meow
+Navbar.Forum.Title,Forum,,Forum,,,Forum,Forum,Форум,,,makona,Meow
+Navbar.Forum.Description,A forum for members of the community to chat with each other in,,Un forum in cui i membri della community possono parlare tra loro,,,Topluluk üyelerinin birbirleriyle konuşabileceği bir forum,Lugar kung saan makakapag-chat ang mga miyembro nang komunidad,"Форум для членов сообщества, чтобы между собой общаться",,,,Meow meow meow meow meow meow meow meow meow meow
+Navbar.Join.Title,Join,,Unisciti,,,Katıl,Salin na,Участвовать,,,kyo,Meow
+Navbar.Join.Description,Join the website by making or logging into an account,,Unisciti al sito web creando un account o accedendo,,,Giriş yaparak veya hesap yaratarak web sitesini görüntüle,Mag log-in o gumawa nang bagong account para sumama sa website,"Создайте и войдите в свой аккаунт, чтобы участвовать",,,,Meow meow meow meow meow meow meow meow meow meow
+Navbar.About.Title,About,,Info,,,Hakkında,About,О джеме,,,ivera,Meow
+Navbar.About.Description,Information about the game jam,,Informazioni sulla game jam,,,Game Jam hakkında bilgiler,Impormasyon tungkol sa game jam,Информация о геймджеме,,,,Meow meow meow meow meow
+Navbar.Donate.Title,Donate,,Dona,,,Bağış,Donate,Задонатить,寄付,,zeba,Meow
+Navbar.Donate.Description,View the donation and support page,,Visualizza la pagina delle donazioni e del supporto,,,Bağış ve destek sayfasını görüntüle,Tignan ang donate at support page,Посмотрите страницу доната и поддержки,寄付するとサポートページを見る,,,Meow meow meow meow meow meow
+Navbar.Lucky.Title,I'm Feeling Lucky,,Mi sento fortunato,,,Şanslı Hissediyorum,Ala-suwete,Чувствую мне повезет,,,go'ka,Meow meow meow
+Navbar.Lucky.Description,Get sent to the page for a random game on the website,,Verrai mandato alla pagina di un gioco casuale sul sito,,,Rasgele bir oyun sayfasına git,Dadalhin ka sa isang random page ng game sa loob nang website,Отправьтесь на страницу случайной игры на сайте,,,,Meow meow meow meow meow meow meow meow meow meow meow meow
+Navbar.RSS.Title,RSS,,RSS,,,RSS,RSS,RSS,,,RSS,Meow
+Navbar.RSS.Description,View available RSS feeds,,Visualizza i feed RSS disponibili,,,Mevcut RSS bildirimlerini görüntüle,Tignan ang mga RSS feeds,Посмотрите доступный RSS фид,,,,Meow meow meow meow
+Navbar.Light.Title,Light Theme,,Tema chiaro,,,Aydınlık Tema,Light Theme,Светлая Тема,,,sol,Meow meow
+Navbar.Light.Description,Change the page colours to be lighter,,Cambia i colori della pagina per essere più chiari,,,Sayfa renklerini aydınlık yapar,Palitan ang kulay ng page para mas maaliwalas,Измените цвета страницы на светлые,,,,Meow meow meow meow meow meow meow
+Navbar.Dark.Title,Dark Theme,,Tema scuro,,,Karanlık Tema,Dark Theme,Темная Тема,,,nalo,Meow meow
+Navbar.Dark.Description,Change the page colours to be darker,,Cambia i colori della pagina per essere più scuri,,,Sayfa renklerini karanlık yapar,Palitan ang kulay ng page para mas madilim,Измените цвета страницы на темные,,,,Meow meow meow meow meow meow meow
+Navbar.Home.Title,Home,,Home,,,Anasayfa,Home,Главная,,,,Meow
+Navbar.Home.Description,Go to the home page,,Vai alla home,,,Anasayfa'ya git,Bumalik sa home page,Вернуться на главную страницу,,,,Meow meow meow meow meow
+Navbar.Brand.Name,D2Jam,,D2Jam,,,D2Jam,D2Jam,D2Jam,,,,Meow
+Navbar.Brand.Alt,Down2Jam logo,,Logo Down2Jam,,,Down2Jam logosu,D2jam logo,Лого Down2Jam,,,,Meow meow
+Navbar.Language.Title,Select Language,,Seleziona lingua,,,Dil Seç,Pumili ng lengguahe,Выбрать Язык,,,,Meow meow
+Navbar.Language.Select,Select,,Seleziona,,,Seç,Pumili,Выбрать,,,,Meow
+Navbar.JoinJam.Title,Join Jam,,Unisciti alla jam,,,Jam'e Katıl,Sumalin sa Jam,Участвовать в Джеме,,,,Meow meow
+Navbar.JoinJam.Description,Mark that you are participating in the jam!,,Conferma la tua partecipazione alla jam!,,,Jam'e katıldığının izini düş,Ipakita mo na sasalin ka sa jam,Отметьтесь что вы участвуете в джеме!,,,,Meow meow meow meow meow meow meow meow!
+Navbar.NoJamToast.Title,Error joining jam,,Errore nell'unirsi alla jam,,,Jam'e katılırken bir hata oluştu,May pagkakamali sa pagsasalin sa jam,Ошибка присоединения к джему,,,,Meow meow meow
+Navbar.NoJamToast.Description,There is no jam to join,,Non c'è una jam a cui unirsi,,,Katılacak bir jam yok,Walang jam na sasalihan,Нет джема для участия,,,,Meow meow meow meow meow meow
+Navbar.MyGame.Title,My Game,,Il mio gioco,,,Oyunum,Aking Game,Моя Игра,,,,Meow meow
+Navbar.MyGame.Description,View the page for your game,,Visualizza la pagina del tuo gioco,,,Oyununun sayfasını görüntüle,Tignan ang page para sa iyong game,Посмотреть страницу вашей игры,,,,Meow meow meow meow meow meow
+Navbar.CreateGame.Title,Create Game,,Crea un gioco,,,Oyun Yarat,Gumawa ng Game,Создать Игру,,,,Meow meow
+Navbar.CreateGame.Description,Create a site page for your game,,Crea una pagina del sito per il tuo gioco,,,Oyunun için bir sayfa oluştur,Gumawa ng site page para sa iyong game,Создайте страницу для вашей игры,,,,Meow meow meow meow meow meow meow
+Navbar.CreatePost.Title,Create Post,,Crea un post,,,Gönderi Yarat,Gumawa ng post,Создать Пост,,,,Meow meow
+Navbar.CreatePost.Description,Create a post in the forum,,Crea un post nel forum,,,Forum'da gönderi yarat,Gumawa ng post sa forum,Создайте пост на форуме,,,,Meow meow meow meow meow meow
+Navbar.MyTeam.Title,My Team,,Il mio team,,,Takımım,Aking Team,Моя Команда,,,,Meow meow
+Navbar.MyTeam.Description,View your team for the jam!,,Visualizza il tuo team per la jam!,,,Jam Takımı'nı görüntüle!,Tignan ang Team nyo para sa jam!,Посмотрите вашу команду на джеме,,,,Meow meow meow meow meow meow!
+Navbar.TeamFinder.Title,Team Finder,,Trova team,,,Takım Bulucu,Hanapan ng Team,Поиск Команды,チームを探す,,,Meow meow
+Navbar.TeamFinder.Description,Find a team to participate in the jam with!,,Trova un team con cui partecipare alla jam!,,,Jam'e katılmak için bir takım bul!,Maghanap ng team para makisalin para sa jam,Найдите команду для участия в джеме,,,,Meow meow meow meow meow meow meow meow meow!
+Navbar.Profile.Title,Profile,,Profilo,,,Profil,Profile,Профиль,プロフィール,,,Meow
+Navbar.Profile.Description,View your profile page,,Visualizza la tua pagina profilo,,,Profilini görüntüle,Tignan ang iyong profile page,Посмотрите свою профильную страницу,,,,Meow meow meow meow
+Navbar.Settings.Title,Settings,,Impostazioni,,,Ayarlar,Settings,Настройки,設定,,eiba,Meow
+Navbar.Settings.Description,Manage your preferences,,Gestisci le tue preferenze,,,Tercihlerini görüntüle,Ayusin ang sariling kagustuhan,Настройте по своим предпочтениям,,,,Meow meow meow
+Navbar.ReportBug.Title,Report Bug,,Segnala un bug,,,Bug Raporu,Report Bug,Доложите о Баге,,,,Meow meow
+Navbar.ReportBug.Description,Go to the Github Repository,,Vai alla repository GitHub,,,Github Depo'suna git,Puntahan ang Github Repository,Перейдите на GitHub Репозиторий,,,,Meow meow meow meow meow
+Navbar.Logout.Title,Logout,,Esci,,,Çıkış Yap,Logout,Выйти,ログアウト,,,Meow
+Navbar.Logout.Description,Log out of your account,,Esci dal tuo account,,,Hesaptan çıkış yap,Mag log-out sa sariling account,Выйдите из своего аккаунта,アカウントからログアウトする,,,Meow meow meow meow meow
+Navbar.Inbox.Title,Inbox,,Notifiche,,,Gelen Kutusu,Inbox,Входящие,受信トレイ,,rolan,Meow
+Navbar.Inbox.Description,View your notifications,,Visualizza le tue notifiche,,,Bildirimleri görüntüle,Tignan ang mga pagpapaunawa,Посмотрите свои оповещения,通知を見る,,,Meow meow meow
+Navbar.Search,Search,,Cerca,,,Ara,Search,Поиск,探す,,,Meow
+Navbar.Music.Title,Music,,Musica,,,Müzik,Musika,Музыка,,,,Meow
+Navbar.Music.Description,All submitted music to the website,,Tutta la musica caricata sul sito,,,Web sitesine gönderilen tüm müzikler,Lahat nang musika na sinalin sa website,Вся музыка добавленная на сайт,,,,Meow meow meow meow meow meow
+Navbar.Login.Title,Login,,Accedi,,,Giriş Yap,,Войти,,,,
+Navbar.Login.Description,Log into the website,,Accedi al sito,,,Web sayfasına giriş yap,,Войдите на сайт,,,,
+Navbar.ThemeSuggestions.Title,Theme Suggestions,,Suggerimenti Tema,,,Tema Önerileri,,Предложение Темы,,,,
+Navbar.ThemeSuggestions.Description,Submit possible jam themes to the jam. These will be voted on by participants in the future,,Proponi possibili temi per la jam. Verranno poi votati dai partecipanti,,,Jam'e tema önerilerinde bulunun. Bu temalar sonraki aşamada katılımcılar tarafından oylanacak.,,Подайте возможные темы для джема. В будущем за них будут голосовать участники,,,,
+Navbar.ThemeElimination.Title,Theme Elimination,,Eliminazione Tema,,,Tema Eleme,,Устранение Темы,,,,
+Navbar.ThemeElimination.Description,Vote on themes you would or would not want to do for the jam. You can vote on as may as you want,,Vota i temi che vorresti o non vorresti per la jam. Puoi votare tutti quelli che vuoi,,,Bu temalarda oyun yapmayı isteyip istemediğinize göre eleme yapın. İstediğiniz kadar temayı oylayabilirsiniz.,,"Проголосуйте за тему, которую вы хотите или нет на джеме. Можете голосовать ровно столько сколько желаете. ",,,,
+Navbar.ThemeVoting.Title,Theme Voting,,Votazione Tema,,,Tema Oylama,,Избирание Темы,,,,
+Navbar.ThemeVoting.Description,Vote on the top themes to determine the theme for the jam,,Vota i migliori temi per determinare il tema finale della jam,,,En beğenilen temalar arasından oy vererek jam temasını seçmeye yardımcı olun,,"Голосуйте за топовые темы, чтобы определить тему на джем",,,,
+PostStyle.Cozy.Title,Cozy,,Esteso,,,Rahat,Maaliwalas,Удобный,,,,
+PostStyle.Cozy.Description,"Large cards, displays all post content",,"Schede grandi, mostra tutto il contenuto del post",,,"Geniş kartlar, bütün gönderi içeriğini gösterir","Malalaking cards, nakikita ang laman ng buong post","Большие карточки, показывают весь пост-контент",,,,
+PostStyle.Compact.Title,Compact,,Compatto,,,Kompakt,Compact,Компактный,,,,
+PostStyle.Compact.Description,Small cards to show more on screen at once,,Schede piccole per mostrare più contenuti sullo schermo contemporaneamente,,,Ekranda daha çok kart göstermek için kartlar küçülür,Malilit na cards para mas mariming makikita sa screen,"Маленькие карточки, чтобы видеть больше на экране",,,,
+PostStyle.Ultra.Title,Ultra Compact,,Ultra compatto,,,Ekstra Kompakt,Ultra Compact,Ультра компактный,,,,
+PostStyle.Ultra.Description,Very small cards for maximum compactness,,Schede molto piccole per la massima compattezza,,,Maksimum kompaktlık için küçücük kartlar,Pinakamaliit na card para talagang napaka-compact,Очень маленькие карточки для максимальной компактности,,,,
+PostSort.Top.Title,Top,,Top,,,Beğeni,Pinakamataas,Топ,,,,
+PostSort.Top.Description,Shows the most liked posts first,,Mostra prima i post più apprezzati,,,En çok beğeni almış postlar önce gösterilir,Pinakikita ang post na may pinakamataas na like sa unahan,Показывать посты с самым большим количеством лайков сначала,,,,
+PostSort.Newest.Title,Newest,,Più recenti,,,En Yeni,Pinakabago,Новейшее,,,,
+PostSort.Newest.Description,Shows the newest posts first,,Mostra prima i post più recenti,,,En yeni gönderiler önce gösterilir.,Pinakikita ang masbagong post sa unahan,Показывать самые свежие посты сначала,,,,
+PostSort.Oldest.Title,Oldest,,Meno recenti,,,En Eski,Pinakaluma,Старейшее,,,,
+PostSort.Oldest.Description,Shows the oldest posts first,,Mostra prima i post più vecchi,,,En eski gönderiler önce gösterilir,Pinakikita ang masmalumahing post sa unahan,Показывать самые старые посты сначала,,,,
+PostTime.Hour.Title,Hour,,Ora,,,Saat,Oras,Час,,,,
+PostTime.Hour.Description,Shows posts from the last hour,,Mostra i post dell'ultima ora,,,Son 1 saatten gönderileri gösterir,Pinakikita ang post galing sa huling nakaraang oras,Показывать посты за последний час,,,,
+PostTime.ThreeHours.Title,Three Hours,,Tre ore,,,Üç Saat,Tatlong Oras,Три Часа,,,,
+PostTime.ThreeHours.Description,Shows posts from the last three hours,,Mostra i post delle ultime tre ore,,,Son 3 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang tatlong oras,Показывать посты за последние три часа,,,,
+PostTime.SixHours.Title,Six Hours,,Sei ore,,,Altı Saat,Anim na Oras,Шесть Часов,,,,
+PostTime.SixHours.Description,Shows posts from the last six hours,,Mostra i post delle ultime sei ore,,,Son 6 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang anim na oras,Показывать посты за последние шесть часов,,,,
+PostTime.TwelveHours.Title,Twelve Hours,,Dodici ore,,,On İki Saat,Labing-dalawang Oras,Двенадцать Часов,,,,
+PostTime.TwelveHours.Description,Shows posts from the last twelve hours,,Mostra i post delle ultime dodici ore,,,Son 12 saatten gönderileri gösterir,Pinakikita ang post galing sa nakaraang labing-dalawang oras,Показывать посты за последние двенадцать часов,,,,
+PostTime.Day.Title,Day,,Giorno,,,Gün,Araw,День,,,,
+PostTime.Day.Description,Shows posts from the last day,,Mostra i post dell'ultimo giorno,,,Son günün gönderilerini gösterir,Pinakikita ang post galing sa nakaraang araw,Показывать посты за последний день,,,,
+PostTime.Week.Title,Week,,Settimana,,,Hafta,Linggo,Неделя,,,,
+PostTime.Week.Description,Shows posts from the last week,,Mostra i post dell'ultima settimana,,,Son haftanın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang linggo,Показывать посты за последнюю неделю,,,,
+PostTime.Month.Title,Month,,Mese,,,Ay,Buwan,Месяц,,,,
+PostTime.Month.Description,Shows posts from the last month,,Mostra i post dell'ultimo mese,,,Son ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang buwan,Показывать посты за последний месяц,,,,
+PostTime.ThreeMonths.Title,Three Months,,Tre mesi,,,Üç Ay,Tatlong Buwan,Три Месяца,,,,
+PostTime.ThreeMonths.Description,Shows posts from the last three months,,Mostra i post degli ultimi tre mesi,,,Son 3 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang tatlong buwan,Показывать посты за последние три месяца,,,,
+PostTime.SixMonths.Title,Six Months,,Sei mesi,,,Altı Ay,Anim na Buwan,Шесть Месяцев,,,,
+PostTime.SixMonths.Description,Shows posts from the last six months,,Mostra i post degli ultimi sei mesi,,,Son 6 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang anim na buwan,Показывать посты за последние шесть месяцев,,,,
+PostTime.NineMonths.Title,Nine Months,,Nove mesi,,,Dokuz Ay,Siyam na Buwan,Девять Месяцев,,,,
+PostTime.NineMonths.Description,Shows posts from the last nine month,,Mostra i post degli ultimi nove mesi,,,Son 9 ayın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang siyam na buwan,Показывать посты за последние девять месяцев,,,,
+PostTime.Year.Title,Year,,Anno,,,Yıl,Taon,Год,,,,
+PostTime.Year.Description,Shows posts from the last year,,Mostra i post dell'ultimo anno,,,Son 1 yılın gönderilerini gösterir,Pinakikita ang post galing sa nakaraang taon,Показывать посты за последний год,,,,
+PostTime.All.Title,All Time,,Sempre,,,Tüm Zamanlar,Lahat,Все Время,,,,
+PostTime.All.Description,Shows all posts,,Mostra tutti i post,,,Bütün gönderileri gösterir,Pinakikita ang lahat ng post,Показывать посты за все время,,,,
+Settings.Title,Settings,,Impostazioni,,,Ayarlar,Settings,Настройки,,,,
+Settings.Description,Manage your preferences,,Gestisci le tue preferenze,,,Ayarlarınızı yönetin,Ayusin ang sariling kagustuhan,Настройте по своим предпочтениям,,,,
+Settings.Name.Title,Name,,Nome,,,İsim,Pangalan,Имя,,,,
+Settings.Name.Description,The name that displays for you on the site,,Il nome che verrà mostrato sul sito,,,Sitede gösterilen isminiz,Ang pangalan na ipakikita sayo sa loob ng site,"Имя, которое отображается на сайте",,,,
+Settings.Email.Title,Email,,Email,,,Eposta,Email,Электронная почта,,,,
+Settings.Email.Description,"The email associated with your account (for password reset, notifications, etc.)",,"L'email associata al tuo account (per reimpostare la password, notifiche, ecc.)",,,"Hesabınıza bağlı eposta (şifre yenileme, bildirim vb. için)","Ang email na konektado sa iyong account (para ayusin ang password, at notipikasyon, atbp.)","Адрес электронной почты связанный с этим аккаунтом (для сброса пароля, оповещений и т.д.)",,,,
+Settings.Email.Show,Show Email,,Mostra email,,,Eposta Göster,Ipakita ang email,Показывать Электронную Почту,,,,
+Settings.Email.Hide,Hide Email,,Nascondi Email,,,Eposta Gizle,Itago and email,Скрыть Электронную Почту,,,,
+Settings.Short.Title,Short,,Descrizione breve,,,Kısa,Maikling bio,Кратко о себе,,,,
+Settings.Short.Description,A short description that appears in spots such as search instead of the bio (max 155 characters),,Una breve descrizione che appare in punti come la ricerca al posto della bio (max 155 caratteri),,,Arama kısmı gibi yerlerde çıkan kısa açıklama,"Maikling bio na pinapakita sa ibang lugar, tulad ng search, kaysasa buong bio","Короткое описание, которое видно в местах вроде поиска вместо Био (максимальная длина в 155 символа)",,,,
+Settings.Bio.Title,Bio,,Bio,,,Bio,Bio,Био,,,,
+Settings.Bio.Description,A large description that shows on your profile page,,Una descrizione estesa che viene mostrata sulla tua pagina del profilo,,,Profil sayfanızda gözüken daha uzun açıklama,Ang buong bio na makikita sa iyong profile page,"Длинное описание, которое видно на странице профиля",,,,
+Settings.ProfilePicture.Title,Profile Picture,,Immagine del profilo,,,Profil Resmi,Profile Picture,Картинка Профиля,,,,
+Settings.ProfilePicture.Description,The image that represents you on the website (usually displays next to your name),,L'immagine che ti rappresenta sul sito (di solito appare accanto al tuo nome),,,Sizi web sitesinde temsil eden resim ( genelde isminizin yanında çıkar),Ang litrato na representasyon nyo sa website (makikitang katabi ng iyong pangalan),"Изображение, которое отображает вас на сайте (обычно показывается рядом с вашим именем)",,,,
+Settings.BannerPicture.Title,Banner Picture,,Immagine di copertina,,,Afiş Resmi,Banner Picture,Баннер Картинка,,,,
+Settings.BannerPicture.Description,A picture that shows at the top of your profile and as the background of your search result,,Un'immagine che viene mostrata in cima al tuo profilo e come sfondo dei tuoi risultati di ricerca,,,Profil sayfanızın üstünde ve arama sonucunuzun arkaplanında gösterilen resim,"Litrato na pinapakita sa taas ng iyong profile page, at sa likod ng resulta ng search","Изображение, которое видно в шапке вашего профиля и как бэкграунд при вашем отображении в поиске",,,,
+Settings.PrimaryRoles.Title,Primary Roles,,Ruoli principali,,,Öncelikli Roller,Pangunahing Tungkulin,Основные Роли,,,,
+Settings.PrimaryRoles.Description,Roles you usually do on a jam team,,I ruoli che di solito ricopri in un team durante una jam,,,Bir jam takımında öncelikli olarak aldığınız roller,Mga papel na karaniwang ginagawa nyo sa isang jam team,"Роли, которые вы обычно занимаете в джеме",,,,
+Settings.SecondaryRoles.Title,Secondary Roles,,Ruoli secondari,,,İkincil Roller,Pangalawang Tungkulin,Второстепенные Роли,,,,
+Settings.SecondaryRoles.Description,Things you are capable of doing (or are willing to do if you can't do your primary role),,Le cose che sei in grado di fare (o che sei disposto a fare se non puoi ricoprire il tuo ruolo primario),,,Yeteneğinizin olduğu işler (ya da öncelikli rolünüzü gerçekleştiremeyecekseniz tercih ettiğiniz şeyler),Mga papel na kaya nyong gawin (o handang gawin kung hindi magawa ang panunahing tungkulin),"То что вы можете делать (или могли бы, если не получается участвовать по основной роли)",,,,
+Settings.Save.Title,Save,,Salva,,,Kaydet,Save,Сохранить,,,,
+Settings.Save.Description,Save your settings changes,,Salva le modifiche alle impostazioni,,,Ayarlardaki değişiklikleri kaydedin,I-save ang mga pagbabago sa setting,Сохраните изменения настроек,,,,
+Settings.Reset.Title,Reset,,Reset,,,Sıfırla,Reset,Сбросить,,,,
+Settings.Reset.Description,Reset your settings to the last save (discards changes),,Ripristina le impostazioni all'ultimo salvataggio (annulla le modifiche),,,Ayarlarınızı son kayda sıfırlayın (yapılan değişiklikleri sıfırla),Ibalik ang settings sa huling save (itatapon ang mga pagbabago),Сбросьте настройки до последнего сохранения (убрать изменения),,,,
+Markdown.Characters,characters,,caratteri,,,karakter,mga texto,символы,,,,
+Markdown.Words,words,,parole,,,kelime,mga salita,слова,,,,
+Markdown.Bold.Title,Bold,,Grassetto,,,Kalın,Bold,Жирным,,,,
+Markdown.Bold.Description,Make text darker and thicker (used to emphasize key words),,Rende il testo più scuro e spesso (usato per enfatizzare le parole chiave),,,Yazıyı daha koyu ve kalın yapar (kelimelere dikkat çekmek için kullanılır),Gawing mas madidilim at mas makapal ang teksto (ginagamit upang bigyang-diin ang mga mahahalagang salita),Сделайте текст темнее и толще (чтобы акцентировать на ключевых словах),,,,
+Markdown.Italic.Title,Italic,,Corsivo,,,İtalik,Italic,Итальянским,,,,
+Markdown.Italic.Description,Slant text to the right (used to indicate the text is vocally stressed),,Inclina il testo a destra (usato per indicare enfasi su una parola),,,Yazıyı sağa doğru yatırır,I-slant ang teksto sa kanan (ginagamit upang ipahiwatig na ang teksto ay may importansya kung wikain),Косой текст вправо (чтобы отразить смысловое ударение в тексте) ,,,,
+Markdown.Highlight.Title,Highlight,,Evidenzia,,,Vurgula,Highlight,Подсветка,,,,
+Markdown.Highlight.Description,Emphasize text by giving it a colored background (used to draw attention),,Enfatizza il testo dandogli uno sfondo colorato (usato per attirare l'attenzione),,,Yazının arkaplanına renk vererek vurgular,Lagyan ng kulay ang background para mag-bigyang diin ang texto (ginagamit para mag-bigay atensyon),Выделите текст придавая ему цветной задний фон (чтобы привлечь внимание),,,,
+Markdown.Strikethrough.Title,Strikethrough,,Barrato,,,Üstü Çizili,Strikethrough,Вычеркнуть,,,,
+Markdown.Strikethrough.Description,"Draw a line through text to indicate deletion, inaccuracy, or irrelevance",,"Traccia una linea sul testo per indicare cancellazione, inesattezza o irrilevanza",,,Sanki silinmişçesine yazının üstüne çizgi çeker,"Guhitan ng texto gamit ang linya upang ipahiwatig ang pagtanggal, kawalan ng katumpakan, o kawalan ng kabuluhan","Проведите линию сквозь текст, чтобы обозначить удаление, неаккуратность или неважность",,,,
+Markdown.Subscript.Title,Subscript,,Pedice,,,Alt Simge,Subscript,Нижний Индекс,,,,
+Markdown.Subscript.Description,"Display text slightly below the normal line (used for chemical formulas, math, and footnotes)",,"Visualizza il testo leggermente al di sotto della riga normale (usato per formule chimiche, matematica e note a piè di pagina)",,,Bir yazının azıcık altında başka bir yazı gösterir (formüller ve dipnotlar için kullanılır),"Ipakita ang texto sa ilalim ng normal na linya (gamit sa chemical formula, matimatika, at mga footnotes)","Отображайте текст слегка ниже линии (используется для химических формул, математики и примечаний)",,,,
+Markdown.Superscript.Title,Superscript,,Apice,,,Üst Simge,Superscript,Верхний Индекс,,,,
+Markdown.Superscript.Description,"Display text slightly above the normal line (used for exponents, ordinal indicators, and references)",,"Visualizza il testo leggermente al di sopra della riga normale (usato per esponenti, indicatori ordinali e riferimenti)",,,"Bir yazının azıcık üstüne başka bir yazı gösterir (üslü sayılar, göstergeler ve referanslarda kullanılır)","Ipakita ang texto sa ibabaw ng normal na linya (gamit sa exponents, ordinal indicators at references)","Отображайте текст слегка выше линии (используется для экспонент, показателей порядка и отссылок)",,,,
+Markdown.Link.Title,Link,,Collegamento,,,Bağlantı,Link,Ссылка,,,,
+Markdown.Link.Description,Add a clickable hyperlink to link to other content,,Aggiunge un link cliccabile per collegarsi ad altri contenuti,,,Başka bir sayfaya bağlantı oluştur,Lagyan ng isang na-click na hyperlink upang mag-link sa iba pang nilalaman,Добавьте кликабельную гиперссылку ведущую к другому содержимому,,,,
+Markdown.Image.Title,Image,,Immagine,,,Resim,Litrato,Изображение,,,,
+Markdown.Image.Description,Insert an image into the content,,Inserisce un'immagine nel contenuto,,,İçeriğe bir resim ekle,Lagyan ng imahe sa loob ng sulatin,Добавьте изображение к содержимому,,,,
+Markdown.HorizontalRule.Title,Horizontal Rule,,Divisore orizzontale,,,Yatay Ayraç,Horizontal Rule,Горизонтальная Линия,,,,
+Markdown.HorizontalRule.Description,Add a horizontal rule (a thematic break between paragraph-level elements),,Aggiunge una riga orizzontale (una separazione tematica tra elementi a livello di paragrafo),,,Yatay bir çizgi ekle,Magdagdag ng horizontal rule (isang temang pahinga sa pagitan ng mga talata),Добавьте горизонтальную линию (для тематического разрыва между параграфами),,,,
+Markdown.Quote.Title,Quote,,Citazione,,,Alıntı,Quote,Цитата,,,,
+Markdown.Quote.Description,Insert a quote block (used to highlight sections of directly quoted text),,Inserisce un blocco di citazione (usato per evidenziare sezioni di testo citato direttamente),,,Bir alıntı bloğu ekle,Magdagdag ng quote block  (pinahihiwatig ang mga grupo na kinopyang texto),Вставьте цитатный блок (чтобы обозначить секции напрямую процитированного текста),,,,
+Markdown.CodeBlock.Title,CodeBlock,,Codice,,,Kod Bloğu,CodeBlock,Блок Кода,,,,
+Markdown.CodeBlock.Description,Insert a code block to color and stylize inserted code,,Inserisce un blocco di codice per colorare e stilizzare il codice inserito,,,Kod bloğu ekleyerek kodu renklendir ve stilize et,Lagyan ng code block para kulayin at istilyohin ang nilagyang code,"Вставьте блок кода, чтобы окрасить и стилизировать вставленный код",,,,
+Markdown.AlignLeft.Title,Align Left,,Allinea a sinistra,,,Sola Hizala,Ihanay sa kaliwa,По Левому Краю,,,,
+Markdown.AlignLeft.Description,Align text to the left,,Allinea il testo a sinistra,,,Yazıyı sola hizala,Ihanay ang teksto sa kaliwa,Выравнивайте текст по левому краю,,,,
+Markdown.AlignCenter.Title,Align Center,,Allinea al centro,,,Ortaya Hizala,Ihanay sa gitna,По Середине,,,,
+Markdown.AlignCenter.Description,Center text,,Allinea il testo al centro,,,Yazıyı ortaya hizala,Ihanay ang teksto sa gitna,Выравнивайте текст по середине,,,,
+Markdown.AlignRight.Title,Align Right,,Allinea a destra,,,Sağa Hizala,Ihanay sa kanan,По Правому Краю,,,,
+Markdown.AlignRight.Description,Align text to the right,,Allinea il testo a destra,,,Yazıyı sağa hizala,Ihanay ang teksto sa kanan,Выравнивайте текст по правому краю,,,,
+Markdown.Justify.Title,Justify,,Giustificato,,,Yasla,Justify,По Ширине,,,,
+Markdown.Justify.Description,Stretch text to so edges align evenly,,Allinea il testo in modo che i bordi si allineino in modo uniforme,,,Kenarlar yaslanacak şekilde yazıyı genişlet,Pahabain ang texto para ang gilid ay pantay-pantay,"Растяните текст, чтобы края выравнивались ровно",,,,
+Markdown.Undo.Title,Undo,,Annulla,,,Geri Al,Undo,Назад,,,,
+Markdown.Undo.Description,Undo the last action,,Annulla l'ultima azione,,,Son yapılanı geri al,Tanggalin ang huling gawain,Отмените последнее действие,,,,
+Markdown.Redo.Title,Redo,,Ripeti,,,Tekrar Et,Redo,Вперед,,,,
+Markdown.Redo.Description,Redo the last undone action,,Ripeti l'ultima azione annullata,,,Geri alınanı tekrar et,Uliting ang huling tinanggal na gawain,Отмените последнее отмененное действие,,,,
+GameSort.Random.Title,Random,,Casuale,,,Rasgele,Random,Случайно,,,,
+GameSort.Random.Description,Shows games in a random order,,Mostra i giochi in ordine casuale,,,Oyunları rasgele bir sırada göster,Ipakita ang mga games sa isang random order,Показывать игры в случайном порядке,,,,
+GameSort.LeastRatings.Title,Least Ratings,,Meno valutazioni,,,En Düşük Derece,Least Ratings,Меньший Рейтинг,,,,
+GameSort.LeastRatings.Description,Shows games that have the least amount of ratings first,,Mostra prima i giochi con il minor numero di valutazioni,,,Oyunları en düşükleri önceleyerek göster,Ang may pinakamababang numero ng rating ay ang unang makikita,Показывать игры с самым низким рейтингом,,,,
+GameSort.Danger.Title,Danger,,In pericolo,,,Tehlike,Danger,Опасность,,,,
+GameSort.Danger.Description,Shows games closest to being able to be ranked,,Mostra i giochi più vicini a poter essere classificati,,,Derecelendirmeye girmeye yakın oyunları göster,"Ipakita ang mga games na hindi pa ranked, pero malapit na, sa ibabaw ng listahan","Показывать игры ближайшие к тому, чтобы попасть в ранк",,,,
+Games.Title,Games,,Giochi,,,Oyunlar,Games,Игры,,,,
+Games.Description,Explore the collection of games uploaded to the site,,Esplora la collezione di giochi caricati sul sito,,,Siteye yüklenmiş oyun koleksiyonunu keşfet,Tignan ang lahat ng games na inupload sa site,Посмотрите коллекцию игр загруженных на сайт,,,,
+About.Title,About the event,,Informazioni sull'evento,,,Etkinlik Hakkında,Tungkol sa event,О событии,,,,
 About.Description,"D2Jam is a community centered game jam with a emphasis on supporting things constructed by the community! We wanted a jam which celebrated post-submission events, encouraged discourse and reflection, and provided tools for developers to find and share games.
 
 D2Jam is an online game jam that anyone is free to join and that lasts for 3 days (Somewhere between Friday and Monday depending on timezones). There is a 2 hour submission window at the end as a time to make sure you get your game submitted before the jam fully ends. After the jam there is a 2 week rating period to play, rate, and give feedback to other entries in the jam. In addition any post jam events such as the Score Chasers tournament will be run in the post jam period.
@@ -184,14 +184,18 @@ Abbiamo 2 categorie: Regular e O.D.A (One Dev Army). Entrambe si svolgono contem
 
 D2Jam, herkesin katılmakta özgür olduğu ve 3 gün süren (zaman dilimlerine göre Cuma ile Pazartesi arasında değişen) çevrim içi bir game jam'dir. Jam’in sonunda, oyununuzu tamamlayıp gönderebilmeniz için 2 saatlik ek bir gönderim penceresi bulunur. Jam bittikten sonra katılımcıların oyunları oynayıp değerlendirebileceği ve geri bildirim verebileceği 2 haftalık bir oylama dönemi başlar. Ayrıca Score Chasers turnuvası gibi gönderim sonrası tüm etkinlikler de bu dönemde gerçekleşir.
 
-2 kategorimiz var: Regular (Normal) ve O.D.A (One Dev Army - Tek Geliştirici Ordusu). Her ikisi de aynı anda gerçekleşir.",,,,,
-GameFAQ.Title,Game FAQ,,FAQ sui Giochi,,,Oyun S.S.S,,,,,
-GameFAQ.Description,Questions relating to creating and submitting games to the jam,,Domande relative alla creazione e alla consegna dei giochi per la jam,,,Jam'e oyun yaratma ve yükleme hakkında sorualr,,,,,
-GameFAQ.Q1.Number,Q1,,D1,,,S1,,,,,
-GameFAQ.Q1.Question,How long do I have to make the game?,,Quanto tempo ho per creare il gioco?,,,Oyunu ne kadar sürede yapmam gerekiyor?,,,,,
-GameFAQ.Q1.Answer,3 Days. From Friday to Monday (depending on the time zone).,,"Hai 3 giorni, da venerdì a lunedì (a seconda del fuso orario)",,,3 Gün. Cuma'dan Pazartesi'ye ( zaman dilimine göre değişiklik gösterebilir),,,,,
-GameFAQ.Q2.Number,Q2,,D2,,,S2,,,,,
-GameFAQ.Q2.Question,"Can I use premade code and assets (art, graphics, music, SFX, etc)?",,"Posso usare codice e risorse (arte, grafica, musica, SFX, ecc.) già pronti?",,,"Hazır kod veya asset(sanat,grafik, müzik, ses efekti, vb...) kullanabilir miyim?",,,,,
+2 kategorimiz var: Regular (Normal) ve O.D.A (One Dev Army - Tek Geliştirici Ordusu). Her ikisi de aynı anda gerçekleşir.",,"D2Jam — это игровой джем ориентированный на сообщество и для сообщества! Мы хотели организовать джем, который бы праздновал события после подачи игр: стимулировал обсуждения и размышления, а также предоставлял инструменты для разработчиков, чтобы они могли находить игры и делиться собственными детищами.
+
+D2Jam — это онлайн-джем, к которому может присоединиться любой желающий, и который длится 3 дня (с пятницы по понедельник, в зависимости от часовых поясов). В конце есть 2-х часовое окно для подачи работ, чтобы убедиться, что вы успели отправить свою игру до полного завершения джема. После джема следует 2-х недельный период оценки, во время которого можно играть в игры других участников, ставить оценки и давать фидбек. Кроме того, любые события после джема, такие как турнир Score Chasers, будут проводиться именно в этот пост-джем период.
+
+У нас есть 2 категории: Regular и O.D.A (Армия Одного Разраба). Обе проходят одновременно.",,,,
+GameFAQ.Title,Game FAQ,,FAQ sui Giochi,,,Oyun S.S.S,,ФАГ по Игре,,,,
+GameFAQ.Description,Questions relating to creating and submitting games to the jam,,Domande relative alla creazione e alla consegna dei giochi per la jam,,,Jam'e oyun yaratma ve yükleme hakkında sorualr,,Вопросы касающиеся создания и подачи игры на джем,,,,
+GameFAQ.Q1.Number,Q1,,D1,,,S1,,В1,,,,
+GameFAQ.Q1.Question,How long do I have to make the game?,,Quanto tempo ho per creare il gioco?,,,Oyunu ne kadar sürede yapmam gerekiyor?,,Как долго я могу делать игру?,,,,
+GameFAQ.Q1.Answer,3 Days. From Friday to Monday (depending on the time zone).,,"Hai 3 giorni, da venerdì a lunedì (a seconda del fuso orario)",,,3 Gün. Cuma'dan Pazartesi'ye ( zaman dilimine göre değişiklik gösterebilir),,3 Дня. С Пятницы по Понедельник (в зависимости от временной зоны),,,,
+GameFAQ.Q2.Number,Q2,,D2,,,S2,,В2,,,,
+GameFAQ.Q2.Question,"Can I use premade code and assets (art, graphics, music, SFX, etc)?",,"Posso usare codice e risorse (arte, grafica, musica, SFX, ecc.) già pronti?",,,"Hazır kod veya asset(sanat,grafik, müzik, ses efekti, vb...) kullanabilir miyim?",,"Могу я использовать заранее подготовленный код и ассеты (арт, графика, музыка, звуковые эффекты и т.д.)?",,,,
 GameFAQ.Q2.Answer,"Regular: Yes! Anything goes, as long as the game's core experience is crafted during the allowed time.
 
 O.D.A: In general, no. This category focuses on creating a game from scratch. However, it's OK to use pre-existing assets from the following categories: fonts, code (engine, shaders, etc.) and logos. This means you cannot use any premade art, music, or SFX. Additionally, the game's core experience must be crafted during the allowed time.",,"Regular: Sì! Vale tutto, a patto che l'esperienza di gioco principale venga creata durante il tempo stabilito.
@@ -201,9 +205,11 @@ O.D.A: In generale, no. Questa categoria si concentra sulla creazione di un gioc
 O.D.A: Genel olarak hayır. Bu kategori oyunu sıfırdan yaratmanız için düzenlenmiştir. Ancak, şu kategorilerdeki önceden yaratılmış asset'ler kabul edilir:
 Font'lar, kod (oyun motoru, shader'lar, vb...) ve logolar.
 Bu daha önceden yaratılmış sanat, müzik ve ses efekti kullanamayacağınız anlamına geliyor.
-Ek olarak, oyunun ana deneyimi verilen sürede yapılmış olmalıdır.",,,,,
-GameFAQ.Q3.Number,Q3,,D3,,,S3,,,,,
-GameFAQ.Q3.Question,Can I use generative AI to make aspects of the game?,,Posso usare l'IA generativa per creare parti del gioco?,,,Oyunu yaparken üretken Yapay Zeka kullanabilir miyim?,,,,,
+Ek olarak, oyunun ana deneyimi verilen sürede yapılmış olmalıdır.",,"Regular: Да! Разрешается всё, при условии, что основная часть игры создаётся в течение установленного времени.
+
+O.D.A: В общем — нет. Эта категория сосредоточена на создании игры с нуля. Однако разрешается использовать готовые материалы из следующих категорий: шрифты, код (движок, шейдеры и т. д.) и логотипы. Это значит, что нельзя использовать заранее сделанную графику, музыку или звуковые эффекты. Кроме того, основная часть игры должна быть создана в течение установленного времени.",,,,
+GameFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,
+GameFAQ.Q3.Question,Can I use generative AI to make aspects of the game?,,Posso usare l'IA generativa per creare parti del gioco?,,,Oyunu yaparken üretken Yapay Zeka kullanabilir miyim?,,Могу ли я использовать генеративное ИИ для аспектов игры?,,,,
 GameFAQ.Q3.Answer,"The use of generative AI is restricted.
 
 As a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand the that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.
@@ -225,9 +231,16 @@ Topluluk olarak, üretici yapay zekanın uzman becerilere sahip yaratıcılar ü
 Kısıtlama, genel olarak ""game jam ruhuna uygun olmayan"" olarak değerlendirilen teknolojilere odaklanmaktadır. Bunun büyük bölümü, normalde olası bir ekip arkadaşı tarafından yapılacak içerikleri oyununuza üretici yapay zeka ile eklemekle ilgilidir. Kısıtlama, yaratıcılığın yerini almasa da otomatik kod tamamlama veya internette bilgi arama gibi yapay zeka teknolojilerine odaklanmamaktadır.
 Açıklık getirmek gerekirse, bir Yapay Zeka Agentından sizin için bir kod parçası yazmasını veya kodunuzu düzeltmesini istemek yasaktır.
 
-Bir game jam’de, yapay zeka veya başka bir konuda kuralları uygulamak zordur. Jam kurallarını açıkça ihlal eden girişleri rapor etme imkanı ekleyeceğiz. Raporlar, jam organizatörleri tarafından manuel olarak incelenecektir.",,,,,
-GameFAQ.Q4.Number,Q4,,D4,,,S4,,,,,
-GameFAQ.Q4.Question,How do I submit a game?,,Come si consegna un gioco?,,,Oyunumu nasıl yüklerim?,,,,,
+Bir game jam’de, yapay zeka veya başka bir konuda kuralları uygulamak zordur. Jam kurallarını açıkça ihlal eden girişleri rapor etme imkanı ekleyeceğiz. Raporlar, jam organizatörleri tarafından manuel olarak incelenecektir.",,"Использование генеративного ИИ ограничено.
+
+Как сообщество, мы понимаем негативное влияние генеративного ИИ на творцов с узкой профессиональной специализацией. Мы также понимаем, что многие инструменты генеративного ИИ были обучены неэтичными методами. Наш джем празднует создателей и их труд. Организаторы D2J считают, что использование генеративного ИИ для замены традиционных ролей в разработке игр не соответствует духу геймджема.
+
+Ограничение касается технологий, которые широко считаются «не соответствующими духу геймджема». В основном это связано с генерацией контента для вашей игры, который в противном случае мог бы создать гипотетический напарник по команде. Ограничение в меньшей степени касается ИИ-технологий, не заменяющих творчество, таких как автодополнение кода или поиск информации в интернете.
+Для ясности: просить ИИ-агента написать за вас часть кода или исправить ваш код также запрещено.
+
+Соблюдение правил на геймджеме, будь то вокруг ИИ или чего-либо ещё, представляет собой сложную задачу. Мы добавим возможность сообщать об участниках, которые явно нарушили правила джема. Все жалобы будут вручную рассмотрены организаторами.",,,,
+GameFAQ.Q4.Number,Q4,,D4,,,S4,,В4,,,,
+GameFAQ.Q4.Question,How do I submit a game?,,Come si consegna un gioco?,,,Oyunumu nasıl yüklerim?,,Как мне подать игру?,,,,
 GameFAQ.Q4.Answer,"You will need to upload your game to a site such as Itch.io to host the game files. Then you can make a game page on the d2jam site (by clicking the create game button) and create a link on that page to where you hosted the game files.
 
 A page on the d2jam site is required to let people browse games in the jam easily and to let you be rated. Eventually we may support game hosting directly on the d2jam site in a future jam but it would require the jam being supported by donations due to storage costs.",,"Dovrai caricare il tuo gioco su un sito come Itch.io per ospitare i file di gioco. Successivamente, puoi creare la pagina del gioco sul sito d2jam (cliccando sul pulsante ""Crea gioco"") e inserire un link alla pagina dove hai caricato i file di gioco.
@@ -236,9 +249,11 @@ Una pagina sul sito d2jam è necessaria per consentire agli utenti di sfogliare 
 
 İnsanların sizin oyununuzu puanlayıp yorum atabilmesi için d2jam sitesinde bir oyun sayfanız olması gerekiyor.
 Eğer ileride bağışlarla yeterince destek alırsak dosya barındırma işini de direkt sitemize taşımayı planlıyoruz.
-",,,,,
-GameFAQ.Q5.Number,Q5,,D5,,,S5,,,,,
-GameFAQ.Q5.Question,Can I update the game after submission?,,Posso aggiornare il gioco dopo la consegna?,,,Oyunumu yükledikten sonra güncelleyebilir miyim?,,,,,
+",,"Вам нужно будет загрузить свою игру на сайт, например Itch.io, чтобы разместить игровые файлы. Затем вы можете создать страницу игры на сайте d2jam (нажав кнопку «Создать игру») и добавить на этой странице ссылку на место, где размещены файлы игры.
+
+Страница на сайте d2jam обязательна — она позволяет людям легко находить игры участвующие в джеме, а также даёт возможность вашей игре получать оценки. В будущем мы, возможно, добавим поддержку загрузки игр напрямую на сайт d2jam, но это потребует финансирования джема через пожертвования из-за стоимости хранения данных.",,,,
+GameFAQ.Q5.Number,Q5,,D5,,,S5,,В5,,,,
+GameFAQ.Q5.Question,Can I update the game after submission?,,Posso aggiornare il gioco dopo la consegna?,,,Oyunumu yükledikten sonra güncelleyebilir miyim?,,Могу ли я обновить игру после подачи?,,,,
 GameFAQ.Q5.Answer,"You cannot make edits to the jam build of the game during the rating period apart from game breaking bug fixes and porting. (For example if you want to make a mac build during the rating period without changing anything about the game thats fine. If you have a bug that prevents someone from playing your game due to a crash that would be a game breaking bug and can be fixed).
 
 You can make and post a post-jam version of the game during the rating period but the jam version of the game must be more prominent and you cannot trick people into playing the post-jam version of the game. You can use jampack to have 2 web builds on the same page.",,"Non puoi apportare modifiche alla build jam del gioco durante il periodo di valutazione, a parte per correzioni di bug che ne impediscono il funzionamento e per il porting. (Ad esempio, se vuoi creare una versione per Mac durante il periodo di valutazione senza cambiare nulla del gioco, va bene. Se hai un bug che impedisce a qualcuno di giocare a causa di un crash, questo sarebbe un bug che ne impedisce il funzionamento e può essere corretto).
@@ -248,53 +263,58 @@ Biz oyunlarınızın oynanabilir olmasını ve katıldığınız etkinlikten zev
 
 Eğer oyununuza yeni özellikler eklemek istiyorsanız, bunları net bir şekilde sayfanıza changelog ekleyerek belirtip ekstra bir ""post jam versiyonu"" yükleyin.
 İnsanlar iki versionu da deneyerek sizi değerlendirecektir.
-Ayrıca jampack adlı uygulamayı kullanarak tek sayfada iki versiyon gösterebilirsiniz.",,,,,
-GameFAQ.Q6.Number,Q6,,D6,,,S6,,,,,
-GameFAQ.Q6.Question,What happens if I don't submit before the end of the jam,,Cosa succede se non consegno prima della fine della jam?,,,Eğer oyunumu jam bittiğinde yükleyemezsem ne olur?,,,,,
+Ayrıca jampack adlı uygulamayı kullanarak tek sayfada iki versiyon gösterebilirsiniz.",,"Вы не можете вносить изменения в джем-версию игры во время периода оценки, за исключением исправления критических багов и портирования. (Например, если вы хотите сделать сборку для macOS во время периода оценки, не меняя ничего в самой игре — это допустимо. Если у вас есть ошибка, которая мешает кому-то запустить игру из-за вылета — это критический баг, и его можно исправить).
+
+Вы можете создать и опубликовать пост-джем версию игры во время периода оценки, но джем-версия должна быть более заметной, и вы не можете обманывать игроков, заставляя их запускать пост-джем версию вместо джем-версии. Вы можете использовать jampack, чтобы разместить 2 веб-сборки на одной странице.",,,,
+GameFAQ.Q6.Number,Q6,,D6,,,S6,,В6,,,,
+GameFAQ.Q6.Question,What happens if I don't submit before the end of the jam,,Cosa succede se non consegno prima della fine della jam?,,,Eğer oyunumu jam bittiğinde yükleyemezsem ne olur?,,"Что случится, если я не подам игру к концу джема?",,,,
 GameFAQ.Q6.Answer,There is a 2 hour window after the jam ends that you can still upload a game within in order to catch any people that might be having last minute issues with builds. This is meant to be a period to upload within rather than work on the game more within and attempts to submit after the 2 hour submission window will not be accepted.,,"C'è una finestra di 2 ore dopo la fine della jam in cui puoi ancora caricare un gioco, per aiutare chi potrebbe avere problemi dell'ultimo minuto con le versioni. Questo periodo è pensato per il caricamento piuttosto che per continuare a lavorare sul gioco e i tentativi di consegna dopo la finestra di 2 ore non saranno accettati.",,,"Jam bittikten sonra 2 saatlik bir penceremiz var. Son dakika build yaratırken sıkıntı yaşayan katılımcılar için düşündüğümüz bir pencere bu.
-Bu süre oyuna yeni şeyler eklemenizdense, oyunu çalışır hale getirmek ve bir yere yükleyebilmeniz için verilen bir süredir.",,,,,
-GameFAQ.Q7.Number,Q7,,D7,,,S7,,,,,
-GameFAQ.Q7.Question,Can I edit the game page during the rating period?,,Posso modificare la pagina del gioco durante il periodo di valutazione?,,,Oyun sayfasını oylama sırasında değiştirebilir miyim?,,,,,
+Bu süre oyuna yeni şeyler eklemenizdense, oyunu çalışır hale getirmek ve bir yere yükleyebilmeniz için verilen bir süredir.",,"После окончания джема есть 2-х часовое окно, в течение которого вы всё ещё можете загрузить игру, чтобы учесть тех, у кого возникли проблемы со сборками в последний момент. Этот период предназначен именно для загрузки, а не для дальнейшей доработки игры, и попытки отправить игру после 2-х часового окна приёма работ приниматься не будут.",,,,
+GameFAQ.Q7.Number,Q7,,D7,,,S7,,В7,,,,
+GameFAQ.Q7.Question,Can I edit the game page during the rating period?,,Posso modificare la pagina del gioco durante il periodo di valutazione?,,,Oyun sayfasını oylama sırasında değiştirebilir miyim?,,Могу ли я редактировать игровую страницу во время Рейтингового Периода?,,,,
 GameFAQ.Q7.Answer,"Yes you can edit the game page and make marketing materials (e.g. a game trailer, advertising for your game) within the rating period. The sooner you make it the more people would end up seeing your game page changes though.",,"Sì, puoi modificare la pagina del gioco e creare materiali di marketing (ad esempio, un trailer del gioco, pubblicità per il tuo gioco) durante il periodo di valutazione. Prima lo fai, più persone vedranno le modifiche alla tua pagina del gioco.",,,"Evet, oyun sayfanızı değiştirebilir, trailer veya resim gibi materyaller ekleyebilirsiniz. 
-Bu işi ne kadar erken yaparsanız diğer insanların daha düzgün bir sayfayla karşılaşma ihtimalini artırırsınız.",,,,,
-GameFAQ.Q8.Number,Q8,,D8,,,S8,,,,,
-GameFAQ.Q8.Question,"Are there restrictions on game content (NSFW, extreme violence, etc.)?",,"Ci sono restrizioni sui contenuti del gioco (NSFW, violenza estrema, ecc.)?",,,"Oyun içerikleri konusunda bir kısıtlama var mıdır?(NSFW, aşırı vahşet,vb...)",,,,,
+Bu işi ne kadar erken yaparsanız diğer insanların daha düzgün bir sayfayla karşılaşma ihtimalini artırırsınız.",,"Да, вы можете редактировать страницу игры и создавать маркетинговые материалы (например, трейлер игры, рекламу вашей игры) в течение периода оценки. Однако чем раньше вы это сделаете, тем больше людей увидят изменения на вашей странице игры.",,,,
+GameFAQ.Q8.Number,Q8,,D8,,,S8,,В8,,,,
+GameFAQ.Q8.Question,"Are there restrictions on game content (NSFW, extreme violence, etc.)?",,"Ci sono restrizioni sui contenuti del gioco (NSFW, violenza estrema, ecc.)?",,,"Oyun içerikleri konusunda bir kısıtlama var mıdır?(NSFW, aşırı vahşet,vb...)",,"Есть ли ограничения на игровой контент (NSFW, экстремальное насилие и т.д.)?",,,,
 GameFAQ.Q8.Answer,If you include things such as NSFW content you must mark your game as containing it so anybody who does not want to see that content can filter it out.,,"Se includi contenuti come NSFW, devi contrassegnare il tuo gioco come tale in modo che chi non vuole vedere quel tipo di contenuto possa filtrarlo.",,,"Oyununuz NSFW gibi içeriklere sahipse oyunu bu şekilde işaretlemeniz gerekir. 
-Böylece başkaları bu oyunları görmek istemiyorsa oyun onlara gösterilmez.",,,,,
-GameFAQ.Q9.Number,Q9,,D9,,,S9,,,,,
-GameFAQ.Q9.Question,What operating systems do I need to make my game for?,,Per quali sistemi operativi devo creare il mio gioco?,,,Oyunum hangi işletim sistemlerinde çalışmalıdır?,,,,,
+Böylece başkaları bu oyunları görmek istemiyorsa oyun onlara gösterilmez.",,"Если вы включаете материалы для взрослых (NSFW), вы должны отметить игру соответствующим образом, чтобы те, кто не хочет видеть такой контент, могли его отфильтровать.",,,,
+GameFAQ.Q9.Number,Q9,,D9,,,S9,,В9,,,,
+GameFAQ.Q9.Question,What operating systems do I need to make my game for?,,Per quali sistemi operativi devo creare il mio gioco?,,,Oyunum hangi işletim sistemlerinde çalışmalıdır?,,Для каких операционных систем нужно делать игру?,,,,
 GameFAQ.Q9.Answer,Any operating systems you want. Note however that the more you support the more people are able to play your game. In addition supporting windows or having a web build is recommended as that allows the vast majority of people to play your game.,,"Per qualsiasi sistema operativo tu voglia. Nota, tuttavia, che più sistemi supporti, più persone potranno giocare al tuo gioco. Inoltre, supportare Windows o avere una versione web è consigliato in quanto permette alla stragrande maggioranza delle persone di giocare al tuo gioco.",,,"Hangi işletim sistemini istiyorsan onda çalışmalıdır. Ancak bilmelisiniz ki, ne kadar çok işletim sistemi destekleyebilirseniz o kadar insan oyununuzu oynayabilir.
-Windows'u desteklemenin yanı sıra bir Web Build'e sahip olmanız en geniş kitleye ulaşabilmenizi sağlar.",,,,,
-GameFAQ.Q10.Number,Q10,,D10,,,S10,,,,,
-GameFAQ.Q10.Question,"Is there limitations on what game engine, etc. I can use?",,"Ci sono limitazioni su quale motore di gioco, ecc. posso usare?",,,Hangi oyun motorunu veya framework'ü kullanabilmemiz konusunda bir kısıtlama var mıdır?,,,,,
+Windows'u desteklemenin yanı sıra bir Web Build'e sahip olmanız en geniş kitleye ulaşabilmenizi sağlar.",,"Вы можете выбрать любые операционные системы. Однако имейте в виду: чем больше систем вы поддерживаете, тем больше людей сможет сыграть в вашу игру. Кроме того, рекомендуется поддержка Windows или наличие Web-билда, т.к. это позволит подавляющему большинству людей запустить вашу игру.",,,,
+GameFAQ.Q10.Number,Q10,,D10,,,S10,,В10,,,,
+GameFAQ.Q10.Question,"Is there limitations on what game engine, etc. I can use?",,"Ci sono limitazioni su quale motore di gioco, ecc. posso usare?",,,Hangi oyun motorunu veya framework'ü kullanabilmemiz konusunda bir kısıtlama var mıdır?,,Есть ли ограничения на игровой движок и т.д. который я могу использовать?,,,,
 GameFAQ.Q10.Answer,You can use whatever you want to make the game as long as it does not require the people playing the game to download something other than the game itself. For example games on roblox would not be allowed as that requires people to download roblox instead of downloading the game itself.,,"Puoi usare qualsiasi cosa tu voglia per creare il gioco, a patto che non richieda a chi gioca di scaricare qualcosa di diverso dal gioco stesso. Ad esempio, i giochi su Roblox non sarebbero consentiti, in quanto richiedono alle persone di scaricare Roblox invece di scaricare il gioco stesso.",,,"Kullanıcılar oyunun sadece kendisini indirmesi gerektiği sürece istediğiniz oyun motorunda oyunu yapabilirsiniz.
-Örnek olarak bir Roblox oyunu Roblox indirmenizi gerektireceği için bu oyun geçerli olmayacaktır.",,,,,
-TeamFAQ.Title,Team FAQ,,FAQ sui Team,,,Takım S.S.S,,,,,
-TeamFAQ.Description,Questions relating to making a team for the jam,,Domande relative alla creazione di team per la jam,,,Jam için takım oluşturma hakkında sorular,,,,,
-TeamFAQ.Q1.Number,Q1,,D1,,,S1,,,,,
-TeamFAQ.Q1.Question,How many people can make the game?,,Quante persone possono creare un gioco?,,,Oyunu kaç kişiyle beraber yapabilirim?,,,,,
+Örnek olarak bir Roblox oyunu Roblox indirmenizi gerektireceği için bu oyun geçerli olmayacaktır.",,"Вы можете использовать всё, что угодно для создания игры, при условии, что игрокам не потребуется загружать что-то кроме самой игры. Например, игры на Roblox не допускаются, так как для них требуется загрузка Roblox вместо загрузки самой игры.",,,,
+TeamFAQ.Title,Team FAQ,,FAQ sui Team,,,Takım S.S.S,,ФАГ по Команде,,,,
+TeamFAQ.Description,Questions relating to making a team for the jam,,Domande relative alla creazione di team per la jam,,,Jam için takım oluşturma hakkında sorular,,Вопросы касающиеся создания команды на джем,,,,
+TeamFAQ.Q1.Number,Q1,,D1,,,S1,,В1,,,,
+TeamFAQ.Q1.Question,How many people can make the game?,,Quante persone possono creare un gioco?,,,Oyunu kaç kişiyle beraber yapabilirim?,,Как много людей может участвовать в разработке игры?,,,,
 TeamFAQ.Q1.Answer,"Regular: Any number of people.
 O.D.A: Only one developer.",,"Regular: Un numero qualsiasi di persone.
 O.D.A: Un solo sviluppatore.",,,"Normal Jam: İstediğin kadar kişiyle.
-O.D.A: Tek kişi.",,,,,
-TeamFAQ.Q2.Number,Q2,,D2,,,S2,,,,,
-TeamFAQ.Q2.Question,Can I be a part of multiple teams / make multiple games?,,Posso far parte di più team / creare più giochi?,,,Birden fazla takımda / oyunda yer alabilir miyim?,,,,,
-TeamFAQ.Q2.Answer,Yes. It is typically better to focus on one game though so you can give it a higher level of polish within the limited timeframe.,,"Sì. Tuttavia, è solitamente meglio concentrarsi su un solo gioco per poterlo curare maggiormente e renderlo più rifinito nel tempo limitato.",,,Evet ancak tek oyuna odaklanırsanız onu cilalayacak daha çok zamanınız olur.,,,,,
-TeamFAQ.Q3.Number,Q3,,D3,,,S3,,,,,
-TeamFAQ.Q3.Question,How can I find a team?,,Come posso trovare un team?,,,Nasıl takım bulabilirim?,,,,,
+O.D.A: Tek kişi.",,"Regular: Любое количество людей
+O.D.A: Только один разработчик",,,,
+TeamFAQ.Q2.Number,Q2,,D2,,,S2,,В2,,,,
+TeamFAQ.Q2.Question,Can I be a part of multiple teams / make multiple games?,,Posso far parte di più team / creare più giochi?,,,Birden fazla takımda / oyunda yer alabilir miyim?,,Могу ли я быть частью нескольких команд / сделать несколько игр?,,,,
+TeamFAQ.Q2.Answer,Yes. It is typically better to focus on one game though so you can give it a higher level of polish within the limited timeframe.,,"Sì. Tuttavia, è solitamente meglio concentrarsi su un solo gioco per poterlo curare maggiormente e renderlo più rifinito nel tempo limitato.",,,Evet ancak tek oyuna odaklanırsanız onu cilalayacak daha çok zamanınız olur.,,"Да. Однако обычно лучше сосредоточиться на одной игре, чтобы успеть придать ей более высокий уровень проработки в ограниченные сроки.",,,,
+TeamFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,
+TeamFAQ.Q3.Question,How can I find a team?,,Come posso trovare un team?,,,Nasıl takım bulabilirim?,,Как мне найти команду?,,,,
 TeamFAQ.Q3.Answer,"We have a team finder built into the site you can use to find a team on. In the site settings you can set what roles you have on a team and then in the team finder you can limit results to only show teams that need your role.
 In addition you can use other locations such as on social media or in the team finding channel on our discord server.",,"Abbiamo una funzione integrata per trovare team sul sito. Nelle impostazioni del tuo account, puoi specificare i ruoli che ricopri in un team e, nella funzione di ricerca team, puoi limitare i risultati per mostrare solo i team che cercano il tuo ruolo. Inoltre, puoi usare altri canali come i social media o il canale di ricerca team sul nostro server Discord.",,,"Takım bulabilmeniz için siteye Takım Bulucu sayfasını ekledik. Bu sayfada takımınızda hangi roller olduğunu belirtebilir ve ne aradığınızı girebilirsiniz.
-Bunun dışında sosyal medyaları veya discord sunucumuzun takım bulma kanalını deneyebilirsiniz.",,,,,
-TeamFAQ.Q4.Number,Q4,,D4,,,S4,,,,,
-TeamFAQ.Q4.Question,Can I edit a team during the jam / after submission?,,Posso modificare un team durante la jam / dopo la consegna?,,,Takımımı jam sırasında ve sonrasında güncelleyebilir miyim?,,,,,
-TeamFAQ.Q4.Answer,Yes you can edit teams at any time before the rating period ends. So if you forgot to add a teammate before the jam ended and they want to be able to contribute to the rankings you can invite them into the team during the rating period.,,"Sì, puoi modificare i team in qualsiasi momento prima della fine del periodo di valutazione. Quindi, se hai dimenticato di aggiungere un compagno di squadra prima che la jam finisse e vuoi che possa contribuire alle classifiche, puoi invitarlo a unirsi al team durante il periodo di valutazione.",,,"Evet oylama periodu bitmeden önce takımınızı güncelleyebilirsiniz. Yani jam sırasında bir takım arkadaşınızı eklemeyi unuttuysanız, oylama süresi boyunca da bunu yapabilirsiniz.",,,,,
-TeamFAQ.Q5.Number,Q5,,D5,,,S5,,,,,
-TeamFAQ.Q5.Question,Does every team member need an account on the site?,,Ogni membro del team ha bisogno di un account sul sito?,,,Bütün takım üyelerinin sayfada bir hesabı olması lazım mıdır?,,,,,
-TeamFAQ.Q5.Answer,No but they cannot rate games or be credited directly in the site UI without an account.,,"No, ma senza un account non possono votare i giochi o essere accreditati direttamente nell'interfaccia del sito.",,,Hayır ama eğer hesapları yoksa diğer oyunları oylayamazlar ve oyununuzun altında kredi alamazlar,,,,,
-RatingsFAQ.Title,Ratings FAQ,,FAQ sulla Valutazione,,,Oylama S.S.S,,,,,
-RatingsFAQ.Description,Questions relating to the rating period of the jam,,Domande relative al periodo di valutazione della jam,,,Jam'in oylama süreci hakkında sorular,,,,,
-RatingsFAQ.Q1.Number,Q1,,D1,,,S1,,,,,
-RatingsFAQ.Q1.Question,How are games rated?,,Come vengono valutati i giochi?,,,Oyunlar nasıl oylanır?,,,,,
+Bunun dışında sosyal medyaları veya discord sunucumuzun takım bulma kanalını deneyebilirsiniz.",,"На сайте есть встроенный инструмент для поиска команды, которым вы можете воспользоваться. В настройках сайта можно указать, какие роли вы можете выполнять в команде, а в поиске команд можно ограничить результаты так, чтобы отображались только команды, которым нужна ваша роль.
+
+Кроме того, вы можете искать команды в других местах, например, в социальных сетях или в канале поиска команд на нашем сервере Discord.",,,,
+TeamFAQ.Q4.Number,Q4,,D4,,,S4,,В4,,,,
+TeamFAQ.Q4.Question,Can I edit a team during the jam / after submission?,,Posso modificare un team durante la jam / dopo la consegna?,,,Takımımı jam sırasında ve sonrasında güncelleyebilir miyim?,,Могу ли я редактировать команду во время / после подачи игры?,,,,
+TeamFAQ.Q4.Answer,Yes you can edit teams at any time before the rating period ends. So if you forgot to add a teammate before the jam ended and they want to be able to contribute to the rankings you can invite them into the team during the rating period.,,"Sì, puoi modificare i team in qualsiasi momento prima della fine del periodo di valutazione. Quindi, se hai dimenticato di aggiungere un compagno di squadra prima che la jam finisse e vuoi che possa contribuire alle classifiche, puoi invitarlo a unirsi al team durante il periodo di valutazione.",,,"Evet oylama periodu bitmeden önce takımınızı güncelleyebilirsiniz. Yani jam sırasında bir takım arkadaşınızı eklemeyi unuttuysanız, oylama süresi boyunca da bunu yapabilirsiniz.",,"Да, вы можете редактировать состав команд в любое время до окончания периода оценки. То есть, если вы забыли добавить участника команды до окончания джема, и он хочет иметь возможность участвовать в рейтинге, вы можете пригласить его в команду в течение периода оценки.",,,,
+TeamFAQ.Q5.Number,Q5,,D5,,,S5,,В5,,,,
+TeamFAQ.Q5.Question,Does every team member need an account on the site?,,Ogni membro del team ha bisogno di un account sul sito?,,,Bütün takım üyelerinin sayfada bir hesabı olması lazım mıdır?,,Нужен ли каждому члену команды аккаунт на сайте?,,,,
+TeamFAQ.Q5.Answer,No but they cannot rate games or be credited directly in the site UI without an account.,,"No, ma senza un account non possono votare i giochi o essere accreditati direttamente nell'interfaccia del sito.",,,Hayır ama eğer hesapları yoksa diğer oyunları oylayamazlar ve oyununuzun altında kredi alamazlar,,"Нет, но без аккаунта они не смогут оценивать игры и не будут отображаться в интерфейсе сайта напрямую.",,,,
+RatingsFAQ.Title,Ratings FAQ,,FAQ sulla Valutazione,,,Oylama S.S.S,,ФАГ по Рейтингу,,,,
+RatingsFAQ.Description,Questions relating to the rating period of the jam,,Domande relative al periodo di valutazione della jam,,,Jam'in oylama süreci hakkında sorular,,Вопросы касающиеся рейтингового периода джема,,,,
+RatingsFAQ.Q1.Number,Q1,,D1,,,S1,,В1,,,,
+RatingsFAQ.Q1.Question,How are games rated?,,Come vengono valutati i giochi?,,,Oyunlar nasıl oylanır?,,Как игры оцениваются?,,,,
 RatingsFAQ.Q1.Answer,"Games are rated by other participants in the following categories:
 
 - OVERALL: Your overall opinion of the game, how well all the categories are sticking together.
@@ -319,36 +339,50 @@ RatingsFAQ.Q1.Answer,"Games are rated by other participants in the following cat
 - GRAFİK: Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu.
 - YARATICILIK: Benzersizlik, özgünlük, yenilik ve sürpriz unsuru.
 - DUYGUSAL AKTARIM: Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı.
-- TEMA: Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı.",,,,,
-RatingsFAQ.Q2.Number,Q2,,D2,,,S2,,,,,
-RatingsFAQ.Q2.Question,Can I opt out of receiving ratings for any category?,,Posso scegliere di non ricevere valutazioni per una categoria?,,,Herhangi bir kategoride oy almaktan çekilebilir miyim?,,,,,
+- TEMA: Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı.",,"Игры оцениваются другими участниками по следующим категориям:
+
+ОБЩАЯ ОЦЕНКА: Ваше общее мнение о игре, насколько хорошо все категории сочетаются друг с другом.
+
+ГЕЙМПЛЕЙ: Насколько вам нравится играть в игру и насколько удовлетворительны её механики.
+
+ЗВУК: Насколько хорошо звучит игра и насколько эффективен саунд-дизайн.
+
+ГРАФИКА: Насколько хорошо выглядит игра и насколько эффективен визуальный стиль.
+
+КРЕАТИВНОСТЬ: Уникальность, оригинальность, новаторство и элемент неожиданности.
+
+ЭМОЦИОНАЛЬНАЯ ПОДАЧА: Насколько эффективно переданы эмоциональные или юмористические элементы.
+
+ТЕМА: Интерпретация темы в игре и насколько хорошо она использована и реализована.",,,,
+RatingsFAQ.Q2.Number,Q2,,D2,,,S2,,В2,,,,
+RatingsFAQ.Q2.Question,Can I opt out of receiving ratings for any category?,,Posso scegliere di non ricevere valutazioni per una categoria?,,,Herhangi bir kategoride oy almaktan çekilebilir miyim?,,Могу ли я исключить себя из любой категории на рейтинг?,,,,
 RatingsFAQ.Q2.Answer,Only the Overall and Theme ratings will be initially opted in and cannot be opted out. You must select and opt-in to any other rating category you wish to be rated and/or compete in.,,Solo le valutazioni Generale e Tema sono attivate all'inizio e non possono essere disattivate. Devi selezionare e attivare qualsiasi altra categoria di valutazione in cui desideri essere valutato e/o competere.,,,"Sadece ""Genel"" ve ""Tema"" kategorileri otomatik olarak seçili başlar.
-Oyunu yaratırken yarışmak istediğiniz diğer kategorileri seçerek eklemeniz gerekir.",,,,,
-RatingsFAQ.Q3.Number,Q3,,D3,,,S3,,,,,
-RatingsFAQ.Q3.Question,Can people who did not participate rate games?,,Le persone che non hanno partecipato possono votare i giochi?,,,Jam'e katılmamış kişiler oyunları oylayabilir mi?,,,,,
+Oyunu yaratırken yarışmak istediğiniz diğer kategorileri seçerek eklemeniz gerekir.",,"Изначально активной будут только категория рейтинга Общая Оценка и Тема, от которых нельзя отказаться. Вы должны выбрать и подключить любые другие категории оценок, в которых хотите участвовать и/или состязаться.",,,,
+RatingsFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,
+RatingsFAQ.Q3.Question,Can people who did not participate rate games?,,Le persone che non hanno partecipato possono votare i giochi?,,,Jam'e katılmamış kişiler oyunları oylayabilir mi?,,"Могу ли люди, которые не участвовали - оценивать игры?",,,,
 RatingsFAQ.Q3.Answer,Yes but any ratings they give do not contribute to the rankings.,,"Sì, ma le votazioni che danno non contribuiscono alle classifiche.",,,"Evet ama bu oylar oyunun derecelendirmesine yansımaz.
-Bu oylarla birlikte tüm oyların derecesi ayrı gösterilir.",,,,,
-RatingsFAQ.Q4.Number,Q4,,D4,,,S4,,,,,
-RatingsFAQ.Q4.Question,What are the rankings?,,Cosa sono le classifiche?,,,Derecelendirmeler nedir?,,,,,
+Bu oylarla birlikte tüm oyların derecesi ayrı gösterilir.",,"Да, но любые оценки, которые они дают не будут влиять на рейтинг.",,,,
+RatingsFAQ.Q4.Number,Q4,,D4,,,S4,,В4,,,,
+RatingsFAQ.Q4.Question,What are the rankings?,,Cosa sono le classifiche?,,,Derecelendirmeler nedir?,,Что такое рейтинги?,,,,
 RatingsFAQ.Q4.Answer,After the rating period games will be ranked in each category based on their average rating in that category. For example the game with the highest average theme score will be rank #1 in the theme category.,,"Dopo il periodo di valutazione, i giochi saranno classificati in ogni categoria in base al loro punteggio medio in quella categoria. Ad esempio, il gioco con il punteggio medio più alto nella categoria ""Tema"" sarà al primo posto in quella categoria.",,,"Oylama süreci sonunda oyunlar her bir kategori altında oylarına bakılarak derecelendirilir.
 Mesela Tema kategorisinde en yüksek puanı almış oyun o kategorinin birincisi olacaktır.
-",,,,,
-RatingsFAQ.Q5.Number,Q5,,D5,,,S5,,,,,
-RatingsFAQ.Q5.Question,How many ratings do I need to give/receive to be included in the rankings,,Quante valutazioni devo dare/ricevere per essere incluso nelle classifiche?,,,Derecelendirmeye girebilmek için oyunumun kaç oy alması gerekiyor?,,,,,
+",,"После периода оценки игры будут ранжироваться в каждой категории на основе их среднего балла в этой категории. Например, игра с наивысшим средним баллом за тему займёт 1-е место в категории «Тема».",,,,
+RatingsFAQ.Q5.Number,Q5,,D5,,,S5,,В5,,,,
+RatingsFAQ.Q5.Question,How many ratings do I need to give/receive to be included in the rankings,,Quante valutazioni devo dare/ricevere per essere incluso nelle classifiche?,,,Derecelendirmeye girebilmek için oyunumun kaç oy alması gerekiyor?,,"Как много оценок мне нужно дать / получить, чтобы самому попасть в рейтинги?",,,,
 RatingsFAQ.Q5.Answer,For the current edition of the jam you need to both rate 5 games and receive 5 ratings. This prevents a game with only 1 5 star rating from instantly winning the jam.,,"Per l'edizione attuale della jam, devi sia votare 5 giochi sia ricevere 5 votazioni. Questo impedisce a un gioco con una sola votazione da 5 stelle di vincere immediatamente la jam.",,,"Şu anki jam için en az 5 oyun oylayıp, oyununuzun da en az 5 oy alması gerekmektedir.
-Bu yaklaşım, sadece 1 kişi tarafından oylanan bir oyunun jam'i kazanmasını engeller.",,,,,
-RatingsFAQ.Q6.Number,Q6,,D6,,,S6,,,,,
-RatingsFAQ.Q6.Question,Does this jam have a prize?,,Questa jam ha un premio?,,,Jam'in bir ödülü var mıdır?,,,,,
+Bu yaklaşım, sadece 1 kişi tarafından oylanan bir oyunun jam'i kazanmasını engeller.",,"Для текущего издания джема вам нужно оценить 5 игр и получить 5 оценок. Это предотвращает ситуацию, когда игра с одними пятёрками сразу выигрывает джем.",,,,
+RatingsFAQ.Q6.Number,Q6,,D6,,,S6,,В6,,,,
+RatingsFAQ.Q6.Question,Does this jam have a prize?,,Questa jam ha un premio?,,,Jam'in bir ödülü var mıdır?,,Есть ли у джема вознаграждение?,,,,
 RatingsFAQ.Q6.Answer,The prize is having a game that you've managed to build and release. Theres nothing like a cash prize so the jam has more of a community feel instead of becoming competitive.,,"Il premio è avere un gioco che sei riuscito a creare e pubblicare. Non c'è un premio in denaro, quindi la jam ha un'atmosfera più comunitaria che competitiva.",,,"Ödül, bir oyun yapabilmiş ve yayınlamış olmanızdır. 
-Herhangi bir para ödülü bulunmamaktadır. Böylece jam'de birbirini yenmeye çalışma yerine daha çok topluluk hissiyatı olur.",,,,,
-StreamsFAQ.Title,Streams FAQ,,FAQ sugli Stream,,,Yayınlar S.S.S,,,,,
-StreamsFAQ.Description,Questions relating to livestreaming the jam,,Domande relative alle dirette streaming della jam,,,Canlı yayınlar hakkında sorular,,,,,
-StreamsFAQ.Q1.Number,Q1,,D1,,,S1,,,,,
-StreamsFAQ.Q1.Question,Can I livestream the jam?,,Posso fare live streaming della jam?,,,Jam sırasında canlı yayın açabilir miyim?,,,,,
+Herhangi bir para ödülü bulunmamaktadır. Böylece jam'de birbirini yenmeye çalışma yerine daha çok topluluk hissiyatı olur.",,"Призом является сама игра, которую вы смогли создать и выпустить. Денежного приза нет, чтобы джем сохранял больше сообщественный дух и не превращался в соревнование.",,,,
+StreamsFAQ.Title,Streams FAQ,,FAQ sugli Stream,,,Yayınlar S.S.S,,ФАГ по Стримам,,,,
+StreamsFAQ.Description,Questions relating to livestreaming the jam,,Domande relative alle dirette streaming della jam,,,Canlı yayınlar hakkında sorular,,Вопросы касающиеся стримов джема,,,,
+StreamsFAQ.Q1.Number,Q1,,D1,,,S1,,В1,,,,
+StreamsFAQ.Q1.Question,Can I livestream the jam?,,Posso fare live streaming della jam?,,,Jam sırasında canlı yayın açabilir miyim?,,Могу ли я стримить джем?,,,,
 StreamsFAQ.Q1.Answer,"Yes you can stream anything relating to the jam you want. e.g. making progress on your game, playing games made by other people, etc.",,"Sì, puoi trasmettere in streaming tutto ciò che riguarda la jam. Ad esempio, i progressi sul tuo gioco, giocare ai giochi realizzati da altre persone, ecc.",,,"Evet jam sırasında jam hakkında herhangi bir şey için canlı yayın açabilirsiniz.
-Örnek olarak; oyunu yaparken yayın açmak veya başkalarının oyununu oynamak.",,,,,
-StreamsFAQ.Q2.Number,Q2,,D2,,,S3,,,,,
-StreamsFAQ.Q2.Question,How do I show up in the featured streamers section on the sidebar?,,"Come faccio a comparire nella sezione degli ""Streamer in evidenza"" sulla barra laterale?",,,"Yandaki ""öne çıkan yayıncılar"" kısmında nasıl gözükürüm?",,,,,
+Örnek olarak; oyunu yaparken yayın açmak veya başkalarının oyununu oynamak.",,"Да, вы можете стримить всё, что связано с джемом. Например, процесс создания вашей игры, игру в игры других участников и т.д.",,,,
+StreamsFAQ.Q2.Number,Q2,,D2,,,S3,,В2,,,,
+StreamsFAQ.Q2.Question,How do I show up in the featured streamers section on the sidebar?,,"Come faccio a comparire nella sezione degli ""Streamer in evidenza"" sulla barra laterale?",,,"Yandaki ""öne çıkan yayıncılar"" kısmında nasıl gözükürüm?",,Как я могу появиться на избранных стримах сбоку на сайте?,,,,
 StreamsFAQ.Q2.Answer,"There is 3 priority tiers in the featured streamers section. The higher priority you are the further ahead in the featured streamers you show. Streams with the same priority are ordered by viewers with some randomness. Only livestreams from twitch show due to youtube not providing an equivalent api.
 
 The lowest priority (that only ever has 3 streams show from) is any gamedev stream on twitch. The medium priority is anyone that has been marked as a streamer on the site (a.k.a streamers who have an account on the d2jam site). The highest priority is streams that use the d2jam tag (to show that they are streaming something related to the jam).
@@ -364,19 +398,27 @@ En düşük öncelik yayının Twitch'te herhangi bir Yazılım ve Oyun Gelişti
 Orta öncelik ise yayıncının s2jam sayfasında yayıncı olarak işaretlenmiş olmasıdır(yayıncının d2jam web sitesinde bir hesabı olmalı). En yüksek öncelik ise yayının #d2jam tag'ine sahip olmasıdır.
 
 Sadece aşağıdaki kategorilerdeki yayınlar dikkate alınır:
-Yazılım ve Oyun Geliştirme, Sanat, Ortak Çalışma ve Ders Çalışma, Games + Demos",,,,,
-StreamsFAQ.Q3.Number,Q3,,D3,,,S3,,,,,
-StreamsFAQ.Q3.Question,How can I be marked as a streamer on the site?,,Come posso essere segnato come streamer sul sito?,,,Web sitesinde nasıl yayıncı olarak işaretlenirim?,,,,,
-StreamsFAQ.Q3.Answer,For now just let Ategon know your d2jam username and your twitch account.,,"Per ora, basta far sapere ad Ategon il tuo nome utente di D2Jam e il tuo account Twitch.",,,Şimdilik Ategon'a d2jam kullanıcı adınızı ve twitch hesabınızı bildirin.,,,,,
-StreamsFAQ.Q4.Number,Q4,,D4,,,S4,,,,,
-StreamsFAQ.Q4.Question,How can I let people know about my stream?,,Come posso far sapere alla gente del mio stream?,,,İnsanlara yayınımı nasıl bildirebilirim?,,,,,
+Yazılım ve Oyun Geliştirme, Sanat, Ortak Çalışma ve Ders Çalışma, Games + Demos",,"В разделе «Рекомендуемые стримеры» есть 3 уровня приоритета. Чем выше ваш приоритет, тем выше вы отображаетесь в списке. Потоки с одинаковым приоритетом упорядочиваются по количеству зрителей с элементом случайности. Отображаются только стримы с Twitch, так как YouTube не предоставляет эквивалентное API.
+
+Низший приоритет (из которого показываются только 3 стрима) — любой стрим по разработке игр на Twitch.
+
+Средний приоритет — все, кто отмечен как стример на сайте (т. е. стримеры с аккаунтом на d2jam).
+
+Высший приоритет — стримы с тегом d2jam (чтобы показать, что стрим связан с джемом).
+
+Отображаются только стримы в следующих категориях: Software and Game Development, Art, Co-working & Studying, Games + Demos.",,,,
+StreamsFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,
+StreamsFAQ.Q3.Question,How can I be marked as a streamer on the site?,,Come posso essere segnato come streamer sul sito?,,,Web sitesinde nasıl yayıncı olarak işaretlenirim?,,Как я могу быть отмечен как стример на сайте?,,,,
+StreamsFAQ.Q3.Answer,For now just let Ategon know your d2jam username and your twitch account.,,"Per ora, basta far sapere ad Ategon il tuo nome utente di D2Jam e il tuo account Twitch.",,,Şimdilik Ategon'a d2jam kullanıcı adınızı ve twitch hesabınızı bildirin.,,На данный момент просто сообщите Ategon ваше имя пользователя на d2jam и аккаунт Twitch.,,,,
+StreamsFAQ.Q4.Number,Q4,,D4,,,S4,,В4,,,,
+StreamsFAQ.Q4.Question,How can I let people know about my stream?,,Come posso far sapere alla gente del mio stream?,,,İnsanlara yayınımı nasıl bildirebilirim?,,Как я могу оповестить людей о моем стриме?,,,,
 StreamsFAQ.Q4.Answer,The site has a built in event system that shows upcoming and active events. If you are marked as a streamer you can go to the events page and then add a new event for your stream to make it show there. The events are located in the sidebar.,,"Il sito ha un sistema di eventi integrato che mostra gli eventi imminenti e quelli attivi. Se sei stato segnato come streamer, puoi andare sulla pagina degli eventi e aggiungere un nuovo evento per il tuo stream in modo che venga mostrato lì. Gli eventi si trovano nella barra laterale.",,,"Gelecek etkinlikler ve aktif etkinlikler için sitenin özel bir bölümü bulunmaktadır.
 Eğer sitede işaretlenmiş bir yayıncıysanız, etkinlikler sayfasına gidip yeni bir etkinlik ekleyebilirsiniz.
-Etkinlikler sitenin sağ tarafında yer alır.",,,,,
-MetaFAQ.Title,Meta FAQ,,FAQ Meta,,,Meta S.S.S,,,,,
-MetaFAQ.Description,Questions relating to the organization of the jam,,Domande relative all'organizzazione della jam,,,Jam'in organizasyonu hakkında sorular,,,,,
-MetaFAQ.Q1.Number,Q1,,D1,,,S1,,,,,
-MetaFAQ.Q1.Question,Who is organizing the jam?,,Chi organizza la jam?,,,Jam'i kim organize ediyor?,,,,,
+Etkinlikler sitenin sağ tarafında yer alır.",,"На сайте есть встроенная система событий, которая отображает предстоящие и текущие мероприятия. Если вы отмечены как стример, вы можете перейти на страницу событий и добавить новое событие для своего стрима, чтобы оно отображалось там. События расположены в боковой панели.",,,,
+MetaFAQ.Title,Meta FAQ,,FAQ Meta,,,Meta S.S.S,,Мета ФАГ,,,,
+MetaFAQ.Description,Questions relating to the organization of the jam,,Domande relative all'organizzazione della jam,,,Jam'in organizasyonu hakkında sorular,,Вопросы по организаторам джема,,,,
+MetaFAQ.Q1.Number,Q1,,D1,,,S1,,В1,,,,
+MetaFAQ.Q1.Question,Who is organizing the jam?,,Chi organizza la jam?,,,Jam'i kim organize ediyor?,,Кто организует джем?,,,,
 MetaFAQ.Q1.Answer,"The jam is organized primarily by a group of 11 people who make sure things run smoothly and who run things like the social media accounts for the jam for marketing. Decisions however are typically voted on by the community to let the community control how the jam is run and anybody is free to start running something related to the jam such as a tournament, community keynote, or other event.
 
 The 11 core organizers are Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, and Tobugis.",,"La jam è organizzata principalmente da un gruppo di 11 persone che si assicurano che tutto funzioni senza intoppi e che gestiscono cose come gli account social media per il marketing della jam. Tuttavia, le decisioni sono tipicamente votate dalla comunità per lasciare che sia la comunità a controllare come la jam viene gestita, e chiunque è libero di iniziare a gestire qualcosa relativo alla jam, come un torneo, un evento principale della comunità, o un altro evento.
@@ -384,80 +426,82 @@ The 11 core organizers are Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, its
 Gli 11 organizzatori principali sono Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, e Tobugis.",,,"Jam her şeyin düzgün yürütülebilmesi için 11 kişlilik bir öncü grup tarafından organize ediliyor.
 Topluluğun Jam'in nasıl işleyeceğine düzgün etki edebilmesi için kararlar alınırken genelde topluluğa sorularak hareket edilir. Herhangi biri jam için turnuva, keynote vebazı etkinlikler düzenleyebilir.
 Çekirdek 11 kişi şöyledir:
-Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, ve Tobugis.",,,,,
-MetaFAQ.Q2.Number,Q2,,D2,,,S2,,,,,
-MetaFAQ.Q2.Question,Where are the servers hosted?,,Dove sono ospitati i server?,,,Sunucular nerededir?,,,,,
-MetaFAQ.Q2.Answer,"The server that hosts the jam is in Canada. In the future various things such as the email service, DNS, etc. will be swapped to have as many Canadian-based technologies as possible.",,"Il server che ospita la jam si trova in Canada. In futuro, vari servizi come il servizio di posta elettronica, il DNS, ecc., saranno modificati per avere il maggior numero possibile di tecnologie basate in Canada.",,,"Sunucularımız Kanada'dadır. İleride ekleyeceğimiz eposta servisleri, DNS, vebazı özelliklerin de Kanada'da olması muhtemeldir.",,,,,
-MetaFAQ.Q3.Number,Q3,,D3,,,S3,,,,,
-MetaFAQ.Q3.Question,How can I donate to the jam?,,Come posso fare una donazione per la jam?,,,Jam'e nasıl bağış yaparım,,,,,
-MetaFAQ.Q3.Answer,There is currently no way to donate to the jam but it will be made in the future once it gets popular enough that it makes sense to spend the funds to make a non-profit for the jam.,,"Al momento non c'è un modo per donare alla jam, ma verrà creato in futuro quando diventerà abbastanza popolare da giustificare i fondi per creare un'organizzazione no-profit per la jam.",,,Henüz jam'e bağış yapmanız mümkün değildir ama ileride Bağış sayfamızı açacağız.,,,,,
-MetaFAQ.Q4.Number,Q4,,D4,,,S4,,,,,
-MetaFAQ.Q4.Question,How can I help code the site?,,Come posso aiutare a programmare il sito?,,,Sitenin koduna nasıl yardım edebilirim?,,,,,
+Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman, ve Tobugis.",,"Джем в основном организуется группой из 11 человек, которые следят за тем, чтобы всё проходило гладко, и управляют, например, аккаунтами джема в социальных сетях для маркетинга. Однако решения обычно принимаются путём голосования со стороны сообщества, чтобы дать сообществу контроль над проведением джема, и любой желающий может начать организовывать что-то, связанное с джемом, например турнир, общую презентацию или другое мероприятие.
+
+11 основных организаторов: Ategon, Badcop, FunBaseAlpha, Pomo, Rincs, Aeron, itsBoats, Brainoid, HonestDan, Kuviman и Tobugis.",,,,
+MetaFAQ.Q2.Number,Q2,,D2,,,S2,,В2,,,,
+MetaFAQ.Q2.Question,Where are the servers hosted?,,Dove sono ospitati i server?,,,Sunucular nerededir?,,Где находятся сервера?,,,,
+MetaFAQ.Q2.Answer,"The server that hosts the jam is in Canada. In the future various things such as the email service, DNS, etc. will be swapped to have as many Canadian-based technologies as possible.",,"Il server che ospita la jam si trova in Canada. In futuro, vari servizi come il servizio di posta elettronica, il DNS, ecc., saranno modificati per avere il maggior numero possibile di tecnologie basate in Canada.",,,"Sunucularımız Kanada'dadır. İleride ekleyeceğimiz eposta servisleri, DNS, vebazı özelliklerin de Kanada'da olması muhtemeldir.",,"Сервер, на котором размещён джем, находится в Канаде. В будущем различные сервисы, такие как электронная почта, DNS и другие, будут перенесены на канадские технологии, чтобы использовать как можно больше инфраструктуры, базирующейся в Канаде.",,,,
+MetaFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,
+MetaFAQ.Q3.Question,How can I donate to the jam?,,Come posso fare una donazione per la jam?,,,Jam'e nasıl bağış yaparım,,Как задонатить на джем?,,,,
+MetaFAQ.Q3.Answer,There is currently no way to donate to the jam but it will be made in the future once it gets popular enough that it makes sense to spend the funds to make a non-profit for the jam.,,"Al momento non c'è un modo per donare alla jam, ma verrà creato in futuro quando diventerà abbastanza popolare da giustificare i fondi per creare un'organizzazione no-profit per la jam.",,,Henüz jam'e bağış yapmanız mümkün değildir ama ileride Bağış sayfamızı açacağız.,,"В данный момент нет возможности пожертвовать средства на джем, но она будет добавлена в будущем, когда джем станет достаточно популярным, чтобы имело смысл тратить средства на создание некоммерческой организации для поддержки джема.",,,,
+MetaFAQ.Q4.Number,Q4,,D4,,,S4,,В4,,,,
+MetaFAQ.Q4.Question,How can I help code the site?,,Come posso aiutare a programmare il sito?,,,Sitenin koduna nasıl yardım edebilirim?,,Могу ли я помочь с кодом сайта?,,,,
 MetaFAQ.Q4.Answer,The site is currently open source with the repositories available in our github organization. Jamcore is the backend of the site while jamjar is the frontend. Each repository has instructions on how to set it up locally and a project board with tasks that need to be made for the site. If you have any questions relating to contributing feel free to chat in the site development channel in our discord.,,"Il sito è attualmente open source, con repository disponibili nella nostra organizzazione GitHub. Jamcore è il backend del sito, mentre jamjar è il frontend. Ogni repository ha istruzioni su come configurarla localmente e una board di progetto con i compiti che devono essere realizzati per il sito. Se hai domande a riguardo, sentiti libero di chattare nel canale di sviluppo del sito sul nostro Discord.",,,"Websitesi şu anda açık kaynak kodlu ve github'da kodlarımız ulaşılır haldedir. Jamcore sitenin backend'i, jamjar ise frontend'idir. Her iki repo'da da lokal olarak sitenin nasıl kurulacağına dair direktifler mevcuttur.
-Herhangi bir sorunuz olursa discord'da #site-development kanalına sorabilirsiniz.",,,,,
-MetaFAQ.Q5.Number,Q5,,D5,,,S5,,,,,
-MetaFAQ.Q5.Question,Where can I report a bug?,,Dove posso segnalare un bug?,,,Hataları nereye rapor edebilirim?,,,,,
+Herhangi bir sorunuz olursa discord'da #site-development kanalına sorabilirsiniz.",,"Сайт в настоящее время является проектом с открытым исходным кодом, репозитории доступны в нашей организации на GitHub. Jamcore — это бэкенд сайта, а Jamjar — фронтенд. В каждом репозитории есть инструкции по локальной настройке и доска проекта с задачами, которые необходимо выполнить для сайта. Если у вас есть вопросы по поводу участия в разработке, не стесняйтесь писать в канал по разработке сайта на нашем сервере Discord.",,,,
+MetaFAQ.Q5.Number,Q5,,D5,,,S5,,В5,,,,
+MetaFAQ.Q5.Question,Where can I report a bug?,,Dove posso segnalare un bug?,,,Hataları nereye rapor edebilirim?,,Где я могу доложить о баге?,,,,
 MetaFAQ.Q5.Answer,"You can currently reports bugs in our code repositories until a bug report feature is built into the site itself. You click on the relevant repository (e.g. if its a frontend issue you would go to Jamjar), go to the issues tab, and then create a new issue.",,"Attualmente puoi segnalare i bug nelle nostre repository di codice fino a quando una funzione di segnalazione bug non sarà integrata nel sito stesso. Devi cliccare sulla repository pertinente (ad esempio, se è un problema del frontend, vai su Jamjar), andare nella scheda ""Issues"" e creare una nuova issue.",,,"Siteye bir hata bildirimi desteği getirene kadar şimdilik hataları kod repo'larımıza bildirebilirsiniz.
-Alakalı repository'e gidip Issues kısmından yeni bir hata bildirimi ekleyebilirsiniz.",,,,,
-MetaFAQ.Q6.Number,Q6,,D6,,,S6,,,,,
-MetaFAQ.Q6.Question,How often does the jam happen?,,Quanto spesso si tiene la jam?,,,Jam ne kadar sıklıkla gerçekleşiyor?,,,,,
-MetaFAQ.Q6.Answer,"The jam happens twice a year, typically around 6 months apart.",,"La jam si svolge due volte all'anno, tipicamente a circa 6 mesi di distanza l'una dall'altra.",,,"Jam senede iki kez, çoğunlukla birbirinden 6 ay arayla gerçekleşir.",,,,,
-JamHeader.Suggestions,Go to Theme Suggestions,,"Vai a ""Suggerimenti Tema""",,,Tema Gönderimi'ne Git,,,,,
-JamHeader.Elimination,Go to Theme Elimination,,"Vai a ""Eliminazione Tema""",,,Tema Eliminasyonu'na Git,,,,,
-JamHeader.Voting,Go to Theme Voting,,"Vai a ""Votazione Tema""",,,Tema Oylaması'na Git,,,,,
-JamHeader.JamSoon,Theme will be revealed on jam start,,Il tema sarà svelato all'inizio della jam,,,Jam başlarken tema görünür olacaktır,,,,,
-JamHeader.NoTheme,No top-scoring theme available,,Nessun tema con il punteggio più alto disponibile,,,Seçilebilmiş bir tema yoktur,,,,,
-JamHeader.Submissions,Submissions close soon,,Le consegne si chiuderanno presto,,,Gönderimler yakında kapanıyor,,,,,
-JamHeader.Rate,Go rate games!,,Vai a valutare i giochi!,,,Hadi oyunları oylayın!,,,,,
-Stats.Timer,Jam starts in,,La jam inizia tra,,,Jam başlama zamanı:,,,,,
-Stats.Entrants,Entrants,,Partecipanti,,,Katılımcılar,,,,,
-Stats.Games,Games,,Giochi,,,Oyunlar,,,,,
-Stats.Ratings,Ratings,,Valutazioni,,,Oylamalar,,,,,
-SidebarGames.Title,Featured Games,,Giochi in evidenza,,,Öne Çıkan Oyunlar,,,,,
-SidebarGames.Link,To Games Page,,Pagina dei giochi,,,Oyunlar Sayfası'na Git,,,,,
-SidebarMusic.Title,Featured Music,,Musica in evidenza,,,Öne Çıkan Müzikler,,,,,
-SidebarMusic.Link,To Music Page,,Pagina della musica,,,Müzik Sayfası'na Git,,,,,
-SidebarEvents.Active.Title,Active Events,,Eventi attivi,,,Aktif Etkinlikler,,,,,
-SidebarEvents.Upcoming.Title,Upcoming Events,,Eventi in arrivo,,,Gelecek Etkinlikler,,,,,
-SidebarEvents.Link,To Events Page,,Pagina degli eventi,,,Etkinlikler Sayfası'na Git,,,,,
-ThemeSuggestions.YourSuggestions.Title,Your Suggestions,,I tuoi suggerimenti,,,Önerileriniz,,,,,
-ThemeSuggestions.YourSuggestions.Description,Themes you have submitted to the voting rounds,,Temi che hai inviato per i turni di votazione,,,Oylama turu için gönderdiğiniz temalar,,,,,
-ThemeSuggestions.PastSuggestions.Title,Past Suggestions,,Suggerimenti passati,,,Önceki Temalarınız,,,,,
-ThemeSuggestions.PastSuggestions.Description,Themes you have submitted to the previous jam,,Temi che hai inviato per la jam precedente,,,Önceki Jam'lere gönderdiğniz temalar,,,,,
-ThemeSuggestions.Edit.Title,Edit,,Modifica,,,Düzenle,,,,,
-ThemeSuggestions.Edit.Description,Edit the theme suggestion,,Modifica il suggerimento del tema,,,Tema önerisini düzenle,,,,,
-ThemeSuggestions.Delete.Title,Delete,,Elimina,,,Sil,,,,,
-ThemeSuggestions.Delete.Description,Delete the theme suggestion,,Elimina il suggerimento del tema,,,Tema önerisini sil,,,,,
-ThemeSuggestions.Conflict,That suggestion cannot be used (it likely has been used recently for another jam).,,Questo suggerimento non può essere usato (probabilmente è stato usato di recente per un'altra jam),,,Bu öneri kullanılamaz(muhtemelen başka bir yakın jam'de kullanıldı),,,,,
-ThemeSuggestions.Added,Suggestion added successfully!,,Suggerimento aggiunto con successo!,,,Öneri başarıyla eklendi!,,,,,
-ThemeSuggestions.ErrorDeleting,Error deleting suggestion:,,Errore durante l'eliminazione del suggerimento:,,,Öneriyi silerken hata oluştu:,,,,,
-ThemeSuggestions.FailedDelete,Failed to delete suggestion.,,Impossibile eliminare il suggerimento.,,,Öneri silinemedi.,,,,,
-ThemeSuggestions.SignIn.Title,Not signed in,,Non hai effettuato l'accesso,,,Giriş yapılmamış,,,,,
-ThemeSuggestions.SignIn.Description,Sign in to be able to suggest themes,,Accedi per poter suggerire temi,,,Tema önerebilmek için siteye giriş yap,,,,,
-ThemeSuggestions.JoinJam.Title,Join the Jam First,,Unisciti prima alla jam,,,Önce Jam'e Katıl,,,,,
-ThemeSuggestions.JoinJam.Description,You need to join the current jam before you can suggest themes.,,Devi unirti alla jam attuale prima di poter suggerire temi,,,Tema önermeden önce şu anki jam'e katılmalısınız.,,,,,
-ThemeSuggestions.Title,Submit Your Theme Suggestion,,Invia il tuo suggerimento per il tema,,,Tema Önerini Gönder,,,,,
-ThemeSuggestions.Description,Submit themes to the voting rounds to possibly be used in the jam,,Invia temi ai turni di votazione per poterli usare nella jam,,,Jam'de kullanılabilecek muhtemel temaları gönder,,,,,
-ThemeSuggestions.LimitReached,You've reached your theme suggestion limit for this jam!,,Hai raggiunto il tuo limite di suggerimenti per il tema per questa jam!,,,Maksimum yollanabilecek tema sayısına ulaştın!,,,,,
-ThemeSuggestions.NoExamples,No examples,,Nessun esempio,,,Örnek yok,,,,,
-ThemeSuggestions.NoSuggestions,You haven't submitted any suggestions yet.,,Non hai ancora inviato nessun suggerimento.,,,Henüz bir tema göndermedin.,,,,,
-ThemeSuggestions.Loading.Title,Loading...,,Caricamento...,,,Yükleniyor...,Loading...,,,,
-ThemeSuggestions.Loading.Description,Getting info from the backend,,Recupero informazioni dal backend,,,Sunucudan bilgi alınıyor,Kinukuha ang impormasyon sa backend,,,,
-Themes.Signup,Sign up,,Registrati,,,Üye Ol,Sign up,,,,
-Themes.Login,Login,,Accedi,,,Giriş Yap,Log in,,,,
-Phases.ThemeSubmission.Title,Theme Submission,,Proposta Tema,,,Tema Gönderimi,,,,,
-Phases.ThemeSubmission.Description,Submitting possible jam themes,,Inviare possibili temi della jam,,,Potansiyel tema gönderim süreci,,,,,
-Phases.ThemeElimination.Title,Theme Elimination,,Eliminazione Tema,,,Tema Eliminasyonu,,,,,
-Phases.ThemeElimination.Description,Going through submitted jam themes and voting yes or no to them,,Esaminare i temi della jam inviati e votare sì o no,,,Gönderilen jam temalarına bakıp evet veya hayır diye oylama süreci,,,,,
-Phases.ThemeVoting.Title,Theme Voting,,Votazione Tema,,,Tema Oylaması,,,,,
-Phases.ThemeVoting.Description,Voting from a list of top themes for the final theme,,Votare da una lista di temi migliori per il tema finale,,,En çok oy alan temaların seçildiği bir listede tek temaya indirmek için oylama süreci,,,,,
-Phases.GameJam.Title,Game Jam,,Game Jam,,,Game Jam,,,,,
-Phases.GameJam.Description,The core event! Making a game in a small period of time,,L'evento principale! Realizzare un gioco in un breve periodo di tempo,,,Asıl etkinlik! Kısa bir zamanda oyun çıkarma süreci,,,,,
-Phases.Rating.Title,Rating Period,,Periodo di Valutazione,,,Oyun Oylaması,,,,,
-Phases.Rating.Description,Playing and giving feedback to other people's games,,Giocare e dare feedback ai giochi degli altri,,,Diğer katılımcıların oyunlarını oynayıp onlara yorum atma süreci,,,,,
-Phases.Results.Title,Results,,Risultati,,,Sonuçlar,,,,,
-Phases.Results.Description,Viewing the results of the jam and how you were rated,,Visualizzare i risultati della jam e come si è stati valutati,,,Diğer oyunların sonuçlarını ve senin oyununun derecesini gör,,,,,
-Phases.PostRating.Title,Post Jam Rating Period,,Periodo di Valutazione Post-Jam,,,Jam Sonrası Oylama Süreci,,,,,
-Phases.PostRating.Description,Playing and giving feedback to other people's post jam improvements,,Giocare e dare feedback ai miglioramenti post-jam fatti dagli altri,,,Diğer katılımcıların post jam versiyonlarını oynayıp yorum atma süreci,,,,,
-Phases.PostResults.Title,Post Jam Results,,Risultati Post-Jam,,,Post Jam Sonuçları,,,,,
-Phases.PostResults.Description,Viewing the results of the post jam and how you were rated compared to the jam,,Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam,,,Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma,,,,,
+Alakalı repository'e gidip Issues kısmından yeni bir hata bildirimi ekleyebilirsiniz.",,"В данный момент вы можете сообщать об ошибках в наших репозиториях кода до того, как функция отчёта о багах будет добавлена на сам сайт. Для этого перейдите в соответствующий репозиторий (например, если это проблема с фронтендом, откройте репозиторий Jamjar), затем вкладку Issues и создайте новую запись об ошибке.",,,,
+MetaFAQ.Q6.Number,Q6,,D6,,,S6,,В6,,,,
+MetaFAQ.Q6.Question,How often does the jam happen?,,Quanto spesso si tiene la jam?,,,Jam ne kadar sıklıkla gerçekleşiyor?,,Как часто проходит джем?,,,,
+MetaFAQ.Q6.Answer,"The jam happens twice a year, typically around 6 months apart.",,"La jam si svolge due volte all'anno, tipicamente a circa 6 mesi di distanza l'una dall'altra.",,,"Jam senede iki kez, çoğunlukla birbirinden 6 ay arayla gerçekleşir.",,"Джем проходит два раза в год, обычно каждые 6 месяцев",,,,
+JamHeader.Suggestions,Go to Theme Suggestions,,"Vai a ""Suggerimenti Tema""",,,Tema Gönderimi'ne Git,,Перейти к Предложению Темы,,,,
+JamHeader.Elimination,Go to Theme Elimination,,"Vai a ""Eliminazione Tema""",,,Tema Eliminasyonu'na Git,,Перейти к Устранению Темы,,,,
+JamHeader.Voting,Go to Theme Voting,,"Vai a ""Votazione Tema""",,,Tema Oylaması'na Git,,Перейти к Избиранию Темы,,,,
+JamHeader.JamSoon,Theme will be revealed on jam start,,Il tema sarà svelato all'inizio della jam,,,Jam başlarken tema görünür olacaktır,,Тема будет объявлена в начале джема,,,,
+JamHeader.NoTheme,No top-scoring theme available,,Nessun tema con il punteggio più alto disponibile,,,Seçilebilmiş bir tema yoktur,,Нет доступных топовых тем,,,,
+JamHeader.Submissions,Submissions close soon,,Le consegne si chiuderanno presto,,,Gönderimler yakında kapanıyor,,Подача скоро закроется,,,,
+JamHeader.Rate,Go rate games!,,Vai a valutare i giochi!,,,Hadi oyunları oylayın!,,Оценивайте игры!,,,,
+Stats.Timer,Jam starts in,,La jam inizia tra,,,Jam başlama zamanı:,,Джем начинается через,,,,
+Stats.Entrants,Entrants,,Partecipanti,,,Katılımcılar,,Участники,,,,
+Stats.Games,Games,,Giochi,,,Oyunlar,,Игры,,,,
+Stats.Ratings,Ratings,,Valutazioni,,,Oylamalar,,Рейтинги,,,,
+SidebarGames.Title,Featured Games,,Giochi in evidenza,,,Öne Çıkan Oyunlar,,Рекомендуемые Игры,,,,
+SidebarGames.Link,To Games Page,,Pagina dei giochi,,,Oyunlar Sayfası'na Git,,К Играм,,,,
+SidebarMusic.Title,Featured Music,,Musica in evidenza,,,Öne Çıkan Müzikler,,Рекомендуемая Музыка,,,,
+SidebarMusic.Link,To Music Page,,Pagina della musica,,,Müzik Sayfası'na Git,,К Музыке,,,,
+SidebarEvents.Active.Title,Active Events,,Eventi attivi,,,Aktif Etkinlikler,,Активные События,,,,
+SidebarEvents.Upcoming.Title,Upcoming Events,,Eventi in arrivo,,,Gelecek Etkinlikler,,Престоящие События,,,,
+SidebarEvents.Link,To Events Page,,Pagina degli eventi,,,Etkinlikler Sayfası'na Git,,К Событиям,,,,
+ThemeSuggestions.YourSuggestions.Title,Your Suggestions,,I tuoi suggerimenti,,,Önerileriniz,,Ваши Предложения,,,,
+ThemeSuggestions.YourSuggestions.Description,Themes you have submitted to the voting rounds,,Temi che hai inviato per i turni di votazione,,,Oylama turu için gönderdiğiniz temalar,,"Темы, которые вы подали на голосование",,,,
+ThemeSuggestions.PastSuggestions.Title,Past Suggestions,,Suggerimenti passati,,,Önceki Temalarınız,,Прошлые Предложения,,,,
+ThemeSuggestions.PastSuggestions.Description,Themes you have submitted to the previous jam,,Temi che hai inviato per la jam precedente,,,Önceki Jam'lere gönderdiğniz temalar,,Темы. которые вы предлагали на предыдущем джеме,,,,
+ThemeSuggestions.Edit.Title,Edit,,Modifica,,,Düzenle,,Редактировать,,,,
+ThemeSuggestions.Edit.Description,Edit the theme suggestion,,Modifica il suggerimento del tema,,,Tema önerisini düzenle,,Редактировать предложенную тему,,,,
+ThemeSuggestions.Delete.Title,Delete,,Elimina,,,Sil,,Удалить,,,,
+ThemeSuggestions.Delete.Description,Delete the theme suggestion,,Elimina il suggerimento del tema,,,Tema önerisini sil,,Удалить предложенную тему,,,,
+ThemeSuggestions.Conflict,That suggestion cannot be used (it likely has been used recently for another jam).,,Questo suggerimento non può essere usato (probabilmente è stato usato di recente per un'altra jam),,,Bu öneri kullanılamaz(muhtemelen başka bir yakın jam'de kullanıldı),,Это предложение нельзя использовать (вероятно использовалось на предыдущем джеме),,,,
+ThemeSuggestions.Added,Suggestion added successfully!,,Suggerimento aggiunto con successo!,,,Öneri başarıyla eklendi!,,Предложение успешно добавлено!,,,,
+ThemeSuggestions.ErrorDeleting,Error deleting suggestion:,,Errore durante l'eliminazione del suggerimento:,,,Öneriyi silerken hata oluştu:,,Ошибка удаления предложенного:,,,,
+ThemeSuggestions.FailedDelete,Failed to delete suggestion.,,Impossibile eliminare il suggerimento.,,,Öneri silinemedi.,,Не получилось удалить предложенное.,,,,
+ThemeSuggestions.SignIn.Title,Not signed in,,Non hai effettuato l'accesso,,,Giriş yapılmamış,,Не выполнен вход,,,,
+ThemeSuggestions.SignIn.Description,Sign in to be able to suggest themes,,Accedi per poter suggerire temi,,,Tema önerebilmek için siteye giriş yap,,"Войдите, чтобы предлагать темы",,,,
+ThemeSuggestions.JoinJam.Title,Join the Jam First,,Unisciti prima alla jam,,,Önce Jam'e Katıl,,Сначала Присоединитесь к Джему,,,,
+ThemeSuggestions.JoinJam.Description,You need to join the current jam before you can suggest themes.,,Devi unirti alla jam attuale prima di poter suggerire temi,,,Tema önermeden önce şu anki jam'e katılmalısınız.,,"Чтобы предлагать темы, нужно присоединиться к джему",,,,
+ThemeSuggestions.Title,Submit Your Theme Suggestion,,Invia il tuo suggerimento per il tema,,,Tema Önerini Gönder,,Предложите Свою Тему,,,,
+ThemeSuggestions.Description,Submit themes to the voting rounds to possibly be used in the jam,,Invia temi ai turni di votazione per poterli usare nella jam,,,Jam'de kullanılabilecek muhtemel temaları gönder,,"Предложите свою тему на голосование, чтобы возможно она использовалась на джеме",,,,
+ThemeSuggestions.LimitReached,You've reached your theme suggestion limit for this jam!,,Hai raggiunto il tuo limite di suggerimenti per il tema per questa jam!,,,Maksimum yollanabilecek tema sayısına ulaştın!,,Вы достигли максимального количества предложенных тем на этот джем!,,,,
+ThemeSuggestions.NoExamples,No examples,,Nessun esempio,,,Örnek yok,,Ничего нет,,,,
+ThemeSuggestions.NoSuggestions,You haven't submitted any suggestions yet.,,Non hai ancora inviato nessun suggerimento.,,,Henüz bir tema göndermedin.,,Вы пока не предложили ни одной темы.,,,,
+ThemeSuggestions.Loading.Title,Loading...,,Caricamento...,,,Yükleniyor...,Loading...,Загрузка...,,,,
+ThemeSuggestions.Loading.Description,Getting info from the backend,,Recupero informazioni dal backend,,,Sunucudan bilgi alınıyor,Kinukuha ang impormasyon sa backend,Получаем инфу с бэкенда,,,,
+Themes.Signup,Sign up,,Registrati,,,Üye Ol,Sign up,Зарегистрироваться,,,,
+Themes.Login,Login,,Accedi,,,Giriş Yap,Log in,Войти,,,,
+Phases.ThemeSubmission.Title,Theme Submission,,Proposta Tema,,,Tema Gönderimi,,Предложение Темы,,,,
+Phases.ThemeSubmission.Description,Submitting possible jam themes,,Inviare possibili temi della jam,,,Potansiyel tema gönderim süreci,,Предложите потенциальные темы для джема,,,,
+Phases.ThemeElimination.Title,Theme Elimination,,Eliminazione Tema,,,Tema Eliminasyonu,,Устранение Темы,,,,
+Phases.ThemeElimination.Description,Going through submitted jam themes and voting yes or no to them,,Esaminare i temi della jam inviati e votare sì o no,,,Gönderilen jam temalarına bakıp evet veya hayır diye oylama süreci,,Пройдитесь по предложенным темам и голосуйте Да или Нет за них,,,,
+Phases.ThemeVoting.Title,Theme Voting,,Votazione Tema,,,Tema Oylaması,,Избирание Темы,,,,
+Phases.ThemeVoting.Description,Voting from a list of top themes for the final theme,,Votare da una lista di temi migliori per il tema finale,,,En çok oy alan temaların seçildiği bir listede tek temaya indirmek için oylama süreci,,"Голосуйте за топовые темы, чтобы определить финальную тему",,,,
+Phases.GameJam.Title,Game Jam,,Game Jam,,,Game Jam,,Геймджем,,,,
+Phases.GameJam.Description,The core event! Making a game in a small period of time,,L'evento principale! Realizzare un gioco in un breve periodo di tempo,,,Asıl etkinlik! Kısa bir zamanda oyun çıkarma süreci,,Основное событие! Сделайте игру в короткий срок времени,,,,
+Phases.Rating.Title,Rating Period,,Periodo di Valutazione,,,Oyun Oylaması,,Рейтинговый Период,,,,
+Phases.Rating.Description,Playing and giving feedback to other people's games,,Giocare e dare feedback ai giochi degli altri,,,Diğer katılımcıların oyunlarını oynayıp onlara yorum atma süreci,,Играйте и оставляйте фидбек под играми других людей,,,,
+Phases.Results.Title,Results,,Risultati,,,Sonuçlar,,Результаты,,,,
+Phases.Results.Description,Viewing the results of the jam and how you were rated,,Visualizzare i risultati della jam e come si è stati valutati,,,Diğer oyunların sonuçlarını ve senin oyununun derecesini gör,,Посмотрите результаты с джема и свой рейтинг,,,,
+Phases.PostRating.Title,Post Jam Rating Period,,Periodo di Valutazione Post-Jam,,,Jam Sonrası Oylama Süreci,,Пост Джемовый Рейтинговый Период,,,,
+Phases.PostRating.Description,Playing and giving feedback to other people's post jam improvements,,Giocare e dare feedback ai miglioramenti post-jam fatti dagli altri,,,Diğer katılımcıların post jam versiyonlarını oynayıp yorum atma süreci,,Играйте и оставляйте фидбек под играми других людей после их улучшения в пост джеме,,,,
+Phases.PostResults.Title,Post Jam Results,,Risultati Post-Jam,,,Post Jam Sonuçları,,Пост Джем Результаты,,,,
+Phases.PostResults.Description,Viewing the results of the post jam and how you were rated compared to the jam,,Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam,,,Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma,,Посмотрите результаты с пост джема и ваш рейтинг в сравнении с джемом,,,,

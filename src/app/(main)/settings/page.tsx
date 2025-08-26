@@ -20,6 +20,7 @@ import { Card } from "@/framework/Card";
 import { Spinner } from "@/framework/Spinner";
 import Dropdown from "@/framework/Dropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Textarea } from "@/framework/Textarea";
 
 export default function UserPage() {
   const [user, setUser] = useState<UserType>();
@@ -244,13 +245,12 @@ export default function UserPage() {
                 Settings.Short.Description
               </Text>
             </div>
-            <Input
+            <Textarea
               value={short}
               onValueChange={setShort}
               name="short"
               placeholder="Enter a short bio"
-              type="text"
-              maxLength={32}
+              maxLength={155}
             />
           </Vstack>
         </Card>

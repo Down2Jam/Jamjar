@@ -224,7 +224,7 @@
     },
     "Short": {
       "Title": "Descrizione breve",
-      "Description": "Una breve descrizione che appare in punti come la ricerca al posto della bio (max 32 caratteri)"
+      "Description": "Una breve descrizione che appare in punti come la ricerca al posto della bio (max 155 caratteri)"
     },
     "Bio": {
       "Title": "Bio",

@@ -20,7 +20,7 @@ export default function SearchResultUser({
       key={user.id}
       href={`/u/${user.slug}`}
       onPress={onPress}
-      backgroundImage={user.bannerPicture}
+      backgroundImage={user.bannerPicture || user.profilePicture}
     >
       <Hstack>
         <Badge

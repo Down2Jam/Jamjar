@@ -224,7 +224,7 @@
     },
     "Short": {
       "Title": "Short",
-      "Description": "A short description that appears in spots such as search instead of the bio (max 32 characters)"
+      "Description": "A short description that appears in spots such as search instead of the bio (max 155 characters)"
     },
     "Bio": {
       "Title": "Bio",

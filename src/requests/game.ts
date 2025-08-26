@@ -52,7 +52,8 @@ export async function postGame(
   achievements: AchievementType[],
   flags: number[],
   tags: number[],
-  leaderboards: LeaderboardType[]
+  leaderboards: LeaderboardType[],
+  short: string
 ) {
   return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -73,6 +74,7 @@ export async function postGame(
       flags,
       tags,
       leaderboards,
+      short,
     }),
     method: "POST",
     headers: {
@@ -103,7 +105,8 @@ export async function updateGame(
   achievements: AchievementType[],
   flags: number[],
   tags: number[],
-  leaderboards: LeaderboardType[]
+  leaderboards: LeaderboardType[],
+  short: string
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -123,6 +126,7 @@ export async function updateGame(
       flags,
       tags,
       leaderboards,
+      short,
     }),
     method: "PUT",
     headers: {

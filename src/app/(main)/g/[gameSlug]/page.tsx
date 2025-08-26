@@ -5,9 +5,10 @@ import { getGame } from "@/requests/game";
 export async function generateMetadata({
   params,
 }: {
-  params: { gameSlug: string };
+  params: Promise<{ gameSlug: string }>;
 }): Promise<Metadata> {
-  const res = await getGame(params.gameSlug);
+  const { gameSlug } = await params;
+  const res = await getGame(gameSlug);
 
   if (!res.ok) {
     return {
@@ -16,18 +17,28 @@ export async function generateMetadata({
     };
   }
 
-  const { name, short, thumbnail } = await res.json();
+  const { name, short, thumbnail, slug } = await res.json();
+  const fallbackIcon = "/images/D2J_Icon.png";
+  const iconUrl = thumbnail || fallbackIcon;
 
   return {
     title: `${name}`,
     description: short || "A game submitted to Down2Jam",
     alternates: {
-      canonical: `/g/${params.gameSlug}`,
+      canonical: `/g/${slug}`,
+    },
+    icons: {
+      icon: [
+        { url: iconUrl, sizes: "16x16" },
+        { url: iconUrl, sizes: "32x32" },
+      ],
+      apple: [{ url: iconUrl }],
+      shortcut: iconUrl,
     },
     openGraph: {
       title: name,
       description: short || "A game submitted to Down2Jam",
-      url: `https://d2jam.com/g/${params.gameSlug}`,
+      url: `https://d2jam.com/g/${slug}`,
       type: "website",
       images: [
         {

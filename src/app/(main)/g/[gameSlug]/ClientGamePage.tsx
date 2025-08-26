@@ -240,9 +240,9 @@ export default function ClientGamePage({
             </ThemedProse>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
-            {isEditable && activeJamResponse?.jam?.id == game.jamId && (
+            {isEditable && (
               <div>
-                <Button icon="squarepen" href="/create-game">
+                <Button icon="squarepen" href={`/g/${game.slug}/edit`}>
                   Edit
                 </Button>
               </div>

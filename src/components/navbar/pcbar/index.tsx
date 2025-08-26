@@ -354,10 +354,26 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" className="hidden xl:flex" />
             <div className="hidden xl:flex gap-1">
-              <Button icon="sidiscord" href="https://discord.d2jam.com" />
-              <Button icon="sibluesky" href="https://bluesky.d2jam.com" />
-              <Button icon="siyoutube" href="https://youtube.d2jam.com" />
-              <Button icon="siinstagram" href="https://instagram.d2jam.com" />
+              <Button
+                icon="sidiscord"
+                href="https://discord.d2jam.com"
+                target="_blank"
+              />
+              <Button
+                icon="sibluesky"
+                href="https://bluesky.d2jam.com"
+                target="_blank"
+              />
+              <Button
+                icon="siyoutube"
+                href="https://youtube.d2jam.com"
+                target="_blank"
+              />
+              <Button
+                icon="siinstagram"
+                href="https://instagram.d2jam.com"
+                target="_blank"
+              />
             </div>
           </>
         )}

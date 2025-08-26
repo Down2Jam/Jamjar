@@ -61,6 +61,15 @@
   colorSecondary: purpleLight
   colorBg: purpleDark
 
+- key: ru
+  label: Русский
+  gradient: from-blue-500 to-gray-300
+  bg: bg-blue-500
+  hoverBg: hover:!bg-blue-900
+  colorPrimary: blue
+  colorSecondary: blueLight
+  colorBg: blueDark
+
 - key: ja
   label: 日本語
   gradient: from-amber-500 to-amber-300

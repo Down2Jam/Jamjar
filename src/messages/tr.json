@@ -117,6 +117,18 @@
     "Login": {
       "Title": "Giriş Yap",
       "Description": "Web sayfasına giriş yap"
+    },
+    "ThemeSuggestions": {
+      "Title": "Tema Önerileri",
+      "Description": "Jam'e tema önerilerinde bulunun. Bu temalar sonraki aşamada katılımcılar tarafından oylanacak."
+    },
+    "ThemeElimination": {
+      "Title": "Tema Eleme",
+      "Description": "Bu temalarda oyun yapmayı isteyip istemediğinize göre eleme yapın. İstediğiniz kadar temayı oylayabilirsiniz."
+    },
+    "ThemeVoting": {
+      "Title": "Tema Oylama",
+      "Description": "En beğenilen temalar arasından oy vererek jam temasını seçmeye yardımcı olun"
     }
   },
   "PostStyle": {
