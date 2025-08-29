@@ -62,11 +62,11 @@ export default function Posts() {
       "all"
   );
   const [style, setStyle] = useState<PostStyle>(
-    (["cozy", "compact", "ultra"].includes(
+    (["Cozy", "Compact", "Ultra"].includes(
       searchParams.get("style") as PostStyle
     ) &&
       (searchParams.get("style") as PostStyle)) ||
-      "cozy"
+      "Cozy"
   );
   const [user, setUser] = useState<UserType>();
   const [oldIsOpen, setOldIsOpen] = useState<boolean | null>(null);
@@ -300,7 +300,7 @@ export default function Posts() {
       <div className="flex justify-between p-4 pb-0">
         <div className="flex gap-2">
           <Dropdown
-            trigger={<Button>{sorts[sort]?.name}</Button>}
+            selectedValue={sort}
             onSelect={(key) => {
               setSort(key as PostSort);
               updateQueryParam("sort", key as string);
@@ -318,7 +318,7 @@ export default function Posts() {
             ))}
           </Dropdown>
           <Dropdown
-            trigger={<Button>{times[time]?.name}</Button>}
+            selectedValue={time}
             onSelect={(key) => {
               setTime(key as PostTime);
               updateQueryParam("time", key as string);
@@ -418,30 +418,28 @@ export default function Posts() {
         </div>
         <div>
           <Dropdown
-            trigger={
-              <Button>{style.charAt(0).toUpperCase() + style.slice(1)}</Button>
-            }
+            selectedValue={style}
             onSelect={(key) => {
               setStyle(key as PostStyle);
               updateQueryParam("style", key as string);
             }}
           >
             <Dropdown.Item
-              value="cozy"
+              value="Cozy"
               description="PostStyle.Cozy.Description"
               icon="maximize2"
             >
               PostStyle.Cozy.Title
             </Dropdown.Item>
             <Dropdown.Item
-              value="compact"
+              value="Compact"
               description="PostStyle.Compact.Description"
               icon="zoomout"
             >
               PostStyle.Compact.Title
             </Dropdown.Item>
             <Dropdown.Item
-              value="ultra"
+              value="Ultra"
               description="PostStyle.Ultra.Description"
               icon="minimize2"
             >

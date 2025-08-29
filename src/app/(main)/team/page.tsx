@@ -535,22 +535,6 @@ export default function EditTeamPage() {
               onSelectionChange={(selection) => {
                 setWantedRoles(selection as Set<string>);
               }}
-              trigger={
-                <Button
-                  size="sm"
-                  disabled={teams[selectedTeam].ownerId != user.id}
-                >
-                  {wantedRoles.size > 0
-                    ? Array.from(wantedRoles)
-                        .map(
-                          (role) =>
-                            roles.find((findrole) => findrole.slug == role)
-                              ?.name || "Unknown"
-                        )
-                        .join(", ")
-                    : "No Roles"}
-                </Button>
-              }
             >
               {roles.map((secondaryRole) => (
                 <Dropdown.Item

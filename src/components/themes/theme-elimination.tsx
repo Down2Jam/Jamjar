@@ -663,13 +663,10 @@ export default function ThemeSlaughter() {
                     style={getStyleFromVote(
                       themes[currentTheme].votes[0].slaughterScore
                     )}
+                    icon={getIconFromVote(
+                      themes[currentTheme].votes[0].slaughterScore
+                    )}
                   >
-                    <Icon
-                      name={getIconFromVote(
-                        themes[currentTheme].votes[0].slaughterScore
-                      )}
-                      size={16}
-                    />
                     <Text size="sm">
                       {getTextFromVote(
                         themes[currentTheme].votes[0].slaughterScore
@@ -795,13 +792,8 @@ export default function ThemeSlaughter() {
                           style={getStyleFromVote(
                             theme.votes[0].slaughterScore
                           )}
+                          icon={getIconFromVote(theme.votes[0].slaughterScore)}
                         >
-                          <Icon
-                            name={getIconFromVote(
-                              theme.votes[0].slaughterScore
-                            )}
-                            size={16}
-                          />
                           <Text size="sm">
                             {getTextFromVote(theme.votes[0].slaughterScore)}
                           </Text>

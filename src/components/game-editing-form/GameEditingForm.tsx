@@ -3,7 +3,7 @@
 import { Button } from "@/framework/Button";
 import { Card } from "@/framework/Card";
 import Dropdown from "@/framework/Dropdown";
-import Icon from "@/framework/Icon";
+import Icon, { IconName } from "@/framework/Icon";
 import { Input } from "@/framework/Input";
 import { Spinner } from "@/framework/Spinner";
 import { Hstack, Vstack } from "@/framework/Stack";
@@ -32,13 +32,20 @@ import { addToast, Avatar, Form } from "@heroui/react";
 import Image from "next/image";
 import { ReactNode, useEffect, useState } from "react";
 import Select, { StylesConfig } from "react-select";
-import { Select as NextSelect, SelectItem } from "@heroui/react";
 import { Switch } from "@/framework/Switch";
-import { LandPlot, Rabbit, Trophy, Turtle } from "lucide-react";
 import { getIcon } from "@/helpers/icon";
 import { Textarea } from "@/framework/Textarea";
 import Editor from "@/components/editor";
 import { useRouter } from "next/navigation";
+
+const LB_ICON: Record<LeaderboardTypeType, IconName> = {
+  SCORE: "trophy",
+  GOLF: "landplot",
+  SPEEDRUN: "rabbit",
+  ENDURANCE: "turtle",
+};
+
+const lbIconFor = (t: LeaderboardTypeType): IconName => LB_ICON[t] ?? "trophy";
 
 export default function GameEditingForm({
   game = null,
@@ -418,36 +425,37 @@ export default function GameEditingForm({
             </Vstack>
           </Card>
 
-          {activeJamResponse &&
-            activeJamResponse.jam &&
-            (activeJamResponse.jam.id === game?.jam.id || !game) &&
-            (activeJamResponse.phase == "Jamming" ||
-              activeJamResponse.phase == "Submission" ||
-              (activeJamResponse.phase == "Rating" && !prevSlug)) && (
-              <>
-                <Card>
-                  <Vstack align="start">
-                    <div>
-                      <Text color="text">Game Category</Text>
-                      <Text color="textFaded" size="xs">
-                        The category you are submitting your game to in the jam
-                      </Text>
-                    </div>
+          {
+            <>
+              <Card>
+                <Vstack align="start">
+                  <div>
+                    <Text color="text">Game Category</Text>
+                    <Text color="textFaded" size="xs">
+                      The category you are submitting your game to in the jam
+                    </Text>
+                  </div>
+                  {
                     <Dropdown
-                      trigger={
-                        <Button>
-                          {category == "REGULAR"
-                            ? "Regular"
-                            : category == "ODA"
-                            ? "One Dev Army"
-                            : "Extra"}
-                        </Button>
+                      disabled={
+                        (activeJamResponse &&
+                          activeJamResponse.jam &&
+                          (activeJamResponse.jam.id === game?.jam.id ||
+                            !game) &&
+                          (activeJamResponse.phase == "Jamming" ||
+                            activeJamResponse.phase == "Submission" ||
+                            (activeJamResponse.phase == "Rating" &&
+                              !prevSlug))) ||
+                        undefined
                       }
+                      selectedValue={category}
+                      placeholder="Select category"
                       onSelect={(key) => {
                         setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                       }}
                     >
-                      {activeJamResponse.phase != "Rating" ? (
+                      {activeJamResponse &&
+                      activeJamResponse.phase != "Rating" ? (
                         <Dropdown.Item
                           value="REGULAR"
                           description="The regular jam category"
@@ -460,7 +468,9 @@ export default function GameEditingForm({
                       )}
                       {teams &&
                       teams.length > 0 &&
+                      teams[currentTeam].users &&
                       teams[currentTeam].users.length == 1 &&
+                      activeJamResponse &&
                       activeJamResponse.phase != "Rating" ? (
                         <Dropdown.Item
                           value="ODA"
@@ -480,10 +490,11 @@ export default function GameEditingForm({
                         Extra
                       </Dropdown.Item>
                     </Dropdown>
-                  </Vstack>
-                </Card>
-              </>
-            )}
+                  }
+                </Vstack>
+              </Card>
+            </>
+          }
 
           <Card>
             <Vstack align="start">
@@ -602,6 +613,7 @@ export default function GameEditingForm({
                     />
                   </div>
                   <Button
+                    icon="trash"
                     color="red"
                     size="sm"
                     onClick={() => {
@@ -679,6 +691,7 @@ export default function GameEditingForm({
                     />
                   </div>
                   <Button
+                    icon="trash"
                     color="red"
                     size="sm"
                     onClick={() => {
@@ -744,67 +757,42 @@ export default function GameEditingForm({
                             }
                           }}
                         />
-                        <NextSelect
+                        <Dropdown
                           className="w-96"
-                          defaultSelectedKeys={["Web"]}
-                          aria-label="Select platform" // Add this to fix accessibility warning
-                          onSelectionChange={(value) => {
+                          placeholder="Select platform"
+                          selectedValue={link.platform}
+                          onSelect={(val) => {
                             const newLinks = [...downloadLinks];
-                            newLinks[index].platform =
-                              value.currentKey as unknown as PlatformType;
+                            newLinks[index].platform = val as PlatformType;
                             setDownloadLinks(newLinks);
                           }}
-                          selectedKeys={[link.platform]}
                         >
-                          <SelectItem
-                            key="Web"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          <Dropdown.Item value="Web" icon="globe">
                             Web
-                          </SelectItem>
-                          <SelectItem
-                            key="SourceCode"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="SourceCode" icon="code2">
                             Source Code
-                          </SelectItem>
-                          <SelectItem
-                            key="Windows"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="Windows" icon="monitor">
                             Windows
-                          </SelectItem>
-                          <SelectItem
-                            key="MacOS"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="MacOS" icon="apple">
                             MacOS
-                          </SelectItem>
-                          <SelectItem
-                            key="Linux"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="Linux" icon="terminal">
                             Linux
-                          </SelectItem>
-                          <SelectItem
-                            key="iOS"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="iOS" icon="smartphone">
                             Apple iOS
-                          </SelectItem>
-                          <SelectItem
-                            key="Android"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="Android" icon="smartphone">
                             Android
-                          </SelectItem>
-                          <SelectItem
-                            key="Other"
-                            classNames={{ base: "text-[#333] dark:text-white" }}
-                          >
+                          </Dropdown.Item>
+                          <Dropdown.Item value="Other" icon="morehorizontal">
                             Other
-                          </SelectItem>
-                        </NextSelect>
+                          </Dropdown.Item>
+                        </Dropdown>
+
                         <Button
                           color="red"
                           onClick={() => {
@@ -1067,81 +1055,111 @@ export default function GameEditingForm({
                 </Text>
               </div>
               {leaderboards.map((lb, index) => (
-                <div key={index} className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-2 ">
-                    <Hstack>
-                      <Input
-                        label="Leaderboard Name"
-                        placeholder="Enter name here"
-                        value={lb.name}
-                        onChange={(e) => {
-                          const updated = [...leaderboards];
-                          updated[index].name = e.target.value;
-                          setLeaderboards(updated);
-                        }}
-                      />
-
-                      <Input
-                        type="number"
-                        label="Users per page"
-                        placeholder="Enter a user amount"
-                        value={lb.maxUsersShown}
-                        min={0}
-                        max={100}
-                        onValueChange={(e) => {
-                          const updated = [...leaderboards];
-                          updated[index].maxUsersShown = parseInt(e);
-                          setLeaderboards(updated);
-                        }}
-                      />
-                      <NextSelect
-                        label="Leaderboard Type"
-                        defaultSelectedKeys={["SCORE"]}
-                        onChange={(e) => {
-                          const updated = [...leaderboards];
-                          updated[index].type = e.target
-                            .value as LeaderboardTypeType;
-                          setLeaderboards(updated);
-                        }}
+                <Card key={index}>
+                  <Vstack align="start">
+                    <Hstack className="mb-2">
+                      <Icon name={lbIconFor(lb.type)} size={16} />
+                      <Text size="lg">
+                        Leaderboard #{index + 1}
+                        {lb.name ? `: ${lb.name}` : ""}
+                      </Text>
+                    </Hstack>
+                    <div>
+                      <Text color="text">Leaderboard Name</Text>
+                      <Text color="textFaded" size="xs">
+                        The name that shows for the leaderboard tab. Should
+                        describe what the leaderboard is (e.g. any%, death%)
+                      </Text>
+                    </div>
+                    <Input
+                      placeholder="Enter a name"
+                      value={lb.name}
+                      onChange={(e) => {
+                        const updated = [...leaderboards];
+                        updated[index].name = e.target.value;
+                        setLeaderboards(updated);
+                      }}
+                    />
+                    <div>
+                      <Text color="text">Users per page</Text>
+                      <Text color="textFaded" size="xs">
+                        Users that show on a page of the leaderboard (users past
+                        this are paginated and the user needs to go to a
+                        different page)
+                      </Text>
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="Enter a user amount"
+                      value={lb.maxUsersShown}
+                      min={0}
+                      max={100}
+                      onValueChange={(e) => {
+                        const updated = [...leaderboards];
+                        updated[index].maxUsersShown = parseInt(e);
+                        setLeaderboards(updated);
+                      }}
+                    />
+                    <div>
+                      <Text color="text">Leaderboard Type</Text>
+                      <Text color="textFaded" size="xs">
+                        The goal users are ordered by and that the score is
+                        formatted as. Determines whether users need to get
+                        lowest score, highest score, lowest time, etc.
+                      </Text>
+                    </div>
+                    <Dropdown
+                      placeholder="Select Leaderboard Type"
+                      selectedValue={leaderboards[index].type}
+                      onSelect={(value) => {
+                        const updated = [...leaderboards];
+                        updated[index].type = value as LeaderboardTypeType;
+                        setLeaderboards(updated);
+                      }}
+                    >
+                      <Dropdown.Item
+                        value="SCORE"
+                        description="Highest Score"
+                        icon="trophy"
                       >
-                        <SelectItem
-                          key="SCORE"
-                          description="Highest Score"
-                          startContent={<Trophy />}
-                          classNames={{ base: "text-[#333] dark:text-white" }}
-                        >
-                          Score
-                        </SelectItem>
-                        <SelectItem
-                          key="GOLF"
-                          description="Lowest Score"
-                          startContent={<LandPlot />}
-                          classNames={{ base: "text-[#333] dark:text-white" }}
-                        >
-                          Golf
-                        </SelectItem>
-                        <SelectItem
-                          key="SPEEDRUN"
-                          description="Lowest Time"
-                          startContent={<Rabbit />}
-                          classNames={{ base: "text-[#333] dark:text-white" }}
-                        >
-                          Speedrun
-                        </SelectItem>
-                        <SelectItem
-                          key="ENDURANCE"
-                          description="Highest Time"
-                          startContent={<Turtle />}
-                          classNames={{ base: "text-[#333] dark:text-white" }}
-                        >
-                          Endurance
-                        </SelectItem>
-                      </NextSelect>
-                      {(lb.type == "SCORE" || lb.type == "GOLF") && (
+                        Score
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        value="GOLF"
+                        description="Lowest Score"
+                        icon="landplot"
+                      >
+                        Golf
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        value="SPEEDRUN"
+                        description="Lowest Time"
+                        icon="rabbit"
+                      >
+                        Speedrun
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        value="ENDURANCE"
+                        description="Highest Time"
+                        icon="turtle"
+                      >
+                        Endurance
+                      </Dropdown.Item>
+                    </Dropdown>
+                    {(lb.type == "SCORE" || lb.type == "GOLF") && (
+                      <>
+                        <div>
+                          <Text color="text">Decimal places</Text>
+                          <Text color="textFaded" size="xs">
+                            The amount of decimal places that a score supports
+                          </Text>
+                        </div>
                         <Input
                           type="number"
-                          label="Decimal places"
-                          placeholder="Enter the scores decimal places"
+                          placeholder="Enter the score's decimal places"
                           value={lb.decimalPlaces}
                           min={0}
                           max={3}
@@ -1151,8 +1169,14 @@ export default function GameEditingForm({
                             setLeaderboards(updated);
                           }}
                         />
-                      )}
-                    </Hstack>
+                      </>
+                    )}
+                    <div>
+                      <Text color="text">Advanced toggles</Text>
+                      <Text color="textFaded" size="xs">
+                        Toggles to control more functionality on the leaderboard
+                      </Text>
+                    </div>
                     <Hstack>
                       <Switch
                         checked={lb.onlyBest}
@@ -1169,22 +1193,23 @@ export default function GameEditingForm({
                         </Text>
                       </Vstack>
                     </Hstack>
-                    <div>
-                      <Button
-                        color="red"
-                        onClick={() =>
-                          setLeaderboards(
-                            leaderboards.filter((_, i) => i !== index)
-                          )
-                        }
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                    <div className="p-1" />
+                    <Button
+                      icon="trash"
+                      color="red"
+                      onClick={() =>
+                        setLeaderboards(
+                          leaderboards.filter((_, i) => i !== index)
+                        )
+                      }
+                    >
+                      Remove {lb.name}
+                    </Button>
+                  </Vstack>
+                </Card>
               ))}
               <Button
+                icon="plus"
                 color="green"
                 onClick={() =>
                   setLeaderboards([
@@ -1213,7 +1238,7 @@ export default function GameEditingForm({
                 <Text color="text">Soundtrack</Text>
                 <Text color="textFaded" size="xs">
                   The soundtrack of your game for people to listen to when
-                  browsing your game page.
+                  browsing the site
                 </Text>
               </div>
               <Button
@@ -1268,6 +1293,72 @@ export default function GameEditingForm({
                 disabled
               >
                 Add Song (disabled for now, will be enabled soon)
+              </Button>
+            </Vstack>
+          </Card>
+
+          <Card>
+            <Vstack align="start">
+              <div>
+                <Text color="text">Achievements</Text>
+                <Text color="textFaded" size="xs">
+                  Achievements for people to obtain from goals relating to your
+                  game (e.g. find the hidden chicken). Completion is self
+                  reported
+                </Text>
+              </div>
+              <Button
+                onClick={async () => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "audio/*";
+                  input.onchange = async (e: Event) => {
+                    const file = (e.target as HTMLInputElement)?.files?.[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append("upload", file);
+
+                    try {
+                      const response = await fetch(
+                        process.env.NEXT_PUBLIC_MODE === "PROD"
+                          ? "https://d2jam.com/api/v1/music"
+                          : "http://localhost:3005/api/v1/music",
+                        {
+                          method: "POST",
+                          body: formData,
+                          headers: {
+                            authorization: `Bearer ${getCookie("token")}`,
+                          },
+                          credentials: "include",
+                        }
+                      );
+
+                      const result = await response.json();
+                      if (response.ok) {
+                        addToast({
+                          title: "Song uploaded",
+                        });
+                        console.log("Upload successful:", result);
+                      } else {
+                        addToast({
+                          title: "Upload failed",
+                        });
+                        console.error("Upload failed:", result);
+                      }
+                    } catch (error) {
+                      addToast({
+                        title: "Error uploading file",
+                      });
+                      console.error("Error uploading file:", error);
+                    }
+                  };
+                  input.click();
+                }}
+                color="purple"
+                disabled
+              >
+                Add Achievement (disabled for now, will be enabled soon)
               </Button>
             </Vstack>
           </Card>

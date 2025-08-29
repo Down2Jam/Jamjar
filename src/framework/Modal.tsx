@@ -7,12 +7,18 @@ import { Input } from "@/framework/Input";
 import { Textarea } from "@/framework/Textarea";
 import { Button } from "@/framework/Button";
 import { IconName } from "./Icon";
+import Text from "./Text";
 
 interface ModalProps {
   shown: boolean;
   onClose: () => void;
   onSubmit: (formData: { [key: string]: string }) => void;
-  fields: { name: string; label: string; type?: "input" | "textarea" }[];
+  fields: {
+    name: string;
+    label: string;
+    description: string;
+    type?: "input" | "textarea";
+  }[];
   confirm?: { icon?: IconName; label?: string };
   cancel?: { icon?: IconName; label?: string };
 }
@@ -47,23 +53,35 @@ export default function Modal({
     >
       <form onSubmit={handleSubmit}>
         <Vstack gap={3} className="p-2 min-w-[250px]">
-          {fields.map(({ name, label, type = "input" }) =>
+          {fields.map(({ name, label, description, type = "input" }) =>
             type === "textarea" ? (
-              <Textarea
-                key={name}
-                label={label}
-                value={formState[name] || ""}
-                onValueChange={(v) => handleChange(name, v)}
-                fullWidth
-              />
+              <Vstack key={name}>
+                <div>
+                  <Text color="text">{label}</Text>
+                  <Text color="textFaded" size="xs">
+                    {description}
+                  </Text>
+                </div>
+                <Textarea
+                  value={formState[name] || ""}
+                  onValueChange={(v) => handleChange(name, v)}
+                  fullWidth
+                />
+              </Vstack>
             ) : (
-              <Input
-                key={name}
-                label={label}
-                value={formState[name] || ""}
-                onValueChange={(v) => handleChange(name, v)}
-                fullWidth
-              />
+              <Vstack key={name}>
+                <div>
+                  <Text color="text">{label}</Text>
+                  <Text color="textFaded" size="xs">
+                    {description}
+                  </Text>
+                </div>
+                <Input
+                  value={formState[name] || ""}
+                  onValueChange={(v) => handleChange(name, v)}
+                  fullWidth
+                />
+              </Vstack>
             )
           )}
           <Hstack justify="end" gap={2}>

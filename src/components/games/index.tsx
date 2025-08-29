@@ -8,7 +8,6 @@ import { getGames } from "@/requests/game";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
 import { IconName } from "@/framework/Icon";
-import { Button } from "@/framework/Button";
 import Dropdown from "@/framework/Dropdown";
 import { GameCard } from "../gamecard";
 import { Spinner } from "@/framework/Spinner";
@@ -104,7 +103,7 @@ export default function Games() {
     <>
       <Vstack className="p-4">
         <Dropdown
-          trigger={<Button size="sm">{sorts[sort]?.name}</Button>}
+          selectedValue={sort}
           onSelect={(key) => {
             setSort(key as GameSort);
             updateQueryParam("sort", key as string);

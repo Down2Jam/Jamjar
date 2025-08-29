@@ -9,12 +9,22 @@ type Shared = {
   loading?: boolean;
   fullWidth?: boolean;
   icon?: IconName;
-  color?: "default" | "blue" | "green" | "pink" | "red" | "yellow" | "gray";
+  color?:
+    | "default"
+    | "blue"
+    | "green"
+    | "pink"
+    | "red"
+    | "yellow"
+    | "purple"
+    | "gray";
   externalIcon?: boolean;
   disabled?: boolean;
   className?: string;
   style?: React.CSSProperties;
   kbd?: string;
+  rightSlot?: React.ReactNode;
+  tooltip?: string;
 };
 
 export type ButtonAsButton = Shared &

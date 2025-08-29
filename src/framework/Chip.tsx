@@ -7,6 +7,7 @@ import Link from "next/link";
 import Icon from "./Icon";
 import type { IconName } from "./Icon";
 import { Avatar } from "./Avatar";
+import { Hstack } from "./Stack";
 
 type ChipColor =
   | "default"
@@ -15,6 +16,7 @@ type ChipColor =
   | "pink"
   | "red"
   | "yellow"
+  | "purple"
   | "gray";
 
 type Shared = {
@@ -112,6 +114,13 @@ export function Chip(props: ChipProps) {
       borderColor: colors["yellow"],
       color: colors["yellow"],
     };
+  } else if (color === "purple") {
+    style = {
+      ...style,
+      backgroundColor: colors["purpleDarkDark"] + "88",
+      borderColor: colors["purple"],
+      color: colors["purple"],
+    };
   } else if (color === "gray") {
     style = {
       ...style,
@@ -131,7 +140,7 @@ export function Chip(props: ChipProps) {
     .join(" ");
 
   const content = (
-    <>
+    <Hstack>
       {(avatarSrc || avatarFallback) && (
         <Avatar
           src={avatarSrc}
@@ -144,7 +153,7 @@ export function Chip(props: ChipProps) {
       )}
       {icon && <Icon name={icon} size={iconSize} />}
       <span className="leading-none">{children}</span>
-    </>
+    </Hstack>
   );
 
   if (href) {

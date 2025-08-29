@@ -1,7 +1,11 @@
 "use client";
 
 import React, {
+  Children,
   createContext,
+  isValidElement,
+  ReactElement,
+  ReactNode,
   useCallback,
   useContext,
   useEffect,
@@ -18,6 +22,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import Text from "./Text";
 import { Hstack } from "./Stack";
+import { Button } from "./Button";
 
 type Position =
   | "top-left"
@@ -30,6 +35,29 @@ type Position =
   | "right"
   | "center";
 
+function isDropdownItemElement(
+  node: ReactNode
+): node is ReactElement<ItemProps, typeof Item> {
+  return isValidElement(node) && node.type === Item;
+}
+
+function findSelectedDisplay(
+  nodes: ReactNode,
+  selectedValue: unknown
+): { label?: string; icon?: IconName } | null {
+  for (const child of Children.toArray(nodes)) {
+    if (isDropdownItemElement(child)) {
+      if (child.props.value === selectedValue) {
+        return { label: child.props.children, icon: child.props.icon };
+      }
+    } else if (isValidElement(child) && child.props?.children) {
+      const found = findSelectedDisplay(child.props.children, selectedValue);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 interface DropdownContextValue {
   closeOnSelect: boolean;
   onItemSelect?: (value: unknown) => void;
@@ -37,6 +65,11 @@ interface DropdownContextValue {
   multiple: boolean;
   selectedValues: Set<unknown>;
   setSelectedValues: (set: Set<unknown>) => void;
+
+  // let items tell the dropdown what to display in the default trigger
+  setSelectedDisplay: (
+    display: { label?: string; icon?: IconName } | null
+  ) => void;
 }
 
 const DropdownCtx = createContext<DropdownContextValue | null>(null);
@@ -47,7 +80,7 @@ const useDropdownCtx = () => {
 };
 
 interface DropdownProps {
-  trigger: React.ReactNode;
+  trigger?: React.ReactNode; // optional, if ommited does a default button
   children: React.ReactNode;
   position?: Position;
   className?: string;
@@ -61,9 +94,13 @@ interface DropdownProps {
   backdrop?: boolean;
   closeOnOutsideClick?: boolean;
   multiple?: boolean;
+  selectedValue?: unknown;
   selectedValues?: Set<unknown>;
   onSelectionChange?: (selected: Set<unknown>) => void;
   disabled?: boolean;
+
+  placeholder?: string;
+  showChevron?: boolean;
 }
 
 function Dropdown({
@@ -84,6 +121,9 @@ function Dropdown({
   selectedValues: controlledSelectedValues,
   onSelectionChange,
   disabled = false,
+  selectedValue,
+  placeholder = "Select",
+  showChevron = true,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -91,6 +131,19 @@ function Dropdown({
   const [internalSelectedValues, setInternalSelectedValues] = useState<
     Set<unknown>
   >(new Set());
+
+  const [selectedDisplay, setSelectedDisplay] = useState<{
+    label?: string;
+    icon?: IconName;
+  } | null>(null);
+
+  useEffect(() => {
+    if (multiple) return;
+    if (selectedValue === undefined) return;
+
+    const found = findSelectedDisplay(children, selectedValue);
+    if (found) setSelectedDisplay(found);
+  }, [children, multiple, selectedValue]);
 
   const selectedValues = useMemo(
     () => controlledSelectedValues ?? internalSelectedValues,
@@ -126,7 +179,6 @@ function Dropdown({
         setOpenAndNotify(false);
       }
     };
-    // Use capture so it runs before other handlers
     document.addEventListener("mousedown", onDown, true);
     return () => document.removeEventListener("mousedown", onDown, true);
   }, [open, closeOnOutsideClick, setOpenAndNotify]);
@@ -150,6 +202,34 @@ function Dropdown({
     setOpenAndNotify(!open);
   };
 
+  const computedLabel = multiple
+    ? selectedValues.size > 0
+      ? `${selectedValues.size} selected`
+      : placeholder
+    : selectedDisplay?.label ?? placeholder;
+
+  const computedIcon = multiple ? undefined : selectedDisplay?.icon;
+
+  const renderDefaultTrigger = () => (
+    <Button
+      icon={computedIcon}
+      disabled={disabled}
+      rightSlot={
+        showChevron && (
+          <Icon
+            name="chevrondown"
+            size={16}
+            className={`ml-2 transform transition-transform duration-200 ${
+              open ? "rotate-180" : "rotate-0"
+            }`}
+          />
+        )
+      }
+    >
+      {computedLabel}
+    </Button>
+  );
+
   return (
     <div
       ref={rootRef}
@@ -158,7 +238,7 @@ function Dropdown({
       onMouseLeave={handleMouseLeave}
     >
       <div onClick={handleClick} className="cursor-pointer">
-        {trigger}
+        {trigger ?? renderDefaultTrigger()}
       </div>
 
       {backdrop && (
@@ -173,6 +253,7 @@ function Dropdown({
           multiple,
           selectedValues,
           setSelectedValues,
+          setSelectedDisplay, // NEW
         }}
       >
         <Popover
@@ -190,7 +271,7 @@ function Dropdown({
   );
 }
 
-interface ItemProps<T = unknown> {
+export interface ItemProps<T = unknown> {
   value?: T;
   children: string;
   description?: string;
@@ -228,6 +309,7 @@ function Item<T = unknown>({
     multiple,
     selectedValues,
     setSelectedValues,
+    setSelectedDisplay,
   } = useDropdownCtx();
   const { colors } = useTheme();
 
@@ -244,6 +326,9 @@ function Item<T = unknown>({
       else newSet.add(value);
       setSelectedValues(newSet);
     } else {
+      if (value !== undefined) {
+        setSelectedDisplay({ label: children, icon });
+      }
       handleSelect();
       if (closeOnSelect) setOpen(false);
     }

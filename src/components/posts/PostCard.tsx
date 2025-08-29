@@ -44,7 +44,7 @@ export default function PostCard({
         display: hidden ? "none" : "flex",
       }}
     >
-      {style == "cozy" &&
+      {style == "Cozy" &&
         (minimized ? (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4">
@@ -415,7 +415,7 @@ export default function PostCard({
             </div>
           </div>
         ))}
-      {style == "compact" && (
+      {style == "Compact" && (
         <div>
           <Link
             href={`/p/${post.slug}`}
@@ -454,7 +454,7 @@ export default function PostCard({
           </div>
         </div>
       )}
-      {style == "ultra" && (
+      {style == "Ultra" && (
         <div className="flex items-center gap-4">
           <Link
             href={`/p/${post.slug}`}

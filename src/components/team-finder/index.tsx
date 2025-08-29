@@ -1,17 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Avatar,
-  AvatarGroup,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  Textarea,
-  useDisclosure,
-} from "@heroui/react";
 import { TeamType } from "@/types/TeamType";
 import { getTeams } from "@/requests/team";
 import { applyToTeam, createTeam } from "@/helpers/team";
@@ -28,6 +17,8 @@ import Dropdown from "@/framework/Dropdown";
 import Tooltip from "@/framework/Tooltip";
 import { Hstack, Vstack } from "@/framework/Stack";
 import { Spinner } from "@/framework/Spinner";
+import Modal from "@/framework/Modal";
+import { Avatar } from "@/framework/Avatar";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -39,11 +30,10 @@ export default function TeamFinder() {
     "Primary Role" | "Primary or Secondary Role" | "All"
   >("All");
   const [user, setUser] = useState<UserType>();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const [body, setBody] = useState<string>("");
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const [sortSet, setSortSet] = useState<boolean>(false);
   const [jam, setJam] = useState<JamType | null>();
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -79,7 +69,12 @@ export default function TeamFinder() {
         );
         teams = teams.filter((team: TeamType) => team.rolesWanted.length != 0);
 
-        if (filter == "Primary Role") {
+        const effectiveFilter:
+          | "Primary Role"
+          | "Primary or Secondary Role"
+          | "All" = teamType === "All" ? "All" : filter;
+
+        if (effectiveFilter == "Primary Role") {
           teams = teams.filter(
             (team: TeamType) =>
               team.rolesWanted.filter(
@@ -92,7 +87,7 @@ export default function TeamFinder() {
           if (teams.length == 0 && !sortSet) {
             setFilter("Primary or Secondary Role");
           }
-        } else if (filter == "Primary or Secondary Role") {
+        } else if (effectiveFilter == "Primary or Secondary Role") {
           teams = teams.filter(
             (team: TeamType) =>
               team.rolesWanted.filter(
@@ -165,7 +160,7 @@ export default function TeamFinder() {
         </div>
         <div className="flex gap-2">
           <Dropdown
-            trigger={<Button size="sm">{teamType}</Button>}
+            selectedValue={teamType}
             onSelect={(key) => {
               setTeamType(key as "Open to Applications" | "All");
             }}
@@ -177,24 +172,26 @@ export default function TeamFinder() {
               All
             </Dropdown.Item>
           </Dropdown>
-          <Dropdown
-            trigger={<Button size="sm">{filter}</Button>}
-            onSelect={(key) => {
-              setFilter(
-                key as "Primary Role" | "Primary or Secondary Role" | "All"
-              );
-            }}
-          >
-            <Dropdown.Item value="Primary Role" icon="settings2">
-              Primary Role
-            </Dropdown.Item>
-            <Dropdown.Item value="Primary or Secondary Role" icon="settings">
-              Primary or Secondary Role
-            </Dropdown.Item>
-            <Dropdown.Item value="All" icon="star">
-              All
-            </Dropdown.Item>
-          </Dropdown>
+          {teamType !== "All" && (
+            <Dropdown
+              selectedValue={filter}
+              onSelect={(key) => {
+                setFilter(
+                  key as "Primary Role" | "Primary or Secondary Role" | "All"
+                );
+              }}
+            >
+              <Dropdown.Item value="Primary Role" icon="settings2">
+                Primary Role
+              </Dropdown.Item>
+              <Dropdown.Item value="Primary or Secondary Role" icon="settings">
+                Primary or Secondary Role
+              </Dropdown.Item>
+              <Dropdown.Item value="All" icon="star">
+                All
+              </Dropdown.Item>
+            </Dropdown>
+          )}
         </div>
       </section>
 
@@ -203,32 +200,24 @@ export default function TeamFinder() {
           teams.map((team) => (
             <Card key={team.id}>
               <div className="flex items-center justify-between flex-row gap-3">
-                <div className="flex items-center gap-3">
-                  <AvatarGroup
-                    renderCount={(count) => <p>+{count}</p>}
-                    max={10}
-                  >
+                <Hstack>
+                  <div>
                     {team.users.map((user) => (
                       <Tooltip key={user.id} content={user.name} position="top">
-                        <Avatar
-                          size="sm"
-                          className="w-6 h-6"
-                          src={user.profilePicture}
-                        />
+                        <Avatar size={24} src={user.profilePicture} />
                       </Tooltip>
                     ))}
-                  </AvatarGroup>
+                  </div>
                   {team.name ? team.name : `${team.owner.name}'s Team`}
-                </div>
+                </Hstack>
                 <div>
                   {team.applicationsOpen &&
                     (!team.game || team.game.category != "ODA") && (
                       <Button
                         icon="clipboard"
                         onClick={() => {
-                          setBody("");
                           setSelectedTeam(team.id);
-                          onOpen();
+                          setIsOpen(true);
                         }}
                       >
                         Apply
@@ -258,37 +247,25 @@ export default function TeamFinder() {
           </Text>
         )}
       </section>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader>Application</ModalHeader>
-              <ModalBody>
-                <Textarea
-                  value={body}
-                  onValueChange={setBody}
-                  placeholder="Enter application content"
-                />
-              </ModalBody>
-              <ModalFooter>
-                <Button color="red" onClick={onClose}>
-                  Close
-                </Button>
-                <Button
-                  color="blue"
-                  onClick={() => {
-                    onClose();
-                    if (!selectedTeam) return;
-                    applyToTeam(selectedTeam, body);
-                  }}
-                >
-                  Apply
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
+      <Modal
+        shown={isOpen}
+        onClose={() => {
+          setIsOpen(false);
+        }}
+        onSubmit={({ content }) => {
+          if (!selectedTeam) return;
+          applyToTeam(selectedTeam, content);
+        }}
+        fields={[
+          {
+            name: "content",
+            label: "Application Content",
+            description:
+              "The text shown to the team owner when they are choosing to accept or deny your application",
+            type: "textarea",
+          },
+        ]}
+      />
     </>
   );
 }

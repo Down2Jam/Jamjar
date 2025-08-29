@@ -14,6 +14,7 @@ import type {
 } from "./Button.types";
 import Text from "./Text";
 import { Chip } from "./Chip";
+import Tooltip from "./Tooltip";
 
 export function Button(props: ButtonProps) {
   const {
@@ -27,6 +28,9 @@ export function Button(props: ButtonProps) {
     className = "",
     kbd,
     style,
+    rightSlot,
+    tooltip,
+    ...rest
   } = props;
 
   const { colors } = useTheme();
@@ -87,6 +91,12 @@ export function Button(props: ButtonProps) {
       borderColor: colors["yellow"],
       backgroundColor: colors["yellowDarkDark"] + "88",
     };
+  } else if (color === "purple") {
+    variantStyles.standard = {
+      color: colors["purple"],
+      borderColor: colors["purple"],
+      backgroundColor: colors["purpleDarkDark"] + "88",
+    };
   } else if (color === "gray") {
     variantStyles.standard = {
       color: colors["gray"],
@@ -132,6 +142,11 @@ export function Button(props: ButtonProps) {
       backgroundColor: colors["yellowDark"],
       color: colors["yellowLight"],
     };
+  } else if (color === "purple") {
+    hoverStyles.standard = {
+      backgroundColor: colors["purpleDark"],
+      color: colors["purpleLight"],
+    };
   } else if (color === "gray") {
     hoverStyles.standard = {
       backgroundColor: colors["grayDark"],
@@ -159,10 +174,12 @@ export function Button(props: ButtonProps) {
       {!loading && icon && <Icon size={16} name={icon} />}
       <Text size="xs">{props.children}</Text>
       {kbd && <Chip color={color}>{kbd}</Chip>}
+      {rightSlot}
     </>
   );
 
   // Link mode
+  let element: React.ReactNode;
   if ("href" in props && props.href) {
     const {
       href,
@@ -170,7 +187,7 @@ export function Button(props: ButtonProps) {
       target,
       rel,
       ...linkProps
-    } = props as ButtonAsLink;
+    } = rest as ButtonAsLink;
 
     const isExternal =
       !isIconOnly &&
@@ -184,7 +201,7 @@ export function Button(props: ButtonProps) {
         }
       })();
 
-    return (
+    element = (
       <Link
         href={href}
         className={commonClass}
@@ -201,21 +218,29 @@ export function Button(props: ButtonProps) {
         )}
       </Link>
     );
+  } else {
+    // Button mode
+    const { type = "button", ...buttonProps } = rest as ButtonAsButton;
+    element = (
+      <button
+        className={commonClass}
+        style={commonStyle}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        disabled={disabled || loading}
+        type={type}
+        {...buttonProps}
+      >
+        {content}
+      </button>
+    );
   }
 
-  // Button mode
-  const { type = "button", ...buttonProps } = props as ButtonAsButton;
-  return (
-    <button
-      className={commonClass}
-      style={commonStyle}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      disabled={disabled || loading}
-      type={type}
-      {...buttonProps}
-    >
-      {content}
-    </button>
+  return tooltip ? (
+    <Tooltip position="top" content={tooltip}>
+      {element}
+    </Tooltip>
+  ) : (
+    element
   );
 }

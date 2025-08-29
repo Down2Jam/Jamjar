@@ -36,7 +36,7 @@ export default function GamesPage() {
     <>
       <Vstack>
         <Card>
-          <Vstack align="start">
+          <Vstack>
             <Hstack>
               <Icon name="gamepad2" color="text" />
               <Text size="xl" color="text" weight="semibold">
