@@ -3,8 +3,6 @@
 import { hasCookie } from "@/helpers/cookie";
 import {
   addToast,
-  Avatar,
-  Chip,
   Form,
   Modal,
   ModalBody,
@@ -39,6 +37,8 @@ import { Textarea } from "@/framework/Textarea";
 import { Spinner } from "@/framework/Spinner";
 import { Switch } from "@/framework/Switch";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { Avatar } from "@/framework/Avatar";
+import { Chip } from "@/framework/Chip";
 
 export default function EditTeamPage() {
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
@@ -61,6 +61,7 @@ export default function EditTeamPage() {
     useState<ActiveJamResponse | null>(null);
   const [name, setName] = useState<string>("");
   const { colors } = useTheme();
+  const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
 
   // Fetch the current jam phase using helpers/jam
   useEffect(() => {
@@ -413,23 +414,47 @@ export default function EditTeamPage() {
                     }}
                   />
                   {searchResults.length > 0 && (
-                    <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
-                      {searchResults.map((user) => (
-                        <div
-                          key={user.id}
-                          className="flex justify-between items-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded cursor-pointer"
-                          onClick={() => {
-                            setSelectedAuthor(user);
-                            setSearchResults([]);
-                            setAuthorSearch("");
-                          }}
-                        >
-                          <span>{user.name}</span>
-                        </div>
-                      ))}
+                    <Card>
+                      <Vstack align="stretch">
+                        {searchResults.map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors"
+                            style={{
+                              backgroundColor:
+                                hoveredUserId === user.id
+                                  ? colors["base"]
+                                  : colors["mantle"],
+                            }}
+                            onMouseEnter={() => setHoveredUserId(user.id)}
+                            onMouseLeave={() => setHoveredUserId(null)}
+                            onClick={() => {
+                              setSelectedAuthor(user);
+                              setSearchResults([]);
+                              setAuthorSearch("");
+                            }}
+                          >
+                            <Hstack>
+                              <Avatar src={user.profilePicture} size={36} />
+                              <Vstack gap={0} align="start">
+                                <Text>{user.name}</Text>
+                                <Text color="textFaded" size="xs">
+                                  {user.short || "No description"}
+                                </Text>
+                              </Vstack>
+                            </Hstack>
+                          </div>
+                        ))}
+                      </Vstack>
+                    </Card>
+                  )}
+                  {selectedAuthor && (
+                    <div>
+                      <Chip avatarSrc={selectedAuthor.profilePicture}>
+                        {selectedAuthor.name}
+                      </Chip>
                     </div>
                   )}
-                  {selectedAuthor && <Chip>{selectedAuthor.name}</Chip>}
                   <Textarea
                     value={body}
                     onValueChange={setBody}
