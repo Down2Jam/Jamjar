@@ -27,6 +27,7 @@ import { Spinner } from "@/framework/Spinner";
 import Text from "@/framework/Text";
 import { Avatar } from "@/framework/Avatar";
 import { Chip } from "@/framework/Chip";
+import { useTranslations } from "next-intl";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -36,6 +37,7 @@ export default function PostPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
+  const t = useTranslations();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -92,7 +94,9 @@ export default function PostPage() {
                   </Link>
 
                   <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
-                    <p>By</p>
+                    <Text size="xs" color="textFaded">
+                      PostCard.By
+                    </Text>
                     <Link
                       href={`/u/${post.author.slug}`}
                       className="flex items-center gap-2"
@@ -167,35 +171,39 @@ export default function PostPage() {
                       <Dropdown.Item
                         key="copy"
                         icon="link"
-                        description="Copy the post link to your clipboard"
+                        description="PostCard.Copy.Description"
                         onClick={async () => {
                           navigator.clipboard.writeText(
                             `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
                           );
                           addToast({
-                            title: "Copied Link",
+                            title: t("PostCard.Copy.Success"),
                           });
                         }}
                       >
-                        Copy Link
+                        PostCard.Copy.Title
                       </Dropdown.Item>
                       {user?.slug == post.author.slug ? (
                         <Dropdown.Item
                           key="delete"
                           icon="trash"
-                          description="Delete your post"
+                          description="PostCard.Delete.Description"
                           onClick={async () => {
                             const response = await deletePost(post.id);
 
                             if (response.ok) {
-                              addToast({ title: "Deleted post" });
+                              addToast({
+                                title: t("PostCard.Delete.Success"),
+                              });
                               redirect("/");
                             } else {
-                              addToast({ title: "Error while deleting post" });
+                              addToast({
+                                title: t("PostCard.Delete.Error"),
+                              });
                             }
                           }}
                         >
-                          Delete
+                          PostCard.Delete.Title
                         </Dropdown.Item>
                       ) : (
                         <></>
@@ -205,27 +213,29 @@ export default function PostPage() {
                           <Dropdown.Item
                             key="remove"
                             icon="x"
-                            description="Remove this post"
+                            description="PostCard.Remove.Description"
                             onClick={async () => {
                               const response = await deletePost(post.id);
 
                               if (response.ok) {
-                                addToast({ title: "Removed post" });
+                                addToast({
+                                  title: t("PostCard.Remove.Success"),
+                                });
                                 redirect("/");
                               } else {
                                 addToast({
-                                  title: "Error while removing post",
+                                  title: t("PostCard.Remove.Error"),
                                 });
                               }
                             }}
                           >
-                            Remove
+                            PostCard.Remove.Title
                           </Dropdown.Item>
                           {post.sticky ? (
                             <Dropdown.Item
                               key="unsticky"
                               icon="staroff"
-                              description="Unsticky post"
+                              description="PostCard.Unsticky.Description"
                               onClick={async () => {
                                 const response = await stickPost(
                                   post.id,
@@ -233,43 +243,47 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  addToast({ title: "Unstickied post" });
-                                  redirect("/");
+                                  addToast({
+                                    title: t("PostCard.Unsticky.Success"),
+                                  });
+                                  window.location.reload();
                                 } else {
                                   addToast({
-                                    title: "Error while unstickying post",
+                                    title: t("PostCard.Unsticky.Error"),
                                   });
                                 }
                               }}
                             >
-                              Unsticky
+                              PostCard.Unsticky.Title
                             </Dropdown.Item>
                           ) : (
                             <Dropdown.Item
                               key="sticky"
                               icon="star"
-                              description="Sticky post"
+                              description="PostCard.Sticky.Description"
                               onClick={async () => {
                                 const response = await stickPost(post.id, true);
 
                                 if (response.ok) {
-                                  addToast({ title: "Stickied post" });
-                                  redirect("/");
+                                  addToast({
+                                    title: t("PostCard.Sticky.Success"),
+                                  });
+                                  window.location.reload();
                                 } else {
                                   addToast({
-                                    title: "Error while stickying post",
+                                    title: t("PostCard.Sticky.Error"),
                                   });
                                 }
                               }}
                             >
-                              Sticky
+                              PostCard.Sticky.Title
                             </Dropdown.Item>
                           )}
                           {user?.admin && !post.author.mod ? (
                             <Dropdown.Item
                               key="promote-mod"
                               icon="shield"
-                              description="Promote user to Mod"
+                              description="PostCard.Promote.Description"
                               onClick={async () => {
                                 const response = await assignMod(
                                   post.author.slug,
@@ -277,16 +291,18 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  addToast({ title: "Promoted user to mod" });
+                                  addToast({
+                                    title: t("PostCard.Promote.Success"),
+                                  });
                                   window.location.reload();
                                 } else {
                                   addToast({
-                                    title: "Error while promoting user to Mod",
+                                    title: t("PostCard.Promote.Error"),
                                   });
                                 }
                               }}
                             >
-                              Appoint as mod
+                              PostCard.Promote.Title
                             </Dropdown.Item>
                           ) : (
                             <></>
@@ -297,7 +313,7 @@ export default function PostPage() {
                             <Dropdown.Item
                               key="demote-mod"
                               icon="shieldx"
-                              description="Demote user from Mod"
+                              description="PostCard.Demote.Description"
                               onClick={async () => {
                                 const response = await assignMod(
                                   post.author.slug,
@@ -305,16 +321,18 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  addToast({ title: "Demoted user" });
+                                  addToast({
+                                    title: t("PostCard.Demote.Success"),
+                                  });
                                   window.location.reload();
                                 } else {
                                   addToast({
-                                    title: "Error while demoting user",
+                                    title: t("PostCard.Demote.Error"),
                                   });
                                 }
                               }}
                             >
-                              Remove as mod
+                              PostCard.Demote.Title
                             </Dropdown.Item>
                           ) : (
                             <></>
@@ -323,7 +341,7 @@ export default function PostPage() {
                             <Dropdown.Item
                               key="promote-admin"
                               icon="shieldalert"
-                              description="Promote user to Admin"
+                              description="PostCard.PromoteAdmin.Description"
                               onClick={async () => {
                                 const response = await assignAdmin(
                                   post.author.slug,
@@ -331,17 +349,18 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  addToast({ title: "Promoted user to Admin" });
+                                  addToast({
+                                    title: t("PostCard.PromoteAdmin.Success"),
+                                  });
                                   window.location.reload();
                                 } else {
                                   addToast({
-                                    title:
-                                      "Error while promoting user to Admin",
+                                    title: t("PostCard.PromoteAdmin.Error"),
                                   });
                                 }
                               }}
                             >
-                              Appoint as admin
+                              PostCard.PromoteAdmin.Title
                             </Dropdown.Item>
                           ) : (
                             <></>
@@ -352,7 +371,7 @@ export default function PostPage() {
                             <Dropdown.Item
                               key="demote-admin"
                               icon="shieldx"
-                              description="Demote user to mod"
+                              description="PostCard.DemoteAdmin.Description"
                               onClick={async () => {
                                 const response = await assignAdmin(
                                   post.author.slug,
@@ -360,16 +379,18 @@ export default function PostPage() {
                                 );
 
                                 if (response.ok) {
-                                  addToast({ title: "Demoted user to mod" });
+                                  addToast({
+                                    title: t("PostCard.DemoteAdmin.Success"),
+                                  });
                                   window.location.reload();
                                 } else {
                                   addToast({
-                                    title: "Error while demoting user to mod",
+                                    title: t("PostCard.DemoteAdmin.Error"),
                                   });
                                 }
                               }}
                             >
-                              Remove as admin
+                              PostCard.DemoteAdmin.Title
                             </Dropdown.Item>
                           ) : (
                             <></>

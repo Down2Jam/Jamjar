@@ -37,6 +37,7 @@ import { getIcon } from "@/helpers/icon";
 import { Textarea } from "@/framework/Textarea";
 import Editor from "@/components/editor";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const LB_ICON: Record<LeaderboardTypeType, IconName> = {
   SCORE: "trophy",
@@ -92,6 +93,7 @@ export default function GameEditingForm({
   const [editGame, setEditGame] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<number>(0);
   const router = useRouter();
+  const t = useTranslations();
 
   useEffect(() => {
     setEditGame(!!game);
@@ -244,9 +246,9 @@ export default function GameEditingForm({
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">CreateGame.Loading.Title</Text>
             </Hstack>
-            <Text color="textFaded">Loading edit form...</Text>
+            <Text color="textFaded">CreateGame.Loading.Description</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -256,13 +258,13 @@ export default function GameEditingForm({
   return (
     <Vstack>
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
+        className="w-full max-w-2xl flex flex-col gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
 
           if (!title) {
             addToast({
-              title: "Please enter a valid title",
+              title: t("CreateGame.Name.Error"),
             });
             return;
           }
@@ -270,7 +272,7 @@ export default function GameEditingForm({
           const userSlug = getCookie("user"); // Retrieve user slug from cookies
           if (!userSlug) {
             addToast({
-              title: "You are not logged in",
+              title: "CreateGame.NotLogged",
             });
             return;
           }
@@ -344,22 +346,22 @@ export default function GameEditingForm({
             if (response.ok) {
               addToast({
                 title: prevSlug
-                  ? "Game updated successfully!"
-                  : "Game created successfully!",
+                  ? t("CreateGame.Update.Success")
+                  : t("CreateGame.Create.Success"),
               });
               setWaitingPost(false);
               router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
             } else {
               const error = await response.text();
               addToast({
-                title: error || "Failed to create game",
+                title: error || t("CreateGame.Create.Error"),
               });
               setWaitingPost(false);
             }
           } catch (error) {
             console.error("Error creating game:", error);
             addToast({
-              title: "Failed to create game.",
+              title: t("CreateGame.Create.Error"),
             });
           }
         }}
@@ -370,28 +372,30 @@ export default function GameEditingForm({
               <Hstack>
                 <Icon name="gamepad2" color="text" />
                 <Text size="xl" color="text" weight="semibold">
-                  {prevSlug ? "Edit Game" : "Create New Game"}
+                  {prevSlug
+                    ? "CreateGame.Edit.Title"
+                    : "CreateGame.Create.Title"}
                 </Text>
               </Hstack>
               <Text size="sm" color="textFaded">
                 {prevSlug
-                  ? "Edit the page for a game you've made"
-                  : "Create a new page for a game on the site"}
+                  ? "CreateGame.Edit.Description"
+                  : "CreateGame.Create.Description"}
               </Text>
             </Vstack>
           </Card>
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Game Name</Text>
+                <Text color="text">CreateGame.Name.Title</Text>
                 <Text color="textFaded" size="xs">
-                  The name your game is called
+                  CreateGame.Name.Description
                 </Text>
               </div>
               <Input
                 required
                 name="title"
-                placeholder="Enter your game name"
+                placeholder="CreateGame.Name.Placeholder"
                 type="text"
                 value={title}
                 onValueChange={(value) => {
@@ -407,15 +411,18 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Game Slug</Text>
-                <Text color="textFaded" size="xs">
-                  {`This will be used in the URL: d2jam.com/g/${
-                    gameSlug || "your-game-name"
-                  }`}
-                </Text>
+                <Text color="text">CreateGame.Slug.Title</Text>
+                <Hstack wrap>
+                  <Text color="textFaded" size="xs">
+                    CreateGame.Slug.Description
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    {`d2jam.com/g/${gameSlug || "your-game-name"}`}
+                  </Text>
+                </Hstack>
               </div>
               <Input
-                placeholder="your-game-name"
+                placeholder="CreateGame.Slug.Placeholder"
                 value={gameSlug}
                 onValueChange={(value) => {
                   setGameSlug(sanitizeSlug(value));
@@ -430,9 +437,9 @@ export default function GameEditingForm({
               <Card>
                 <Vstack align="start">
                   <div>
-                    <Text color="text">Game Category</Text>
+                    <Text color="text">CreateGame.Category.Title</Text>
                     <Text color="textFaded" size="xs">
-                      The category you are submitting your game to in the jam
+                      CreateGame.Category.Description
                     </Text>
                   </div>
                   {
@@ -449,7 +456,6 @@ export default function GameEditingForm({
                         undefined
                       }
                       selectedValue={category}
-                      placeholder="Select category"
                       onSelect={(key) => {
                         setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                       }}
@@ -458,10 +464,10 @@ export default function GameEditingForm({
                       activeJamResponse.phase != "Rating" ? (
                         <Dropdown.Item
                           value="REGULAR"
-                          description="The regular jam category"
+                          description="GameCategory.Regular.Description"
                           icon="gamepad2"
                         >
-                          Regular
+                          GameCategory.Regular.Title
                         </Dropdown.Item>
                       ) : (
                         <></>
@@ -474,20 +480,20 @@ export default function GameEditingForm({
                       activeJamResponse.phase != "Rating" ? (
                         <Dropdown.Item
                           value="ODA"
-                          description="1 Dev, No third party assets"
+                          description="GameCategory.Oda.Description"
                           icon="swords"
                         >
-                          One Dev Army (O.D.A)
+                          GameCategory.Oda.Title
                         </Dropdown.Item>
                       ) : (
                         <></>
                       )}
                       <Dropdown.Item
                         value="EXTRA"
-                        description="Can be submitted during the rating period. Will not be ranked"
+                        description="GameCategory.Extra.Description"
                         icon="calendar"
                       >
-                        Extra
+                        GameCategory.Extra.Title
                       </Dropdown.Item>
                     </Dropdown>
                   }
@@ -499,10 +505,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Game Description</Text>
+                <Text color="text">CreateGame.Description.Title</Text>
                 <Text color="textFaded" size="xs">
-                  The content of your game page. Visible when people look at
-                  your game
+                  CreateGame.Description.Description
                 </Text>
               </div>
               <Editor
@@ -517,14 +522,13 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Game Short</Text>
+                <Text color="text">CreateGame.Short.Title</Text>
                 <Text color="textFaded" size="xs">
-                  A short description that shows on the games page and when
-                  someone searches for you game (max 155 characters)
+                  CreateGame.Short.Description
                 </Text>
               </div>
               <Textarea
-                placeholder="Enter a short description"
+                placeholder="CreateGame.Short.Placeholder"
                 value={short}
                 onValueChange={setShort}
                 maxLength={155}
@@ -535,14 +539,13 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Theme Justification</Text>
+                <Text color="text">CreateGame.Theme.Title</Text>
                 <Text color="textFaded" size="xs">
-                  This will be shown to people as they rate you for theme. Why
-                  your game follows the theme
+                  CreateGame.Theme.Description
                 </Text>
               </div>
               <Textarea
-                placeholder="Enter a justification (optional)"
+                placeholder="CreateGame.Theme.Placeholder"
                 value={themeJustification}
                 onValueChange={setThemeJustification}
               />
@@ -552,9 +555,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Thumbnail</Text>
+                <Text color="text">CreateGame.Thumbnail.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Shows when people are browsing through games (384x216)
+                  CreateGame.Thumbnail.Description
                 </Text>
               </div>
               <input
@@ -630,9 +633,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Banner</Text>
+                <Text color="text">CreateGame.Banner.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Shows on the game page (1468 x 240)
+                  CreateGame.Banner.Description
                 </Text>
               </div>
               <input
@@ -708,10 +711,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Links</Text>
+                <Text color="text">CreateGame.Links.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Upload your game to a hosting site (such as itch.io) and link
-                  it here for people to play on or download from
+                  CreateGame.Links.Description
                 </Text>
               </div>
               <div className="flex flex-col gap-4">
@@ -721,7 +723,7 @@ export default function GameEditingForm({
                       <div key={link.id} className="flex gap-2">
                         <Input
                           className="flex-grow"
-                          placeholder="https://example.com"
+                          placeholder="CreateGame.Links.Placeholder"
                           value={link.url}
                           onValueChange={(value) => {
                             const newLinks = [...downloadLinks];
@@ -731,8 +733,7 @@ export default function GameEditingForm({
                           onBlur={() => {
                             if (!urlRegex.test(downloadLinks[index].url)) {
                               addToast({
-                                title:
-                                  "Please enter a valid URL starting with http:// or https://",
+                                title: t("CreateGame.Links.Error"),
                               });
 
                               if (
@@ -808,6 +809,7 @@ export default function GameEditingForm({
                 </div>
 
                 <Button
+                  icon="plus"
                   onClick={() => {
                     setDownloadLinks([
                       ...downloadLinks,
@@ -819,7 +821,7 @@ export default function GameEditingForm({
                     ]);
                   }}
                 >
-                  Add Link
+                  CreateGame.Links.Add
                 </Button>
               </div>
             </Vstack>
@@ -868,9 +870,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Tags</Text>
+                <Text color="text">CreateGame.Tags.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Tags for game engine, genre, etc. for people to filter by
+                  CreateGame.Tags.Description
                 </Text>
               </div>
               {isMounted && (
@@ -922,9 +924,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Content Flags</Text>
+                <Text color="text">CreateGame.Flags.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Warnings about what content your game contains
+                  CreateGame.Flags.Description
                 </Text>
               </div>
               {isMounted && (
@@ -967,9 +969,9 @@ export default function GameEditingForm({
               <Card>
                 <Vstack align="start">
                   <div>
-                    <Text color="text">Opt-In Rating Categories</Text>
+                    <Text color="text">CreateGame.RatingCategories.Title</Text>
                     <Text color="textFaded" size="xs">
-                      Any optional categories you want to get a rating & rank in
+                      CreateGame.RatingCategories.Description
                     </Text>
                   </div>
                   {ratingCategories.map((category3) => (
@@ -1048,10 +1050,9 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Leaderboards</Text>
+                <Text color="text">CreateGame.Leaderboards.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Leaderboards for people to submit high scores for your game
-                  (scores will be reported manually with pictures for evidence)
+                  CreateGame.Leaderboards.Description
                 </Text>
               </div>
               {leaderboards.map((lb, index) => (
@@ -1065,14 +1066,13 @@ export default function GameEditingForm({
                       </Text>
                     </Hstack>
                     <div>
-                      <Text color="text">Leaderboard Name</Text>
+                      <Text color="text">CreateLeaderboard.Name.Title</Text>
                       <Text color="textFaded" size="xs">
-                        The name that shows for the leaderboard tab. Should
-                        describe what the leaderboard is (e.g. any%, death%)
+                        CreateLeaderboard.Name.Description
                       </Text>
                     </div>
                     <Input
-                      placeholder="Enter a name"
+                      placeholder="CreateLeaderboard.Name.Placeholder"
                       value={lb.name}
                       onChange={(e) => {
                         const updated = [...leaderboards];
@@ -1081,16 +1081,15 @@ export default function GameEditingForm({
                       }}
                     />
                     <div>
-                      <Text color="text">Users per page</Text>
+                      <Text color="text">
+                        CreateLeaderboard.UsersPerPage.Title
+                      </Text>
                       <Text color="textFaded" size="xs">
-                        Users that show on a page of the leaderboard (users past
-                        this are paginated and the user needs to go to a
-                        different page)
+                        CreateLeaderboard.UsersPerPage.Description
                       </Text>
                     </div>
                     <Input
                       type="number"
-                      placeholder="Enter a user amount"
                       value={lb.maxUsersShown}
                       min={0}
                       max={100}
@@ -1101,15 +1100,12 @@ export default function GameEditingForm({
                       }}
                     />
                     <div>
-                      <Text color="text">Leaderboard Type</Text>
+                      <Text color="text">CreateLeaderboard.Type.Title</Text>
                       <Text color="textFaded" size="xs">
-                        The goal users are ordered by and that the score is
-                        formatted as. Determines whether users need to get
-                        lowest score, highest score, lowest time, etc.
+                        CreateLeaderboard.Type.Description
                       </Text>
                     </div>
                     <Dropdown
-                      placeholder="Select Leaderboard Type"
                       selectedValue={leaderboards[index].type}
                       onSelect={(value) => {
                         const updated = [...leaderboards];
@@ -1119,47 +1115,48 @@ export default function GameEditingForm({
                     >
                       <Dropdown.Item
                         value="SCORE"
-                        description="Highest Score"
+                        description="LeaderboardType.Endurance.Description"
                         icon="trophy"
                       >
-                        Score
+                        LeaderboardType.Endurance.Title
                       </Dropdown.Item>
 
                       <Dropdown.Item
                         value="GOLF"
-                        description="Lowest Score"
+                        description="LeaderboardType.Golf.Description"
                         icon="landplot"
                       >
-                        Golf
+                        LeaderboardType.Golf.Title
                       </Dropdown.Item>
 
                       <Dropdown.Item
                         value="SPEEDRUN"
-                        description="Lowest Time"
+                        description="LeaderboardType.Speedrun.Description"
                         icon="rabbit"
                       >
-                        Speedrun
+                        LeaderboardType.Speedrun.Title
                       </Dropdown.Item>
 
                       <Dropdown.Item
                         value="ENDURANCE"
-                        description="Highest Time"
+                        description="LeaderboardType.Endurance.Description"
                         icon="turtle"
                       >
-                        Endurance
+                        LeaderboardType.Endurance.Title
                       </Dropdown.Item>
                     </Dropdown>
                     {(lb.type == "SCORE" || lb.type == "GOLF") && (
                       <>
                         <div>
-                          <Text color="text">Decimal places</Text>
+                          <Text color="text">
+                            CreateLeaderboard.Decimals.Title
+                          </Text>
                           <Text color="textFaded" size="xs">
-                            The amount of decimal places that a score supports
+                            CreateLeaderboard.Decimals.Description
                           </Text>
                         </div>
                         <Input
                           type="number"
-                          placeholder="Enter the score's decimal places"
                           value={lb.decimalPlaces}
                           min={0}
                           max={3}
@@ -1172,9 +1169,9 @@ export default function GameEditingForm({
                       </>
                     )}
                     <div>
-                      <Text color="text">Advanced toggles</Text>
+                      <Text color="text">CreateLeaderboard.Advanced.Title</Text>
                       <Text color="textFaded" size="xs">
-                        Toggles to control more functionality on the leaderboard
+                        CreateLeaderboard.Advanced.Description
                       </Text>
                     </div>
                     <Hstack>
@@ -1187,9 +1184,9 @@ export default function GameEditingForm({
                         }}
                       />
                       <Vstack gap={0} align="start">
-                        <Text size="sm">Only Highest</Text>
+                        <Text size="sm">CreateLeaderboard.Highest.Title</Text>
                         <Text size="xs" color="textFaded">
-                          Only shows each users highest score
+                          CreateLeaderboard.Highest.Description
                         </Text>
                       </Vstack>
                     </Hstack>
@@ -1227,7 +1224,7 @@ export default function GameEditingForm({
                   ])
                 }
               >
-                Add Leaderboard
+                CreateGame.Leaderboards.Add
               </Button>
             </Vstack>
           </Card>
@@ -1235,13 +1232,13 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Soundtrack</Text>
+                <Text color="text">CreateGame.Soundtrack.Title</Text>
                 <Text color="textFaded" size="xs">
-                  The soundtrack of your game for people to listen to when
-                  browsing the site
+                  CreateGame.Soundtrack.Description
                 </Text>
               </div>
               <Button
+                icon="plus"
                 onClick={async () => {
                   const input = document.createElement("input");
                   input.type = "file";
@@ -1292,7 +1289,7 @@ export default function GameEditingForm({
                 color="yellow"
                 disabled
               >
-                Add Song (disabled for now, will be enabled soon)
+                CreateGame.Soundtrack.Add
               </Button>
             </Vstack>
           </Card>
@@ -1300,14 +1297,13 @@ export default function GameEditingForm({
           <Card>
             <Vstack align="start">
               <div>
-                <Text color="text">Achievements</Text>
+                <Text color="text">CreateGame.Achievements.Title</Text>
                 <Text color="textFaded" size="xs">
-                  Achievements for people to obtain from goals relating to your
-                  game (e.g. find the hidden chicken). Completion is self
-                  reported
+                  CreateGame.Achievements.Title
                 </Text>
               </div>
               <Button
+                icon="plus"
                 onClick={async () => {
                   const input = document.createElement("input");
                   input.type = "file";
@@ -1358,7 +1354,7 @@ export default function GameEditingForm({
                 color="purple"
                 disabled
               >
-                Add Achievement (disabled for now, will be enabled soon)
+                CreateGame.Achievements.Add
               </Button>
             </Vstack>
           </Card>
@@ -1368,7 +1364,9 @@ export default function GameEditingForm({
               <Spinner />
             ) : (
               <Button color="blue" type="submit" name="action" value="save">
-                {prevSlug ? "Update" : "Create"}
+                {prevSlug
+                  ? "CreateGame.Update.Title"
+                  : "CreateGame.Create.Title"}
               </Button>
             )}
             {(!game || !game.published) &&
@@ -1387,7 +1385,7 @@ export default function GameEditingForm({
                   name="action"
                   value="publish"
                 >
-                  {prevSlug ? "Publish" : "Create & Publish"}
+                  {prevSlug ? "CreateGame.Publish" : "CreateGame.CreatePublish"}
                 </Button>
               ))}
             {game &&
@@ -1407,7 +1405,7 @@ export default function GameEditingForm({
                   name="action"
                   value="unpublish"
                 >
-                  {"Unpublish"}
+                  CreateGame.Unpublish
                 </Button>
               ))}
           </Hstack>

@@ -15,6 +15,7 @@ import ThemedProse from "../themed-prose";
 import { Avatar } from "@/framework/Avatar";
 import { Spinner } from "@/framework/Spinner";
 import { addToast } from "@heroui/react";
+import Text from "@/framework/Text";
 
 export default function CommentCard({ comment }: { comment: CommentType }) {
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -31,7 +32,9 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
             color: colors["textFaded"],
           }}
         >
-          <p>By</p>
+          <Text size="xs" color="textFaded">
+            PostCard.By
+          </Text>
           <Link
             href={`/u/${comment.author.slug}`}
             className="flex items-center gap-2"

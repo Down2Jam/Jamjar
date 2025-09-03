@@ -12,4 +12,5 @@ export type TextareaProps = Omit<
   label?: string;
   labelPlacement?: LabelPlacement;
   onValueChange?: (val: string) => void;
+  placeholder?: string;
 };

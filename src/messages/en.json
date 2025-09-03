@@ -124,7 +124,7 @@
     },
     "ThemeElimination": {
       "Title": "Theme Elimination",
-      "Description": "Vote on themes you would or would not want to do for the jam. You can vote on as may as you want"
+      "Description": "Vote on themes you would or would not want to do for the jam. You can vote on as many as you want"
     },
     "ThemeVoting": {
       "Title": "Theme Voting",
@@ -632,5 +632,253 @@
       "Title": "Post Jam Results",
       "Description": "Viewing the results of the post jam and how you were rated compared to the jam"
     }
+  },
+  "PostTags": {
+    "All": "All Tags",
+    "Custom": "Custom Tags",
+    "Filtering": "Tag Filtering"
+  },
+  "PostCard": {
+    "Copy": {
+      "Title": "Copy Link",
+      "Description": "Copy the post link to your clipboard",
+      "Success": "Copied Link"
+    },
+    "Delete": {
+      "Title": "Delete",
+      "Description": "Delete your post",
+      "Success": "Deleted post",
+      "Error": "Error while deleting post"
+    },
+    "Remove": {
+      "Title": "Remove",
+      "Description": "Remove this post",
+      "Success": "Removed post",
+      "Error": "Error while removing post"
+    },
+    "Unsticky": {
+      "Title": "Unsticky",
+      "Description": "Unsticky post",
+      "Success": "Unsticked post",
+      "Error": "Error while unstickying post"
+    },
+    "Sticky": {
+      "Title": "Sticky",
+      "Description": "Sticky post",
+      "Success": "Stickied post",
+      "Error": "Error while stickying post"
+    },
+    "Promote": {
+      "Title": "Appoint as mod",
+      "Description": "Promote user to Mod",
+      "Success": "Promoted User to Mod",
+      "Error": "Error while promoting user to Mod"
+    },
+    "Demote": {
+      "Title": "Remove as mod",
+      "Description": "Demote user from Mod",
+      "Success": "Demoted User",
+      "Error": "Error while demoting user"
+    },
+    "PromoteAdmin": {
+      "Title": "Appoint as admin",
+      "Description": "Promote user to Admin",
+      "Success": "Promoted User to Admin",
+      "Error": "Error while promoting user to Admin"
+    },
+    "DemoteAdmin": {
+      "Title": "Remove as admin",
+      "Description": "Demote user to mod",
+      "Success": "Demoted User to Mod",
+      "Error": "Error while demoting user to mod"
+    },
+    "By": "By"
+  },
+  "CreateGame": {
+    "Create": {
+      "Title": "Create",
+      "Description": "Create a new page for a game on the site",
+      "Success": "Game created successfully!",
+      "Error": "Failed to create game"
+    },
+    "Edit": {
+      "Title": "Edit Game",
+      "Description": "Edit the page for a game you've made"
+    },
+    "Name": {
+      "Title": "Game Name",
+      "Description": "The name your game is called",
+      "Placeholder": "Enter your game name",
+      "Error": "Please enter a valid title"
+    },
+    "Slug": {
+      "Title": "Game Slug",
+      "Description": "This will be used in the URL:",
+      "Placeholder": "your-game-name"
+    },
+    "Category": {
+      "Title": "Game Category",
+      "Description": "The category you are submitting your game to in the jam"
+    },
+    "Description": {
+      "Title": "Game Description",
+      "Description": "The content of your game page. Visible when people look at your game"
+    },
+    "Short": {
+      "Title": "Game Short",
+      "Description": "A short description that shows on the games page and when someone searches for you game (max 155 characters)",
+      "Placeholder": "Enter a short description"
+    },
+    "Theme": {
+      "Title": "Theme Justification",
+      "Description": "This will be shown to people as they rate you for theme. Why your game follows the theme",
+      "Placeholder": "Enter a justification (optional)"
+    },
+    "Thumbnail": {
+      "Title": "Thumbnail",
+      "Description": "Shows when people are browsing through games (360x200)"
+    },
+    "Banner": {
+      "Title": "Banner",
+      "Description": "Shows on the game page and in search results (1468 x 240)"
+    },
+    "Links": {
+      "Title": "Links",
+      "Description": "Upload your game to a hosting site (such as itch.io) and link it here for people to play on or download from",
+      "Placeholder": "https://example.com",
+      "Add": "Add Link",
+      "Error": "Please enter a valid URL starting with http:// or https://"
+    },
+    "Tags": {
+      "Title": "Tags",
+      "Description": "Tags for game engine, genre, etc. for people to filter by"
+    },
+    "Flags": {
+      "Title": "Content Flags",
+      "Description": "Warnings about what content your game contains"
+    },
+    "RatingCategories": {
+      "Title": "Opt-In Rating Categories",
+      "Description": "Any optional categories you want to get a rating & rank in"
+    },
+    "Leaderboards": {
+      "Title": "Leaderboards",
+      "Description": "Leaderboards for people to submit high scores for your game (scores will be reported manually with pictures for evidence)",
+      "Add": "Add Leaderboard"
+    },
+    "Soundtrack": {
+      "Title": "Soundtrack",
+      "Description": "The soundtrack of your game for people to listen to when browsing the site",
+      "Add": "Add Song (disabled for now, will be enabled soon)"
+    },
+    "Achievements": {
+      "Title": "Achievements",
+      "Description": "Achievements for people to obtain from goals relating to your game (e.g. find the hidden chicken). Completion is self reported",
+      "Add": "Add Achievement (disabled for now, will be enabled soon)"
+    },
+    "CreatePublish": "Create & Publish",
+    "Publish": "Publish",
+    "Unpublish": "Unpublish",
+    "Update": {
+      "Title": "Update",
+      "Success": "Game updated successfully!"
+    },
+    "Loading": {
+      "Title": "Loading...",
+      "Description": "Loading edit form..."
+    },
+    "NotLogged": "You are not logged in"
+  },
+  "CreateLeaderboard": {
+    "Name": {
+      "Title": "Leaderboard Name",
+      "Description": "The name that shows for the leaderboard tab. Should describe what the leaderboard is (e.g. any%, death%)",
+      "Placeholder": "Enter a name"
+    },
+    "UsersPerPage": {
+      "Title": "Users per page",
+      "Description": "Users that show on a page of the leaderboard (users past this are paginated and the user needs to go to a different page)"
+    },
+    "Type": {
+      "Title": "Leaderboard Type",
+      "Description": "The goal users are ordered by and that the score is formatted as. Determines whether users need to get lowest score, highest score, lowest time, etc."
+    },
+    "Decimals": {
+      "Title": "Decimal places",
+      "Description": "The amount of decimal places that a score supports"
+    },
+    "Advanced": {
+      "Title": "Advanced toggles",
+      "Description": "Toggles to control more functionality on the leaderboard"
+    },
+    "Highest": {
+      "Title": "Only Highest",
+      "Description": "Only shows each users highest score"
+    }
+  },
+  "GameCategory": {
+    "Regular": {
+      "Title": "Regular",
+      "Description": "The regular jam category"
+    },
+    "Oda": {
+      "Title": "One Dev Army (O.D.A)",
+      "Description": "1 Dev, No third party assets"
+    },
+    "Extra": {
+      "Title": "Extra",
+      "Description": "Can be submitted during the rating period. Will not be ranked"
+    }
+  },
+  "RatingCategory": {
+    "Gameplay": {
+      "Title": "Gameplay",
+      "Description": "How much you enjoy playing the game, and how satisfying the mechanics are."
+    },
+    "Audio": {
+      "Title": "Audio",
+      "Description": "How good the game sounds, or how effective the sound design is."
+    },
+    "Graphics": {
+      "Title": "Graphics",
+      "Description": "How good the game looks, and how effective the visual style is."
+    },
+    "Creativity": {
+      "Title": "Creativity",
+      "Description": "Uniqueness, Originality, Innovation, and the surprise element."
+    },
+    "Emotional": {
+      "Title": "Emotional Delivery",
+      "Description": "How effectively the emotional or humorous elements are delivered."
+    },
+    "Overall": {
+      "Title": "Overall",
+      "Description": "Your overall opinion of the game, how well all the categories are sticking together."
+    },
+    "Theme": {
+      "Title": "Theme",
+      "Description": "The game’s take on the theme, and how well it was used and executed."
+    }
+  },
+  "LeaderboardType": {
+    "Score": {
+      "Title": "Score",
+      "Description": "Highest Score"
+    },
+    "Golf": {
+      "Title": "Golf",
+      "Description": "Lowest Score"
+    },
+    "Speedrun": {
+      "Title": "Speedrun",
+      "Description": "Lowest Time"
+    },
+    "Endurance": {
+      "Title": "Endurance",
+      "Description": "Highest Time"
+    }
+  },
+  "General": {
+    "NoDescription": "No description"
   }
 }

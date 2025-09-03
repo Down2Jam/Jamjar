@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { InputSize, InputVariant } from "./Input.types";
 import { TextareaProps } from "./Textarea.type";
+import { useTranslations } from "next-intl";
 
 export function Textarea({
   className = "",
@@ -14,9 +15,22 @@ export function Textarea({
   label,
   labelPlacement = "outside",
   onValueChange,
+  placeholder,
   ...props
 }: TextareaProps) {
   const { colors } = useTheme();
+  const t = useTranslations();
+
+  const maybeKey = placeholder?.trim();
+  const looksLikeKey = !!maybeKey && /^\w+(?:\.\w+)+$/.test(maybeKey);
+  let resolvedPlaceholder = placeholder;
+  if (looksLikeKey) {
+    try {
+      resolvedPlaceholder = t(maybeKey!);
+    } catch {
+      /* keep raw string if no translation */
+    }
+  }
 
   const sizeClasses: Record<InputSize, string> = {
     xs: "text-[8px] rounded-sm px-2 py-1",
@@ -69,6 +83,7 @@ export function Textarea({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onChange={(e) => onValueChange?.(e.target.value)}
+        placeholder={resolvedPlaceholder}
         {...props}
       />
     </label>

@@ -439,7 +439,7 @@ export default function EditTeamPage() {
                               <Vstack gap={0} align="start">
                                 <Text>{user.name}</Text>
                                 <Text color="textFaded" size="xs">
-                                  {user.short || "No description"}
+                                  {user.short || "General.NoDescription"}
                                 </Text>
                               </Vstack>
                             </Hstack>

@@ -95,7 +95,7 @@ export default function JamHeader() {
         activeJamResponse.jam &&
         new Date(activeJamResponse.jam.startTime).getTime() -
           new Date().getTime() <=
-          60 * 60 * 1000
+          60 * 60 * 1000 * 24
       )
         return {
           text: "JamHeader.JamSoon",
@@ -275,14 +275,16 @@ export default function JamHeader() {
               </div>
             </Link>
           ) : (
-            <Text
-              weight="semibold"
+            <div
+              className="p-4 text-center rounded-b-2x flex justify-center"
               style={{
                 backgroundColor: colors["blueDarkDark"],
               }}
             >
-              {getPhaseObj(activeJamResponse.phase).text}
-            </Text>
+              <Text weight="semibold">
+                {getPhaseObj(activeJamResponse.phase).text}
+              </Text>
+            </div>
           ))}
       </div>
 
@@ -301,8 +303,26 @@ export default function JamHeader() {
               ),
             }}
           >
-            <Text size="xs">{event.name}</Text>
-            <Text weight="bold">{event.date}</Text>
+            <Text
+              size="xs"
+              color={
+                index === nextEventIndex - 1 && event.dateObj < currentDate
+                  ? "textLight"
+                  : "text"
+              }
+            >
+              {event.name}
+            </Text>
+            <Text
+              weight="bold"
+              color={
+                index === nextEventIndex - 1 && event.dateObj < currentDate
+                  ? "textLight"
+                  : "text"
+              }
+            >
+              {event.date}
+            </Text>
           </div>
         ))}
       </div>

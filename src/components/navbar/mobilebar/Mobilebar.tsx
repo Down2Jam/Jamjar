@@ -77,13 +77,6 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           )
         }
       >
-        <Dropdown.Item
-          key="results"
-          icon="trophy"
-          onClick={() => redirect("/results")}
-        >
-          Results
-        </Dropdown.Item>
         {user && (
           <Dropdown.Item
             key="profile"

@@ -38,6 +38,7 @@ import { getCookie } from "@/helpers/cookie";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
 import { addToast } from "@heroui/react";
+import { useTranslations } from "next-intl";
 
 type EditorProps = {
   content: string;
@@ -53,6 +54,7 @@ export default function Editor({
   gameEditor,
 }: EditorProps) {
   const { colors } = useTheme();
+  const t = useTranslations();
 
   const editor = useEditor({
     extensions: [
@@ -376,9 +378,10 @@ export default function Editor({
               className="!duration-250 !ease-linear !transition-all"
             />
           </svg>
-          {editor.storage.characterCount.characters()} / {limit} characters
+          {editor.storage.characterCount.characters()} / {limit}{" "}
+          {t("Markdown.Characters")}
           <br />
-          {editor.storage.characterCount.words()} words
+          {editor.storage.characterCount.words()} {t("Markdown.Words")}
         </div>
       )}
     </div>

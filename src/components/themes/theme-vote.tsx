@@ -252,7 +252,7 @@ export default function VotingPage() {
     activeJamResponse.jam &&
     new Date(activeJamResponse.jam.startTime).getTime() -
       new Date().getTime() <=
-      60 * 60 * 1000
+      60 * 60 * 1000 * 24
   ) {
     return (
       <Vstack>

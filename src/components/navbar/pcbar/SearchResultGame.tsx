@@ -39,7 +39,7 @@ export default function SearchResultGame({
         <Vstack gap={0} align="start">
           <Text color="text">{game.name}</Text>
           <Text color="textFaded" size="sm">
-            {game.short || "No Description"}
+            {game.short || "General.NoDescription"}
           </Text>
         </Vstack>
       </Hstack>

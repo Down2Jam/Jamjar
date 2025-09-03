@@ -33,7 +33,7 @@ export default function SearchResultUser({
         <Vstack gap={0} align="start">
           <Text color="text">{user.name}</Text>
           <Text color="textFaded" size="sm">
-            {user.short || "No Description"}
+            {user.short || "General.NoDescription"}
           </Text>
         </Vstack>
       </Hstack>

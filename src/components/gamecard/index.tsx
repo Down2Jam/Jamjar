@@ -110,7 +110,7 @@ export function GameCard({
                 borderColor: colors["base"],
               }}
             >
-              {game.short || "No description"}
+              {game.short || "General.NoDescription"}
             </Text>
           </Vstack>
           <Hstack>

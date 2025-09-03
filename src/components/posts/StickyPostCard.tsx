@@ -7,6 +7,7 @@ import { PostType } from "@/types/PostType";
 import { Megaphone, NotebookText } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Card } from "@/framework/Card";
+import Text from "@/framework/Text";
 
 export default function StickyPostCard({ post }: { post: PostType }) {
   const { colors } = useTheme();
@@ -37,7 +38,9 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               color: colors["textFaded"],
             }}
           >
-            <p>By</p>
+            <Text size="xs" color="textFaded">
+              PostCard.By
+            </Text>
             <Link
               href={`/u/${post.author.slug}`}
               className="flex items-center gap-2"

@@ -29,6 +29,8 @@ import { Card } from "@/framework/Card";
 import Drawer from "@/framework/Drawer";
 import { Chip } from "@/framework/Chip";
 import { Spinner } from "@/framework/Spinner";
+import Text from "@/framework/Text";
+import { useTranslations } from "next-intl";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -79,6 +81,7 @@ export default function Posts() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<number>(0);
+  const t = useTranslations();
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -337,15 +340,21 @@ export default function Posts() {
           </Dropdown>
           <Dropdown
             trigger={
-              <Button>
+              <Button
+                icon={
+                  tagRules && Object.keys(tagRules).length > 0
+                    ? "settings"
+                    : "tags"
+                }
+              >
                 {tagRules && Object.keys(tagRules).length > 0
-                  ? "Custom Tags"
-                  : "All Tags"}
+                  ? "PostTags.Custom"
+                  : "PostTags.All"}
               </Button>
             }
           >
             <div className="p-4 max-w-[800px] max-h-[400px] overflow-y-scroll">
-              <p className="text-2xl">Tag Filtering</p>
+              <Text size="2xl">PostTags.Filtering</Text>
               {tags && Object.keys(tags).length > 0 ? (
                 Object.keys(tags)
                   .sort(
@@ -357,7 +366,7 @@ export default function Posts() {
                       <div className="flex gap-1 flex-wrap p-4 w-full">
                         {tags[category].tags.map((tag) => (
                           <Chip
-                            avatarSrc={tag.icon ? tag.icon : undefined}
+                            // avatarSrc={tag.icon ? tag.icon : undefined}
                             key={tag.id}
                             onClick={() => {
                               if (!tagRules) {
@@ -514,11 +523,11 @@ export default function Posts() {
                       `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
                     );
                     addToast({
-                      title: "Copied Link",
+                      title: t("PostCard.Copy.Success"),
                     });
                   }}
                 >
-                  Copy Link
+                  PostCard.Copy.Title
                 </Button>
                 <Button
                   icon="arrowupright"
@@ -558,7 +567,9 @@ export default function Posts() {
                 <p className="text-2xl">{posts[currentPost].title}</p>
               </Link>
               <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
-                <p>By</p>
+                <Text size="xs" color="textFaded">
+                  PostCard.By
+                </Text>
                 <Link
                   href={`/u/${posts[currentPost].author.slug}`}
                   className="flex items-center gap-2"

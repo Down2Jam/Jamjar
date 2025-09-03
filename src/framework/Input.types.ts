@@ -15,4 +15,5 @@ export interface InputProps
   label?: string;
   labelPlacement?: LabelPlacement;
   onValueChange?: (value: string) => void;
+  placeholder?: string;
 }

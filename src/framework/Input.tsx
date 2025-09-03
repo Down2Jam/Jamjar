@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { InputProps, InputSize, InputVariant } from "./Input.types";
+import { useTranslations } from "next-intl";
 
 export function Input({
   className = "",
@@ -15,9 +16,22 @@ export function Input({
   label,
   labelPlacement = "outside",
   onValueChange,
+  placeholder,
   ...props
 }: InputProps) {
   const { colors } = useTheme();
+  const t = useTranslations();
+
+  const maybeKey = placeholder?.trim();
+  const looksLikeKey = !!maybeKey && /^\w+(?:\.\w+)+$/.test(maybeKey);
+  let resolvedPlaceholder = placeholder;
+  if (looksLikeKey) {
+    try {
+      resolvedPlaceholder = t(maybeKey!);
+    } catch {
+      /* keep raw string if no translation */
+    }
+  }
 
   const sizeClasses: Record<InputSize, string> = {
     xs: "h-4 text-[8px] rounded-sm px-2 gap-1",
@@ -72,6 +86,7 @@ export function Input({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onChange={(e) => onValueChange?.(e.target.value)}
+        placeholder={resolvedPlaceholder}
         {...props}
       />
       {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}

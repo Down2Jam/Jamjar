@@ -66,6 +66,8 @@ import ThemedProse from "@/components/themed-prose";
 import { Button } from "@/framework/Button";
 import { Input } from "@/framework/Input";
 import { Link } from "@/framework/Link";
+import { useTranslations } from "next-intl";
+import Text from "@/framework/Text";
 
 export default function ClientGamePage({
   params,
@@ -104,6 +106,7 @@ export default function ClientGamePage({
     useState<ActiveJamResponse | null>(null);
 
   const { siteTheme, colors } = useTheme();
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -234,7 +237,7 @@ export default function ClientGamePage({
             <ThemedProse>
               <div
                 dangerouslySetInnerHTML={{
-                  __html: game.description || "No Description",
+                  __html: game.description || t("General.NoDescription"),
                 }}
               />
             </ThemedProse>
@@ -362,7 +365,7 @@ export default function ClientGamePage({
                             color: colors["textFaded"],
                           }}
                         >
-                          {score}:
+                          {t(score)}:
                         </span>
                         <span
                           style={{
@@ -447,7 +450,7 @@ export default function ClientGamePage({
                         cy="50%"
                         outerRadius="80%"
                         data={Object.keys(game?.scores || {}).map((score) => ({
-                          subject: score,
+                          subject: t(score),
                           A: game.scores[score].averageScore / 2,
                           B: game.scores[score].averageUnrankedScore / 2,
                           fullMark: 5,
@@ -484,14 +487,14 @@ export default function ClientGamePage({
                 </>
               )}
               {isEditable && activeJamResponse?.jam?.id == game.jamId && (
-                <p className="text-[#666] dark:text-[#ccc] text-xs">
+                <Text size="xs" color="textFaded">
                   You can&apos;t rate your own game
-                </p>
+                </Text>
               )}
               {!user && activeJamResponse?.jam?.id == game.jamId && (
-                <p className="text-[#666] dark:text-[#ccc] text-xs">
+                <Text size="xs" color="textFaded">
                   You must be logged in to rate games
-                </p>
+                </Text>
               )}
               {!isEditable &&
                 user?.teams.filter((team) => team.game && team.game.published)
@@ -499,9 +502,9 @@ export default function ClientGamePage({
                 activeJamResponse?.jam?.id == game.jamId &&
                 activeJamResponse?.phase != "Rating" &&
                 activeJamResponse?.phase != "Submission" && (
-                  <p className="text-[#666] dark:text-[#ccc] text-xs">
+                  <Text size="xs" color="textFaded">
                     It is not the rating period
-                  </p>
+                  </Text>
                 )}
               {!isEditable &&
                 user?.teams.filter((team) => team.game && team.game.published)
@@ -509,10 +512,10 @@ export default function ClientGamePage({
                 activeJamResponse?.jam?.id == game.jamId &&
                 (activeJamResponse?.phase == "Rating" ||
                   activeJamResponse?.phase == "Submission") && (
-                  <p className="text-[#666] dark:text-[#ccc] text-xs">
+                  <Text size="xs" color="textFaded">
                     Your ratings will not count towards the rankings as you did
                     not submit a game
-                  </p>
+                  </Text>
                 )}
               <div>
                 {user &&
@@ -526,13 +529,13 @@ export default function ClientGamePage({
                       <StarRow
                         key={ratingCategory.id}
                         id={ratingCategory.id}
-                        name={ratingCategory.name}
+                        name={t(ratingCategory.name)}
                         text={
                           ratingCategory.name == "Theme"
                             ? game.themeJustification
                             : ""
                         }
-                        description={ratingCategory.description}
+                        description={t(ratingCategory.description)}
                         hoverStars={hoverStars}
                         setHoverStars={setHoverStars}
                         hoverCategory={hoverCategory}
