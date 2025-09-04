@@ -365,7 +365,7 @@
     "Q3": {
       "Number": "Q3",
       "Question": "Can I use generative AI to make aspects of the game?",
-      "Answer": "The use of generative AI is restricted.\n\nAs a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand the that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.\n\nThe restriction focuses on tech that is widely considered \"not in the spirit of game jamming\". Most of this is based around generating content for your game that would otherwise be created by a hypothetical team mate. The restriction is less focused on AI tech that is not replacing creativity, such as auto-complete coding or searching for information on the web. \nTo clarify, asking an AI Agent to write a chunk of code for you or asking it to fix your code is still forbidden.\n\nEnforcement of rules in a game jam, around AI or otherwise, is challenging. We will be adding the ability to report entries that have clearly breached any jam rules. Reports will be manually reviewed by the jam organizers."
+      "Answer": "The use of generative AI is restricted.\n\nAs a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.\n\nThe restriction focuses on tech that is widely considered \"not in the spirit of game jamming\". Most of this is based around generating content for your game that would otherwise be created by a hypothetical team mate. The restriction is less focused on AI tech that is not replacing creativity, such as auto-complete coding or searching for information on the web. \nTo clarify, asking an AI Agent to write a chunk of code for you or asking it to fix your code is still forbidden.\n\nEnforcement of rules in a game jam, around AI or otherwise, is challenging. We will be adding the ability to report entries that have clearly breached any jam rules. Reports will be manually reviewed by the jam organizers."
     },
     "Q4": {
       "Number": "Q4",
@@ -769,12 +769,12 @@
     "Soundtrack": {
       "Title": "Soundtrack",
       "Description": "The soundtrack of your game for people to listen to when browsing the site",
-      "Add": "Add Song (disabled for now, will be enabled soon)"
+      "Add": "Add Song"
     },
     "Achievements": {
       "Title": "Achievements",
       "Description": "Achievements for people to obtain from goals relating to your game (e.g. find the hidden chicken). Completion is self reported",
-      "Add": "Add Achievement (disabled for now, will be enabled soon)"
+      "Add": "Add Achievement"
     },
     "CreatePublish": "Create & Publish",
     "Publish": "Publish",

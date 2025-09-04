@@ -218,7 +218,7 @@ GameFAQ.Q3.Number,Q3,,D3,,,S3,,В3,,,,Meow
 GameFAQ.Q3.Question,Can I use generative AI to make aspects of the game?,,Posso usare l'IA generativa per creare parti del gioco?,,,Oyunu yaparken üretken Yapay Zeka kullanabilir miyim?,,Могу ли я использовать генеративное ИИ для аспектов игры?,,,,Meow meow meow meow meow meow meow meow meow meow meow?
 GameFAQ.Q3.Answer,"The use of generative AI is restricted.
 
-As a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand the that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.
+As a community, we understand the negative impact generative AI has on creatives with specialist skill sets. We understand that many generative AI tools were trained unethically. Our jam celebrates creatives and their work. D2J organizers feel that using generative AI to replace traditional roles in game development is not in the spirit of game jamming.
 
 The restriction focuses on tech that is widely considered ""not in the spirit of game jamming"". Most of this is based around generating content for your game that would otherwise be created by a hypothetical team mate. The restriction is less focused on AI tech that is not replacing creativity, such as auto-complete coding or searching for information on the web. 
 To clarify, asking an AI Agent to write a chunk of code for you or asking it to fix your code is still forbidden.
@@ -246,7 +246,7 @@ Bir game jam’de, yapay zeka veya başka bir konuda kuralları uygulamak zordur
 
 Соблюдение правил на геймджеме, будь то вокруг ИИ или чего-либо ещё, представляет собой сложную задачу. Мы добавим возможность сообщать об участниках, которые явно нарушили правила джема. Все жалобы будут вручную рассмотрены организаторами.",,,,"Meow meow meow meow meow meow meow.
 
-Meow meow meow, meow meow meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow.
+Meow meow meow, meow meow meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow.
 
 Meow meow meow meow meow meow meow meow meow ""meow meow meow meow meow meow meow"". Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow meow meow meow meow meow, meow meow meow-meow meow meow meow meow meow meow meow meow. 
 Meow meow, meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow.
@@ -538,140 +538,140 @@ Phases.PostRating.Title,Post Jam Rating Period,,Periodo di Valutazione Post-Jam,
 Phases.PostRating.Description,Playing and giving feedback to other people's post jam improvements,,Giocare e dare feedback ai miglioramenti post-jam fatti dagli altri,,,Diğer katılımcıların post jam versiyonlarını oynayıp yorum atma süreci,,Играйте и оставляйте фидбек под играми других людей после их улучшения в пост джеме,,,,Meow meow meow meow meow meow meow'meow meow meow meow
 Phases.PostResults.Title,Post Jam Results,,Risultati Post-Jam,,,Post Jam Sonuçları,,Пост Джем Результаты,,,,Meow meow meow
 Phases.PostResults.Description,Viewing the results of the post jam and how you were rated compared to the jam,,Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam,,,Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma,,Посмотрите результаты с пост джема и ваш рейтинг в сравнении с джемом,,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow
-PostTags.All,All Tags,,,,,,,,,,,Meow meow
-PostTags.Custom,Custom Tags,,,,,,,,,,,Meow meow
-PostTags.Filtering,Tag Filtering,,,,,,,,,,,Meow meow
-PostCard.Copy.Title,Copy Link,,,,,,,,,,,Meow meow
-PostCard.Copy.Description,Copy the post link to your clipboard,,,,,,,,,,,Meow meow meow meow meow meow meow
-PostCard.Copy.Success,Copied Link,,,,,,,,,,,Meow meow
-PostCard.Delete.Title,Delete,,,,,,,,,,,Meow
-PostCard.Delete.Description,Delete your post,,,,,,,,,,,Meow meow meow
-PostCard.Delete.Success,Deleted post,,,,,,,,,,,Meow meow
-PostCard.Delete.Error,Error while deleting post,,,,,,,,,,,Meow meow meow meow
-PostCard.Remove.Title,Remove,,,,,,,,,,,Meow
-PostCard.Remove.Description,Remove this post,,,,,,,,,,,Meow meow meow
-PostCard.Remove.Success,Removed post,,,,,,,,,,,Meow meow
-PostCard.Remove.Error,Error while removing post,,,,,,,,,,,Meow meow meow meow
-PostCard.Unsticky.Title,Unsticky,,,,,,,,,,,Meow
-PostCard.Unsticky.Description,Unsticky post,,,,,,,,,,,Meow meow
-PostCard.Unsticky.Success,Unsticked post,,,,,,,,,,,Meow meow
-PostCard.Unsticky.Error,Error while unstickying post,,,,,,,,,,,Meow meow meow meow
-PostCard.Sticky.Title,Sticky,,,,,,,,,,,Meow
-PostCard.Sticky.Description,Sticky post,,,,,,,,,,,Meow meow
-PostCard.Sticky.Success,Stickied post,,,,,,,,,,,Meow meow
-PostCard.Sticky.Error,Error while stickying post,,,,,,,,,,,Meow meow meow meow
-PostCard.Promote.Title,Appoint as mod,,,,,,,,,,,Meow meow meow
-PostCard.Promote.Description,Promote user to Mod,,,,,,,,,,,Meow meow meow meow
-PostCard.Promote.Success,Promoted User to Mod,,,,,,,,,,,Meow meow meow meow
-PostCard.Promote.Error,Error while promoting user to Mod,,,,,,,,,,,Meow meow meow meow meow meow
-PostCard.Demote.Title,Remove as mod,,,,,,,,,,,Meow meow meow
-PostCard.Demote.Description,Demote user from Mod,,,,,,,,,,,Meow meow meow meow
-PostCard.Demote.Success,Demoted User,,,,,,,,,,,Meow meow
-PostCard.Demote.Error,Error while demoting user,,,,,,,,,,,Meow meow meow meow
-PostCard.PromoteAdmin.Title,Appoint as admin,,,,,,,,,,,Meow meow meow
-PostCard.PromoteAdmin.Description,Promote user to Admin,,,,,,,,,,,Meow meow meow meow
-PostCard.PromoteAdmin.Success,Promoted User to Admin,,,,,,,,,,,Meow meow meow meow
-PostCard.PromoteAdmin.Error,Error while promoting user to Admin,,,,,,,,,,,Meow meow meow meow meow meow
-PostCard.DemoteAdmin.Title,Remove as admin,,,,,,,,,,,Meow meow meow
-PostCard.DemoteAdmin.Description,Demote user to mod,,,,,,,,,,,Meow meow meow meow
-PostCard.DemoteAdmin.Success,Demoted User to Mod,,,,,,,,,,,Meow meow meow meow
-PostCard.DemoteAdmin.Error,Error while demoting user to mod,,,,,,,,,,,Meow meow meow meow meow meow
-PostCard.By,By,,,,,,,,,,,Meow
-CreateGame.Create.Title,Create New Game,,,,,,,,,,,Meow meow meow
-CreateGame.Create.Description,Create a new page for a game on the site,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow
-CreateGame.Edit.Title,Edit Game,,,,,,,,,,,Meow meow
-CreateGame.Edit.Description,Edit the page for a game you've made,,,,,,,,,,,Meow meow meow meow meow meow meow'meow meow
-CreateGame.Name.Title,Game Name,,,,,,,,,,,Meow meow
-CreateGame.Name.Description,The name your game is called,,,,,,,,,,,Meow meow meow meow meow meow
-CreateGame.Name.Placeholder,Enter your game name,,,,,,,,,,,Meow meow meow meow
-CreateGame.Name.Error,Please enter a valid title,,,,,,,,,,,Meow meow meow meow meow
-CreateGame.Slug.Title,Game Slug,,,,,,,,,,,Meow meow
-CreateGame.Slug.Description,This will be used in the URL:,,,,,,,,,,,Meow meow meow meow meow meow meow:
-CreateGame.Slug.Placeholder,your-game-name,,,,,,,,,,,Meow-meow-meow
-CreateGame.Category.Title,Game Category,,,,,,,,,,,Meow meow
-CreateGame.Category.Description,The category you are submitting your game to in the jam,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow meow
-CreateGame.Description.Title,Game Description,,,,,,,,,,,Meow meow
-CreateGame.Description.Description,The content of your game page. Visible when people look at your game,,,,,,,,,,,Meow meow meow meow meow meow. Meow meow meow meow meow meow meow
-CreateGame.Short.Title,Game Short,,,,,,,,,,,Meow meow
-CreateGame.Short.Description,A short description that shows on the games page and when someone searches for you game (max 155 characters),,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow (meow meow meow)
-CreateGame.Short.Placeholder,Enter a short description,,,,,,,,,,,Meow meow meow meow
-CreateGame.Theme.Title,Theme Justification,,,,,,,,,,,Meow meow
-CreateGame.Theme.Description,This will be shown to people as they rate you for theme. Why your game follows the theme,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow
-CreateGame.Theme.Placeholder,Enter a justification (optional),,,,,,,,,,,Meow meow meow (meow)
-CreateGame.Thumbnail.Title,Thumbnail,,,,,,,,,,,Meow
-CreateGame.Thumbnail.Description,Shows when people are browsing through games (360x200),,,,,,,,,,,Meow meow meow meow meow meow meow (meow)
-CreateGame.Banner.Title,Banner,,,,,,,,,,,Meow
-CreateGame.Banner.Description,Shows on the game page and in search results (1468 x 240),,,,,,,,,,,Meow meow meow meow meow meow meow meow meow (meow meow meow)
-CreateGame.Links.Title,Links,,,,,,,,,,,Meow
-CreateGame.Links.Description,Upload your game to a hosting site (such as itch.io) and link it here for people to play on or download from,,,,,,,,,,,Meow meow meow meow meow meow meow (meow meow meow.meow) meow meow meow meow meow meow meow meow meow meow meow meow
-CreateGame.Links.Placeholder,https://example.com,,,,,,,,,,,Meow://meow.meow
-CreateGame.Links.Add,Add Link,,,,,,,,,,,Meow meow
-CreateGame.Links.Error,Please enter a valid URL starting with http:// or https://,,,,,,,,,,,Meow meow meow meow meow meow meow meow:// meow meow://
-CreateGame.Tags.Title,Tags,,,,,,,,,,,Meow
-CreateGame.Tags.Description,"Tags for game engine, genre, etc. for people to filter by",,,,,,,,,,,"Meow meow meow meow, meow, meow. Meow meow meow meow meow"
-CreateGame.Flags.Title,Content Flags,,,,,,,,,,,Meow meow
-CreateGame.Flags.Description,Warnings about what content your game contains,,,,,,,,,,,Meow meow meow meow meow meow meow
-CreateGame.RatingCategories.Title,Opt-In Rating Categories,,,,,,,,,,,Meow-meow meow meow
-CreateGame.RatingCategories.Description,Any optional categories you want to get a rating & rank in,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow & meow meow
-CreateGame.Leaderboards.Title,Leaderboards,,,,,,,,,,,Meow
-CreateGame.Leaderboards.Description,Leaderboards for people to submit high scores for your game (scores will be reported manually with pictures for evidence),,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow (meow meow meow meow meow meow meow meow meow)
-CreateGame.Leaderboards.Add,Add Leaderboard,,,,,,,,,,,Meow meow
-CreateGame.Soundtrack.Title,Soundtrack,,,,,,,,,,,Meow
-CreateGame.Soundtrack.Description,The soundtrack of your game for people to listen to when browsing the site,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow
-CreateGame.Soundtrack.Add,"Add Song (disabled for now, will be enabled soon)",,,,,,,,,,,"Meow meow (meow meow meow, meow meow meow meow)"
-CreateGame.Achievements.Title,Achievements,,,,,,,,,,,Meow
-CreateGame.Achievements.Description,Achievements for people to obtain from goals relating to your game (e.g. find the hidden chicken). Completion is self reported,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow meow meow (meow.meow. Meow meow meow meow). Meow meow meow meow
-CreateGame.Achievements.Add,"Add Achievement (disabled for now, will be enabled soon)",,,,,,,,,,,"Meow meow (meow meow meow, meow meow meow meow)"
-CreateGame.Create.Title,Create,,,,,,,,,,,Meow
-CreateGame.Create.Success,Game created successfully!,,,,,,,,,,,Meow meow meow!
-CreateGame.Create.Error,Failed to create game,,,,,,,,,,,Meow meow meow meow
-CreateGame.CreatePublish,Create & Publish,,,,,,,,,,,Meow & meow
-CreateGame.Publish,Publish,,,,,,,,,,,Meow
-CreateGame.Unpublish,Unpublish,,,,,,,,,,,Meow
-CreateGame.Update.Title,Update,,,,,,,,,,,Meow
-CreateGame.Update.Success,Game updated successfully!,,,,,,,,,,,Meow meow meow!
-CreateGame.Loading.Title,Loading...,,,,,,,,,,,Meow...
-CreateGame.Loading.Description,Loading edit form...,,,,,,,,,,,Meow meow meow...
-CreateGame.NotLogged,You are not logged in,,,,,,,,,,,Meow meow meow meow meow
-CreateLeaderboard.Name.Title,Leaderboard Name,,,,,,,,,,,Meow meow
-CreateLeaderboard.Name.Description,"The name that shows for the leaderboard tab. Should describe what the leaderboard is (e.g. any%, death%)",,,,,,,,,,,"Meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow (meow.meow. Meow%, meow%)"
-CreateLeaderboard.Name.Placeholder,Enter a name,,,,,,,,,,,Meow meow meow
-CreateLeaderboard.UsersPerPage.Title,Users per page,,,,,,,,,,,Meow meow meow
-CreateLeaderboard.UsersPerPage.Description,Users that show on a page of the leaderboard (users past this are paginated and the user needs to go to a different page),,,,,,,,,,,Meow meow meow meow meow meow meow meow meow (meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow)
-CreateLeaderboard.Type.Title,Leaderboard Type,,,,,,,,,,,Meow meow
-CreateLeaderboard.Type.Description,"The goal users are ordered by and that the score is formatted as. Determines whether users need to get lowest score, highest score, lowest time, etc.",,,,,,,,,,,"Meow meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow, meow meow, meow meow, meow."
-CreateLeaderboard.Decimals.Title,Decimal places,,,,,,,,,,,Meow meow
-CreateLeaderboard.Decimals.Description,The amount of decimal places that a score supports,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow
-CreateLeaderboard.Advanced.Title,Advanced toggles,,,,,,,,,,,Meow meow
-CreateLeaderboard.Advanced.Description,Toggles to control more functionality on the leaderboard,,,,,,,,,,,Meow meow meow meow meow meow meow meow
-CreateLeaderboard.Highest.Title,Only Highest,,,,,,,,,,,Meow meow
-CreateLeaderboard.Highest.Description,Only shows each users highest score,,,,,,,,,,,Meow meow meow meow meow meow
-GameCategory.Regular.Title,Regular,,,,,,,,,,,Meow
-GameCategory.Regular.Description,The regular jam category,,,,,,,,,,,Meow meow meow meow
-GameCategory.Oda.Title,One Dev Army (O.D.A),,,,,,,,,,,Meow meow meow (meow.meow.meow)
-GameCategory.Oda.Description,"1 Dev, No third party assets",,,,,,,,,,,"Meow meow, meow meow meow meow"
-GameCategory.Extra.Title,Extra,,,,,,,,,,,Meow
-GameCategory.Extra.Description,Can be submitted during the rating period. Will not be ranked,,,,,,,,,,,Meow meow meow meow meow meow meow. Meow meow meow meow
-RatingCategory.Gameplay.Title,Gameplay,,,,,,,,,,,Meow
-RatingCategory.Gameplay.Description,"How much you enjoy playing the game, and how satisfying the mechanics are.",,,,,,,,,,,"Meow meow meow meow meow meow meow, meow meow meow meow meow meow."
-RatingCategory.Audio.Title,Audio,,,,,,,,,,,Meow
-RatingCategory.Audio.Description,"How good the game sounds, or how effective the sound design is.",,,,,,,,,,,"Meow meow meow meow meow, meow meow meow meow meow meow meow."
-RatingCategory.Graphics.Title,Graphics,,,,,,,,,,,Meow
-RatingCategory.Graphics.Description,"How good the game looks, and how effective the visual style is.",,,,,,,,,,,"Meow meow meow meow meow, meow meow meow meow meow meow meow."
-RatingCategory.Creativity.Title,Creativity,,,,,,,,,,,Meow
-RatingCategory.Creativity.Description,"Uniqueness, Originality, Innovation, and the surprise element.",,,,,,,,,,,"Meow, meow, meow, meow meow meow meow."
-RatingCategory.Emotional.Title,Emotional Delivery,,,,,,,,,,,Meow meow
-RatingCategory.Emotional.Description,How effectively the emotional or humorous elements are delivered.,,,,,,,,,,,Meow meow meow meow meow meow meow meow meow.
-RatingCategory.Overall.Title,Overall,,,,,,,,,,,Meow
-RatingCategory.Overall.Description,"Your overall opinion of the game, how well all the categories are sticking together.",,,,,,,,,,,"Meow meow meow meow meow meow, meow meow meow meow meow meow meow meow."
-RatingCategory.Theme.Title,Theme,,,,,,,,,,,Meow
-RatingCategory.Theme.Description,"The game’s take on the theme, and how well it was used and executed.",,,,,,,,,,,"Meow meow’meow meow meow meow meow, meow meow meow meow meow meow meow meow."
-LeaderboardType.Score.Title,Score,,,,,,,,,,,Meow
-LeaderboardType.Score.Description,Highest Score,,,,,,,,,,,Meow meow
-LeaderboardType.Golf.Title,Golf,,,,,,,,,,,Meow
-LeaderboardType.Golf.Description,Lowest Score,,,,,,,,,,,Meow meow
-LeaderboardType.Speedrun.Title,Speedrun,,,,,,,,,,,Meow
-LeaderboardType.Speedrun.Description,Lowest Time,,,,,,,,,,,Meow meow
-LeaderboardType.Endurance.Title,Endurance,,,,,,,,,,,Meow
-LeaderboardType.Endurance.Description,Highest Time,,,,,,,,,,,Meow meow
-General.NoDescription,No description,,,,,,,,,,,Meow meow
+PostTags.All,All Tags,,,,,Bütün Etiketler,,,,,,Meow meow
+PostTags.Custom,Custom Tags,,,,,Kişisel Etkietler,,,,,,Meow meow
+PostTags.Filtering,Tag Filtering,,,,,Etiket Filtreleme,,,,,,Meow meow
+PostCard.Copy.Title,Copy Link,,,,,Bağlantıyı Kopyala,,,,,,Meow meow
+PostCard.Copy.Description,Copy the post link to your clipboard,,,,,Gönderi bağlantısını panoya kopyala,,,,,,Meow meow meow meow meow meow meow
+PostCard.Copy.Success,Copied Link,,,,,Bağlantı kopyalandı,,,,,,Meow meow
+PostCard.Delete.Title,Delete,,,,,Sil,,,,,,Meow
+PostCard.Delete.Description,Delete your post,,,,,Gönderiyi sil,,,,,,Meow meow meow
+PostCard.Delete.Success,Deleted post,,,,,Gönderi silindi,,,,,,Meow meow
+PostCard.Delete.Error,Error while deleting post,,,,,Gönderi silinirken bir hata oluştu,,,,,,Meow meow meow meow
+PostCard.Remove.Title,Remove,,,,,Kaldır,,,,,,Meow
+PostCard.Remove.Description,Remove this post,,,,,Bu gönderiyi kaldır,,,,,,Meow meow meow
+PostCard.Remove.Success,Removed post,,,,,Gönderi kaldırıldı,,,,,,Meow meow
+PostCard.Remove.Error,Error while removing post,,,,,Gönderi kaldırılırken bir hata oluştu,,,,,,Meow meow meow meow
+PostCard.Unsticky.Title,Unsticky,,,,,Yapışkanı Kaldır,,,,,,Meow
+PostCard.Unsticky.Description,Unsticky post,,,,,Gönderinin yapışkanını kaldır,,,,,,Meow meow
+PostCard.Unsticky.Success,Unsticked post,,,,,Yapışkanlık kaldırıldı,,,,,,Meow meow
+PostCard.Unsticky.Error,Error while unstickying post,,,,,Yapışkanlık kaldırılırken bir hata oluştu,,,,,,Meow meow meow meow
+PostCard.Sticky.Title,Sticky,,,,,Yapışkan,,,,,,Meow
+PostCard.Sticky.Description,Sticky post,,,,,Gönderiyi yapışkan yap,,,,,,Meow meow
+PostCard.Sticky.Success,Stickied post,,,,,Gönderi yapışkan yapıldı,,,,,,Meow meow
+PostCard.Sticky.Error,Error while stickying post,,,,,Gönderiyi yapışkan yaparken bir hata oluştu,,,,,,Meow meow meow meow
+PostCard.Promote.Title,Appoint as mod,,,,,Mod'luğa yükselt,,,,,,Meow meow meow
+PostCard.Promote.Description,Promote user to Mod,,,,,Kullanıcıyı mod yap,,,,,,Meow meow meow meow
+PostCard.Promote.Success,Promoted User to Mod,,,,,Kullanıcı mod yapıldı,,,,,,Meow meow meow meow
+PostCard.Promote.Error,Error while promoting user to Mod,,,,,Kullanıcı mod yapılırken bir hata oluştu,,,,,,Meow meow meow meow meow meow
+PostCard.Demote.Title,Remove as mod,,,,,Mod'luktan Çıkar,,,,,,Meow meow meow
+PostCard.Demote.Description,Demote user from Mod,,,,,Kullanıcıyı mod'luktan çıkar,,,,,,Meow meow meow meow
+PostCard.Demote.Success,Demoted User,,,,,Kullanıcı mod'luktan çıkarıldı,,,,,,Meow meow
+PostCard.Demote.Error,Error while demoting user,,,,,Kullanıcı mod'luktan çıkarılırken bir hata oluştu,,,,,,Meow meow meow meow
+PostCard.PromoteAdmin.Title,Appoint as admin,,,,,Yönetici yap,,,,,,Meow meow meow
+PostCard.PromoteAdmin.Description,Promote user to Admin,,,,,Kullanıcıyı yönetici yap,,,,,,Meow meow meow meow
+PostCard.PromoteAdmin.Success,Promoted User to Admin,,,,,Kullanıcı yönetici yapıldı,,,,,,Meow meow meow meow
+PostCard.PromoteAdmin.Error,Error while promoting user to Admin,,,,,Kullanıcı yönetici yapılırken bir hata oluştu,,,,,,Meow meow meow meow meow meow
+PostCard.DemoteAdmin.Title,Remove as admin,,,,,Yöneticiliği kaldır,,,,,,Meow meow meow
+PostCard.DemoteAdmin.Description,Demote user to mod,,,,,Kullanıcının yöneticiliğini kaldır,,,,,,Meow meow meow meow
+PostCard.DemoteAdmin.Success,Demoted User to Mod,,,,,Kullanıcının yöneticiliği kaldırıldı,,,,,,Meow meow meow meow
+PostCard.DemoteAdmin.Error,Error while demoting user to mod,,,,,Kullanıcının yöneticiliği kaldırırken bir hata oluştu,,,,,,Meow meow meow meow meow meow
+PostCard.By,By,,,,,üyeler,,,,,,Meow
+CreateGame.Create.Title,Create New Game,,,,,Yeni Oyun Yarat,,,,,,Meow meow meow
+CreateGame.Create.Description,Create a new page for a game on the site,,,,,Sitede yeni bir oyun sayfası yarat,,,,,,Meow meow meow meow meow meow meow meow meow meow
+CreateGame.Edit.Title,Edit Game,,,,,Oyunu Düzenle,,,,,,Meow meow
+CreateGame.Edit.Description,Edit the page for a game you've made,,,,,Oyununuzun sayfasını düzenleyin,,,,,,Meow meow meow meow meow meow meow'meow meow
+CreateGame.Name.Title,Game Name,,,,,Oyun İsmi,,,,,,Meow meow
+CreateGame.Name.Description,The name your game is called,,,,,Oyununuza verdiğiniz isim,,,,,,Meow meow meow meow meow meow
+CreateGame.Name.Placeholder,Enter your game name,,,,,Oyununuzun ismini girn,,,,,,Meow meow meow meow
+CreateGame.Name.Error,Please enter a valid title,,,,,Lütfen uygun bir başlık giriniz,,,,,,Meow meow meow meow meow
+CreateGame.Slug.Title,Game Slug,,,,,Oyun Slug'ı,,,,,,Meow meow
+CreateGame.Slug.Description,This will be used in the URL:,,,,,Bu URL'nizde kullanılacak:,,,,,,Meow meow meow meow meow meow meow:
+CreateGame.Slug.Placeholder,your-game-name,,,,,oyununuzun-ismi,,,,,,Meow-meow-meow
+CreateGame.Category.Title,Game Category,,,,,Oyun Kategorisi,,,,,,Meow meow
+CreateGame.Category.Description,The category you are submitting your game to in the jam,,,,,Oyunun yer alacağı jam kategorisi,,,,,,Meow meow meow meow meow meow meow meow meow meow meow
+CreateGame.Description.Title,Game Description,,,,,Oyun Açıklaması,,,,,,Meow meow
+CreateGame.Description.Description,The content of your game page. Visible when people look at your game,,,,,Oyun sayfanızın içerik kısmı,,,,,,Meow meow meow meow meow meow. Meow meow meow meow meow meow meow
+CreateGame.Short.Title,Game Short,,,,,Kısa Açıklama,,,,,,Meow meow
+CreateGame.Short.Description,A short description that shows on the games page and when someone searches for you game (max 155 characters),,,,,Aramalarda ve başka yerlerde çıkan oyunun kısa açıklaması ( maks 155 karakter),,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow (meow meow meow)
+CreateGame.Short.Placeholder,Enter a short description,,,,,Kısa bir açıklama girin,,,,,,Meow meow meow meow
+CreateGame.Theme.Title,Theme Justification,,,,,Tema Kullanımı,,,,,,Meow meow
+CreateGame.Theme.Description,This will be shown to people as they rate you for theme. Why your game follows the theme,,,,,Bu açıklama diğer kullanıcılar sizin temanızı oylarken gsterilecek. Oyununuz temayı nasıl sağlıyor?,,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow
+CreateGame.Theme.Placeholder,Enter a justification (optional),,,,,Tema kullanım açıklaması girin (opsiyonel),,,,,,Meow meow meow (meow)
+CreateGame.Thumbnail.Title,Thumbnail,,,,,Küçük resim,,,,,,Meow
+CreateGame.Thumbnail.Description,Shows when people are browsing through games (360x200),,,,,Kullanıcıların oyunlara göz atarken görecekleri görsel (360x200),,,,,,Meow meow meow meow meow meow meow (meow)
+CreateGame.Banner.Title,Banner,,,,,Afiş,,,,,,Meow
+CreateGame.Banner.Description,Shows on the game page and in search results (1468 x 240),,,,,Oyun sayfasında ve arama sonuçlarında gösterilir (1468 x 240),,,,,,Meow meow meow meow meow meow meow meow meow (meow meow meow)
+CreateGame.Links.Title,Links,,,,,Bağlantılar,,,,,,Meow
+CreateGame.Links.Description,Upload your game to a hosting site (such as itch.io) and link it here for people to play on or download from,,,,,Oyununuzu bir depolama sayfasına yükleyin(mesela itch.io) ve buraya insanların oynayabilmesi için bağlantısını girin,,,,,,Meow meow meow meow meow meow meow (meow meow meow.meow) meow meow meow meow meow meow meow meow meow meow meow meow
+CreateGame.Links.Placeholder,https://example.com,,,,,https://ornek.com,,,,,,Meow://meow.meow
+CreateGame.Links.Add,Add Link,,,,,Bağlantı Ekle,,,,,,Meow meow
+CreateGame.Links.Error,Please enter a valid URL starting with http:// or https://,,,,,Lütfen uygun bir URL giriniz. http:// veya https:// ile başlamalı,,,,,,Meow meow meow meow meow meow meow meow:// meow meow://
+CreateGame.Tags.Title,Tags,,,,,Etiketler,,,,,,Meow
+CreateGame.Tags.Description,"Tags for game engine, genre, etc. for people to filter by",,,,,"Filtrelerde çıkması için oyun motoru, genre, vb... gibi etiketler ekleyin.",,,,,,"Meow meow meow meow, meow, meow. Meow meow meow meow meow"
+CreateGame.Flags.Title,Content Flags,,,,,İçerik Uyarıları,,,,,,Meow meow
+CreateGame.Flags.Description,Warnings about what content your game contains,,,,,Oyununuzun içerebileceği şeyler konusunda uyarılar ekleyin,,,,,,Meow meow meow meow meow meow meow
+CreateGame.RatingCategories.Title,Opt-In Rating Categories,,,,,Kategori Seçimleri,,,,,,Meow-meow meow meow
+CreateGame.RatingCategories.Description,Any optional categories you want to get a rating & rank in,,,,,Oy almak ve sıralamaya girmek istediğiniz kategorileri seçin,,,,,,Meow meow meow meow meow meow meow meow meow & meow meow
+CreateGame.Leaderboards.Title,Leaderboards,,,,,Skor Tabloları,,,,,,Meow
+CreateGame.Leaderboards.Description,Leaderboards for people to submit high scores for your game (scores will be reported manually with pictures for evidence),,,,,İnsanların oyununuza yüksek skorları ekleyebildikleri skor tabloları. (skorlar resim yükleyerek beyan usulü eklenir),,,,,,Meow meow meow meow meow meow meow meow meow meow (meow meow meow meow meow meow meow meow meow)
+CreateGame.Leaderboards.Add,Add Leaderboard,,,,,Skor Tablosu Ekle,,,,,,Meow meow
+CreateGame.Soundtrack.Title,Soundtrack,,,,,Oyun Müziği,,,,,,Meow
+CreateGame.Soundtrack.Description,The soundtrack of your game for people to listen to when browsing the site,,,,,Sayfayı gezerken insanların dinleyebileceği oyununuzun müzikleri,,,,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow
+CreateGame.Soundtrack.Add,Add Song,,,,,Şarkı Ekle,,,,,,Meow meow
+CreateGame.Achievements.Title,Achievements,,,,,Başarımlar,,,,,,Meow
+CreateGame.Achievements.Description,Achievements for people to obtain from goals relating to your game (e.g. find the hidden chicken). Completion is self reported,,,,,İnsanların oyununuzda bazı hedeflere ulaştığını listeleyen kısım (örnek: gizli tavuğu bul). Beyan usulü çalışır,,,,,,Meow meow meow meow meow meow meow meow meow meow meow (meow.meow. Meow meow meow meow). Meow meow meow meow
+CreateGame.Achievements.Add,Add Achievement,,,,,Başarım Ekle,,,,,,Meow meow
+CreateGame.Create.Title,Create,,,,,Yarat,,,,,,Meow
+CreateGame.Create.Success,Game created successfully!,,,,,Oyun başarıyla yaratıldı!,,,,,,Meow meow meow!
+CreateGame.Create.Error,Failed to create game,,,,,Oyun yaratılırken bir hata oluştu,,,,,,Meow meow meow meow
+CreateGame.CreatePublish,Create & Publish,,,,,Yarat & Yayınla,,,,,,Meow & meow
+CreateGame.Publish,Publish,,,,,Yayınla,,,,,,Meow
+CreateGame.Unpublish,Unpublish,,,,,Yayından Kaldır,,,,,,Meow
+CreateGame.Update.Title,Update,,,,,GÜncelle,,,,,,Meow
+CreateGame.Update.Success,Game updated successfully!,,,,,Oyun başarıyla güncellendi,,,,,,Meow meow meow!
+CreateGame.Loading.Title,Loading...,,,,,Yükleniyor...,,,,,,Meow...
+CreateGame.Loading.Description,Loading edit form...,,,,,Düzenleme formu yükleniyor...,,,,,,Meow meow meow...
+CreateGame.NotLogged,You are not logged in,,,,,Siteye giriş yapmamışsınız,,,,,,Meow meow meow meow meow
+CreateLeaderboard.Name.Title,Leaderboard Name,,,,,Skor Tablosu İsmi,,,,,,Meow meow
+CreateLeaderboard.Name.Description,"The name that shows for the leaderboard tab. Should describe what the leaderboard is (e.g. any%, death%)",,,,,"Skor tablosu sekmesinde gözükecek isim. Tablonun neyle ilgili olduğunu açıklamalı (örnek: herhangi%, ölüm%)",,,,,,"Meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow (meow.meow. Meow%, meow%)"
+CreateLeaderboard.Name.Placeholder,Enter a name,,,,,Bir isim girin,,,,,,Meow meow meow
+CreateLeaderboard.UsersPerPage.Title,Users per page,,,,,Sayfa başına kullanıcı,,,,,,Meow meow meow
+CreateLeaderboard.UsersPerPage.Description,Users that show on a page of the leaderboard (users past this are paginated and the user needs to go to a different page),,,,,Tabloda sayfa başına gösterilecek kullanıcı sayısı,,,,,,Meow meow meow meow meow meow meow meow meow (meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow)
+CreateLeaderboard.Type.Title,Leaderboard Type,,,,,Skor Tablosu Tipi,,,,,,Meow meow
+CreateLeaderboard.Type.Description,"The goal users are ordered by and that the score is formatted as. Determines whether users need to get lowest score, highest score, lowest time, etc.",,,,,Skor tablosunun nasıl sıralandığı ve dizildiği,,,,,,"Meow meow meow meow meow meow meow meow meow meow meow meow meow. Meow meow meow meow meow meow meow meow, meow meow, meow meow, meow."
+CreateLeaderboard.Decimals.Title,Decimal places,,,,,Ondalık sayılar,,,,,,Meow meow
+CreateLeaderboard.Decimals.Description,The amount of decimal places that a score supports,,,,,Skorun desteklediği ondalık basamak sayısı,,,,,,Meow meow meow meow meow meow meow meow meow
+CreateLeaderboard.Advanced.Title,Advanced toggles,,,,,Gelişmiş Seçenekler,,,,,,Meow meow
+CreateLeaderboard.Advanced.Description,Toggles to control more functionality on the leaderboard,,,,,Skor tablosunda daha çok kontrole sahip olmak için seçenekler,,,,,,Meow meow meow meow meow meow meow meow
+CreateLeaderboard.Highest.Title,Only Highest,,,,,Sadece En Yüksek,,,,,,Meow meow
+CreateLeaderboard.Highest.Description,Only shows each users highest score,,,,,Sadece her oyuncunun en yüksek skorunu gösterir,,,,,,Meow meow meow meow meow meow
+GameCategory.Regular.Title,Regular,,,,,Normal,,,,,,Meow
+GameCategory.Regular.Description,The regular jam category,,,,,Normal jam kategorisi,,,,,,Meow meow meow meow
+GameCategory.Oda.Title,One Dev Army (O.D.A),,,,,Tek Geliştirici Ordusu (O.D.A),,,,,,Meow meow meow (meow.meow.meow)
+GameCategory.Oda.Description,"1 Dev, No third party assets",,,,,"Tek geliştirici, üçüncü parti assetler yasak",,,,,,"Meow meow, meow meow meow meow"
+GameCategory.Extra.Title,Extra,,,,,Ekstra,,,,,,Meow
+GameCategory.Extra.Description,Can be submitted during the rating period. Will not be ranked,,,,,Oylama sırasında da yüklenebilen oyunlar. Sıralamaya giremez,,,,,,Meow meow meow meow meow meow meow. Meow meow meow meow
+RatingCategory.Gameplay.Title,Gameplay,,,,,Oynanış,,,,,,Meow
+RatingCategory.Gameplay.Description,"How much you enjoy playing the game, and how satisfying the mechanics are.",,,,,Oyunu oynarken ne kadar eğlendiğiniz ve mekaniklerin ne kadar tatmin edici olduğu.,,,,,,"Meow meow meow meow meow meow meow, meow meow meow meow meow meow."
+RatingCategory.Audio.Title,Audio,,,,,Ses,,,,,,Meow
+RatingCategory.Audio.Description,"How good the game sounds, or how effective the sound design is.",,,,,Oyunun ses kalitesi veya ses tasarımının ne kadar etkili olduğu.,,,,,,"Meow meow meow meow meow, meow meow meow meow meow meow meow."
+RatingCategory.Graphics.Title,Graphics,,,,,Grafikler,,,,,,Meow
+RatingCategory.Graphics.Description,"How good the game looks, and how effective the visual style is.",,,,,Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu.,,,,,,"Meow meow meow meow meow, meow meow meow meow meow meow meow."
+RatingCategory.Creativity.Title,Creativity,,,,,Yaratıcılık,,,,,,Meow
+RatingCategory.Creativity.Description,"Uniqueness, Originality, Innovation, and the surprise element.",,,,,"Benzersizlik, özgünlük, yenilik ve sürpriz unsuru.",,,,,,"Meow, meow, meow, meow meow meow meow."
+RatingCategory.Emotional.Title,Emotional Delivery,,,,,Duygusal Aktarım,,,,,,Meow meow
+RatingCategory.Emotional.Description,How effectively the emotional or humorous elements are delivered.,,,,,"Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı.",,,,,,Meow meow meow meow meow meow meow meow meow.
+RatingCategory.Overall.Title,Overall,,,,,Genel,,,,,,Meow
+RatingCategory.Overall.Description,"Your overall opinion of the game, how well all the categories are sticking together.",,,,,"Oyunun genel değerlendirmesi, tüm kategorilerin ne kadar iyi bir araya geldiği.",,,,,,"Meow meow meow meow meow meow, meow meow meow meow meow meow meow meow."
+RatingCategory.Theme.Title,Theme,,,,,Tema,,,,,,Meow
+RatingCategory.Theme.Description,"The game’s take on the theme, and how well it was used and executed.",,,,,Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı.,,,,,,"Meow meow’meow meow meow meow meow, meow meow meow meow meow meow meow meow."
+LeaderboardType.Score.Title,Score,,,,,Skor,,,,,,Meow
+LeaderboardType.Score.Description,Highest Score,,,,,En Yüksek Skor,,,,,,Meow meow
+LeaderboardType.Golf.Title,Golf,,,,,Golf,,,,,,Meow
+LeaderboardType.Golf.Description,Lowest Score,,,,,En Düşük Skor,,,,,,Meow meow
+LeaderboardType.Speedrun.Title,Speedrun,,,,,Speedrun,,,,,,Meow
+LeaderboardType.Speedrun.Description,Lowest Time,,,,,En Düşük Zaman,,,,,,Meow meow
+LeaderboardType.Endurance.Title,Endurance,,,,,Dayanıklılık,,,,,,Meow
+LeaderboardType.Endurance.Description,Highest Time,,,,,En Yüksek Zaman,,,,,,Meow meow
+General.NoDescription,No description,,,,,Açıklama yok,,,,,,Meow meow

@@ -438,7 +438,7 @@
     "Q1": {
       "Number": "S1",
       "Question": "Oyunlar nasıl oylanır?",
-      "Answer": "Oyunlar diğer katılımcılar tarafından şu kategorilerde değerlendirilir:\n\n-GENEL: Oyunun genel değerlendirmesi, tüm kategorilerin ne kadar iyi bir araya geldiği.\r\n- OYNANIŞ: Oyunu oynarken ne kadar eğlendiğiniz ve mekaniklerin ne kadar tatmin edici olduğu.\r\n- SES: Oyunun ses kalitesi veya ses tasarımının ne kadar etkili olduğu.\r\n- GRAFİK: Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu.\r\n- YARATICILIK: Benzersizlik, özgünlük, yenilik ve sürpriz unsuru.\r\n- DUYGUSAL AKTARIM: Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı.\r\n- TEMA: Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı."
+      "Answer": "Oyunlar diğer katılımcılar tarafından şu kategorilerde değerlendirilir:\n\n-GENEL: Oyunun genel değerlendirmesi, tüm kategorilerin ne kadar iyi bir araya geldiği.\n- OYNANIŞ: Oyunu oynarken ne kadar eğlendiğiniz ve mekaniklerin ne kadar tatmin edici olduğu.\n- SES: Oyunun ses kalitesi veya ses tasarımının ne kadar etkili olduğu.\n- GRAFİK: Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu.\n- YARATICILIK: Benzersizlik, özgünlük, yenilik ve sürpriz unsuru.\n- DUYGUSAL AKTARIM: Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı.\n- TEMA: Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı."
     },
     "Q2": {
       "Number": "S2",
@@ -632,5 +632,253 @@
       "Title": "Post Jam Sonuçları",
       "Description": "Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma"
     }
+  },
+  "PostTags": {
+    "All": "Bütün Etiketler",
+    "Custom": "Kişisel Etkietler",
+    "Filtering": "Etiket Filtreleme"
+  },
+  "PostCard": {
+    "Copy": {
+      "Title": "Bağlantıyı Kopyala",
+      "Description": "Gönderi bağlantısını panoya kopyala",
+      "Success": "Bağlantı kopyalandı"
+    },
+    "Delete": {
+      "Title": "Sil",
+      "Description": "Gönderiyi sil",
+      "Success": "Gönderi silindi",
+      "Error": "Gönderi silinirken bir hata oluştu"
+    },
+    "Remove": {
+      "Title": "Kaldır",
+      "Description": "Bu gönderiyi kaldır",
+      "Success": "Gönderi kaldırıldı",
+      "Error": "Gönderi kaldırılırken bir hata oluştu"
+    },
+    "Unsticky": {
+      "Title": "Yapışkanı Kaldır",
+      "Description": "Gönderinin yapışkanını kaldır",
+      "Success": "Yapışkanlık kaldırıldı",
+      "Error": "Yapışkanlık kaldırılırken bir hata oluştu"
+    },
+    "Sticky": {
+      "Title": "Yapışkan",
+      "Description": "Gönderiyi yapışkan yap",
+      "Success": "Gönderi yapışkan yapıldı",
+      "Error": "Gönderiyi yapışkan yaparken bir hata oluştu"
+    },
+    "Promote": {
+      "Title": "Mod'luğa yükselt",
+      "Description": "Kullanıcıyı mod yap",
+      "Success": "Kullanıcı mod yapıldı",
+      "Error": "Kullanıcı mod yapılırken bir hata oluştu"
+    },
+    "Demote": {
+      "Title": "Mod'luktan Çıkar",
+      "Description": "Kullanıcıyı mod'luktan çıkar",
+      "Success": "Kullanıcı mod'luktan çıkarıldı",
+      "Error": "Kullanıcı mod'luktan çıkarılırken bir hata oluştu"
+    },
+    "PromoteAdmin": {
+      "Title": "Yönetici yap",
+      "Description": "Kullanıcıyı yönetici yap",
+      "Success": "Kullanıcı yönetici yapıldı",
+      "Error": "Kullanıcı yönetici yapılırken bir hata oluştu"
+    },
+    "DemoteAdmin": {
+      "Title": "Yöneticiliği kaldır",
+      "Description": "Kullanıcının yöneticiliğini kaldır",
+      "Success": "Kullanıcının yöneticiliği kaldırıldı",
+      "Error": "Kullanıcının yöneticiliği kaldırırken bir hata oluştu"
+    },
+    "By": "üyeler"
+  },
+  "CreateGame": {
+    "Create": {
+      "Title": "Yarat",
+      "Description": "Sitede yeni bir oyun sayfası yarat",
+      "Success": "Oyun başarıyla yaratıldı!",
+      "Error": "Oyun yaratılırken bir hata oluştu"
+    },
+    "Edit": {
+      "Title": "Oyunu Düzenle",
+      "Description": "Oyununuzun sayfasını düzenleyin"
+    },
+    "Name": {
+      "Title": "Oyun İsmi",
+      "Description": "Oyununuza verdiğiniz isim",
+      "Placeholder": "Oyununuzun ismini girn",
+      "Error": "Lütfen uygun bir başlık giriniz"
+    },
+    "Slug": {
+      "Title": "Oyun Slug'ı",
+      "Description": "Bu URL'nizde kullanılacak:",
+      "Placeholder": "oyununuzun-ismi"
+    },
+    "Category": {
+      "Title": "Oyun Kategorisi",
+      "Description": "Oyunun yer alacağı jam kategorisi"
+    },
+    "Description": {
+      "Title": "Oyun Açıklaması",
+      "Description": "Oyun sayfanızın içerik kısmı"
+    },
+    "Short": {
+      "Title": "Kısa Açıklama",
+      "Description": "Aramalarda ve başka yerlerde çıkan oyunun kısa açıklaması ( maks 155 karakter)",
+      "Placeholder": "Kısa bir açıklama girin"
+    },
+    "Theme": {
+      "Title": "Tema Kullanımı",
+      "Description": "Bu açıklama diğer kullanıcılar sizin temanızı oylarken gsterilecek. Oyununuz temayı nasıl sağlıyor?",
+      "Placeholder": "Tema kullanım açıklaması girin (opsiyonel)"
+    },
+    "Thumbnail": {
+      "Title": "Küçük resim",
+      "Description": "Kullanıcıların oyunlara göz atarken görecekleri görsel (360x200)"
+    },
+    "Banner": {
+      "Title": "Afiş",
+      "Description": "Oyun sayfasında ve arama sonuçlarında gösterilir (1468 x 240)"
+    },
+    "Links": {
+      "Title": "Bağlantılar",
+      "Description": "Oyununuzu bir depolama sayfasına yükleyin(mesela itch.io) ve buraya insanların oynayabilmesi için bağlantısını girin",
+      "Placeholder": "https://ornek.com",
+      "Add": "Bağlantı Ekle",
+      "Error": "Lütfen uygun bir URL giriniz. http:// veya https:// ile başlamalı"
+    },
+    "Tags": {
+      "Title": "Etiketler",
+      "Description": "Filtrelerde çıkması için oyun motoru, genre, vb... gibi etiketler ekleyin."
+    },
+    "Flags": {
+      "Title": "İçerik Uyarıları",
+      "Description": "Oyununuzun içerebileceği şeyler konusunda uyarılar ekleyin"
+    },
+    "RatingCategories": {
+      "Title": "Kategori Seçimleri",
+      "Description": "Oy almak ve sıralamaya girmek istediğiniz kategorileri seçin"
+    },
+    "Leaderboards": {
+      "Title": "Skor Tabloları",
+      "Description": "İnsanların oyununuza yüksek skorları ekleyebildikleri skor tabloları. (skorlar resim yükleyerek beyan usulü eklenir)",
+      "Add": "Skor Tablosu Ekle"
+    },
+    "Soundtrack": {
+      "Title": "Oyun Müziği",
+      "Description": "Sayfayı gezerken insanların dinleyebileceği oyununuzun müzikleri",
+      "Add": "Şarkı Ekle"
+    },
+    "Achievements": {
+      "Title": "Başarımlar",
+      "Description": "İnsanların oyununuzda bazı hedeflere ulaştığını listeleyen kısım (örnek: gizli tavuğu bul). Beyan usulü çalışır",
+      "Add": "Başarım Ekle"
+    },
+    "CreatePublish": "Yarat & Yayınla",
+    "Publish": "Yayınla",
+    "Unpublish": "Yayından Kaldır",
+    "Update": {
+      "Title": "GÜncelle",
+      "Success": "Oyun başarıyla güncellendi"
+    },
+    "Loading": {
+      "Title": "Yükleniyor...",
+      "Description": "Düzenleme formu yükleniyor..."
+    },
+    "NotLogged": "Siteye giriş yapmamışsınız"
+  },
+  "CreateLeaderboard": {
+    "Name": {
+      "Title": "Skor Tablosu İsmi",
+      "Description": "Skor tablosu sekmesinde gözükecek isim. Tablonun neyle ilgili olduğunu açıklamalı (örnek: herhangi%, ölüm%)",
+      "Placeholder": "Bir isim girin"
+    },
+    "UsersPerPage": {
+      "Title": "Sayfa başına kullanıcı",
+      "Description": "Tabloda sayfa başına gösterilecek kullanıcı sayısı"
+    },
+    "Type": {
+      "Title": "Skor Tablosu Tipi",
+      "Description": "Skor tablosunun nasıl sıralandığı ve dizildiği"
+    },
+    "Decimals": {
+      "Title": "Ondalık sayılar",
+      "Description": "Skorun desteklediği ondalık basamak sayısı"
+    },
+    "Advanced": {
+      "Title": "Gelişmiş Seçenekler",
+      "Description": "Skor tablosunda daha çok kontrole sahip olmak için seçenekler"
+    },
+    "Highest": {
+      "Title": "Sadece En Yüksek",
+      "Description": "Sadece her oyuncunun en yüksek skorunu gösterir"
+    }
+  },
+  "GameCategory": {
+    "Regular": {
+      "Title": "Normal",
+      "Description": "Normal jam kategorisi"
+    },
+    "Oda": {
+      "Title": "Tek Geliştirici Ordusu (O.D.A)",
+      "Description": "Tek geliştirici, üçüncü parti assetler yasak"
+    },
+    "Extra": {
+      "Title": "Ekstra",
+      "Description": "Oylama sırasında da yüklenebilen oyunlar. Sıralamaya giremez"
+    }
+  },
+  "RatingCategory": {
+    "Gameplay": {
+      "Title": "Oynanış",
+      "Description": "Oyunu oynarken ne kadar eğlendiğiniz ve mekaniklerin ne kadar tatmin edici olduğu."
+    },
+    "Audio": {
+      "Title": "Ses",
+      "Description": "Oyunun ses kalitesi veya ses tasarımının ne kadar etkili olduğu."
+    },
+    "Graphics": {
+      "Title": "Grafikler",
+      "Description": "Oyunun görsel kalitesi ve görsel stilinin ne kadar başarılı olduğu."
+    },
+    "Creativity": {
+      "Title": "Yaratıcılık",
+      "Description": "Benzersizlik, özgünlük, yenilik ve sürpriz unsuru."
+    },
+    "Emotional": {
+      "Title": "Duygusal Aktarım",
+      "Description": "Duygusal(üzüntü,korku,vb...) veya mizahi unsurların ne kadar başarılı bir şekilde aktarıldığı."
+    },
+    "Overall": {
+      "Title": "Genel",
+      "Description": "Oyunun genel değerlendirmesi, tüm kategorilerin ne kadar iyi bir araya geldiği."
+    },
+    "Theme": {
+      "Title": "Tema",
+      "Description": "Oyunun temayı ele alış biçimi ve temanın ne kadar iyi kullanılıp uygulandığı."
+    }
+  },
+  "LeaderboardType": {
+    "Score": {
+      "Title": "Skor",
+      "Description": "En Yüksek Skor"
+    },
+    "Golf": {
+      "Title": "Golf",
+      "Description": "En Düşük Skor"
+    },
+    "Speedrun": {
+      "Title": "Speedrun",
+      "Description": "En Düşük Zaman"
+    },
+    "Endurance": {
+      "Title": "Dayanıklılık",
+      "Description": "En Yüksek Zaman"
+    }
+  },
+  "General": {
+    "NoDescription": "Açıklama yok"
   }
 }
