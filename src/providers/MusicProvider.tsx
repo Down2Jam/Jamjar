@@ -299,7 +299,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
           song: value.current?.url || "",
           name: value.current?.name || "",
           artist: value.current?.composer.name || "",
-          thumbnail: value.current?.image || "/images/D2J_Icon.png",
+          thumbnail: value.current?.game.thumbnail || "/images/D2J_Icon.png",
           game: value.current?.game.name || "",
         },
       }}

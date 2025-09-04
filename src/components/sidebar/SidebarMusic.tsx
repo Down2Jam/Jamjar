@@ -40,7 +40,7 @@ export default function SidebarMusic() {
                 key={index}
                 name={track.name}
                 artist={track.composer.name}
-                thumbnail={track.image || "/images/D2J_Icon.png"}
+                thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
                 game={track.game.name}
                 song={track.url}
               />
