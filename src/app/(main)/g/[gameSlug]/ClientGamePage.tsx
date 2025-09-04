@@ -10,7 +10,6 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
-  Tooltip,
   useDisclosure,
   User,
 } from "@heroui/react";
@@ -68,6 +67,9 @@ import { Input } from "@/framework/Input";
 import { Link } from "@/framework/Link";
 import { useTranslations } from "next-intl";
 import Text from "@/framework/Text";
+import Tooltip from "@/framework/Tooltip";
+import SidebarSong from "@/components/sidebar/SidebarSong";
+import { BASE_URL } from "@/requests/config";
 
 export default function ClientGamePage({
   params,
@@ -771,6 +773,178 @@ export default function ClientGamePage({
                 </Tabs>
               </div>
             )}
+            {game.achievements && game.achievements.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  ACHIEVEMENTS
+                </p>
+
+                <Text color="textFaded" size="xs">
+                  You&apos;ve unlocked{" "}
+                  {
+                    game.achievements.filter(
+                      (achievement) =>
+                        achievement.users.filter(
+                          (user2) => user?.id === user2.id
+                        ).length > 0
+                    ).length
+                  }
+                  /{game.achievements.length}
+                </Text>
+
+                {game.achievements.map((achievement) => (
+                  <div
+                    key={achievement.id}
+                    style={{
+                      backgroundColor: colors["base"],
+                    }}
+                    className="w-fit h-fit"
+                  >
+                    <Tooltip
+                      content={
+                        <Hstack>
+                          <Image
+                            src={achievement.image || "/images/D2J_Icon.png"}
+                            width={48}
+                            height={48}
+                            alt="Achievement"
+                            className="rounded-xl"
+                          />
+                          <Vstack align="start" gap={0}>
+                            <Text color="text">{achievement.name}</Text>
+                            <Text color="textFaded" size="xs">
+                              {achievement.description}
+                            </Text>
+                            <Text
+                              color={
+                                achievement.users.filter(
+                                  (user2) => user?.id === user2.id
+                                ).length > 0
+                                  ? "red"
+                                  : "green"
+                              }
+                              size="xs"
+                            >
+                              {achievement.users.filter(
+                                (user2) => user?.id === user2.id
+                              ).length > 0
+                                ? "Click to mark as unachieved"
+                                : "Click to mark as achieved"}
+                            </Text>
+                          </Vstack>
+                        </Hstack>
+                      }
+                    >
+                      <button
+                        onClick={async () => {
+                          if (user) {
+                            if (
+                              achievement.users.filter(
+                                (user2) => user?.id === user2.id
+                              ).length > 0
+                            ) {
+                              const res = fetch(`${BASE_URL}/achievement`, {
+                                body: JSON.stringify({
+                                  achievementId: achievement.id,
+                                }),
+                                method: "DELETE",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  authorization: `Bearer ${getCookie("token")}`,
+                                },
+                                credentials: "include",
+                              });
+
+                              if ((await res).ok) {
+                                achievement.users = achievement.users.filter(
+                                  (user2) => user?.id !== user2.id
+                                );
+                                setGame({
+                                  ...game,
+                                  achievements: game.achievements,
+                                });
+                              }
+                            } else {
+                              const res = fetch(`${BASE_URL}/achievement`, {
+                                body: JSON.stringify({
+                                  achievementId: achievement.id,
+                                }),
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  authorization: `Bearer ${getCookie("token")}`,
+                                },
+                                credentials: "include",
+                              });
+
+                              if ((await res).ok) {
+                                achievement.users = [
+                                  ...achievement.users,
+                                  user,
+                                ];
+                                setGame({
+                                  ...game,
+                                  achievements: game.achievements,
+                                });
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <Image
+                          src={achievement.image || "/images/D2J_Icon.png"}
+                          width={48}
+                          height={48}
+                          alt="Achievement"
+                          style={{
+                            opacity:
+                              achievement.users.filter(
+                                (user2) => user?.id === user2.id
+                              ).length > 0
+                                ? 1
+                                : 0.5,
+                            filter:
+                              achievement.users.filter(
+                                (user2) => user?.id === user2.id
+                              ).length > 0
+                                ? ""
+                                : "grayscale(1)",
+                          }}
+                        />
+                      </button>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            )}
+            {game.tracks && game.tracks.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  MUSIC
+                </p>
+
+                {game.tracks.map((track) => (
+                  <SidebarSong
+                    key={track.id}
+                    name={track.name}
+                    artist={track.composer.name}
+                    thumbnail={track.image ?? "/images/D2J_Icon.png"}
+                    game={track.game.name}
+                    song={track.url}
+                  />
+                ))}
+              </div>
+            )}
             <Vstack align="start">
               <p
                 className="text-xs"
@@ -809,10 +983,7 @@ export default function ClientGamePage({
                   ).length /
                     (game.ratingCategories.length + ratingCategories.length)
                 ) < 5 && (
-                  <Tooltip
-                    className="text-red-500"
-                    content="This game needs 5 ratings received in order to be ranked after the rating period"
-                  >
+                  <Tooltip content="This game needs 5 ratings received in order to be ranked after the rating period">
                     <AlertTriangle size={16} className="text-red-500" />
                   </Tooltip>
                 )}
@@ -851,10 +1022,7 @@ export default function ClientGamePage({
                     0
                   )
                 ) < 5 && (
-                  <Tooltip
-                    content="This game needs 5 ratings given in order to be ranked after the rating period"
-                    className="text-red-500"
-                  >
+                  <Tooltip content="This game needs 5 ratings given in order to be ranked after the rating period">
                     <AlertTriangle
                       size={16}
                       style={{
@@ -1120,7 +1288,7 @@ function StarRow({
         ))}
       </div>
       <p className="text-[#666] dark:text-[#ccc]">{name}</p>
-      <Tooltip content={description} className="text-[#333] dark:text-[#ccc]">
+      <Tooltip content={description}>
         <CircleHelp size={16} className="text-[#ccc] dark:text-[#333]" />
       </Tooltip>
       {text && (
@@ -1131,12 +1299,8 @@ function StarRow({
               <p>{text}</p>
             </div>
           }
-          className="text-[#333] dark:text-[#ccc] max-w-96"
         >
-          <MessageCircleMore
-            size={16}
-            className="text-[#ccc] dark:text-[#333]"
-          />
+          <MessageCircleMore size={16} />
         </Tooltip>
       )}
     </div>

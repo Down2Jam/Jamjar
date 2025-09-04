@@ -17,6 +17,7 @@ import {
 import { useTheme } from "./SiteThemeProvider";
 import Text from "@/framework/Text";
 import { Hstack, Vstack } from "@/framework/Stack";
+import { TrackType } from "@/types/TrackType";
 
 type Track = {
   name: string;
@@ -25,184 +26,6 @@ type Track = {
   game: string;
   song: string;
 };
-
-const music = [
-  {
-    name: "Main Theme",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/8vu7cm9a.bmp",
-    game: "Sammich",
-    song: "Sammich.ogg",
-  },
-  {
-    name: "Emmett The Loopwalker",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/Emmet.png",
-    game: "Loopwalker",
-    song: "Emmet.ogg",
-  },
-  {
-    name: "Cootsmania",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/LDcA_C.png",
-    game: "Cootsmania",
-    song: "Cootsmania.mp3",
-  },
-  {
-    name: "Cool Track, Fun Track",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/H6Bcjg.png",
-    game: "Ryder Funk",
-    song: "Cool Track, Fun Track.ogg",
-  },
-  {
-    name: "Horse Soop All the Way",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/H6Bcjg.png",
-    game: "Ryder Funk",
-    song: "Horse Soop All the Way.ogg",
-  },
-  {
-    name: "Death Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Death Ante.ogg",
-  },
-  {
-    name: "Easy Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Easy Ante.ogg",
-  },
-  {
-    name: "First Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "First Ante.ogg",
-  },
-  {
-    name: "Hard Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Hard Ante.ogg",
-  },
-  {
-    name: "Legendary Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Legendary Ante.ogg",
-  },
-  {
-    name: "Medium Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Medium Ante.ogg",
-  },
-  {
-    name: "Shop 1",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Shop 1.ogg",
-  },
-  {
-    name: "Shop 2",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Shop 2.ogg",
-  },
-  {
-    name: "Very Easy Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Very Easy Ante.ogg",
-  },
-  {
-    name: "Very Hard Ante",
-    artist: "Brainoid",
-    thumbnail: "/images/test-images/5BiQKi.png",
-    game: "Replicat",
-    song: "Very Hard Ante.ogg",
-  },
-  {
-    name: "Rocket Mobilization",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "01_Rocket Mobilization.mp3",
-  },
-  {
-    name: "Global Technical Progress",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "02_Global Technical Progress.mp3",
-  },
-  {
-    name: "Celestial Simulations",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "03_Celestial Simulations.mp3",
-  },
-  {
-    name: "Training Complexities",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "04_Training Complexities.mp3",
-  },
-  {
-    name: "Last Moments on Terra",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "05_Last Moments on Terra.mp3",
-  },
-  {
-    name: "Launch Anticipation",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "06_Launch Anticipation.mp3",
-  },
-  {
-    name: "Leaving Terra",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "07_Leaving Terra.mp3",
-  },
-  {
-    name: "Traveling Through Local Space",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "08_Traveling Through Local Space.mp3",
-  },
-  {
-    name: "Positive Reflections",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "09_Positive Reflections.mp3",
-  },
-  {
-    name: "Mission Completion",
-    artist: "Conduit",
-    thumbnail: "/images/test-images/conduit.png",
-    game: "Leaving Terra",
-    song: "10_Mission Completion.mp3",
-  },
-];
 
 type MusicContextValue = {
   audioEl: HTMLAudioElement | null;
@@ -240,13 +63,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   >("autoplay");
   const repeatStateRef = useRef(repeatState);
   const [shown, setShown] = useState<boolean>(true);
+  const [music, setMusic] = useState<TrackType[]>([]);
 
   const playIndex = useCallback(
     async (i: number) => {
       if (!audioRef.current || !music[i]) return;
       const audio = audioRef.current;
       const track = music[i];
-      const src = srcFor(track);
+      const src = track.url;
       if (audio.src !== src) audio.src = src;
       audio.volume = volume;
       setCurrentIndex(i);
@@ -254,7 +78,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
       setShown(true);
     },
-    [volume]
+    [volume, music]
   );
 
   useEffect(() => {
@@ -293,7 +117,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
     setFwdStack([]);
     await playIndex(nextIdx);
-  }, [currentIndex, fwdStack.length, playIndex]);
+  }, [currentIndex, fwdStack.length, playIndex, music.length]);
 
   useEffect(() => {
     nextRef.current = next;
@@ -313,6 +137,15 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     audioRef.current = audio;
     audio.preload = "auto";
     audio.crossOrigin = "anonymous";
+
+    async function fetchData() {
+      const res = await fetch(`${BASE_URL}/tracks`);
+      const json = await res.json();
+
+      setMusic(json.data);
+    }
+
+    fetchData();
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
@@ -388,14 +221,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
   }, [repeatState]);
 
-  const srcFor = (t: Track) =>
-    `${BASE_URL}/music/${encodeURIComponent(t.song)}`;
-
   const current = currentIndex == null ? null : music[currentIndex];
 
   const playItem = useCallback(
     async (t: Track) => {
-      const i = music.findIndex((x) => x.song === t.song);
+      const i = music.findIndex((x) => x.url === t.song);
       if (i >= 0) {
         setBackStack((bs) =>
           currentIndex == null || bs[bs.length - 1] === currentIndex
@@ -408,7 +238,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       }
       if (!audioRef.current) return;
       const audio = audioRef.current;
-      audio.src = srcFor(t);
+      audio.src = t.song;
       audio.volume = volume;
       setBackStack((bs) =>
         currentIndex == null || bs[bs.length - 1] === currentIndex
@@ -419,7 +249,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       setCurrentIndex(null);
       await audio.play();
     },
-    [currentIndex, playIndex, volume]
+    [currentIndex, playIndex, volume, music]
   );
 
   const value = useMemo(
@@ -462,7 +292,18 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <MusicContext.Provider value={value}>
+    <MusicContext.Provider
+      value={{
+        ...value,
+        current: {
+          song: value.current?.url || "",
+          name: value.current?.name || "",
+          artist: value.current?.composer.name || "",
+          thumbnail: value.current?.image || "/images/D2J_Icon.png",
+          game: value.current?.game.name || "",
+        },
+      }}
+    >
       {children}
       <MiniPlayer />
     </MusicContext.Provider>

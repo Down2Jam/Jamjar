@@ -30,7 +30,7 @@ import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "@heroui/react";
 import Image from "next/image";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import Select, { StylesConfig } from "react-select";
 import { Switch } from "@/framework/Switch";
 import { getIcon } from "@/helpers/icon";
@@ -38,6 +38,11 @@ import { Textarea } from "@/framework/Textarea";
 import Editor from "@/components/editor";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { searchUsers } from "@/requests/user";
+import { UserType } from "@/types/UserType";
+import { TrackType } from "@/types/TrackType";
+import { useTheme } from "@/providers/SiteThemeProvider";
+import { debounce } from "lodash";
 
 const LB_ICON: Record<LeaderboardTypeType, IconName> = {
   SCORE: "trophy",
@@ -47,6 +52,15 @@ const LB_ICON: Record<LeaderboardTypeType, IconName> = {
 };
 
 const lbIconFor = (t: LeaderboardTypeType): IconName => LB_ICON[t] ?? "trophy";
+
+type SongEdit = {
+  id: number;
+  slug: string;
+  name: string;
+  url: string;
+  composerId: number | null;
+  composer?: Pick<UserType, "id" | "name" | "slug" | "profilePicture"> | null;
+};
 
 export default function GameEditingForm({
   game = null,
@@ -95,6 +109,14 @@ export default function GameEditingForm({
   const router = useRouter();
   const t = useTranslations();
 
+  const [songs, setSongs] = useState<SongEdit[]>([]);
+  const [artistQuery, setArtistQuery] = useState<Record<number, string>>({});
+  const [artistResults, setArtistResults] = useState<
+    Record<number, UserType[]>
+  >({});
+  const { colors } = useTheme();
+  const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
+
   useEffect(() => {
     setEditGame(!!game);
     setTitle(game?.name || "");
@@ -131,6 +153,22 @@ export default function GameEditingForm({
       game?.majRatingCategories?.map((ratingCategory) => ratingCategory.id) ||
         []
     );
+    const incomingSongs = (game?.tracks || []).map((s: TrackType) => ({
+      id: s.id,
+      slug: s.slug,
+      name: s.name,
+      url: s.url,
+      composerId: s.composerId,
+      composer: s.composer
+        ? {
+            id: s.composer.id,
+            name: s.composer.name,
+            slug: s.composer.slug,
+            profilePicture: s.composer.profilePicture,
+          }
+        : null,
+    })) as SongEdit[];
+    setSongs(incomingSongs);
 
     async function loadData() {
       const teamResponse = await getTeamsUser();
@@ -237,6 +275,64 @@ export default function GameEditingForm({
       .substring(0, 50); // Limit length to 50 characters
   };
 
+  const uploadTo = async (
+    endpoint: "image" | "music",
+    file: File
+  ): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("upload", file);
+    const url =
+      process.env.NEXT_PUBLIC_MODE === "PROD"
+        ? `https://d2jam.com/api/v1/${endpoint}`
+        : `http://localhost:3005/api/v1/${endpoint}`;
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        body: formData,
+        headers: { authorization: `Bearer ${getCookie("token")}` },
+        credentials: "include",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        addToast({ title: data.message ?? "Uploaded" });
+        return data.data as string;
+      }
+      addToast({ title: data?.message ?? `Failed to upload ${endpoint}` });
+      return null;
+    } catch (e) {
+      console.error(e);
+      addToast({ title: `Error uploading ${endpoint}` });
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    console.log(artistResults);
+  }, [artistResults]);
+
+  const doArtistSearch = useMemo(
+    () =>
+      debounce(async (songId: number, q: string) => {
+        if (!q) {
+          setArtistResults((prev) => ({ ...prev, [songId]: [] }));
+          return;
+        }
+        try {
+          const res = await searchUsers(q);
+          if (res.status === 200) {
+            const data = await res.json();
+            setArtistResults((prev) => ({
+              ...prev,
+              [songId]: data as UserType[],
+            }));
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 250),
+    []
+  );
+
   if (!isMounted) return;
 
   if (loading) {
@@ -299,6 +395,37 @@ export default function GameEditingForm({
               platform: link.platform,
             }));
 
+            const payloadSongs = songs.map((s) => ({
+              name: s.name,
+              url: s.url,
+              composerId: s.composerId,
+              id: s.id,
+              slug: s.slug,
+            }));
+
+            for (const song of payloadSongs) {
+              if (!song.composerId) {
+                addToast({
+                  title: `${song.name} is missing a composer`,
+                });
+                return;
+              }
+
+              if (!song.slug) {
+                addToast({
+                  title: `${song.name} is missing a slug`,
+                });
+                return;
+              }
+
+              if (!song.name) {
+                addToast({
+                  title: `${song.name} is missing a name`,
+                });
+                return;
+              }
+            }
+
             const request = editGame
               ? updateGame(
                   prevSlug,
@@ -318,7 +445,8 @@ export default function GameEditingForm({
                   Array.from(flags).map((thing) => allFlags[thing].id),
                   Array.from(tags).map((thing) => allTags[thing].id),
                   leaderboards,
-                  short
+                  short,
+                  payloadSongs
                 )
               : postGame(
                   title,
@@ -338,7 +466,8 @@ export default function GameEditingForm({
                   Array.from(flags).map((thing) => allFlags[thing].id),
                   Array.from(tags).map((thing) => allTags[thing].id),
                   leaderboards,
-                  short
+                  short,
+                  payloadSongs
                 );
 
             const response = await request;
@@ -1207,7 +1336,6 @@ export default function GameEditingForm({
               ))}
               <Button
                 icon="plus"
-                color="green"
                 onClick={() =>
                   setLeaderboards([
                     ...leaderboards,
@@ -1237,57 +1365,267 @@ export default function GameEditingForm({
                   CreateGame.Soundtrack.Description
                 </Text>
               </div>
+
+              {/* List songs */}
+              {songs.length > 0 && (
+                <Vstack className="w-full gap-3" align="stretch">
+                  {songs.map((song) => (
+                    <Card key={song.id}>
+                      <Vstack align="start" className="gap-3">
+                        <Hstack className="w-full justify-between">
+                          <Hstack>
+                            <Icon name="music" />
+                            <Text color="text" weight="semibold">
+                              {song.name || "Untitled track"}
+                            </Text>
+                          </Hstack>
+                          <Button
+                            icon="trash"
+                            color="red"
+                            size="sm"
+                            onClick={() =>
+                              setSongs((prev) =>
+                                prev.filter((s) => s.id !== song.id)
+                              )
+                            }
+                          >
+                            Remove
+                          </Button>
+                        </Hstack>
+
+                        <div className="w-full">
+                          <Text color="text">Song Slug</Text>
+                          <Text color="textFaded" size="xs">
+                            Used in the url for the song
+                          </Text>
+                        </div>
+                        <Input
+                          placeholder="Enter song slug"
+                          value={song.slug}
+                          onValueChange={(val) =>
+                            setSongs((prev) =>
+                              prev.map((s) =>
+                                s.id === song.id ? { ...s, slug: val } : s
+                              )
+                            )
+                          }
+                        />
+                        <div className="w-full">
+                          <Text color="text">Song Name</Text>
+                          <Text color="textFaded" size="xs">
+                            Shown in the soundtrack list.
+                          </Text>
+                        </div>
+                        <Input
+                          placeholder="Enter song name"
+                          value={song.name}
+                          onValueChange={(val) =>
+                            setSongs((prev) =>
+                              prev.map((s) =>
+                                s.id === song.id ? { ...s, name: val } : s
+                              )
+                            )
+                          }
+                        />
+
+                        <div className="w-full">
+                          <Text color="text">Composer</Text>
+                          <Text color="textFaded" size="xs">
+                            The person who made the song (linked to account on
+                            the site)
+                          </Text>
+                        </div>
+
+                        <div className="w-full relative">
+                          <Input
+                            placeholder="Search users..."
+                            value={artistQuery[song.id] ?? ""}
+                            onValueChange={(value) => {
+                              setArtistQuery((prev) => ({
+                                ...prev,
+                                [song.id]: value,
+                              }));
+                              doArtistSearch(song.id, value);
+                            }}
+                          />
+
+                          {(artistResults[song.id]?.length ?? 0) > 0 && (
+                            <Card>
+                              <Vstack align="stretch">
+                                {artistResults[song.id]!.map((u) => (
+                                  <div
+                                    key={u.id}
+                                    className="flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors"
+                                    style={{
+                                      backgroundColor:
+                                        hoveredUserId === u.id
+                                          ? colors["base"]
+                                          : colors["mantle"],
+                                    }}
+                                    onMouseEnter={() => setHoveredUserId(u.id)}
+                                    onMouseLeave={() => setHoveredUserId(null)}
+                                    onClick={() => {
+                                      setSongs((prev) =>
+                                        prev.map((s) =>
+                                          s.id === song.id
+                                            ? {
+                                                ...s,
+                                                composerId: u.id,
+                                                composer: {
+                                                  id: u.id,
+                                                  name: u.name,
+                                                  slug: u.slug,
+                                                  profilePicture:
+                                                    u.profilePicture,
+                                                },
+                                              }
+                                            : s
+                                        )
+                                      );
+                                      // clear query/results for this song
+                                      setArtistQuery((prev) => ({
+                                        ...prev,
+                                        [song.id]: "",
+                                      }));
+                                      setArtistResults((prev) => ({
+                                        ...prev,
+                                        [song.id]: [],
+                                      }));
+                                    }}
+                                  >
+                                    <Hstack>
+                                      <Avatar src={u.profilePicture} />
+                                      <Vstack gap={0} align="start">
+                                        <Text>{u.name}</Text>
+                                        <Text color="textFaded" size="xs">
+                                          {u.short || "General.NoDescription"}
+                                        </Text>
+                                      </Vstack>
+                                    </Hstack>
+                                  </div>
+                                ))}
+                              </Vstack>
+                            </Card>
+                          )}
+
+                          {song.composerId && (
+                            <Hstack className="mt-2 items-center gap-2">
+                              <Avatar
+                                src={song.composer?.profilePicture}
+                                size="sm"
+                              />
+                              <Text size="sm" color="textFaded">
+                                Selected:{" "}
+                                {song.composer?.name ??
+                                  `User #${song.composerId}`}
+                              </Text>
+                              <Button
+                                size="xs"
+                                onClick={() =>
+                                  setSongs((prev) =>
+                                    prev.map((s) =>
+                                      s.id === song.id
+                                        ? {
+                                            ...s,
+                                            composerId: null,
+                                            composer: null,
+                                          }
+                                        : s
+                                    )
+                                  )
+                                }
+                              >
+                                Clear
+                              </Button>
+                            </Hstack>
+                          )}
+                        </div>
+                        <div className="w-full">
+                          <Text color="text">Song</Text>
+                          <Text color="textFaded" size="xs">
+                            The track itself
+                          </Text>
+                        </div>
+                        {song.url && (
+                          <div className="w-full">
+                            <audio
+                              controls
+                              preload="none"
+                              src={song.url}
+                              style={{ width: "100%" }}
+                            />
+                          </div>
+                        )}
+                        <Hstack className="items-center gap-2">
+                          <Button
+                            icon="upload"
+                            size="sm"
+                            onClick={async () => {
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.accept = "audio/*";
+                              input.onchange = async (ev: Event) => {
+                                const file = (ev.target as HTMLInputElement)
+                                  ?.files?.[0];
+                                if (!file) return;
+                                const newUrl = await uploadTo("music", file);
+                                if (!newUrl) return;
+                                setSongs((prev) =>
+                                  prev.map((s) =>
+                                    s.id === song.id
+                                      ? {
+                                          ...s,
+                                          url: newUrl,
+                                          name:
+                                            s.name ||
+                                            file.name.replace(/\.[^/.]+$/, ""),
+                                        }
+                                      : s
+                                  )
+                                );
+                                addToast({ title: "Song replaced" });
+                              };
+                              input.click();
+                            }}
+                          >
+                            Replace Audio
+                          </Button>
+                        </Hstack>
+                      </Vstack>
+                    </Card>
+                  ))}
+                </Vstack>
+              )}
+
+              {/* Add song (upload) */}
               <Button
                 icon="plus"
                 onClick={async () => {
                   const input = document.createElement("input");
                   input.type = "file";
                   input.accept = "audio/*";
-                  input.onchange = async (e: Event) => {
-                    const file = (e.target as HTMLInputElement)?.files?.[0];
+                  input.onchange = async (ev: Event) => {
+                    const file = (ev.target as HTMLInputElement)?.files?.[0];
                     if (!file) return;
-
-                    const formData = new FormData();
-                    formData.append("upload", file);
-
-                    try {
-                      const response = await fetch(
-                        process.env.NEXT_PUBLIC_MODE === "PROD"
-                          ? "https://d2jam.com/api/v1/music"
-                          : "http://localhost:3005/api/v1/music",
-                        {
-                          method: "POST",
-                          body: formData,
-                          headers: {
-                            authorization: `Bearer ${getCookie("token")}`,
-                          },
-                          credentials: "include",
-                        }
-                      );
-
-                      const result = await response.json();
-                      if (response.ok) {
-                        addToast({
-                          title: "Song uploaded",
-                        });
-                        console.log("Upload successful:", result);
-                      } else {
-                        addToast({
-                          title: "Upload failed",
-                        });
-                        console.error("Upload failed:", result);
-                      }
-                    } catch (error) {
-                      addToast({
-                        title: "Error uploading file",
-                      });
-                      console.error("Error uploading file:", error);
-                    }
+                    const url = await uploadTo("music", file);
+                    if (!url) return;
+                    const baseName = file.name.replace(/\.[^/.]+$/, "");
+                    setSongs((prev) => [
+                      ...prev,
+                      {
+                        id: Date.now(),
+                        url,
+                        name: baseName,
+                        artistUserId: null,
+                        artist: null,
+                        slug: sanitizeSlug(baseName),
+                        composerId: null,
+                      },
+                    ]);
+                    addToast({ title: "Song uploaded" });
                   };
                   input.click();
                 }}
-                color="yellow"
-                disabled
               >
                 CreateGame.Soundtrack.Add
               </Button>
@@ -1299,60 +1637,151 @@ export default function GameEditingForm({
               <div>
                 <Text color="text">CreateGame.Achievements.Title</Text>
                 <Text color="textFaded" size="xs">
-                  CreateGame.Achievements.Title
+                  CreateGame.Achievements.Description
                 </Text>
               </div>
+
+              {achievements.length > 0 && (
+                <Vstack className="w-full gap-3" align="stretch">
+                  {achievements.map((a, idx) => (
+                    <Card key={a.id ?? idx}>
+                      <Vstack align="start" className="gap-3">
+                        <Hstack className="w-full justify-between">
+                          <Hstack>
+                            <Icon name="award" />
+                            <Text color="text" weight="semibold">
+                              {a.name || `Achievement #${idx + 1}`}
+                            </Text>
+                          </Hstack>
+                          <Button
+                            icon="trash"
+                            color="red"
+                            size="sm"
+                            onClick={() =>
+                              setAchievements((prev) =>
+                                prev.filter((_, i) => i !== idx)
+                              )
+                            }
+                          >
+                            Remove
+                          </Button>
+                        </Hstack>
+
+                        <div className="w-full">
+                          <Text color="text">Name</Text>
+                          <Text color="textFaded" size="xs">
+                            The name of the achievement
+                          </Text>
+                        </div>
+                        <Input
+                          placeholder="Enter achievement name"
+                          value={a.name ?? ""}
+                          onValueChange={(val) =>
+                            setAchievements((prev) => {
+                              const copy = [...prev];
+                              copy[idx] = { ...copy[idx], name: val };
+                              return copy;
+                            })
+                          }
+                        />
+
+                        <div className="w-full">
+                          <Text color="text">Description</Text>
+                          <Text color="textFaded" size="xs">
+                            A description of the achievement, what the player
+                            does to earn it (e.g. find the chicken)
+                          </Text>
+                        </div>
+                        <Textarea
+                          placeholder="Enter description"
+                          value={a.description ?? ""}
+                          onValueChange={(val) =>
+                            setAchievements((prev) => {
+                              const copy = [...prev];
+                              copy[idx] = { ...copy[idx], description: val };
+                              return copy;
+                            })
+                          }
+                        />
+
+                        <div className="w-full">
+                          <Text color="text">Image</Text>
+                          <Text color="textFaded" size="xs">
+                            An image corresponding to the achievement
+                          </Text>
+                        </div>
+                        <Hstack className="items-center gap-3">
+                          {a.image && (
+                            <div className="bg-[#222222] h-[80px] w-[80px] relative rounded-lg overflow-hidden">
+                              <Image
+                                src={a.image}
+                                alt={`${a.name || "achievement"} icon`}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <Button
+                            icon="upload"
+                            onClick={async () => {
+                              const input = document.createElement("input");
+                              input.type = "file";
+                              input.accept = "image/*";
+                              input.onchange = async (ev: Event) => {
+                                const file = (ev.target as HTMLInputElement)
+                                  ?.files?.[0];
+                                if (!file) return;
+                                const url = await uploadTo("image", file);
+                                if (!url) return;
+                                setAchievements((prev) => {
+                                  const copy = [...prev];
+                                  copy[idx] = { ...copy[idx], image: url };
+                                  return copy;
+                                });
+                              };
+                              input.click();
+                            }}
+                          >
+                            {a.image ? "Replace Image" : "Upload Image"}
+                          </Button>
+                          {a.image && (
+                            <Button
+                              icon="trash"
+                              color="red"
+                              onClick={() =>
+                                setAchievements((prev) => {
+                                  const copy = [...prev];
+                                  copy[idx] = {
+                                    ...copy[idx],
+                                    image: "",
+                                  };
+                                  return copy;
+                                })
+                              }
+                            >
+                              Remove Image
+                            </Button>
+                          )}
+                        </Hstack>
+                      </Vstack>
+                    </Card>
+                  ))}
+                </Vstack>
+              )}
+
               <Button
                 icon="plus"
-                onClick={async () => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "audio/*";
-                  input.onchange = async (e: Event) => {
-                    const file = (e.target as HTMLInputElement)?.files?.[0];
-                    if (!file) return;
-
-                    const formData = new FormData();
-                    formData.append("upload", file);
-
-                    try {
-                      const response = await fetch(
-                        process.env.NEXT_PUBLIC_MODE === "PROD"
-                          ? "https://d2jam.com/api/v1/music"
-                          : "http://localhost:3005/api/v1/music",
-                        {
-                          method: "POST",
-                          body: formData,
-                          headers: {
-                            authorization: `Bearer ${getCookie("token")}`,
-                          },
-                          credentials: "include",
-                        }
-                      );
-
-                      const result = await response.json();
-                      if (response.ok) {
-                        addToast({
-                          title: "Song uploaded",
-                        });
-                        console.log("Upload successful:", result);
-                      } else {
-                        addToast({
-                          title: "Upload failed",
-                        });
-                        console.error("Upload failed:", result);
-                      }
-                    } catch (error) {
-                      addToast({
-                        title: "Error uploading file",
-                      });
-                      console.error("Error uploading file:", error);
-                    }
-                  };
-                  input.click();
-                }}
-                color="purple"
-                disabled
+                onClick={() =>
+                  setAchievements((prev) => [
+                    ...prev,
+                    {
+                      id: -1,
+                      name: "",
+                      description: "",
+                      image: "",
+                    } as AchievementType,
+                  ])
+                }
               >
                 CreateGame.Achievements.Add
               </Button>

@@ -53,7 +53,14 @@ export async function postGame(
   flags: number[],
   tags: number[],
   leaderboards: LeaderboardType[],
-  short: string
+  short: string,
+  songs: {
+    name: string;
+    url: string;
+    composerId: number | null;
+    id: number;
+    slug: string;
+  }[]
 ) {
   return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -75,6 +82,7 @@ export async function postGame(
       tags,
       leaderboards,
       short,
+      songs,
     }),
     method: "POST",
     headers: {
@@ -106,7 +114,14 @@ export async function updateGame(
   flags: number[],
   tags: number[],
   leaderboards: LeaderboardType[],
-  short: string
+  short: string,
+  songs: {
+    name: string;
+    url: string;
+    composerId: number | null;
+    id: number;
+    slug: string;
+  }[]
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -127,6 +142,7 @@ export async function updateGame(
       tags,
       leaderboards,
       short,
+      songs,
     }),
     method: "PUT",
     headers: {

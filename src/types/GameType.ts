@@ -8,6 +8,7 @@ import { LeaderboardType } from "./LeaderboardType";
 import { RatingCategoryType } from "./RatingCategoryType";
 import { RatingType } from "./RatingType";
 import { TeamType } from "./TeamType";
+import { TrackType } from "./TrackType";
 
 export interface GameType {
   id: number;
@@ -34,6 +35,7 @@ export interface GameType {
   comments: CommentType[];
   majRatingCategories: RatingCategoryType[];
   ratings: RatingType[];
+  tracks: TrackType[];
   jamId: number;
   scores: {
     [name: string]: {
