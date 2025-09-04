@@ -62,7 +62,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     "none" | "repeat" | "autoplay"
   >("autoplay");
   const repeatStateRef = useRef(repeatState);
-  const [shown, setShown] = useState<boolean>(true);
+  const [shown, setShown] = useState<boolean>(false);
   const [music, setMusic] = useState<TrackType[]>([]);
 
   const playIndex = useCallback(
