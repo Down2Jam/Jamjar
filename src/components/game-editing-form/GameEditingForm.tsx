@@ -142,9 +142,8 @@ export default function GameEditingForm({
     );
     setLeaderboards(game?.leaderboards || []);
     setCategory(
-      game?.category || activeJamResponse?.phase == "Rating"
-        ? "EXTRA"
-        : "REGULAR"
+      game?.category ||
+        (activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR")
     );
     setChosenRatingCategories(
       game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || []
@@ -574,39 +573,31 @@ export default function GameEditingForm({
                   {
                     <Dropdown
                       disabled={
-                        (activeJamResponse &&
-                          activeJamResponse.jam &&
-                          (activeJamResponse.jam.id === game?.jam.id ||
-                            !game) &&
-                          (activeJamResponse.phase == "Jamming" ||
-                            activeJamResponse.phase == "Submission" ||
-                            (activeJamResponse.phase == "Rating" &&
-                              !prevSlug))) ||
-                        undefined
+                        activeJamResponse &&
+                        activeJamResponse.jam &&
+                        (activeJamResponse.jam.id === game?.jam.id || !game) &&
+                        (activeJamResponse.phase == "Jamming" ||
+                          activeJamResponse.phase == "Submission")
+                          ? false
+                          : true
                       }
                       selectedValue={category}
                       onSelect={(key) => {
                         setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                       }}
                     >
-                      {activeJamResponse &&
-                      activeJamResponse.phase != "Rating" ? (
-                        <Dropdown.Item
-                          value="REGULAR"
-                          description="GameCategory.Regular.Description"
-                          icon="gamepad2"
-                        >
-                          GameCategory.Regular.Title
-                        </Dropdown.Item>
-                      ) : (
-                        <></>
-                      )}
+                      <Dropdown.Item
+                        value="REGULAR"
+                        description="GameCategory.Regular.Description"
+                        icon="gamepad2"
+                      >
+                        GameCategory.Regular.Title
+                      </Dropdown.Item>
+
                       {teams &&
                       teams.length > 0 &&
                       teams[currentTeam].users &&
-                      teams[currentTeam].users.length == 1 &&
-                      activeJamResponse &&
-                      activeJamResponse.phase != "Rating" ? (
+                      teams[currentTeam].users.length == 1 ? (
                         <Dropdown.Item
                           value="ODA"
                           description="GameCategory.Oda.Description"
