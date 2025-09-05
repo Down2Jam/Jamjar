@@ -29,11 +29,6 @@ export default function ClientGameEditPage({
         if (teamResponse.status == 200) {
           const data = await teamResponse.json();
           const matchingSlugTeam = data.data.filter((team: TeamType) => {
-            console.log(
-              team.game?.slug,
-              gameSlug,
-              team.game?.slug === gameSlug
-            );
             return team.game?.slug === gameSlug;
           });
 
