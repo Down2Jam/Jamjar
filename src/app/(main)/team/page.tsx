@@ -222,6 +222,9 @@ export default function EditTeamPage() {
               </Text>
             </Vstack>
             <Hstack>
+              <Button href="/team-finder" color="green" icon="users">
+                Go to Team Finder
+              </Button>
               <Button
                 onClick={async () => {
                   const successful = await createTeam();
@@ -229,12 +232,9 @@ export default function EditTeamPage() {
                     redirect("/team");
                   }
                 }}
-                color="green"
-                icon="users"
+                color="yellow"
+                icon="userplus"
               >
-                Go to Team Finder
-              </Button>
-              <Button href="/login" color="yellow" icon="userplus">
                 Create Team
               </Button>
             </Hstack>

@@ -30,19 +30,27 @@ import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "@heroui/react";
 import Image from "next/image";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Select, { StylesConfig } from "react-select";
 import { Switch } from "@/framework/Switch";
 import { getIcon } from "@/helpers/icon";
 import { Textarea } from "@/framework/Textarea";
 import Editor from "@/components/editor";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { searchUsers } from "@/requests/user";
+import { getSelf, searchUsers } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { TrackType } from "@/types/TrackType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { debounce } from "lodash";
+import { createTeam } from "@/helpers/team";
 
 const LB_ICON: Record<LeaderboardTypeType, IconName> = {
   SCORE: "trophy",
@@ -116,6 +124,23 @@ export default function GameEditingForm({
   >({});
   const { colors } = useTheme();
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
+  const teamsRef = useRef<TeamType[]>([]);
+  const updateTeams = useCallback(
+    (nextOrFn: TeamType[] | ((prev: TeamType[]) => TeamType[])) => {
+      setTeams((prev) => {
+        const next =
+          typeof nextOrFn === "function"
+            ? (nextOrFn as (prev: TeamType[]) => TeamType[])(prev)
+            : nextOrFn;
+
+        teamsRef.current = next;
+        return next;
+      });
+    },
+    []
+  );
+  const creatingTeamRef = useRef(false);
+  const teamCheckDoneRef = useRef(false);
 
   useEffect(() => {
     setEditGame(!!game);
@@ -180,7 +205,7 @@ export default function GameEditingForm({
         );
 
         if (matchingSlugTeam.length !== 0) {
-          setTeams([matchingSlugTeam, ...filteredTeams]);
+          setTeams([...matchingSlugTeam, ...filteredTeams]);
         } else {
           setTeams(filteredTeams);
         }
@@ -189,6 +214,16 @@ export default function GameEditingForm({
 
     loadData();
   }, [game, allTags, allFlags, activeJamResponse]);
+
+  const refreshTeams = useCallback(async () => {
+    const teamResponse = await getTeamsUser();
+    if (teamResponse.ok) {
+      const { data } = await teamResponse.json();
+      const filtered = data.filter((t: TeamType) => !t.game);
+      updateTeams(filtered);
+      setCurrentTeam((i) => Math.min(i, Math.max(filtered.length - 1, 0)));
+    }
+  }, [updateTeams]);
 
   useEffect(() => {
     const load = async () => {
@@ -212,13 +247,51 @@ export default function GameEditingForm({
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam);
 
+        // always get *fresh* teams before deciding to create one
+        await refreshTeams();
+
+        // If we already handled the team check once in this session (StrictMode), bail.
+        if (teamCheckDoneRef.current) {
+          setLoading(false);
+          return;
+        }
+        teamCheckDoneRef.current = true;
+
+        const response = await getSelf();
+        const localuser = (await response.json()) as UserType;
+
+        if (!localuser) return;
+
+        const hasTeamForJam =
+          !!activeJam?.jam?.id &&
+          localuser.teams.some((t) => t.jamId === activeJam.jam?.id);
+
+        if (!hasTeamForJam && !creatingTeamRef.current) {
+          creatingTeamRef.current = true;
+
+          const alreadyHas = teamsRef.current.some(
+            (t) => t.jamId === activeJam?.jam?.id
+          );
+          if (!alreadyHas) {
+            const created = await createTeam(); // should return truthy or handle 409
+            if (!created) {
+              addToast({ title: "Error while creating team" });
+              redirect("/");
+              return;
+            }
+          }
+
+          creatingTeamRef.current = false;
+          await refreshTeams();
+        }
+
         setLoading(false);
       } catch (error) {
         console.error(error);
       }
     };
     load();
-  }, []);
+  }, [refreshTeams]);
 
   const styles: StylesConfig<
     {
