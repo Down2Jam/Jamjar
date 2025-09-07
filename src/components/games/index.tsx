@@ -1,7 +1,7 @@
 "use client";
 
 import { GameType } from "@/types/GameType";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getGames } from "@/requests/game";
@@ -15,19 +15,40 @@ import { Hstack, Vstack } from "@/framework/Stack";
 import { Card } from "@/framework/Card";
 import Text from "@/framework/Text";
 
+import { getCurrentJam } from "@/helpers/jam";
+import { getJams } from "@/requests/jam";
+
+type JamOption = { id: string; name: string };
+
 export default function Games() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [games, setGames] = useState<GameType[]>();
+  const [user, setUser] = useState<UserType>();
+
+  const sortParam = (searchParams.get("sort") as GameSort) || "random";
   const [sort, setSort] = useState<GameSort>(
     (["newest", "oldest", "random", "leastratings", "danger"].includes(
-      searchParams.get("sort") as GameSort
+      sortParam
     ) &&
-      (searchParams.get("sort") as GameSort)) ||
+      (sortParam as GameSort)) ||
       "random"
   );
-  const router = useRouter();
-  const [user, setUser] = useState<UserType>();
+  const hasUserSelected = useRef(false);
+  const hasAppliedDefault = useRef(false);
+
+  const initialJamParam = useMemo(() => {
+    if (typeof window === "undefined") return "all";
+    const p = new URLSearchParams(window.location.search).get("jam");
+    return p ?? "all";
+  }, []);
+  const [jamId, setJamId] = useState<string>(initialJamParam);
+  const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
+  const [jamDetecting, setJamDetecting] = useState<boolean>(true);
+  const [hasData, setHasData] = useState(false);
+  const [showBusy, setShowBusy] = useState(false);
 
   const sorts: Record<
     GameSort,
@@ -50,41 +71,135 @@ export default function Games() {
     },
   };
 
-  const updateQueryParam = (key: string, value: string) => {
-    const params = new URLSearchParams(window.location.search);
-    if (value) {
-      params.set(key, value);
+  useEffect(() => {
+    let t: number | undefined;
+    if (isLoading || jamDetecting) {
+      t = window.setTimeout(() => setShowBusy(true), 250);
     } else {
-      params.delete(key);
+      setShowBusy(false);
     }
-    router.push(`?${params.toString()}`);
-  };
+    return () => {
+      if (t) clearTimeout(t);
+    };
+  }, [isLoading, jamDetecting]);
+
+  const updateQueryParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(window.location.search);
+      if (value && value !== "all") {
+        params.set(key, value);
+      } else {
+        // Delete when value is "all" to keep URLs clean.
+        params.delete(key);
+      }
+      router.push(`?${params.toString()}`);
+    },
+    [router]
+  );
 
   useEffect(() => {
-    async function getData() {
-      const response = await getSelf();
-      setUser(await response.json());
-    }
-
-    getData();
+    (async () => {
+      try {
+        const response = await getSelf();
+        setUser(await response.json());
+      } catch {}
+    })();
   }, []);
 
   useEffect(() => {
-    const fetchGameData = async () => {
+    let cancelled = false;
+
+    (async () => {
+      setJamDetecting(true);
+      const options: JamOption[] = [{ id: "all", name: "All Jams" }];
+
+      let ratingDefault: string | null = null;
       try {
-        const gameResponse = await getGames(sort);
-        setGames(await gameResponse.json());
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
+        const res = await getCurrentJam();
+        const isRatingPhase = res?.phase === "Rating";
+        const currentJamId = res?.jam?.id?.toString();
+        const currentJamName = res?.jam?.name || "Current Jam";
+
+        if (currentJamId)
+          options.push({ id: currentJamId, name: currentJamName });
+
+        if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
+          ratingDefault = currentJamId ?? null;
+        }
+      } catch {}
+
+      try {
+        if (typeof getJams === "function") {
+          const jr = await getJams();
+          const js = await jr.json();
+          if (Array.isArray(js)) {
+            js.forEach((j) => {
+              const id = String(j?.id ?? "");
+              if (id && j?.name && !options.find((o) => o.id === id)) {
+                options.push({ id, name: j.name });
+              }
+            });
+          }
+        }
+      } catch {}
+
+      if (cancelled) return;
+
+      setJamOptions(options);
+
+      if (
+        !hasAppliedDefault.current &&
+        !hasUserSelected.current &&
+        ratingDefault
+      ) {
+        hasAppliedDefault.current = true;
+        setJamId(ratingDefault);
+
+        const params = new URLSearchParams(window.location.search);
+        params.set("jam", ratingDefault);
+        const qs = params.toString();
+        router.replace(qs ? `?${qs}` : "?");
       }
+
+      setJamDetecting(false);
+    })();
+
+    return () => {
+      cancelled = true;
     };
+  }, [router, initialJamParam]);
 
-    fetchGameData();
-  }, [sort]);
+  useEffect(() => {
+    if (jamDetecting) return;
 
-  if (isLoading)
+    let cancelled = false;
+    (async () => {
+      try {
+        setIsLoading(true);
+        const gameResponse = await getGames(
+          sort,
+          jamId !== "all" ? jamId : undefined
+        );
+        if (cancelled) return;
+        const data = await gameResponse.json();
+        setGames(data);
+        if (Array.isArray(data)) setHasData(true);
+      } catch (error) {
+        if (!cancelled) {
+          console.error(error);
+          setGames(undefined);
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sort, jamId, jamDetecting]);
+
+  if (!hasData && (showBusy || jamDetecting)) {
     return (
       <Vstack>
         <Card className="max-w-96">
@@ -98,32 +213,52 @@ export default function Games() {
         </Card>
       </Vstack>
     );
+  }
 
   return (
     <>
-      <Vstack className="p-4">
-        <Dropdown
-          selectedValue={sort}
-          onSelect={(key) => {
-            setSort(key as GameSort);
-            updateQueryParam("sort", key as string);
-          }}
-        >
-          {Object.entries(sorts).map(([key, sort]) => (
-            <Dropdown.Item
-              key={key}
-              value={key}
-              icon={sort.icon}
-              description={sort.description}
-            >
-              {sort.name}
-            </Dropdown.Item>
-          ))}
-        </Dropdown>
+      <Vstack className="p-4 gap-3">
+        <Hstack className="gap-3 flex-wrap">
+          {/* Sort dropdown */}
+          <Dropdown
+            selectedValue={sort}
+            onSelect={(key) => {
+              setSort(key as GameSort);
+              updateQueryParam("sort", key as string);
+            }}
+          >
+            {Object.entries(sorts).map(([key, sort]) => (
+              <Dropdown.Item
+                key={key}
+                value={key}
+                icon={sort.icon}
+                description={sort.description}
+              >
+                {sort.name}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
+
+          {/* Jam dropdown */}
+          <Dropdown
+            selectedValue={jamId}
+            onSelect={(key) => {
+              const val = key as string;
+              setJamId(val);
+              updateQueryParam("jam", val);
+            }}
+          >
+            {jamOptions.map((j) => (
+              <Dropdown.Item key={j.id} value={j.id} icon="gamepad2">
+                {j.name}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
+        </Hstack>
       </Vstack>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {games ? (
+        {games && games.length > 0 ? (
           games.map((game) => (
             <GameCard
               key={game.id}

@@ -9,6 +9,9 @@ import Text from "@/framework/Text";
 import { Button } from "@/framework/Button";
 import Link from "next/link";
 
+// 👇 Assumes you have these helpers available
+import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
+
 export default function SidebarGames() {
   const [games, setGames] = useState<GameType[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -17,8 +20,22 @@ export default function SidebarGames() {
   useEffect(() => {
     const fetchGameData = async () => {
       try {
-        const gameResponse = await getGames("random");
-        setGames(await gameResponse.json());
+        let jamId: string | undefined;
+
+        try {
+          const active: ActiveJamResponse | null = await getCurrentJam();
+          const phase = active?.phase ?? "";
+          const isRatingWindow =
+            phase === "Jamming" || phase === "Submission" || phase === "Rating";
+
+          if (active?.jam?.id && isRatingWindow) {
+            jamId = active.jam.id.toString();
+          }
+        } catch {}
+
+        const gameResponse = await getGames("random", jamId);
+        const data = await gameResponse.json();
+        setGames(Array.isArray(data) ? data : data?.data ?? []);
       } catch (error) {
         console.error(error);
       } finally {
@@ -30,8 +47,7 @@ export default function SidebarGames() {
   }, []);
 
   if (isLoading) return <></>;
-
-  if (games.length == 0) return <></>;
+  if (games.length === 0) return <></>;
 
   return (
     <>

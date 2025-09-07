@@ -60,7 +60,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [fwdStack, setFwdStack] = useState<number[]>([]);
   const [repeatState, setRepeatState] = useState<
     "none" | "repeat" | "autoplay"
-  >("autoplay");
+  >("none");
   const repeatStateRef = useRef(repeatState);
   const [shown, setShown] = useState<boolean>(false);
   const [music, setMusic] = useState<TrackType[]>([]);

@@ -4,9 +4,11 @@ import SidebarSong from "./SidebarSong";
 import useHasMounted from "@/hooks/useHasMounted";
 import Text from "@/framework/Text";
 import { Button } from "@/framework/Button";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TrackType } from "@/types/TrackType";
 import { BASE_URL } from "@/requests/config";
+
+import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
 
 export default function SidebarMusic() {
   const hasMounted = useHasMounted();
@@ -14,18 +16,47 @@ export default function SidebarMusic() {
 
   useEffect(() => {
     async function loadData() {
-      const res = await fetch(`${BASE_URL}/tracks`);
-      const json = await res.json();
+      try {
+        let jamId: string | undefined;
+        try {
+          const active: ActiveJamResponse | null = await getCurrentJam();
+          const phase = active?.phase ?? "";
+          const inWindow =
+            phase === "Jamming" || phase === "Submission" || phase === "Rating";
+          if (active?.jam?.id && inWindow) {
+            jamId = active.jam.id.toString();
+          }
+        } catch {}
 
-      setMusic(json.data);
+        const qs = new URLSearchParams();
+        if (jamId) qs.set("jamId", jamId);
+
+        const res = await fetch(
+          `${BASE_URL}/tracks${qs.toString() ? `?${qs.toString()}` : ""}`
+        );
+        const json = await res.json();
+        const tracks: TrackType[] = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data)
+          ? json.data
+          : [];
+
+        setMusic(tracks);
+      } catch (err) {
+        console.error(err);
+        setMusic([]);
+      }
     }
 
     loadData();
   }, []);
 
-  if (!hasMounted) return;
+  const featured = useMemo(
+    () => [...music].sort(() => Math.random() - 0.5).slice(0, 5),
+    [music]
+  );
 
-  const featured = [...music].sort(() => Math.random() - 0.5).slice(0, 5);
+  if (!hasMounted) return null;
 
   return (
     <>

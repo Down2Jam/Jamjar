@@ -153,8 +153,13 @@ export async function updateGame(
   });
 }
 
-export async function getGames(sort: string) {
-  return fetch(`${BASE_URL}/games?sort=${sort}`);
+export async function getGames(sort: string, jamId?: string) {
+  const params = new URLSearchParams({ sort });
+  if (jamId !== undefined) {
+    params.set("jamId", jamId);
+  }
+
+  return fetch(`${BASE_URL}/games?${params.toString()}`);
 }
 
 export async function getResults(
