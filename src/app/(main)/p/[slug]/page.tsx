@@ -32,26 +32,11 @@ import { useTranslations } from "next-intl";
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
   const { slug } = useParams();
-  const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState<boolean>(true);
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
   const t = useTranslations();
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches);
-    };
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
 
   useEffect(() => {
     const loadUserAndPosts = async () => {
@@ -128,20 +113,9 @@ export default function PostPage() {
                       {post.tags
                         .filter((tag) => tag.name != "D2Jam")
                         .map((tag: TagType) => (
-                          <Link
-                            href="/"
-                            key={tag.id}
-                            className={`transition-all transform duration-500 ease-in-out ${
-                              !reduceMotion ? "hover:scale-110" : ""
-                            }`}
-                          >
-                            <Chip>
-                              <Hstack>
-                                {tag.icon && <Avatar src={tag.icon} />}
-                                {tag.name}
-                              </Hstack>
-                            </Chip>
-                          </Link>
+                          <Chip key={tag.id}>
+                            <Hstack>{tag.name}</Hstack>
+                          </Chip>
                         ))}
                     </div>
                   ) : (

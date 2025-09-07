@@ -1097,14 +1097,6 @@ export default function GameEditingForm({
                     id: i,
                     label: (
                       <div className="flex gap-2 items-center">
-                        {tag.icon && (
-                          <Avatar
-                            className="w-6 h-6 min-w-6 min-h-6"
-                            size="sm"
-                            src={tag.icon}
-                            classNames={{ base: "bg-transparent" }}
-                          />
-                        )}
                         <p>{tag.name}</p>
                       </div>
                     ),
@@ -1143,7 +1135,6 @@ export default function GameEditingForm({
                     id: i,
                     label: (
                       <div className="flex gap-2 items-center">
-                        {flag.icon && getIcon(flag.icon)}
                         <p>{flag.name}</p>
                       </div>
                     ),
@@ -1229,8 +1220,8 @@ export default function GameEditingForm({
                               }}
                             />
                             <Text color="textFaded" size="xs">
-                              Did you make the majority of the {category3.name}{" "}
-                              content
+                              Did you make the majority of the{" "}
+                              {category3.name.split(".")[1]} content
                             </Text>
                           </Hstack>
                         )}
@@ -1308,10 +1299,10 @@ export default function GameEditingForm({
                     >
                       <Dropdown.Item
                         value="SCORE"
-                        description="LeaderboardType.Endurance.Description"
+                        description="LeaderboardType.Score.Description"
                         icon="trophy"
                       >
-                        LeaderboardType.Endurance.Title
+                        LeaderboardType.Score.Title
                       </Dropdown.Item>
 
                       <Dropdown.Item
@@ -1708,7 +1699,7 @@ export default function GameEditingForm({
               {achievements.length > 0 && (
                 <Vstack className="w-full gap-3" align="stretch">
                   {achievements.map((a, idx) => (
-                    <Card key={a.id ?? idx}>
+                    <Card key={idx}>
                       <Vstack align="start" className="gap-3">
                         <Hstack className="w-full justify-between">
                           <Hstack>

@@ -341,7 +341,7 @@ export default function EditTeamPage() {
           </div>
         )}
         {users?.map((user2) => (
-          <Card key={user2.id} className="min-w-96">
+          <Card key={user2.id} className="min-w-96" href={`/u/${user2.slug}`}>
             <Hstack justify="between">
               <Hstack>
                 <Avatar src={user2.profilePicture} />
@@ -360,7 +360,11 @@ export default function EditTeamPage() {
           </Card>
         ))}
         {invitations?.map((invite) => (
-          <Card key={user.id} className="min-w-96">
+          <Card
+            key={invite.user.id}
+            className="min-w-96"
+            href={`/u/${invite.user.slug}`}
+          >
             <Hstack justify="between">
               <Hstack>
                 <Avatar src={invite.user.profilePicture} />
@@ -369,11 +373,13 @@ export default function EditTeamPage() {
               </Hstack>
               {teams[selectedTeam].ownerId == user.id && (
                 <Button
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
                     setInvitations(
                       invitations.filter((a) => a.id !== invite.id)
-                    )
-                  }
+                    );
+                  }}
                   icon="x"
                 />
               )}

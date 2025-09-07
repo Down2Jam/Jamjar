@@ -3,16 +3,7 @@
 import { use } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
-import {
-  addToast,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  useDisclosure,
-  User,
-} from "@heroui/react";
+import { addToast, User } from "@heroui/react";
 import { Tabs, Tab } from "@/framework/Tabs";
 import {
   Table,
@@ -33,12 +24,8 @@ import {
   Award,
   Badge as LucideBadge,
   CircleHelp,
-  LandPlot,
   MessageCircleMore,
-  Rabbit,
   Star,
-  Trophy,
-  Turtle,
 } from "lucide-react";
 import CommentCard from "@/components/posts/CommentCard";
 import { LeaderboardType } from "@/types/LeaderboardType";
@@ -63,13 +50,40 @@ import { Chip } from "@/framework/Chip";
 import { Hstack, Vstack } from "@/framework/Stack";
 import ThemedProse from "@/components/themed-prose";
 import { Button } from "@/framework/Button";
-import { Input } from "@/framework/Input";
 import { Link } from "@/framework/Link";
 import { useTranslations } from "next-intl";
 import Text from "@/framework/Text";
 import Tooltip from "@/framework/Tooltip";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { BASE_URL } from "@/requests/config";
+import Popover from "@/framework/Popover";
+import Modal from "@/framework/Modal";
+import { IconName } from "@/framework/Icon";
+
+const platformOrder: Record<string, number> = {
+  Windows: 1,
+  MacOS: 2,
+  Linux: 3,
+  Web: 4,
+  Mobile: 5,
+};
+
+function getPlatformIcon(platform: string): IconName | undefined {
+  switch (platform) {
+    case "Linux":
+      return "silinux";
+    case "Mobile":
+      return "smartphone";
+    case "Windows":
+      return "grid2x2";
+    case "MacOS":
+      return "custommacos";
+    case "Web":
+      return "sihtml5";
+    default:
+      return undefined;
+  }
+}
 
 export default function ClientGamePage({
   params,
@@ -84,18 +98,8 @@ export default function ClientGamePage({
   const [selectedScore, setSelectedScore] = useState<string>("");
   const [selectedLeaderboard, setSelectedLeaderboard] =
     useState<LeaderboardType>();
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const {
-    isOpen: isOpen2,
-    onOpen: onOpen2,
-    onOpenChange: onOpenChange2,
-  } = useDisclosure();
-  const [evidenceUrl, setEvidenceUrl] = useState<string>();
-  const [score, setScore] = useState<number>(0);
-  const [milliseconds, setMilliseconds] = useState<number>(0);
-  const [seconds, setSeconds] = useState<number>(0);
-  const [minutes, setMinutes] = useState<number>(0);
-  const [hours, setHours] = useState<number>(0);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isOpen2, setIsOpen2] = useState<boolean>(false);
   const [hoverStars, setHoverStars] = useState<{ [key: number]: number }>({});
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const [selectedStars, setSelectedStars] = useState<{ [key: number]: number }>(
@@ -179,6 +183,31 @@ export default function ClientGamePage({
     return i + "th";
   }
 
+  const uploadEvidence = async (file: File) => {
+    const formData = new FormData();
+    formData.append("upload", file);
+
+    const endpoint =
+      process.env.NEXT_PUBLIC_MODE === "PROD"
+        ? "https://d2jam.com/api/v1/image"
+        : "http://localhost:3005/api/v1/image";
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      body: formData,
+      headers: { authorization: `Bearer ${getCookie("token")}` },
+      credentials: "include",
+    });
+
+    if (!res.ok) {
+      addToast({ title: "Failed to upload image" });
+      throw new Error("Upload failed");
+    }
+    const json = await res.json();
+    addToast({ title: json.message });
+    return json.data as string; // URL
+  };
+
   if (!game) return <div>Loading...</div>;
 
   // Check if the logged-in user is the creator or a contributor
@@ -194,7 +223,7 @@ export default function ClientGamePage({
     <>
       <div
         style={{
-          background: siteTheme.colors["mantle"],
+          backgroundColor: siteTheme.colors["mantle"],
           borderColor: siteTheme.colors["base"],
           color: siteTheme.colors["text"],
         }}
@@ -203,7 +232,7 @@ export default function ClientGamePage({
         <div
           className="h-60 relative"
           style={{
-            background: colors["base"],
+            backgroundColor: colors["base"],
           }}
         >
           {(game.thumbnail || game.banner) && (
@@ -243,6 +272,25 @@ export default function ClientGamePage({
                 }}
               />
             </ThemedProse>
+            <Hstack>
+              {[
+                ...new Set(
+                  game.downloadLinks.sort(
+                    (a, b) =>
+                      (platformOrder[a.platform] ?? 99) -
+                      (platformOrder[b.platform] ?? 99)
+                  )
+                ),
+              ].map((downloadLink) => (
+                <Button
+                  icon={getPlatformIcon(downloadLink.platform)}
+                  key={downloadLink.id}
+                  href={downloadLink.url}
+                >
+                  {downloadLink.platform}
+                </Button>
+              ))}
+            </Hstack>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
             {isEditable && (
@@ -286,9 +334,7 @@ export default function ClientGamePage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {game.tags.map((tag) => (
-                    <Chip key={tag.id} avatarSrc={tag.icon}>
-                      {tag.name}
-                    </Chip>
+                    <Chip key={tag.id}>{tag.name}</Chip>
                   ))}
                 </div>
               </>
@@ -329,14 +375,6 @@ export default function ClientGamePage({
                 </div>
               </>
             )}
-            {/* <div className="flex flex-col gap-2">
-              <p className="text-[#666] dark:text-[#ccc] text-xs">
-                ACHIEVEMENTS
-              </p>
-              <Card>
-                <CardBody className="text-[#333] dark:text-white">N/A</CardBody>
-              </Card>
-            </div> */}
             <div className="flex flex-col gap-3">
               <p
                 className="text-xs"
@@ -346,148 +384,150 @@ export default function ClientGamePage({
               >
                 RATINGS
               </p>
-              {((activeJamResponse &&
-                activeJamResponse?.jam?.id != game.jamId) ||
-                user?.id == 3) && (
-                <>
-                  {Object.keys(game?.scores || {})
-                    .sort(
-                      (a, b) =>
-                        (game.scores[a].placement || 0) -
-                        (game.scores[b].placement || 0)
-                    )
-                    .map((score) => (
-                      <div
-                        key={score}
-                        className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
-                      >
-                        <span
-                          className="text-sm"
-                          style={{
-                            color: colors["textFaded"],
-                          }}
+              {activeJamResponse &&
+                activeJamResponse?.jam?.id != game.jamId && (
+                  <>
+                    {Object.keys(game?.scores || {})
+                      .sort(
+                        (a, b) =>
+                          (game.scores[a].placement || 0) -
+                          (game.scores[b].placement || 0)
+                      )
+                      .map((score) => (
+                        <div
+                          key={score}
+                          className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                         >
-                          {t(score)}:
-                        </span>
-                        <span
-                          style={{
-                            color:
-                              game.scores[score].placement == 1
-                                ? colors["yellow"]
-                                : game.scores[score].placement == 2
-                                ? colors["gray"]
-                                : game.scores[score].placement == 3
-                                ? colors["orange"]
-                                : game.scores[score].placement >= 4 &&
-                                  game.scores[score].placement <= 5
-                                ? colors["blue"]
-                                : game.scores[score].placement >= 6 &&
-                                  game.scores[score].placement <= 10
-                                ? colors["purple"]
-                                : colors["textFaded"],
-                          }}
-                        >
-                          {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
-                          stars
-                        </span>
-                        {game.scores[score].placement && (
                           <span
+                            className="text-sm"
                             style={{
                               color: colors["textFaded"],
                             }}
                           >
-                            ({ordinal_suffix_of(game.scores[score].placement)})
+                            {t(score)}:
                           </span>
-                        )}
-                        <span className="flex items-center justify-center">
-                          {game.scores[score].placement == 1 && (
-                            <Award
-                              size={16}
+                          <span
+                            style={{
+                              color:
+                                game.scores[score].placement == 1
+                                  ? colors["yellow"]
+                                  : game.scores[score].placement == 2
+                                  ? colors["gray"]
+                                  : game.scores[score].placement == 3
+                                  ? colors["orange"]
+                                  : game.scores[score].placement >= 4 &&
+                                    game.scores[score].placement <= 5
+                                  ? colors["blue"]
+                                  : game.scores[score].placement >= 6 &&
+                                    game.scores[score].placement <= 10
+                                  ? colors["purple"]
+                                  : colors["textFaded"],
+                            }}
+                          >
+                            {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
+                            stars
+                          </span>
+                          {game.scores[score].placement && (
+                            <span
                               style={{
-                                color: colors["yellow"],
+                                color: colors["textFaded"],
                               }}
-                            />
+                            >
+                              ({ordinal_suffix_of(game.scores[score].placement)}
+                              )
+                            </span>
                           )}
-                          {game.scores[score].placement == 2 && (
-                            <Award
-                              size={16}
-                              style={{
-                                color: colors["gray"],
-                              }}
-                            />
-                          )}
-                          {game.scores[score].placement == 3 && (
-                            <Award
-                              size={16}
-                              style={{
-                                color: colors["orange"],
-                              }}
-                            />
-                          )}
-                          {game.scores[score].placement >= 4 &&
-                            game.scores[score].placement <= 5 && (
-                              <LucideBadge
-                                size={12}
+                          <span className="flex items-center justify-center">
+                            {game.scores[score].placement == 1 && (
+                              <Award
+                                size={16}
                                 style={{
-                                  color: colors["blue"],
+                                  color: colors["yellow"],
                                 }}
                               />
                             )}
-                          {game.scores[score].placement >= 6 &&
-                            game.scores[score].placement <= 10 && (
-                              <LucideBadge
-                                size={12}
+                            {game.scores[score].placement == 2 && (
+                              <Award
+                                size={16}
                                 style={{
-                                  color: colors["purple"],
+                                  color: colors["gray"],
                                 }}
                               />
                             )}
-                        </span>
-                      </div>
-                    ))}
-                  <div className="w-96 h-60">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="80%"
-                        data={Object.keys(game?.scores || {}).map((score) => ({
-                          subject: t(score),
-                          A: game.scores[score].averageScore / 2,
-                          B: game.scores[score].averageUnrankedScore / 2,
-                          fullMark: 5,
-                        }))}
-                      >
-                        <PolarGrid stroke={colors["crust"]} />
-                        <PolarAngleAxis
-                          dataKey="subject"
-                          tick={{ fill: colors["textFaded"], fontSize: 14 }}
-                        />
-                        <PolarRadiusAxis
-                          domain={[0, 5]}
-                          axisLine={false}
-                          tick={false}
-                        />
-                        <Radar
-                          name="All"
-                          dataKey="B"
-                          stroke={colors["magenta"]}
-                          fill={colors["magentaDark"]}
-                          fillOpacity={0.6}
-                        />
-                        <Radar
-                          name="Ranked"
-                          dataKey="A"
-                          stroke={colors["blue"]}
-                          fill={colors["blueDark"]}
-                          fillOpacity={0.6}
-                        />
-                        <Legend />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </>
-              )}
+                            {game.scores[score].placement == 3 && (
+                              <Award
+                                size={16}
+                                style={{
+                                  color: colors["orange"],
+                                }}
+                              />
+                            )}
+                            {game.scores[score].placement >= 4 &&
+                              game.scores[score].placement <= 5 && (
+                                <LucideBadge
+                                  size={12}
+                                  style={{
+                                    color: colors["blue"],
+                                  }}
+                                />
+                              )}
+                            {game.scores[score].placement >= 6 &&
+                              game.scores[score].placement <= 10 && (
+                                <LucideBadge
+                                  size={12}
+                                  style={{
+                                    color: colors["purple"],
+                                  }}
+                                />
+                              )}
+                          </span>
+                        </div>
+                      ))}
+                    <div className="w-96 h-60">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart
+                          cx="50%"
+                          cy="50%"
+                          outerRadius="80%"
+                          data={Object.keys(game?.scores || {}).map(
+                            (score) => ({
+                              subject: t(score),
+                              A: game.scores[score].averageScore / 2,
+                              B: game.scores[score].averageUnrankedScore / 2,
+                              fullMark: 5,
+                            })
+                          )}
+                        >
+                          <PolarGrid stroke={colors["crust"]} />
+                          <PolarAngleAxis
+                            dataKey="subject"
+                            tick={{ fill: colors["textFaded"], fontSize: 14 }}
+                          />
+                          <PolarRadiusAxis
+                            domain={[0, 5]}
+                            axisLine={false}
+                            tick={false}
+                          />
+                          <Radar
+                            name="All"
+                            dataKey="B"
+                            stroke={colors["magenta"]}
+                            fill={colors["magentaDark"]}
+                            fillOpacity={0.6}
+                          />
+                          <Radar
+                            name="Ranked"
+                            dataKey="A"
+                            stroke={colors["blue"]}
+                            fill={colors["blueDark"]}
+                            fillOpacity={0.6}
+                          />
+                          <Legend />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </>
+                )}
               {isEditable && activeJamResponse?.jam?.id == game.jamId && (
                 <Text size="xs" color="textFaded">
                   You can&apos;t rate your own game
@@ -727,7 +767,7 @@ export default function ClientGamePage({
                                         icon="eye"
                                         onClick={() => {
                                           setSelectedScore(score.evidence);
-                                          onOpen();
+                                          setIsOpen(true);
                                         }}
                                         size="sm"
                                       />
@@ -760,9 +800,7 @@ export default function ClientGamePage({
                           icon="plus"
                           onClick={() => {
                             setSelectedLeaderboard(leaderboard);
-                            setScore(0);
-                            setEvidenceUrl(undefined);
-                            onOpen2();
+                            setIsOpen2(true);
                           }}
                         >
                           Submit Score
@@ -797,129 +835,135 @@ export default function ClientGamePage({
                   /{game.achievements.length}
                 </Text>
 
-                {game.achievements.map((achievement) => (
-                  <div
-                    key={achievement.id}
-                    style={{
-                      backgroundColor: colors["base"],
-                    }}
-                    className="w-fit h-fit"
-                  >
-                    <Tooltip
-                      content={
-                        <Hstack>
+                <Hstack>
+                  {game.achievements.map((achievement) => (
+                    <div
+                      key={achievement.id}
+                      style={{
+                        backgroundColor: colors["base"],
+                      }}
+                      className="w-fit h-fit"
+                    >
+                      <Tooltip
+                        content={
+                          <Hstack>
+                            <Image
+                              src={achievement.image || "/images/D2J_Icon.png"}
+                              width={48}
+                              height={48}
+                              alt="Achievement"
+                              className="rounded-xl"
+                            />
+                            <Vstack align="start" gap={0}>
+                              <Text color="text">{achievement.name}</Text>
+                              <Text color="textFaded" size="xs">
+                                {achievement.description}
+                              </Text>
+                              <Text
+                                color={
+                                  achievement.users.filter(
+                                    (user2) => user?.id === user2.id
+                                  ).length > 0
+                                    ? "red"
+                                    : "green"
+                                }
+                                size="xs"
+                              >
+                                {achievement.users.filter(
+                                  (user2) => user?.id === user2.id
+                                ).length > 0
+                                  ? "Click to mark as unachieved"
+                                  : "Click to mark as achieved"}
+                              </Text>
+                            </Vstack>
+                          </Hstack>
+                        }
+                      >
+                        <button
+                          onClick={async () => {
+                            if (user) {
+                              if (
+                                achievement.users.filter(
+                                  (user2) => user?.id === user2.id
+                                ).length > 0
+                              ) {
+                                const res = fetch(`${BASE_URL}/achievement`, {
+                                  body: JSON.stringify({
+                                    achievementId: achievement.id,
+                                  }),
+                                  method: "DELETE",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    authorization: `Bearer ${getCookie(
+                                      "token"
+                                    )}`,
+                                  },
+                                  credentials: "include",
+                                });
+
+                                if ((await res).ok) {
+                                  achievement.users = achievement.users.filter(
+                                    (user2) => user?.id !== user2.id
+                                  );
+                                  setGame({
+                                    ...game,
+                                    achievements: game.achievements,
+                                  });
+                                }
+                              } else {
+                                const res = fetch(`${BASE_URL}/achievement`, {
+                                  body: JSON.stringify({
+                                    achievementId: achievement.id,
+                                  }),
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    authorization: `Bearer ${getCookie(
+                                      "token"
+                                    )}`,
+                                  },
+                                  credentials: "include",
+                                });
+
+                                if ((await res).ok) {
+                                  achievement.users = [
+                                    ...achievement.users,
+                                    user,
+                                  ];
+                                  setGame({
+                                    ...game,
+                                    achievements: game.achievements,
+                                  });
+                                }
+                              }
+                            }
+                          }}
+                        >
                           <Image
                             src={achievement.image || "/images/D2J_Icon.png"}
                             width={48}
                             height={48}
                             alt="Achievement"
-                            className="rounded-xl"
-                          />
-                          <Vstack align="start" gap={0}>
-                            <Text color="text">{achievement.name}</Text>
-                            <Text color="textFaded" size="xs">
-                              {achievement.description}
-                            </Text>
-                            <Text
-                              color={
+                            style={{
+                              opacity:
                                 achievement.users.filter(
                                   (user2) => user?.id === user2.id
                                 ).length > 0
-                                  ? "red"
-                                  : "green"
-                              }
-                              size="xs"
-                            >
-                              {achievement.users.filter(
-                                (user2) => user?.id === user2.id
-                              ).length > 0
-                                ? "Click to mark as unachieved"
-                                : "Click to mark as achieved"}
-                            </Text>
-                          </Vstack>
-                        </Hstack>
-                      }
-                    >
-                      <button
-                        onClick={async () => {
-                          if (user) {
-                            if (
-                              achievement.users.filter(
-                                (user2) => user?.id === user2.id
-                              ).length > 0
-                            ) {
-                              const res = fetch(`${BASE_URL}/achievement`, {
-                                body: JSON.stringify({
-                                  achievementId: achievement.id,
-                                }),
-                                method: "DELETE",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  authorization: `Bearer ${getCookie("token")}`,
-                                },
-                                credentials: "include",
-                              });
-
-                              if ((await res).ok) {
-                                achievement.users = achievement.users.filter(
-                                  (user2) => user?.id !== user2.id
-                                );
-                                setGame({
-                                  ...game,
-                                  achievements: game.achievements,
-                                });
-                              }
-                            } else {
-                              const res = fetch(`${BASE_URL}/achievement`, {
-                                body: JSON.stringify({
-                                  achievementId: achievement.id,
-                                }),
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  authorization: `Bearer ${getCookie("token")}`,
-                                },
-                                credentials: "include",
-                              });
-
-                              if ((await res).ok) {
-                                achievement.users = [
-                                  ...achievement.users,
-                                  user,
-                                ];
-                                setGame({
-                                  ...game,
-                                  achievements: game.achievements,
-                                });
-                              }
-                            }
-                          }
-                        }}
-                      >
-                        <Image
-                          src={achievement.image || "/images/D2J_Icon.png"}
-                          width={48}
-                          height={48}
-                          alt="Achievement"
-                          style={{
-                            opacity:
-                              achievement.users.filter(
-                                (user2) => user?.id === user2.id
-                              ).length > 0
-                                ? 1
-                                : 0.5,
-                            filter:
-                              achievement.users.filter(
-                                (user2) => user?.id === user2.id
-                              ).length > 0
-                                ? ""
-                                : "grayscale(1)",
-                          }}
-                        />
-                      </button>
-                    </Tooltip>
-                  </div>
-                ))}
+                                  ? 1
+                                  : 0.5,
+                              filter:
+                                achievement.users.filter(
+                                  (user2) => user?.id === user2.id
+                                ).length > 0
+                                  ? ""
+                                  : "grayscale(1)",
+                            }}
+                          />
+                        </button>
+                      </Tooltip>
+                    </div>
+                  ))}
+                </Hstack>
               </div>
             )}
             {game.tracks && game.tracks.length > 0 && (
@@ -983,7 +1027,10 @@ export default function ClientGamePage({
                   ).length /
                     (game.ratingCategories.length + ratingCategories.length)
                 ) < 5 && (
-                  <Tooltip content="This game needs 5 ratings received in order to be ranked after the rating period">
+                  <Tooltip
+                    content="This game needs 5 ratings received in order to be ranked after the rating period"
+                    position="top"
+                  >
                     <AlertTriangle size={16} className="text-red-500" />
                   </Tooltip>
                 )}
@@ -1022,7 +1069,10 @@ export default function ClientGamePage({
                     0
                   )
                 ) < 5 && (
-                  <Tooltip content="This game needs 5 ratings given in order to be ranked after the rating period">
+                  <Tooltip
+                    content="This game needs 5 ratings given in order to be ranked after the rating period"
+                    position="top"
+                  >
                     <AlertTriangle
                       size={16}
                       style={{
@@ -1033,193 +1083,152 @@ export default function ClientGamePage({
                 )}
               </Hstack>
             </Vstack>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-              <ModalContent>
-                {(onClose) => (
-                  <>
-                    <ModalBody className="min-h-60">
-                      <Image
-                        src={selectedScore}
-                        alt="Evidence image"
-                        fill
-                        objectFit="contain"
-                      />
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button color="red" onClick={onClose}>
-                        Close
-                      </Button>
-                    </ModalFooter>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
-            <Modal isOpen={isOpen2} onOpenChange={onOpenChange2}>
-              <ModalContent>
-                {(onClose) => (
-                  <>
-                    <ModalHeader className="flex items-center gap-2">
-                      {selectedLeaderboard?.type == "SCORE" ? (
-                        <Trophy />
-                      ) : selectedLeaderboard?.type == "GOLF" ? (
-                        <LandPlot />
-                      ) : selectedLeaderboard?.type == "SPEEDRUN" ? (
-                        <Rabbit />
-                      ) : (
-                        <Turtle />
-                      )}
-                      <p>{selectedLeaderboard?.name}</p>
-                    </ModalHeader>
-                    <ModalBody>
-                      {(selectedLeaderboard?.type == "SPEEDRUN" ||
-                        selectedLeaderboard?.type == "ENDURANCE") && (
-                        <>
-                          <Input
-                            label="Hours"
-                            placeholder="Enter hours"
-                            value={hours}
-                            min={0}
-                            max={24}
-                            onValueChange={(e) => setHours(parseInt(e))}
-                          />
-                          <Input
-                            label="Minutes"
-                            placeholder="Enter minutes"
-                            value={minutes}
-                            min={0}
-                            max={59}
-                            onValueChange={(e) => setMinutes(parseInt(e))}
-                          />
-                          <Input
-                            label="Seconds"
-                            placeholder="Enter seconds"
-                            value={seconds}
-                            min={0}
-                            max={59}
-                            onValueChange={(e) => setSeconds(parseInt(e))}
-                          />
-                          <Input
-                            label="Milliseconds"
-                            // description="Milliseconds are out of 1000. e.g. if its 0.23 seconds enter 230"
-                            placeholder="Enter milliseconds"
-                            value={milliseconds}
-                            min={0}
-                            max={999}
-                            onValueChange={(e) => setMilliseconds(parseInt(e))}
-                          />
-                        </>
-                      )}
-                      {(selectedLeaderboard?.type == "SCORE" ||
-                        selectedLeaderboard?.type == "GOLF") && (
-                        <Input
-                          type="number"
-                          label="Score"
-                          placeholder="Enter your score"
-                          value={score}
-                          onValueChange={(e) => setScore(parseInt(e))}
-                        />
-                      )}
-                      <p>Evidence Picture</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
+            <Popover
+              showCloseButton
+              position="center"
+              shown={isOpen}
+              onClose={() => {
+                setIsOpen(false);
+              }}
+            >
+              <div className="w-[300px] h-[300px]">
+                <Image
+                  src={selectedScore}
+                  alt="Evidence image"
+                  fill
+                  objectFit="contain"
+                />
+              </div>
+            </Popover>
+            <Modal
+              shown={isOpen2}
+              onClose={() => {
+                setIsOpen2(false);
+              }}
+              icon={
+                selectedLeaderboard?.type == "SCORE"
+                  ? "trophy"
+                  : selectedLeaderboard?.type == "GOLF"
+                  ? "landplot"
+                  : selectedLeaderboard?.type == "SPEEDRUN"
+                  ? "rabbit"
+                  : "turtle"
+              }
+              title={selectedLeaderboard?.name || "Leaderboard"}
+              onSubmit={async (form) => {
+                // Validate evidence
+                const evidenceUrl = form["evidence"];
+                if (!evidenceUrl) {
+                  addToast({ title: "No evidence image provided" });
+                  return;
+                }
+                if (!selectedLeaderboard) {
+                  addToast({ title: "No leaderboard selected" });
+                  return;
+                }
 
-                          const formData = new FormData();
-                          formData.append("upload", file);
+                let finalScore: number | undefined;
 
-                          try {
-                            const response = await fetch(
-                              process.env.NEXT_PUBLIC_MODE === "PROD"
-                                ? "https://d2jam.com/api/v1/image"
-                                : "http://localhost:3005/api/v1/image",
-                              {
-                                method: "POST",
-                                body: formData,
-                                headers: {
-                                  authorization: `Bearer ${getCookie("token")}`,
-                                },
-                                credentials: "include",
-                              }
-                            );
+                if (
+                  selectedLeaderboard?.type === "SPEEDRUN" ||
+                  selectedLeaderboard?.type === "ENDURANCE"
+                ) {
+                  const hours = parseInt(form["hours"] || "0", 10) || 0;
+                  const minutes = parseInt(form["minutes"] || "0", 10) || 0;
+                  const seconds = parseInt(form["seconds"] || "0", 10) || 0;
+                  const ms = parseInt(form["milliseconds"] || "0", 10) || 0;
 
-                            if (response.ok) {
-                              const data = await response.json();
-                              setEvidenceUrl(data.data);
-                              addToast({ title: data.message });
-                            } else {
-                              addToast({ title: "Failed to upload image" });
-                            }
-                          } catch (error) {
-                            console.error(error);
-                            addToast({ title: "Error uploading image" });
-                          }
-                        }}
-                      />
+                  finalScore =
+                    ms + seconds * 1000 + minutes * 60_000 + hours * 3_600_000;
+                } else if (
+                  selectedLeaderboard?.type === "SCORE" ||
+                  selectedLeaderboard?.type === "GOLF"
+                ) {
+                  finalScore = parseInt(form["score"] || "", 10);
+                }
 
-                      {evidenceUrl && (
-                        <div className="w-full">
-                          <div className="bg-[#222222] min-h-60 w-full relative">
-                            <Image
-                              src={evidenceUrl}
-                              alt={`${selectedLeaderboard?.name}'s evidence`}
-                              className="object-cover"
-                              fill
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </ModalBody>
-                    <ModalFooter>
-                      <Button color="red" onClick={onClose}>
-                        Close
-                      </Button>
-                      <Button
-                        color="red"
-                        onClick={async () => {
-                          if (!evidenceUrl) {
-                            addToast({ title: "No evidence image provided" });
-                            return;
-                          }
+                if (finalScore == null || Number.isNaN(finalScore)) {
+                  addToast({ title: "Please enter a valid score/time." });
+                  return;
+                }
 
-                          if (!selectedLeaderboard) {
-                            addToast({ title: "No leaderboard selected" });
-                            return;
-                          }
-
-                          let finalScore = score;
-
-                          if (
-                            selectedLeaderboard.type == "SPEEDRUN" ||
-                            selectedLeaderboard.type == "ENDURANCE"
-                          ) {
-                            finalScore =
-                              (milliseconds || 0) +
-                              (seconds || 0) * 1000 +
-                              (minutes || 0) * 1000 * 60 +
-                              (hours || 0) * 1000 * 60 * 60;
-                          }
-
-                          const success = await postScore(
-                            finalScore,
-                            evidenceUrl,
-                            selectedLeaderboard.id
-                          );
-                          if (success) {
-                            onClose();
-                            window.location.reload();
-                          }
-                        }}
-                      >
-                        Submit
-                      </Button>
-                    </ModalFooter>
-                  </>
-                )}
-              </ModalContent>
-            </Modal>
+                const ok = await postScore(
+                  finalScore,
+                  evidenceUrl,
+                  selectedLeaderboard.id
+                );
+                if (ok) {
+                  setIsOpen2(false);
+                  window.location.reload();
+                }
+              }}
+              fields={[
+                ...(selectedLeaderboard?.type === "SPEEDRUN" ||
+                selectedLeaderboard?.type === "ENDURANCE"
+                  ? ([
+                      {
+                        type: "number",
+                        name: "hours",
+                        label: "Hours",
+                        description: "Enter hours",
+                        min: 0,
+                        max: 24,
+                        defaultValue: "0",
+                      },
+                      {
+                        type: "number",
+                        name: "minutes",
+                        label: "Minutes",
+                        description: "Enter minutes",
+                        min: 0,
+                        max: 59,
+                        defaultValue: "0",
+                      },
+                      {
+                        type: "number",
+                        name: "seconds",
+                        label: "Seconds",
+                        description: "Enter seconds",
+                        min: 0,
+                        max: 59,
+                        defaultValue: "0",
+                      },
+                      {
+                        type: "number",
+                        name: "milliseconds",
+                        label: "Milliseconds",
+                        description:
+                          "Enter milliseconds (enter all 3 digits, .43 -> 430)",
+                        min: 0,
+                        max: 999,
+                        defaultValue: "0",
+                      },
+                    ] as const)
+                  : []),
+                ...(selectedLeaderboard?.type === "SCORE" ||
+                selectedLeaderboard?.type === "GOLF"
+                  ? ([
+                      {
+                        type: "number",
+                        name: "score",
+                        label: "Score",
+                        description: "Enter your score",
+                        required: true,
+                      },
+                    ] as const)
+                  : []),
+                {
+                  type: "imageUpload",
+                  name: "evidence",
+                  label: "Evidence Picture",
+                  description:
+                    "Upload a screenshot/photo to verify your result.",
+                  upload: uploadEvidence,
+                  accept: "image/*",
+                  previewHeight: 240,
+                },
+              ]}
+            />
           </div>
         </div>
       </div>

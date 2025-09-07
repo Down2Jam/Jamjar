@@ -17,7 +17,6 @@ import Text from "@/framework/Text";
 import Icon from "@/framework/Icon";
 import { Card } from "@/framework/Card";
 import { Button } from "@/framework/Button";
-import { Avatar } from "@/framework/Avatar";
 import { Switch } from "@/framework/Switch";
 import { Spinner } from "@/framework/Spinner";
 
@@ -81,7 +80,6 @@ export default function CreatePostPage() {
               id: tag.id,
               label: (
                 <div className="flex gap-2 items-center">
-                  {tag.icon && <Avatar src={tag.icon} />}
                   <p>
                     {tag.name}
                     {tag.modOnly ? " (Mod Only)" : ""}

@@ -768,7 +768,7 @@
     },
     "Soundtrack": {
       "Title": "Soundtrack",
-      "Description": "The soundtrack of your game for people to listen to when browsing the site",
+      "Description": "The soundtrack of your game for people to listen to when browsing the site (only add songs your team has created)",
       "Add": "Add Song"
     },
     "Achievements": {

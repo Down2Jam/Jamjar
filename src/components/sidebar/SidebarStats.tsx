@@ -23,6 +23,9 @@ export default async function SidebarStats() {
   );
   const users = currentJam?.users.length || 0;
   const games = currentJam?.games.filter((game) => game.published).length || 0;
+  const music = currentJam?.games
+    .filter((game) => game.published)
+    .reduce((acc, game) => acc + game.tracks?.length || 0, 0);
 
   return (
     <Card>
@@ -38,6 +41,13 @@ export default async function SidebarStats() {
             <Icon name="gamepad2" color="textFaded" />
             <Text>Stats.Games</Text>
             <Text color="blue">{games}</Text>
+          </Hstack>
+        )}
+        {music != 0 && (
+          <Hstack>
+            <Icon name="music" color="textFaded" />
+            <Text>Music</Text>
+            <Text color="blue">{music}</Text>
           </Hstack>
         )}
         {ratings != 0 && (

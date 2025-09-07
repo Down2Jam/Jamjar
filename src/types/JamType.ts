@@ -1,3 +1,4 @@
+import { IconName } from "@/framework/Icon";
 import { GameType } from "./GameType";
 import { UserType } from "./UserType";
 
@@ -16,6 +17,8 @@ export interface JamType {
   themePerUser: number;
   users: UserType[];
   games: GameType[];
+  color: string;
+  icon: IconName;
 }
 
 export type JamPhase =

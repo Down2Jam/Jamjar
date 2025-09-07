@@ -5,14 +5,7 @@ import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import { Image } from "@heroui/react";
 import NextImage from "next/image";
 import { getStreamers } from "@/requests/streamer";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Eye,
-  Play,
-} from "lucide-react";
+import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Tooltip from "@/framework/Tooltip";
 import { Button } from "@/framework/Button";
@@ -107,14 +100,8 @@ export default function SidebarStreams() {
                   handlePrevPage();
                 }}
                 size="sm"
-              >
-                <ChevronsLeft
-                  size={16}
-                  style={{
-                    color: colors["textLightFaded"],
-                  }}
-                />
-              </Button>
+                icon="chevronsleft"
+              />
             </Tooltip>
           )}
           {streamers.length > 0 + 3 * Math.floor(currentIndex / 3.0) && (
@@ -224,14 +211,8 @@ export default function SidebarStreams() {
                   handleNextPage();
                 }}
                 size="sm"
-              >
-                <ChevronsRight
-                  size={16}
-                  style={{
-                    color: colors["textLightFaded"],
-                  }}
-                />
-              </Button>
+                icon="chevronsright"
+              />
             </Tooltip>
           )}
         </div>
@@ -242,13 +223,8 @@ export default function SidebarStreams() {
                 e.preventDefault();
                 handlePrev();
               }}
-            >
-              <ChevronLeft
-                style={{
-                  color: colors["textLight"],
-                }}
-              />
-            </Button>
+              icon="chevronleft"
+            />
           </Tooltip>
           <Play
             size={32}
@@ -262,13 +238,8 @@ export default function SidebarStreams() {
                 e.preventDefault();
                 handleNext();
               }}
-            >
-              <ChevronRight
-                style={{
-                  color: colors["textLight"],
-                }}
-              />
-            </Button>
+              icon="chevronright"
+            />
           </Tooltip>
         </div>
         <div className="relative z-10 p-2">
@@ -322,69 +293,4 @@ export default function SidebarStreams() {
       </div>
     </a>
   );
-  // return (
-  //   <div className="text-[#333] dark:text-white text-center p-6 transition-color duration-250">
-  //     <h1>Featured Streamer</h1>
-  //     <div
-  //       style={{
-  //         display: "flex",
-  //         flexDirection: "column",
-  //         alignItems: "center",
-  //         border: "1px solid #ccc",
-  //         borderRadius: "8px",
-  //         padding: "20px",
-  //         width: "400px",
-  //         margin: "0 auto",
-  //       }}
-  //     >
-  //       <Image
-  //         as={NextImage}
-  //         src={currentStreamer.thumbnailUrl}
-  //         alt={`${currentStreamer.userName}'s thumbnail`}
-  //         style={{ width: "100%", borderRadius: "4px", marginBottom: "10px" }}
-  //         width={320}
-  //         height={180}
-  //       />
-  //       <a
-  //         href={`https://twitch.tv/${currentStreamer.userName}`}
-  //         target="_blank"
-  //       >
-  //         <div
-  //           style={{
-  //             height: "100px",
-  //             display: "flex",
-  //             flexDirection: "column",
-  //             justifyContent: "center",
-  //           }}
-  //         >
-  //           <h3>{currentStreamer.userName}</h3>
-  //           <p>{currentStreamer.streamTitle}</p>
-  //         </div>
-  //       </a>
-  //       <div>
-  //         {currentStreamer.streamTags.map((tag, index) => (
-  //           <span
-  //             key={index}
-  //             style={{
-  //               display: "inline-block",
-  //               backgroundColor: "#f0f0f0",
-  //               borderRadius: "4px",
-  //               padding: "2px 6px",
-  //               marginRight: "4px",
-  //               fontSize: "12px",
-  //             }}
-  //           >
-  //             {tag}
-  //           </span>
-  //         ))}
-  //       </div>
-  //     </div>
-  //     <div style={{ marginTop: "20px" }}>
-  //       <button onClick={handlePrev} style={{ marginRight: "10px" }}>
-  //         &larr; Previous
-  //       </button>
-  //       <button onClick={handleNext}>&rarr; Next</button>
-  //     </div>
-  //   </div>
-  // );
 }

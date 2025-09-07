@@ -11,8 +11,9 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
+import { IconName } from "@/framework/Icon";
 
-type JamOption = { id: string; name: string };
+type JamOption = { id: string; name: string; icon?: IconName };
 
 export default function MusicPage() {
   const { colors } = useTheme();
@@ -25,7 +26,6 @@ export default function MusicPage() {
   const hasAppliedDefault = useRef(false);
   const hasUserSelected = useRef(false);
 
-  // detect initial jam param once (SSR-safe)
   const initialJamParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     const p = new URLSearchParams(window.location.search).get("jam");
@@ -34,7 +34,6 @@ export default function MusicPage() {
 
   const [jamId, setJamId] = useState<string>(initialJamParam);
 
-  // keep a simple helper to update query string
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(window.location.search);
@@ -48,7 +47,6 @@ export default function MusicPage() {
     [router]
   );
 
-  // detect current jam & build dropdown list
   useEffect(() => {
     let cancelled = false;
 
@@ -59,23 +57,26 @@ export default function MusicPage() {
       let ratingDefault: string | null = null;
       try {
         const res = await getCurrentJam();
-        const isRatingPhase = res?.phase === "Rating";
+        const isRatingPhase =
+          res?.phase === "Rating" ||
+          res?.phase === "Submission" ||
+          res?.phase === "Jamming";
         const currentJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
         if (currentJamId) {
-          options.push({ id: currentJamId, name: currentJamName });
+          options.push({
+            id: currentJamId,
+            name: currentJamName,
+            icon: res?.jam?.icon,
+          });
         }
 
-        // only apply auto default if user didn't specify a jam
         if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
           ratingDefault = currentJamId ?? null;
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
 
-      // optional: fetch full jam list and dedupe
       try {
         if (typeof getJams === "function") {
           const jr = await getJams();
@@ -84,20 +85,17 @@ export default function MusicPage() {
             js.forEach((j) => {
               const id = String(j?.id ?? "");
               if (id && j?.name && !options.find((o) => o.id === id)) {
-                options.push({ id, name: j.name });
+                options.push({ id, name: j.name, icon: j.icon });
               }
             });
           }
         }
-      } catch {
-        // ignore
-      }
+      } catch {}
 
       if (cancelled) return;
 
       setJamOptions(options);
 
-      // apply rating default once if appropriate
       if (
         !hasAppliedDefault.current &&
         !hasUserSelected.current &&
@@ -120,7 +118,6 @@ export default function MusicPage() {
     };
   }, [router, initialJamParam]);
 
-  // load tracks whenever jam changes (skip while detecting to avoid flashes)
   useEffect(() => {
     if (jamDetecting) return;
 
@@ -135,7 +132,6 @@ export default function MusicPage() {
       const json = await res.json();
       if (cancelled) return;
 
-      // expect `{ data: TrackType[] }`
       setMusic(Array.isArray(json?.data) ? json.data : []);
     })();
 
@@ -163,7 +159,7 @@ export default function MusicPage() {
           }}
         >
           {jamOptions.map((j) => (
-            <Dropdown.Item key={j.id} value={j.id} icon="gamepad2">
+            <Dropdown.Item key={j.id} value={j.id} icon={j.icon || "gamepad2"}>
               {j.name}
             </Dropdown.Item>
           ))}

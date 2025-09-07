@@ -18,7 +18,7 @@ import Text from "@/framework/Text";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
 
-type JamOption = { id: string; name: string };
+type JamOption = { id: string; name: string; icon?: IconName };
 
 export default function Games() {
   const searchParams = useSearchParams();
@@ -116,12 +116,19 @@ export default function Games() {
       let ratingDefault: string | null = null;
       try {
         const res = await getCurrentJam();
-        const isRatingPhase = res?.phase === "Rating";
+        const isRatingPhase =
+          res?.phase === "Rating" ||
+          res?.phase === "Submission" ||
+          res?.phase === "Jamming";
         const currentJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
         if (currentJamId)
-          options.push({ id: currentJamId, name: currentJamName });
+          options.push({
+            id: currentJamId,
+            name: currentJamName,
+            icon: res?.jam?.icon,
+          });
 
         if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
           ratingDefault = currentJamId ?? null;
@@ -136,7 +143,7 @@ export default function Games() {
             js.forEach((j) => {
               const id = String(j?.id ?? "");
               if (id && j?.name && !options.find((o) => o.id === id)) {
-                options.push({ id, name: j.name });
+                options.push({ id, name: j.name, icon: j.icon });
               }
             });
           }
@@ -249,7 +256,11 @@ export default function Games() {
             }}
           >
             {jamOptions.map((j) => (
-              <Dropdown.Item key={j.id} value={j.id} icon="gamepad2">
+              <Dropdown.Item
+                key={j.id}
+                value={j.id}
+                icon={j.icon || "gamepad2"}
+              >
                 {j.name}
               </Dropdown.Item>
             ))}
