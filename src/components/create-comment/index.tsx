@@ -57,8 +57,9 @@ export default function CreateComment({ gameId }: { gameId: number }) {
             setWaitingPost(false);
           }
         }}
-        name={waitingPost ? "Loading..." : "Create Comment"}
-      />
+      >
+        {waitingPost ? "Loading..." : "Create Comment"}
+      </Button>
     </>
   );
 }

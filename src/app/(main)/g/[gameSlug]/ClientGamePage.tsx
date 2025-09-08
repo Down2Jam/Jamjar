@@ -253,17 +253,32 @@ export default function ClientGamePage({
           <div className="w-2/3 p-4 flex flex-col gap-4">
             <div>
               <p className="text-4xl">{game.name}</p>
-              <p
-                style={{
-                  color: colors["textFaded"],
-                }}
-              >
-                By{" "}
-                {game.team.name ||
-                  (game.team.users.length == 1
-                    ? game.team.owner.name
-                    : `${game.team.owner.name}'s team`)}
-              </p>
+              <Hstack>
+                <p
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  By{" "}
+                  {game.team.name ||
+                    (game.team.users.length == 1
+                      ? game.team.owner.name
+                      : `${game.team.owner.name}'s team`)}{" "}
+                </p>
+                <Chip
+                  className="opacity-50"
+                  color={
+                    game.category == "REGULAR"
+                      ? "blue"
+                      : game.category == "ODA"
+                      ? "purple"
+                      : "pink"
+                  }
+                  key={game.category}
+                >
+                  {game.category}
+                </Chip>
+              </Hstack>
             </div>
             <ThemedProse>
               <div
