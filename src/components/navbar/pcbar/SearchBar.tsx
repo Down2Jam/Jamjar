@@ -25,6 +25,8 @@ import { usePathname } from "next/navigation";
 import { Spinner } from "@/framework/Spinner";
 import SearchResultGame from "./SearchResultGame";
 import { GameType } from "@/types/GameType";
+import SearchResultTrack from "./SearchResultTrack";
+import { TrackType } from "@/types/TrackType";
 
 export default function SearchBar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -37,9 +39,10 @@ export default function SearchBar() {
         games: GameType[];
         users: UserType[];
         posts: { id: number; title: string; slug: string }[];
+        tracks: TrackType[];
       }
     | undefined
-  >({ games: [], users: [], posts: [] });
+  >({ games: [], users: [], posts: [], tracks: [] });
   const [loadingResults, setLoadingResults] = useState<boolean>(false);
   const t = useTranslations("Navbar");
   const { siteTheme, colors } = useTheme();
@@ -171,7 +174,12 @@ export default function SearchBar() {
                       onPress={() => {
                         onClose();
                         setSearch("");
-                        setResults({ games: [], users: [], posts: [] });
+                        setResults({
+                          games: [],
+                          users: [],
+                          posts: [],
+                          tracks: [],
+                        });
                       }}
                     />
                   ))}
@@ -184,7 +192,12 @@ export default function SearchBar() {
                       onPress={() => {
                         onClose();
                         setSearch("");
-                        setResults({ games: [], users: [], posts: [] });
+                        setResults({
+                          games: [],
+                          users: [],
+                          posts: [],
+                          tracks: [],
+                        });
                       }}
                     />
                   ))}
@@ -213,6 +226,24 @@ export default function SearchBar() {
                         <MessageCircle /> {post.title}
                       </CardBody>
                     </Card>
+                  ))}
+                {results &&
+                  results.tracks?.length > 0 &&
+                  results.tracks.map((track) => (
+                    <SearchResultTrack
+                      key={track.id}
+                      track={track}
+                      onPress={() => {
+                        onClose();
+                        setSearch("");
+                        setResults({
+                          games: [],
+                          users: [],
+                          posts: [],
+                          tracks: [],
+                        });
+                      }}
+                    />
                   ))}
               </ModalBody>
             </>

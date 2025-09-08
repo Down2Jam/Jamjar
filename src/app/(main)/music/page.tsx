@@ -13,7 +13,41 @@ import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
 import { IconName } from "@/framework/Icon";
 
-type JamOption = { id: string; name: string; icon?: IconName };
+type JamOption = {
+  id: string;
+  name: string;
+  icon?: IconName;
+  description?: string;
+};
+
+function formatJamWindow(
+  startISO?: string,
+  jammingHours?: number
+): string | undefined {
+  if (!startISO || !jammingHours || Number.isNaN(Number(jammingHours)))
+    return undefined;
+
+  const start = new Date(startISO);
+  if (isNaN(start.getTime())) return undefined;
+
+  const end = new Date(start.getTime() + Number(jammingHours) * 60 * 60 * 1000);
+
+  const dFmt = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+
+  if (sameDay) {
+    return `${dFmt.format(start)}`;
+  }
+  return `${dFmt.format(start)} – ${dFmt.format(end)}`;
+}
 
 export default function MusicPage() {
   const { colors } = useTheme();
@@ -69,6 +103,10 @@ export default function MusicPage() {
             id: currentJamId,
             name: currentJamName,
             icon: res?.jam?.icon,
+            description: formatJamWindow(
+              res?.jam?.startTime,
+              res?.jam?.jammingHours
+            ),
           });
         }
 
@@ -85,7 +123,12 @@ export default function MusicPage() {
             js.forEach((j) => {
               const id = String(j?.id ?? "");
               if (id && j?.name && !options.find((o) => o.id === id)) {
-                options.push({ id, name: j.name, icon: j.icon });
+                options.push({
+                  id,
+                  name: j.name,
+                  icon: j.icon,
+                  description: formatJamWindow(j.startTime, j.jammingHours),
+                });
               }
             });
           }
@@ -159,7 +202,15 @@ export default function MusicPage() {
           }}
         >
           {jamOptions.map((j) => (
-            <Dropdown.Item key={j.id} value={j.id} icon={j.icon || "gamepad2"}>
+            <Dropdown.Item
+              key={j.id}
+              value={j.id}
+              icon={j.icon || "gamepad2"}
+              description={
+                j.description ??
+                (j.id === "all" ? "Browse music from every jam" : undefined)
+              }
+            >
               {j.name}
             </Dropdown.Item>
           ))}

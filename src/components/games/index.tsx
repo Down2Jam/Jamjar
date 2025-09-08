@@ -18,7 +18,43 @@ import Text from "@/framework/Text";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
 
-type JamOption = { id: string; name: string; icon?: IconName };
+type JamOption = {
+  id: string;
+  name: string;
+  icon?: IconName;
+  description?: string;
+};
+
+function formatJamWindow(
+  startISO?: string,
+  jammingHours?: number
+): string | undefined {
+  if (!startISO || !jammingHours || Number.isNaN(Number(jammingHours)))
+    return undefined;
+
+  const start = new Date(startISO);
+  if (isNaN(start.getTime())) return undefined;
+
+  const end = new Date(start.getTime() + Number(jammingHours) * 60 * 60 * 1000);
+
+  const dFmt = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+
+  if (sameDay) {
+    return `${dFmt.format(start)}`;
+  }
+  return `${dFmt.format(start)} – ${dFmt.format(end)}`;
+}
+
+const restrictedSorts = new Set<GameSort>(["leastratings", "danger"]);
 
 export default function Games() {
   const searchParams = useSearchParams();
@@ -30,9 +66,7 @@ export default function Games() {
 
   const sortParam = (searchParams.get("sort") as GameSort) || "random";
   const [sort, setSort] = useState<GameSort>(
-    (["newest", "oldest", "random", "leastratings", "danger"].includes(
-      sortParam
-    ) &&
+    (["random", "leastratings", "danger"].includes(sortParam) &&
       (sortParam as GameSort)) ||
       "random"
   );
@@ -49,6 +83,12 @@ export default function Games() {
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
   const [hasData, setHasData] = useState(false);
   const [showBusy, setShowBusy] = useState(false);
+  const [currentJamId, setCurrentJamId] = useState<string | undefined>(
+    undefined
+  );
+
+  const isRestricted = (s: GameSort) => restrictedSorts.has(s);
+  const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
 
   const sorts: Record<
     GameSort,
@@ -98,6 +138,16 @@ export default function Games() {
   );
 
   useEffect(() => {
+    const isRestricted = restrictedSorts.has(sort);
+    const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
+
+    if (!canUseRestrictedSorts && isRestricted) {
+      setSort("random");
+      updateQueryParam("sort", "random");
+    }
+  }, [sort, jamId, currentJamId, updateQueryParam]);
+
+  useEffect(() => {
     (async () => {
       try {
         const response = await getSelf();
@@ -111,7 +161,12 @@ export default function Games() {
 
     (async () => {
       setJamDetecting(true);
-      const options: JamOption[] = [{ id: "all", name: "All Jams" }];
+      const options: JamOption[] = [
+        {
+          id: "all",
+          name: "All Jams",
+        },
+      ];
 
       let ratingDefault: string | null = null;
       try {
@@ -123,11 +178,17 @@ export default function Games() {
         const currentJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
+        setCurrentJamId(currentJamId || undefined);
+
         if (currentJamId)
           options.push({
             id: currentJamId,
             name: currentJamName,
             icon: res?.jam?.icon,
+            description: `${formatJamWindow(
+              res?.jam?.startTime,
+              res?.jam?.jammingHours
+            )}`,
           });
 
         if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
@@ -143,7 +204,12 @@ export default function Games() {
             js.forEach((j) => {
               const id = String(j?.id ?? "");
               if (id && j?.name && !options.find((o) => o.id === id)) {
-                options.push({ id, name: j.name, icon: j.icon });
+                options.push({
+                  id,
+                  name: j.name,
+                  icon: j.icon,
+                  description: formatJamWindow(j?.startTime, j?.jammingHours),
+                });
               }
             });
           }
@@ -230,20 +296,29 @@ export default function Games() {
           <Dropdown
             selectedValue={sort}
             onSelect={(key) => {
-              setSort(key as GameSort);
+              const next = key as GameSort;
+
+              if (isRestricted(next) && !canUseRestrictedSorts) return;
+
+              setSort(next);
               updateQueryParam("sort", key as string);
             }}
           >
-            {Object.entries(sorts).map(([key, sort]) => (
-              <Dropdown.Item
-                key={key}
-                value={key}
-                icon={sort.icon}
-                description={sort.description}
-              >
-                {sort.name}
-              </Dropdown.Item>
-            ))}
+            {Object.entries(sorts)
+              .filter(
+                (sort) =>
+                  !(isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts)
+              )
+              .map(([key, sort]) => (
+                <Dropdown.Item
+                  key={key}
+                  value={key}
+                  icon={sort.icon}
+                  description={sort.description}
+                >
+                  {sort.name}
+                </Dropdown.Item>
+              ))}
           </Dropdown>
 
           {/* Jam dropdown */}
@@ -260,6 +335,10 @@ export default function Games() {
                 key={j.id}
                 value={j.id}
                 icon={j.icon || "gamepad2"}
+                description={
+                  j.description ??
+                  (j.id === "all" ? "Browse entries from every jam" : undefined)
+                }
               >
                 {j.name}
               </Dropdown.Item>

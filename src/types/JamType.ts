@@ -11,7 +11,7 @@ export interface JamType {
   jammingHours: number;
   submissionHours: number;
   ratingHours: number;
-  startTime: Date;
+  startTime: string;
   createdAt: Date;
   updatedAt: Date;
   themePerUser: number;
