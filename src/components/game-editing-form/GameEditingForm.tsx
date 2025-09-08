@@ -142,6 +142,14 @@ export default function GameEditingForm({
   const creatingTeamRef = useRef(false);
   const teamCheckDoneRef = useRef(false);
 
+  const inCurrentJamContext =
+    !!activeJamResponse?.jam &&
+    (activeJamResponse.jam.id === game?.jam.id || !game);
+
+  const isRatingPhase = activeJamResponse?.phase === "Rating";
+
+  const canSwapCategory = inCurrentJamContext && !isRatingPhase;
+
   useEffect(() => {
     setEditGame(!!game);
     setTitle(game?.name || "");
@@ -166,10 +174,12 @@ export default function GameEditingForm({
         .filter((index) => index !== -1) || []
     );
     setLeaderboards(game?.leaderboards || []);
-    setCategory(
-      game?.category ||
-        (activeJamResponse?.phase == "Rating" ? "EXTRA" : "REGULAR")
-    );
+    const desiredCategory =
+      game?.category ?? (isRatingPhase ? "EXTRA" : "REGULAR");
+    const shouldForceExtra =
+      inCurrentJamContext && isRatingPhase && (!game || !game.published);
+
+    setCategory(shouldForceExtra ? "EXTRA" : desiredCategory);
     setChosenRatingCategories(
       game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || []
     );
@@ -645,15 +655,7 @@ export default function GameEditingForm({
                   </div>
                   {
                     <Dropdown
-                      disabled={
-                        activeJamResponse &&
-                        activeJamResponse.jam &&
-                        (activeJamResponse.jam.id === game?.jam.id || !game) &&
-                        (activeJamResponse.phase == "Jamming" ||
-                          activeJamResponse.phase == "Submission")
-                          ? false
-                          : true
-                      }
+                      disabled={!canSwapCategory}
                       selectedValue={category}
                       onSelect={(key) => {
                         setCategory(key as "REGULAR" | "ODA" | "EXTRA");
