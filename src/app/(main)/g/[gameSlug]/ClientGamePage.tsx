@@ -58,7 +58,8 @@ import SidebarSong from "@/components/sidebar/SidebarSong";
 import { BASE_URL } from "@/requests/config";
 import Popover from "@/framework/Popover";
 import Modal from "@/framework/Modal";
-import { IconName } from "@/framework/Icon";
+import Icon, { IconName } from "@/framework/Icon";
+import { Card } from "@/framework/Card";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -308,731 +309,774 @@ export default function ClientGamePage({
             </Hstack>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
-            {isEditable && (
-              <div>
-                <Button icon="squarepen" href={`/g/${game.slug}/edit`}>
-                  Edit
-                </Button>
-              </div>
-            )}
-            <>
-              <p
-                className="text-xs"
-                style={{
-                  color: colors["textFaded"],
-                }}
-              >
-                AUTHORS
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {game.team.users.map((user) => (
-                  <Chip
-                    key={user.id}
-                    avatarSrc={user.profilePicture}
-                    href={`/u/${user.slug}`}
+            <Card>
+              <Vstack align="stretch">
+                {isEditable && (
+                  <div>
+                    <Button icon="squarepen" href={`/g/${game.slug}/edit`}>
+                      Edit
+                    </Button>
+                  </div>
+                )}
+                <>
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
                   >
-                    {user.name}
-                  </Chip>
-                ))}
-              </div>
-            </>
+                    AUTHORS
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {game.team.users.map((user) => (
+                      <Chip
+                        key={user.id}
+                        avatarSrc={user.profilePicture}
+                        href={`/u/${user.slug}`}
+                      >
+                        {user.name}
+                      </Chip>
+                    ))}
+                  </div>
+                </>
 
-            {game.tags && game.tags.length > 0 && (
-              <>
-                <p
-                  className="text-xs"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
-                >
-                  TAGS
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {game.tags.map((tag) => (
-                    <Chip key={tag.id}>{tag.name}</Chip>
-                  ))}
-                </div>
-              </>
-            )}
-            {game.flags && game.flags.length > 0 && (
-              <>
-                <p
-                  className="text-xs"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
-                >
-                  FLAGS
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {game.flags.map((flag) => (
-                    <Chip key={flag.id}>{flag.name}</Chip>
-                  ))}
-                </div>
-              </>
-            )}
-            {game.downloadLinks && game.downloadLinks.length > 0 && (
-              <>
-                <p
-                  className="text-xs"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
-                >
-                  LINKS
-                </p>
-                <div className="flex flex-col gap-2 items-start">
-                  {game.downloadLinks.map((link) => (
-                    <Link key={link.id} href={link.url}>
-                      {link.platform}
-                    </Link>
-                  ))}
-                </div>
-              </>
-            )}
-            <div className="flex flex-col gap-3">
-              <p
-                className="text-xs"
-                style={{
-                  color: colors["textFaded"],
-                }}
-              >
-                RATINGS
-              </p>
-              {activeJamResponse &&
-                activeJamResponse?.jam?.id != game.jamId && (
+                {game.tags && game.tags.length > 0 && (
                   <>
-                    {Object.keys(game?.scores || {})
-                      .sort(
-                        (a, b) =>
-                          (game.scores[a].placement || 0) -
-                          (game.scores[b].placement || 0)
-                      )
-                      .map((score) => (
-                        <div
-                          key={score}
-                          className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
-                        >
-                          <span
-                            className="text-sm"
-                            style={{
-                              color: colors["textFaded"],
-                            }}
+                    <p
+                      className="text-xs"
+                      style={{
+                        color: colors["textFaded"],
+                      }}
+                    >
+                      TAGS
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {game.tags.map((tag) => (
+                        <Chip key={tag.id}>{tag.name}</Chip>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {game.flags && game.flags.length > 0 && (
+                  <>
+                    <p
+                      className="text-xs"
+                      style={{
+                        color: colors["textFaded"],
+                      }}
+                    >
+                      FLAGS
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {game.flags.map((flag) => (
+                        <Chip key={flag.id}>{flag.name}</Chip>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {game.downloadLinks && game.downloadLinks.length > 0 && (
+                  <>
+                    <p
+                      className="text-xs"
+                      style={{
+                        color: colors["textFaded"],
+                      }}
+                    >
+                      LINKS
+                    </p>
+                    <div className="flex flex-col gap-2 items-start">
+                      {game.downloadLinks.map((link) => (
+                        <Link key={link.id} href={link.url}>
+                          {getPlatformIcon(link.platform) && (
+                            <Icon
+                              size={12}
+                              name={getPlatformIcon(link.platform)}
+                            />
+                          )}
+                          {link.platform}
+                        </Link>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </Vstack>
+            </Card>
+            <Card>
+              <Vstack align="start">
+                <p
+                  className="text-xs"
+                  style={{
+                    color: colors["textFaded"],
+                  }}
+                >
+                  RATINGS
+                </p>
+                {activeJamResponse &&
+                  activeJamResponse?.jam?.id != game.jamId && (
+                    <>
+                      {Object.keys(game?.scores || {})
+                        .sort(
+                          (a, b) =>
+                            (game.scores[a].placement || 0) -
+                            (game.scores[b].placement || 0)
+                        )
+                        .map((score) => (
+                          <div
+                            key={score}
+                            className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                           >
-                            {t(score)}:
-                          </span>
-                          <span
-                            style={{
-                              color:
-                                game.scores[score].placement == 1
-                                  ? colors["yellow"]
-                                  : game.scores[score].placement == 2
-                                  ? colors["gray"]
-                                  : game.scores[score].placement == 3
-                                  ? colors["orange"]
-                                  : game.scores[score].placement >= 4 &&
-                                    game.scores[score].placement <= 5
-                                  ? colors["blue"]
-                                  : game.scores[score].placement >= 6 &&
-                                    game.scores[score].placement <= 10
-                                  ? colors["purple"]
-                                  : colors["textFaded"],
-                            }}
-                          >
-                            {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
-                            stars
-                          </span>
-                          {game.scores[score].placement && (
                             <span
+                              className="text-sm"
                               style={{
                                 color: colors["textFaded"],
                               }}
                             >
-                              ({ordinal_suffix_of(game.scores[score].placement)}
-                              )
+                              {t(score)}:
                             </span>
-                          )}
-                          <span className="flex items-center justify-center">
-                            {game.scores[score].placement == 1 && (
-                              <Award
-                                size={16}
+                            <span
+                              style={{
+                                color:
+                                  game.scores[score].placement == 1
+                                    ? colors["yellow"]
+                                    : game.scores[score].placement == 2
+                                    ? colors["gray"]
+                                    : game.scores[score].placement == 3
+                                    ? colors["orange"]
+                                    : game.scores[score].placement >= 4 &&
+                                      game.scores[score].placement <= 5
+                                    ? colors["blue"]
+                                    : game.scores[score].placement >= 6 &&
+                                      game.scores[score].placement <= 10
+                                    ? colors["purple"]
+                                    : colors["textFaded"],
+                              }}
+                            >
+                              {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
+                              stars
+                            </span>
+                            {game.scores[score].placement && (
+                              <span
                                 style={{
-                                  color: colors["yellow"],
+                                  color: colors["textFaded"],
                                 }}
-                              />
+                              >
+                                (
+                                {ordinal_suffix_of(
+                                  game.scores[score].placement
+                                )}
+                                )
+                              </span>
                             )}
-                            {game.scores[score].placement == 2 && (
-                              <Award
-                                size={16}
-                                style={{
-                                  color: colors["gray"],
-                                }}
-                              />
-                            )}
-                            {game.scores[score].placement == 3 && (
-                              <Award
-                                size={16}
-                                style={{
-                                  color: colors["orange"],
-                                }}
-                              />
-                            )}
-                            {game.scores[score].placement >= 4 &&
-                              game.scores[score].placement <= 5 && (
-                                <LucideBadge
-                                  size={12}
+                            <span className="flex items-center justify-center">
+                              {game.scores[score].placement == 1 && (
+                                <Award
+                                  size={16}
                                   style={{
-                                    color: colors["blue"],
+                                    color: colors["yellow"],
                                   }}
                                 />
                               )}
-                            {game.scores[score].placement >= 6 &&
-                              game.scores[score].placement <= 10 && (
-                                <LucideBadge
-                                  size={12}
+                              {game.scores[score].placement == 2 && (
+                                <Award
+                                  size={16}
                                   style={{
-                                    color: colors["purple"],
+                                    color: colors["gray"],
                                   }}
                                 />
                               )}
-                          </span>
-                        </div>
-                      ))}
-                    <div className="w-96 h-60">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart
-                          cx="50%"
-                          cy="50%"
-                          outerRadius="80%"
-                          data={Object.keys(game?.scores || {}).map(
-                            (score) => ({
-                              subject: t(score),
-                              A: game.scores[score].averageScore / 2,
-                              B: game.scores[score].averageUnrankedScore / 2,
-                              fullMark: 5,
-                            })
-                          )}
-                        >
-                          <PolarGrid stroke={colors["crust"]} />
-                          <PolarAngleAxis
-                            dataKey="subject"
-                            tick={{ fill: colors["textFaded"], fontSize: 14 }}
-                          />
-                          <PolarRadiusAxis
-                            domain={[0, 5]}
-                            axisLine={false}
-                            tick={false}
-                          />
-                          <Radar
-                            name="All"
-                            dataKey="B"
-                            stroke={colors["magenta"]}
-                            fill={colors["magentaDark"]}
-                            fillOpacity={0.6}
-                          />
-                          <Radar
-                            name="Ranked"
-                            dataKey="A"
-                            stroke={colors["blue"]}
-                            fill={colors["blueDark"]}
-                            fillOpacity={0.6}
-                          />
-                          <Legend />
-                        </RadarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </>
-                )}
-              {isEditable && activeJamResponse?.jam?.id == game.jamId && (
-                <Text size="xs" color="textFaded">
-                  You can&apos;t rate your own game
-                </Text>
-              )}
-              {!user && activeJamResponse?.jam?.id == game.jamId && (
-                <Text size="xs" color="textFaded">
-                  You must be logged in to rate games
-                </Text>
-              )}
-              {!isEditable &&
-                user?.teams.filter((team) => team.game && team.game.published)
-                  .length == 0 &&
-                activeJamResponse?.jam?.id == game.jamId &&
-                activeJamResponse?.phase != "Rating" &&
-                activeJamResponse?.phase != "Submission" && (
+                              {game.scores[score].placement == 3 && (
+                                <Award
+                                  size={16}
+                                  style={{
+                                    color: colors["orange"],
+                                  }}
+                                />
+                              )}
+                              {game.scores[score].placement >= 4 &&
+                                game.scores[score].placement <= 5 && (
+                                  <LucideBadge
+                                    size={12}
+                                    style={{
+                                      color: colors["blue"],
+                                    }}
+                                  />
+                                )}
+                              {game.scores[score].placement >= 6 &&
+                                game.scores[score].placement <= 10 && (
+                                  <LucideBadge
+                                    size={12}
+                                    style={{
+                                      color: colors["purple"],
+                                    }}
+                                  />
+                                )}
+                            </span>
+                          </div>
+                        ))}
+                      <div className="w-96 h-60">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart
+                            cx="50%"
+                            cy="50%"
+                            outerRadius="80%"
+                            data={Object.keys(game?.scores || {}).map(
+                              (score) => ({
+                                subject: t(score),
+                                A: game.scores[score].averageScore / 2,
+                                B: game.scores[score].averageUnrankedScore / 2,
+                                fullMark: 5,
+                              })
+                            )}
+                          >
+                            <PolarGrid stroke={colors["crust"]} />
+                            <PolarAngleAxis
+                              dataKey="subject"
+                              tick={{ fill: colors["textFaded"], fontSize: 14 }}
+                            />
+                            <PolarRadiusAxis
+                              domain={[0, 5]}
+                              axisLine={false}
+                              tick={false}
+                            />
+                            <Radar
+                              name="All"
+                              dataKey="B"
+                              stroke={colors["magenta"]}
+                              fill={colors["magentaDark"]}
+                              fillOpacity={0.6}
+                            />
+                            <Radar
+                              name="Ranked"
+                              dataKey="A"
+                              stroke={colors["blue"]}
+                              fill={colors["blueDark"]}
+                              fillOpacity={0.6}
+                            />
+                            <Legend />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </>
+                  )}
+                {isEditable && activeJamResponse?.jam?.id == game.jamId && (
                   <Text size="xs" color="textFaded">
-                    It is not the rating period
+                    You can&apos;t rate your own game
                   </Text>
                 )}
-              {!isEditable &&
-                user?.teams.filter((team) => team.game && team.game.published)
-                  .length == 0 &&
-                activeJamResponse?.jam?.id == game.jamId &&
-                (activeJamResponse?.phase == "Rating" ||
-                  activeJamResponse?.phase == "Submission") && (
+                {!user && activeJamResponse?.jam?.id == game.jamId && (
                   <Text size="xs" color="textFaded">
-                    Your ratings will not count towards the rankings as you did
-                    not submit a game
+                    You must be logged in to rate games
                   </Text>
                 )}
-              <div>
-                {user &&
-                  !isEditable &&
+                {!isEditable &&
+                  user?.teams.filter((team) => team.game && team.game.published)
+                    .length == 0 &&
+                  activeJamResponse?.jam?.id == game.jamId &&
+                  activeJamResponse?.phase != "Rating" &&
+                  activeJamResponse?.phase != "Submission" && (
+                    <Text size="xs" color="textFaded">
+                      It is not the rating period
+                    </Text>
+                  )}
+                {!isEditable &&
+                  user?.teams.filter((team) => team.game && team.game.published)
+                    .length == 0 &&
                   activeJamResponse?.jam?.id == game.jamId &&
                   (activeJamResponse?.phase == "Rating" ||
                     activeJamResponse?.phase == "Submission") && (
-                    <Vstack align="start">
-                      {[...game.ratingCategories, ...ratingCategories]
-                        .sort((a, b) => b.order - a.order)
-                        .map((ratingCategory) => (
-                          <StarRow
-                            key={ratingCategory.id}
-                            id={ratingCategory.id}
-                            name={t(ratingCategory.name)}
-                            text={
-                              ratingCategory.name == "Theme"
-                                ? game.themeJustification
-                                : ""
-                            }
-                            description={t(ratingCategory.description)}
-                            hoverStars={hoverStars}
-                            setHoverStars={setHoverStars}
-                            hoverCategory={hoverCategory}
-                            setHoverCategory={setHoverCategory}
-                            selectedStars={selectedStars}
-                            setSelectedStars={setSelectedStars}
-                            gameId={game.id}
-                          />
-                        ))}
-                      <Text size="sm" color="textFaded">
-                        Leave some feedback for the creators - what did you
-                        like, what could be improved? (shows below the game
-                        page)
-                      </Text>
-                      <CreateComment gameId={game.id} size="xs" />
-                    </Vstack>
+                    <Text size="xs" color="textFaded">
+                      Your ratings will not count towards the rankings as you
+                      did not submit a game
+                    </Text>
                   )}
-              </div>
-            </div>
+                <div>
+                  {user &&
+                    !isEditable &&
+                    activeJamResponse?.jam?.id == game.jamId &&
+                    (activeJamResponse?.phase == "Rating" ||
+                      activeJamResponse?.phase == "Submission") && (
+                      <Vstack align="start">
+                        {[...game.ratingCategories, ...ratingCategories]
+                          .sort((a, b) => b.order - a.order)
+                          .map((ratingCategory) => (
+                            <StarRow
+                              key={ratingCategory.id}
+                              id={ratingCategory.id}
+                              name={t(ratingCategory.name)}
+                              text={
+                                ratingCategory.name == "Theme"
+                                  ? game.themeJustification
+                                  : ""
+                              }
+                              description={t(ratingCategory.description)}
+                              hoverStars={hoverStars}
+                              setHoverStars={setHoverStars}
+                              hoverCategory={hoverCategory}
+                              setHoverCategory={setHoverCategory}
+                              selectedStars={selectedStars}
+                              setSelectedStars={setSelectedStars}
+                              gameId={game.id}
+                            />
+                          ))}
+                        <Text size="sm" color="textFaded">
+                          Leave some feedback for the creators - what did you
+                          like, what could be improved? (shows below the game
+                          page)
+                        </Text>
+                        <CreateComment gameId={game.id} size="xs" />
+                      </Vstack>
+                    )}
+                </div>
+              </Vstack>
+            </Card>
             {game.leaderboards && game.leaderboards.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p
-                  className="text-xs"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
-                >
-                  LEADERBOARD
-                </p>
+              <Card>
+                <Vstack align="start">
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    LEADERBOARD
+                  </p>
 
-                <Tabs>
-                  {game.leaderboards.map((leaderboard) => (
-                    <Tab
-                      key={leaderboard.id}
-                      title={leaderboard.name}
-                      icon={
-                        leaderboard.type == "SCORE"
-                          ? "trophy"
-                          : leaderboard.type == "GOLF"
-                          ? "landplot"
-                          : leaderboard.type == "SPEEDRUN"
-                          ? "rabbit"
-                          : "turtle"
-                      }
-                    >
-                      {leaderboard.scores && (
-                        <>
-                          <div className="p-1" />
-                          <Table
-                            bottomContent={
-                              <div className="flex w-full justify-center">
-                                <Pagination
-                                  showControls
-                                  color="primary"
-                                  variant="faded"
-                                  page={page}
-                                  total={Math.ceil(
-                                    (leaderboard.onlyBest
-                                      ? Array.from(
-                                          leaderboard.scores
-                                            .reduce((acc, score) => {
-                                              if (
-                                                !acc.has(score.user.id) ||
-                                                acc.get(score.user.id).data <
-                                                  score.data
-                                              ) {
-                                                acc.set(score.user.id, score);
-                                              }
-                                              return acc;
-                                            }, new Map())
-                                            .values()
-                                        )
-                                      : leaderboard.scores
-                                    ).length / leaderboard.maxUsersShown
-                                  )}
-                                  onChange={(page) => setPage(page)}
-                                />
-                              </div>
-                            }
-                          >
-                            <TableHeader>
-                              <TableColumn>#</TableColumn>
-                              <TableColumn>User</TableColumn>
-                              <TableColumn>
-                                {leaderboard.type == "SCORE" ||
-                                leaderboard.type == "GOLF"
-                                  ? "Score"
-                                  : "Time"}
-                              </TableColumn>
-                              <TableColumn>Actions</TableColumn>
-                            </TableHeader>
-                            <TableBody>
-                              {(leaderboard.onlyBest
-                                ? Array.from(
-                                    leaderboard.scores
-                                      .reduce((acc, score) => {
-                                        if (
-                                          !acc.has(score.user.id) ||
-                                          (acc.get(score.user.id).data <
-                                            score.data &&
-                                            (leaderboard.type == "SCORE" ||
-                                              leaderboard.type ==
-                                                "ENDURANCE")) ||
-                                          (acc.get(score.user.id).data >
-                                            score.data &&
-                                            (leaderboard.type == "GOLF" ||
-                                              leaderboard.type == "SPEEDRUN"))
-                                        ) {
-                                          acc.set(score.user.id, score);
-                                        }
-                                        return acc;
-                                      }, new Map())
-                                      .values()
-                                  )
-                                : leaderboard.scores
-                              )
-                                .sort((a, b) => {
-                                  if (
-                                    leaderboard.type == "GOLF" ||
-                                    leaderboard.type == "SPEEDRUN"
-                                  ) {
-                                    return a.data - b.data;
-                                  } else {
-                                    return b.data - a.data;
-                                  }
-                                })
-                                .slice(
-                                  0 + leaderboard.maxUsersShown * (page - 1),
-                                  leaderboard.maxUsersShown * page
+                  <Tabs>
+                    {game.leaderboards.map((leaderboard) => (
+                      <Tab
+                        key={leaderboard.id}
+                        title={leaderboard.name}
+                        icon={
+                          leaderboard.type == "SCORE"
+                            ? "trophy"
+                            : leaderboard.type == "GOLF"
+                            ? "landplot"
+                            : leaderboard.type == "SPEEDRUN"
+                            ? "rabbit"
+                            : "turtle"
+                        }
+                      >
+                        {leaderboard.scores && (
+                          <>
+                            <div className="p-1" />
+                            <Table
+                              bottomContent={
+                                <div className="flex w-full justify-center">
+                                  <Pagination
+                                    showControls
+                                    color="primary"
+                                    variant="faded"
+                                    page={page}
+                                    total={Math.ceil(
+                                      (leaderboard.onlyBest
+                                        ? Array.from(
+                                            leaderboard.scores
+                                              .reduce((acc, score) => {
+                                                if (
+                                                  !acc.has(score.user.id) ||
+                                                  acc.get(score.user.id).data <
+                                                    score.data
+                                                ) {
+                                                  acc.set(score.user.id, score);
+                                                }
+                                                return acc;
+                                              }, new Map())
+                                              .values()
+                                          )
+                                        : leaderboard.scores
+                                      ).length / leaderboard.maxUsersShown
+                                    )}
+                                    onChange={(page) => setPage(page)}
+                                  />
+                                </div>
+                              }
+                            >
+                              <TableHeader>
+                                <TableColumn>#</TableColumn>
+                                <TableColumn>User</TableColumn>
+                                <TableColumn>
+                                  {leaderboard.type == "SCORE" ||
+                                  leaderboard.type == "GOLF"
+                                    ? "Score"
+                                    : "Time"}
+                                </TableColumn>
+                                <TableColumn>Actions</TableColumn>
+                              </TableHeader>
+                              <TableBody>
+                                {(leaderboard.onlyBest
+                                  ? Array.from(
+                                      leaderboard.scores
+                                        .reduce((acc, score) => {
+                                          if (
+                                            !acc.has(score.user.id) ||
+                                            (acc.get(score.user.id).data <
+                                              score.data &&
+                                              (leaderboard.type == "SCORE" ||
+                                                leaderboard.type ==
+                                                  "ENDURANCE")) ||
+                                            (acc.get(score.user.id).data >
+                                              score.data &&
+                                              (leaderboard.type == "GOLF" ||
+                                                leaderboard.type == "SPEEDRUN"))
+                                          ) {
+                                            acc.set(score.user.id, score);
+                                          }
+                                          return acc;
+                                        }, new Map())
+                                        .values()
+                                    )
+                                  : leaderboard.scores
                                 )
-                                .map((score, i) => (
-                                  <TableRow key={score.id}>
-                                    <TableCell
-                                      style={{
-                                        color: colors["textFaded"],
-                                      }}
-                                    >
-                                      {i +
-                                        1 +
-                                        leaderboard.maxUsersShown * (page - 1)}
-                                    </TableCell>
-                                    <TableCell>
-                                      <User
-                                        className="flex justify-start"
-                                        name={score.user.name}
-                                        avatarProps={{
-                                          src: score.user.profilePicture,
-                                          className: "w-6 h-6",
-                                          size: "sm",
+                                  .sort((a, b) => {
+                                    if (
+                                      leaderboard.type == "GOLF" ||
+                                      leaderboard.type == "SPEEDRUN"
+                                    ) {
+                                      return a.data - b.data;
+                                    } else {
+                                      return b.data - a.data;
+                                    }
+                                  })
+                                  .slice(
+                                    0 + leaderboard.maxUsersShown * (page - 1),
+                                    leaderboard.maxUsersShown * page
+                                  )
+                                  .map((score, i) => (
+                                    <TableRow key={score.id}>
+                                      <TableCell
+                                        style={{
+                                          color: colors["textFaded"],
                                         }}
-                                      />
-                                    </TableCell>
-                                    <TableCell
-                                      style={{
-                                        color: colors["blue"],
-                                      }}
-                                    >
-                                      {leaderboard.type == "GOLF" ||
-                                      leaderboard.type == "SCORE"
-                                        ? score.data /
-                                          10 ** leaderboard.decimalPlaces
-                                        : (() => {
-                                            const totalMilliseconds =
-                                              score.data;
-                                            const hours = Math.floor(
-                                              totalMilliseconds / 3600000
-                                            );
-                                            const minutes = Math.floor(
-                                              (totalMilliseconds % 3600000) /
-                                                60000
-                                            );
-                                            const seconds = Math.floor(
-                                              (totalMilliseconds % 60000) / 1000
-                                            );
-                                            const milliseconds =
-                                              totalMilliseconds % 1000;
+                                      >
+                                        {i +
+                                          1 +
+                                          leaderboard.maxUsersShown *
+                                            (page - 1)}
+                                      </TableCell>
+                                      <TableCell>
+                                        <User
+                                          className="flex justify-start"
+                                          name={score.user.name}
+                                          avatarProps={{
+                                            src: score.user.profilePicture,
+                                            className: "w-6 h-6",
+                                            size: "sm",
+                                          }}
+                                        />
+                                      </TableCell>
+                                      <TableCell
+                                        style={{
+                                          color: colors["blue"],
+                                        }}
+                                      >
+                                        {leaderboard.type == "GOLF" ||
+                                        leaderboard.type == "SCORE"
+                                          ? score.data /
+                                            10 ** leaderboard.decimalPlaces
+                                          : (() => {
+                                              const totalMilliseconds =
+                                                score.data;
+                                              const hours = Math.floor(
+                                                totalMilliseconds / 3600000
+                                              );
+                                              const minutes = Math.floor(
+                                                (totalMilliseconds % 3600000) /
+                                                  60000
+                                              );
+                                              const seconds = Math.floor(
+                                                (totalMilliseconds % 60000) /
+                                                  1000
+                                              );
+                                              const milliseconds =
+                                                totalMilliseconds % 1000;
 
-                                            return `${
-                                              hours > 0 ? `${hours}:` : ""
-                                            }${minutes
-                                              .toString()
-                                              .padStart(2, "0")}:${seconds
-                                              .toString()
-                                              .padStart(2, "0")}${
-                                              milliseconds > 0
-                                                ? `.${milliseconds
-                                                    .toString()
-                                                    .padStart(3, "0")}`
-                                                : ""
-                                            }`;
-                                          })()}
-                                    </TableCell>
-                                    <TableCell className="flex gap-2">
-                                      <Button
-                                        icon="eye"
-                                        onClick={() => {
-                                          setSelectedScore(score.evidence);
-                                          setIsOpen(true);
-                                        }}
-                                        size="sm"
-                                      />
-                                      {(isEditable ||
-                                        score.user.id == user?.id ||
-                                        user?.mod) && (
+                                              return `${
+                                                hours > 0 ? `${hours}:` : ""
+                                              }${minutes
+                                                .toString()
+                                                .padStart(2, "0")}:${seconds
+                                                .toString()
+                                                .padStart(2, "0")}${
+                                                milliseconds > 0
+                                                  ? `.${milliseconds
+                                                      .toString()
+                                                      .padStart(3, "0")}`
+                                                  : ""
+                                              }`;
+                                            })()}
+                                      </TableCell>
+                                      <TableCell className="flex gap-2">
                                         <Button
-                                          color="red"
-                                          icon="trash"
-                                          onClick={async () => {
-                                            const success = await deleteScore(
-                                              score.id
-                                            );
-                                            if (success) {
-                                              window.location.reload();
-                                            }
+                                          icon="eye"
+                                          onClick={() => {
+                                            setSelectedScore(score.evidence);
+                                            setIsOpen(true);
                                           }}
                                           size="sm"
                                         />
-                                      )}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                            </TableBody>
-                          </Table>
-                        </>
-                      )}
-                      <div className="mt-4">
-                        <Button
-                          icon="plus"
-                          onClick={() => {
-                            setSelectedLeaderboard(leaderboard);
-                            setIsOpen2(true);
-                          }}
-                        >
-                          Submit Score
-                        </Button>
-                      </div>
-                    </Tab>
-                  ))}
-                </Tabs>
-              </div>
+                                        {(isEditable ||
+                                          score.user.id == user?.id ||
+                                          user?.mod) && (
+                                          <Button
+                                            color="red"
+                                            icon="trash"
+                                            onClick={async () => {
+                                              const success = await deleteScore(
+                                                score.id
+                                              );
+                                              if (success) {
+                                                window.location.reload();
+                                              }
+                                            }}
+                                            size="sm"
+                                          />
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                              </TableBody>
+                            </Table>
+                          </>
+                        )}
+                        <div className="mt-4">
+                          <Button
+                            icon="plus"
+                            onClick={() => {
+                              setSelectedLeaderboard(leaderboard);
+                              setIsOpen2(true);
+                            }}
+                          >
+                            Submit Score
+                          </Button>
+                        </div>
+                      </Tab>
+                    ))}
+                  </Tabs>
+                </Vstack>
+              </Card>
             )}
             {game.achievements && game.achievements.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <p
-                  className="text-xs"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
-                >
-                  ACHIEVEMENTS
-                </p>
+              <Card>
+                <Vstack align="start">
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    ACHIEVEMENTS
+                  </p>
 
-                <Text color="textFaded" size="xs">
-                  You&apos;ve unlocked{" "}
-                  {
-                    game.achievements.filter(
-                      (achievement) =>
-                        achievement.users.filter(
-                          (user2) => user?.id === user2.id
-                        ).length > 0
-                    ).length
-                  }
-                  /{game.achievements.length}
-                </Text>
+                  <Text color="textFaded" size="xs">
+                    You&apos;ve unlocked{" "}
+                    {
+                      game.achievements.filter(
+                        (achievement) =>
+                          achievement.users.filter(
+                            (user2) => user?.id === user2.id
+                          ).length > 0
+                      ).length
+                    }
+                    /{game.achievements.length}
+                  </Text>
 
-                <Hstack>
-                  {game.achievements.map((achievement) => (
-                    <div
-                      key={achievement.id}
-                      style={{
-                        backgroundColor: colors["base"],
-                      }}
-                      className="w-fit h-fit"
-                    >
-                      <Tooltip
-                        content={
-                          <Hstack>
+                  <Hstack>
+                    {game.achievements.map((achievement) => (
+                      <div
+                        key={achievement.id}
+                        style={{
+                          backgroundColor: colors["base"],
+                        }}
+                        className="w-fit h-fit"
+                      >
+                        <Tooltip
+                          content={
+                            <Hstack>
+                              <Image
+                                src={
+                                  achievement.image || "/images/D2J_Icon.png"
+                                }
+                                width={48}
+                                height={48}
+                                alt="Achievement"
+                                className="rounded-xl"
+                              />
+                              <Vstack align="start" gap={0}>
+                                <Text color="text">{achievement.name}</Text>
+                                <Text color="textFaded" size="xs">
+                                  {achievement.description}
+                                </Text>
+                                <Text
+                                  color={
+                                    achievement.users.filter(
+                                      (user2) => user?.id === user2.id
+                                    ).length > 0
+                                      ? "red"
+                                      : "green"
+                                  }
+                                  size="xs"
+                                >
+                                  {achievement.users.filter(
+                                    (user2) => user?.id === user2.id
+                                  ).length > 0
+                                    ? "Click to mark as unachieved"
+                                    : "Click to mark as achieved"}
+                                </Text>
+                              </Vstack>
+                            </Hstack>
+                          }
+                        >
+                          <button
+                            onClick={async () => {
+                              if (user) {
+                                if (
+                                  achievement.users.filter(
+                                    (user2) => user?.id === user2.id
+                                  ).length > 0
+                                ) {
+                                  const res = fetch(`${BASE_URL}/achievement`, {
+                                    body: JSON.stringify({
+                                      achievementId: achievement.id,
+                                    }),
+                                    method: "DELETE",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      authorization: `Bearer ${getCookie(
+                                        "token"
+                                      )}`,
+                                    },
+                                    credentials: "include",
+                                  });
+
+                                  if ((await res).ok) {
+                                    achievement.users =
+                                      achievement.users.filter(
+                                        (user2) => user?.id !== user2.id
+                                      );
+                                    setGame({
+                                      ...game,
+                                      achievements: game.achievements,
+                                    });
+                                  }
+                                } else {
+                                  const res = fetch(`${BASE_URL}/achievement`, {
+                                    body: JSON.stringify({
+                                      achievementId: achievement.id,
+                                    }),
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                      authorization: `Bearer ${getCookie(
+                                        "token"
+                                      )}`,
+                                    },
+                                    credentials: "include",
+                                  });
+
+                                  if ((await res).ok) {
+                                    achievement.users = [
+                                      ...achievement.users,
+                                      user,
+                                    ];
+                                    setGame({
+                                      ...game,
+                                      achievements: game.achievements,
+                                    });
+                                  }
+                                }
+                              }
+                            }}
+                          >
                             <Image
                               src={achievement.image || "/images/D2J_Icon.png"}
                               width={48}
                               height={48}
                               alt="Achievement"
-                              className="rounded-xl"
-                            />
-                            <Vstack align="start" gap={0}>
-                              <Text color="text">{achievement.name}</Text>
-                              <Text color="textFaded" size="xs">
-                                {achievement.description}
-                              </Text>
-                              <Text
-                                color={
+                              style={{
+                                opacity:
                                   achievement.users.filter(
                                     (user2) => user?.id === user2.id
                                   ).length > 0
-                                    ? "red"
-                                    : "green"
-                                }
-                                size="xs"
-                              >
-                                {achievement.users.filter(
-                                  (user2) => user?.id === user2.id
-                                ).length > 0
-                                  ? "Click to mark as unachieved"
-                                  : "Click to mark as achieved"}
-                              </Text>
-                            </Vstack>
-                          </Hstack>
-                        }
-                      >
-                        <button
-                          onClick={async () => {
-                            if (user) {
-                              if (
-                                achievement.users.filter(
-                                  (user2) => user?.id === user2.id
-                                ).length > 0
-                              ) {
-                                const res = fetch(`${BASE_URL}/achievement`, {
-                                  body: JSON.stringify({
-                                    achievementId: achievement.id,
-                                  }),
-                                  method: "DELETE",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    authorization: `Bearer ${getCookie(
-                                      "token"
-                                    )}`,
-                                  },
-                                  credentials: "include",
-                                });
-
-                                if ((await res).ok) {
-                                  achievement.users = achievement.users.filter(
-                                    (user2) => user?.id !== user2.id
-                                  );
-                                  setGame({
-                                    ...game,
-                                    achievements: game.achievements,
-                                  });
-                                }
-                              } else {
-                                const res = fetch(`${BASE_URL}/achievement`, {
-                                  body: JSON.stringify({
-                                    achievementId: achievement.id,
-                                  }),
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    authorization: `Bearer ${getCookie(
-                                      "token"
-                                    )}`,
-                                  },
-                                  credentials: "include",
-                                });
-
-                                if ((await res).ok) {
-                                  achievement.users = [
-                                    ...achievement.users,
-                                    user,
-                                  ];
-                                  setGame({
-                                    ...game,
-                                    achievements: game.achievements,
-                                  });
-                                }
-                              }
-                            }
-                          }}
-                        >
-                          <Image
-                            src={achievement.image || "/images/D2J_Icon.png"}
-                            width={48}
-                            height={48}
-                            alt="Achievement"
-                            style={{
-                              opacity:
-                                achievement.users.filter(
-                                  (user2) => user?.id === user2.id
-                                ).length > 0
-                                  ? 1
-                                  : 0.5,
-                              filter:
-                                achievement.users.filter(
-                                  (user2) => user?.id === user2.id
-                                ).length > 0
-                                  ? ""
-                                  : "grayscale(1)",
-                            }}
-                          />
-                        </button>
-                      </Tooltip>
-                    </div>
-                  ))}
-                </Hstack>
-              </div>
+                                    ? 1
+                                    : 0.5,
+                                filter:
+                                  achievement.users.filter(
+                                    (user2) => user?.id === user2.id
+                                  ).length > 0
+                                    ? ""
+                                    : "grayscale(1)",
+                              }}
+                            />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    ))}
+                  </Hstack>
+                </Vstack>
+              </Card>
             )}
             {game.tracks && game.tracks.length > 0 && (
-              <div className="flex flex-col gap-2">
+              <Card>
+                <Vstack align="stretch">
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    MUSIC
+                  </p>
+
+                  {game.tracks.map((track) => (
+                    <SidebarSong
+                      key={track.id}
+                      name={track.name}
+                      artist={track.composer.name}
+                      thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
+                      game={track.game.name}
+                      song={track.url}
+                    />
+                  ))}
+                </Vstack>
+              </Card>
+            )}
+            <Card>
+              <Vstack align="start">
                 <p
                   className="text-xs"
                   style={{
                     color: colors["textFaded"],
                   }}
                 >
-                  MUSIC
+                  STATS
                 </p>
+                <Chip>
+                  Ratings Received:{" "}
+                  {Math.round(
+                    game.ratings.length /
+                      (game.ratingCategories.length + ratingCategories.length)
+                  )}
+                </Chip>
+                {game.category !== "EXTRA" && (
+                  <Hstack>
+                    <Chip>
+                      Ranked Ratings Received:{" "}
+                      {Math.round(
+                        game.ratings.filter(
+                          (rating) =>
+                            rating.user.teams.filter(
+                              (team) =>
+                                team.game &&
+                                team.game.jamId == game.jamId &&
+                                team.game.published &&
+                                team.game.category !== "EXTRA"
+                            ).length > 0
+                        ).length /
+                          (game.ratingCategories.length +
+                            ratingCategories.length)
+                      )}
+                    </Chip>
 
-                {game.tracks.map((track) => (
-                  <SidebarSong
-                    key={track.id}
-                    name={track.name}
-                    artist={track.composer.name}
-                    thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
-                    game={track.game.name}
-                    song={track.url}
-                  />
-                ))}
-              </div>
-            )}
-            <Vstack align="start">
-              <p
-                className="text-xs"
-                style={{
-                  color: colors["textFaded"],
-                }}
-              >
-                STATS
-              </p>
-              <Chip>
-                Ratings Received:{" "}
-                {Math.round(
-                  game.ratings.length /
-                    (game.ratingCategories.length + ratingCategories.length)
-                )}
-              </Chip>
-              {game.category !== "EXTRA" && (
-                <Hstack>
-                  <Chip>
-                    Ranked Ratings Received:{" "}
                     {Math.round(
                       game.ratings.filter(
                         (rating) =>
@@ -1045,34 +1089,37 @@ export default function ClientGamePage({
                           ).length > 0
                       ).length /
                         (game.ratingCategories.length + ratingCategories.length)
+                    ) < 5 && (
+                      <Tooltip
+                        content="This game needs 5 ratings received in order to be ranked after the rating period"
+                        position="top"
+                      >
+                        <AlertTriangle size={16} className="text-red-500" />
+                      </Tooltip>
+                    )}
+                  </Hstack>
+                )}
+                <Hstack>
+                  <Chip>
+                    Ratings Given:{" "}
+                    {Math.round(
+                      game.team.users.reduce(
+                        (prev, cur) =>
+                          prev +
+                          cur.ratings.reduce(
+                            (prev2, cur2) =>
+                              prev2 +
+                              (cur2.game.jamId === game.jamId
+                                ? 1 /
+                                  (cur2.game.ratingCategories.length +
+                                    ratingCategories.length)
+                                : 0),
+                            0
+                          ),
+                        0
+                      )
                     )}
                   </Chip>
-
-                  {Math.round(
-                    game.ratings.filter(
-                      (rating) =>
-                        rating.user.teams.filter(
-                          (team) =>
-                            team.game &&
-                            team.game.jamId == game.jamId &&
-                            team.game.published &&
-                            team.game.category !== "EXTRA"
-                        ).length > 0
-                    ).length /
-                      (game.ratingCategories.length + ratingCategories.length)
-                  ) < 5 && (
-                    <Tooltip
-                      content="This game needs 5 ratings received in order to be ranked after the rating period"
-                      position="top"
-                    >
-                      <AlertTriangle size={16} className="text-red-500" />
-                    </Tooltip>
-                  )}
-                </Hstack>
-              )}
-              <Hstack>
-                <Chip>
-                  Ratings Given:{" "}
                   {Math.round(
                     game.team.users.reduce(
                       (prev, cur) =>
@@ -1089,39 +1136,22 @@ export default function ClientGamePage({
                         ),
                       0
                     )
+                  ) < 5 && (
+                    <Tooltip
+                      content="This game needs 5 ratings given in order to be ranked after the rating period"
+                      position="top"
+                    >
+                      <AlertTriangle
+                        size={16}
+                        style={{
+                          color: colors["red"],
+                        }}
+                      />
+                    </Tooltip>
                   )}
-                </Chip>
-                {Math.round(
-                  game.team.users.reduce(
-                    (prev, cur) =>
-                      prev +
-                      cur.ratings.reduce(
-                        (prev2, cur2) =>
-                          prev2 +
-                          (cur2.game.jamId === game.jamId
-                            ? 1 /
-                              (cur2.game.ratingCategories.length +
-                                ratingCategories.length)
-                            : 0),
-                        0
-                      ),
-                    0
-                  )
-                ) < 5 && (
-                  <Tooltip
-                    content="This game needs 5 ratings given in order to be ranked after the rating period"
-                    position="top"
-                  >
-                    <AlertTriangle
-                      size={16}
-                      style={{
-                        color: colors["red"],
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </Hstack>
-            </Vstack>
+                </Hstack>
+              </Vstack>
+            </Card>
             <Popover
               showCloseButton
               position="center"

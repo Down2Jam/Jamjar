@@ -338,7 +338,7 @@ export default function Editor({
       <ThemedProse>
         <EditorContent editor={editor} />
       </ThemedProse>
-      <div className="mt-3" />
+      {size == "sm" && <div className="mt-3" />}
       {editor && size == "sm" && (
         <div
           className={`transform-color duration-250 ease-linear flex items-center gap-3`}
