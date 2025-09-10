@@ -1039,6 +1039,7 @@ export default function ClientGamePage({
                           rating.user.teams.filter(
                             (team) =>
                               team.game &&
+                              team.game.jamId == game.jamId &&
                               team.game.published &&
                               team.game.category !== "EXTRA"
                           ).length > 0
@@ -1051,7 +1052,11 @@ export default function ClientGamePage({
                     game.ratings.filter(
                       (rating) =>
                         rating.user.teams.filter(
-                          (team) => team.game && team.game.published
+                          (team) =>
+                            team.game &&
+                            team.game.jamId == game.jamId &&
+                            team.game.published &&
+                            team.game.category !== "EXTRA"
                         ).length > 0
                     ).length /
                       (game.ratingCategories.length + ratingCategories.length)
@@ -1074,11 +1079,12 @@ export default function ClientGamePage({
                         prev +
                         cur.ratings.reduce(
                           (prev2, cur2) =>
-                            prev2 + cur2.game.jamId === game.jamId
+                            prev2 +
+                            (cur2.game.jamId === game.jamId
                               ? 1 /
                                 (cur2.game.ratingCategories.length +
                                   ratingCategories.length)
-                              : 0,
+                              : 0),
                           0
                         ),
                       0
@@ -1091,11 +1097,12 @@ export default function ClientGamePage({
                       prev +
                       cur.ratings.reduce(
                         (prev2, cur2) =>
-                          prev2 + cur2.game.jamId === game.jamId
+                          prev2 +
+                          (cur2.game.jamId === game.jamId
                             ? 1 /
                               (cur2.game.ratingCategories.length +
                                 ratingCategories.length)
-                            : 0,
+                            : 0),
                         0
                       ),
                     0
