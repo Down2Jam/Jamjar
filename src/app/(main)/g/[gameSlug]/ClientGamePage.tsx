@@ -311,13 +311,22 @@ export default function ClientGamePage({
           <div className="flex flex-col w-1/3 gap-4 p-4">
             <Card>
               <Vstack align="stretch">
-                {isEditable && (
-                  <div>
-                    <Button icon="squarepen" href={`/g/${game.slug}/edit`}>
-                      Edit
-                    </Button>
-                  </div>
-                )}
+                <Hstack>
+                  {isEditable && (
+                    <div>
+                      <Button icon="squarepen" href={`/g/${game.slug}/edit`}>
+                        Edit
+                      </Button>
+                    </div>
+                  )}
+                  {isEditable && game.category != "ODA" && (
+                    <div>
+                      <Button icon="users" href={`/team`}>
+                        Edit Team
+                      </Button>
+                    </div>
+                  )}
+                </Hstack>
                 <>
                   <p
                     className="text-xs"

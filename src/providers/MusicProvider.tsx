@@ -18,6 +18,7 @@ import { useTheme } from "./SiteThemeProvider";
 import Text from "@/framework/Text";
 import { Hstack, Vstack } from "@/framework/Stack";
 import { TrackType } from "@/types/TrackType";
+import { getCookie } from "@/helpers/cookie";
 
 type Track = {
   name: string;
@@ -47,20 +48,37 @@ type MusicContextValue = {
   setShown: (val: boolean) => void;
 };
 
+const setCookie = (name: string, value: string, days = 365) => {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(
+      value
+    )}; Expires=${expires}; Path=/; SameSite=Lax`;
+  } catch {}
+};
+
 const MusicContext = createContext<MusicContextValue | null>(null);
 
 export function MusicProvider({ children }: { children: React.ReactNode }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
-  const [volume, setVol] = useState(0.5);
+  const [volume, setVol] = useState<number>(() => {
+    if (typeof document === "undefined") return 0.5;
+    const v = parseFloat(getCookie?.("music_volume") ?? "");
+    return Number.isFinite(v) ? Math.min(Math.max(v, 0), 1) : 0.5;
+  });
+  const [repeatState, setRepeatState] = useState<
+    "none" | "repeat" | "autoplay"
+  >(() => {
+    if (typeof document === "undefined") return "none";
+    const v = (getCookie?.("music_repeat") ?? "") as string;
+    return v === "repeat" || v === "autoplay" || v === "none" ? v : "none";
+  });
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const nextRef = useRef<() => Promise<void>>(() => Promise.resolve());
   const [backStack, setBackStack] = useState<number[]>([]);
   const [fwdStack, setFwdStack] = useState<number[]>([]);
-  const [repeatState, setRepeatState] = useState<
-    "none" | "repeat" | "autoplay"
-  >("none");
   const repeatStateRef = useRef(repeatState);
   const [shown, setShown] = useState<boolean>(false);
   const [music, setMusic] = useState<TrackType[]>([]);
@@ -82,7 +100,12 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    setCookie("music_volume", String(volume));
+  }, [volume]);
+
+  useEffect(() => {
     repeatStateRef.current = repeatState;
+    setCookie("music_repeat", repeatState);
   }, [repeatState]);
 
   const next = useCallback(async () => {

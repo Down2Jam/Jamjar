@@ -13,6 +13,7 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   index?: number;
   onIndexChange?: (i: number) => void;
   fullWidth?: boolean;
+  wrap?: boolean;
 }
 
 export interface TabProps {
@@ -29,6 +30,7 @@ export function Tabs({
   index,
   onIndexChange,
   fullWidth = false,
+  wrap = true,
   ...rest
 }: TabsProps) {
   const { colors } = useTheme();
@@ -51,8 +53,11 @@ export function Tabs({
         role="tablist"
         aria-orientation="horizontal"
         className={[
-          "flex gap-2 overflow-x-auto no-scrollbar",
-          fullWidth ? "justify-between" : "",
+          "flex gap-x-2",
+          wrap
+            ? "flex-wrap content-start gap-y-2 overflow-x-visible"
+            : "overflow-x-auto no-scrollbar",
+          fullWidth && !wrap ? "justify-between" : "",
         ].join(" ")}
       >
         {items.map((child, i) => {
