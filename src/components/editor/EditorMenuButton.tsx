@@ -7,6 +7,7 @@ type EditorMenuButtonProps = {
   isActive: boolean;
   disabled?: boolean;
   children: React.ReactNode;
+  size?: "xs" | "sm";
 };
 
 export default function EditorMenuButton({
@@ -14,13 +15,14 @@ export default function EditorMenuButton({
   isActive,
   disabled,
   children,
+  size = "sm",
 }: EditorMenuButtonProps) {
   return (
     <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      size="sm"
+      size={size}
       color={isActive ? "blue" : "default"}
     >
       {children}

@@ -579,29 +579,38 @@ export default function ClientGamePage({
                   !isEditable &&
                   activeJamResponse?.jam?.id == game.jamId &&
                   (activeJamResponse?.phase == "Rating" ||
-                    activeJamResponse?.phase == "Submission") &&
-                  [...game.ratingCategories, ...ratingCategories]
-                    .sort((a, b) => b.order - a.order)
-                    .map((ratingCategory) => (
-                      <StarRow
-                        key={ratingCategory.id}
-                        id={ratingCategory.id}
-                        name={t(ratingCategory.name)}
-                        text={
-                          ratingCategory.name == "Theme"
-                            ? game.themeJustification
-                            : ""
-                        }
-                        description={t(ratingCategory.description)}
-                        hoverStars={hoverStars}
-                        setHoverStars={setHoverStars}
-                        hoverCategory={hoverCategory}
-                        setHoverCategory={setHoverCategory}
-                        selectedStars={selectedStars}
-                        setSelectedStars={setSelectedStars}
-                        gameId={game.id}
-                      />
-                    ))}
+                    activeJamResponse?.phase == "Submission") && (
+                    <Vstack align="start">
+                      {[...game.ratingCategories, ...ratingCategories]
+                        .sort((a, b) => b.order - a.order)
+                        .map((ratingCategory) => (
+                          <StarRow
+                            key={ratingCategory.id}
+                            id={ratingCategory.id}
+                            name={t(ratingCategory.name)}
+                            text={
+                              ratingCategory.name == "Theme"
+                                ? game.themeJustification
+                                : ""
+                            }
+                            description={t(ratingCategory.description)}
+                            hoverStars={hoverStars}
+                            setHoverStars={setHoverStars}
+                            hoverCategory={hoverCategory}
+                            setHoverCategory={setHoverCategory}
+                            selectedStars={selectedStars}
+                            setSelectedStars={setSelectedStars}
+                            gameId={game.id}
+                          />
+                        ))}
+                      <Text size="sm" color="textFaded">
+                        Leave some feedback for the creators - what did you
+                        like, what could be improved? (shows below the game
+                        page)
+                      </Text>
+                      <CreateComment gameId={game.id} size="xs" />
+                    </Vstack>
+                  )}
               </div>
             </div>
             {game.leaderboards && game.leaderboards.length > 0 && (
@@ -1020,9 +1029,24 @@ export default function ClientGamePage({
                     (game.ratingCategories.length + ratingCategories.length)
                 )}
               </Chip>
-              <Hstack>
-                <Chip>
-                  Ranked Ratings Received:{" "}
+              {game.category !== "EXTRA" && (
+                <Hstack>
+                  <Chip>
+                    Ranked Ratings Received:{" "}
+                    {Math.round(
+                      game.ratings.filter(
+                        (rating) =>
+                          rating.user.teams.filter(
+                            (team) =>
+                              team.game &&
+                              team.game.published &&
+                              team.game.category !== "EXTRA"
+                          ).length > 0
+                      ).length /
+                        (game.ratingCategories.length + ratingCategories.length)
+                    )}
+                  </Chip>
+
                   {Math.round(
                     game.ratings.filter(
                       (rating) =>
@@ -1031,25 +1055,16 @@ export default function ClientGamePage({
                         ).length > 0
                     ).length /
                       (game.ratingCategories.length + ratingCategories.length)
+                  ) < 5 && (
+                    <Tooltip
+                      content="This game needs 5 ratings received in order to be ranked after the rating period"
+                      position="top"
+                    >
+                      <AlertTriangle size={16} className="text-red-500" />
+                    </Tooltip>
                   )}
-                </Chip>
-                {Math.round(
-                  game.ratings.filter(
-                    (rating) =>
-                      rating.user.teams.filter(
-                        (team) => team.game && team.game.published
-                      ).length > 0
-                  ).length /
-                    (game.ratingCategories.length + ratingCategories.length)
-                ) < 5 && (
-                  <Tooltip
-                    content="This game needs 5 ratings received in order to be ranked after the rating period"
-                    position="top"
-                  >
-                    <AlertTriangle size={16} className="text-red-500" />
-                  </Tooltip>
-                )}
-              </Hstack>
+                </Hstack>
+              )}
               <Hstack>
                 <Chip>
                   Ratings Given:{" "}
@@ -1059,10 +1074,11 @@ export default function ClientGamePage({
                         prev +
                         cur.ratings.reduce(
                           (prev2, cur2) =>
-                            prev2 +
-                            1 /
-                              (cur2.game.ratingCategories.length +
-                                ratingCategories.length),
+                            prev2 + cur2.game.jamId === game.jamId
+                              ? 1 /
+                                (cur2.game.ratingCategories.length +
+                                  ratingCategories.length)
+                              : 0,
                           0
                         ),
                       0
@@ -1075,10 +1091,11 @@ export default function ClientGamePage({
                       prev +
                       cur.ratings.reduce(
                         (prev2, cur2) =>
-                          prev2 +
-                          1 /
-                            (cur2.game.ratingCategories.length +
-                              ratingCategories.length),
+                          prev2 + cur2.game.jamId === game.jamId
+                            ? 1 /
+                              (cur2.game.ratingCategories.length +
+                                ratingCategories.length)
+                            : 0,
                         0
                       ),
                     0

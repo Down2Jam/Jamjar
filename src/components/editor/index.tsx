@@ -44,6 +44,7 @@ type EditorProps = {
   content: string;
   setContent: (content: string) => void;
   gameEditor?: boolean;
+  size?: "xs" | "sm";
 };
 
 const limit = 32767;
@@ -52,6 +53,7 @@ export default function Editor({
   content,
   setContent,
   gameEditor,
+  size,
 }: EditorProps) {
   const { colors } = useTheme();
   const t = useTranslations();
@@ -129,8 +131,11 @@ export default function Editor({
         class:
           (gameEditor
             ? "min-h-[600px] max-h-[600px]"
-            : "min-h-[150px] max-h-[400px]") +
-          " overflow-y-auto cursor-text rounded-md border p-5 focus-within:outline-none focus-within:border-blue-500 !duration-250 !ease-linear !transition-all",
+            : size == "sm"
+            ? "min-h-[150px] max-h-[400px]"
+            : "min-h-[100px] max-h-[400px]") +
+          (size == "sm" ? " border-gray-500" : " border-gray-600") +
+          " overflow-y-auto cursor-text rounded-md border px-5 focus-within:outline-none focus-within:border-blue-500 !duration-250 !ease-linear !transition-all",
       },
       handleDOMEvents: {
         keydown: (_view, event) => {
@@ -329,12 +334,12 @@ export default function Editor({
 
   return (
     <div className="w-full">
-      <EditorMenuBar editor={editor} />
+      <EditorMenuBar editor={editor} size={size} />
       <ThemedProse>
         <EditorContent editor={editor} />
       </ThemedProse>
       <div className="mt-3" />
-      {editor && (
+      {editor && size == "sm" && (
         <div
           className={`transform-color duration-250 ease-linear flex items-center gap-3`}
           style={{

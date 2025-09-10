@@ -7,15 +7,22 @@ import { Button } from "@/framework/Button";
 import { addToast } from "@heroui/react";
 
 // CreateComment.tsx
-export default function CreateComment({ gameId }: { gameId: number }) {
+export default function CreateComment({
+  gameId,
+  size = "sm",
+}: {
+  gameId: number;
+  size?: "xs" | "sm";
+}) {
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
 
   return (
     <>
-      <Editor content={content} setContent={setContent} />
-      <div className="p-4" />
+      <Editor content={content} setContent={setContent} size={size} />
+      {size == "sm" && <div className="p-4" />}
       <Button
+        size={size}
         onClick={async () => {
           if (!content) {
             addToast({

@@ -27,9 +27,13 @@ import { addToast } from "@heroui/react";
 
 type EditorMenuProps = {
   editor: Editor | null;
+  size?: "xs" | "sm";
 };
 
-export default function EditorMenuBar({ editor }: EditorMenuProps) {
+export default function EditorMenuBar({
+  editor,
+  size = "sm",
+}: EditorMenuProps) {
   if (!editor) return null;
 
   const addLink = () => {
@@ -120,119 +124,134 @@ export default function EditorMenuBar({ editor }: EditorMenuProps) {
     });
   }
 
+  const iconSize = size === "sm" ? 20 : 16;
+  const isXS = size === "xs";
+
   const buttons = [
     {
-      icon: <Bold size={20} />,
+      icon: <Bold size={iconSize} />,
       onClick: () => editor.chain().focus().toggleBold().run(),
-      disabled: false,
+      disabled: !editor.can().toggleBold?.() && false,
       isActive: editor.isActive("bold"),
     },
     {
-      icon: <Italic size={20} />,
+      icon: <Italic size={iconSize} />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
-      disabled: false,
+      disabled: !editor.can().toggleItalic?.() && false,
       isActive: editor.isActive("italic"),
     },
     {
-      icon: <Highlighter size={20} />,
+      icon: <Highlighter size={iconSize} />,
       onClick: () => editor.chain().focus().toggleHighlight().run(),
-      disabled: false,
+      disabled: !editor.can().toggleHighlight?.() && false,
       isActive: editor.isActive("highlight"),
     },
     {
-      icon: <Strikethrough size={20} />,
+      icon: <Strikethrough size={iconSize} />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
-      disabled: false,
+      disabled: !editor.can().toggleStrike?.() && false,
       isActive: editor.isActive("strike"),
     },
     {
-      icon: <Subscript size={20} />,
-      onClick: () => editor.chain().focus().toggleSubscript().run(),
-      disabled: false,
-      isActive: editor.isActive("subscript"),
-    },
-    {
-      icon: <Superscript size={20} />,
-      onClick: () => editor.chain().focus().toggleSuperscript().run(),
-      disabled: false,
-      isActive: editor.isActive("superscript"),
-    },
-    {
-      icon: <LinkIcon size={20} />,
+      icon: <LinkIcon size={iconSize} />,
       onClick: addLink,
       disabled: false,
       isActive: editor.isActive("link"),
     },
     {
-      icon: <ImageIcon size={20} />,
+      icon: <ImageIcon size={iconSize} />,
       onClick: addImage,
       disabled: false,
       isActive: false,
     },
     {
-      icon: <Minus size={20} />,
+      icon: <Subscript size={iconSize} />,
+      onClick: () => editor.chain().focus().toggleSubscript().run(),
+      disabled: !editor.can().toggleSubscript?.(),
+      isActive: editor.isActive("subscript"),
+      hideOnXS: true,
+    },
+    {
+      icon: <Superscript size={iconSize} />,
+      onClick: () => editor.chain().focus().toggleSuperscript().run(),
+      disabled: !editor.can().toggleSuperscript?.(),
+      isActive: editor.isActive("superscript"),
+      hideOnXS: true,
+    },
+    {
+      icon: <Minus size={iconSize} />,
       onClick: () => editor.chain().focus().setHorizontalRule().run(),
-      disabled: !editor.can().setHorizontalRule(),
+      disabled: !editor.can().setHorizontalRule?.(),
+      isActive: false,
+      hideOnXS: true,
+    },
+    {
+      icon: <Quote size={iconSize} />,
+      onClick: () => editor.chain().focus().toggleBlockquote().run(),
+      disabled: !editor.can().toggleBlockquote?.(),
+      isActive: editor.isActive("blockquote"),
+      hideOnXS: true,
+    },
+    {
+      icon: <Code size={iconSize} />,
+      onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+      disabled: !editor.can().toggleCodeBlock?.(),
+      isActive: editor.isActive("codeBlock"),
+      hideOnXS: true,
+    },
+    {
+      icon: <AlignLeft size={iconSize} />,
+      onClick: () => editor.chain().focus().setTextAlign("left").run(),
+      disabled: !editor.can().setTextAlign?.("left"),
+      isActive: editor.isActive({ textAlign: "left" }),
+      hideOnXS: true,
+    },
+    {
+      icon: <AlignRight size={iconSize} />,
+      onClick: () => editor.chain().focus().setTextAlign("right").run(),
+      disabled: !editor.can().setTextAlign?.("right"),
+      isActive: editor.isActive({ textAlign: "right" }),
+      hideOnXS: true,
+    },
+    {
+      icon: <AlignCenter size={iconSize} />,
+      onClick: () => editor.chain().focus().setTextAlign("center").run(),
+      disabled: !editor.can().setTextAlign?.("center"),
+      isActive: editor.isActive({ textAlign: "center" }),
+      hideOnXS: true,
+    },
+    {
+      icon: <AlignJustify size={iconSize} />,
+      onClick: () => editor.chain().focus().setTextAlign("justify").run(),
+      disabled: !editor.can().setTextAlign?.("justify"),
+      isActive: editor.isActive({ textAlign: "justify" }),
+      hideOnXS: true,
+    },
+    {
+      icon: <Undo size={iconSize} />,
+      onClick: () => editor.chain().focus().undo().run(),
+      disabled: !editor.can().undo(),
       isActive: false,
     },
     {
-      icon: <Quote size={20} />,
-      onClick: () => editor.chain().focus().toggleBlockquote().run(),
-      disabled: !editor.can().toggleBlockquote(),
-      isActive: editor.isActive("blockquote"),
-    },
-    {
-      icon: <Code size={20} />,
-      onClick: () => editor.chain().focus().toggleCodeBlock().run(),
-      disabled: !editor.can().toggleCodeBlock(),
-      isActive: editor.isActive("codeblock"),
-    },
-    {
-      icon: <AlignLeft size={20} />,
-      onClick: () => editor.chain().focus().setTextAlign("left").run(),
-      disabled: !editor.can().setTextAlign("left"),
-      isActive: editor.isActive("textalign"),
-    },
-    {
-      icon: <AlignRight size={20} />,
-      onClick: () => editor.chain().focus().setTextAlign("right").run(),
-      disabled: !editor.can().setTextAlign("right"),
-      isActive: editor.isActive("textalign"),
-    },
-    {
-      icon: <AlignCenter size={20} />,
-      onClick: () => editor.chain().focus().setTextAlign("center").run(),
-      disabled: !editor.can().setTextAlign("center"),
-      isActive: editor.isActive("textalign"),
-    },
-    {
-      icon: <AlignJustify size={20} />,
-      onClick: () => editor.chain().focus().setTextAlign("justify").run(),
-      disabled: !editor.can().setTextAlign("justify"),
-      isActive: editor.isActive("textalign"),
-    },
-    {
-      icon: <Undo size={20} />,
-      onClick: () => editor.chain().focus().undo().run(),
-      disabled: !editor.can().undo(),
-      isActive: editor.isActive("undo"),
-    },
-    {
-      icon: <Redo size={20} />,
+      icon: <Redo size={iconSize} />,
       onClick: () => editor.chain().focus().redo().run(),
       disabled: !editor.can().redo(),
-      isActive: editor.isActive("redo"),
+      isActive: false,
     },
   ];
 
+  const visibleButtons = buttons.filter((b) => !(isXS && b.hideOnXS));
+
   return (
     <Hstack className="mb-2" wrap>
-      {buttons.map(({ icon, onClick, disabled, isActive }, index) => (
+      {visibleButtons.map(({ icon, onClick, disabled, isActive }, index) => (
         <EditorMenuButton
           key={index}
           onClick={onClick}
           isActive={isActive}
           disabled={disabled}
+          size={size}
         >
           {icon}
         </EditorMenuButton>
