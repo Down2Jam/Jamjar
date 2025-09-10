@@ -54,7 +54,11 @@ function formatJamWindow(
   return `${dFmt.format(start)} – ${dFmt.format(end)}`;
 }
 
-const restrictedSorts = new Set<GameSort>(["leastratings", "danger"]);
+const restrictedSorts = new Set<GameSort>([
+  "leastratings",
+  "danger",
+  "ratingbalance",
+]);
 
 export default function Games() {
   const searchParams = useSearchParams();
@@ -66,7 +70,9 @@ export default function Games() {
 
   const sortParam = (searchParams.get("sort") as GameSort) || "random";
   const [sort, setSort] = useState<GameSort>(
-    (["random", "leastratings", "danger"].includes(sortParam) &&
+    (["random", "leastratings", "danger", "ratingbalance"].includes(
+      sortParam
+    ) &&
       (sortParam as GameSort)) ||
       "random"
   );
@@ -108,6 +114,11 @@ export default function Games() {
       name: "GameSort.Danger.Title",
       icon: "circlealert",
       description: "GameSort.Danger.Description",
+    },
+    ratingbalance: {
+      name: "Rating Balance",
+      icon: "scale",
+      description: "Ratings given minus ratings gotten",
     },
   };
 

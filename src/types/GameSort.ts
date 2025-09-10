@@ -1,1 +1,1 @@
-export type GameSort = "random" | "leastratings" | "danger";
+export type GameSort = "random" | "leastratings" | "danger" | "ratingbalance";
