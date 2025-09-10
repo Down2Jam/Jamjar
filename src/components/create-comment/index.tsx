@@ -75,7 +75,7 @@ export default function CreateComment({
             }
           }}
         >
-          {size == "sm" ? "Create Comment" : "Submit"}
+          {size == "sm" ? "Create Comment" : "Submit Feedback"}
         </Button>
       )}
     </>

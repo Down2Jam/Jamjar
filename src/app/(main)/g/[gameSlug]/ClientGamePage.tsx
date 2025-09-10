@@ -596,6 +596,9 @@ export default function ClientGamePage({
                     (activeJamResponse?.phase == "Rating" ||
                       activeJamResponse?.phase == "Submission") && (
                       <Vstack align="start">
+                        <Text size="xs" color="textFaded">
+                          Ratings are automatically saved
+                        </Text>
                         {[...game.ratingCategories, ...ratingCategories]
                           .sort((a, b) => b.order - a.order)
                           .map((ratingCategory) => (
@@ -1344,6 +1347,7 @@ function StarRow({
   gameId: number;
 }) {
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
+  const { colors } = useTheme();
 
   return (
     <div className="flex items-center gap-4">
@@ -1365,9 +1369,14 @@ function StarRow({
           />
         ))}
       </div>
-      <p className="text-[#666] dark:text-[#ccc]">{name}</p>
-      <Tooltip content={description}>
-        <CircleHelp size={16} className="text-[#ccc] dark:text-[#333]" />
+      <Text color="textFaded">{name}</Text>
+      <Tooltip content={description} position="top">
+        <CircleHelp
+          size={16}
+          style={{
+            color: colors["textFaded"],
+          }}
+        />
       </Tooltip>
       {text && (
         <Tooltip
@@ -1410,6 +1419,8 @@ function StarElement({
   setNewlyClicked: (arg0: boolean) => void;
   gameId: number;
 }) {
+  const { colors } = useTheme();
+
   return (
     <div
       className="relative w-6 h-6 cursor-pointer"
@@ -1423,31 +1434,35 @@ function StarElement({
       {/* Full Star */}
       <Star
         fill="currentColor"
-        className={`absolute transition-all duration-300 ${
-          hoverStars[id] > 0 &&
-          hoverStars[id] >= value &&
-          hoverCategoryId == id &&
-          !newlyClicked
-            ? "text-[#777]"
-            : selectedStars[id] > 0 && selectedStars[id] >= value
-            ? "text-yellow-400 dark:text-yellow-200"
-            : "text-[#ccc] dark:text-[#333]"
-        }`}
+        className={`absolute transition-all duration-300`}
+        style={{
+          color:
+            hoverStars[id] > 0 &&
+            hoverStars[id] >= value &&
+            hoverCategoryId == id &&
+            !newlyClicked
+              ? colors["orangeDark"]
+              : selectedStars[id] > 0 && selectedStars[id] >= value
+              ? colors["yellow"]
+              : colors["base"],
+        }}
       />
       {/* Half Star (Overlapping Left Side) */}
       <Star
         fill="currentColor"
-        className={`absolute transition-all duration-300 ${
-          hoverStars[id] > 0 &&
-          hoverStars[id] >= value - 1 &&
-          hoverCategoryId == id &&
-          !newlyClicked
-            ? "text-[#777]"
-            : selectedStars[id] > 0 && selectedStars[id] >= value - 1
-            ? "text-yellow-400 dark:text-yellow-200"
-            : "text-[#ccc] dark:text-[#333]"
-        }`}
-        style={{ clipPath: "inset(0 50% 0 0)" }} // Show only left half
+        className={`absolute transition-all duration-300`}
+        style={{
+          clipPath: "inset(0 50% 0 0)",
+          color:
+            hoverStars[id] > 0 &&
+            hoverStars[id] >= value - 1 &&
+            hoverCategoryId == id &&
+            !newlyClicked
+              ? colors["orangeDark"]
+              : selectedStars[id] > 0 && selectedStars[id] >= value - 1
+              ? colors["yellow"]
+              : colors["base"],
+        }} // Show only left half
       />
       {/* Left Half (Triggers value - 1) */}
       <div
