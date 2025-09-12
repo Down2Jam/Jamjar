@@ -6,4 +6,5 @@ export interface TeamApplicationType {
   userId: number;
   user: UserType;
   content: string;
+  createdAt: Date;
 }

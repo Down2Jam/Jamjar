@@ -99,7 +99,6 @@ export function Badge({
             height: size,
             ...colorMap[color],
             ...positionStyle,
-            transform: "translate(50%, 50%)", // or another based on position
           }}
         >
           {content}

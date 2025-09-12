@@ -1,18 +1,24 @@
 "use client";
 
-import { Button } from "@/framework/Button";
 import { Card } from "@/framework/Card";
-import { Vstack } from "@/framework/Stack";
+import Icon from "@/framework/Icon";
+import { Hstack, Vstack } from "@/framework/Stack";
+import Text from "@/framework/Text";
 import { handleApplication, handleInvite } from "@/helpers/team";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { useEffect, useState } from "react";
+import TeamInviteNotification from "./TeamInviteNotification";
+import { deleteNotification } from "@/helpers/notifications";
+import TeamApplicationNotification from "./TeamApplicationNotification";
+import GeneralNotification from "./GeneralNotification";
+import CommentNotification from "./CommentNotification";
 
 export default function InboxPage() {
   const [user, setUser] = useState<UserType>();
 
   useEffect(() => {
-    async function fetchData() {
+    (async () => {
       try {
         const self = await getSelf();
         const data = await self.json();
@@ -20,82 +26,115 @@ export default function InboxPage() {
       } catch (error) {
         console.error(error);
       }
-    }
-
-    fetchData();
+    })();
   }, []);
 
+  const notifications = user?.receivedNotifications ?? [];
+
+  const removeNotificationFromState = (id: number) =>
+    setUser((prev) =>
+      prev
+        ? {
+            ...prev,
+            receivedNotifications: prev.receivedNotifications.filter(
+              (n) => n.id !== id
+            ),
+          }
+        : prev
+    );
+
   return (
-    <div className="flex flex-col gap-3 text-[#333] dark:text-white">
-      <p>Invites</p>
-      {user?.teamInvites.length || 0 > 0 ? (
-        <div className="flex flex-col gap-3">
-          {user?.teamInvites.map((invite) => (
-            <Card key={invite.id}>
-              <Vstack>
-                <p>{invite.team.owner.name}&apos;s Team</p>
-                <p>{invite.content}</p>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      handleInvite(invite.id, true);
-                    }}
-                    icon="check"
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      handleInvite(invite.id, false);
-                    }}
-                    icon="x"
-                  >
-                    Reject
-                  </Button>
-                </div>
-              </Vstack>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <p>None</p>
-      )}
-      <p>Applications</p>
-      {user?.ownedTeams.filter((team) => team.applications.length > 0).length ||
-      0 > 0 ? (
-        <div className="flex flex-col gap-3">
-          {user?.ownedTeams.map((team) =>
-            team.applications.map((application) => (
-              <Card key={application.id}>
-                <Vstack>
-                  <p>{application.user.name}</p>
-                  <p>{application.content}</p>
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => {
-                        handleApplication(application.id, true);
-                      }}
-                      icon="check"
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        handleApplication(application.id, false);
-                      }}
-                      icon="x"
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                </Vstack>
-              </Card>
-            ))
-          )}
-        </div>
-      ) : (
-        <p>None</p>
-      )}
-    </div>
+    <Vstack>
+      <Card>
+        <Vstack>
+          <Hstack>
+            <Icon name="inbox" color="text" />
+            <Text size="xl" color="text" weight="semibold">
+              Notifications
+            </Text>
+          </Hstack>
+          <Text size="sm" color="textFaded">
+            Alerts of things happening on the site
+          </Text>
+        </Vstack>
+      </Card>
+
+      {notifications.map((notification) => {
+        const handleMarkRead = async (id: number) => {
+          const res = await deleteNotification(id);
+          if (res.ok) removeNotificationFromState(id);
+        };
+
+        switch (notification.type) {
+          case "TEAM_INVITE":
+            return (
+              <TeamInviteNotification
+                key={notification.id}
+                notification={notification}
+                onAccept={async (inviteId, notificationId) => {
+                  try {
+                    const ok = await handleInvite(inviteId, true);
+                    if (ok) await handleMarkRead(notificationId);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                onReject={async (inviteId, notificationId) => {
+                  try {
+                    const ok = await handleInvite(inviteId, false);
+                    if (ok) await handleMarkRead(notificationId);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+              />
+            );
+
+          case "TEAM_APPLICATION":
+            return (
+              <TeamApplicationNotification
+                key={notification.id}
+                notification={notification}
+                onAccept={async (applicationId, notificationId) => {
+                  try {
+                    const ok = await handleApplication(applicationId, true);
+                    if (ok) await handleMarkRead(notificationId);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                onReject={async (applicationId, notificationId) => {
+                  try {
+                    const ok = await handleApplication(applicationId, false);
+                    if (ok) await handleMarkRead(notificationId);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+              />
+            );
+
+          case "GAME_COMMENT":
+          case "POST_COMMENT":
+          case "COMMENT_REPLY":
+            return (
+              <CommentNotification
+                key={notification.id}
+                notification={notification}
+                onMarkRead={handleMarkRead}
+              />
+            );
+
+          default:
+            return (
+              <GeneralNotification
+                key={notification.id}
+                notification={notification}
+                onMarkRead={handleMarkRead}
+              />
+            );
+        }
+      })}
+    </Vstack>
   );
 }

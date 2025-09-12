@@ -1,3 +1,5 @@
+import { GameType } from "./GameType";
+import { PostType } from "./PostType";
 import { UserType } from "./UserType";
 
 export interface CommentType {
@@ -8,4 +10,6 @@ export interface CommentType {
   createdAt: Date;
   likes: [];
   hasLiked: boolean;
+  game?: GameType;
+  post?: PostType;
 }

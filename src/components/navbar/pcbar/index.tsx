@@ -46,6 +46,7 @@ import SiteThemeDropdown from "./SiteThemeDropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "@/framework/Button";
+import { Badge } from "@/framework/Badge";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -380,17 +381,33 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         {(user || isLgDown) && (
           <>
             <Divider orientation="vertical" />
-            {user && (
-              <NavbarButton
-                icon={<Bell size={16} />}
-                href="/inbox"
-                name="Navbar.Inbox.Title"
-                description="Navbar.Inbox.Description"
-                hotkey={["G", "I"]}
-                color="green"
-                isIconOnly
-              />
-            )}
+            {user &&
+              (user.receivedNotifications.length ? (
+                <Badge
+                  position="bottom-right"
+                  content={user.receivedNotifications.length}
+                >
+                  <NavbarButton
+                    icon={<Bell size={16} />}
+                    href="/inbox"
+                    name="Navbar.Inbox.Title"
+                    description="Navbar.Inbox.Description"
+                    hotkey={["G", "I"]}
+                    color="green"
+                    isIconOnly
+                  />
+                </Badge>
+              ) : (
+                <NavbarButton
+                  icon={<Bell size={16} />}
+                  href="/inbox"
+                  name="Navbar.Inbox.Title"
+                  description="Navbar.Inbox.Description"
+                  hotkey={["G", "I"]}
+                  color="green"
+                  isIconOnly
+                />
+              ))}
             <NavbarUser user={user} />
           </>
         )}

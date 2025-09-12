@@ -118,7 +118,7 @@ export default function Games() {
     ratingbalance: {
       name: "Rating Balance",
       icon: "scale",
-      description: "Ratings given minus ratings gotten",
+      description: "Sorts by ratings given minus ratings gotten",
     },
   };
 

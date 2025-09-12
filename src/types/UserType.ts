@@ -1,3 +1,4 @@
+import { NotificationType } from "./NotificationType";
 import { RatingType } from "./RatingType";
 import { RoleType } from "./RoleType";
 import { TeamInviteType } from "./TeamInviteType";
@@ -21,4 +22,5 @@ export interface UserType {
   teamInvites: TeamInviteType[];
   ownedTeams: TeamType[];
   ratings: RatingType[];
+  receivedNotifications: NotificationType[];
 }
