@@ -1,8 +1,13 @@
+import { AchievementType } from "./AchievementType";
+import { CommentType } from "./CommentType";
 import { NotificationType } from "./NotificationType";
+import { PostType } from "./PostType";
 import { RatingType } from "./RatingType";
 import { RoleType } from "./RoleType";
+import { ScoreType } from "./ScoreType";
 import { TeamInviteType } from "./TeamInviteType";
 import { TeamType } from "./TeamType";
+import { TrackType } from "./TrackType";
 
 export interface UserType {
   id: number;
@@ -22,5 +27,10 @@ export interface UserType {
   teamInvites: TeamInviteType[];
   ownedTeams: TeamType[];
   ratings: RatingType[];
+  tracks: TrackType[];
+  achievements: AchievementType[];
+  scores: ScoreType[];
+  posts: PostType[];
+  comments: CommentType[];
   receivedNotifications: NotificationType[];
 }

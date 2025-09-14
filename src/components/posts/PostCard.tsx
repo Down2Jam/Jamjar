@@ -32,9 +32,9 @@ export default function PostCard({
   post: PostType;
   style: PostStyle;
   user?: UserType;
-  index: number;
-  setCurrentPost: Dispatch<SetStateAction<number>>;
-  onOpen: (val1: boolean) => void;
+  index?: number;
+  setCurrentPost?: Dispatch<SetStateAction<number>>;
+  onOpen?: (val1: boolean) => void;
 }) {
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
@@ -55,9 +55,15 @@ export default function PostCard({
                 href={`/p/${post.slug}`}
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
-                    e.preventDefault();
-                    setCurrentPost(index);
-                    onOpen(true);
+                    if (onOpen) {
+                      e.preventDefault();
+                    }
+                    if (setCurrentPost && index) {
+                      setCurrentPost(index);
+                    }
+                    if (onOpen) {
+                      onOpen(true);
+                    }
                   }
                 }}
               >
@@ -103,9 +109,15 @@ export default function PostCard({
                 href={`/p/${post.slug}`}
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
-                    e.preventDefault();
-                    setCurrentPost(index);
-                    onOpen(true);
+                    if (onOpen) {
+                      e.preventDefault();
+                    }
+                    if (setCurrentPost && index) {
+                      setCurrentPost(index);
+                    }
+                    if (onOpen) {
+                      onOpen(true);
+                    }
                   }
                 }}
               >
@@ -428,9 +440,15 @@ export default function PostCard({
             href={`/p/${post.slug}`}
             onClick={(e) => {
               if (window.innerWidth > 500) {
-                e.preventDefault();
-                setCurrentPost(index);
-                onOpen(true);
+                if (onOpen) {
+                  e.preventDefault();
+                }
+                if (setCurrentPost && index) {
+                  setCurrentPost(index);
+                }
+                if (onOpen) {
+                  onOpen(true);
+                }
               }
             }}
           >
@@ -469,9 +487,15 @@ export default function PostCard({
             href={`/p/${post.slug}`}
             onClick={(e) => {
               if (window.innerWidth > 500) {
-                e.preventDefault();
-                setCurrentPost(index);
-                onOpen(true);
+                if (onOpen) {
+                  e.preventDefault();
+                }
+                if (setCurrentPost && index) {
+                  setCurrentPost(index);
+                }
+                if (onOpen) {
+                  onOpen(true);
+                }
               }
             }}
           >

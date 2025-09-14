@@ -12,6 +12,7 @@ interface LinkProps {
   showExternalIcon?: boolean;
   target?: "_blank" | "_self";
   rel?: string;
+  underline?: boolean;
 }
 
 export function Link({
@@ -21,6 +22,7 @@ export function Link({
   showExternalIcon = true,
   target,
   rel,
+  underline = true,
 }: LinkProps) {
   const { colors } = useTheme();
   const [hovered, setHovered] = useState(false);
@@ -50,7 +52,9 @@ export function Link({
       rel={resolvedRel}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={`inline-flex items-center gap-1 underline transition-colors duration-300 ${className}`}
+      className={`inline-flex items-center gap-1 underline transition-colors duration-300 ${
+        underline ? "underline" : "no-underline"
+      } ${className}`}
       style={{ color: hovered ? colors.blueDark : colors.blue }}
     >
       {children}

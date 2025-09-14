@@ -3,7 +3,7 @@
 import { use } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
-import { addToast, User } from "@heroui/react";
+import { addToast } from "@heroui/react";
 import { Tabs, Tab } from "@/framework/Tabs";
 import {
   Table,
@@ -60,6 +60,7 @@ import Popover from "@/framework/Popover";
 import Modal from "@/framework/Modal";
 import Icon, { IconName } from "@/framework/Icon";
 import { Card } from "@/framework/Card";
+import { Avatar } from "@/framework/Avatar";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -670,7 +671,7 @@ export default function ClientGamePage({
                       >
                         {leaderboard.scores && (
                           <>
-                            <div className="p-1" />
+                            <div />
                             <Table
                               bottomContent={
                                 <div className="flex w-full justify-center">
@@ -766,15 +767,20 @@ export default function ClientGamePage({
                                             (page - 1)}
                                       </TableCell>
                                       <TableCell>
-                                        <User
-                                          className="flex justify-start"
-                                          name={score.user.name}
-                                          avatarProps={{
-                                            src: score.user.profilePicture,
-                                            className: "w-6 h-6",
-                                            size: "sm",
-                                          }}
-                                        />
+                                        <Link
+                                          href={`/u/${score.user.slug}`}
+                                          underline={false}
+                                        >
+                                          <Hstack>
+                                            <Avatar
+                                              src={score.user.profilePicture}
+                                              size={24}
+                                            />
+                                            <Text color="text">
+                                              {score.user.name}
+                                            </Text>
+                                          </Hstack>
+                                        </Link>
                                       </TableCell>
                                       <TableCell
                                         style={{
@@ -850,7 +856,7 @@ export default function ClientGamePage({
                             </Table>
                           </>
                         )}
-                        <div className="mt-4">
+                        <div className="mt-2">
                           <Button
                             icon="plus"
                             onClick={() => {

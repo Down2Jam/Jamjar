@@ -53,7 +53,7 @@ export function Tabs({
         role="tablist"
         aria-orientation="horizontal"
         className={[
-          "flex gap-x-2",
+          "flex gap-x-2 mb-2",
           wrap
             ? "flex-wrap content-start gap-y-2 overflow-x-visible"
             : "overflow-x-auto no-scrollbar",
