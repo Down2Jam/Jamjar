@@ -223,9 +223,9 @@ export default function MusicPage() {
           <SidebarSong
             key={index}
             name={track.name}
-            artist={track.composer.name}
+            artist={track.composer}
             thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
-            game={track.game.name}
+            game={track.game}
             song={track.url}
           />
         ))}

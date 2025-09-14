@@ -751,34 +751,55 @@ export default function ClientGamePage({
                             <div />
                             <Table
                               bottomContent={
-                                <div className="flex w-full justify-center">
-                                  <Pagination
-                                    showControls
-                                    color="primary"
-                                    variant="faded"
-                                    page={page}
-                                    total={Math.ceil(
-                                      (leaderboard.onlyBest
-                                        ? Array.from(
-                                            leaderboard.scores
-                                              .reduce((acc, score) => {
-                                                if (
-                                                  !acc.has(score.user.id) ||
-                                                  acc.get(score.user.id).data <
-                                                    score.data
-                                                ) {
-                                                  acc.set(score.user.id, score);
-                                                }
-                                                return acc;
-                                              }, new Map())
-                                              .values()
-                                          )
-                                        : leaderboard.scores
-                                      ).length / leaderboard.maxUsersShown
-                                    )}
-                                    onChange={(page) => setPage(page)}
-                                  />
-                                </div>
+                                (leaderboard.onlyBest
+                                  ? Array.from(
+                                      leaderboard.scores
+                                        .reduce((acc, score) => {
+                                          if (
+                                            !acc.has(score.user.id) ||
+                                            acc.get(score.user.id).data <
+                                              score.data
+                                          ) {
+                                            acc.set(score.user.id, score);
+                                          }
+                                          return acc;
+                                        }, new Map())
+                                        .values()
+                                    )
+                                  : leaderboard.scores
+                                ).length >= leaderboard.maxUsersShown ? (
+                                  <div className="flex w-full justify-center">
+                                    <Pagination
+                                      showControls
+                                      color="primary"
+                                      variant="faded"
+                                      page={page}
+                                      total={Math.ceil(
+                                        (leaderboard.onlyBest
+                                          ? Array.from(
+                                              leaderboard.scores
+                                                .reduce((acc, score) => {
+                                                  if (
+                                                    !acc.has(score.user.id) ||
+                                                    acc.get(score.user.id)
+                                                      .data < score.data
+                                                  ) {
+                                                    acc.set(
+                                                      score.user.id,
+                                                      score
+                                                    );
+                                                  }
+                                                  return acc;
+                                                }, new Map())
+                                                .values()
+                                            )
+                                          : leaderboard.scores
+                                        ).length / leaderboard.maxUsersShown
+                                      )}
+                                      onChange={(page) => setPage(page)}
+                                    />
+                                  </div>
+                                ) : undefined
                               }
                             >
                               <TableHeader>
@@ -1154,9 +1175,9 @@ export default function ClientGamePage({
                     <SidebarSong
                       key={track.id}
                       name={track.name}
-                      artist={track.composer.name}
+                      artist={track.composer}
                       thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
-                      game={track.game.name}
+                      game={track.game}
                       song={track.url}
                     />
                   ))}

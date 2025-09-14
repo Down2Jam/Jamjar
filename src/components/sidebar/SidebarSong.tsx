@@ -7,13 +7,16 @@ import Icon from "@/framework/Icon";
 import Text from "@/framework/Text";
 import { useMusic } from "@/providers/MusicProvider";
 import Image from "next/image";
+import { Link } from "@/framework/Link";
+import { GameType } from "@/types/GameType";
+import { UserType } from "@/types/UserType";
 
 interface SidebarSongProps {
   name: string;
-  artist: string;
+  artist: UserType;
   thumbnail: string;
   song: string;
-  game: string;
+  game: GameType;
 }
 
 export default function SidebarSong({
@@ -38,12 +41,16 @@ export default function SidebarSong({
           />
           <Vstack className="z-10" align="start" gap={0}>
             <Text>{name}</Text>
-            <Text size="xs" color="textFaded">
-              {game}
-            </Text>
-            <Text size="sm" color="textFaded">
-              {artist}
-            </Text>
+            <Link href={`/g/${game.slug}`} underline={false}>
+              <Text size="xs" color="textFaded">
+                {game.name}
+              </Text>
+            </Link>
+            <Link href={`/u/${artist.slug}`} underline={false}>
+              <Text size="sm" color="textFaded">
+                {artist.name || artist.slug}
+              </Text>
+            </Link>
           </Vstack>
         </Hstack>
 

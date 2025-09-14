@@ -19,12 +19,14 @@ import Text from "@/framework/Text";
 import { Hstack, Vstack } from "@/framework/Stack";
 import { TrackType } from "@/types/TrackType";
 import { getCookie } from "@/helpers/cookie";
+import { GameType } from "@/types/GameType";
+import { UserType } from "@/types/UserType";
 
 type Track = {
   name: string;
-  artist: string;
+  artist: UserType;
   thumbnail: string;
-  game: string;
+  game: GameType;
   song: string;
 };
 
@@ -321,9 +323,9 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         current: {
           song: value.current?.url || "",
           name: value.current?.name || "",
-          artist: value.current?.composer.name || "",
+          artist: value.current?.composer || ({} as UserType),
           thumbnail: value.current?.game.thumbnail || "/images/D2J_Icon.png",
-          game: value.current?.game.name || "",
+          game: value.current?.game || ({} as GameType),
         },
       }}
     >
@@ -419,7 +421,8 @@ function MiniPlayer() {
                   textOverflow: "ellipsis",
                 }}
               >
-                {current.game} — {current.artist}
+                {current.game.name} —{" "}
+                {current.artist.name || current.artist.slug}
               </div>
             </div>
 

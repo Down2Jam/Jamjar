@@ -9,21 +9,6 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import Text from "@/framework/Text";
 import Link from "next/link";
 
-const events = [
-  { name: "Phases.ThemeSubmission.Title", date: "AUG 15" },
-  { name: "Phases.ThemeElimination.Title", date: "AUG 22" },
-  { name: "Phases.ThemeVoting.Title", date: "AUG 29" },
-  { name: "Phases.GameJam.Title", date: "SEP 5" },
-  { name: "Phases.Rating.Title", date: "SEP 8" },
-  { name: "Phases.Results.Title", date: "SEP 21" },
-];
-
-const getDateObject = (dateString: string) => {
-  const date = new Date(`${dateString} ${new Date().getFullYear()}`);
-  date.setUTCHours(22, 0, 0, 0);
-  return date;
-};
-
 export default function JamHeader() {
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
@@ -34,10 +19,14 @@ export default function JamHeader() {
   const getStyleForDateDisplay = (
     index: number,
     nextEventIndex: number,
-    eventDateObj: Date,
-    currentDate: Date
+    currentDate: Date,
+    eventDateObj: Date | null
   ) => {
-    if (index === nextEventIndex - 1 && eventDateObj < currentDate) {
+    if (
+      eventDateObj &&
+      index === nextEventIndex - 1 &&
+      eventDateObj < currentDate
+    ) {
       return {
         backgroundColor: colors["blueDark"],
       };
@@ -63,7 +52,7 @@ export default function JamHeader() {
         borderColor: colors["purpleDark"],
       };
     }
-    if (eventDateObj < currentDate) {
+    if (eventDateObj && eventDateObj < currentDate) {
       return {
         borderWidth: "2px",
         borderStyle: "solid",
@@ -157,13 +146,78 @@ export default function JamHeader() {
     return () => clearInterval(timer);
   }, []);
 
+  const events = [
+    {
+      name: "Phases.ThemeSubmission.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(
+          new Date(activeJamResponse.jam.startTime).getTime() -
+            activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
+            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60 -
+            activeJamResponse.jam.suggestionHours * 1000 * 60 * 60
+        ),
+    },
+    {
+      name: "Phases.ThemeElimination.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(
+          new Date(activeJamResponse.jam.startTime).getTime() -
+            activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
+            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60
+        ),
+    },
+    {
+      name: "Phases.ThemeVoting.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(
+          new Date(activeJamResponse.jam.startTime).getTime() -
+            activeJamResponse.jam.votingHours * 1000 * 60 * 60
+        ),
+    },
+    {
+      name: "Phases.GameJam.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(activeJamResponse.jam.startTime),
+    },
+    {
+      name: "Phases.Rating.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(
+          new Date(activeJamResponse.jam.startTime).getTime() +
+            activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
+            activeJamResponse.jam.submissionHours * 1000 * 60 * 60
+        ),
+    },
+    {
+      name: "Phases.Results.Title",
+      date:
+        activeJamResponse &&
+        activeJamResponse.jam &&
+        new Date(
+          new Date(activeJamResponse.jam.startTime).getTime() +
+            activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
+            activeJamResponse.jam.submissionHours * 1000 * 60 * 60 +
+            activeJamResponse.jam.ratingHours * 1000 * 60 * 60
+        ),
+    },
+  ];
+
   const sortedEvents = events.map((event) => ({
     ...event,
-    dateObj: getDateObject(event.date),
   }));
 
   const nextEventIndex = sortedEvents.findIndex(
-    (event) => event.dateObj >= currentDate
+    (event) => event.date && event.date >= currentDate
   );
 
   // Helper function to get ordinal suffix
@@ -217,29 +271,84 @@ export default function JamHeader() {
                 {activeJamResponse?.jam ? (
                   <>
                     {new Date(
-                      activeJamResponse.jam.startTime
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                    })}{" "}
-                    {new Date(activeJamResponse.jam.startTime).getDate()}
-                    {getOrdinalSuffix(
-                      new Date(activeJamResponse.jam.startTime).getDate()
-                    )}
-                    {" - "}
-                    {new Date(
-                      new Date(activeJamResponse.jam.startTime).getTime() +
-                        activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                          activeJamResponse.jam.submissionHours * 60 * 60 * 1000
+                        : activeJamResponse.jam.startTime
                     ).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
                     {new Date(
-                      new Date(activeJamResponse.jam.startTime).getTime() +
-                        activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                          activeJamResponse.jam.submissionHours * 60 * 60 * 1000
+                        : activeJamResponse.jam.startTime
                     ).getDate()}
                     {getOrdinalSuffix(
                       new Date(
-                        new Date(activeJamResponse.jam.startTime).getTime() +
+                        activeJamResponse.phase == "Rating"
+                          ? new Date(
+                              activeJamResponse.jam.startTime
+                            ).getTime() +
+                            activeJamResponse.jam.jammingHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.submissionHours *
+                              60 *
+                              60 *
+                              1000
+                          : activeJamResponse.jam.startTime
+                      ).getDate()
+                    )}
+                    {" - "}
+                    {new Date(
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                          activeJamResponse.jam.submissionHours *
+                            60 *
+                            60 *
+                            1000 +
+                          activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                        : new Date(activeJamResponse.jam.startTime).getTime() +
                           activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                    })}{" "}
+                    {new Date(
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                          activeJamResponse.jam.submissionHours *
+                            60 *
+                            60 *
+                            1000 +
+                          activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                        : new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                    ).getDate()}
+                    {getOrdinalSuffix(
+                      new Date(
+                        activeJamResponse.phase == "Rating"
+                          ? new Date(
+                              activeJamResponse.jam.startTime
+                            ).getTime() +
+                            activeJamResponse.jam.jammingHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.submissionHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                          : new Date(
+                              activeJamResponse.jam.startTime
+                            ).getTime() +
+                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000
                       ).getDate()
                     )}
                   </>
@@ -298,15 +407,17 @@ export default function JamHeader() {
               ...getStyleForDateDisplay(
                 index,
                 nextEventIndex,
-                event.dateObj,
-                currentDate
+                currentDate,
+                event.date
               ),
             }}
           >
             <Text
               size="xs"
               color={
-                index === nextEventIndex - 1 && event.dateObj < currentDate
+                index === nextEventIndex - 1 &&
+                event.date &&
+                event.date < currentDate
                   ? "textLight"
                   : "text"
               }
@@ -316,12 +427,17 @@ export default function JamHeader() {
             <Text
               weight="bold"
               color={
-                index === nextEventIndex - 1 && event.dateObj < currentDate
+                index === nextEventIndex - 1 &&
+                event.date &&
+                event.date < currentDate
                   ? "textLight"
                   : "text"
               }
             >
-              {event.date}
+              {event.date
+                ?.toLocaleString("en-US", { month: "short" })
+                .toUpperCase()}{" "}
+              {event.date?.getDate()}
             </Text>
           </div>
         ))}

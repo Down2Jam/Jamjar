@@ -5,6 +5,7 @@ import PostCard from "@/components/posts/PostCard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import ThemedProse from "@/components/themed-prose";
 import { Avatar } from "@/framework/Avatar";
+import { Button } from "@/framework/Button";
 import { Card } from "@/framework/Card";
 import { Chip } from "@/framework/Chip";
 import Icon from "@/framework/Icon";
@@ -14,7 +15,7 @@ import { Tab, Tabs } from "@/framework/Tabs";
 import Text from "@/framework/Text";
 import Tooltip from "@/framework/Tooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { getUser } from "@/requests/user";
+import { getSelf, getUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import Image from "next/image";
@@ -190,6 +191,7 @@ export default function ClientUserPage({
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const [user, setUser] = useState<UserType>();
+  const [self, setSelf] = useState<UserType>();
   const { colors } = useTheme();
 
   const rarityStyles: Record<
@@ -228,6 +230,11 @@ export default function ClientUserPage({
     const fetchUser = async () => {
       const response = await getUser(`${slug}`);
       setUser((await response.json()).data);
+
+      const selfRes = await getSelf();
+      if (selfRes.ok) {
+        setSelf(await selfRes.json());
+      }
     };
 
     fetchUser();
@@ -283,6 +290,11 @@ export default function ClientUserPage({
               }}
             />
           </ThemedProse>
+          {self && self.id == user.id && (
+            <Button icon="cog" href="/settings">
+              Settings
+            </Button>
+          )}
         </Vstack>
       </Card>
       <Tabs>
@@ -332,9 +344,9 @@ export default function ClientUserPage({
                 <SidebarSong
                   key={track.id}
                   name={track.name}
-                  artist={track.composer.name}
+                  artist={track.composer}
                   thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
-                  game={track.game.name}
+                  game={track.game}
                   song={track.url}
                 />
               ))}
