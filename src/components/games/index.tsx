@@ -55,6 +55,7 @@ function formatJamWindow(
 }
 
 const restrictedSorts = new Set<GameSort>([
+  "karma",
   "leastratings",
   "danger",
   "ratingbalance",
@@ -68,13 +69,13 @@ export default function Games() {
   const [games, setGames] = useState<GameType[]>();
   const [user, setUser] = useState<UserType>();
 
-  const sortParam = (searchParams.get("sort") as GameSort) || "random";
+  const sortParam = (searchParams.get("sort") as GameSort) || "karma";
   const [sort, setSort] = useState<GameSort>(
-    (["random", "leastratings", "danger", "ratingbalance"].includes(
+    (["karma", "random", "leastratings", "danger", "ratingbalance"].includes(
       sortParam
     ) &&
       (sortParam as GameSort)) ||
-      "random"
+      "karma"
   );
   const hasUserSelected = useRef(false);
   const hasAppliedDefault = useRef(false);
@@ -100,6 +101,12 @@ export default function Games() {
     GameSort,
     { name: string; icon: IconName; description: string }
   > = {
+    karma: {
+      name: "Karma",
+      icon: "sparkles",
+      description:
+        "Shows games from people who are rating and giving good feedback",
+    },
     random: {
       name: "GameSort.Random.Title",
       icon: "dice3",
@@ -152,11 +159,13 @@ export default function Games() {
     const isRestricted = restrictedSorts.has(sort);
     const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
 
+    if (jamDetecting) return;
+
     if (!canUseRestrictedSorts && isRestricted) {
       setSort("random");
       updateQueryParam("sort", "random");
     }
-  }, [sort, jamId, currentJamId, updateQueryParam]);
+  }, [sort, jamId, currentJamId, updateQueryParam, jamDetecting]);
 
   useEffect(() => {
     (async () => {

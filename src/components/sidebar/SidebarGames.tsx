@@ -33,7 +33,7 @@ export default function SidebarGames() {
           }
         } catch {}
 
-        const gameResponse = await getGames("random", jamId);
+        const gameResponse = await getGames("karma", jamId);
         const data = await gameResponse.json();
         setGames(Array.isArray(data) ? data : data?.data ?? []);
       } catch (error) {
