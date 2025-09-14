@@ -25,6 +25,13 @@ type JamOption = {
   description?: string;
 };
 
+type TypeOption = {
+  id: "all" | "ODA" | "Extra" | "Regular";
+  name: string;
+  icon?: IconName;
+  description?: string;
+};
+
 function formatJamWindow(
   startISO?: string,
   jammingHours?: number
@@ -93,6 +100,23 @@ export default function Games() {
   const [currentJamId, setCurrentJamId] = useState<string | undefined>(
     undefined
   );
+
+  const initialTypeParam = useMemo(() => {
+    if (typeof window === "undefined") return "all";
+    const p = new URLSearchParams(window.location.search).get("type");
+    const allowed = new Set(["ODA", "Extra", "Regular"]);
+    if (!p) return "all";
+    return allowed.has(p) ? (p as TypeOption["id"]) : "all";
+  }, []);
+  const [typeFilter, setTypeFilter] =
+    useState<TypeOption["id"]>(initialTypeParam);
+
+  const typeOptions: TypeOption[] = [
+    { id: "all", name: "All Categories", icon: "layers" },
+    { id: "Regular", name: "Regular", icon: "gamepad2" },
+    { id: "Extra", name: "Extra", icon: "calendar" },
+    { id: "ODA", name: "ODA", icon: "swords" },
+  ];
 
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
   const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
@@ -292,6 +316,17 @@ export default function Games() {
     };
   }, [sort, jamId, jamDetecting]);
 
+  const displayedGames = useMemo(() => {
+    if (!games) return [];
+    if (typeFilter === "all") return games;
+
+    const wanted = typeFilter.toLowerCase();
+    return games.filter((g) => {
+      const t = g.category ?? "";
+      return String(t).toLowerCase() === wanted;
+    });
+  }, [games, typeFilter]);
+
   if (!hasData && (showBusy || jamDetecting)) {
     return (
       <Vstack>
@@ -364,12 +399,37 @@ export default function Games() {
               </Dropdown.Item>
             ))}
           </Dropdown>
+
+          {/* Type dropdown */}
+          <Dropdown
+            selectedValue={typeFilter}
+            onSelect={(key) => {
+              const val = key as TypeOption["id"];
+              setTypeFilter(val);
+              updateQueryParam("type", val);
+            }}
+          >
+            {typeOptions.map((t) => (
+              <Dropdown.Item
+                key={t.id}
+                value={t.id}
+                icon={t.icon || "gamepad2"}
+                description={
+                  t.id === "all"
+                    ? "Show all game categories"
+                    : `Only ${t.name} entries`
+                }
+              >
+                {t.name}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
         </Hstack>
       </Vstack>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {games && games.length > 0 ? (
-          games.map((game) => (
+        {displayedGames && displayedGames.length > 0 ? (
+          displayedGames.map((game) => (
             <GameCard
               key={game.id}
               game={game}
