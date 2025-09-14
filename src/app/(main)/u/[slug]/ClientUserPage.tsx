@@ -20,6 +20,52 @@ import Image from "next/image";
 import NextImage from "next/image";
 import { use, useEffect, useState } from "react";
 
+type RarityTier =
+  | "Abyssal"
+  | "Diamond"
+  | "Gold"
+  | "Silver"
+  | "Bronze"
+  | "Default";
+
+function getRarityTier(
+  haveCount: number,
+  totalEngaged: number
+): { tier: RarityTier; pct: number } {
+  const pct = totalEngaged > 0 ? (haveCount / totalEngaged) * 100 : 0;
+  if (totalEngaged >= 40 && pct <= 5) return { tier: "Abyssal", pct };
+  if (totalEngaged >= 20 && pct <= 10) return { tier: "Diamond", pct };
+  if (totalEngaged >= 10 && pct <= 25) return { tier: "Gold", pct };
+  if (totalEngaged >= 5 && pct <= 50) return { tier: "Silver", pct };
+  if (totalEngaged >= 5 && pct <= 100) return { tier: "Bronze", pct };
+  return { tier: "Default", pct };
+}
+
+function engagedUserIdsForGame(game: GameType): Set<number> {
+  const ids = new Set<number>();
+  if (!game) return ids;
+
+  for (const a of game.achievements ?? []) {
+    for (const u of a.users ?? []) {
+      if (u?.id != null) ids.add(u.id);
+    }
+  }
+
+  for (const lb of game.leaderboards ?? []) {
+    for (const s of lb.scores ?? []) {
+      const uid = s?.userId;
+      if (uid != null) ids.add(uid);
+    }
+  }
+
+  for (const r of game.ratings ?? []) {
+    const uid = r?.user?.id ?? r?.userId;
+    if (uid != null) ids.add(uid);
+  }
+
+  return ids;
+}
+
 type LeaderboardScore = {
   id: number;
   data: number;
@@ -130,10 +176,8 @@ function formatScoreValue(s: LeaderboardScore) {
 function placementColor(p: number | null, colors: Record<string, string>) {
   if (p == null) return colors["textFaded"];
   if (p === 1) return colors["yellow"];
-  if (p === 2) return colors["gray"];
-  if (p === 3) return colors["orange"];
-  if (p >= 4 && p <= 5) return colors["indigo"];
-  if (p >= 6 && p <= 10) return colors["purple"];
+  if (p === 2) return colors["orange"];
+  if (p === 3) return colors["red"];
   return colors["textFaded"];
 }
 
@@ -146,6 +190,38 @@ export default function ClientUserPage({
   const slug = resolvedParams.slug;
   const [user, setUser] = useState<UserType>();
   const { colors } = useTheme();
+
+  const rarityStyles: Record<
+    RarityTier,
+    { border: string; glow?: string; text: string }
+  > = {
+    Abyssal: {
+      border: colors["magenta"] + "99",
+      glow: `0 0 12px ${colors["magentaDark"] + "99"}`,
+      text: colors["magenta"],
+    },
+    Diamond: {
+      border: colors["blue"] + "99",
+      glow: `0 0 10px ${colors["blueDark"] + "99"}`,
+      text: colors["blue"],
+    },
+    Gold: {
+      border: colors["yellow"] + "99",
+      glow: `0 0 10px ${colors["yellowDark"] + "99"}`,
+      text: colors["yellow"],
+    },
+    Silver: {
+      border: colors["gray"] + "99",
+      glow: `0 0 8px ${colors["gray"] + "99"}`,
+      text: colors["gray"],
+    },
+    Bronze: {
+      border: colors["orange"] + "99",
+      glow: `0 0 8px ${colors["orangeDark"] + "99"}`,
+      text: colors["orange"],
+    },
+    Default: { border: colors["base"] + "99", text: colors["textFaded"] },
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -291,7 +367,7 @@ export default function ClientUserPage({
                     comment.game
                       ? `/g/${comment.game?.slug}`
                       : comment.post
-                      ? `/g/${comment.post.slug}`
+                      ? `/p/${comment.post.slug}`
                       : undefined
                   }
                 >
@@ -388,51 +464,96 @@ export default function ClientUserPage({
           disabled={user.achievements.length == 0}
         >
           <Hstack wrap>
-            {user.achievements.map((achievement) => (
-              <Tooltip
-                key={achievement.id}
-                content={
-                  <Vstack align="start">
-                    <Hstack>
-                      <Image
-                        src={achievement.image || "/images/D2J_Icon.png"}
-                        width={48}
-                        height={48}
-                        alt="Achievement"
-                        className="rounded-xl"
-                      />
-                      <Vstack align="start" gap={0}>
-                        <Text color="text">{achievement.name}</Text>
-                        <Text color="textFaded" size="xs">
-                          {achievement.description}
-                        </Text>
-                      </Vstack>
-                    </Hstack>
-                    <Hstack>
-                      <Image
-                        src={
-                          achievement.game.thumbnail ?? "/images/D2J_Icon.png"
-                        }
-                        alt="Game thumbnail"
-                        width={18}
-                        height={10}
-                        className="rounded-lg"
-                      />
-                      <Text color="textFaded" size="xs">
-                        {achievement.game.name}
-                      </Text>
-                    </Hstack>
-                  </Vstack>
-                }
-              >
-                <Image
-                  src={achievement.image || "/images/D2J_Icon.png"}
-                  width={48}
-                  height={48}
-                  alt="Achievement"
-                />
-              </Tooltip>
-            ))}
+            {user.achievements
+              .sort((a, b) => b.id - a.id)
+              .map((achievement) => {
+                const fullAch =
+                  achievement.game?.achievements?.find(
+                    (x) => x.id === achievement.id
+                  ) ?? achievement;
+
+                const haveCount: number = fullAch?.users?.length ?? 0;
+                const engagedIds = engagedUserIdsForGame(achievement.game);
+                const { tier, pct } = getRarityTier(haveCount, engagedIds.size);
+                const style = rarityStyles[tier];
+
+                return (
+                  <div key={achievement.id} className="relative">
+                    <Tooltip
+                      content={
+                        <Vstack align="start">
+                          <Hstack>
+                            <Image
+                              src={achievement.image || "/images/D2J_Icon.png"}
+                              width={48}
+                              height={48}
+                              alt="Achievement"
+                              className="rounded-xl"
+                            />
+                            <Vstack align="start" gap={0}>
+                              <Text color="text">{achievement.name}</Text>
+                              <Text color="textFaded" size="xs">
+                                {achievement.description}
+                              </Text>
+                              <Hstack>
+                                <Image
+                                  src={
+                                    achievement.game?.thumbnail ??
+                                    "/images/D2J_Icon.png"
+                                  }
+                                  alt="Game thumbnail"
+                                  width={18}
+                                  height={10}
+                                  className="rounded-lg"
+                                />
+                                <Text color="textFaded" size="xs">
+                                  {achievement.game?.name}
+                                </Text>
+                              </Hstack>
+                              <Text size="xs" style={{ color: style.text }}>
+                                {tier === "Default" ? "" : `${tier} • `}
+                                {pct.toFixed(1)}% of users achieved
+                              </Text>
+                            </Vstack>
+                          </Hstack>
+                        </Vstack>
+                      }
+                    >
+                      <div
+                        className="rounded-xl p-1"
+                        style={{
+                          backgroundColor: colors["base"],
+                          borderWidth: 2,
+                          borderStyle: "solid",
+                          borderColor: style.border,
+                          boxShadow: style.glow,
+                        }}
+                      >
+                        <Image
+                          src={achievement.image || "/images/D2J_Icon.png"}
+                          width={48}
+                          height={48}
+                          alt="Achievement"
+                          className="rounded-lg"
+                        />
+                      </div>
+                    </Tooltip>
+
+                    {tier !== "Default" && (
+                      <div
+                        className="absolute -top-1 -right-1 px-1 py-0.5 rounded-md text-[10px]"
+                        style={{
+                          backgroundColor: colors["mantle"],
+                          color: style.text,
+                          border: `1px solid ${style.border}`,
+                        }}
+                      >
+                        {tier}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
           </Hstack>
         </Tab>
       </Tabs>

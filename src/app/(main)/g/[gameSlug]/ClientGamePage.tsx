@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { addToast } from "@heroui/react";
@@ -116,9 +116,86 @@ export default function ClientGamePage({
   const { siteTheme, colors } = useTheme();
   const t = useTranslations();
 
+  const engagedUserIds = useMemo(() => {
+    const ids = new Set<number>();
+    if (!game) return ids;
+
+    for (const a of game.achievements ?? []) {
+      for (const u of a.users ?? []) {
+        if (u?.id != null) ids.add(u.id);
+      }
+    }
+
+    for (const lb of game.leaderboards ?? []) {
+      for (const s of lb.scores ?? []) {
+        const uid = s?.userId;
+        if (uid != null) ids.add(uid);
+      }
+    }
+
+    for (const r of game.ratings ?? []) {
+      const uid = r?.userId;
+      if (uid != null) ids.add(uid);
+    }
+
+    return ids;
+  }, [game]);
+
+  type RarityTier =
+    | "Abyssal"
+    | "Diamond"
+    | "Gold"
+    | "Silver"
+    | "Bronze"
+    | "Default";
+  function getRarityTier(
+    haveCount: number,
+    totalEngaged: number
+  ): { tier: RarityTier; pct: number } {
+    const pct = totalEngaged > 0 ? (haveCount / totalEngaged) * 100 : 0;
+
+    if (totalEngaged >= 40 && pct <= 5) return { tier: "Abyssal", pct };
+    if (totalEngaged >= 20 && pct <= 10) return { tier: "Diamond", pct };
+    if (totalEngaged >= 10 && pct <= 25) return { tier: "Gold", pct };
+    if (totalEngaged >= 5 && pct <= 50) return { tier: "Silver", pct };
+    if (totalEngaged >= 5 && pct <= 100) return { tier: "Bronze", pct };
+    return { tier: "Default", pct };
+  }
+
+  const rarityStyles: Record<
+    RarityTier,
+    { border: string; glow?: string; text: string }
+  > = {
+    Abyssal: {
+      border: colors["magenta"] + "99",
+      glow: `0 0 12px ${colors["magentaDark"] + "99"}`,
+      text: colors["magenta"],
+    },
+    Diamond: {
+      border: colors["blue"] + "99",
+      glow: `0 0 10px ${colors["blueDark"] + "99"}`,
+      text: colors["blue"],
+    },
+    Gold: {
+      border: colors["yellow"] + "99",
+      glow: `0 0 10px ${colors["yellowDark"] + "99"}`,
+      text: colors["yellow"],
+    },
+    Silver: {
+      border: colors["gray"] + "99",
+      glow: `0 0 8px ${colors["gray"] + "99"}`,
+      text: colors["gray"],
+    },
+    Bronze: {
+      border: colors["orange"] + "99",
+      glow: `0 0 8px ${colors["orangeDark"] + "99"}`,
+      text: colors["orange"],
+    },
+    Default: { border: colors["base"] + "99", text: colors["textFaded"] },
+  };
+
   useEffect(() => {
     const fetchGameAndUser = async () => {
-      // Fetch the game data
       const gameResponse = await getGame(gameSlug);
 
       let gameData;
@@ -898,137 +975,162 @@ export default function ClientGamePage({
                     /{game.achievements.length}
                   </Text>
 
-                  <Hstack>
-                    {game.achievements.map((achievement) => (
-                      <div
-                        key={achievement.id}
-                        style={{
-                          backgroundColor: colors["base"],
-                        }}
-                        className="w-fit h-fit"
-                      >
-                        <Tooltip
-                          content={
-                            <Hstack>
-                              <Image
-                                src={
-                                  achievement.image || "/images/D2J_Icon.png"
-                                }
-                                width={48}
-                                height={48}
-                                alt="Achievement"
-                                className="rounded-xl"
-                              />
-                              <Vstack align="start" gap={0}>
-                                <Text color="text">{achievement.name}</Text>
-                                <Text color="textFaded" size="xs">
-                                  {achievement.description}
-                                </Text>
-                                <Text
-                                  color={
-                                    achievement.users.filter(
-                                      (user2) => user?.id === user2.id
-                                    ).length > 0
-                                      ? "red"
-                                      : "green"
-                                  }
-                                  size="xs"
-                                >
-                                  {achievement.users.filter(
-                                    (user2) => user?.id === user2.id
-                                  ).length > 0
-                                    ? "Click to mark as unachieved"
-                                    : "Click to mark as achieved"}
-                                </Text>
-                              </Vstack>
-                            </Hstack>
-                          }
-                        >
-                          <button
-                            onClick={async () => {
-                              if (user) {
-                                if (
-                                  achievement.users.filter(
-                                    (user2) => user?.id === user2.id
-                                  ).length > 0
-                                ) {
-                                  const res = fetch(`${BASE_URL}/achievement`, {
-                                    body: JSON.stringify({
-                                      achievementId: achievement.id,
-                                    }),
-                                    method: "DELETE",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                      authorization: `Bearer ${getCookie(
-                                        "token"
-                                      )}`,
-                                    },
-                                    credentials: "include",
-                                  });
+                  <Hstack wrap>
+                    {game.achievements
+                      .sort((a, b) => {
+                        const haveCount = a.users.length;
+                        const haveCountB = b.users.length;
+                        const users = engagedUserIds.size;
+                        return haveCountB / users - haveCount / users;
+                      })
+                      .map((achievement) => {
+                        const haveCount = achievement.users.length;
+                        const { tier, pct } = getRarityTier(
+                          haveCount,
+                          engagedUserIds.size
+                        );
+                        const style = rarityStyles[tier];
 
-                                  if ((await res).ok) {
-                                    achievement.users =
-                                      achievement.users.filter(
-                                        (user2) => user?.id !== user2.id
-                                      );
-                                    setGame({
-                                      ...game,
-                                      achievements: game.achievements,
-                                    });
-                                  }
-                                } else {
-                                  const res = fetch(`${BASE_URL}/achievement`, {
-                                    body: JSON.stringify({
-                                      achievementId: achievement.id,
-                                    }),
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                      authorization: `Bearer ${getCookie(
-                                        "token"
-                                      )}`,
-                                    },
-                                    credentials: "include",
-                                  });
-
-                                  if ((await res).ok) {
-                                    achievement.users = [
-                                      ...achievement.users,
-                                      user,
-                                    ];
-                                    setGame({
-                                      ...game,
-                                      achievements: game.achievements,
-                                    });
-                                  }
-                                }
+                        return (
+                          <div key={achievement.id} className="relative">
+                            <Tooltip
+                              position="top"
+                              content={
+                                <Vstack align="start" gap={0}>
+                                  <Hstack gap={6}>
+                                    <Image
+                                      src={
+                                        achievement.image ||
+                                        "/images/D2J_Icon.png"
+                                      }
+                                      width={48}
+                                      height={48}
+                                      alt="Achievement"
+                                      className="rounded-xl"
+                                    />
+                                    <Vstack align="start" gap={0}>
+                                      <Text color="text">
+                                        {achievement.name}
+                                      </Text>
+                                      <Text color="textFaded" size="xs">
+                                        {achievement.description}
+                                      </Text>
+                                      <Text
+                                        size="xs"
+                                        style={{ color: style.text }}
+                                      >
+                                        {tier == "Default"
+                                          ? undefined
+                                          : `${tier} • `}
+                                        {pct.toFixed(1)}% of users achieved
+                                      </Text>
+                                      <Text
+                                        color={
+                                          achievement.users.some(
+                                            (u) => u.id === user?.id
+                                          )
+                                            ? "red"
+                                            : "green"
+                                        }
+                                        size="xs"
+                                      >
+                                        {achievement.users.some(
+                                          (u) => u.id === user?.id
+                                        )
+                                          ? "Click to mark as unachieved"
+                                          : "Click to mark as achieved"}
+                                      </Text>
+                                    </Vstack>
+                                  </Hstack>
+                                </Vstack>
                               }
-                            }}
-                          >
-                            <Image
-                              src={achievement.image || "/images/D2J_Icon.png"}
-                              width={48}
-                              height={48}
-                              alt="Achievement"
-                              style={{
-                                opacity:
-                                  achievement.users.filter(
-                                    (user2) => user?.id === user2.id
-                                  ).length > 0
+                            >
+                              <button
+                                onClick={async () => {
+                                  if (!user) return;
+                                  const hasIt = achievement.users.some(
+                                    (u) => u.id === user.id
+                                  );
+                                  const method = hasIt ? "DELETE" : "POST";
+                                  const res = await fetch(
+                                    `${BASE_URL}/achievement`,
+                                    {
+                                      method,
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                        authorization: `Bearer ${getCookie(
+                                          "token"
+                                        )}`,
+                                      },
+                                      credentials: "include",
+                                      body: JSON.stringify({
+                                        achievementId: achievement.id,
+                                      }),
+                                    }
+                                  );
+                                  if (res.ok) {
+                                    achievement.users = hasIt
+                                      ? achievement.users.filter(
+                                          (u) => u.id !== user.id
+                                        )
+                                      : [...achievement.users, user];
+                                    setGame({
+                                      ...game,
+                                      achievements: [...game.achievements],
+                                    });
+                                  }
+                                }}
+                                className="rounded-xl p-1"
+                                style={{
+                                  backgroundColor: colors["base"],
+                                  borderWidth: 2,
+                                  borderStyle: "solid",
+                                  borderColor: style.border,
+                                  boxShadow: style.glow,
+                                  opacity: achievement.users.some(
+                                    (u) => u.id === user?.id
+                                  )
                                     ? 1
                                     : 0.5,
-                                filter:
-                                  achievement.users.filter(
-                                    (user2) => user?.id === user2.id
-                                  ).length > 0
+                                  filter: achievement.users.some(
+                                    (u) => u.id === user?.id
+                                  )
                                     ? ""
                                     : "grayscale(1)",
-                              }}
-                            />
-                          </button>
-                        </Tooltip>
-                      </div>
-                    ))}
+                                }}
+                              >
+                                <Image
+                                  src={
+                                    achievement.image || "/images/D2J_Icon.png"
+                                  }
+                                  width={48}
+                                  height={48}
+                                  alt="Achievement"
+                                  className="rounded-lg"
+                                />
+                              </button>
+                            </Tooltip>
+
+                            {tier != "Default" && (
+                              <div
+                                className="absolute -top-1 -right-1 px-1 py-0.5 rounded-md text-[10px]"
+                                style={{
+                                  backgroundColor: colors["mantle"],
+                                  color: style.text,
+                                  border: `1px solid ${style.border}`,
+                                  filter: achievement.users.some(
+                                    (u) => u.id === user?.id
+                                  )
+                                    ? ""
+                                    : "grayscale(1)",
+                                }}
+                              >
+                                {tier}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                   </Hstack>
                 </Vstack>
               </Card>

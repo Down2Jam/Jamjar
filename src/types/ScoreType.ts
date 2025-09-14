@@ -7,4 +7,5 @@ export interface ScoreType {
   evidence: string;
   user: UserType;
   leaderboard: LeaderboardType;
+  userId: number;
 }
