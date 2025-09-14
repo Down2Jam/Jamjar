@@ -8,6 +8,7 @@ import { Avatar } from "@/framework/Avatar";
 import { Card } from "@/framework/Card";
 import { Chip } from "@/framework/Chip";
 import Icon from "@/framework/Icon";
+import { Link } from "@/framework/Link";
 import { Hstack, Vstack } from "@/framework/Stack";
 import { Tab, Tabs } from "@/framework/Tabs";
 import Text from "@/framework/Text";
@@ -484,11 +485,15 @@ export default function ClientUserPage({
                         <Vstack align="start">
                           <Hstack>
                             <Image
-                              src={achievement.image || "/images/D2J_Icon.png"}
+                              src={
+                                achievement.image ||
+                                achievement.game.thumbnail ||
+                                "/images/D2J_Icon.png"
+                              }
                               width={48}
                               height={48}
                               alt="Achievement"
-                              className="rounded-xl"
+                              className="rounded-xl w-12 h-12 object-cover"
                             />
                             <Vstack align="start" gap={0}>
                               <Text color="text">{achievement.name}</Text>
@@ -498,13 +503,13 @@ export default function ClientUserPage({
                               <Hstack>
                                 <Image
                                   src={
-                                    achievement.game?.thumbnail ??
+                                    achievement.game.thumbnail ||
                                     "/images/D2J_Icon.png"
                                   }
                                   alt="Game thumbnail"
                                   width={18}
                                   height={10}
-                                  className="rounded-lg"
+                                  className="rounded-lg w-[18px] h-[10px] object-cover"
                                 />
                                 <Text color="textFaded" size="xs">
                                   {achievement.game?.name}
@@ -519,24 +524,30 @@ export default function ClientUserPage({
                         </Vstack>
                       }
                     >
-                      <div
-                        className="rounded-xl p-1"
-                        style={{
-                          backgroundColor: colors["base"],
-                          borderWidth: 2,
-                          borderStyle: "solid",
-                          borderColor: style.border,
-                          boxShadow: style.glow,
-                        }}
-                      >
-                        <Image
-                          src={achievement.image || "/images/D2J_Icon.png"}
-                          width={48}
-                          height={48}
-                          alt="Achievement"
-                          className="rounded-lg"
-                        />
-                      </div>
+                      <Link href={`/g/${achievement.game.slug}`}>
+                        <div
+                          className="rounded-xl p-1"
+                          style={{
+                            backgroundColor: colors["base"],
+                            borderWidth: 2,
+                            borderStyle: "solid",
+                            borderColor: style.border,
+                            boxShadow: style.glow,
+                          }}
+                        >
+                          <Image
+                            src={
+                              achievement.image ||
+                              achievement.game.thumbnail ||
+                              "/images/D2J_Icon.png"
+                            }
+                            width={48}
+                            height={48}
+                            alt="Achievement"
+                            className="rounded-lg w-12 h-12 object-cover"
+                          />
+                        </div>
+                      </Link>
                     </Tooltip>
 
                     {tier !== "Default" && (

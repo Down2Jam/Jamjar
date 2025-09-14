@@ -996,17 +996,18 @@ export default function ClientGamePage({
                             <Tooltip
                               position="top"
                               content={
-                                <Vstack align="start" gap={0}>
-                                  <Hstack gap={6}>
+                                <Vstack align="start">
+                                  <Hstack>
                                     <Image
                                       src={
                                         achievement.image ||
+                                        game.thumbnail ||
                                         "/images/D2J_Icon.png"
                                       }
                                       width={48}
                                       height={48}
                                       alt="Achievement"
-                                      className="rounded-xl"
+                                      className="rounded-xl w-12 h-12 object-cover"
                                     />
                                     <Vstack align="start" gap={0}>
                                       <Text color="text">
@@ -1101,12 +1102,14 @@ export default function ClientGamePage({
                               >
                                 <Image
                                   src={
-                                    achievement.image || "/images/D2J_Icon.png"
+                                    achievement.image ||
+                                    game.thumbnail ||
+                                    "/images/D2J_Icon.png"
                                   }
                                   width={48}
                                   height={48}
                                   alt="Achievement"
-                                  className="rounded-lg"
+                                  className="rounded-lg object-cover w-12 h-12"
                                 />
                               </button>
                             </Tooltip>
