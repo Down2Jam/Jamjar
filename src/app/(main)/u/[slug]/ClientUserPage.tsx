@@ -326,11 +326,17 @@ export default function ClientUserPage({
                         </Text>
                       </Hstack>
                     )}
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: comment.content,
-                      }}
-                    />
+                    <ThemedProse>
+                      <div
+                        className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            user.bio && user.bio != "<p></p>"
+                              ? user.bio
+                              : "No user bio",
+                        }}
+                      />
+                    </ThemedProse>
                   </Vstack>
                 </Card>
               ))}
