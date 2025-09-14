@@ -132,7 +132,7 @@ function placementColor(p: number | null, colors: Record<string, string>) {
   if (p === 1) return colors["yellow"];
   if (p === 2) return colors["gray"];
   if (p === 3) return colors["orange"];
-  if (p >= 4 && p <= 5) return colors["blue"];
+  if (p >= 4 && p <= 5) return colors["indigo"];
   if (p >= 6 && p <= 10) return colors["purple"];
   return colors["textFaded"];
 }
