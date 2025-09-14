@@ -73,7 +73,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   >(() => {
     if (typeof document === "undefined") return "none";
     const v = (getCookie?.("music_repeat") ?? "") as string;
-    return v === "repeat" || v === "autoplay" || v === "none" ? v : "none";
+    return v === "repeat" || v === "autoplay" || v === "none" ? v : "repeat";
   });
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
   const nextRef = useRef<() => Promise<void>>(() => Promise.resolve());
