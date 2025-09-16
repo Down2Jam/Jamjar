@@ -162,61 +162,81 @@ export default function AboutPage() {
               title="GameFAQ.Q1.Number"
               subtitle="GameFAQ.Q1.Question"
             >
-              <Text color="textFaded">GameFAQ.Q1.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q1.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q2.Number"
               subtitle="GameFAQ.Q2.Question"
             >
-              <Text color="textFaded">GameFAQ.Q2.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q2.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q3.Number"
               subtitle="GameFAQ.Q3.Question"
             >
-              <Text color="textFaded">GameFAQ.Q3.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q3.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q4.Number"
               subtitle="GameFAQ.Q4.Question"
             >
-              <Text color="textFaded">GameFAQ.Q4.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q4.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q5.Number"
               subtitle="GameFAQ.Q5.Question"
             >
-              <Text color="textFaded">GameFAQ.Q5.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q5.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q6.Number"
               subtitle="GameFAQ.Q6.Question"
             >
-              <Text color="textFaded">GameFAQ.Q6.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q6.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q7.Number"
               subtitle="GameFAQ.Q7.Question"
             >
-              <Text color="textFaded">GameFAQ.Q7.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q7.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q8.Number"
               subtitle="GameFAQ.Q8.Question"
             >
-              <Text color="textFaded">GameFAQ.Q8.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q8.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q9.Number"
               subtitle="GameFAQ.Q9.Question"
             >
-              <Text color="textFaded">GameFAQ.Q9.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q9.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="GameFAQ.Q10.Number"
               subtitle="GameFAQ.Q10.Question"
             >
-              <Text color="textFaded">GameFAQ.Q10.Answer</Text>
+              <Text color="textFaded" size="sm">
+                GameFAQ.Q10.Answer
+              </Text>
             </AccordionItem>
           </Accordion>
         </Vstack>
@@ -237,31 +257,41 @@ export default function AboutPage() {
               title="TeamFAQ.Q1.Number"
               subtitle="TeamFAQ.Q1.Question"
             >
-              <Text color="textFaded">TeamFAQ.Q1.Answer</Text>
+              <Text color="textFaded" size="sm">
+                TeamFAQ.Q1.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="TeamFAQ.Q2.Number"
               subtitle="TeamFAQ.Q2.Question"
             >
-              <Text color="textFaded">TeamFAQ.Q2.Answer</Text>
+              <Text color="textFaded" size="sm">
+                TeamFAQ.Q2.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="TeamFAQ.Q3.Number"
               subtitle="TeamFAQ.Q3.Question"
             >
-              <Text color="textFaded">TeamFAQ.Q3.Answer</Text>
+              <Text color="textFaded" size="sm">
+                TeamFAQ.Q3.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="TeamFAQ.Q4.Number"
               subtitle="TeamFAQ.Q4.Question"
             >
-              <Text color="textFaded">TeamFAQ.Q4.Answer</Text>
+              <Text color="textFaded" size="sm">
+                TeamFAQ.Q4.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="TeamFAQ.Q5.Number"
               subtitle="TeamFAQ.Q5.Question"
             >
-              <Text color="textFaded">TeamFAQ.Q5.Answer</Text>
+              <Text color="textFaded" size="sm">
+                TeamFAQ.Q5.Answer
+              </Text>
             </AccordionItem>
           </Accordion>
         </Vstack>
@@ -283,37 +313,49 @@ export default function AboutPage() {
               title="RatingsFAQ.Q1.Number"
               subtitle="RatingsFAQ.Q1.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q1.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q1.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="RatingsFAQ.Q2.Number"
               subtitle="RatingsFAQ.Q2.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q2.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q2.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="RatingsFAQ.Q3.Number"
               subtitle="RatingsFAQ.Q3.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q3.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q3.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="RatingsFAQ.Q4.Number"
               subtitle="RatingsFAQ.Q4.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q4.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q4.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="RatingsFAQ.Q5.Number"
               subtitle="RatingsFAQ.Q5.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q5.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q5.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="RatingsFAQ.Q6.Number"
               subtitle="RatingsFAQ.Q6.Question"
             >
-              <Text color="textFaded">RatingsFAQ.Q6.Answer</Text>
+              <Text color="textFaded" size="sm">
+                RatingsFAQ.Q6.Answer
+              </Text>
             </AccordionItem>
           </Accordion>
         </Vstack>
@@ -335,25 +377,33 @@ export default function AboutPage() {
               title="StreamsFAQ.Q1.Number"
               subtitle="StreamsFAQ.Q1.Question"
             >
-              <Text color="textFaded">StreamsFAQ.Q1.Answer</Text>
+              <Text color="textFaded" size="sm">
+                StreamsFAQ.Q1.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="StreamsFAQ.Q2.Number"
               subtitle="StreamsFAQ.Q2.Question"
             >
-              <Text color="textFaded">StreamsFAQ.Q2.Answer</Text>
+              <Text color="textFaded" size="sm">
+                StreamsFAQ.Q2.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="StreamsFAQ.Q3.Number"
               subtitle="StreamsFAQ.Q3.Question"
             >
-              <Text color="textFaded">StreamsFAQ.Q3.Answer</Text>
+              <Text color="textFaded" size="sm">
+                StreamsFAQ.Q3.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="StreamsFAQ.Q4.Number"
               subtitle="StreamsFAQ.Q4.Question"
             >
-              <Text color="textFaded">StreamsFAQ.Q4.Answer</Text>
+              <Text color="textFaded" size="sm">
+                StreamsFAQ.Q4.Answer
+              </Text>
             </AccordionItem>
           </Accordion>
         </Vstack>
@@ -375,37 +425,49 @@ export default function AboutPage() {
               title="MetaFAQ.Q1.Number"
               subtitle="MetaFAQ.Q1.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q1.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q1.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="MetaFAQ.Q2.Number"
               subtitle="MetaFAQ.Q2.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q2.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q2.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="MetaFAQ.Q3.Number"
               subtitle="MetaFAQ.Q3.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q3.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q3.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="MetaFAQ.Q4.Number"
               subtitle="MetaFAQ.Q4.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q4.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q4.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="MetaFAQ.Q5.Number"
               subtitle="MetaFAQ.Q5.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q5.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q5.Answer
+              </Text>
             </AccordionItem>
             <AccordionItem
               title="MetaFAQ.Q6.Number"
               subtitle="MetaFAQ.Q6.Question"
             >
-              <Text color="textFaded">MetaFAQ.Q6.Answer</Text>
+              <Text color="textFaded" size="sm">
+                MetaFAQ.Q6.Answer
+              </Text>
             </AccordionItem>
           </Accordion>
         </Vstack>

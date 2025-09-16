@@ -114,8 +114,8 @@ export default function Games() {
   const typeOptions: TypeOption[] = [
     { id: "all", name: "All Categories", icon: "layers" },
     { id: "Regular", name: "Regular", icon: "gamepad2" },
-    { id: "Extra", name: "Extra", icon: "calendar" },
     { id: "ODA", name: "ODA", icon: "swords" },
+    { id: "Extra", name: "Extra", icon: "calendar" },
   ];
 
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
@@ -329,7 +329,7 @@ export default function Games() {
 
   if (!hasData && (showBusy || jamDetecting)) {
     return (
-      <Vstack>
+      <Vstack className="p-4">
         <Card className="max-w-96">
           <Vstack>
             <Hstack>

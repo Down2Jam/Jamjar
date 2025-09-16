@@ -51,6 +51,54 @@ import { TrackType } from "@/types/TrackType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { debounce } from "lodash";
 import { createTeam } from "@/helpers/team";
+import { Tab, Tabs } from "@/framework/Tabs";
+import { Accordion, AccordionItem } from "@/framework/Accordion";
+
+type InputMethodType =
+  | "KeyboardMouse"
+  | "Gamepad"
+  | "Touch"
+  | "KeyboardOnly"
+  | "MouseOnly"
+  | "Motion"
+  | "VR"
+  | "Other";
+
+const YT_ID_REGEX =
+  /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
+
+const extractYouTubeId = (url: string): string | null => {
+  const m = url.match(YT_ID_REGEX);
+  return m ? m[1] : null;
+};
+
+const INPUT_METHOD_OPTIONS: {
+  value: InputMethodType;
+  label: string;
+  icon?: IconName;
+}[] = [
+  { value: "KeyboardMouse", label: "Keyboard + Mouse", icon: "keyboard" },
+  { value: "Gamepad", label: "Gamepad / Controller", icon: "gamepad2" },
+  { value: "Touch", label: "Touch", icon: "touchpad" },
+  { value: "KeyboardOnly", label: "Keyboard Only", icon: "keyboard" },
+  { value: "MouseOnly", label: "Mouse Only", icon: "mouse" },
+  { value: "Motion", label: "Motion Controls", icon: "move3d" },
+  { value: "VR", label: "VR", icon: "headset" },
+  { value: "Other", label: "Other", icon: "morehorizontal" },
+];
+
+const TIME_OPTIONS = [
+  "Under 5 mins",
+  "5–10 mins",
+  "10–20 mins",
+  "20-30 mins",
+  "30–60 min",
+  "1–2 hours",
+  "2–3 hours",
+  "3–5 hours",
+  "5–10 hours",
+  "10+ hours",
+] as const;
 
 const LB_ICON: Record<LeaderboardTypeType, IconName> = {
   SCORE: "trophy",
@@ -142,6 +190,16 @@ export default function GameEditingForm({
   const creatingTeamRef = useRef(false);
   const teamCheckDoneRef = useRef(false);
 
+  const [screenshots, setScreenshots] = useState<string[]>([]);
+  const [trailerUrl, setTrailerUrl] = useState<string>("");
+
+  const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
+    new Set()
+  );
+  const [estOneRun, setEstOneRun] = useState<string>("");
+  const [estAnyPercent, setEstAnyPercent] = useState<string>("");
+  const [estHundredPercent, setEstHundredPercent] = useState<string>("");
+
   const inCurrentJamContext =
     !!activeJamResponse?.jam &&
     (activeJamResponse.jam.id === game?.jam.id || !game);
@@ -187,6 +245,12 @@ export default function GameEditingForm({
       game?.majRatingCategories?.map((ratingCategory) => ratingCategory.id) ||
         []
     );
+    // setScreenshots(game?.screenshots ?? []);
+    // setTrailerUrl(game?.trailerUrl ?? "");
+    // setInputMethods(game?.inputMethods ?? new Set());
+    // setEstAnyPercent(game?.estAnyPercent ?? "");
+    // setEstHundredPercent(game?.estHundredPercent ?? "");
+
     const incomingSongs = (game?.tracks || []).map((s: TrackType) => ({
       id: s.id,
       slug: s.slug,
@@ -223,7 +287,14 @@ export default function GameEditingForm({
     }
 
     loadData();
-  }, [game, allTags, allFlags, activeJamResponse]);
+  }, [
+    game,
+    allTags,
+    allFlags,
+    activeJamResponse,
+    inCurrentJamContext,
+    isRatingPhase,
+  ]);
 
   const refreshTeams = useCallback(async () => {
     const teamResponse = await getTeamsUser();
@@ -595,1261 +666,1696 @@ export default function GameEditingForm({
               </Text>
             </Vstack>
           </Card>
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Name.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Name.Description
-                </Text>
-              </div>
-              <Input
-                required
-                name="title"
-                placeholder="CreateGame.Name.Placeholder"
-                type="text"
-                value={title}
-                onValueChange={(value) => {
-                  setTitle(value);
-                  if (!isSlugManuallyEdited) {
-                    setGameSlug(sanitizeSlug(value));
-                  }
-                }}
-              />
-            </Vstack>
-          </Card>
 
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Slug.Title</Text>
-                <Hstack wrap>
-                  <Text color="textFaded" size="xs">
-                    CreateGame.Slug.Description
-                  </Text>
-                  <Text color="textFaded" size="xs">
-                    {`d2jam.com/g/${gameSlug || "your-game-name"}`}
-                  </Text>
-                </Hstack>
-              </div>
-              <Input
-                placeholder="CreateGame.Slug.Placeholder"
-                value={gameSlug}
-                onValueChange={(value) => {
-                  setGameSlug(sanitizeSlug(value));
-                  setIsSlugManuallyEdited(true);
-                }}
-              />
-            </Vstack>
-          </Card>
-
-          {
-            <>
-              <Card>
-                <Vstack align="start">
-                  <div>
-                    <Text color="text">CreateGame.Category.Title</Text>
-                    <Text color="textFaded" size="xs">
-                      CreateGame.Category.Description
-                    </Text>
-                  </div>
-                  {
-                    <Dropdown
-                      disabled={!canSwapCategory}
-                      selectedValue={category}
-                      onSelect={(key) => {
-                        setCategory(key as "REGULAR" | "ODA" | "EXTRA");
-                      }}
-                    >
-                      <Dropdown.Item
-                        value="REGULAR"
-                        description="GameCategory.Regular.Description"
-                        icon="gamepad2"
-                      >
-                        GameCategory.Regular.Title
-                      </Dropdown.Item>
-
-                      {teams &&
-                      teams.length > 0 &&
-                      teams[currentTeam].users &&
-                      teams[currentTeam].users.length == 1 ? (
-                        <Dropdown.Item
-                          value="ODA"
-                          description="GameCategory.Oda.Description"
-                          icon="swords"
-                        >
-                          GameCategory.Oda.Title
-                        </Dropdown.Item>
-                      ) : (
-                        <></>
-                      )}
-                      <Dropdown.Item
-                        value="EXTRA"
-                        description="GameCategory.Extra.Description"
-                        icon="calendar"
-                      >
-                        GameCategory.Extra.Title
-                      </Dropdown.Item>
-                    </Dropdown>
-                  }
-                </Vstack>
-              </Card>
-            </>
-          }
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Description.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Description.Description
-                </Text>
-              </div>
-              <Editor
-                key={editorKey}
-                content={content}
-                setContent={setContent}
-                gameEditor
-              />
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Short.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Short.Description
-                </Text>
-              </div>
-              <Textarea
-                placeholder="CreateGame.Short.Placeholder"
-                value={short}
-                onValueChange={setShort}
-                maxLength={155}
-              />
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Theme.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Theme.Description
-                </Text>
-              </div>
-              <Textarea
-                placeholder="CreateGame.Theme.Placeholder"
-                value={themeJustification}
-                onValueChange={setThemeJustification}
-              />
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Thumbnail.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Thumbnail.Description
-                </Text>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  const formData = new FormData();
-                  formData.append("upload", file);
-
-                  try {
-                    const response = await fetch(
-                      process.env.NEXT_PUBLIC_MODE === "PROD"
-                        ? "https://d2jam.com/api/v1/image"
-                        : "http://localhost:3005/api/v1/image",
-                      {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                          authorization: `Bearer ${getCookie("token")}`,
-                        },
-                        credentials: "include",
-                      }
-                    );
-
-                    if (response.ok) {
-                      const data = await response.json();
-                      setThumbnailUrl(data.data);
-                      addToast({
-                        title: data.message,
-                      });
-                    } else {
-                      addToast({
-                        title: "Failed to upload image",
-                      });
-                    }
-                  } catch (error) {
-                    console.error(error);
-                    addToast({
-                      title: "Error uploading image",
-                    });
-                  }
-                }}
-              />
-
-              {thumbnailUrl && (
-                <div className="w-full">
-                  <div className="bg-[#222222] h-[216px] w-[384px] relative">
-                    <Image
-                      src={thumbnailUrl}
-                      alt={`${title}'s thumbnail`}
-                      className="object-cover"
-                      fill
-                    />
-                  </div>
-                  <Button
-                    icon="trash"
-                    color="red"
-                    size="sm"
-                    onClick={() => {
-                      setThumbnailUrl(null);
-                    }}
-                  >
-                    Remove Thumbnail
-                  </Button>
-                </div>
-              )}
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Banner.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Banner.Description
-                </Text>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-
-                  const formData = new FormData();
-                  formData.append("upload", file);
-
-                  try {
-                    const response = await fetch(
-                      process.env.NEXT_PUBLIC_MODE === "PROD"
-                        ? "https://d2jam.com/api/v1/image"
-                        : "http://localhost:3005/api/v1/image",
-                      {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                          authorization: `Bearer ${getCookie("token")}`,
-                        },
-                        credentials: "include",
-                      }
-                    );
-
-                    if (response.ok) {
-                      const data = await response.json();
-                      setBannerUrl(data.data);
-                      addToast({
-                        title: data.message,
-                      });
-                    } else {
-                      addToast({
-                        title: "Failed to upload image",
-                      });
-                    }
-                  } catch (error) {
-                    console.error(error);
-                    addToast({
-                      title: "Error uploading image",
-                    });
-                  }
-                }}
-              />
-
-              {bannerUrl && (
-                <div className="w-full">
-                  <div className="bg-[#222222] h-[110px] w-[734px] relative">
-                    <Image
-                      src={bannerUrl}
-                      alt={`${title}'s banner`}
-                      className="object-cover"
-                      fill
-                    />
-                  </div>
-                  <Button
-                    icon="trash"
-                    color="red"
-                    size="sm"
-                    onClick={() => {
-                      setBannerUrl(null);
-                    }}
-                  >
-                    Remove Banner
-                  </Button>
-                </div>
-              )}
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Links.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Links.Description
-                </Text>
-              </div>
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-2">
-                  {Array.isArray(downloadLinks) &&
-                    downloadLinks.map((link, index) => (
-                      <div key={link.id} className="flex gap-2">
-                        <Input
-                          className="flex-grow"
-                          placeholder="CreateGame.Links.Placeholder"
-                          value={link.url}
-                          onValueChange={(value) => {
-                            const newLinks = [...downloadLinks];
-                            newLinks[index].url = value;
-                            setDownloadLinks(newLinks);
-                          }}
-                          onBlur={() => {
-                            if (!urlRegex.test(downloadLinks[index].url)) {
-                              addToast({
-                                title: t("CreateGame.Links.Error"),
-                              });
-
-                              if (
-                                !downloadLinks[index].url.startsWith(
-                                  "http://"
-                                ) &&
-                                !downloadLinks[index].url.startsWith("https://")
-                              ) {
-                                const newUrl =
-                                  "https://" + downloadLinks[index].url;
-                                const newLinks = [...downloadLinks];
-                                newLinks[index].url = newUrl;
-                                setDownloadLinks(newLinks);
-                                const input =
-                                  document.querySelector<HTMLInputElement>(
-                                    `#download-link-${index}`
-                                  );
-                                if (input) {
-                                  input.value = newUrl;
-                                }
-                              }
-                            }
-                          }}
-                        />
-                        <Dropdown
-                          className="w-96"
-                          placeholder="Select platform"
-                          selectedValue={link.platform}
-                          onSelect={(val) => {
-                            const newLinks = [...downloadLinks];
-                            newLinks[index].platform = val as PlatformType;
-                            setDownloadLinks(newLinks);
-                          }}
-                        >
-                          <Dropdown.Item value="Web" icon="globe">
-                            Web
-                          </Dropdown.Item>
-                          <Dropdown.Item value="SourceCode" icon="code2">
-                            Source Code
-                          </Dropdown.Item>
-                          <Dropdown.Item value="Windows" icon="monitor">
-                            Windows
-                          </Dropdown.Item>
-                          <Dropdown.Item value="MacOS" icon="apple">
-                            MacOS
-                          </Dropdown.Item>
-                          <Dropdown.Item value="Linux" icon="terminal">
-                            Linux
-                          </Dropdown.Item>
-                          <Dropdown.Item value="iOS" icon="smartphone">
-                            Apple iOS
-                          </Dropdown.Item>
-                          <Dropdown.Item value="Android" icon="smartphone">
-                            Android
-                          </Dropdown.Item>
-                          <Dropdown.Item value="Other" icon="morehorizontal">
-                            Other
-                          </Dropdown.Item>
-                        </Dropdown>
-
-                        <Button
-                          color="red"
-                          onClick={() => {
-                            setDownloadLinks(
-                              downloadLinks.filter((l) => l.id !== link.id)
-                            );
-                          }}
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                </div>
-
-                <Button
-                  icon="plus"
-                  onClick={() => {
-                    setDownloadLinks([
-                      ...downloadLinks,
-                      {
-                        id: Date.now(),
-                        url: "",
-                        platform: "Web",
-                      },
-                    ]);
-                  }}
-                >
-                  CreateGame.Links.Add
-                </Button>
-              </div>
-            </Vstack>
-          </Card>
-          {teams.length > 1 && !prevSlug && (
-            <Card>
-              <Vstack align="start">
-                <div>
-                  <Text color="text">Team</Text>
-                  <Text color="textFaded" size="xs">
-                    Set the team associated with the game
-                  </Text>
-                </div>
-                <Dropdown
-                  trigger={
-                    <Button>
-                      {teams && teams[currentTeam]
-                        ? teams[currentTeam].name
-                          ? teams[currentTeam].name
-                          : `${teams[currentTeam].owner.name}'s Team`
-                        : "Unknown"}
-                    </Button>
-                  }
-                  onSelect={(i) => {
-                    setCurrentTeam(i as number);
-                  }}
-                >
-                  {teams.map((team, i) => (
-                    <Dropdown.Item
-                      key={i}
-                      value={i}
-                      description={`${team.users.length} members`}
-                    >
-                      {teams && teams[i]
-                        ? teams[i].name
-                          ? teams[i].name
-                          : `${teams[i].owner.name}'s Team`
-                        : "Unknown"}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown>
-              </Vstack>
-            </Card>
-          )}
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Tags.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Tags.Description
-                </Text>
-              </div>
-              {isMounted && (
-                <Select
-                  styles={styles}
-                  isMulti
-                  isClearable={false}
-                  onChange={(value) => setTags(value.map((i) => i.id))}
-                  value={tags.map((index) => ({
-                    value: allTags[index].name,
-                    id: index,
-                    label: (
-                      <div className="flex gap-2 items-center">
-                        {allTags[index].icon && (
-                          <Avatar
-                            className="w-6 h-6 min-w-6 min-h-6"
-                            size="sm"
-                            src={allTags[index].icon}
-                            classNames={{ base: "bg-transparent" }}
-                          />
-                        )}
-                        <p>{allTags[index].name}</p>
-                      </div>
-                    ),
-                  }))}
-                  isOptionDisabled={() => tags != null && tags.length >= 10}
-                  options={allTags.map((tag, i) => ({
-                    value: tag.name,
-                    id: i,
-                    label: (
-                      <div className="flex gap-2 items-center">
-                        <p>{tag.name}</p>
-                      </div>
-                    ),
-                  }))}
-                />
-              )}
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Flags.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Flags.Description
-                </Text>
-              </div>
-              {isMounted && (
-                <Select
-                  styles={styles}
-                  isMulti
-                  isClearable={false}
-                  onChange={(value) => setFlags(value.map((i) => i.id))}
-                  value={flags.map((index) => ({
-                    value: allFlags[index].name,
-                    id: index,
-                    label: (
-                      <div className="flex gap-2 items-center">
-                        {allFlags[index].icon && getIcon(allFlags[index].icon)}
-                        <p>{allFlags[index].name}</p>
-                      </div>
-                    ),
-                  }))}
-                  options={allFlags.map((flag, i) => ({
-                    value: flag.name,
-                    id: i,
-                    label: (
-                      <div className="flex gap-2 items-center">
-                        <p>{flag.name}</p>
-                      </div>
-                    ),
-                  }))}
-                />
-              )}
-            </Vstack>
-          </Card>
-
-          {activeJamResponse &&
-            activeJamResponse.jam &&
-            (activeJamResponse.jam.id === game?.jam.id || !game) &&
-            (activeJamResponse.phase == "Jamming" ||
-              activeJamResponse.phase == "Submission" ||
-              (activeJamResponse.phase == "Rating" && !prevSlug)) && (
-              <Card>
-                <Vstack align="start">
-                  <div>
-                    <Text color="text">CreateGame.RatingCategories.Title</Text>
-                    <Text color="textFaded" size="xs">
-                      CreateGame.RatingCategories.Description
-                    </Text>
-                  </div>
-                  {ratingCategories.map((category3) => (
-                    <div key={category3.id}>
-                      <Hstack>
-                        <Switch
-                          checked={
-                            chosenRatingCategories.filter(
-                              (category2) => category2 == category3.id
-                            ).length > 0
-                          }
-                          onChange={(value) => {
-                            if (value) {
-                              setChosenRatingCategories([
-                                ...chosenRatingCategories,
-                                category3.id,
-                              ]);
-                            } else {
-                              setChosenRatingCategories(
-                                chosenRatingCategories.filter(
-                                  (category2) => category2 != category3.id
-                                )
-                              );
-                            }
-                          }}
-                        />
-                        <Vstack gap={0} align="start">
-                          <Text color="text" size="sm">
-                            {category3.name}
-                          </Text>
-                          <Text color="textFaded" size="xs">
-                            {category3.description}
-                          </Text>
-                        </Vstack>
-                      </Hstack>
-                      {category3.askMajorityContent &&
-                        category == "REGULAR" &&
-                        chosenRatingCategories.filter(
-                          (category2) => category2 == category3.id
-                        ).length > 0 && (
-                          <Hstack className="pl-5 pt-2">
-                            <Switch
-                              key={category3.id + "maj"}
-                              checked={
-                                chosenMajRatingCategories.filter(
-                                  (category2) => category2 == category3.id
-                                ).length > 0
-                              }
-                              onChange={(value) => {
-                                if (value) {
-                                  setChosenMajRatingCategories([
-                                    ...chosenMajRatingCategories,
-                                    category3.id,
-                                  ]);
-                                } else {
-                                  setChosenMajRatingCategories(
-                                    chosenMajRatingCategories.filter(
-                                      (category2) => category2 != category3.id
-                                    )
-                                  );
-                                }
-                              }}
-                            />
-                            <Text color="textFaded" size="xs">
-                              Did you make the majority of the{" "}
-                              {category3.name.split(".")[1]} content
-                            </Text>
-                          </Hstack>
-                        )}
-                    </div>
-                  ))}
-                </Vstack>
-              </Card>
-            )}
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Leaderboards.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Leaderboards.Description
-                </Text>
-              </div>
-              {leaderboards.map((lb, index) => (
-                <Card key={index}>
+          <Tabs addBottomTabs>
+            <Tab title="General" icon="cog">
+              <Vstack align="stretch">
+                <Card>
                   <Vstack align="start">
-                    <Hstack className="mb-2">
-                      <Icon name={lbIconFor(lb.type)} size={16} />
-                      <Text size="lg">
-                        Leaderboard #{index + 1}
-                        {lb.name ? `: ${lb.name}` : ""}
-                      </Text>
-                    </Hstack>
-                    <div>
-                      <Text color="text">CreateLeaderboard.Name.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateLeaderboard.Name.Description
-                      </Text>
-                    </div>
-                    <Input
-                      placeholder="CreateLeaderboard.Name.Placeholder"
-                      value={lb.name}
-                      onChange={(e) => {
-                        const updated = [...leaderboards];
-                        updated[index].name = e.target.value;
-                        setLeaderboards(updated);
-                      }}
-                    />
-                    <div>
-                      <Text color="text">
-                        CreateLeaderboard.UsersPerPage.Title
-                      </Text>
-                      <Text color="textFaded" size="xs">
-                        CreateLeaderboard.UsersPerPage.Description
-                      </Text>
-                    </div>
-                    <Input
-                      type="number"
-                      value={lb.maxUsersShown}
-                      min={0}
-                      max={100}
-                      onValueChange={(e) => {
-                        const updated = [...leaderboards];
-                        updated[index].maxUsersShown = parseInt(e);
-                        setLeaderboards(updated);
-                      }}
-                    />
-                    <div>
-                      <Text color="text">CreateLeaderboard.Type.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateLeaderboard.Type.Description
-                      </Text>
-                    </div>
-                    <Dropdown
-                      selectedValue={leaderboards[index].type}
-                      onSelect={(value) => {
-                        const updated = [...leaderboards];
-                        updated[index].type = value as LeaderboardTypeType;
-                        setLeaderboards(updated);
-                      }}
-                    >
-                      <Dropdown.Item
-                        value="SCORE"
-                        description="LeaderboardType.Score.Description"
-                        icon="trophy"
-                      >
-                        LeaderboardType.Score.Title
-                      </Dropdown.Item>
-
-                      <Dropdown.Item
-                        value="GOLF"
-                        description="LeaderboardType.Golf.Description"
-                        icon="landplot"
-                      >
-                        LeaderboardType.Golf.Title
-                      </Dropdown.Item>
-
-                      <Dropdown.Item
-                        value="SPEEDRUN"
-                        description="LeaderboardType.Speedrun.Description"
-                        icon="rabbit"
-                      >
-                        LeaderboardType.Speedrun.Title
-                      </Dropdown.Item>
-
-                      <Dropdown.Item
-                        value="ENDURANCE"
-                        description="LeaderboardType.Endurance.Description"
-                        icon="turtle"
-                      >
-                        LeaderboardType.Endurance.Title
-                      </Dropdown.Item>
-                    </Dropdown>
-                    {(lb.type == "SCORE" || lb.type == "GOLF") && (
-                      <>
-                        <div>
-                          <Text color="text">
-                            CreateLeaderboard.Decimals.Title
-                          </Text>
-                          <Text color="textFaded" size="xs">
-                            CreateLeaderboard.Decimals.Description
-                          </Text>
-                        </div>
-                        <Input
-                          type="number"
-                          value={lb.decimalPlaces}
-                          min={0}
-                          max={3}
-                          onValueChange={(e) => {
-                            const updated = [...leaderboards];
-                            updated[index].decimalPlaces = parseInt(e);
-                            setLeaderboards(updated);
-                          }}
-                        />
-                      </>
-                    )}
-                    <div>
-                      <Text color="text">CreateLeaderboard.Advanced.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateLeaderboard.Advanced.Description
-                      </Text>
-                    </div>
                     <Hstack>
-                      <Switch
-                        checked={lb.onlyBest}
-                        onChange={(value) => {
-                          const updated = [...leaderboards];
-                          updated[index].onlyBest = value;
-                          setLeaderboards(updated);
-                        }}
-                      />
-                      <Vstack gap={0} align="start">
-                        <Text size="sm">CreateLeaderboard.Highest.Title</Text>
-                        <Text size="xs" color="textFaded">
-                          CreateLeaderboard.Highest.Description
-                        </Text>
-                      </Vstack>
+                      <Icon name="cog" color="textFaded" size={12} />
+                      <Text size="xs" color="textFaded">
+                        General
+                      </Text>
                     </Hstack>
-                    <div className="p-1" />
-                    <Button
-                      icon="trash"
-                      color="red"
-                      onClick={() =>
-                        setLeaderboards(
-                          leaderboards.filter((_, i) => i !== index)
-                        )
-                      }
-                    >
-                      Remove {lb.name}
-                    </Button>
+                    <Text size="xs" color="textFaded">
+                      The main settings to change how your game is viewed on the
+                      site
+                    </Text>
                   </Vstack>
                 </Card>
-              ))}
-              <Button
-                icon="plus"
-                onClick={() =>
-                  setLeaderboards([
-                    ...leaderboards,
-                    {
-                      id: -1,
-                      name: "",
-                      type: "SCORE",
-                      onlyBest: true,
-                      game: {} as GameType,
-                      scores: [],
-                      maxUsersShown: 10,
-                      decimalPlaces: 0,
-                    },
-                  ])
-                }
-              >
-                CreateGame.Leaderboards.Add
-              </Button>
-            </Vstack>
-          </Card>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Name.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Name.Description
+                      </Text>
+                    </div>
+                    <Input
+                      required
+                      name="title"
+                      placeholder="CreateGame.Name.Placeholder"
+                      type="text"
+                      value={title}
+                      onValueChange={(value) => {
+                        setTitle(value);
+                        if (!isSlugManuallyEdited) {
+                          setGameSlug(sanitizeSlug(value));
+                        }
+                      }}
+                    />
+                  </Vstack>
+                </Card>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Slug.Title</Text>
+                      <Hstack wrap>
+                        <Text color="textFaded" size="xs">
+                          CreateGame.Slug.Description
+                        </Text>
+                        <Text color="textFaded" size="xs">
+                          {`d2jam.com/g/${gameSlug || "your-game-name"}`}
+                        </Text>
+                      </Hstack>
+                    </div>
+                    <Input
+                      placeholder="CreateGame.Slug.Placeholder"
+                      value={gameSlug}
+                      onValueChange={(value) => {
+                        setGameSlug(sanitizeSlug(value));
+                        setIsSlugManuallyEdited(true);
+                      }}
+                    />
+                  </Vstack>
+                </Card>
 
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Soundtrack.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Soundtrack.Description
-                </Text>
-              </div>
-
-              {/* List songs */}
-              {songs.length > 0 && (
-                <Vstack className="w-full gap-3" align="stretch">
-                  {songs.map((song) => (
-                    <Card key={song.id}>
-                      <Vstack align="start" className="gap-3">
-                        <Hstack className="w-full justify-between">
-                          <Hstack>
-                            <Icon name="music" />
-                            <Text color="text" weight="semibold">
-                              {song.name || "Untitled track"}
-                            </Text>
-                          </Hstack>
-                          <Button
-                            icon="trash"
-                            color="red"
-                            size="sm"
-                            onClick={() =>
-                              setSongs((prev) =>
-                                prev.filter((s) => s.id !== song.id)
-                              )
-                            }
-                          >
-                            Remove
-                          </Button>
-                        </Hstack>
-
-                        <div className="w-full">
-                          <Text color="text">Song Slug</Text>
+                {
+                  <>
+                    <Card>
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">CreateGame.Category.Title</Text>
                           <Text color="textFaded" size="xs">
-                            Used in the url for the song
+                            CreateGame.Category.Description
                           </Text>
                         </div>
-                        <Input
-                          placeholder="Enter song slug"
-                          value={song.slug}
-                          onValueChange={(val) =>
-                            setSongs((prev) =>
-                              prev.map((s) =>
-                                s.id === song.id ? { ...s, slug: val } : s
-                              )
-                            )
-                          }
-                        />
-                        <div className="w-full">
-                          <Text color="text">Song Name</Text>
-                          <Text color="textFaded" size="xs">
-                            Shown in the soundtrack list.
-                          </Text>
-                        </div>
-                        <Input
-                          placeholder="Enter song name"
-                          value={song.name}
-                          onValueChange={(val) =>
-                            setSongs((prev) =>
-                              prev.map((s) =>
-                                s.id === song.id ? { ...s, name: val } : s
-                              )
-                            )
-                          }
-                        />
-
-                        <div className="w-full">
-                          <Text color="text">Composer</Text>
-                          <Text color="textFaded" size="xs">
-                            The person who made the song (linked to account on
-                            the site)
-                          </Text>
-                        </div>
-
-                        <div className="w-full relative">
-                          <Input
-                            placeholder="Search users..."
-                            value={artistQuery[song.id] ?? ""}
-                            onValueChange={(value) => {
-                              setArtistQuery((prev) => ({
-                                ...prev,
-                                [song.id]: value,
-                              }));
-                              doArtistSearch(song.id, value);
+                        {
+                          <Dropdown
+                            disabled={!canSwapCategory}
+                            selectedValue={category}
+                            onSelect={(key) => {
+                              setCategory(key as "REGULAR" | "ODA" | "EXTRA");
                             }}
-                          />
+                          >
+                            <Dropdown.Item
+                              value="REGULAR"
+                              description="GameCategory.Regular.Description"
+                              icon="gamepad2"
+                            >
+                              GameCategory.Regular.Title
+                            </Dropdown.Item>
 
-                          {(artistResults[song.id]?.length ?? 0) > 0 && (
-                            <Card>
-                              <Vstack align="stretch">
-                                {artistResults[song.id]!.map((u) => (
-                                  <div
-                                    key={u.id}
-                                    className="flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors"
-                                    style={{
-                                      backgroundColor:
-                                        hoveredUserId === u.id
-                                          ? colors["base"]
-                                          : colors["mantle"],
-                                    }}
-                                    onMouseEnter={() => setHoveredUserId(u.id)}
-                                    onMouseLeave={() => setHoveredUserId(null)}
-                                    onClick={() => {
-                                      setSongs((prev) =>
-                                        prev.map((s) =>
-                                          s.id === song.id
-                                            ? {
-                                                ...s,
-                                                composerId: u.id,
-                                                composer: {
-                                                  id: u.id,
-                                                  name: u.name,
-                                                  slug: u.slug,
-                                                  profilePicture:
-                                                    u.profilePicture,
-                                                },
-                                              }
-                                            : s
-                                        )
-                                      );
-                                      // clear query/results for this song
-                                      setArtistQuery((prev) => ({
-                                        ...prev,
-                                        [song.id]: "",
-                                      }));
-                                      setArtistResults((prev) => ({
-                                        ...prev,
-                                        [song.id]: [],
-                                      }));
-                                    }}
-                                  >
-                                    <Hstack>
-                                      <Avatar src={u.profilePicture} />
-                                      <Vstack gap={0} align="start">
-                                        <Text>{u.name}</Text>
-                                        <Text color="textFaded" size="xs">
-                                          {u.short || "General.NoDescription"}
-                                        </Text>
-                                      </Vstack>
-                                    </Hstack>
-                                  </div>
-                                ))}
-                              </Vstack>
-                            </Card>
-                          )}
-
-                          {song.composerId && (
-                            <Hstack className="mt-2 items-center gap-2">
-                              <Avatar
-                                src={song.composer?.profilePicture}
-                                size="sm"
-                              />
-                              <Text size="sm" color="textFaded">
-                                Selected:{" "}
-                                {song.composer?.name ??
-                                  `User #${song.composerId}`}
-                              </Text>
-                              <Button
-                                size="xs"
-                                onClick={() =>
-                                  setSongs((prev) =>
-                                    prev.map((s) =>
-                                      s.id === song.id
-                                        ? {
-                                            ...s,
-                                            composerId: null,
-                                            composer: null,
-                                          }
-                                        : s
-                                    )
-                                  )
-                                }
+                            {teams &&
+                            teams.length > 0 &&
+                            teams[currentTeam].users &&
+                            teams[currentTeam].users.length == 1 ? (
+                              <Dropdown.Item
+                                value="ODA"
+                                description="GameCategory.Oda.Description"
+                                icon="swords"
                               >
-                                Clear
-                              </Button>
-                            </Hstack>
-                          )}
-                        </div>
-                        <div className="w-full">
-                          <Text color="text">Song</Text>
-                          <Text color="textFaded" size="xs">
-                            The track itself
-                          </Text>
-                        </div>
-                        {song.url && (
-                          <div className="w-full">
-                            <audio
-                              controls
-                              preload="none"
-                              src={song.url}
-                              style={{ width: "100%" }}
-                            />
-                          </div>
-                        )}
-                        <Hstack className="items-center gap-2">
-                          <Button
-                            icon="upload"
-                            size="sm"
-                            onClick={async () => {
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.accept = "audio/*";
-                              input.onchange = async (ev: Event) => {
-                                const file = (ev.target as HTMLInputElement)
-                                  ?.files?.[0];
-                                if (!file) return;
-                                const newUrl = await uploadTo("music", file);
-                                if (!newUrl) return;
-                                setSongs((prev) =>
-                                  prev.map((s) =>
-                                    s.id === song.id
-                                      ? {
-                                          ...s,
-                                          url: newUrl,
-                                          name:
-                                            s.name ||
-                                            file.name.replace(/\.[^/.]+$/, ""),
-                                        }
-                                      : s
-                                  )
-                                );
-                                addToast({ title: "Song replaced" });
-                              };
-                              input.click();
-                            }}
-                          >
-                            Replace Audio
-                          </Button>
-                        </Hstack>
+                                GameCategory.Oda.Title
+                              </Dropdown.Item>
+                            ) : (
+                              <></>
+                            )}
+                            <Dropdown.Item
+                              value="EXTRA"
+                              description="GameCategory.Extra.Description"
+                              icon="calendar"
+                            >
+                              GameCategory.Extra.Title
+                            </Dropdown.Item>
+                          </Dropdown>
+                        }
                       </Vstack>
                     </Card>
-                  ))}
-                </Vstack>
-              )}
+                  </>
+                }
 
-              {/* Add song (upload) */}
-              <Button
-                icon="plus"
-                onClick={async () => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "audio/*";
-                  input.onchange = async (ev: Event) => {
-                    const file = (ev.target as HTMLInputElement)?.files?.[0];
-                    if (!file) return;
-                    const url = await uploadTo("music", file);
-                    if (!url) return;
-                    const baseName = file.name.replace(/\.[^/.]+$/, "");
-                    setSongs((prev) => [
-                      ...prev,
-                      {
-                        id: Date.now(),
-                        url,
-                        name: baseName,
-                        artistUserId: null,
-                        artist: null,
-                        slug: sanitizeSlug(baseName),
-                        composerId: null,
-                      },
-                    ]);
-                    addToast({ title: "Song uploaded" });
-                  };
-                  input.click();
-                }}
-              >
-                CreateGame.Soundtrack.Add
-              </Button>
-            </Vstack>
-          </Card>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Description.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Description.Description
+                      </Text>
+                    </div>
+                    <Editor
+                      key={editorKey}
+                      content={content}
+                      setContent={setContent}
+                      gameEditor
+                    />
+                  </Vstack>
+                </Card>
 
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">CreateGame.Achievements.Title</Text>
-                <Text color="textFaded" size="xs">
-                  CreateGame.Achievements.Description
-                </Text>
-              </div>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Short.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Short.Description
+                      </Text>
+                    </div>
+                    <Textarea
+                      placeholder="CreateGame.Short.Placeholder"
+                      value={short}
+                      onValueChange={setShort}
+                      maxLength={155}
+                    />
+                  </Vstack>
+                </Card>
 
-              {achievements.length > 0 && (
-                <Vstack className="w-full gap-3" align="stretch">
-                  {achievements.map((a, idx) => (
-                    <Card key={idx}>
-                      <Vstack align="start" className="gap-3">
-                        <Hstack className="w-full justify-between">
-                          <Hstack>
-                            <Icon name="award" />
-                            <Text color="text" weight="semibold">
-                              {a.name || `Achievement #${idx + 1}`}
-                            </Text>
-                          </Hstack>
-                          <Button
-                            icon="trash"
-                            color="red"
-                            size="sm"
-                            onClick={() =>
-                              setAchievements((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              )
-                            }
-                          >
-                            Remove
-                          </Button>
-                        </Hstack>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Theme.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Theme.Description
+                      </Text>
+                    </div>
+                    <Textarea
+                      placeholder="CreateGame.Theme.Placeholder"
+                      value={themeJustification}
+                      onValueChange={setThemeJustification}
+                    />
+                  </Vstack>
+                </Card>
 
-                        <div className="w-full">
-                          <Text color="text">Name</Text>
-                          <Text color="textFaded" size="xs">
-                            The name of the achievement
-                          </Text>
-                        </div>
-                        <Input
-                          placeholder="Enter achievement name"
-                          value={a.name ?? ""}
-                          onValueChange={(val) =>
-                            setAchievements((prev) => {
-                              const copy = [...prev];
-                              copy[idx] = { ...copy[idx], name: val };
-                              return copy;
-                            })
-                          }
-                        />
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Links.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Links.Description
+                      </Text>
+                    </div>
+                    <div className="flex flex-col gap-4">
+                      <div className="flex flex-col gap-2">
+                        {Array.isArray(downloadLinks) &&
+                          downloadLinks.map((link, index) => (
+                            <div key={link.id} className="flex gap-2">
+                              <Input
+                                className="flex-grow"
+                                placeholder="CreateGame.Links.Placeholder"
+                                value={link.url}
+                                onValueChange={(value) => {
+                                  const newLinks = [...downloadLinks];
+                                  newLinks[index].url = value;
+                                  setDownloadLinks(newLinks);
+                                }}
+                                onBlur={() => {
+                                  if (
+                                    !urlRegex.test(downloadLinks[index].url)
+                                  ) {
+                                    addToast({
+                                      title: t("CreateGame.Links.Error"),
+                                    });
 
-                        <div className="w-full">
-                          <Text color="text">Description</Text>
-                          <Text color="textFaded" size="xs">
-                            A description of the achievement, what the player
-                            does to earn it (e.g. find the chicken)
-                          </Text>
-                        </div>
-                        <Textarea
-                          placeholder="Enter description"
-                          value={a.description ?? ""}
-                          onValueChange={(val) =>
-                            setAchievements((prev) => {
-                              const copy = [...prev];
-                              copy[idx] = { ...copy[idx], description: val };
-                              return copy;
-                            })
-                          }
-                        />
-
-                        <div className="w-full">
-                          <Text color="text">Image</Text>
-                          <Text color="textFaded" size="xs">
-                            An image corresponding to the achievement
-                          </Text>
-                        </div>
-                        <Hstack className="items-center gap-3">
-                          {a.image && (
-                            <div className="bg-[#222222] h-[80px] w-[80px] relative rounded-lg overflow-hidden">
-                              <Image
-                                src={a.image}
-                                alt={`${a.name || "achievement"} icon`}
-                                fill
-                                className="object-cover"
+                                    if (
+                                      !downloadLinks[index].url.startsWith(
+                                        "http://"
+                                      ) &&
+                                      !downloadLinks[index].url.startsWith(
+                                        "https://"
+                                      )
+                                    ) {
+                                      const newUrl =
+                                        "https://" + downloadLinks[index].url;
+                                      const newLinks = [...downloadLinks];
+                                      newLinks[index].url = newUrl;
+                                      setDownloadLinks(newLinks);
+                                      const input =
+                                        document.querySelector<HTMLInputElement>(
+                                          `#download-link-${index}`
+                                        );
+                                      if (input) {
+                                        input.value = newUrl;
+                                      }
+                                    }
+                                  }
+                                }}
                               />
+                              <Dropdown
+                                className="w-96"
+                                placeholder="Select platform"
+                                selectedValue={link.platform}
+                                onSelect={(val) => {
+                                  const newLinks = [...downloadLinks];
+                                  newLinks[index].platform =
+                                    val as PlatformType;
+                                  setDownloadLinks(newLinks);
+                                }}
+                              >
+                                <Dropdown.Item value="Web" icon="globe">
+                                  Web
+                                </Dropdown.Item>
+                                <Dropdown.Item value="SourceCode" icon="code2">
+                                  Source Code
+                                </Dropdown.Item>
+                                <Dropdown.Item value="Windows" icon="monitor">
+                                  Windows
+                                </Dropdown.Item>
+                                <Dropdown.Item value="MacOS" icon="apple">
+                                  MacOS
+                                </Dropdown.Item>
+                                <Dropdown.Item value="Linux" icon="terminal">
+                                  Linux
+                                </Dropdown.Item>
+                                <Dropdown.Item value="iOS" icon="smartphone">
+                                  Apple iOS
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  value="Android"
+                                  icon="smartphone"
+                                >
+                                  Android
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                  value="Other"
+                                  icon="morehorizontal"
+                                >
+                                  Other
+                                </Dropdown.Item>
+                              </Dropdown>
+
+                              <Button
+                                color="red"
+                                onClick={() => {
+                                  setDownloadLinks(
+                                    downloadLinks.filter(
+                                      (l) => l.id !== link.id
+                                    )
+                                  );
+                                }}
+                              >
+                                ×
+                              </Button>
                             </div>
-                          )}
-                          <Button
-                            icon="upload"
-                            onClick={async () => {
-                              const input = document.createElement("input");
-                              input.type = "file";
-                              input.accept = "image/*";
-                              input.onchange = async (ev: Event) => {
-                                const file = (ev.target as HTMLInputElement)
-                                  ?.files?.[0];
-                                if (!file) return;
-                                const url = await uploadTo("image", file);
-                                if (!url) return;
-                                setAchievements((prev) => {
-                                  const copy = [...prev];
-                                  copy[idx] = { ...copy[idx], image: url };
-                                  return copy;
-                                });
-                              };
-                              input.click();
-                            }}
-                          >
-                            {a.image ? "Replace Image" : "Upload Image"}
+                          ))}
+                      </div>
+
+                      <Button
+                        icon="plus"
+                        onClick={() => {
+                          setDownloadLinks([
+                            ...downloadLinks,
+                            {
+                              id: Date.now(),
+                              url: "",
+                              platform: "Web",
+                            },
+                          ]);
+                        }}
+                      >
+                        CreateGame.Links.Add
+                      </Button>
+                    </div>
+                  </Vstack>
+                </Card>
+                {teams.length > 1 && !prevSlug && (
+                  <Card>
+                    <Vstack align="start">
+                      <div>
+                        <Text color="text">Team</Text>
+                        <Text color="textFaded" size="xs">
+                          Set the team associated with the game
+                        </Text>
+                      </div>
+                      <Dropdown
+                        trigger={
+                          <Button>
+                            {teams && teams[currentTeam]
+                              ? teams[currentTeam].name
+                                ? teams[currentTeam].name
+                                : `${teams[currentTeam].owner.name}'s Team`
+                              : "Unknown"}
                           </Button>
-                          {a.image && (
+                        }
+                        onSelect={(i) => {
+                          setCurrentTeam(i as number);
+                        }}
+                      >
+                        {teams.map((team, i) => (
+                          <Dropdown.Item
+                            key={i}
+                            value={i}
+                            description={`${team.users.length} members`}
+                          >
+                            {teams && teams[i]
+                              ? teams[i].name
+                                ? teams[i].name
+                                : `${teams[i].owner.name}'s Team`
+                              : "Unknown"}
+                          </Dropdown.Item>
+                        ))}
+                      </Dropdown>
+                    </Vstack>
+                  </Card>
+                )}
+                {activeJamResponse &&
+                  activeJamResponse.jam &&
+                  (activeJamResponse.jam.id === game?.jam.id || !game) &&
+                  (activeJamResponse.phase == "Jamming" ||
+                    activeJamResponse.phase == "Submission" ||
+                    (activeJamResponse.phase == "Rating" && !prevSlug)) && (
+                    <Card>
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            CreateGame.RatingCategories.Title
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            CreateGame.RatingCategories.Description
+                          </Text>
+                        </div>
+                        {ratingCategories.map((category3) => (
+                          <div key={category3.id}>
+                            <Hstack>
+                              <Switch
+                                checked={
+                                  chosenRatingCategories.filter(
+                                    (category2) => category2 == category3.id
+                                  ).length > 0
+                                }
+                                onChange={(value) => {
+                                  if (value) {
+                                    setChosenRatingCategories([
+                                      ...chosenRatingCategories,
+                                      category3.id,
+                                    ]);
+                                  } else {
+                                    setChosenRatingCategories(
+                                      chosenRatingCategories.filter(
+                                        (category2) => category2 != category3.id
+                                      )
+                                    );
+                                  }
+                                }}
+                              />
+                              <Vstack gap={0} align="start">
+                                <Text color="text" size="sm">
+                                  {category3.name}
+                                </Text>
+                                <Text color="textFaded" size="xs">
+                                  {category3.description}
+                                </Text>
+                              </Vstack>
+                            </Hstack>
+                            {category3.askMajorityContent &&
+                              category == "REGULAR" &&
+                              chosenRatingCategories.filter(
+                                (category2) => category2 == category3.id
+                              ).length > 0 && (
+                                <Hstack className="pl-5 pt-2">
+                                  <Switch
+                                    key={category3.id + "maj"}
+                                    checked={
+                                      chosenMajRatingCategories.filter(
+                                        (category2) => category2 == category3.id
+                                      ).length > 0
+                                    }
+                                    onChange={(value) => {
+                                      if (value) {
+                                        setChosenMajRatingCategories([
+                                          ...chosenMajRatingCategories,
+                                          category3.id,
+                                        ]);
+                                      } else {
+                                        setChosenMajRatingCategories(
+                                          chosenMajRatingCategories.filter(
+                                            (category2) =>
+                                              category2 != category3.id
+                                          )
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <Text color="textFaded" size="xs">
+                                    Did you make the majority of the{" "}
+                                    {category3.name.split(".")[1]} content
+                                  </Text>
+                                </Hstack>
+                              )}
+                          </div>
+                        ))}
+                      </Vstack>
+                    </Card>
+                  )}
+              </Vstack>
+            </Tab>
+            <Tab title="Media" icon="images">
+              <Vstack align="stretch">
+                <Card>
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="images" color="textFaded" size={12} />
+                      <Text size="xs" color="textFaded">
+                        Media
+                      </Text>
+                    </Hstack>
+                    <Text size="xs" color="textFaded">
+                      Spots to upload pictures and music to add to your game
+                      page in various locations
+                    </Text>
+                  </Vstack>
+                </Card>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Thumbnail.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Thumbnail.Description
+                      </Text>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const formData = new FormData();
+                        formData.append("upload", file);
+
+                        try {
+                          const response = await fetch(
+                            process.env.NEXT_PUBLIC_MODE === "PROD"
+                              ? "https://d2jam.com/api/v1/image"
+                              : "http://localhost:3005/api/v1/image",
+                            {
+                              method: "POST",
+                              body: formData,
+                              headers: {
+                                authorization: `Bearer ${getCookie("token")}`,
+                              },
+                              credentials: "include",
+                            }
+                          );
+
+                          if (response.ok) {
+                            const data = await response.json();
+                            setThumbnailUrl(data.data);
+                            addToast({
+                              title: data.message,
+                            });
+                          } else {
+                            addToast({
+                              title: "Failed to upload image",
+                            });
+                          }
+                        } catch (error) {
+                          console.error(error);
+                          addToast({
+                            title: "Error uploading image",
+                          });
+                        }
+                      }}
+                    />
+
+                    {thumbnailUrl && (
+                      <Vstack align="start">
+                        <div className="bg-[#222222] h-[200px] w-[360px] relative">
+                          <Image
+                            src={thumbnailUrl}
+                            alt={`${title}'s thumbnail`}
+                            className="object-cover"
+                            fill
+                          />
+                        </div>
+                        <Button
+                          icon="trash"
+                          color="red"
+                          size="sm"
+                          onClick={() => {
+                            setThumbnailUrl(null);
+                          }}
+                        >
+                          Remove Thumbnail
+                        </Button>
+                      </Vstack>
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Banner.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Banner.Description
+                      </Text>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+
+                        const formData = new FormData();
+                        formData.append("upload", file);
+
+                        try {
+                          const response = await fetch(
+                            process.env.NEXT_PUBLIC_MODE === "PROD"
+                              ? "https://d2jam.com/api/v1/image"
+                              : "http://localhost:3005/api/v1/image",
+                            {
+                              method: "POST",
+                              body: formData,
+                              headers: {
+                                authorization: `Bearer ${getCookie("token")}`,
+                              },
+                              credentials: "include",
+                            }
+                          );
+
+                          if (response.ok) {
+                            const data = await response.json();
+                            setBannerUrl(data.data);
+                            addToast({
+                              title: data.message,
+                            });
+                          } else {
+                            addToast({
+                              title: "Failed to upload image",
+                            });
+                          }
+                        } catch (error) {
+                          console.error(error);
+                          addToast({
+                            title: "Error uploading image",
+                          });
+                        }
+                      }}
+                    />
+
+                    {bannerUrl && (
+                      <Vstack align="start">
+                        <div className="bg-[#222222] h-[120px] w-[734px] relative">
+                          <Image
+                            src={bannerUrl}
+                            alt={`${title}'s banner`}
+                            className="object-cover"
+                            fill
+                          />
+                        </div>
+                        <Button
+                          icon="trash"
+                          color="red"
+                          size="sm"
+                          onClick={() => {
+                            setBannerUrl(null);
+                          }}
+                        >
+                          Remove Banner
+                        </Button>
+                      </Vstack>
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card className="opacity-70">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Screenshots (up to 5)</Text>
+                      <Text color="textFaded" size="xs">
+                        First two will be shown on hover. All will be shown on
+                        game page (coming soon)
+                      </Text>
+                    </div>
+
+                    {screenshots.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+                        {screenshots.map((src, i) => (
+                          <Card key={src + i}>
+                            <Vstack align="start" className="gap-2">
+                              <div
+                                className="relative w-full rounded-lg overflow-hidden"
+                                style={{
+                                  aspectRatio: "16 / 9",
+                                  background: "#222",
+                                }}
+                              >
+                                <Image
+                                  src={src}
+                                  alt={`Screenshot #${i + 1}`}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
+                              <Hstack>
+                                <Text size="xs" color="textFaded">
+                                  #{i + 1}
+                                </Text>
+                                <Button
+                                  icon="trash"
+                                  color="red"
+                                  size="sm"
+                                  onClick={() =>
+                                    setScreenshots((prev) =>
+                                      prev.filter((_, idx) => idx !== i)
+                                    )
+                                  }
+                                >
+                                  Remove
+                                </Button>
+                                {i > 0 && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      setScreenshots((prev) => {
+                                        const copy = [...prev];
+                                        [copy[i - 1], copy[i]] = [
+                                          copy[i],
+                                          copy[i - 1],
+                                        ];
+                                        return copy;
+                                      })
+                                    }
+                                  >
+                                    Move Up
+                                  </Button>
+                                )}
+                                {i < screenshots.length - 1 && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      setScreenshots((prev) => {
+                                        const copy = [...prev];
+                                        [copy[i + 1], copy[i]] = [
+                                          copy[i],
+                                          copy[i + 1],
+                                        ];
+                                        return copy;
+                                      })
+                                    }
+                                  >
+                                    Move Down
+                                  </Button>
+                                )}
+                              </Hstack>
+                            </Vstack>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
+
+                    <Hstack className="pt-2">
+                      <Button
+                        icon="upload"
+                        disabled
+                        // disabled={screenshots.length >= 5}
+                        onClick={() => {
+                          if (screenshots.length >= 5) return;
+                          const input = document.createElement("input");
+                          input.type = "file";
+                          input.accept = "image/*";
+                          input.onchange = async (ev: Event) => {
+                            const file = (ev.target as HTMLInputElement)
+                              ?.files?.[0];
+                            if (!file) return;
+                            if (screenshots.length >= 5) {
+                              addToast({
+                                title: "You can only add up to 5 screenshots.",
+                              });
+                              return;
+                            }
+                            const url = await uploadTo("image", file);
+                            if (!url) return;
+                            setScreenshots((prev) =>
+                              [...prev, url].slice(0, 5)
+                            );
+                            addToast({ title: "Screenshot added" });
+                          };
+                          input.click();
+                        }}
+                      >
+                        {screenshots.length >= 5
+                          ? "Max screenshots reached"
+                          : "Add Screenshot"}
+                      </Button>
+                      {screenshots.length > 0 && (
+                        <Button
+                          icon="trash"
+                          color="red"
+                          onClick={() => setScreenshots([])}
+                        >
+                          Clear All
+                        </Button>
+                      )}
+                    </Hstack>
+                  </Vstack>
+                </Card>
+
+                <Card className="opacity-70">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Trailer (YouTube)</Text>
+                      <Text color="textFaded" size="xs">
+                        Paste a YouTube URL (watch, share link, shorts, or
+                        embed) (coming soon)
+                      </Text>
+                    </div>
+                    <Input
+                      disabled
+                      placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
+                      value={trailerUrl}
+                      onValueChange={setTrailerUrl}
+                      onBlur={() => {
+                        if (trailerUrl && !extractYouTubeId(trailerUrl)) {
+                          addToast({
+                            title:
+                              "That doesn’t look like a valid YouTube URL.",
+                          });
+                        }
+                      }}
+                    />
+                    {trailerUrl && extractYouTubeId(trailerUrl) && (
+                      <div
+                        className="w-full rounded-xl overflow-hidden"
+                        style={{ aspectRatio: "16 / 9", background: "#111" }}
+                      >
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${extractYouTubeId(
+                            trailerUrl
+                          )}`}
+                          title="Trailer"
+                          className="w-full h-full"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    )}
+                  </Vstack>
+                </Card>
+                <Accordion>
+                  <AccordionItem
+                    title="CreateGame.Soundtrack.Title"
+                    subtitle="CreateGame.Soundtrack.Description"
+                  >
+                    <Vstack align="start">
+                      {/* List songs */}
+                      {songs.length > 0 && (
+                        <Vstack className="w-full gap-3" align="stretch">
+                          {songs.map((song) => (
+                            <Card key={song.id}>
+                              <Vstack align="start" className="gap-3">
+                                <Hstack className="w-full justify-between">
+                                  <Hstack>
+                                    <Icon name="music" />
+                                    <Text color="text" weight="semibold">
+                                      {song.name || "Untitled track"}
+                                    </Text>
+                                  </Hstack>
+                                  <Button
+                                    icon="trash"
+                                    color="red"
+                                    size="sm"
+                                    onClick={() =>
+                                      setSongs((prev) =>
+                                        prev.filter((s) => s.id !== song.id)
+                                      )
+                                    }
+                                  >
+                                    Remove
+                                  </Button>
+                                </Hstack>
+
+                                <div className="w-full">
+                                  <Text color="text">Song Slug</Text>
+                                  <Text color="textFaded" size="xs">
+                                    Used in the url for the song
+                                  </Text>
+                                </div>
+                                <Input
+                                  placeholder="Enter song slug"
+                                  value={song.slug}
+                                  onValueChange={(val) =>
+                                    setSongs((prev) =>
+                                      prev.map((s) =>
+                                        s.id === song.id
+                                          ? { ...s, slug: val }
+                                          : s
+                                      )
+                                    )
+                                  }
+                                />
+                                <div className="w-full">
+                                  <Text color="text">Song Name</Text>
+                                  <Text color="textFaded" size="xs">
+                                    Shown in the soundtrack list.
+                                  </Text>
+                                </div>
+                                <Input
+                                  placeholder="Enter song name"
+                                  value={song.name}
+                                  onValueChange={(val) =>
+                                    setSongs((prev) =>
+                                      prev.map((s) =>
+                                        s.id === song.id
+                                          ? { ...s, name: val }
+                                          : s
+                                      )
+                                    )
+                                  }
+                                />
+
+                                <div className="w-full">
+                                  <Text color="text">Composer</Text>
+                                  <Text color="textFaded" size="xs">
+                                    The person who made the song (linked to
+                                    account on the site)
+                                  </Text>
+                                </div>
+
+                                <div className="w-full relative">
+                                  <Input
+                                    placeholder="Search users..."
+                                    value={artistQuery[song.id] ?? ""}
+                                    onValueChange={(value) => {
+                                      setArtistQuery((prev) => ({
+                                        ...prev,
+                                        [song.id]: value,
+                                      }));
+                                      doArtistSearch(song.id, value);
+                                    }}
+                                  />
+
+                                  {(artistResults[song.id]?.length ?? 0) >
+                                    0 && (
+                                    <Card>
+                                      <Vstack align="stretch">
+                                        {artistResults[song.id]!.map((u) => (
+                                          <div
+                                            key={u.id}
+                                            className="flex justify-between items-center p-3 rounded-lg cursor-pointer transition-colors"
+                                            style={{
+                                              backgroundColor:
+                                                hoveredUserId === u.id
+                                                  ? colors["base"]
+                                                  : colors["mantle"],
+                                            }}
+                                            onMouseEnter={() =>
+                                              setHoveredUserId(u.id)
+                                            }
+                                            onMouseLeave={() =>
+                                              setHoveredUserId(null)
+                                            }
+                                            onClick={() => {
+                                              setSongs((prev) =>
+                                                prev.map((s) =>
+                                                  s.id === song.id
+                                                    ? {
+                                                        ...s,
+                                                        composerId: u.id,
+                                                        composer: {
+                                                          id: u.id,
+                                                          name: u.name,
+                                                          slug: u.slug,
+                                                          profilePicture:
+                                                            u.profilePicture,
+                                                        },
+                                                      }
+                                                    : s
+                                                )
+                                              );
+                                              // clear query/results for this song
+                                              setArtistQuery((prev) => ({
+                                                ...prev,
+                                                [song.id]: "",
+                                              }));
+                                              setArtistResults((prev) => ({
+                                                ...prev,
+                                                [song.id]: [],
+                                              }));
+                                            }}
+                                          >
+                                            <Hstack>
+                                              <Avatar src={u.profilePicture} />
+                                              <Vstack gap={0} align="start">
+                                                <Text>{u.name}</Text>
+                                                <Text
+                                                  color="textFaded"
+                                                  size="xs"
+                                                >
+                                                  {u.short ||
+                                                    "General.NoDescription"}
+                                                </Text>
+                                              </Vstack>
+                                            </Hstack>
+                                          </div>
+                                        ))}
+                                      </Vstack>
+                                    </Card>
+                                  )}
+
+                                  {song.composerId && (
+                                    <Hstack className="mt-2 items-center gap-2">
+                                      <Avatar
+                                        src={song.composer?.profilePicture}
+                                        size="sm"
+                                      />
+                                      <Text size="sm" color="textFaded">
+                                        Selected:{" "}
+                                        {song.composer?.name ??
+                                          `User #${song.composerId}`}
+                                      </Text>
+                                      <Button
+                                        size="xs"
+                                        onClick={() =>
+                                          setSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? {
+                                                    ...s,
+                                                    composerId: null,
+                                                    composer: null,
+                                                  }
+                                                : s
+                                            )
+                                          )
+                                        }
+                                      >
+                                        Clear
+                                      </Button>
+                                    </Hstack>
+                                  )}
+                                </div>
+                                <div className="w-full">
+                                  <Text color="text">Song</Text>
+                                  <Text color="textFaded" size="xs">
+                                    The track itself
+                                  </Text>
+                                </div>
+                                {song.url && (
+                                  <div className="w-full">
+                                    <audio
+                                      controls
+                                      preload="none"
+                                      src={song.url}
+                                      style={{ width: "100%" }}
+                                    />
+                                  </div>
+                                )}
+                                <Hstack className="items-center gap-2">
+                                  <Button
+                                    icon="upload"
+                                    size="sm"
+                                    onClick={async () => {
+                                      const input =
+                                        document.createElement("input");
+                                      input.type = "file";
+                                      input.accept = "audio/*";
+                                      input.onchange = async (ev: Event) => {
+                                        const file = (
+                                          ev.target as HTMLInputElement
+                                        )?.files?.[0];
+                                        if (!file) return;
+                                        const newUrl = await uploadTo(
+                                          "music",
+                                          file
+                                        );
+                                        if (!newUrl) return;
+                                        setSongs((prev) =>
+                                          prev.map((s) =>
+                                            s.id === song.id
+                                              ? {
+                                                  ...s,
+                                                  url: newUrl,
+                                                  name:
+                                                    s.name ||
+                                                    file.name.replace(
+                                                      /\.[^/.]+$/,
+                                                      ""
+                                                    ),
+                                                }
+                                              : s
+                                          )
+                                        );
+                                        addToast({ title: "Song replaced" });
+                                      };
+                                      input.click();
+                                    }}
+                                  >
+                                    Replace Audio
+                                  </Button>
+                                </Hstack>
+                              </Vstack>
+                            </Card>
+                          ))}
+                        </Vstack>
+                      )}
+
+                      {/* Add song (upload) */}
+                      <Button
+                        icon="plus"
+                        onClick={async () => {
+                          const input = document.createElement("input");
+                          input.type = "file";
+                          input.accept = "audio/*";
+                          input.onchange = async (ev: Event) => {
+                            const file = (ev.target as HTMLInputElement)
+                              ?.files?.[0];
+                            if (!file) return;
+                            const url = await uploadTo("music", file);
+                            if (!url) return;
+                            const baseName = file.name.replace(/\.[^/.]+$/, "");
+                            setSongs((prev) => [
+                              ...prev,
+                              {
+                                id: Date.now(),
+                                url,
+                                name: baseName,
+                                artistUserId: null,
+                                artist: null,
+                                slug: sanitizeSlug(baseName),
+                                composerId: null,
+                              },
+                            ]);
+                            addToast({ title: "Song uploaded" });
+                          };
+                          input.click();
+                        }}
+                      >
+                        CreateGame.Soundtrack.Add
+                      </Button>
+                    </Vstack>
+                  </AccordionItem>
+                </Accordion>
+              </Vstack>
+            </Tab>
+            <Tab title="Metadata" icon="tags">
+              <Vstack align="stretch">
+                <Card>
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="tags" color="textFaded" size={12} />
+                      <Text size="xs" color="textFaded">
+                        Metadata
+                      </Text>
+                    </Hstack>
+                    <Text size="xs" color="textFaded">
+                      Metadata to help people find your game better and to be
+                      able to know more about your game
+                    </Text>
+                  </Vstack>
+                </Card>
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Tags.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Tags.Description
+                      </Text>
+                    </div>
+                    {isMounted && (
+                      <Select
+                        styles={styles}
+                        isMulti
+                        isClearable={false}
+                        onChange={(value) => setTags(value.map((i) => i.id))}
+                        value={tags.map((index) => ({
+                          value: allTags[index].name,
+                          id: index,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              {allTags[index].icon && (
+                                <Avatar
+                                  className="w-6 h-6 min-w-6 min-h-6"
+                                  size="sm"
+                                  src={allTags[index].icon}
+                                  classNames={{ base: "bg-transparent" }}
+                                />
+                              )}
+                              <p>{allTags[index].name}</p>
+                            </div>
+                          ),
+                        }))}
+                        isOptionDisabled={() =>
+                          tags != null && tags.length >= 10
+                        }
+                        options={allTags.map((tag, i) => ({
+                          value: tag.name,
+                          id: i,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              <p>{tag.name}</p>
+                            </div>
+                          ),
+                        }))}
+                      />
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Flags.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Flags.Description
+                      </Text>
+                    </div>
+                    {isMounted && (
+                      <Select
+                        styles={styles}
+                        isMulti
+                        isClearable={false}
+                        onChange={(value) => setFlags(value.map((i) => i.id))}
+                        value={flags.map((index) => ({
+                          value: allFlags[index].name,
+                          id: index,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              {allFlags[index].icon &&
+                                getIcon(allFlags[index].icon)}
+                              <p>{allFlags[index].name}</p>
+                            </div>
+                          ),
+                        }))}
+                        options={allFlags.map((flag, i) => ({
+                          value: flag.name,
+                          id: i,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              <p>{flag.name}</p>
+                            </div>
+                          ),
+                        }))}
+                      />
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card className="opacity-70">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Input Methods</Text>
+                      <Text color="textFaded" size="xs">
+                        Select all input methods that players can use (coming
+                        soon)
+                      </Text>
+                    </div>
+
+                    <Dropdown
+                      disabled
+                      multiple
+                      closeOnSelect={false}
+                      placeholder="Select input methods"
+                      selectedValues={inputMethods}
+                      onSelectionChange={(sel) => {
+                        setInputMethods(sel as Set<InputMethodType>);
+                      }}
+                    >
+                      <Dropdown.Item
+                        icon="eraser"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setInputMethods(new Set());
+                        }}
+                      >
+                        Clear all
+                      </Dropdown.Item>
+
+                      {INPUT_METHOD_OPTIONS.map(({ value, label, icon }) => (
+                        <Dropdown.Item key={value} value={value} icon={icon}>
+                          {label}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown>
+                  </Vstack>
+                </Card>
+                <Accordion>
+                  <AccordionItem
+                    title="Estimated Playtimes"
+                    subtitle="Times it would take people to complete runs / playthroughs of the game"
+                    icon="trophy"
+                  >
+                    <Card className="opacity-70">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to Complete a Run (optional)
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            If your game features multiple runs (such as a
+                            roguelike), how long a user should expect an average
+                            run of the game to take (coming soon)
+                          </Text>
+                        </div>
+
+                        <Dropdown
+                          disabled
+                          placeholder="Select time interval"
+                          selectedValue={estOneRun}
+                          onSelect={(i) => {
+                            setEstOneRun(i as string);
+                          }}
+                        >
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </Card>
+                    <Card className="opacity-70">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to Beat the Game (optional)
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            If your game can be beaten, the average amount of a
+                            time a user would spend playing the game until they
+                            do that (coming soon)
+                          </Text>
+                        </div>
+
+                        <Dropdown
+                          disabled
+                          placeholder="Select time interval"
+                          selectedValue={estAnyPercent}
+                          onSelect={(i) => {
+                            setEstAnyPercent(i as string);
+                          }}
+                        >
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </Card>
+                    <Card className="opacity-70">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to 100% the game (optional)
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            The average time it would take for a user to achieve
+                            everything in the game if it has more past just the
+                            regular run (e.g. getting all achievements, getting
+                            all optional collectables, etc.) (coming soon)
+                          </Text>
+                        </div>
+
+                        <Dropdown
+                          disabled
+                          placeholder="Select time interval"
+                          selectedValue={estHundredPercent}
+                          onSelect={(i) => {
+                            setEstHundredPercent(i as string);
+                          }}
+                        >
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </Card>
+                  </AccordionItem>
+                </Accordion>
+              </Vstack>
+            </Tab>
+            <Tab title="Achievements & Leaderboards" icon="circlestar">
+              <Vstack align="stretch">
+                <Card>
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="circlestar" color="textFaded" size={12} />
+                      <Text size="xs" color="textFaded">
+                        Achievements & Leaderboards
+                      </Text>
+                    </Hstack>
+                    <Text size="xs" color="textFaded">
+                      Things for people to achieve for your game (competing for
+                      high scores or getting game achievements for things in the
+                      game)
+                    </Text>
+                  </Vstack>
+                </Card>
+                <Accordion>
+                  <AccordionItem
+                    title="CreateGame.Leaderboards.Title"
+                    subtitle="CreateGame.Leaderboards.Description"
+                    icon="trophy"
+                  >
+                    <Vstack align="start">
+                      {leaderboards.map((lb, index) => (
+                        <Card key={index}>
+                          <Vstack align="start">
+                            <Hstack className="mb-2">
+                              <Icon name={lbIconFor(lb.type)} size={16} />
+                              <Text size="lg">
+                                Leaderboard #{index + 1}
+                                {lb.name ? `: ${lb.name}` : ""}
+                              </Text>
+                            </Hstack>
+                            <div>
+                              <Text color="text">
+                                CreateLeaderboard.Name.Title
+                              </Text>
+                              <Text color="textFaded" size="xs">
+                                CreateLeaderboard.Name.Description
+                              </Text>
+                            </div>
+                            <Input
+                              placeholder="CreateLeaderboard.Name.Placeholder"
+                              value={lb.name}
+                              onChange={(e) => {
+                                const updated = [...leaderboards];
+                                updated[index].name = e.target.value;
+                                setLeaderboards(updated);
+                              }}
+                            />
+                            <div>
+                              <Text color="text">
+                                CreateLeaderboard.UsersPerPage.Title
+                              </Text>
+                              <Text color="textFaded" size="xs">
+                                CreateLeaderboard.UsersPerPage.Description
+                              </Text>
+                            </div>
+                            <Input
+                              type="number"
+                              value={lb.maxUsersShown}
+                              min={0}
+                              max={100}
+                              onValueChange={(e) => {
+                                const updated = [...leaderboards];
+                                updated[index].maxUsersShown = parseInt(e);
+                                setLeaderboards(updated);
+                              }}
+                            />
+                            <div>
+                              <Text color="text">
+                                CreateLeaderboard.Type.Title
+                              </Text>
+                              <Text color="textFaded" size="xs">
+                                CreateLeaderboard.Type.Description
+                              </Text>
+                            </div>
+                            <Dropdown
+                              selectedValue={leaderboards[index].type}
+                              onSelect={(value) => {
+                                const updated = [...leaderboards];
+                                updated[index].type =
+                                  value as LeaderboardTypeType;
+                                setLeaderboards(updated);
+                              }}
+                            >
+                              <Dropdown.Item
+                                value="SCORE"
+                                description="LeaderboardType.Score.Description"
+                                icon="trophy"
+                              >
+                                LeaderboardType.Score.Title
+                              </Dropdown.Item>
+
+                              <Dropdown.Item
+                                value="GOLF"
+                                description="LeaderboardType.Golf.Description"
+                                icon="landplot"
+                              >
+                                LeaderboardType.Golf.Title
+                              </Dropdown.Item>
+
+                              <Dropdown.Item
+                                value="SPEEDRUN"
+                                description="LeaderboardType.Speedrun.Description"
+                                icon="rabbit"
+                              >
+                                LeaderboardType.Speedrun.Title
+                              </Dropdown.Item>
+
+                              <Dropdown.Item
+                                value="ENDURANCE"
+                                description="LeaderboardType.Endurance.Description"
+                                icon="turtle"
+                              >
+                                LeaderboardType.Endurance.Title
+                              </Dropdown.Item>
+                            </Dropdown>
+                            {(lb.type == "SCORE" || lb.type == "GOLF") && (
+                              <>
+                                <div>
+                                  <Text color="text">
+                                    CreateLeaderboard.Decimals.Title
+                                  </Text>
+                                  <Text color="textFaded" size="xs">
+                                    CreateLeaderboard.Decimals.Description
+                                  </Text>
+                                </div>
+                                <Input
+                                  type="number"
+                                  value={lb.decimalPlaces}
+                                  min={0}
+                                  max={3}
+                                  onValueChange={(e) => {
+                                    const updated = [...leaderboards];
+                                    updated[index].decimalPlaces = parseInt(e);
+                                    setLeaderboards(updated);
+                                  }}
+                                />
+                              </>
+                            )}
+                            <div>
+                              <Text color="text">
+                                CreateLeaderboard.Advanced.Title
+                              </Text>
+                              <Text color="textFaded" size="xs">
+                                CreateLeaderboard.Advanced.Description
+                              </Text>
+                            </div>
+                            <Hstack>
+                              <Switch
+                                checked={lb.onlyBest}
+                                onChange={(value) => {
+                                  const updated = [...leaderboards];
+                                  updated[index].onlyBest = value;
+                                  setLeaderboards(updated);
+                                }}
+                              />
+                              <Vstack gap={0} align="start">
+                                <Text size="sm">
+                                  CreateLeaderboard.Highest.Title
+                                </Text>
+                                <Text size="xs" color="textFaded">
+                                  CreateLeaderboard.Highest.Description
+                                </Text>
+                              </Vstack>
+                            </Hstack>
+                            <div className="p-1" />
                             <Button
                               icon="trash"
                               color="red"
                               onClick={() =>
-                                setAchievements((prev) => {
-                                  const copy = [...prev];
-                                  copy[idx] = {
-                                    ...copy[idx],
-                                    image: "",
-                                  };
-                                  return copy;
-                                })
+                                setLeaderboards(
+                                  leaderboards.filter((_, i) => i !== index)
+                                )
                               }
                             >
-                              Remove Image
+                              Remove {lb.name}
                             </Button>
-                          )}
-                        </Hstack>
-                      </Vstack>
-                    </Card>
-                  ))}
-                </Vstack>
-              )}
+                          </Vstack>
+                        </Card>
+                      ))}
+                      <Button
+                        icon="plus"
+                        onClick={() =>
+                          setLeaderboards([
+                            ...leaderboards,
+                            {
+                              id: -1,
+                              name: "",
+                              type: "SCORE",
+                              onlyBest: true,
+                              game: {} as GameType,
+                              scores: [],
+                              maxUsersShown: 10,
+                              decimalPlaces: 0,
+                            },
+                          ])
+                        }
+                      >
+                        CreateGame.Leaderboards.Add
+                      </Button>
+                    </Vstack>
+                  </AccordionItem>
+                  <AccordionItem
+                    title="CreateGame.Achievements.Title"
+                    subtitle="CreateGame.Achievements.Description"
+                    icon="award"
+                  >
+                    <Vstack align="start">
+                      {achievements.length > 0 && (
+                        <Vstack className="w-full gap-3" align="stretch">
+                          {achievements.map((a, idx) => (
+                            <Card key={idx}>
+                              <Vstack align="start" className="gap-3">
+                                <Hstack className="w-full justify-between">
+                                  <Hstack>
+                                    <Icon name="award" />
+                                    <Text color="text" weight="semibold">
+                                      {a.name || `Achievement #${idx + 1}`}
+                                    </Text>
+                                  </Hstack>
+                                  <Button
+                                    icon="trash"
+                                    color="red"
+                                    size="sm"
+                                    onClick={() =>
+                                      setAchievements((prev) =>
+                                        prev.filter((_, i) => i !== idx)
+                                      )
+                                    }
+                                  >
+                                    Remove
+                                  </Button>
+                                </Hstack>
 
-              <Button
-                icon="plus"
-                onClick={() =>
-                  setAchievements((prev) => [
-                    ...prev,
-                    {
-                      id: -1,
-                      name: "",
-                      description: "",
-                      image: "",
-                    } as AchievementType,
-                  ])
-                }
-              >
-                CreateGame.Achievements.Add
-              </Button>
-            </Vstack>
-          </Card>
+                                <div className="w-full">
+                                  <Text color="text">Name</Text>
+                                  <Text color="textFaded" size="xs">
+                                    The name of the achievement
+                                  </Text>
+                                </div>
+                                <Input
+                                  placeholder="Enter achievement name"
+                                  value={a.name ?? ""}
+                                  onValueChange={(val) =>
+                                    setAchievements((prev) => {
+                                      const copy = [...prev];
+                                      copy[idx] = { ...copy[idx], name: val };
+                                      return copy;
+                                    })
+                                  }
+                                />
 
+                                <div className="w-full">
+                                  <Text color="text">Description</Text>
+                                  <Text color="textFaded" size="xs">
+                                    A description of the achievement, what the
+                                    player does to earn it (e.g. find the
+                                    chicken)
+                                  </Text>
+                                </div>
+                                <Textarea
+                                  placeholder="Enter description"
+                                  value={a.description ?? ""}
+                                  onValueChange={(val) =>
+                                    setAchievements((prev) => {
+                                      const copy = [...prev];
+                                      copy[idx] = {
+                                        ...copy[idx],
+                                        description: val,
+                                      };
+                                      return copy;
+                                    })
+                                  }
+                                />
+
+                                <div className="w-full">
+                                  <Text color="text">Image</Text>
+                                  <Text color="textFaded" size="xs">
+                                    An image corresponding to the achievement
+                                  </Text>
+                                </div>
+                                <Hstack className="items-center gap-3">
+                                  {a.image && (
+                                    <div className="bg-[#222222] h-[80px] w-[80px] relative rounded-lg overflow-hidden">
+                                      <Image
+                                        src={a.image}
+                                        alt={`${a.name || "achievement"} icon`}
+                                        fill
+                                        className="object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  <Button
+                                    icon="upload"
+                                    onClick={async () => {
+                                      const input =
+                                        document.createElement("input");
+                                      input.type = "file";
+                                      input.accept = "image/*";
+                                      input.onchange = async (ev: Event) => {
+                                        const file = (
+                                          ev.target as HTMLInputElement
+                                        )?.files?.[0];
+                                        if (!file) return;
+                                        const url = await uploadTo(
+                                          "image",
+                                          file
+                                        );
+                                        if (!url) return;
+                                        setAchievements((prev) => {
+                                          const copy = [...prev];
+                                          copy[idx] = {
+                                            ...copy[idx],
+                                            image: url,
+                                          };
+                                          return copy;
+                                        });
+                                      };
+                                      input.click();
+                                    }}
+                                  >
+                                    {a.image ? "Replace Image" : "Upload Image"}
+                                  </Button>
+                                  {a.image && (
+                                    <Button
+                                      icon="trash"
+                                      color="red"
+                                      onClick={() =>
+                                        setAchievements((prev) => {
+                                          const copy = [...prev];
+                                          copy[idx] = {
+                                            ...copy[idx],
+                                            image: "",
+                                          };
+                                          return copy;
+                                        })
+                                      }
+                                    >
+                                      Remove Image
+                                    </Button>
+                                  )}
+                                </Hstack>
+                              </Vstack>
+                            </Card>
+                          ))}
+                        </Vstack>
+                      )}
+
+                      <Button
+                        icon="plus"
+                        onClick={() =>
+                          setAchievements((prev) => [
+                            ...prev,
+                            {
+                              id: -1,
+                              name: "",
+                              description: "",
+                              image: "",
+                            } as AchievementType,
+                          ])
+                        }
+                      >
+                        CreateGame.Achievements.Add
+                      </Button>
+                    </Vstack>
+                  </AccordionItem>
+                </Accordion>
+              </Vstack>
+            </Tab>
+          </Tabs>
           <Hstack>
             {waitingPost ? (
               <Spinner />
             ) : (
-              <Button color="blue" type="submit" name="action" value="save">
+              <Button color="green" type="submit" name="action" value="save">
                 {prevSlug
                   ? "CreateGame.Update.Title"
                   : "CreateGame.Create.Title"}

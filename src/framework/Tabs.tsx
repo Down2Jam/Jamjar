@@ -14,6 +14,7 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
   onIndexChange?: (i: number) => void;
   fullWidth?: boolean;
   wrap?: boolean;
+  addBottomTabs?: boolean;
 }
 
 export interface TabProps {
@@ -31,6 +32,7 @@ export function Tabs({
   onIndexChange,
   fullWidth = false,
   wrap = true,
+  addBottomTabs = false,
   ...rest
 }: TabsProps) {
   const { colors } = useTheme();
@@ -66,6 +68,9 @@ export function Tabs({
 
           return (
             <Button
+              style={{
+                borderWidth: "1px 1px 4px 1px",
+              }}
               key={i}
               role="tab"
               aria-selected={isActive}
@@ -86,11 +91,48 @@ export function Tabs({
         id={`panel-${active}`}
         role="tabpanel"
         aria-labelledby={`tab-${active}`}
-        className="pt-3"
         style={{ color: colors.text }}
       >
         {items[active]}
       </div>
+
+      {addBottomTabs && (
+        <div
+          role="tablist"
+          aria-orientation="horizontal"
+          className={[
+            "flex gap-x-2 mt-2",
+            wrap
+              ? "flex-wrap content-start gap-y-2 overflow-x-visible"
+              : "overflow-x-auto no-scrollbar",
+            fullWidth && !wrap ? "justify-between" : "",
+          ].join(" ")}
+        >
+          {items.map((child, i) => {
+            const isActive = i === active;
+            const disabled = !!child.props.disabled;
+
+            return (
+              <Button
+                style={{
+                  borderWidth: "1px 1px 4px 1px",
+                }}
+                key={i}
+                role="tab"
+                aria-selected={isActive}
+                aria-controls={`panel-${i}`}
+                id={`tab-${i}`}
+                disabled={disabled}
+                onClick={() => !disabled && setActive(i)}
+                icon={child.props.icon}
+                color={isActive ? "blue" : "default"}
+              >
+                {child.props.title}
+              </Button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

@@ -3,8 +3,9 @@
 import { useState, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Vstack } from "@/framework/Stack";
+import { Hstack, Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
+import Icon, { IconName } from "./Icon";
 
 interface AccordionProps {
   children: ReactNode;
@@ -28,6 +29,7 @@ interface AccordionItemProps {
 interface AccordionItemProps {
   title: string;
   subtitle?: string;
+  icon?: IconName;
   children: ReactNode;
   defaultOpen?: boolean;
 }
@@ -36,6 +38,7 @@ export function AccordionItem({
   title,
   subtitle,
   children,
+  icon,
   defaultOpen = false,
 }: AccordionItemProps) {
   const { colors } = useTheme();
@@ -51,14 +54,20 @@ export function AccordionItem({
       }}
     >
       <button
+        type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex w-full justify-between px-4 py-3 text-left"
         style={{ color: colors.text }}
       >
         <div className="flex flex-col gap-1">
-          <Text weight="medium">{title}</Text>
+          <Hstack>
+            {icon && <Icon size={12} name={icon} />}
+            <Text weight="medium" size="sm">
+              {title}
+            </Text>
+          </Hstack>
           {subtitle && (
-            <Text size="sm" color="textFaded">
+            <Text size="xs" color="textFaded">
               {subtitle}
             </Text>
           )}
@@ -73,7 +82,7 @@ export function AccordionItem({
       </button>
       <div
         style={{
-          maxHeight: open ? "1000px" : "0px",
+          maxHeight: open ? undefined : "0px", // code here to possibly make it animate, issue is if you set it to a px value so it does it clips things in the game edit page
           overflow: "hidden",
           transition: "max-height 0.3s ease",
         }}
