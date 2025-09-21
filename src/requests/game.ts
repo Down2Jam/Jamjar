@@ -169,7 +169,9 @@ export async function getResults(
   jam: string
 ) {
   return fetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}`,
+    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}${
+      jam && jam !== "all" ? `&jamId=${jam}` : ``
+    }`,
     {
       credentials: "include",
       headers: {
