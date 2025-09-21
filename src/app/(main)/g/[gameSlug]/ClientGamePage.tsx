@@ -499,7 +499,8 @@ export default function ClientGamePage({
                   RATINGS
                 </p>
                 {activeJamResponse &&
-                  activeJamResponse?.jam?.id != game.jamId && (
+                  (activeJamResponse?.jam?.id != game.jamId ||
+                    user?.id === 3) && (
                     <>
                       {Object.keys(game?.scores || {})
                         .sort(

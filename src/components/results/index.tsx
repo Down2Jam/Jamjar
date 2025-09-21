@@ -5,6 +5,7 @@ import { Card } from "@/framework/Card";
 import Dropdown from "@/framework/Dropdown";
 import { Link } from "@/framework/Link";
 import { Hstack, Vstack } from "@/framework/Stack";
+import Text from "@/framework/Text";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
@@ -241,18 +242,15 @@ export default function Results() {
                         key={category.categoryId}
                         className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                       >
-                        <span
-                          className="text-sm"
-                          style={{ color: colors["textFaded"] }}
-                        >
-                          {category.categoryName}:
-                        </span>
+                        <Text size="sm" color="textFaded">
+                          {category.categoryName}
+                        </Text>
                         <span style={{ color }}>
                           {(category.averageScore / 2).toFixed(2)} stars
                         </span>
-                        <span style={{ color: colors["textFaded"] }}>
+                        <Text color="textFaded">
                           ({ordinal_suffix_of(category.placement)})
-                        </span>
+                        </Text>
                         <span className="flex items-center justify-center">
                           {category.placement === 1 && (
                             <Award

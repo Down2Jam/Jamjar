@@ -168,6 +168,12 @@ export async function getResults(
   sort: string
 ) {
   return fetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}`
+    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}`,
+    {
+      credentials: "include",
+      headers: {
+        authorization: `Bearer ${getCookie("token")}`,
+      },
+    }
   );
 }
