@@ -87,6 +87,53 @@ function getPlatformIcon(platform: string): IconName | undefined {
   }
 }
 
+function gradientTextStyle(
+  gradient: string,
+  fallback: string
+): React.CSSProperties {
+  return {
+    backgroundImage: gradient,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    color: fallback,
+  };
+}
+
+function getPlacementGradient(
+  placement: number,
+  colors: Record<string, string>
+) {
+  if (placement === 1)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
+      first: colors["red"],
+    };
+  if (placement === 2)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["tealLight"]}, ${colors["gray"]})`,
+      first: colors["gray"],
+    };
+  if (placement === 3)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["red"]}, ${colors["pink"]})`,
+      first: colors["pink"],
+    };
+  if (placement >= 4 && placement <= 5)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["blue"]}, ${colors["indigo"]})`,
+      first: colors["indigo"],
+    };
+  if (placement >= 6 && placement <= 10)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["purple"]}, ${colors["violet"]})`,
+      first: colors["violet"],
+    };
+  return {
+    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["crust"]})`,
+    first: colors["textFaded"],
+  };
+}
+
 export default function ClientGamePage({
   params,
 }: {
@@ -508,100 +555,71 @@ export default function ClientGamePage({
                             (game.scores[a].placement || 0) -
                             (game.scores[b].placement || 0)
                         )
-                        .map((score) => (
-                          <div
-                            key={score}
-                            className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
-                          >
-                            <span
-                              className="text-sm"
-                              style={{
-                                color: colors["textFaded"],
-                              }}
+                        .map((score) => {
+                          const { gradient, first } = getPlacementGradient(
+                            game.scores[score].placement,
+                            colors
+                          );
+
+                          return (
+                            <div
+                              key={score}
+                              className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
                             >
-                              {t(score)}:
-                            </span>
-                            <span
-                              style={{
-                                color:
-                                  game.scores[score].placement == 1
-                                    ? colors["yellow"]
-                                    : game.scores[score].placement == 2
-                                    ? colors["gray"]
-                                    : game.scores[score].placement == 3
-                                    ? colors["orange"]
-                                    : game.scores[score].placement >= 4 &&
-                                      game.scores[score].placement <= 5
-                                    ? colors["blue"]
-                                    : game.scores[score].placement >= 6 &&
-                                      game.scores[score].placement <= 10
-                                    ? colors["purple"]
-                                    : colors["textFaded"],
-                              }}
-                            >
-                              {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
-                              stars
-                            </span>
-                            {game.scores[score].placement &&
-                              game.scores[score].placement !== -1 && (
-                                <span
-                                  style={{
-                                    color: colors["textFaded"],
-                                  }}
-                                >
-                                  (
-                                  {ordinal_suffix_of(
-                                    game.scores[score].placement
+                              <span
+                                style={{
+                                  color: colors["textFaded"],
+                                }}
+                                className="text-sm"
+                              >
+                                {t(score)}:
+                              </span>
+                              <span
+                                style={gradientTextStyle(gradient, first)}
+                                className="w-fit"
+                              >
+                                {(game.scores[score].averageScore / 2).toFixed(
+                                  2
+                                )}{" "}
+                                stars
+                              </span>
+                              {game.scores[score].placement &&
+                                game.scores[score].placement !== -1 && (
+                                  <span
+                                    style={{
+                                      color: colors["textFaded"],
+                                    }}
+                                  >
+                                    (
+                                    {ordinal_suffix_of(
+                                      game.scores[score].placement
+                                    )}
+                                    )
+                                  </span>
+                                )}
+                              <span className="flex items-center justify-center">
+                                {game.scores[score].placement >= 1 &&
+                                  game.scores[score].placement <= 3 && (
+                                    <Award
+                                      size={16}
+                                      style={{
+                                        color: first,
+                                      }}
+                                    />
                                   )}
-                                  )
-                                </span>
-                              )}
-                            <span className="flex items-center justify-center">
-                              {game.scores[score].placement == 1 && (
-                                <Award
-                                  size={16}
-                                  style={{
-                                    color: colors["yellow"],
-                                  }}
-                                />
-                              )}
-                              {game.scores[score].placement == 2 && (
-                                <Award
-                                  size={16}
-                                  style={{
-                                    color: colors["gray"],
-                                  }}
-                                />
-                              )}
-                              {game.scores[score].placement == 3 && (
-                                <Award
-                                  size={16}
-                                  style={{
-                                    color: colors["orange"],
-                                  }}
-                                />
-                              )}
-                              {game.scores[score].placement >= 4 &&
-                                game.scores[score].placement <= 5 && (
-                                  <LucideBadge
-                                    size={12}
-                                    style={{
-                                      color: colors["blue"],
-                                    }}
-                                  />
-                                )}
-                              {game.scores[score].placement >= 6 &&
-                                game.scores[score].placement <= 10 && (
-                                  <LucideBadge
-                                    size={12}
-                                    style={{
-                                      color: colors["purple"],
-                                    }}
-                                  />
-                                )}
-                            </span>
-                          </div>
-                        ))}
+                                {game.scores[score].placement >= 4 &&
+                                  game.scores[score].placement <= 10 && (
+                                    <LucideBadge
+                                      size={12}
+                                      style={{
+                                        color: first,
+                                      }}
+                                    />
+                                  )}
+                              </span>
+                            </div>
+                          );
+                        })}
                       <div className="w-96 h-60">
                         <ResponsiveContainer width="100%" height="100%">
                           <RadarChart

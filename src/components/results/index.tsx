@@ -12,6 +12,7 @@ import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
 import { Image } from "@heroui/react";
 import { Award, Badge } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -30,6 +31,53 @@ type JamOption = {
   description?: string;
   startTime?: string;
 };
+
+function gradientTextStyle(
+  gradient: string,
+  fallback: string
+): React.CSSProperties {
+  return {
+    backgroundImage: gradient,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    color: fallback,
+  };
+}
+
+function getPlacementGradient(
+  placement: number,
+  colors: Record<string, string>
+) {
+  if (placement === 1)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
+      first: colors["red"],
+    };
+  if (placement === 2)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["tealLight"]}, ${colors["gray"]})`,
+      first: colors["gray"],
+    };
+  if (placement === 3)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["red"]}, ${colors["pink"]})`,
+      first: colors["pink"],
+    };
+  if (placement >= 4 && placement <= 5)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["blue"]}, ${colors["indigo"]})`,
+      first: colors["indigo"],
+    };
+  if (placement >= 6 && placement <= 10)
+    return {
+      gradient: `linear-gradient(90deg, ${colors["purple"]}, ${colors["violet"]})`,
+      first: colors["violet"],
+    };
+  return {
+    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["crust"]})`,
+    first: colors["textFaded"],
+  };
+}
 
 function formatJamWindow(
   startISO?: string,
@@ -118,6 +166,7 @@ export default function Results() {
   const { colors } = useTheme();
   const [jamId, setJamId] = useState<string>("all");
   const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
+  const t = useTranslations();
 
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
@@ -322,7 +371,7 @@ export default function Results() {
         {games &&
           games.map((game) => {
             const radarData = game.categoryAverages.map((avg) => ({
-              subject: avg.categoryName.split(".")[1],
+              subject: t(avg.categoryName),
               rating: avg.averageScore / 2,
               fullMark: 5,
             }));
@@ -343,23 +392,10 @@ export default function Results() {
                     {game.categoryAverages
                       .sort((a, b) => a.placement - b.placement)
                       .map((category) => {
-                        let color;
-                        if (category.placement === 1) color = colors["yellow"];
-                        else if (category.placement === 2)
-                          color = colors["gray"];
-                        else if (category.placement === 3)
-                          color = colors["orange"];
-                        else if (
-                          category.placement >= 4 &&
-                          category.placement <= 5
-                        )
-                          color = colors["blue"];
-                        else if (
-                          category.placement >= 6 &&
-                          category.placement <= 10
-                        )
-                          color = colors["purple"];
-                        else color = colors["textFaded"];
+                        const { gradient, first } = getPlacementGradient(
+                          category.placement,
+                          colors
+                        );
 
                         return (
                           <div
@@ -369,7 +405,10 @@ export default function Results() {
                             <Text size="sm" color="textFaded">
                               {category.categoryName}
                             </Text>
-                            <span style={{ color }}>
+                            <span
+                              style={gradientTextStyle(gradient, first)}
+                              className="w-fit"
+                            >
                               {(category.averageScore / 2).toFixed(2)} stars
                             </span>
                             <Text color="textFaded">
@@ -377,43 +416,28 @@ export default function Results() {
                             </Text>
                             <span className="flex items-center justify-center">
                               {category.placement === 1 && (
-                                <Award
-                                  size={16}
-                                  style={{ color: colors["yellow"] }}
-                                />
+                                <Award size={16} style={{ color: first }} />
                               )}
                               {category.placement === 2 && (
-                                <Award
-                                  size={16}
-                                  style={{ color: colors["gray"] }}
-                                />
+                                <Award size={16} style={{ color: first }} />
                               )}
                               {category.placement === 3 && (
-                                <Award
-                                  size={16}
-                                  style={{ color: colors["orange"] }}
-                                />
+                                <Award size={16} style={{ color: first }} />
                               )}
                               {category.placement >= 4 &&
                                 category.placement <= 5 && (
-                                  <Badge
-                                    size={12}
-                                    style={{ color: colors["blue"] }}
-                                  />
+                                  <Badge size={12} style={{ color: first }} />
                                 )}
                               {category.placement >= 6 &&
                                 category.placement <= 10 && (
-                                  <Badge
-                                    size={12}
-                                    style={{ color: colors["purple"] }}
-                                  />
+                                  <Badge size={12} style={{ color: first }} />
                                 )}
                             </span>
                           </div>
                         );
                       })}
                   </div>
-                  <div className="w-80 h-32 shrink-0">
+                  <div className="w-60 h-32 shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
                         cx="50%"
