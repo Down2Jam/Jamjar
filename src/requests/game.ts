@@ -165,10 +165,11 @@ export async function getGames(sort: string, jamId?: string) {
 export async function getResults(
   category: string,
   contentType: string,
-  sort: string
+  sort: string,
+  jam: string
 ) {
   return fetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}`,
+    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}`,
     {
       credentials: "include",
       headers: {

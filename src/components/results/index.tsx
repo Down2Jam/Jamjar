@@ -6,13 +6,51 @@ import Dropdown from "@/framework/Dropdown";
 import { Link } from "@/framework/Link";
 import { Hstack, Vstack } from "@/framework/Stack";
 import Text from "@/framework/Text";
+import { getJams } from "@/helpers/jam";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
 import { Image } from "@heroui/react";
 import { Award, Badge } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+type JamOption = {
+  id: string;
+  name: string;
+  icon?: string;
+  description?: string;
+  startTime?: string;
+};
+
+function formatJamWindow(
+  startISO?: string,
+  jammingHours?: number
+): string | undefined {
+  if (!startISO || !jammingHours || Number.isNaN(Number(jammingHours)))
+    return undefined;
+
+  const start = new Date(startISO);
+  if (isNaN(start.getTime())) return undefined;
+
+  const end = new Date(start.getTime() + Number(jammingHours) * 60 * 60 * 1000);
+
+  const dFmt = new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const sameDay =
+    start.getFullYear() === end.getFullYear() &&
+    start.getMonth() === end.getMonth() &&
+    start.getDate() === end.getDate();
+
+  if (sameDay) {
+    return `${dFmt.format(start)}`;
+  }
+  return `${dFmt.format(start)} – ${dFmt.format(end)}`;
+}
 
 export default function Results() {
   const searchParams = useSearchParams();
@@ -70,10 +108,63 @@ export default function Results() {
   );
   const router = useRouter();
   const { colors } = useTheme();
+  const [jamId, setJamId] = useState<string>("all");
+  const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
+
+  const updateQueryParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(window.location.search);
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      router.replace(`?${params.toString()}`);
+    },
+    [router]
+  );
+
+  useEffect(() => {
+    const fetchJams = async () => {
+      const options: JamOption[] = [{ id: "all", name: "All Jams" }];
+
+      try {
+        const res = await getJams();
+        const jams = res;
+
+        if (Array.isArray(jams)) {
+          jams.forEach((jam) => {
+            options.push({
+              id: String(jam.id),
+              name: jam.name,
+              icon: jam.icon,
+              description: `${formatJamWindow(
+                jam.startTime,
+                jam.jammingHours
+              )}`,
+              startTime: jam.startTime,
+            });
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching jams:", error);
+      }
+
+      setJamOptions(options);
+
+      if (options.length > 1) {
+        const latestJamId = options[1].id;
+        setJamId(latestJamId);
+        updateQueryParam("jam", latestJamId);
+      }
+    };
+
+    fetchJams();
+  }, [updateQueryParam]);
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getResults(category, contentType, sort);
+      const response = await getResults(category, contentType, sort, jamId);
 
       if (response.ok) {
         const gameData = (await response.json()).data;
@@ -82,19 +173,9 @@ export default function Results() {
     };
 
     getData();
-  }, [category, contentType, sort]);
+  }, [category, contentType, sort, jamId]);
 
   const { siteTheme } = useTheme();
-
-  const updateQueryParam = (key: string, value: string) => {
-    const params = new URLSearchParams(window.location.search);
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
-    }
-    router.push(`?${params.toString()}`);
-  };
 
   function ordinal_suffix_of(i: number) {
     const j = i % 10,
@@ -204,6 +285,28 @@ export default function Results() {
             Emotional Delivery
           </Dropdown.Item>
           <Dropdown.Item value="THEME">Theme</Dropdown.Item>
+        </Dropdown>
+
+        <Dropdown
+          trigger={
+            <Button>
+              {jamOptions.find((j) => j.id === jamId)?.name || "Select Jam"}
+            </Button>
+          }
+          onSelect={(key) => {
+            setJamId(key as string);
+            updateQueryParam("jam", key as string);
+          }}
+        >
+          {jamOptions.map((jam) => (
+            <Dropdown.Item
+              key={jam.id}
+              value={jam.id}
+              description={jam.description}
+            >
+              {jam.name}
+            </Dropdown.Item>
+          ))}
         </Dropdown>
       </Hstack>
 
