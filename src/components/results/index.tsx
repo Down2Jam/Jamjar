@@ -413,7 +413,7 @@ export default function Results() {
                         );
                       })}
                   </div>
-                  <div className="w-40 h-32 shrink-0">
+                  <div className="w-80 h-32 shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
                         cx="50%"
