@@ -110,7 +110,7 @@ function getPlacementGradient(
     };
   if (placement === 2)
     return {
-      gradient: `linear-gradient(90deg, ${colors["tealLight"]}, ${colors["gray"]})`,
+      gradient: `linear-gradient(90deg, ${colors["green"]}, ${colors["gray"]})`,
       first: colors["gray"],
     };
   if (placement === 3)
@@ -129,7 +129,7 @@ function getPlacementGradient(
       first: colors["violet"],
     };
   return {
-    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["crust"]})`,
+    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
     first: colors["textFaded"],
   };
 }
