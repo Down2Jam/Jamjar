@@ -14,6 +14,14 @@ import { Image } from "@heroui/react";
 import { Award, Badge } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import {
+  PolarAngleAxis,
+  PolarGrid,
+  PolarRadiusAxis,
+  Radar,
+  RadarChart,
+  ResponsiveContainer,
+} from "recharts";
 
 type JamOption = {
   id: string;
@@ -126,7 +134,7 @@ export default function Results() {
 
   useEffect(() => {
     const fetchJams = async () => {
-      const options: JamOption[] = [{ id: "all", name: "All Jams" }];
+      const options: JamOption[] = [];
 
       try {
         const res = await getJams();
@@ -153,7 +161,7 @@ export default function Results() {
       setJamOptions(options);
 
       if (options.length > 1) {
-        const latestJamId = options[1].id;
+        const latestJamId = options[0].id;
         setJamId(latestJamId);
         updateQueryParam("jam", latestJamId);
       }
@@ -312,88 +320,131 @@ export default function Results() {
 
       <Vstack className="pt-4" align="stretch">
         {games &&
-          games.map((game) => (
-            <Card key={game.id} className="flex items-center gap-4">
-              <Image
-                removeWrapper
-                alt={`${game.name}'s thumbnail`}
-                className="z-0 h-[108px] w-[192px] object-cover"
-                height={108}
-                width="100%"
-                src={game.thumbnail ?? "/images/D2J_Icon.png"}
-              />
-              <div className="flex flex-col">
-                <Link href={`/g/${game.slug}`}>{game.name}</Link>
-                {game.categoryAverages
-                  .sort((a, b) => a.placement - b.placement)
-                  .map((category) => {
-                    let color;
-                    if (category.placement === 1) color = colors["yellow"];
-                    else if (category.placement === 2) color = colors["gray"];
-                    else if (category.placement === 3) color = colors["orange"];
-                    else if (category.placement >= 4 && category.placement <= 5)
-                      color = colors["blue"];
-                    else if (
-                      category.placement >= 6 &&
-                      category.placement <= 10
-                    )
-                      color = colors["purple"];
-                    else color = colors["textFaded"];
+          games.map((game) => {
+            const radarData = game.categoryAverages.map((avg) => ({
+              subject: avg.categoryName.split(".")[1],
+              rating: avg.averageScore / 2,
+              fullMark: 5,
+            }));
 
-                    return (
-                      <div
-                        key={category.categoryId}
-                        className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
+            return (
+              <Card key={game.id} className="flex items-center gap-4">
+                <Hstack gap={12}>
+                  <Image
+                    removeWrapper
+                    alt={`${game.name}'s thumbnail`}
+                    className="z-0 h-[108px] w-[192px] object-cover"
+                    height={108}
+                    width="100%"
+                    src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                  />
+                  <div className="flex flex-col">
+                    <Link href={`/g/${game.slug}`}>{game.name}</Link>
+                    {game.categoryAverages
+                      .sort((a, b) => a.placement - b.placement)
+                      .map((category) => {
+                        let color;
+                        if (category.placement === 1) color = colors["yellow"];
+                        else if (category.placement === 2)
+                          color = colors["gray"];
+                        else if (category.placement === 3)
+                          color = colors["orange"];
+                        else if (
+                          category.placement >= 4 &&
+                          category.placement <= 5
+                        )
+                          color = colors["blue"];
+                        else if (
+                          category.placement >= 6 &&
+                          category.placement <= 10
+                        )
+                          color = colors["purple"];
+                        else color = colors["textFaded"];
+
+                        return (
+                          <div
+                            key={category.categoryId}
+                            className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
+                          >
+                            <Text size="sm" color="textFaded">
+                              {category.categoryName}
+                            </Text>
+                            <span style={{ color }}>
+                              {(category.averageScore / 2).toFixed(2)} stars
+                            </span>
+                            <Text color="textFaded">
+                              ({ordinal_suffix_of(category.placement)})
+                            </Text>
+                            <span className="flex items-center justify-center">
+                              {category.placement === 1 && (
+                                <Award
+                                  size={16}
+                                  style={{ color: colors["yellow"] }}
+                                />
+                              )}
+                              {category.placement === 2 && (
+                                <Award
+                                  size={16}
+                                  style={{ color: colors["gray"] }}
+                                />
+                              )}
+                              {category.placement === 3 && (
+                                <Award
+                                  size={16}
+                                  style={{ color: colors["orange"] }}
+                                />
+                              )}
+                              {category.placement >= 4 &&
+                                category.placement <= 5 && (
+                                  <Badge
+                                    size={12}
+                                    style={{ color: colors["blue"] }}
+                                  />
+                                )}
+                              {category.placement >= 6 &&
+                                category.placement <= 10 && (
+                                  <Badge
+                                    size={12}
+                                    style={{ color: colors["purple"] }}
+                                  />
+                                )}
+                            </span>
+                          </div>
+                        );
+                      })}
+                  </div>
+                  <div className="w-40 h-32 shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart
+                        cx="50%"
+                        cy="50%"
+                        outerRadius="80%"
+                        data={radarData}
                       >
-                        <Text size="sm" color="textFaded">
-                          {category.categoryName}
-                        </Text>
-                        <span style={{ color }}>
-                          {(category.averageScore / 2).toFixed(2)} stars
-                        </span>
-                        <Text color="textFaded">
-                          ({ordinal_suffix_of(category.placement)})
-                        </Text>
-                        <span className="flex items-center justify-center">
-                          {category.placement === 1 && (
-                            <Award
-                              size={16}
-                              style={{ color: colors["yellow"] }}
-                            />
-                          )}
-                          {category.placement === 2 && (
-                            <Award
-                              size={16}
-                              style={{ color: colors["gray"] }}
-                            />
-                          )}
-                          {category.placement === 3 && (
-                            <Award
-                              size={16}
-                              style={{ color: colors["orange"] }}
-                            />
-                          )}
-                          {category.placement >= 4 &&
-                            category.placement <= 5 && (
-                              <Badge
-                                size={12}
-                                style={{ color: colors["blue"] }}
-                              />
-                            )}
-                          {category.placement >= 6 &&
-                            category.placement <= 10 && (
-                              <Badge
-                                size={12}
-                                style={{ color: colors["purple"] }}
-                              />
-                            )}
-                        </span>
-                      </div>
-                    );
-                  })}
-              </div>
-            </Card>
-          ))}
+                        <PolarGrid stroke={colors["crust"]} />
+                        <PolarAngleAxis
+                          dataKey="subject"
+                          tick={{ fill: colors["textFaded"], fontSize: 12 }}
+                        />
+                        <PolarRadiusAxis
+                          domain={[0, 5]}
+                          axisLine={false}
+                          tick={false}
+                        />
+                        <Radar
+                          name="Rating"
+                          dataKey="rating"
+                          stroke={colors["blue"]}
+                          fill={colors["blueDark"]}
+                          fillOpacity={0.6}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </Hstack>
+              </Card>
+            );
+          })}
       </Vstack>
     </main>
   );

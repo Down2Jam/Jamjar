@@ -542,19 +542,20 @@ export default function ClientGamePage({
                               {(game.scores[score].averageScore / 2).toFixed(2)}{" "}
                               stars
                             </span>
-                            {game.scores[score].placement && (
-                              <span
-                                style={{
-                                  color: colors["textFaded"],
-                                }}
-                              >
-                                (
-                                {ordinal_suffix_of(
-                                  game.scores[score].placement
-                                )}
-                                )
-                              </span>
-                            )}
+                            {game.scores[score].placement &&
+                              game.scores[score].placement !== -1 && (
+                                <span
+                                  style={{
+                                    color: colors["textFaded"],
+                                  }}
+                                >
+                                  (
+                                  {ordinal_suffix_of(
+                                    game.scores[score].placement
+                                  )}
+                                  )
+                                </span>
+                              )}
                             <span className="flex items-center justify-center">
                               {game.scores[score].placement == 1 && (
                                 <Award
