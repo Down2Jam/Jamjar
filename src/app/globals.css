@@ -33,7 +33,3 @@ html,
 body {
   overflow-x: hidden;
 }
-
-.mention-hidden {
-  display: none !important;
-}

@@ -2,8 +2,13 @@ import { Extension } from '@tiptap/core';
 import { Decoration, DecorationSet } from 'prosemirror-view';
 import { Plugin, EditorState } from 'prosemirror-state';
 import { getUserMention, cleanUserMentionsHtml } from "./UserMentions";
+import { Node as ProseMirrorNode } from 'prosemirror-model';
 
-const LETTER_REGEX = /https?:\/\/d2jam\.com\/([a-zA-Z])\/([a-zA-Z0-9_-]+)/;
+
+const domains = ['example.com', 'd2jam.com'];
+const domainsGroup = domains.map(domain => domain.replace('.', '\\.')).join('|');
+const LETTER_REGEX = new RegExp(`https?:\/\/(${domainsGroup})\/([a-zA-Z])\/([a-zA-Z0-9_-]+)`);
+
 
 enum MentionType {
     User = 'user',
@@ -11,7 +16,7 @@ enum MentionType {
 
 function extractLetter(text: string): string | null {
     const match = text.match(LETTER_REGEX);
-    return match ? match[1] : null; 
+    return match ? match[2] : null; 
 }
 
 function getMentionType(text: string): MentionType | null {
@@ -39,9 +44,9 @@ const Mentions = Extension.create({
                     decorations: (state: EditorState) => {
                         const decorations: Decoration[] = [];
                         const { doc } = state;
-                        doc.descendants((node: any, pos: number) => {
-                            if (node.isText) {
-                                const linkRegex = /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
+                        doc.descendants((node: ProseMirrorNode, pos: number) => {
+                            if (typeof node.text === 'string') {
+                                const linkRegex = new RegExp(LETTER_REGEX.source, 'g');
                                 let match;
                                 while ((match = linkRegex.exec(node.text))) {
                                     const url = match[0];
@@ -53,7 +58,7 @@ const Mentions = Extension.create({
                                             Decoration.inline(
                                                 pos + match.index,
                                                 pos + match.index + url.length,
-                                                { class: 'mention-hidden' }
+                                                { class: '!hidden' }
                                             )
                                         );
                                         decorations.push(
