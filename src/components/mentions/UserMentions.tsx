@@ -23,12 +23,12 @@ export function cleanUserMentionsHtml(html: string) {
     .map((domain) => domain.replace(/\./g, "\\."))
     .join("|");
   const mentionRegex = new RegExp(
-    `<a([^>]*)href="https://(${userDomainsGroup})/u/([a-zA-Z0-9_-]+)"([^>]*)>https://(${userDomainsGroup})/u/[a-zA-Z0-9_-]+</a>`,
-    "g"
+      `(https?:\\/\\/(${userDomainsGroup})\\/u\\/([a-zA-Z0-9_-]+))`,
+      "g"
   );
   return html.replace(
-    mentionRegex,
-    (_match, pre, domain, username, post) =>
-      `<a${pre}href="https://${domain}/u/${username}"${post}>@${username}@${domain}</a>`
+      mentionRegex,
+      (_match, _fullUrl, domain, username) =>
+          `<a href="https://${domain}/u/${username}">@${username}@${domain}</a>`
   );
 }
