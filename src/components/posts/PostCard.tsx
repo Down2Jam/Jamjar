@@ -20,6 +20,7 @@ import Dropdown from "@/framework/Dropdown";
 import { Chip } from "@/framework/Chip";
 import Text from "@/framework/Text";
 import { useTranslations } from "next-intl";
+import { cleanMentionsHtml } from "../mentions/Mentions";
 
 export default function PostCard({
   post,
@@ -161,7 +162,7 @@ export default function PostCard({
             <ThemedProse>
               <div
                 className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: cleanMentionsHtml(post.content) }}
               />
             </ThemedProse>
 

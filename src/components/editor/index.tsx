@@ -39,6 +39,7 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
 import { addToast } from "@heroui/react";
 import { useTranslations } from "next-intl";
+import Mentions from "../mentions/Mentions";
 
 type EditorProps = {
   content: string;
@@ -101,6 +102,7 @@ export default function Editor({
       }),
       CodeBlock,
       Link,
+      Mentions,
       ImageResize.configure({
         allowBase64: false,
       }).extend({
