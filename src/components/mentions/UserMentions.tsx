@@ -15,7 +15,6 @@ function extractUsernameAndDomain(
 
 export function getUserMention(text: string): string | null {
   const result = extractUsernameAndDomain(text);
-  console.log("Extracted username and domain:", result);
   return result ? `@${result.username}@${result.domain}` : null;
 }
 

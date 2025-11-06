@@ -23,7 +23,6 @@ function extractLetter(text: string): string | null {
 
 function getMentionType(text: string): MentionType | null {
   const letter = extractLetter(text);
-  console.log("Extracted letter:", letter);
   if (letter === "u") {
     return MentionType.User;
   }
