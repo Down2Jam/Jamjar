@@ -1,7 +1,8 @@
 import { Extension } from "@tiptap/core";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { Plugin, EditorState } from "prosemirror-state";
+import { Plugin, EditorState, Transaction } from "prosemirror-state";
 import { getUserMention, cleanUserMentionsHtml } from "./UserMentions";
+import { getGameMention, cleanGameMentionsHtml } from "./GameMentions";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 
 const domains = ["example.com", "d2jam.com"];
@@ -14,6 +15,7 @@ const LETTER_REGEX = new RegExp(
 
 enum MentionType {
   User = "user",
+  Game = "game",
 }
 
 function extractLetter(text: string): string | null {
@@ -25,6 +27,8 @@ function getMentionType(text: string): MentionType | null {
   const letter = extractLetter(text);
   if (letter === "u") {
     return MentionType.User;
+  } else if (letter === "g") {
+    return MentionType.Game;
   }
   return null;
 }
@@ -32,6 +36,9 @@ function getMentionType(text: string): MentionType | null {
 function getMentionText(text: string, type: MentionType): string | null {
   if (type === MentionType.User) {
     return getUserMention(text);
+  }
+  if (type === MentionType.Game) {
+    return getGameMention(text);
   }
   return null;
 }
@@ -46,22 +53,16 @@ const Mentions = Extension.create({
             const decorations: Decoration[] = [];
             const { doc } = state;
             doc.descendants((node: ProseMirrorNode, pos: number) => {
-              if (typeof node.text === "string") {
-                const linkRegex = new RegExp(LETTER_REGEX.source, "g");
+              if (node.isText) {
+                const linkRegex =
+                  /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
                 let match;
-                while ((match = linkRegex.exec(node.text))) {
+                while ((match = linkRegex.exec(node.text || ""))) {
                   const url = match[0];
                   const type = getMentionType(url);
                   const mention = type ? getMentionText(url, type) : null;
 
                   if (mention && type) {
-                    decorations.push(
-                      Decoration.inline(
-                        pos + match.index,
-                        pos + match.index + url.length,
-                        { class: "!hidden" }
-                      )
-                    );
                     decorations.push(
                       Decoration.widget(
                         pos + match.index,
@@ -75,7 +76,17 @@ const Mentions = Extension.create({
                           a.title = mention;
                           return a;
                         },
-                        { side: -1 }
+                        { side: 0, stopEvent: () => true }
+                      )
+                    );
+                    decorations.push(
+                      Decoration.inline(
+                        pos + match.index,
+                        pos + match.index + url.length,
+                        {
+                          style:
+                            "font-size:0;width:0;height:0;display:inline-block;overflow:hidden;",
+                        }
                       )
                     );
                   }
@@ -86,6 +97,33 @@ const Mentions = Extension.create({
           },
         },
       }),
+      // link mark removal plugin
+      new Plugin({
+        appendTransaction: (transactions, oldState, newState) => {
+          let tr: Transaction | null = null;
+          const { doc, schema } = newState;
+          doc.descendants((node, pos) => {
+            if (node.isText) {
+              const linkRegex =
+                /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
+              let match;
+              while ((match = linkRegex.exec(node.text || ""))) {
+                const url = match[0];
+                const from = pos + match.index;
+                const to = from + url.length;
+                // remove link mark
+                node.marks.forEach((mark) => {
+                  if (mark.type === schema.marks.link) {
+                    if (!tr) tr = newState.tr;
+                    tr.removeMark(from, to, schema.marks.link);
+                  }
+                });
+              }
+            }
+          });
+          return tr;
+        },
+      }),
     ];
   },
 });
@@ -93,6 +131,7 @@ const Mentions = Extension.create({
 export function cleanMentionsHtml(html: string) {
   let cleanedHtml = html;
   cleanedHtml = cleanUserMentionsHtml(cleanedHtml);
+  cleanedHtml = cleanGameMentionsHtml(cleanedHtml);
   return cleanedHtml;
 }
 
