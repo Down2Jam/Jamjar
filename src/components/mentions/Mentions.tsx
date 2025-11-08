@@ -15,7 +15,7 @@ const LETTER_REGEX = new RegExp(
 
 enum MentionType {
   User = "user",
-  Game = "game"
+  Game = "game",
 }
 
 function extractLetter(text: string): string | null {
@@ -27,8 +27,7 @@ function getMentionType(text: string): MentionType | null {
   const letter = extractLetter(text);
   if (letter === "u") {
     return MentionType.User;
-  }
-  else if (letter === "g") {
+  } else if (letter === "g") {
     return MentionType.Game;
   }
   return null;
@@ -55,36 +54,40 @@ const Mentions = Extension.create({
             const { doc } = state;
             doc.descendants((node: ProseMirrorNode, pos: number) => {
               if (node.isText) {
-                const linkRegex = /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
+                const linkRegex =
+                  /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
                 let match;
-                while ((match = linkRegex.exec(node.text || ''))) {
+                while ((match = linkRegex.exec(node.text || ""))) {
                   const url = match[0];
                   const type = getMentionType(url);
                   const mention = type ? getMentionText(url, type) : null;
 
                   if (mention && type) {
                     decorations.push(
-                        Decoration.widget(
-                            pos + match.index,
-                            () => {
-                              const a = document.createElement('a');
-                              a.className = `mention mention-${type}`;
-                              a.href = url;
-                              a.target = '_blank';
-                              a.rel = 'noopener noreferrer nofollow';
-                              a.textContent = mention;
-                              a.title = mention;
-                              return a;
-                            },
-                            { side: 0, stopEvent: () => true }
-                        )
+                      Decoration.widget(
+                        pos + match.index,
+                        () => {
+                          const a = document.createElement("a");
+                          a.className = `mention mention-${type}`;
+                          a.href = url;
+                          a.target = "_blank";
+                          a.rel = "noopener noreferrer nofollow";
+                          a.textContent = mention;
+                          a.title = mention;
+                          return a;
+                        },
+                        { side: 0, stopEvent: () => true }
+                      )
                     );
                     decorations.push(
-                        Decoration.inline(
-                            pos + match.index,
-                            pos + match.index + url.length,
-                            { style: 'font-size:0;width:0;height:0;display:inline-block;overflow:hidden;' }
-                        )
+                      Decoration.inline(
+                        pos + match.index,
+                        pos + match.index + url.length,
+                        {
+                          style:
+                            "font-size:0;width:0;height:0;display:inline-block;overflow:hidden;",
+                        }
+                      )
                     );
                   }
                 }
@@ -101,14 +104,15 @@ const Mentions = Extension.create({
           const { doc, schema } = newState;
           doc.descendants((node, pos) => {
             if (node.isText) {
-              const linkRegex = /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
+              const linkRegex =
+                /https?:\/\/d2jam\.com\/[a-zA-Z]\/[a-zA-Z0-9_-]+/g;
               let match;
-              while ((match = linkRegex.exec(node.text || ''))) {
+              while ((match = linkRegex.exec(node.text || ""))) {
                 const url = match[0];
                 const from = pos + match.index;
                 const to = from + url.length;
                 // remove link mark
-                node.marks.forEach(mark => {
+                node.marks.forEach((mark) => {
                   if (mark.type === schema.marks.link) {
                     if (!tr) tr = newState.tr;
                     tr.removeMark(from, to, schema.marks.link);
@@ -118,7 +122,7 @@ const Mentions = Extension.create({
             }
           });
           return tr;
-        }
+        },
       }),
     ];
   },
