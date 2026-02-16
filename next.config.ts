@@ -14,7 +14,8 @@ const plugins = [withAnalyzer, withNextIntl];
 // -- Remote Image Patterns --
 // Do not allow arbitrary remote hosts in production.
 const imageHostAllowlist = (
-  process.env.NEXT_IMAGE_ALLOWED_HOSTS ?? "d2jam.com,www.d2jam.com"
+  process.env.NEXT_IMAGE_ALLOWED_HOSTS ??
+  "d2jam.com,www.d2jam.com,static-cdn.jtvnw.net"
 )
   .split(",")
   .map((host) => host.trim().toLowerCase())
