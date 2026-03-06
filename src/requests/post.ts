@@ -58,13 +58,13 @@ export async function deletePost(postId: number) {
 }
 
 export async function stickPost(postId: number, sticky: boolean) {
-  return fetch(`${BASE_URL}/post/sticky`, {
+  return fetch(`${BASE_URL}/post`, {
       body: JSON.stringify({
         postId,
         sticky,
         username: getCookie("user"),
       }),
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         authorization: `Bearer ${getCookie(
@@ -74,4 +74,22 @@ export async function stickPost(postId: number, sticky: boolean) {
       credentials: "include",
     }
   );
+}
+
+export async function togglePostReaction(
+  postId: number,
+  reactionId: number
+) {
+  return fetch(`${BASE_URL}/post/reaction`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      postId,
+      reactionId,
+    }),
+  });
 }

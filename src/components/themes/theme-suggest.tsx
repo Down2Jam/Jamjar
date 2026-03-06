@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { React, useState, useEffect, useRef } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
   getCurrentJam,
@@ -14,14 +14,14 @@ import {
   getThemeSuggestions,
   postThemeSuggestion,
 } from "@/requests/theme";
-import { Card } from "@/framework/Card";
-import Text from "@/framework/Text";
-import { Hstack, Vstack } from "@/framework/Stack";
-import { Button } from "@/framework/Button";
-import { Input } from "@/framework/Input";
-import Icon from "@/framework/Icon";
-import { addToast } from "@heroui/react";
-import { Spinner } from "@/framework/Spinner";
+import { Card } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Input } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { addToast } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
 
 const bannedThemes = [
   "pgorley",

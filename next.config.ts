@@ -20,19 +20,25 @@ const remotePatterns: RemotePattern[] = [
   },
 ];
 
-// Allow images from the local machine in development mode
-if (process.env.NEXT_PUBLIC_MODE === "DEV") {
-  remotePatterns.push({
+// Allow images from the local machine (covers dev/staging configs)
+remotePatterns.push(
+  {
     protocol: "http",
     hostname: "localhost",
-  });
-}
+  },
+  {
+    protocol: "http",
+    hostname: "127.0.0.1",
+  }
+);
 
 // -- Base config --
 const nextConfig: NextConfig = {
   images: {
     remotePatterns,
+    unoptimized: true,
   },
+  transpilePackages: ["bioloom-ui", "bioloom-miniplayer"],
 };
 
 // -- Apply and export --

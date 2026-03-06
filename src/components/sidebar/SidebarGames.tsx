@@ -5,8 +5,8 @@ import { GameType } from "@/types/GameType";
 import { getGames } from "@/requests/game";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Image from "next/image";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import Link from "next/link";
 
 // 👇 Assumes you have these helpers available

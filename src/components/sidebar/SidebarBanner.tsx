@@ -2,7 +2,7 @@
 
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Banner from "../banner";
-import Text from "@/framework/Text";
+import { Text } from "bioloom-ui";
 
 export default function SidebarBanner() {
   const { colors } = useTheme();

@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
-import { Image } from "@heroui/react";
 import NextImage from "next/image";
 import { getStreamers } from "@/requests/streamer";
 import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Tooltip from "@/framework/Tooltip";
-import { Button } from "@/framework/Button";
-import { Chip } from "@/framework/Chip";
+import { Tooltip } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
 
 export default function SidebarStreams() {
   const [streamers, setStreamers] = useState<FeaturedStreamerType[]>([]);
@@ -73,8 +72,7 @@ export default function SidebarStreams() {
     <a href={`https://twitch.tv/${currentStreamer.userName}`} target="_blank">
       <div className="transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer h-[320px]">
         <div className="absolute z-0">
-          <Image
-            as={NextImage}
+          <NextImage
             src={currentStreamer.thumbnailUrl}
             width={480}
             height={270}
@@ -113,22 +111,20 @@ export default function SidebarStreams() {
             //     streamers[0 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
             //   }`}
             // >
-            <Image
-              as={NextImage}
+            <NextImage
               src={
                 streamers[0 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
               }
               width={120}
-              height={67.5}
+              height={68}
               alt={`${
                 streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 currentIndex === 0 + 3 * Math.floor(currentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-              classNames={{ wrapper: "w-full h-[67.5px]" }}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -146,22 +142,20 @@ export default function SidebarStreams() {
             //     streamers[1 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
             //   }`}
             // >
-            <Image
-              as={NextImage}
+            <NextImage
               src={
                 streamers[1 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
               }
               width={120}
-              height={67.5}
+              height={68}
               alt={`${
                 streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 currentIndex === 1 + 3 * Math.floor(currentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-              classNames={{ wrapper: "w-full h-[67.5px]" }}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -179,22 +173,20 @@ export default function SidebarStreams() {
             //     streamers[2 + 3 * Math.floor(currentIndex / 3.0)].streamTitle
             //   }`}
             // >
-            <Image
-              as={NextImage}
+            <NextImage
               src={
                 streamers[2 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
               }
               width={120}
-              height={67.5}
+              height={68}
               alt={`${
                 streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer absolute z-0 inset-shadow-sm inset-shadow-black ${
+              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 currentIndex === 2 + 3 * Math.floor(currentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
-              classNames={{ wrapper: "w-full h-[67.5px]" }}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();

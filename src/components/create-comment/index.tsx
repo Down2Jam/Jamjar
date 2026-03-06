@@ -1,11 +1,10 @@
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
-import { sanitize } from "@/helpers/sanitize";
 import { postComment } from "@/requests/comment";
 import { useState } from "react";
-import { Button } from "@/framework/Button";
-import { addToast } from "@heroui/react";
-import { Spinner } from "@/framework/Spinner";
+import { Button } from "bioloom-ui";
+import { addToast } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
 
 // CreateComment.tsx
 export default function CreateComment({
@@ -20,7 +19,12 @@ export default function CreateComment({
 
   return (
     <>
-      <Editor content={content} setContent={setContent} size={size} />
+      <Editor
+        content={content}
+        setContent={setContent}
+        size={size}
+        format="markdown"
+      />
       {size == "sm" && <div className="p-4" />}
       {waitingPost ? (
         <Spinner />
@@ -43,15 +47,9 @@ export default function CreateComment({
               return;
             }
 
-            const sanitizedHtml = sanitize(content);
             setWaitingPost(true);
 
-            const response = await postComment(
-              sanitizedHtml,
-              null,
-              null,
-              gameId
-            );
+            const response = await postComment(content, null, null, gameId);
 
             if (response.status === 401) {
               addToast({

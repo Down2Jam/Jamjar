@@ -1,12 +1,12 @@
 "use client";
 
-import { Button } from "@/framework/Button";
-import { Input } from "@/framework/Input";
-import { Link } from "@/framework/Link";
+import { Button } from "bioloom-ui";
+import { Input } from "bioloom-ui";
+import { Link } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { signup } from "@/requests/auth";
-import { addToast, Form } from "@heroui/react";
-import { redirect } from "next/navigation";
+import { addToast, Form } from "bioloom-ui";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -16,6 +16,7 @@ export default function UserPage() {
   const [password2, setPassword2] = useState("");
   const [email, setEmail] = useState("");
   const { siteTheme } = useTheme();
+  const router = useRouter();
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
@@ -90,7 +91,8 @@ export default function UserPage() {
             title: "Successfully signed up",
           });
 
-          redirect("/");
+          router.replace("/");
+          router.refresh();
         }}
       >
         <Input

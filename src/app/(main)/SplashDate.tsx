@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import Text from "@/framework/Text";
+import { Text } from "bioloom-ui";
 
 export default function SplashDate() {
   const [activeJamResponse, setActiveJamResponse] =

@@ -1,4 +1,4 @@
-import { IconName } from "@/framework/Icon";
+import { IconName } from "bioloom-ui";
 import { GameType } from "./GameType";
 import { UserType } from "./UserType";
 

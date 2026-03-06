@@ -6,7 +6,7 @@ import { PostType } from "@/types/PostType";
 import { TagType } from "@/types/TagType";
 import { UserType } from "@/types/UserType";
 import Link from "next/link";
-import { addToast } from "@heroui/react";
+import { addToast } from "bioloom-ui";
 import { formatDistance } from "date-fns";
 import { MoreVertical } from "lucide-react";
 import { redirect, useParams } from "next/navigation";
@@ -17,17 +17,18 @@ import { getSelf } from "@/requests/user";
 import { deletePost, getPost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
 import { postComment } from "@/requests/comment";
-import { sanitize } from "@/helpers/sanitize";
-import { Card } from "@/framework/Card";
-import { Button } from "@/framework/Button";
+import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
-import Dropdown from "@/framework/Dropdown";
-import { Hstack } from "@/framework/Stack";
-import { Spinner } from "@/framework/Spinner";
-import Text from "@/framework/Text";
-import { Avatar } from "@/framework/Avatar";
-import { Chip } from "@/framework/Chip";
+import { Dropdown } from "bioloom-ui";
+import { Hstack } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Avatar } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
 import { useTranslations } from "next-intl";
+import MentionedContent from "@/components/mentions/MentionedContent";
+import PostReactions from "@/components/posts/PostReactions";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -100,9 +101,9 @@ export default function PostPage() {
                   </div>
 
                   <ThemedProse>
-                    <div
+                    <MentionedContent
+                      html={post.content}
                       className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                      dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                   </ThemedProse>
 
@@ -374,6 +375,7 @@ export default function PostPage() {
                         <></>
                       )}
                     </Dropdown>
+                    <PostReactions postId={post.id} reactions={post.reactions} />
                   </div>
                 </div>
               )}
@@ -390,7 +392,11 @@ export default function PostPage() {
               </Card>
             ) : (
               <>
-                <Editor content={content} setContent={setContent} />
+                <Editor
+                  content={content}
+                  setContent={setContent}
+                  format="markdown"
+                />
                 <div className="mt-1" />
                 <Button
                   onClick={async () => {
@@ -399,10 +405,9 @@ export default function PostPage() {
                       return;
                     }
 
-                    const sanitizedHtml = sanitize(content);
                     setWaitingPost(true);
 
-                    const response = await postComment(sanitizedHtml, post!.id);
+                    const response = await postComment(content, post!.id);
 
                     if (response.status == 401) {
                       addToast({ title: "Invalid user" });

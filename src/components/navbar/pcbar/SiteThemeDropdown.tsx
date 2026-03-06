@@ -1,11 +1,9 @@
 "use client";
 
-import { Button } from "@heroui/react";
 import { ChevronDown, PaintBucket } from "lucide-react";
 import { useRef, useState } from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Dropdown from "@/framework/Dropdown"; // <-- your custom Dropdown
-import Popover from "@/framework/Popover";
+import { Button, Dropdown, Popover } from "bioloom-ui"; // <-- your custom Dropdown
 
 function waveText(label: string, shouldAnimate: boolean) {
   return (
@@ -52,7 +50,8 @@ export default function SiteThemeDropdown() {
         trigger={
           <Button
             size="sm"
-            startContent={
+            variant="ghost"
+            leftSlot={
               <PaintBucket
                 size={16}
                 className={`transition-transform duration-500 ${
@@ -61,7 +60,7 @@ export default function SiteThemeDropdown() {
                 style={{ color: siteTheme.colors["text"] }}
               />
             }
-            endContent={
+            rightSlot={
               <ChevronDown
                 size={16}
                 className={`transform transition-transform duration-200 ${
@@ -70,7 +69,6 @@ export default function SiteThemeDropdown() {
                 style={{ color: siteTheme.colors["text"] }}
               />
             }
-            variant="light"
             style={{ color: siteTheme.colors["text"] }}
           />
         }

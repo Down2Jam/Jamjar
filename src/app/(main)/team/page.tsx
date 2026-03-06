@@ -10,7 +10,7 @@ import {
   ModalFooter,
   ModalHeader,
   useDisclosure,
-} from "@heroui/react";
+} from "bioloom-ui";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
@@ -26,19 +26,19 @@ import {
 } from "@/helpers/team";
 import { TeamInviteType } from "@/types/TeamInviteType";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import { Card } from "@/framework/Card";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
-import { Hstack, Vstack } from "@/framework/Stack";
-import { Input } from "@/framework/Input";
-import Dropdown from "@/framework/Dropdown";
-import Icon from "@/framework/Icon";
-import { Textarea } from "@/framework/Textarea";
-import { Spinner } from "@/framework/Spinner";
-import { Switch } from "@/framework/Switch";
+import { Card } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Input } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Textarea } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Switch } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Avatar } from "@/framework/Avatar";
-import { Chip } from "@/framework/Chip";
+import { Avatar } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
 
 export default function EditTeamPage() {
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());

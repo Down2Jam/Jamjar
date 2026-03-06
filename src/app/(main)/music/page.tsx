@@ -1,9 +1,9 @@
 "use client";
 
 import SidebarSong from "@/components/sidebar/SidebarSong";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import Dropdown from "@/framework/Dropdown";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { BASE_URL } from "@/requests/config";
 import { TrackType } from "@/types/TrackType";
@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
-import { IconName } from "@/framework/Icon";
+import { IconName } from "bioloom-ui";
 
 type JamOption = {
   id: string;
@@ -227,6 +227,8 @@ export default function MusicPage() {
             thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
             game={track.game}
             song={track.url}
+            license={track.license}
+            allowDownload={track.allowDownload}
           />
         ))}
         {music.length === 0 && !jamDetecting && (

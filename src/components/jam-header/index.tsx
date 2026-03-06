@@ -6,7 +6,7 @@ import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
 import { JamPhase } from "@/types/JamType";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Text from "@/framework/Text";
+import { Text } from "bioloom-ui";
 import Link from "next/link";
 
 export default function JamHeader() {

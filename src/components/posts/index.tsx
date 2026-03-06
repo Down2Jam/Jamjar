@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
-import { addToast, Avatar } from "@heroui/react";
+import { addToast, Avatar } from "bioloom-ui";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
@@ -19,18 +19,20 @@ import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
 import CommentCard from "./CommentCard";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Button } from "@/framework/Button";
-import Dropdown from "@/framework/Dropdown";
-import Tooltip from "@/framework/Tooltip";
-import { Hstack, Vstack } from "@/framework/Stack";
+import { Button } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
+import { Tooltip } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
 import ThemedProse from "../themed-prose";
-import { IconName } from "@/framework/Icon";
-import { Card } from "@/framework/Card";
-import Drawer from "@/framework/Drawer";
-import { Chip } from "@/framework/Chip";
-import { Spinner } from "@/framework/Spinner";
-import Text from "@/framework/Text";
+import { IconName } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Drawer } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { useTranslations } from "next-intl";
+import MentionedContent from "../mentions/MentionedContent";
+import PostReactions from "./PostReactions";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -117,6 +119,12 @@ export default function Posts() {
       }
     }
   }, [open, currentPost, posts, oldIsOpen]);
+
+  useEffect(() => {
+    if (style === "Cozy" && open) {
+      setOpen(false);
+    }
+  }, [style, open]);
 
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -472,8 +480,8 @@ export default function Posts() {
                 style={style}
                 user={user}
                 index={index}
-                setCurrentPost={setCurrentPost}
-                onOpen={setOpen}
+                setCurrentPost={style === "Cozy" ? undefined : setCurrentPost}
+                onOpen={style === "Cozy" ? undefined : setOpen}
               />
             ))
           ) : (
@@ -575,12 +583,9 @@ export default function Posts() {
                   className="flex items-center gap-2"
                 >
                   <Avatar
-                    size="sm"
-                    className="w-6 h-6"
+                    size={24}
                     src={posts[currentPost].author.profilePicture}
-                    classNames={{
-                      base: "bg-transparent",
-                    }}
+                    style={{ backgroundColor: "transparent" }}
                   />
                   <p>{posts[currentPost].author.name}</p>
                 </Link>
@@ -596,11 +601,9 @@ export default function Posts() {
               </div>
 
               <ThemedProse>
-                <div
+                <MentionedContent
+                  html={posts[currentPost].content}
                   className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                  dangerouslySetInnerHTML={{
-                    __html: posts[currentPost].content,
-                  }}
                 />
               </ThemedProse>
 
@@ -615,6 +618,10 @@ export default function Posts() {
                     {posts[currentPost].comments.length}
                   </Button>
                 </Link>
+                <PostReactions
+                  postId={posts[currentPost].id}
+                  reactions={posts[currentPost].reactions}
+                />
               </div>
             </Card>
 

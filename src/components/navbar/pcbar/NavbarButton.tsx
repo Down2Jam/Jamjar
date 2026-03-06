@@ -1,14 +1,11 @@
-import { NavbarItem } from "@heroui/navbar";
-import { Button } from "@heroui/button";
-import { ReactNode } from "react";
+import { Button, IconName, NavbarItem } from "bioloom-ui";
 import Hotkey from "../../hotkey";
 import NavbarTooltip from "./NavbarTooltip";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 interface NavbarButtonProps {
-  icon?: ReactNode;
+  icon?: IconName;
   href?: string;
   name: string;
   isIconOnly?: boolean;
@@ -33,28 +30,30 @@ export default function NavbarButton({
   const { siteTheme } = useTheme();
   const t = useTranslations();
 
+  const label = isIconOnly ? undefined : t(name);
+
   return (
-    <NavbarItem>
+    <NavbarItem className={isIconOnly ? "p-1" : ""}>
       <NavbarTooltip
         icon={icon}
         name={name}
         description={description}
         hotkey={hotkey}
       >
-        <Button
-          className={` ${className}`}
-          style={{
-            color: siteTheme.colors[color],
-          }}
-          isIconOnly={isIconOnly}
-          href={href}
-          as={href ? Link : undefined}
-          startContent={icon}
-          size="sm"
-          variant="light"
-          onPress={onPress}
-        >
-          {isIconOnly ? "" : t(name)}
+        <>
+          <Button
+            className={className}
+            style={{
+              color: siteTheme.colors[color],
+            }}
+            href={href}
+            icon={icon}
+            size="sm"
+            variant="ghost"
+            onClick={onPress}
+          >
+            {label}
+          </Button>
           {hotkey && (
             <Hotkey
               href={href}
@@ -64,7 +63,7 @@ export default function NavbarButton({
               description={description}
             />
           )}
-        </Button>
+        </>
       </NavbarTooltip>
     </NavbarItem>
   );

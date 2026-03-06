@@ -7,15 +7,15 @@ import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
 import LikeButton from "./LikeButton";
 import { postComment } from "@/requests/comment";
-import { sanitize } from "@/helpers/sanitize";
-import { Card } from "@/framework/Card";
-import { Button } from "@/framework/Button";
+import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import ThemedProse from "../themed-prose";
-import { Avatar } from "@/framework/Avatar";
-import { Spinner } from "@/framework/Spinner";
-import { addToast } from "@heroui/react";
-import Text from "@/framework/Text";
+import { Avatar } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { addToast } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import MentionedContent from "../mentions/MentionedContent";
 
 export default function CommentCard({ comment }: { comment: CommentType }) {
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -39,7 +39,7 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
             href={`/u/${comment.author.slug}`}
             className="flex items-center gap-2"
           >
-            <Avatar className="w-6 h-6" src={comment.author.profilePicture} />
+            <Avatar size={24} src={comment.author.profilePicture} />
             <p>{comment.author.name}</p>
           </Link>
           <p>
@@ -50,9 +50,9 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
         </div>
 
         <ThemedProse className="p-4">
-          <div
+          <MentionedContent
+            html={comment.content}
             className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-            dangerouslySetInnerHTML={{ __html: comment.content }}
           />
         </ThemedProse>
 
@@ -76,7 +76,11 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
 
         {creatingReply && (
           <>
-            <Editor content={content} setContent={setContent} />
+            <Editor
+              content={content}
+              setContent={setContent}
+              format="markdown"
+            />
             <div id="create-comment" className="mt-2" />
             <Button
               onClick={async () => {
@@ -94,14 +98,9 @@ export default function CommentCard({ comment }: { comment: CommentType }) {
                   return;
                 }
 
-                const sanitizedHtml = sanitize(content);
                 setWaitingPost(true);
 
-                const response = await postComment(
-                  sanitizedHtml,
-                  null,
-                  comment!.id
-                );
+                const response = await postComment(content, null, comment!.id);
 
                 if (response.status == 401) {
                   addToast({

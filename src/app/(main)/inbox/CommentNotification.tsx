@@ -1,21 +1,21 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import { Vstack, Hstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import Icon, { IconName } from "@/framework/Icon";
-import { Button } from "@/framework/Button";
+import { Card } from "bioloom-ui";
+import { Vstack, Hstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Icon, IconName } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { NotificationType } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { useState } from "react";
 import Editor from "@/components/editor";
-import { sanitize } from "@/helpers/sanitize";
 import { hasCookie } from "@/helpers/cookie";
-import { addToast } from "@heroui/react";
-import { Spinner } from "@/framework/Spinner";
+import { addToast } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
 import { postComment } from "@/requests/comment";
 import ThemedProse from "@/components/themed-prose";
+import MentionedContent from "@/components/mentions/MentionedContent";
 
 type Props = {
   notification: NotificationType;
@@ -101,9 +101,9 @@ export default function CommentNotification({
         </Text>
 
         <ThemedProse className="p-4">
-          <div
+          <MentionedContent
+            html={c.content}
             className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-            dangerouslySetInnerHTML={{ __html: c.content }}
           />
         </ThemedProse>
 
@@ -127,7 +127,11 @@ export default function CommentNotification({
 
         {replyOpen && (
           <Vstack className="w-full" align="start">
-            <Editor content={content} setContent={setContent} />
+            <Editor
+              content={content}
+              setContent={setContent}
+              format="markdown"
+            />
             <Hstack>
               <Button
                 onClick={async () => {
@@ -141,8 +145,7 @@ export default function CommentNotification({
                   }
                   try {
                     setPosting(true);
-                    const sanitized = sanitize(content);
-                    const res = await postComment(sanitized, null, c.id);
+                    const res = await postComment(content, null, c.id);
                     setPosting(false);
 
                     if (res.ok) {

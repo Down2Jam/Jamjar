@@ -14,9 +14,7 @@ import { useRef, useState } from "react";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
 import rawCoverage from "../../../messages/coverage.json";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Popover from "@/framework/Popover";
-import Dropdown from "@/framework/Dropdown";
-import { Button } from "@heroui/react";
+import { Button, Dropdown, Popover } from "bioloom-ui";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 
 type CoverageMap = {
@@ -84,7 +82,8 @@ export default function LanguageDropdown({
         trigger={
           <Button
             size="sm"
-            startContent={
+            variant="ghost"
+            leftSlot={
               <Languages
                 size={16}
                 className={`transition-transform duration-500 ${
@@ -95,7 +94,7 @@ export default function LanguageDropdown({
                 }}
               />
             }
-            endContent={
+            rightSlot={
               <ChevronDown
                 size={16}
                 className={`transform transition-transform duration-200 ${
@@ -106,7 +105,6 @@ export default function LanguageDropdown({
                 }}
               />
             }
-            variant="light"
             onClick={() => {
               if (isOpen) {
                 setIsOpen(false);
@@ -176,6 +174,7 @@ export default function LanguageDropdown({
                       className="text-transparent bg-clip-text"
                       style={{
                         backgroundImage: `linear-gradient(to right, ${siteTheme.colors[colorPrimary]}, ${siteTheme.colors[colorSecondary]})`,
+                        fontSize: key === "pt-br" ? "0.65rem" : undefined,
                       }}
                     >
                       {waveText(label, hoveredKey === key)}
@@ -190,7 +189,7 @@ export default function LanguageDropdown({
                 </div>
               </div>
             );
-          }
+          },
         )}
       </Dropdown>
     </div>

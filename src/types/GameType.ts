@@ -18,6 +18,14 @@ export interface GameType {
   description?: string;
   thumbnail?: string;
   banner?: string;
+  emotePrefix?: string | null;
+  screenshots?: string[];
+  trailerUrl?: string | null;
+  itchEmbedUrl?: string | null;
+  inputMethods?: string[];
+  estOneRun?: string | null;
+  estAnyPercent?: string | null;
+  estHundredPercent?: string | null;
   createdAt: Date;
   updatedAt: Date;
   downloadLinks: DownloadLinkType[];

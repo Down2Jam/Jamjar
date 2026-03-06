@@ -34,22 +34,40 @@ export async function updateUser(
   profilePicture: string | null,
   bannerPicture: string | null,
   primaryRoles: string[],
-  secondaryRoles: string[]
+  secondaryRoles: string[],
+  emotePrefix: string | null,
+  pronouns?: string | null,
+  links?: string[],
+  linkLabels?: string[],
+  profileBackground?: string | null,
+  recommendedGameIds?: number[],
+  recommendedPostIds?: number[],
+  recommendedTrackIds?: number[]
 ) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
+  const payload: Record<string, unknown> = {
+    targetUserSlug: userSlug,
+    name,
+    bio,
+    short,
+    profilePicture: profilePicture,
+    bannerPicture: bannerPicture,
+    primaryRoles,
+    secondaryRoles,
+    emotePrefix,
+    pronouns,
+    links,
+    linkLabels,
+    profileBackground,
+    recommendedGameIds,
+    recommendedPostIds,
+    recommendedTrackIds,
+  };
+
   return fetch(`${BASE_URL}/user`, {
-    body: JSON.stringify({
-      targetUserSlug: userSlug,
-      name,
-      bio,
-      short,
-      profilePicture: profilePicture,
-      bannerPicture: bannerPicture,
-      primaryRoles,
-      secondaryRoles,
-    }),
+    body: JSON.stringify(payload),
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

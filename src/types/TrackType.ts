@@ -6,6 +6,8 @@ export interface TrackType {
   slug: string;
   name: string;
   url: string;
+  license?: string | null;
+  allowDownload?: boolean;
   composerId: number;
   composer: UserType;
   gameId: number;

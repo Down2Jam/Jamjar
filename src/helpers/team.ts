@@ -1,5 +1,5 @@
 import * as teamRequests from "@/requests/team";
-import { addToast } from "@heroui/react";
+import { addToast } from "bioloom-ui";
 
 export async function applyToTeam(teamId: number, body: string) {
   const response = await teamRequests.applyToTeam(teamId, body);

@@ -1,20 +1,19 @@
 "use client";
 
-import { Button } from "@/framework/Button";
-import { Card } from "@/framework/Card";
-import Dropdown from "@/framework/Dropdown";
-import { Link } from "@/framework/Link";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Button } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
+import { Link } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { getJams } from "@/helpers/jam";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
 import { GameResultType } from "@/types/GameResultType";
-import { Image } from "@heroui/react";
 import { Award, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   PolarAngleAxis,
   PolarGrid,
@@ -164,7 +163,11 @@ export default function Results() {
   );
   const router = useRouter();
   const { colors } = useTheme();
-  const [jamId, setJamId] = useState<string>("all");
+  const initialJamParam = useMemo(
+    () => searchParams.get("jam"),
+    [searchParams]
+  );
+  const [jamId, setJamId] = useState<string>(initialJamParam ?? "all");
   const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
   const t = useTranslations();
 
@@ -209,7 +212,18 @@ export default function Results() {
 
       setJamOptions(options);
 
-      if (options.length > 1) {
+      const hasInitial =
+        initialJamParam &&
+        options.some((option) => option.id === initialJamParam);
+      if (initialJamParam === "all") {
+        setJamId("all");
+        return;
+      }
+      if (hasInitial && initialJamParam) {
+        setJamId(initialJamParam);
+        return;
+      }
+      if (options.length > 0) {
         const latestJamId = options[0].id;
         setJamId(latestJamId);
         updateQueryParam("jam", latestJamId);
@@ -217,7 +231,7 @@ export default function Results() {
     };
 
     fetchJams();
-  }, [updateQueryParam]);
+  }, [initialJamParam, updateQueryParam]);
 
   useEffect(() => {
     const getData = async () => {
@@ -379,12 +393,11 @@ export default function Results() {
             return (
               <Card key={game.id} className="flex items-center gap-4">
                 <Hstack gap={12}>
-                  <Image
-                    removeWrapper
+                  <img
                     alt={`${game.name}'s thumbnail`}
                     className="z-0 h-[108px] w-[192px] object-cover"
                     height={108}
-                    width="100%"
+                    width={192}
                     src={game.thumbnail ?? "/images/D2J_Icon.png"}
                   />
                   <div className="flex flex-col">

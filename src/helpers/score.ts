@@ -1,5 +1,5 @@
 import * as scoreRequests from "@/requests/score";
-import { addToast } from "@heroui/react";
+import { addToast } from "bioloom-ui";
 
 export async function postScore(
   value: number,

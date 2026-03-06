@@ -7,11 +7,11 @@ import { Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toZonedTime } from "date-fns-tz";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Accordion, AccordionItem } from "@/framework/Accordion";
-import Text from "@/framework/Text";
-import { Card } from "@/framework/Card";
-import { Hstack, Stack, Vstack } from "@/framework/Stack";
-import Icon from "@/framework/Icon";
+import { Accordion, AccordionItem } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Hstack, Stack, Vstack } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
 import AboutLogo from "../AboutLogo";
 
 export default function AboutPage() {

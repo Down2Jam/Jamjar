@@ -632,5 +632,253 @@
       "Title": "Risultati Post-Jam",
       "Description": "Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam"
     }
+  },
+  "PostTags": {
+    "All": "Tutti i tag",
+    "Custom": "Tag personalizzati",
+    "Filtering": "Filtro per tag"
+  },
+  "PostCard": {
+    "Copy": {
+      "Title": "Copia link",
+      "Description": "Copia il link al post negli appunti",
+      "Success": "Link copiato"
+    },
+    "Delete": {
+      "Title": "Elimina",
+      "Description": "Elimina il tuo post",
+      "Success": "Post eliminato",
+      "Error": "Errore nell'eliminazione del post"
+    },
+    "Remove": {
+      "Title": "Rimuovi",
+      "Description": "Rimuovi questo post",
+      "Success": "Post rimosso",
+      "Error": "Errore nella rimozione del post"
+    },
+    "Unsticky": {
+      "Title": "Non fissare più",
+      "Description": "Non fissare più in alto il post",
+      "Success": "Post non più fissato in alto",
+      "Error": "Errore nel non fissare più in alto il post"
+    },
+    "Sticky": {
+      "Title": "Fissa in alto",
+      "Description": "Fissa il post in alto",
+      "Success": "Post fissato in alto",
+      "Error": "Errore nel fissare in alto il post"
+    },
+    "Promote": {
+      "Title": "Nomina moderatore",
+      "Description": "Promuovi utente a moderatore",
+      "Success": "Utente promosso a moderatore",
+      "Error": "Errore nel promuovere a moderatore l'utente"
+    },
+    "Demote": {
+      "Title": "Rimuovi moderatore",
+      "Description": "Retrocedi utente da moderatore",
+      "Success": "Utente retrocesso",
+      "Error": "Errore nella retrocessione dell'utente"
+    },
+    "PromoteAdmin": {
+      "Title": "Nomina amministratore",
+      "Description": "Promuovi utente ad amministratore",
+      "Success": "Utente promosso ad amministratore",
+      "Error": "Errore nella promozione ad amministratore dell'utente"
+    },
+    "DemoteAdmin": {
+      "Title": "Rimuovi amministratore",
+      "Description": "Retrocedi utente a moderatore",
+      "Success": "Utente retrocesso a moderatore",
+      "Error": "Errore nella retrocessione a moderatore dell'utente"
+    },
+    "By": "Di"
+  },
+  "CreateGame": {
+    "Create": {
+      "Title": "Crea",
+      "Description": "Crea una pagina per un nuovo gioco sul sito",
+      "Success": "Gioco creato con successo!",
+      "Error": "Creazione del gioco non riuscita"
+    },
+    "Edit": {
+      "Title": "Modifica gioco",
+      "Description": "Modifica la pagina di un tuo gioco"
+    },
+    "Name": {
+      "Title": "Nome del gioco",
+      "Description": "Il nome del tuo gioco",
+      "Placeholder": "Inserisci il nome del gioco",
+      "Error": "Inserisci un titolo valido"
+    },
+    "Slug": {
+      "Title": "Slug del gioco",
+      "Description": "Questo verrà usato nell'URL:",
+      "Placeholder": "nome-del-gioco"
+    },
+    "Category": {
+      "Title": "Categoria del gioco",
+      "Description": "La categoria della jam in cui stai inserendo il tuo gioco"
+    },
+    "Description": {
+      "Title": "Descrizione del gioco",
+      "Description": "Il contenuto della pagina del tuo gioco. Visibile quando gli altri visualizzano il tuo gioco"
+    },
+    "Short": {
+      "Title": "Descrizione breve del gioco",
+      "Description": "Una breve descrizione mostrata nella pagina dei giochi e nei risultati di ricerca (max 155 caratteri)",
+      "Placeholder": "Inserisci una breve descrizione"
+    },
+    "Theme": {
+      "Title": "Giustificazione del tema",
+      "Description": "Questo sarà mostrato alle persone quando ti valutano per il tema. Spiega perché il tuo gioco segue il tema",
+      "Placeholder": "Inserisci una giustificazione (opzionale)"
+    },
+    "Thumbnail": {
+      "Title": "Miniatura",
+      "Description": "Mostrata quando le persone sfogliano i giochi (360x200)"
+    },
+    "Banner": {
+      "Title": "Banner",
+      "Description": "Mostrato nella pagina del gioco e nei risultati di ricerca (1468x240)"
+    },
+    "Links": {
+      "Title": "Link",
+      "Description": "Carica il tuo gioco su un sito di hosting (ad es. itch.io) e inserisci qui il link per permettere agli altri di giocare o scaricare",
+      "Placeholder": "https://esempio.com",
+      "Add": "Aggiungi link",
+      "Error": "Inserisci un URL valido che inizi con http:// o https://"
+    },
+    "Tags": {
+      "Title": "Tag",
+      "Description": "Tag per motore di gioco, genere, ecc. usati dagli utenti per filtrare i giochi"
+    },
+    "Flags": {
+      "Title": "Avvisi sui contenuti",
+      "Description": "Avvisi sul tipo di contenuti presenti nel tuo gioco"
+    },
+    "RatingCategories": {
+      "Title": "Categorie di valutazione facoltative",
+      "Description": "Categorie opzionali in cui vuoi ricevere valutazioni e classifiche"
+    },
+    "Leaderboards": {
+      "Title": "Classifiche",
+      "Description": "Classifiche in cui le persone possono inviare i punteggi migliori nel tuo gioco (i punteggi saranno segnalati manualmente con immagini come prova)",
+      "Add": "Aggiungi classifica"
+    },
+    "Soundtrack": {
+      "Title": "Colonna sonora",
+      "Description": "La colonna sonora del tuo gioco, ascoltabile quando si sfoglia il sito",
+      "Add": "Aggiungi brano"
+    },
+    "Achievements": {
+      "Title": "Obiettivi",
+      "Description": "Obiettivi che le persone possono ottenere completando sfide legate al tuo gioco (es. trovare la gallina nascosta). Il completamento è segnalato dall'utente",
+      "Add": "Aggiungi obiettivo"
+    },
+    "CreatePublish": "Crea e Pubblica",
+    "Publish": "Pubblica",
+    "Unpublish": "Annulla pubblicazione",
+    "Update": {
+      "Title": "Aggiorna",
+      "Success": "Gioco aggiornato con successo!"
+    },
+    "Loading": {
+      "Title": "Caricamento...",
+      "Description": "Caricamento del modulo di modifica..."
+    },
+    "NotLogged": "Non sei connesso"
+  },
+  "CreateLeaderboard": {
+    "Name": {
+      "Title": "Nome della classifica",
+      "Description": "Il nome che appare nella scheda della classifica. Dovrebbe descrivere di cosa tratta (es. any%, death%)",
+      "Placeholder": "Inserisci un nome"
+    },
+    "UsersPerPage": {
+      "Title": "Utenti per pagina",
+      "Description": "Numero di utenti mostrati in una pagina della classifica (gli altri saranno divisi in pagine successive)"
+    },
+    "Type": {
+      "Title": "Tipo di classifica",
+      "Description": "Il criterio secondo cui gli utenti sono ordinati e come viene formattato il punteggio. Determina se bisogna ottenere il punteggio più basso, più alto, il tempo più basso, ecc."
+    },
+    "Decimals": {
+      "Title": "Decimali",
+      "Description": "Numero di cifre decimali supportate dal punteggio"
+    },
+    "Advanced": {
+      "Title": "Opzioni avanzate",
+      "Description": "Interruttori per controllare funzionalità aggiuntive della classifica"
+    },
+    "Highest": {
+      "Title": "Solo il più alto",
+      "Description": "Mostra solo il punteggio migliore di ciascun utente"
+    }
+  },
+  "GameCategory": {
+    "Regular": {
+      "Title": "Regular",
+      "Description": "Categoria standard della jam"
+    },
+    "Oda": {
+      "Title": "One Dev Army (O.D.A)",
+      "Description": "1 sviluppatore, nessun asset di terze parti"
+    },
+    "Extra": {
+      "Title": "Extra",
+      "Description": "Può essere inviato durante il periodo di valutazione. Non sarà incluso nella classifica"
+    }
+  },
+  "RatingCategory": {
+    "Gameplay": {
+      "Title": "Gameplay",
+      "Description": "Quanto ti diverte giocare e quanto le meccaniche risultano soddisfacenti"
+    },
+    "Audio": {
+      "Title": "Audio",
+      "Description": "Qualità del suono del gioco e efficacia del design sonoro"
+    },
+    "Graphics": {
+      "Title": "Grafica",
+      "Description": "Qualità visiva del gioco e efficacia dello stile grafico"
+    },
+    "Creativity": {
+      "Title": "Creatività",
+      "Description": "Unicità, originalità, innovazione e fattore sorpresa"
+    },
+    "Emotional": {
+      "Title": "Impatto emotivo",
+      "Description": "Efficacia nel trasmettere elementi emotivi o umoristici"
+    },
+    "Overall": {
+      "Title": "Complessivo",
+      "Description": "Opinione generale sul gioco, e quanto bene tutte le categorie si integrano tra loro"
+    },
+    "Theme": {
+      "Title": "Tema",
+      "Description": "Interpretazione del tema da parte del gioco e quanto è stato sfruttato ed eseguito bene"
+    }
+  },
+  "LeaderboardType": {
+    "Score": {
+      "Title": "Punteggio",
+      "Description": "Punteggio più alto"
+    },
+    "Golf": {
+      "Title": "Golf",
+      "Description": "Punteggio più basso"
+    },
+    "Speedrun": {
+      "Title": "Speedrun",
+      "Description": "Tempo più basso"
+    },
+    "Endurance": {
+      "Title": "Resistenza",
+      "Description": "Tempo più alto"
+    }
+  },
+  "General": {
+    "NoDescription": "Nessuna descrizione"
   }
 }

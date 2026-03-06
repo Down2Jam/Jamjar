@@ -8,17 +8,7 @@ import {
   now,
   ZonedDateTime,
 } from "@internationalized/date";
-import {
-  addToast,
-  DateRangePicker,
-  DateValue,
-  Dropdown,
-  DropdownItem,
-  DropdownMenu,
-  DropdownTrigger,
-  Form,
-  Input,
-} from "@heroui/react";
+import { addToast, Dropdown, Form, Input } from "bioloom-ui";
 import {
   Calendar,
   Code,
@@ -36,8 +26,7 @@ import { sanitize } from "@/helpers/sanitize";
 import SidebarStreams from "@/components/sidebar/SidebarStreams";
 import { postEvent } from "@/requests/event";
 import { EventIcon } from "@/types/EventIcon";
-import { Button } from "@/framework/Button";
-import { Spinner } from "@/framework/Spinner";
+import { Button, Spinner } from "bioloom-ui";
 
 const icons = {
   palette: {
@@ -120,6 +109,22 @@ export default function CreatePostPage() {
 
   if (!user?.twitch && !user?.mod) return <p>You cannot create events</p>;
 
+  const toLocalInputValue = (value?: ZonedDateTime) => {
+    if (!value) return "";
+    const date = value.toDate(getLocalTimeZone());
+    const pad = (num: number) => String(num).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const parseLocalInputValue = (value: string) => {
+    if (!value) return undefined;
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return undefined;
+    return fromDate(parsed, getLocalTimeZone());
+  };
+
   return (
     <div className="static flex items-top mt-10 justify-center top-0 left-0 gap-16">
       <Form
@@ -179,7 +184,7 @@ export default function CreatePostPage() {
         }}
       >
         <Input
-          isRequired
+          required
           label="Title"
           labelPlacement="outside"
           name="title"
@@ -202,53 +207,52 @@ export default function CreatePostPage() {
         <Editor content={content} setContent={setContent} />
 
         <p className="mt-1">Icon</p>
-        <Dropdown backdrop="opaque">
-          <DropdownTrigger>
-            <Button size="sm">{icons[icon]?.name}</Button>
-          </DropdownTrigger>
-          <DropdownMenu
-            onAction={(key) => {
-              setIcon(key as EventIcon);
-            }}
-            className="text-[#333] dark:text-white"
-          >
-            {Object.entries(icons).map(([key, icon]) => (
-              <DropdownItem
-                key={key}
-                startContent={icon.icon}
-                description={icon.description}
-              >
-                {icon.name}
-              </DropdownItem>
-            ))}
-          </DropdownMenu>
+        <Dropdown
+          backdrop
+          trigger={<Button size="sm">{icons[icon]?.name}</Button>}
+          onSelect={(key) => {
+            setIcon(key as EventIcon);
+          }}
+        >
+          {Object.entries(icons).map(([key, icon]) => (
+            <Dropdown.Item key={key} value={key} description={icon.description}>
+              {icon.name}
+            </Dropdown.Item>
+          ))}
         </Dropdown>
 
-        <DateRangePicker
-          defaultValue={{
-            start: now(getLocalTimeZone()),
-            end: now(getLocalTimeZone()).add({ hours: 3 }),
-          }}
-          value={{ start: date.start as DateValue, end: date.end as DateValue }}
-          onChange={(value) =>
-            setDate({
-              start: value?.start
-                ? fromDate(
-                    value?.start.toDate(getLocalTimeZone()),
-                    getLocalTimeZone()
-                  )
-                : undefined,
-              end: value?.end
-                ? fromDate(
-                    value?.end.toDate(getLocalTimeZone()),
-                    getLocalTimeZone()
-                  )
-                : undefined,
-            })
-          }
-          label="Event duration"
-          labelPlacement="outside"
-        />
+        <div className="flex gap-3">
+          <div className="flex-1">
+            <Input
+              fullWidth
+              label="Start"
+              labelPlacement="outside"
+              type="datetime-local"
+              value={toLocalInputValue(date.start)}
+              onValueChange={(value) =>
+                setDate((prev) => ({
+                  ...prev,
+                  start: parseLocalInputValue(value),
+                }))
+              }
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              fullWidth
+              label="End"
+              labelPlacement="outside"
+              type="datetime-local"
+              value={toLocalInputValue(date.end)}
+              onValueChange={(value) =>
+                setDate((prev) => ({
+                  ...prev,
+                  end: parseLocalInputValue(value),
+                }))
+              }
+            />
+          </div>
+        </div>
 
         <div className="flex gap-2 mt-1">
           {waitingPost ? (

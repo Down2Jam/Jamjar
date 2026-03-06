@@ -1,6 +1,7 @@
 import { CommentType } from "./CommentType";
 import { TagType } from "./TagType";
 import { UserType } from "./UserType";
+import { ReactionSummaryType } from "./ReactionType";
 
 export interface PostType {
   id: number;
@@ -14,4 +15,5 @@ export interface PostType {
   tags: TagType[];
   likes: [];
   hasLiked: boolean;
+  reactions?: ReactionSummaryType[];
 }

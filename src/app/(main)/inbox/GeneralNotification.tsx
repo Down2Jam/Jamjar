@@ -1,10 +1,10 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
-import Icon from "@/framework/Icon";
+import { Card } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
 import { NotificationType as AppNotification } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
 

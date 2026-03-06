@@ -88,6 +88,15 @@
   colorSecondary: grayLight
   colorBg: grayDark
 
+- key: pt-br
+  label: Português (Brasil)
+  gradient: from-emerald-500 to-lime-300
+  bg: bg-emerald-500
+  hoverBg: hover:!bg-emerald-900
+  colorPrimary: green
+  colorSecondary: limeLight
+  colorBg: greenDark
+
 - key: mis-edikan
   label: Edikan
   gradient: from-cyan-500 to-cyan-300

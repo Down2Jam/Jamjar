@@ -8,7 +8,7 @@ import SidebarMusic from "./SidebarMusic";
 
 export default function Sidebar() {
   return (
-    <div className="hidden flex-col gap-3 md:flex">
+    <div className="hidden flex-col gap-3 md:flex md:w-[480px] md:min-w-[480px] md:max-w-[480px]">
       <SidebarBanner />
       <SidebarButtons />
       <SidebarStats />

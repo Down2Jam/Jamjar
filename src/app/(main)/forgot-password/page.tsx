@@ -1,8 +1,8 @@
-import { Card } from "@/framework/Card";
-import Icon from "@/framework/Icon";
-import { Link } from "@/framework/Link";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Card } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Link } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 
 export default function ForgotPage() {
   return (

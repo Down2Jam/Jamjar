@@ -1,13 +1,13 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import { Hstack, Vstack } from "@/framework/Stack";
-import { Button } from "@/framework/Button";
-import Icon from "@/framework/Icon";
-import Text from "@/framework/Text";
-import { useMusic } from "@/providers/MusicProvider";
+import { Card } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { useMusic } from "bioloom-miniplayer";
 import Image from "next/image";
-import { Link } from "@/framework/Link";
+import { Link } from "bioloom-ui";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 
@@ -17,6 +17,8 @@ interface SidebarSongProps {
   thumbnail: string;
   song: string;
   game: GameType;
+  license?: string | null;
+  allowDownload?: boolean;
 }
 
 export default function SidebarSong({
@@ -25,6 +27,8 @@ export default function SidebarSong({
   song,
   game,
   artist,
+  license,
+  allowDownload,
 }: SidebarSongProps) {
   const { playItem } = useMusic();
 
@@ -51,6 +55,11 @@ export default function SidebarSong({
                 {artist.name || artist.slug}
               </Text>
             </Link>
+            {license && (
+              <Text size="xs" color="textFaded">
+                License: {license}
+              </Text>
+            )}
           </Vstack>
         </Hstack>
 
@@ -60,6 +69,17 @@ export default function SidebarSong({
           >
             <Icon name="play" />
           </Button>
+          {allowDownload && (
+            <Button
+              size="xs"
+              variant="ghost"
+              href={song}
+              download
+              icon="download"
+            >
+              Download
+            </Button>
+          )}
         </Vstack>
       </Hstack>
     </Card>

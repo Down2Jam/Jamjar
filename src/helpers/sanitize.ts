@@ -2,9 +2,16 @@ import sanitizeHtml from "sanitize-html";
 
 export function sanitize(content: string) {
   return sanitizeHtml(content, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "iframe"]),
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+      "img",
+      "iframe",
+      "input",
+      "label",
+    ]),
     allowedAttributes: {
       img: ["src", "style"],
+      input: ["type", "checked", "disabled"],
+      label: ["for"],
       iframe: [
         "src",
         "width",
@@ -24,7 +31,15 @@ export function sanitize(content: string) {
         "start",
       ],
       p: ["style"],
-      a: ["target", "rel", "href"],
+      a: [
+        "target",
+        "rel",
+        "href",
+        "class",
+        "data-mention-type",
+        "data-mention-slug",
+        "data-mention-domain",
+      ],
     },
     allowedStyles: {
       img: {

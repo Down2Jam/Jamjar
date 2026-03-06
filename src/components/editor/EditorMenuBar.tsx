@@ -3,8 +3,6 @@
 import { Editor } from "@tiptap/react";
 import {
   AlignCenter,
-  AlignJustify,
-  AlignLeft,
   AlignRight,
   Bold,
   Code,
@@ -15,6 +13,7 @@ import {
   Minus,
   Quote,
   Redo,
+  SmilePlus,
   Strikethrough,
   Subscript,
   Superscript,
@@ -22,8 +21,11 @@ import {
 } from "lucide-react";
 import EditorMenuButton from "./EditorMenuButton";
 import { getCookie } from "@/helpers/cookie";
-import { Hstack } from "@/framework/Stack";
-import { addToast } from "@heroui/react";
+import { Hstack } from "bioloom-ui";
+import { addToast } from "bioloom-ui";
+import { useEmojis } from "@/providers/EmojiProvider";
+import { useMemo, useState } from "react";
+import { Popover, Text, Input } from "bioloom-ui";
 
 type EditorMenuProps = {
   editor: Editor | null;
@@ -35,6 +37,9 @@ export default function EditorMenuBar({
   size = "sm",
 }: EditorMenuProps) {
   if (!editor) return null;
+  const { emojis } = useEmojis();
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [emojiQuery, setEmojiQuery] = useState("");
 
   const addLink = () => {
     const url = prompt("Enter link URL:");
@@ -200,31 +205,23 @@ export default function EditorMenuBar({
       hideOnXS: true,
     },
     {
-      icon: <AlignLeft size={iconSize} />,
-      onClick: () => editor.chain().focus().setTextAlign("left").run(),
-      disabled: !editor.can().setTextAlign?.("left"),
-      isActive: editor.isActive({ textAlign: "left" }),
-      hideOnXS: true,
-    },
-    {
       icon: <AlignRight size={iconSize} />,
-      onClick: () => editor.chain().focus().setTextAlign("right").run(),
+      onClick: () =>
+        editor.isActive({ textAlign: "right" })
+          ? editor.chain().focus().unsetTextAlign().run()
+          : editor.chain().focus().setTextAlign("right").run(),
       disabled: !editor.can().setTextAlign?.("right"),
       isActive: editor.isActive({ textAlign: "right" }),
       hideOnXS: true,
     },
     {
       icon: <AlignCenter size={iconSize} />,
-      onClick: () => editor.chain().focus().setTextAlign("center").run(),
+      onClick: () =>
+        editor.isActive({ textAlign: "center" })
+          ? editor.chain().focus().unsetTextAlign().run()
+          : editor.chain().focus().setTextAlign("center").run(),
       disabled: !editor.can().setTextAlign?.("center"),
       isActive: editor.isActive({ textAlign: "center" }),
-      hideOnXS: true,
-    },
-    {
-      icon: <AlignJustify size={iconSize} />,
-      onClick: () => editor.chain().focus().setTextAlign("justify").run(),
-      disabled: !editor.can().setTextAlign?.("justify"),
-      isActive: editor.isActive({ textAlign: "justify" }),
       hideOnXS: true,
     },
     {
@@ -242,6 +239,19 @@ export default function EditorMenuBar({
   ];
 
   const visibleButtons = buttons.filter((b) => !(isXS && b.hideOnXS));
+  const filteredEmojis = useMemo(() => {
+    const query = emojiQuery.trim().toLowerCase();
+    if (!query) return emojis.slice(0, 48);
+    return emojis
+      .filter((emoji) => emoji.slug.includes(query))
+      .sort((a, b) => {
+        const aStarts = a.slug.startsWith(query) ? 1 : 0;
+        const bStarts = b.slug.startsWith(query) ? 1 : 0;
+        if (aStarts !== bStarts) return bStarts - aStarts;
+        return a.slug.localeCompare(b.slug);
+      })
+      .slice(0, 48);
+  }, [emojiQuery, emojis]);
 
   return (
     <Hstack className="mb-2" wrap>
@@ -256,6 +266,59 @@ export default function EditorMenuBar({
           {icon}
         </EditorMenuButton>
       ))}
+      <div className="relative">
+        <EditorMenuButton
+          onClick={() => setEmojiOpen((open) => !open)}
+          isActive={emojiOpen}
+          disabled={emojis.length === 0}
+          size={size}
+        >
+          <SmilePlus size={iconSize} />
+        </EditorMenuButton>
+        <Popover
+          shown={emojiOpen}
+          anchorToScreen={false}
+          position="bottom-left"
+          padding={8}
+        >
+          <div className="flex flex-col gap-2 w-64">
+            <Input
+              value={emojiQuery}
+              onValueChange={setEmojiQuery}
+              placeholder="Search emoji"
+              size="sm"
+            />
+            {filteredEmojis.length === 0 ? (
+              <Text size="xs" color="textFaded">
+                No emojis found.
+              </Text>
+            ) : (
+              <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto">
+                {filteredEmojis.map((emoji) => (
+                  <button
+                    key={emoji.id}
+                    type="button"
+                    className="flex items-center justify-center rounded-md border border-transparent hover:border-white/20"
+                    onClick={() => {
+                      editor.chain().focus().insertContent(`:${emoji.slug}:`).run();
+                      setEmojiOpen(false);
+                      setEmojiQuery("");
+                    }}
+                  >
+                    <img
+                      src={emoji.image}
+                      alt={`:${emoji.slug}:`}
+                      className="h-5 w-5"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </Popover>
+      </div>
     </Hstack>
   );
 }

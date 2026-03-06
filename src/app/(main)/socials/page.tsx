@@ -1,4 +1,4 @@
-import { Button } from "@/framework/Button";
+import { Button } from "bioloom-ui";
 import {
   SiBluesky,
   SiDiscord,

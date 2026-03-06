@@ -35,6 +35,7 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
   const [previewedSiteTheme, setPreviewedSiteThemeBacking] =
     useState<SiteThemeType | null>(null);
   const [allSiteThemes, setAllSiteThemes] = useState<SiteThemeType[]>([]);
+  const [isThemeReady, setIsThemeReady] = useState(false);
 
   async function readThemeFiles() {
     const res = await fetch(`${BASE_URL}/site-themes`);
@@ -87,6 +88,17 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
   }
 
   const effectiveTheme = previewedSiteTheme ?? siteTheme;
+
+  useEffect(() => {
+    if (isThemeReady) return;
+    if (Object.keys(effectiveTheme.colors).length === 0) return;
+    setIsThemeReady(true);
+  }, [effectiveTheme.colors, isThemeReady]);
+
+  useEffect(() => {
+    if (!isThemeReady) return;
+    document.documentElement.setAttribute("data-theme-ready", "true");
+  }, [isThemeReady]);
 
   return (
     <SiteThemeContext.Provider

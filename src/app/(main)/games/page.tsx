@@ -1,8 +1,8 @@
-import Games from "@/components/games";
-import { Card } from "@/framework/Card";
-import Icon from "@/framework/Icon";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import GamesClient from "./GamesClient";
+import { Card } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { Metadata } from "next";
 import { Suspense } from "react";
 
@@ -51,7 +51,7 @@ export default function GamesPage() {
       </Vstack>
 
       <Suspense fallback={<div>Loading...</div>}>
-        <Games />
+        <GamesClient />
       </Suspense>
     </>
   );

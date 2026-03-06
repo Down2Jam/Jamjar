@@ -1,12 +1,12 @@
 "use client";
 
-import { Avatar, NavbarItem } from "@heroui/react";
+import { Avatar, NavbarItem } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import { redirect } from "next/navigation";
 import Hotkey from "../../hotkey";
 import useBreakpoint from "@/hooks/useBreakpoint";
-import Dropdown from "@/framework/Dropdown";
-import { Button } from "@/framework/Button";
+import { Dropdown } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 
 interface NavbarUserProps {
@@ -48,20 +48,20 @@ export default function NavbarUser({ user }: NavbarUserProps) {
         trigger={
           user ? (
             <Avatar
-              size="sm"
+              size={32}
               src={user.profilePicture}
-              className="!duration-300 transition-all cursor-pointer outline-2"
-              classNames={{
-                base: "bg-transparent",
-              }}
+              className="transition-all duration-300 cursor-pointer outline-2"
               style={{
                 outlineColor: colors["base"],
+                outlineStyle: "solid",
+                outlineWidth: 2,
               }}
             />
           ) : (
             <Button
               className="ml-2 !transition-all !duration-500 w-8 h-8 max-h-8 max-w-8 min-w-8 min-h-8 rounded-full outline-[#e2e1e2] dark:outline-[#1c2c21]"
               icon="menu"
+              variant="ghost"
             ></Button>
           )
         }

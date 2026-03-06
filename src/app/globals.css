@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -32,4 +30,18 @@ pre {
 html,
 body {
   overflow-x: hidden;
+}
+
+html:not([data-theme-ready="true"]) *,
+html:not([data-theme-ready="true"]) *::before,
+html:not([data-theme-ready="true"]) *::after {
+  transition: none !important;
+}
+
+.emoji-inline {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  margin: 0 0.05em;
 }

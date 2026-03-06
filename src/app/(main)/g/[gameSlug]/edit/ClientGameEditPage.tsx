@@ -1,15 +1,15 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import { Spinner } from "@/framework/Spinner";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Card } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { getTeamsUser } from "@/requests/team";
 import { GameType } from "@/types/GameType";
 import { TeamType } from "@/types/TeamType";
 import { use, useEffect, useState } from "react";
 import GameEditingForm from "../../../../../components/game-editing-form/GameEditingForm";
-import Icon from "@/framework/Icon";
+import { Icon } from "bioloom-ui";
 
 export default function ClientGameEditPage({
   params,

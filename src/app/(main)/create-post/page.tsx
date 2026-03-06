@@ -1,26 +1,32 @@
 "use client";
 
-import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
-import { addToast, Form } from "@heroui/react";
+import { addToast, Form } from "bioloom-ui";
 import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ReactNode, useEffect, useState } from "react";
-import Select, { MultiValue, StylesConfig } from "react-select";
+import type { MultiValue, StylesConfig } from "react-select";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
 import { getTags } from "@/requests/tag";
 import { postPost } from "@/requests/post";
-import { sanitize } from "@/helpers/sanitize";
-import { Input } from "@/framework/Input";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import Icon from "@/framework/Icon";
-import { Card } from "@/framework/Card";
-import { Button } from "@/framework/Button";
-import { Switch } from "@/framework/Switch";
-import { Spinner } from "@/framework/Spinner";
+import { Input } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Switch } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
 
 const theme = "dark";
+const Editor = dynamic(() => import("@/components/editor"), {
+  ssr: false,
+  loading: () => <div className="min-h-[100px] rounded-md border border-gray-600" />,
+});
+const Select = dynamic(() => import("react-select"), {
+  ssr: false,
+});
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
@@ -56,12 +62,9 @@ export default function CreatePostPage() {
 
     const load = async () => {
       try {
-        const response = await getSelf();
-
+        const [response, tagResponse] = await Promise.all([getSelf(), getTags()]);
         const localuser = await response.json();
         setUser(localuser);
-
-        const tagResponse = await getTags();
 
         if (tagResponse.ok) {
           const newoptions: {
@@ -209,7 +212,6 @@ export default function CreatePostPage() {
                 return;
               }
 
-              const sanitizedHtml = sanitize(content);
               setWaitingPost(true);
 
               const tags = [];
@@ -228,7 +230,7 @@ export default function CreatePostPage() {
               ];
               const response = await postPost(
                 title,
-                sanitizedHtml,
+                content,
                 sticky,
                 combinedTags
               );
@@ -276,7 +278,11 @@ export default function CreatePostPage() {
                 The post content
               </Text>
             </div>
-            <Editor content={content} setContent={setContent} />
+            <Editor
+              content={content}
+              setContent={setContent}
+              format="markdown"
+            />
 
             <div className="mt-2">
               <Text color="text">Tags</Text>

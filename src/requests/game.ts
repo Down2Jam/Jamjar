@@ -60,7 +60,17 @@ export async function postGame(
     composerId: number | null;
     id: number;
     slug: string;
-  }[]
+    license?: string | null;
+    allowDownload?: boolean;
+  }[],
+  screenshots: string[],
+  trailerUrl: string | null,
+  itchEmbedUrl: string | null,
+  inputMethods: string[],
+  estOneRun: string | null,
+  estAnyPercent: string | null,
+  estHundredPercent: string | null,
+  emotePrefix: string | null
 ) {
   return fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -83,6 +93,14 @@ export async function postGame(
       leaderboards,
       short,
       songs,
+      screenshots,
+      trailerUrl,
+      itchEmbedUrl,
+      inputMethods,
+      estOneRun,
+      estAnyPercent,
+      estHundredPercent,
+      emotePrefix,
     }),
     method: "POST",
     headers: {
@@ -121,7 +139,17 @@ export async function updateGame(
     composerId: number | null;
     id: number;
     slug: string;
-  }[]
+    license?: string | null;
+    allowDownload?: boolean;
+  }[],
+  screenshots: string[],
+  trailerUrl: string | null,
+  itchEmbedUrl: string | null,
+  inputMethods: string[],
+  estOneRun: string | null,
+  estAnyPercent: string | null,
+  estHundredPercent: string | null,
+  emotePrefix: string | null
 ) {
   return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -143,6 +171,14 @@ export async function updateGame(
       leaderboards,
       short,
       songs,
+      screenshots,
+      trailerUrl,
+      itchEmbedUrl,
+      inputMethods,
+      estOneRun,
+      estAnyPercent,
+      estHundredPercent,
+      emotePrefix,
     }),
     method: "PUT",
     headers: {

@@ -12,16 +12,16 @@ import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { getCookie } from "@/helpers/cookie";
 import { useMemo } from "react";
-import { Spinner } from "@/framework/Spinner";
-import { Card } from "@/framework/Card";
-import { Chip } from "@/framework/Chip";
-import { Button } from "@/framework/Button";
-import Icon from "@/framework/Icon";
-import Text from "@/framework/Text";
-import { Hstack, Vstack } from "@/framework/Stack";
+import { Spinner } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Switch } from "@/framework/Switch";
-import Dropdown from "@/framework/Dropdown";
+import { Switch } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
 
 export default function ThemeSlaughter() {
   const [themes, setThemes] = useState<ThemeType[]>([]);

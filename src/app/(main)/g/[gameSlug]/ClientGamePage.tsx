@@ -3,8 +3,8 @@
 import { use, useMemo } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
-import { addToast } from "@heroui/react";
-import { Tabs, Tab } from "@/framework/Tabs";
+import { addToast } from "bioloom-ui";
+import { Tabs, Tab } from "bioloom-ui";
 import {
   Table,
   TableHeader,
@@ -12,8 +12,8 @@ import {
   TableBody,
   TableRow,
   TableCell,
-} from "@/framework/Table";
-import { Pagination } from "@/framework/Pagination";
+} from "bioloom-ui";
+import { Pagination } from "bioloom-ui";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
@@ -46,21 +46,22 @@ import {
 } from "recharts";
 import CreateComment from "@/components/create-comment";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Chip } from "@/framework/Chip";
-import { Hstack, Vstack } from "@/framework/Stack";
+import { Chip } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
-import { Button } from "@/framework/Button";
-import { Link } from "@/framework/Link";
+import { Button } from "bioloom-ui";
+import { Link } from "bioloom-ui";
 import { useTranslations } from "next-intl";
-import Text from "@/framework/Text";
-import Tooltip from "@/framework/Tooltip";
+import { Text } from "bioloom-ui";
+import { Tooltip } from "bioloom-ui";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { BASE_URL } from "@/requests/config";
-import Popover from "@/framework/Popover";
-import Modal from "@/framework/Modal";
-import Icon, { IconName } from "@/framework/Icon";
-import { Card } from "@/framework/Card";
-import { Avatar } from "@/framework/Avatar";
+import { Popover } from "bioloom-ui";
+import { Modal } from "bioloom-ui";
+import { Icon, IconName } from "bioloom-ui";
+import MentionedContent from "@/components/mentions/MentionedContent";
+import { Card } from "bioloom-ui";
+import { Avatar } from "bioloom-ui";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -97,6 +98,23 @@ function gradientTextStyle(
     WebkitTextFillColor: "transparent",
     color: fallback,
   };
+}
+
+function toCanonicalItchEmbedUrl(url?: string | null) {
+  if (!url) return null;
+
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.replace(/\/+$/, "");
+
+    if (hostname !== "itch.io") return null;
+    if (!/^\/embed(?:-upload)?\/\d+$/.test(pathname)) return null;
+
+    return `https://itch.io${pathname}${parsed.search}`;
+  } catch {
+    return null;
+  }
 }
 
 function getPlacementGradient(
@@ -345,6 +363,8 @@ export default function ClientGamePage({
     return <p>This game has not been published</p>;
   }
 
+  const itchEmbedUrl = toCanonicalItchEmbedUrl(game.itchEmbedUrl);
+
   return (
     <>
       <div
@@ -406,11 +426,27 @@ export default function ClientGamePage({
                 </Chip>
               </Hstack>
             </div>
-            <ThemedProse>
+            {itchEmbedUrl && (
               <div
-                dangerouslySetInnerHTML={{
-                  __html: game.description || t("General.NoDescription"),
+                className="w-full rounded-xl overflow-hidden"
+                style={{
+                  aspectRatio: "16 / 9",
+                  backgroundColor: colors["base"],
+                  border: `1px solid ${colors["crust"]}`,
                 }}
+              >
+                <iframe
+                  src={itchEmbedUrl}
+                  title={`${game.name} playable embed`}
+                  className="w-full h-full"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                />
+              </div>
+            )}
+            <ThemedProse>
+              <MentionedContent
+                html={game?.description || t("General.NoDescription")}
               />
             </ThemedProse>
             <Hstack>
@@ -1199,6 +1235,8 @@ export default function ClientGamePage({
                       thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
                       game={track.game}
                       song={track.url}
+                      license={track.license}
+                      allowDownload={track.allowDownload}
                     />
                   ))}
                 </Vstack>

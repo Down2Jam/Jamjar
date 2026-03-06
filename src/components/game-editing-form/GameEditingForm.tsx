@@ -1,13 +1,14 @@
 "use client";
 
-import { Button } from "@/framework/Button";
-import { Card } from "@/framework/Card";
-import Dropdown from "@/framework/Dropdown";
-import Icon, { IconName } from "@/framework/Icon";
-import { Input } from "@/framework/Input";
-import { Spinner } from "@/framework/Spinner";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Button } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
+import { Icon, IconName } from "bioloom-ui";
+import { Input } from "bioloom-ui";
+import { ImageInput } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 import { sanitize } from "@/helpers/sanitize";
@@ -28,7 +29,7 @@ import { GameType } from "@/types/GameType";
 import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
-import { addToast, Avatar, Form } from "@heroui/react";
+import { addToast, Avatar, Form } from "bioloom-ui";
 import Image from "next/image";
 import {
   ReactNode,
@@ -39,9 +40,9 @@ import {
   useState,
 } from "react";
 import Select, { StylesConfig } from "react-select";
-import { Switch } from "@/framework/Switch";
+import { Switch } from "bioloom-ui";
 import { getIcon } from "@/helpers/icon";
-import { Textarea } from "@/framework/Textarea";
+import { Textarea } from "bioloom-ui";
 import Editor from "@/components/editor";
 import { redirect, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -49,10 +50,12 @@ import { getSelf, searchUsers } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { TrackType } from "@/types/TrackType";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { useEmojis } from "@/providers/EmojiProvider";
 import { debounce } from "lodash";
 import { createTeam } from "@/helpers/team";
-import { Tab, Tabs } from "@/framework/Tabs";
-import { Accordion, AccordionItem } from "@/framework/Accordion";
+import { Tab, Tabs } from "bioloom-ui";
+import { Accordion, AccordionItem } from "bioloom-ui";
+import { createGameEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 
 type InputMethodType =
   | "KeyboardMouse"
@@ -70,6 +73,21 @@ const YT_ID_REGEX =
 const extractYouTubeId = (url: string): string | null => {
   const m = url.match(YT_ID_REGEX);
   return m ? m[1] : null;
+};
+
+const toCanonicalItchEmbedUrl = (url: string): string | null => {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+    const pathname = parsed.pathname.replace(/\/+$/, "");
+
+    if (hostname !== "itch.io") return null;
+    if (!/^\/embed(?:-upload)?\/\d+$/.test(pathname)) return null;
+
+    return `https://itch.io${pathname}${parsed.search}`;
+  } catch {
+    return null;
+  }
 };
 
 const INPUT_METHOD_OPTIONS: {
@@ -114,8 +132,56 @@ type SongEdit = {
   slug: string;
   name: string;
   url: string;
+  license: string;
+  allowDownload: boolean;
+  licenseAttribution: boolean;
+  licenseCommercial: boolean;
+  licenseDerivatives: boolean;
+  licenseShareAlike: boolean;
   composerId: number | null;
   composer?: Pick<UserType, "id" | "name" | "slug" | "profilePicture"> | null;
+};
+
+type LicenseFlags = {
+  attribution: boolean;
+  commercial: boolean;
+  derivatives: boolean;
+  shareAlike: boolean;
+};
+
+const licenseFlagsToLabel = (flags: LicenseFlags) => {
+  if (!flags.attribution) return "CC0";
+  const prefix = "CC BY";
+  const suffixParts: string[] = [];
+  if (!flags.commercial) suffixParts.push("NC");
+  if (!flags.derivatives) {
+    suffixParts.push("ND");
+  } else if (flags.shareAlike) {
+    suffixParts.push("SA");
+  }
+  return suffixParts.length > 0 ? `${prefix}-${suffixParts.join("-")}` : prefix;
+};
+
+const parseLicenseFlags = (license?: string | null): LicenseFlags => {
+  const normalized = (license ?? "").toUpperCase().replace(/\s+/g, " ").trim();
+  if (normalized.startsWith("CC0")) {
+    return {
+      attribution: false,
+      commercial: true,
+      derivatives: true,
+      shareAlike: false,
+    };
+  }
+
+  const hasNc = normalized.includes("NC");
+  const hasNd = normalized.includes("ND");
+  const hasSa = normalized.includes("SA");
+  return {
+    attribution: true,
+    commercial: !hasNc,
+    derivatives: !hasNd,
+    shareAlike: !hasNd && hasSa,
+  };
 };
 
 export default function GameEditingForm({
@@ -172,6 +238,31 @@ export default function GameEditingForm({
   >({});
   const { colors } = useTheme();
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
+  const { emojis, refresh: refreshEmojis } = useEmojis();
+  const [gameEmoteSlug, setGameEmoteSlug] = useState("");
+  const [gameEmoteImage, setGameEmoteImage] = useState<string | null>(null);
+  const [savingGameEmote, setSavingGameEmote] = useState(false);
+  const [gameEmoteArtistSlug, setGameEmoteArtistSlug] = useState("");
+  const [editingGameEmoteId, setEditingGameEmoteId] = useState<number | null>(
+    null
+  );
+  const [editingGameEmoteSlug, setEditingGameEmoteSlug] = useState("");
+  const [editingGameEmoteImage, setEditingGameEmoteImage] = useState<
+    string | null
+  >(null);
+  const [editingGameEmoteArtistSlug, setEditingGameEmoteArtistSlug] =
+    useState("");
+  const [savingEditGameEmote, setSavingEditGameEmote] = useState(false);
+  const [gameEmoteArtistMatches, setGameEmoteArtistMatches] = useState<UserType[]>(
+    []
+  );
+  const [gameEmoteArtistOpen, setGameEmoteArtistOpen] = useState(false);
+  const [gameEmoteArtistIndex, setGameEmoteArtistIndex] = useState(0);
+  const [editGameEmoteArtistMatches, setEditGameEmoteArtistMatches] = useState<
+    UserType[]
+  >([]);
+  const [editGameEmoteArtistOpen, setEditGameEmoteArtistOpen] = useState(false);
+  const [editGameEmoteArtistIndex, setEditGameEmoteArtistIndex] = useState(0);
   const teamsRef = useRef<TeamType[]>([]);
   const updateTeams = useCallback(
     (nextOrFn: TeamType[] | ((prev: TeamType[]) => TeamType[])) => {
@@ -192,6 +283,8 @@ export default function GameEditingForm({
 
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [trailerUrl, setTrailerUrl] = useState<string>("");
+  const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
+  const [emotePrefixInput, setEmotePrefixInput] = useState("");
 
   const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
     new Set()
@@ -245,27 +338,39 @@ export default function GameEditingForm({
       game?.majRatingCategories?.map((ratingCategory) => ratingCategory.id) ||
         []
     );
-    // setScreenshots(game?.screenshots ?? []);
-    // setTrailerUrl(game?.trailerUrl ?? "");
-    // setInputMethods(game?.inputMethods ?? new Set());
-    // setEstAnyPercent(game?.estAnyPercent ?? "");
-    // setEstHundredPercent(game?.estHundredPercent ?? "");
+    setScreenshots(game?.screenshots ?? []);
+    setTrailerUrl(game?.trailerUrl ?? "");
+    setItchEmbedUrl(game?.itchEmbedUrl ?? "");
+    setEmotePrefixInput(game?.emotePrefix ?? "");
+    setInputMethods(new Set(game?.inputMethods ?? []));
+    setEstOneRun(game?.estOneRun ?? "");
+    setEstAnyPercent(game?.estAnyPercent ?? "");
+    setEstHundredPercent(game?.estHundredPercent ?? "");
 
-    const incomingSongs = (game?.tracks || []).map((s: TrackType) => ({
-      id: s.id,
-      slug: s.slug,
-      name: s.name,
-      url: s.url,
-      composerId: s.composerId,
-      composer: s.composer
-        ? {
-            id: s.composer.id,
-            name: s.composer.name,
-            slug: s.composer.slug,
-            profilePicture: s.composer.profilePicture,
-          }
-        : null,
-    })) as SongEdit[];
+    const incomingSongs = (game?.tracks || []).map((s: TrackType) => {
+      const flags = parseLicenseFlags(s.license);
+      return {
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        url: s.url,
+        license: licenseFlagsToLabel(flags),
+        allowDownload: Boolean(s.allowDownload),
+        licenseAttribution: flags.attribution,
+        licenseCommercial: flags.commercial,
+        licenseDerivatives: flags.derivatives,
+        licenseShareAlike: flags.shareAlike,
+        composerId: s.composerId,
+        composer: s.composer
+          ? {
+              id: s.composer.id,
+              name: s.composer.name,
+              slug: s.composer.slug,
+              profilePicture: s.composer.profilePicture,
+            }
+          : null,
+      };
+    }) as SongEdit[];
     setSongs(incomingSongs);
 
     async function loadData() {
@@ -486,6 +591,68 @@ export default function GameEditingForm({
     []
   );
 
+  const doEmoteArtistSearch = useMemo(
+    () =>
+      debounce(async (q: string, scope: "create" | "edit") => {
+        if (!q) {
+          if (scope === "edit") {
+            setEditGameEmoteArtistMatches([]);
+            setEditGameEmoteArtistOpen(false);
+            setEditGameEmoteArtistIndex(0);
+          } else {
+            setGameEmoteArtistMatches([]);
+            setGameEmoteArtistOpen(false);
+            setGameEmoteArtistIndex(0);
+          }
+          return;
+        }
+        try {
+          const res = await searchUsers(q);
+          if (res.status === 200) {
+            const data = await res.json();
+            const matches = Array.isArray(data) ? data : data?.data ?? [];
+            const slice = matches.slice(0, 6);
+            if (scope === "edit") {
+              setEditGameEmoteArtistMatches(slice);
+              setEditGameEmoteArtistOpen(slice.length > 0);
+              setEditGameEmoteArtistIndex(0);
+            } else {
+              setGameEmoteArtistMatches(slice);
+              setGameEmoteArtistOpen(slice.length > 0);
+              setGameEmoteArtistIndex(0);
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 200),
+    []
+  );
+
+  const gameEmotes = useMemo(() => {
+    if (!game?.id) return [];
+    return emojis.filter(
+      (emoji) =>
+        emoji.scopeType === "GAME" &&
+        (emoji.scopeGameId === game.id || emoji.ownerGame?.id === game.id)
+    );
+  }, [emojis, game?.id]);
+
+  const gameEmotePrefix =
+    emotePrefixInput.trim().toLowerCase() || game?.emotePrefix || "------";
+  const cleanedGameEmoteSlug = gameEmoteSlug
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9_-]/g, "")
+    .slice(0, 44);
+  const cleanedEditingGameEmoteSlug = editingGameEmoteSlug
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9_-]/g, "")
+    .slice(0, 44);
+
   if (!isMounted) return;
 
   if (loading) {
@@ -527,6 +694,14 @@ export default function GameEditingForm({
           }
 
           const sanitizedHtml = sanitize(content);
+          const cleanedPrefix = emotePrefixInput
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+          if (cleanedPrefix && cleanedPrefix.length !== 6) {
+            addToast({ title: "Emote prefix must be exactly 6 characters." });
+            return;
+          }
           setWaitingPost(true);
 
           const submitter = (e.nativeEvent as SubmitEvent)
@@ -554,6 +729,8 @@ export default function GameEditingForm({
               composerId: s.composerId,
               id: s.id,
               slug: s.slug,
+              license: s.license || null,
+              allowDownload: s.allowDownload,
             }));
 
             for (const song of payloadSongs) {
@@ -599,7 +776,15 @@ export default function GameEditingForm({
                   Array.from(tags).map((thing) => allTags[thing].id),
                   leaderboards,
                   short,
-                  payloadSongs
+                  payloadSongs,
+                  screenshots,
+                  trailerUrl || null,
+                  toCanonicalItchEmbedUrl(itchEmbedUrl) || null,
+                  Array.from(inputMethods),
+                  estOneRun || null,
+                  estAnyPercent || null,
+                  estHundredPercent || null,
+                  cleanedPrefix || null
                 )
               : postGame(
                   title,
@@ -620,7 +805,15 @@ export default function GameEditingForm({
                   Array.from(tags).map((thing) => allTags[thing].id),
                   leaderboards,
                   short,
-                  payloadSongs
+                  payloadSongs,
+                  screenshots,
+                  trailerUrl || null,
+                  toCanonicalItchEmbedUrl(itchEmbedUrl) || null,
+                  Array.from(inputMethods),
+                  estOneRun || null,
+                  estAnyPercent || null,
+                  estHundredPercent || null,
+                  cleanedPrefix || null
                 );
 
             const response = await request;
@@ -1121,47 +1314,15 @@ export default function GameEditingForm({
                         CreateGame.Thumbnail.Description
                       </Text>
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-
-                        const formData = new FormData();
-                        formData.append("upload", file);
-
-                        try {
-                          const response = await fetch(
-                            process.env.NEXT_PUBLIC_MODE === "PROD"
-                              ? "https://d2jam.com/api/v1/image"
-                              : "http://localhost:3005/api/v1/image",
-                            {
-                              method: "POST",
-                              body: formData,
-                              headers: {
-                                authorization: `Bearer ${getCookie("token")}`,
-                              },
-                              credentials: "include",
-                            }
-                          );
-
-                          if (response.ok) {
-                            const data = await response.json();
-                            setThumbnailUrl(data.data);
-                            addToast({
-                              title: data.message,
-                            });
-                          } else {
-                            addToast({
-                              title: "Failed to upload image",
-                            });
-                          }
-                        } catch (error) {
-                          console.error(error);
-                          addToast({
-                            title: "Error uploading image",
-                          });
+                    <ImageInput
+                      value={thumbnailUrl}
+                      width={360}
+                      height={200}
+                      placeholder="Upload thumbnail"
+                      onSelect={async (file) => {
+                        const url = await uploadTo("image", file);
+                        if (url) {
+                          setThumbnailUrl(url);
                         }
                       }}
                     />
@@ -1199,47 +1360,15 @@ export default function GameEditingForm({
                         CreateGame.Banner.Description
                       </Text>
                     </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-
-                        const formData = new FormData();
-                        formData.append("upload", file);
-
-                        try {
-                          const response = await fetch(
-                            process.env.NEXT_PUBLIC_MODE === "PROD"
-                              ? "https://d2jam.com/api/v1/image"
-                              : "http://localhost:3005/api/v1/image",
-                            {
-                              method: "POST",
-                              body: formData,
-                              headers: {
-                                authorization: `Bearer ${getCookie("token")}`,
-                              },
-                              credentials: "include",
-                            }
-                          );
-
-                          if (response.ok) {
-                            const data = await response.json();
-                            setBannerUrl(data.data);
-                            addToast({
-                              title: data.message,
-                            });
-                          } else {
-                            addToast({
-                              title: "Failed to upload image",
-                            });
-                          }
-                        } catch (error) {
-                          console.error(error);
-                          addToast({
-                            title: "Error uploading image",
-                          });
+                    <ImageInput
+                      value={bannerUrl}
+                      width={734}
+                      height={120}
+                      placeholder="Upload banner"
+                      onSelect={async (file) => {
+                        const url = await uploadTo("image", file);
+                        if (url) {
+                          setBannerUrl(url);
                         }
                       }}
                     />
@@ -1269,13 +1398,480 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
 
-                <Card className="opacity-70">
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Emote Prefix</Text>
+                      <Text color="textFaded" size="xs">
+                        Choose a 6-character prefix for this game's emotes.
+                      </Text>
+                    </div>
+                    <Input
+                      value={emotePrefixInput}
+                      onValueChange={(value) =>
+                        setEmotePrefixInput(
+                          value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]/g, "")
+                            .slice(0, 6)
+                        )
+                      }
+                      name="gameEmotePrefix"
+                      placeholder="e.g. jam123"
+                      maxLength={6}
+                    />
+                  </Vstack>
+                </Card>
+
+                <Card>
+                  <Vstack align="start" className="gap-3">
+                    <div>
+                      <Text color="text">Game Emotes</Text>
+                      <Text color="textFaded" size="xs">
+                        Game emotes use the prefix{" "}
+                        <span className="font-semibold">{gameEmotePrefix}</span>
+                        .
+                      </Text>
+                    </div>
+                    <Hstack className="items-end flex-wrap">
+                      <Input
+                        label="Emote slug"
+                        labelPlacement="outside"
+                        placeholder="victory"
+                        value={gameEmoteSlug}
+                        onValueChange={setGameEmoteSlug}
+                        disabled={!game?.slug}
+                      />
+                      <div className="relative">
+                        <Input
+                          label="Artist user slug"
+                          labelPlacement="outside"
+                          placeholder="username"
+                          value={gameEmoteArtistSlug}
+                          onValueChange={(value) => {
+                            setGameEmoteArtistSlug(value);
+                            doEmoteArtistSearch(value, "create");
+                          }}
+                          onKeyDown={(event) => {
+                            if (
+                              !gameEmoteArtistOpen ||
+                              gameEmoteArtistMatches.length === 0
+                            ) {
+                              return;
+                            }
+                            if (event.key === "ArrowDown") {
+                              event.preventDefault();
+                              setGameEmoteArtistIndex((prev) =>
+                                prev + 1 >= gameEmoteArtistMatches.length
+                                  ? 0
+                                  : prev + 1
+                              );
+                            } else if (event.key === "ArrowUp") {
+                              event.preventDefault();
+                              setGameEmoteArtistIndex((prev) =>
+                                prev === 0
+                                  ? gameEmoteArtistMatches.length - 1
+                                  : prev - 1
+                              );
+                            } else if (event.key === "Enter") {
+                              event.preventDefault();
+                              const match =
+                                gameEmoteArtistMatches[gameEmoteArtistIndex];
+                              if (match) {
+                                setGameEmoteArtistSlug(match.slug);
+                                setGameEmoteArtistOpen(false);
+                              }
+                            } else if (event.key === "Escape") {
+                              setGameEmoteArtistOpen(false);
+                            }
+                          }}
+                          disabled={!game?.slug}
+                        />
+                              {gameEmoteArtistOpen &&
+                                gameEmoteArtistMatches.length > 0 && (
+                                  <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
+                                    {gameEmoteArtistMatches.map((u, index) => (
+                                <button
+                                  key={u.id}
+                                  type="button"
+                                  className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
+                                  style={{
+                                    backgroundColor:
+                                      index === gameEmoteArtistIndex
+                                        ? "rgba(59,130,246,0.3)"
+                                        : "transparent",
+                                  }}
+                                  onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    setGameEmoteArtistSlug(u.slug);
+                                    setGameEmoteArtistOpen(false);
+                                  }}
+                                >
+                                  <img
+                                    src={u.profilePicture || "/images/D2J_Icon.png"}
+                                    alt={u.name}
+                                    className="h-5 w-5 rounded-full"
+                                    loading="lazy"
+                                    decoding="async"
+                                  />
+                                  <div className="flex flex-col text-sm">
+                                    <span>{u.name}</span>
+                                    <span className="text-xs opacity-70">
+                                      @{u.slug}
+                                    </span>
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                      <Vstack align="start" gap={1}>
+                        <Text size="xs" color="textFaded">
+                          Upload image
+                        </Text>
+                        <ImageInput
+                          value={gameEmoteImage}
+                          width={80}
+                          height={80}
+                          placeholder="Upload"
+                          disabled={!game?.slug}
+                          onSelect={async (file) => {
+                            const url = await uploadTo("image", file);
+                            if (url) {
+                              setGameEmoteImage(url);
+                            }
+                          }}
+                        />
+                      </Vstack>
+                      <Vstack align="start" gap={1}>
+                        <Text size="xs" color="textFaded">
+                          Preview
+                        </Text>
+                        <Text size="sm">
+                          :{gameEmotePrefix}
+                          {cleanedGameEmoteSlug || "emote"}:
+                        </Text>
+                      </Vstack>
+                      <Button
+                        color="blue"
+                        loading={savingGameEmote}
+                        disabled={!game?.slug}
+                        onClick={async () => {
+                          if (!game?.slug) {
+                            addToast({
+                              title: "Save your game before adding emotes.",
+                            });
+                            return;
+                          }
+                          if (!cleanedGameEmoteSlug || !gameEmoteImage) {
+                            addToast({ title: "Slug and image are required" });
+                            return;
+                          }
+                          setSavingGameEmote(true);
+                          try {
+                            const response = await createGameEmoji(
+                              game.slug,
+                              cleanedGameEmoteSlug,
+                              gameEmoteImage,
+                              gameEmoteArtistSlug.trim() || null
+                            );
+                            const data = await response
+                              .json()
+                              .catch(() => null);
+                            if (!response.ok) {
+                              addToast({
+                                title: data?.message ?? "Failed to add emote",
+                              });
+                              return;
+                            }
+                            addToast({ title: "Emote added" });
+                            setGameEmoteSlug("");
+                            setGameEmoteImage(null);
+                            setGameEmoteArtistSlug("");
+                            await refreshEmojis();
+                          } catch (error) {
+                            console.error(error);
+                            addToast({ title: "Failed to add emote" });
+                          } finally {
+                            setSavingGameEmote(false);
+                          }
+                        }}
+                      >
+                        Add Emote
+                      </Button>
+                    </Hstack>
+
+                    {gameEmotes.length === 0 ? (
+                      <Text size="sm" color="textFaded">
+                        No game emotes yet.
+                      </Text>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        {gameEmotes.map((emoji) => (
+                          <div
+                            key={emoji.id}
+                            className="flex items-center gap-2 rounded-lg border border-gray-700 px-3 py-2"
+                          >
+                            <img
+                              src={emoji.image}
+                              alt={`:${emoji.slug}:`}
+                              className="h-6 w-6"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <Text size="sm">:{emoji.slug}:</Text>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setEditingGameEmoteId(emoji.id);
+                                setEditingGameEmoteSlug(
+                                  emoji.slug.replace(gameEmotePrefix, "")
+                                );
+                                setEditingGameEmoteImage(emoji.image);
+                                setEditingGameEmoteArtistSlug(
+                                  emoji.artistUser?.slug ?? ""
+                                );
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="red"
+                              variant="ghost"
+                              onClick={async () => {
+                                const response = await deleteEmoji(emoji.id);
+                                const data = await response
+                                  .json()
+                                  .catch(() => null);
+                                if (!response.ok) {
+                                  addToast({
+                                    title:
+                                      data?.message ?? "Failed to delete emote",
+                                  });
+                                  return;
+                                }
+                                addToast({
+                                  title: data?.message ?? "Emote deleted",
+                                });
+                                await refreshEmojis();
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {editingGameEmoteId && (
+                      <Card className="w-full">
+                        <Vstack align="start" className="gap-3">
+                          <Text color="text" weight="semibold">
+                            Edit Emote
+                          </Text>
+                          <Hstack className="items-end flex-wrap">
+                            <Input
+                              label="Emote slug"
+                              labelPlacement="outside"
+                              placeholder="victory"
+                              value={editingGameEmoteSlug}
+                              onValueChange={setEditingGameEmoteSlug}
+                            />
+                            <div className="relative">
+                              <Input
+                                label="Artist user slug"
+                                labelPlacement="outside"
+                                placeholder="username"
+                                value={editingGameEmoteArtistSlug}
+                                onValueChange={(value) => {
+                                  setEditingGameEmoteArtistSlug(value);
+                                  doEmoteArtistSearch(value, "edit");
+                                }}
+                                onKeyDown={(event) => {
+                                  if (
+                                    !editGameEmoteArtistOpen ||
+                                    editGameEmoteArtistMatches.length === 0
+                                  ) {
+                                    return;
+                                  }
+                                  if (event.key === "ArrowDown") {
+                                    event.preventDefault();
+                                    setEditGameEmoteArtistIndex((prev) =>
+                                      prev + 1 >= editGameEmoteArtistMatches.length
+                                        ? 0
+                                        : prev + 1
+                                    );
+                                  } else if (event.key === "ArrowUp") {
+                                    event.preventDefault();
+                                    setEditGameEmoteArtistIndex((prev) =>
+                                      prev === 0
+                                        ? editGameEmoteArtistMatches.length - 1
+                                        : prev - 1
+                                    );
+                                  } else if (event.key === "Enter") {
+                                    event.preventDefault();
+                                    const match =
+                                      editGameEmoteArtistMatches[
+                                        editGameEmoteArtistIndex
+                                      ];
+                                    if (match) {
+                                      setEditingGameEmoteArtistSlug(match.slug);
+                                      setEditGameEmoteArtistOpen(false);
+                                    }
+                                  } else if (event.key === "Escape") {
+                                    setEditGameEmoteArtistOpen(false);
+                                  }
+                                }}
+                              />
+                              {editGameEmoteArtistOpen &&
+                                editGameEmoteArtistMatches.length > 0 && (
+                                  <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
+                                    {editGameEmoteArtistMatches.map((u, index) => (
+                                      <button
+                                        key={u.id}
+                                        type="button"
+                                        className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
+                                        style={{
+                                          backgroundColor:
+                                            index === editGameEmoteArtistIndex
+                                              ? "rgba(59,130,246,0.3)"
+                                              : "transparent",
+                                        }}
+                                        onMouseDown={(event) => {
+                                          event.preventDefault();
+                                          setEditingGameEmoteArtistSlug(u.slug);
+                                          setEditGameEmoteArtistOpen(false);
+                                        }}
+                                      >
+                                        <img
+                                          src={u.profilePicture || "/images/D2J_Icon.png"}
+                                          alt={u.name}
+                                          className="h-5 w-5 rounded-full"
+                                          loading="lazy"
+                                          decoding="async"
+                                        />
+                                        <div className="flex flex-col text-sm">
+                                          <span>{u.name}</span>
+                                          <span className="text-xs opacity-70">
+                                            @{u.slug}
+                                          </span>
+                                        </div>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                            </div>
+                            <Vstack align="start" gap={1}>
+                              <Text size="xs" color="textFaded">
+                                Upload image
+                              </Text>
+                              <ImageInput
+                                value={editingGameEmoteImage}
+                                width={80}
+                                height={80}
+                                placeholder="Upload"
+                                onSelect={async (file) => {
+                                  const url = await uploadTo("image", file);
+                                  if (url) {
+                                    setEditingGameEmoteImage(url);
+                                  }
+                                }}
+                              />
+                            </Vstack>
+                            <Vstack align="start" gap={1}>
+                              <Text size="xs" color="textFaded">
+                                Preview
+                              </Text>
+                              <Text size="sm">
+                                :{gameEmotePrefix}
+                                {cleanedEditingGameEmoteSlug || "emote"}:
+                              </Text>
+                            </Vstack>
+                            <Hstack>
+                              <Button
+                                variant="ghost"
+                                onClick={() => {
+                                  setEditingGameEmoteId(null);
+                                  setEditingGameEmoteSlug("");
+                                  setEditingGameEmoteImage(null);
+                                  setEditingGameEmoteArtistSlug("");
+                                }}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                color="blue"
+                                loading={savingEditGameEmote}
+                                onClick={async () => {
+                                  if (!editingGameEmoteId) return;
+                                  if (
+                                    !cleanedEditingGameEmoteSlug ||
+                                    !editingGameEmoteImage
+                                  ) {
+                                    addToast({
+                                      title: "Slug and image are required",
+                                    });
+                                    return;
+                                  }
+                                  setSavingEditGameEmote(true);
+                                  try {
+                                    const response = await updateEmoji(
+                                      editingGameEmoteId,
+                                      {
+                                        slug: `${gameEmotePrefix}${cleanedEditingGameEmoteSlug}`,
+                                        image: editingGameEmoteImage,
+                                        artistSlug:
+                                          editingGameEmoteArtistSlug.trim() ||
+                                          null,
+                                        scopeUserId: null,
+                                        scopeGameId: game?.id ?? null,
+                                      }
+                                    );
+                                    const data = await response
+                                      .json()
+                                      .catch(() => null);
+                                    if (!response.ok) {
+                                      addToast({
+                                        title:
+                                          data?.message ??
+                                          "Failed to update emote",
+                                      });
+                                      return;
+                                    }
+                                    addToast({ title: "Emote updated" });
+                                    setEditingGameEmoteId(null);
+                                    setEditingGameEmoteSlug("");
+                                    setEditingGameEmoteImage(null);
+                                    setEditingGameEmoteArtistSlug("");
+                                    await refreshEmojis();
+                                  } catch (error) {
+                                    console.error(error);
+                                    addToast({
+                                      title: "Failed to update emote",
+                                    });
+                                  } finally {
+                                    setSavingEditGameEmote(false);
+                                  }
+                                }}
+                              >
+                                Save
+                              </Button>
+                            </Hstack>
+                          </Hstack>
+                        </Vstack>
+                      </Card>
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card>
                   <Vstack align="start">
                     <div>
                       <Text color="text">Screenshots (up to 5)</Text>
                       <Text color="textFaded" size="xs">
                         First two will be shown on hover. All will be shown on
-                        game page (coming soon)
+                        game page.
                       </Text>
                     </div>
 
@@ -1355,40 +1951,30 @@ export default function GameEditingForm({
                       </div>
                     )}
 
-                    <Hstack className="pt-2">
-                      <Button
-                        icon="upload"
-                        disabled
-                        // disabled={screenshots.length >= 5}
-                        onClick={() => {
-                          if (screenshots.length >= 5) return;
-                          const input = document.createElement("input");
-                          input.type = "file";
-                          input.accept = "image/*";
-                          input.onchange = async (ev: Event) => {
-                            const file = (ev.target as HTMLInputElement)
-                              ?.files?.[0];
-                            if (!file) return;
-                            if (screenshots.length >= 5) {
-                              addToast({
-                                title: "You can only add up to 5 screenshots.",
-                              });
-                              return;
-                            }
-                            const url = await uploadTo("image", file);
-                            if (!url) return;
-                            setScreenshots((prev) =>
-                              [...prev, url].slice(0, 5)
-                            );
-                            addToast({ title: "Screenshot added" });
-                          };
-                          input.click();
+                    <Hstack className="pt-2 items-start">
+                      <ImageInput
+                        value={null}
+                        width={420}
+                        aspectRatio="16 / 9"
+                        placeholder={
+                          screenshots.length >= 5
+                            ? "Max screenshots reached"
+                            : "Add screenshot"
+                        }
+                        disabled={screenshots.length >= 5}
+                        onSelect={async (file) => {
+                          if (screenshots.length >= 5) {
+                            addToast({
+                              title: "You can only add up to 5 screenshots.",
+                            });
+                            return;
+                          }
+                          const url = await uploadTo("image", file);
+                          if (!url) return;
+                          setScreenshots((prev) => [...prev, url].slice(0, 5));
+                          addToast({ title: "Screenshot added" });
                         }}
-                      >
-                        {screenshots.length >= 5
-                          ? "Max screenshots reached"
-                          : "Add Screenshot"}
-                      </Button>
+                      />
                       {screenshots.length > 0 && (
                         <Button
                           icon="trash"
@@ -1402,17 +1988,16 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
 
-                <Card className="opacity-70">
+                <Card>
                   <Vstack align="start">
                     <div>
                       <Text color="text">Trailer (YouTube)</Text>
                       <Text color="textFaded" size="xs">
                         Paste a YouTube URL (watch, share link, shorts, or
-                        embed) (coming soon)
+                        embed)
                       </Text>
                     </div>
                     <Input
-                      disabled
                       placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
                       value={trailerUrl}
                       onValueChange={setTrailerUrl}
@@ -1437,6 +2022,48 @@ export default function GameEditingForm({
                           title="Trailer"
                           className="w-full h-full"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                        />
+                      </div>
+                    )}
+                  </Vstack>
+                </Card>
+
+                <Card>
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Playable Embed (Itch Widget)</Text>
+                      <Text color="textFaded" size="xs">
+                        Paste your Itch widget URL here, such as
+                        {" https://itch.io/embed/123456 "}. Use the
+                        embed/widget link from Itch, not the normal
+                        game page URL. This will show below the game name and
+                        above the description as a playable embed.
+                      </Text>
+                    </div>
+                    <Input
+                      placeholder="https://itch.io/embed/123456"
+                      value={itchEmbedUrl}
+                      onValueChange={setItchEmbedUrl}
+                      onBlur={() => {
+                        if (itchEmbedUrl && !toCanonicalItchEmbedUrl(itchEmbedUrl)) {
+                          addToast({
+                            title:
+                              "That doesn't look like a valid Itch widget URL.",
+                          });
+                        }
+                      }}
+                    />
+                    {itchEmbedUrl && toCanonicalItchEmbedUrl(itchEmbedUrl) && (
+                      <div
+                        className="w-full rounded-xl overflow-hidden"
+                        style={{ aspectRatio: "16 / 9", background: "#111" }}
+                      >
+                        <iframe
+                          src={toCanonicalItchEmbedUrl(itchEmbedUrl) ?? ""}
+                          title="Playable Itch Embed"
+                          className="w-full h-full"
+                          style={{ border: 0 }}
                           allowFullScreen
                         />
                       </div>
@@ -1514,6 +2141,178 @@ export default function GameEditingForm({
                                     )
                                   }
                                 />
+                                <div className="w-full">
+                                  <Text color="text">License</Text>
+                                  <Text color="textFaded" size="xs">
+                                    Choose how others can use this track.
+                                  </Text>
+                                </div>
+                                <Vstack align="start" className="gap-2">
+                                  <Hstack className="w-full items-center gap-3">
+                                    <Switch
+                                      checked={song.licenseAttribution}
+                                      onChange={(val) =>
+                                        setSongs((prev) =>
+                                          prev.map((s) => {
+                                            if (s.id !== song.id) return s;
+                                            const nextFlags = {
+                                              attribution: val,
+                                              commercial: s.licenseCommercial,
+                                              derivatives: s.licenseDerivatives,
+                                              shareAlike: s.licenseShareAlike,
+                                            };
+                                            return {
+                                              ...s,
+                                              licenseAttribution: val,
+                                              license:
+                                                licenseFlagsToLabel(nextFlags),
+                                            };
+                                          })
+                                        )
+                                      }
+                                    />
+                                    <Vstack align="start" gap={0}>
+                                      <Text color="text" size="sm">
+                                        Require attribution
+                                      </Text>
+                                      <Text color="textFaded" size="xs">
+                                        Credit the composer when used.
+                                      </Text>
+                                    </Vstack>
+                                  </Hstack>
+                                  <Hstack className="w-full items-center gap-3">
+                                    <Switch
+                                      checked={song.licenseCommercial}
+                                      onChange={(val) =>
+                                        setSongs((prev) =>
+                                          prev.map((s) => {
+                                            if (s.id !== song.id) return s;
+                                            const nextFlags = {
+                                              attribution: s.licenseAttribution,
+                                              commercial: val,
+                                              derivatives: s.licenseDerivatives,
+                                              shareAlike: s.licenseShareAlike,
+                                            };
+                                            return {
+                                              ...s,
+                                              licenseCommercial: val,
+                                              license:
+                                                licenseFlagsToLabel(nextFlags),
+                                            };
+                                          })
+                                        )
+                                      }
+                                      disabled={!song.licenseAttribution}
+                                    />
+                                    <Vstack align="start" gap={0}>
+                                      <Text color="text" size="sm">
+                                        Allow commercial use
+                                      </Text>
+                                      <Text color="textFaded" size="xs">
+                                        Let others use it commercially.
+                                      </Text>
+                                    </Vstack>
+                                  </Hstack>
+                                  <Hstack className="w-full items-center gap-3">
+                                    <Switch
+                                      checked={song.licenseDerivatives}
+                                      onChange={(val) =>
+                                        setSongs((prev) =>
+                                          prev.map((s) => {
+                                            if (s.id !== song.id) return s;
+                                            const nextFlags = {
+                                              attribution: s.licenseAttribution,
+                                              commercial: s.licenseCommercial,
+                                              derivatives: val,
+                                              shareAlike: val
+                                                ? s.licenseShareAlike
+                                                : false,
+                                            };
+                                            return {
+                                              ...s,
+                                              licenseDerivatives: val,
+                                              licenseShareAlike: val
+                                                ? s.licenseShareAlike
+                                                : false,
+                                              license:
+                                                licenseFlagsToLabel(nextFlags),
+                                            };
+                                          })
+                                        )
+                                      }
+                                      disabled={!song.licenseAttribution}
+                                    />
+                                    <Vstack align="start" gap={0}>
+                                      <Text color="text" size="sm">
+                                        Allow derivatives
+                                      </Text>
+                                      <Text color="textFaded" size="xs">
+                                        Allow remixes or adaptations.
+                                      </Text>
+                                    </Vstack>
+                                  </Hstack>
+                                  <Hstack className="w-full items-center gap-3">
+                                    <Switch
+                                      checked={song.licenseShareAlike}
+                                      onChange={(val) =>
+                                        setSongs((prev) =>
+                                          prev.map((s) => {
+                                            if (s.id !== song.id) return s;
+                                            const nextFlags = {
+                                              attribution: s.licenseAttribution,
+                                              commercial: s.licenseCommercial,
+                                              derivatives: s.licenseDerivatives,
+                                              shareAlike: val,
+                                            };
+                                            return {
+                                              ...s,
+                                              licenseShareAlike: val,
+                                              license:
+                                                licenseFlagsToLabel(nextFlags),
+                                            };
+                                          })
+                                        )
+                                      }
+                                      disabled={
+                                        !song.licenseAttribution ||
+                                        !song.licenseDerivatives
+                                      }
+                                    />
+                                    <Vstack align="start" gap={0}>
+                                      <Text color="text" size="sm">
+                                        Share alike
+                                      </Text>
+                                      <Text color="textFaded" size="xs">
+                                        Derivatives must use the same license.
+                                      </Text>
+                                    </Vstack>
+                                  </Hstack>
+                                  <Text size="xs" color="textFaded">
+                                    License applied: {song.license}
+                                  </Text>
+                                </Vstack>
+                                <Hstack className="w-full items-center gap-3">
+                                  <Switch
+                                    checked={song.allowDownload}
+                                    onChange={(val) =>
+                                      setSongs((prev) =>
+                                        prev.map((s) =>
+                                          s.id === song.id
+                                            ? { ...s, allowDownload: val }
+                                            : s
+                                        )
+                                      )
+                                    }
+                                  />
+                                  <Vstack align="start" gap={0}>
+                                    <Text color="text" size="sm">
+                                      Allow downloads
+                                    </Text>
+                                    <Text color="textFaded" size="xs">
+                                      Let listeners download this track.
+                                    </Text>
+                                  </Vstack>
+                                </Hstack>
 
                                 <div className="w-full">
                                   <Text color="text">Composer</Text>
@@ -1608,7 +2407,7 @@ export default function GameEditingForm({
                                     <Hstack className="mt-2 items-center gap-2">
                                       <Avatar
                                         src={song.composer?.profilePicture}
-                                        size="sm"
+                                        size={24}
                                       />
                                       <Text size="sm" color="textFaded">
                                         Selected:{" "}
@@ -1721,10 +2520,15 @@ export default function GameEditingForm({
                                 id: Date.now(),
                                 url,
                                 name: baseName,
-                                artistUserId: null,
-                                artist: null,
                                 slug: sanitizeSlug(baseName),
+                                license: "CC BY",
+                                allowDownload: true,
+                                licenseAttribution: true,
+                                licenseCommercial: true,
+                                licenseDerivatives: true,
+                                licenseShareAlike: false,
                                 composerId: null,
+                                composer: null,
                               },
                             ]);
                             addToast({ title: "Song uploaded" });
@@ -1777,9 +2581,9 @@ export default function GameEditingForm({
                               {allTags[index].icon && (
                                 <Avatar
                                   className="w-6 h-6 min-w-6 min-h-6"
-                                  size="sm"
+                                  size={24}
                                   src={allTags[index].icon}
-                                  classNames={{ base: "bg-transparent" }}
+                                  style={{ backgroundColor: "transparent" }}
                                 />
                               )}
                               <p>{allTags[index].name}</p>
@@ -1842,18 +2646,16 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
 
-                <Card className="opacity-70">
+                <Card>
                   <Vstack align="start">
                     <div>
                       <Text color="text">Input Methods</Text>
                       <Text color="textFaded" size="xs">
-                        Select all input methods that players can use (coming
-                        soon)
+                        Select all input methods that players can use
                       </Text>
                     </div>
 
                     <Dropdown
-                      disabled
                       multiple
                       closeOnSelect={false}
                       placeholder="Select input methods"
@@ -1886,7 +2688,7 @@ export default function GameEditingForm({
                     subtitle="Times it would take people to complete runs / playthroughs of the game"
                     icon="trophy"
                   >
-                    <Card className="opacity-70">
+                    <Card>
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -1895,12 +2697,11 @@ export default function GameEditingForm({
                           <Text color="textFaded" size="xs">
                             If your game features multiple runs (such as a
                             roguelike), how long a user should expect an average
-                            run of the game to take (coming soon)
+                            run of the game to take
                           </Text>
                         </div>
 
                         <Dropdown
-                          disabled
                           placeholder="Select time interval"
                           selectedValue={estOneRun}
                           onSelect={(i) => {
@@ -1915,7 +2716,7 @@ export default function GameEditingForm({
                         </Dropdown>
                       </Vstack>
                     </Card>
-                    <Card className="opacity-70">
+                    <Card>
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -1924,12 +2725,11 @@ export default function GameEditingForm({
                           <Text color="textFaded" size="xs">
                             If your game can be beaten, the average amount of a
                             time a user would spend playing the game until they
-                            do that (coming soon)
+                            do that
                           </Text>
                         </div>
 
                         <Dropdown
-                          disabled
                           placeholder="Select time interval"
                           selectedValue={estAnyPercent}
                           onSelect={(i) => {
@@ -1944,7 +2744,7 @@ export default function GameEditingForm({
                         </Dropdown>
                       </Vstack>
                     </Card>
-                    <Card className="opacity-70">
+                    <Card>
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -1954,12 +2754,11 @@ export default function GameEditingForm({
                             The average time it would take for a user to achieve
                             everything in the game if it has more past just the
                             regular run (e.g. getting all achievements, getting
-                            all optional collectables, etc.) (coming soon)
+                            all optional collectables, etc.)
                           </Text>
                         </div>
 
                         <Dropdown
-                          disabled
                           placeholder="Select time interval"
                           selectedValue={estHundredPercent}
                           onSelect={(i) => {
@@ -2263,47 +3062,24 @@ export default function GameEditingForm({
                                   </Text>
                                 </div>
                                 <Hstack className="items-center gap-3">
-                                  {a.image && (
-                                    <div className="bg-[#222222] h-[80px] w-[80px] relative rounded-lg overflow-hidden">
-                                      <Image
-                                        src={a.image}
-                                        alt={`${a.name || "achievement"} icon`}
-                                        fill
-                                        className="object-cover"
-                                      />
-                                    </div>
-                                  )}
-                                  <Button
-                                    icon="upload"
-                                    onClick={async () => {
-                                      const input =
-                                        document.createElement("input");
-                                      input.type = "file";
-                                      input.accept = "image/*";
-                                      input.onchange = async (ev: Event) => {
-                                        const file = (
-                                          ev.target as HTMLInputElement
-                                        )?.files?.[0];
-                                        if (!file) return;
-                                        const url = await uploadTo(
-                                          "image",
-                                          file
-                                        );
-                                        if (!url) return;
-                                        setAchievements((prev) => {
-                                          const copy = [...prev];
-                                          copy[idx] = {
-                                            ...copy[idx],
-                                            image: url,
-                                          };
-                                          return copy;
-                                        });
-                                      };
-                                      input.click();
+                                  <ImageInput
+                                    value={a.image}
+                                    width={80}
+                                    height={80}
+                                    placeholder="Upload image"
+                                    onSelect={async (file) => {
+                                      const url = await uploadTo("image", file);
+                                      if (!url) return;
+                                      setAchievements((prev) => {
+                                        const copy = [...prev];
+                                        copy[idx] = {
+                                          ...copy[idx],
+                                          image: url,
+                                        };
+                                        return copy;
+                                      });
                                     }}
-                                  >
-                                    {a.image ? "Replace Image" : "Upload Image"}
-                                  </Button>
+                                  />
                                   {a.image && (
                                     <Button
                                       icon="trash"

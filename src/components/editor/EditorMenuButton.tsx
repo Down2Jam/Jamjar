@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/framework/Button";
+import { Button } from "bioloom-ui";
 
 type EditorMenuButtonProps = {
   onClick: () => void;

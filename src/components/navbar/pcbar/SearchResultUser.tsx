@@ -1,11 +1,11 @@
 "use client";
 
-import { Avatar } from "@/framework/Avatar";
-import { Badge } from "@/framework/Badge";
-import { Card } from "@/framework/Card";
-import Icon from "@/framework/Icon";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Avatar } from "bioloom-ui";
+import { Badge } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 
 export default function SearchResultUser({

@@ -2,8 +2,8 @@
 
 import SidebarSong from "./SidebarSong";
 import useHasMounted from "@/hooks/useHasMounted";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { useEffect, useMemo, useState } from "react";
 import { TrackType } from "@/types/TrackType";
 import { BASE_URL } from "@/requests/config";
@@ -74,6 +74,8 @@ export default function SidebarMusic() {
                 thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
                 game={track.game}
                 song={track.url}
+                license={track.license}
+                allowDownload={track.allowDownload}
               />
             ))}
           </div>

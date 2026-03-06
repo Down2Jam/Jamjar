@@ -2,10 +2,11 @@
 
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
-import { MusicProvider } from "@/providers/MusicProvider";
-import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
-import { HeroUIProvider } from "@heroui/react";
-import { ToastProvider } from "@heroui/toast";
+import { SiteThemeProvider, useTheme } from "@/providers/SiteThemeProvider";
+import { EmojiProvider } from "@/providers/EmojiProvider";
+import { BASE_URL } from "@/requests/config";
+import { MusicProvider, useMusic } from "bioloom-miniplayer";
+import { ThemeProvider, ToastProvider } from "bioloom-ui";
 import { merge } from "lodash";
 import { AbstractIntlMessages, NextIntlClientProvider } from "next-intl";
 import { useEffect, useState } from "react";
@@ -41,7 +42,7 @@ export default function Providers({
 
         const merged = merge({}, fallbackMessages, previewMessages);
         setActiveMessages(merged);
-        setActiveLocale(previewLocale);
+      setActiveLocale(previewLocale);
       } catch (e) {
         console.error("Error loading preview messages:", e);
         setActiveMessages(messages); // fallback to server-provided merged messages
@@ -53,22 +54,65 @@ export default function Providers({
   }, [previewLocale, locale, messages]);
 
   return (
-    <HeroUIProvider>
-      <ShortcutProvider>
-        <SiteThemeProvider>
-          <NextIntlClientProvider
-            locale={activeLocale}
-            messages={activeMessages}
-          >
-            <MusicProvider>
-              <ToastProvider
-                placement={isMobile ? "top-center" : "bottom-right"}
-              />
-              {children}
-            </MusicProvider>
+    <ShortcutProvider>
+      <SiteThemeProvider>
+        <BioloomThemeBridge>
+          <NextIntlClientProvider locale={activeLocale} messages={activeMessages}>
+            <EmojiProvider>
+              <MusicProvider>
+                <MusicTrackLoader />
+                <ToastProvider
+                  placement={isMobile ? "top-center" : "bottom-right"}
+                />
+                {children}
+              </MusicProvider>
+            </EmojiProvider>
           </NextIntlClientProvider>
-        </SiteThemeProvider>
-      </ShortcutProvider>
-    </HeroUIProvider>
+        </BioloomThemeBridge>
+      </SiteThemeProvider>
+    </ShortcutProvider>
   );
+}
+
+function BioloomThemeBridge({ children }: { children: React.ReactNode }) {
+  const { siteTheme } = useTheme();
+
+  return (
+    <ThemeProvider
+      theme={{
+        name: siteTheme.name,
+        type: siteTheme.type,
+        colors: siteTheme.colors,
+      }}
+    >
+      {children}
+    </ThemeProvider>
+  );
+}
+
+function MusicTrackLoader() {
+  const { setTracks } = useMusic();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadTracks = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/tracks`);
+        const json = await res.json();
+        if (!cancelled) {
+          setTracks(json.data ?? []);
+        }
+      } catch (error) {
+        console.error("Error loading tracks:", error);
+      }
+    };
+
+    loadTracks();
+    return () => {
+      cancelled = true;
+    };
+  }, [setTracks]);
+
+  return null;
 }

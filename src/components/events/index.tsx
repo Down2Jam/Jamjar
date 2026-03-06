@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Avatar, Badge } from "@heroui/react";
+import { Avatar, Badge } from "bioloom-ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EventFilter } from "@/types/EventFilter";
 import { getEvents } from "@/requests/event";
@@ -12,13 +12,13 @@ import { UserType } from "@/types/UserType";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
 import { getIcon } from "@/helpers/icon";
-import Dropdown from "@/framework/Dropdown";
-import { Button } from "@/framework/Button";
-import { IconName } from "@/framework/Icon";
-import { Card } from "@/framework/Card";
-import Text from "@/framework/Text";
-import { Spinner } from "@/framework/Spinner";
-import { Hstack } from "@/framework/Stack";
+import { Dropdown } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { IconName } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Hstack } from "bioloom-ui";
 
 export default function Events() {
   const searchParams = useSearchParams();
@@ -137,7 +137,7 @@ export default function Events() {
                   <Hstack justify="between" gap={4}>
                     <Badge
                       content={getIcon(event.icon, 16)}
-                      size="sm"
+                      size={20}
                       className="min-w-8 min-h-8"
                     >
                       <Avatar src={event.host.profilePicture} />

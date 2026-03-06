@@ -1,6 +1,6 @@
 "use client";
 
-import { Link as BaseLink } from "@heroui/react";
+import { Link as BaseLink } from "bioloom-ui";
 import { useEffect, useState } from "react";
 
 interface LinkProps {
@@ -35,6 +35,8 @@ export default function Link({
   return (
     <BaseLink
       href={href}
+      underline={false}
+      useThemeColors={false}
       className={`${
         color == "blue"
           ? "text-[#5cbdce] dark:text-[#4092b3]"

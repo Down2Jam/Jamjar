@@ -9,16 +9,16 @@ import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { getCurrentJam } from "@/helpers/jam";
 import { JamType } from "@/types/JamType";
-import { Card } from "@/framework/Card";
-import { Button } from "@/framework/Button";
-import Text from "@/framework/Text";
-import { Chip } from "@/framework/Chip";
-import Dropdown from "@/framework/Dropdown";
-import Tooltip from "@/framework/Tooltip";
-import { Hstack, Vstack } from "@/framework/Stack";
-import { Spinner } from "@/framework/Spinner";
-import Modal from "@/framework/Modal";
-import { Avatar } from "@/framework/Avatar";
+import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
+import { Dropdown } from "bioloom-ui";
+import { Tooltip } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
+import { Modal } from "bioloom-ui";
+import { Avatar } from "bioloom-ui";
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);

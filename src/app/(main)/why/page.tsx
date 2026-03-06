@@ -1,4 +1,4 @@
-import { Link } from "@/framework/Link";
+import { Link } from "bioloom-ui";
 
 export default function WhyPage() {
   return (

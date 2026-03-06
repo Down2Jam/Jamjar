@@ -1,10 +1,10 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import { Vstack, Hstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
-import Icon from "@/framework/Icon";
+import { Card } from "bioloom-ui";
+import { Vstack, Hstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
 import { NotificationType } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
 
@@ -20,6 +20,9 @@ export default function TeamInviteNotification({
   onReject,
 }: Props) {
   const invite = notification.teamInvite;
+  const teamName =
+    invite?.team?.name ||
+    (invite?.team?.owner?.name ? `${invite.team.owner.name}'s Team` : "a team");
 
   if (!invite) {
     return <></>;
@@ -34,8 +37,7 @@ export default function TeamInviteNotification({
             <Text size="lg">Team Invite</Text>
           </Hstack>
           <Text size="xs" color="textFaded">
-            You&apos;ve been invited to{" "}
-            {invite.team.name || `${invite.team.owner.name}&apos;s Team`}
+            You&apos;ve been invited to {teamName}
           </Text>
         </Vstack>
 

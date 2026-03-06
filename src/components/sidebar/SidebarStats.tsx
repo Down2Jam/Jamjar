@@ -1,11 +1,11 @@
 import { getCurrentJam } from "@/helpers/jam";
 import { GameType } from "@/types/GameType";
 import { getRatingCategories } from "@/requests/game";
-import { Card } from "@/framework/Card";
-import { Hstack, Vstack } from "@/framework/Stack";
+import { Card } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
 import Timers from "../timers";
-import Icon from "@/framework/Icon";
-import Text from "@/framework/Text";
+import { Icon } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 
 export default async function SidebarStats() {
   const jamResponse = await getCurrentJam();

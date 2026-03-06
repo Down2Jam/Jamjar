@@ -1,11 +1,11 @@
 "use client";
 
-import { NavbarBrand } from "@heroui/navbar";
+import { NavbarBrand } from "bioloom-ui";
 import NavbarTooltip from "./NavbarTooltip";
 import Hotkey from "../../hotkey";
 import Logo from "@/components/logo";
 import Link from "next/link";
-import Text from "@/framework/Text";
+import { Text } from "bioloom-ui";
 
 export default function Brand({ userLoggedIn }: { userLoggedIn: boolean }) {
   return (

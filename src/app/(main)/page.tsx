@@ -7,13 +7,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import SplashBackground from "./SplashBackground";
-import { Hstack, Stack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
-import { Button } from "@/framework/Button";
+import { Hstack, Stack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import SplashLogo from "./SplashLogo";
 import SplashDate from "./SplashDate";
 import MobileLogo from "./MobileLogo";
-import UserTicker from "@/components/user-ticker";
 
 export default async function SplashPage() {
   const cookiesStore = await cookies();
@@ -86,7 +85,6 @@ export default async function SplashPage() {
 
             <SplashLogo />
           </Hstack>
-          <UserTicker />
         </Vstack>
       </div>
     </>

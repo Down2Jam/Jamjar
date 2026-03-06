@@ -1,12 +1,12 @@
 "use client";
 
-import { addToast, Navbar, NavbarItem } from "@heroui/react";
+import { addToast } from "bioloom-ui";
 import { redirect, usePathname } from "next/navigation";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
-import { Button } from "@/framework/Button";
+import { Button, Navbar, NavbarItem } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Dropdown from "@/framework/Dropdown";
-import { Avatar } from "@/framework/Avatar";
+import { Dropdown } from "bioloom-ui";
+import { Avatar } from "bioloom-ui";
 import { getSelf } from "@/requests/user";
 import { hasCookie } from "@/helpers/cookie";
 import { useEffect, useState } from "react";
@@ -62,8 +62,8 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
       isBordered
       height={60}
     >
-      <Button href="/" icon="home"></Button>
-      <Button href="/games" icon="gamepad"></Button>
+      <Button href="/" icon="home" variant="ghost"></Button>
+      <Button href="/games" icon="gamepad" variant="ghost"></Button>
       <Dropdown
         position="top"
         trigger={
@@ -73,6 +73,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             <Button
               className="w-14 h-14 max-h-14 max-w-14 min-w-14 min-h-1 rounded-full"
               icon="menu"
+              variant="ghost"
             ></Button>
           )
         }
@@ -116,13 +117,14 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             });
           }}
           icon="search"
+          variant="ghost"
         />
       </NavbarItem>
       <NavbarItem>
         {!isLoggedIn ? (
-          <Button href="/signup" icon="login" />
+          <Button href="/signup" icon="login" variant="ghost" />
         ) : (
-          <Button href="/inbox" icon="bell" />
+          <Button href="/inbox" icon="bell" variant="ghost" />
         )}
       </NavbarItem>
     </Navbar>

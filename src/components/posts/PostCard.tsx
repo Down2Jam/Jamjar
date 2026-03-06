@@ -1,6 +1,6 @@
 "use client";
 
-import { addToast, Avatar } from "@heroui/react";
+import { addToast, Avatar } from "bioloom-ui";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
@@ -8,19 +8,20 @@ import { MoreVertical } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { TagType } from "@/types/TagType";
 import { deletePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
-import { Card } from "@/framework/Card";
-import { Button } from "@/framework/Button";
+import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import ThemedProse from "../themed-prose";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import Dropdown from "@/framework/Dropdown";
-import { Chip } from "@/framework/Chip";
-import Text from "@/framework/Text";
+import { Dropdown } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { useTranslations } from "next-intl";
-import { cleanMentionsHtml } from "../mentions/Mentions";
+import MentionedContent from "../mentions/MentionedContent";
+import PostReactions from "./PostReactions";
 
 export default function PostCard({
   post,
@@ -39,11 +40,41 @@ export default function PostCard({
 }) {
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [reactionsOpen, setReactionsOpen] = useState(false);
+  const [actionsLayerOpen, setActionsLayerOpen] = useState(false);
   const { colors } = useTheme();
   const t = useTranslations();
+  const actionsOpen = dropdownOpen || reactionsOpen;
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    if (actionsOpen) {
+      setActionsLayerOpen(true);
+      return;
+    }
+
+    closeTimerRef.current = setTimeout(() => {
+      setActionsLayerOpen(false);
+      closeTimerRef.current = null;
+    }, 220);
+
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+    };
+  }, [actionsOpen]);
 
   return (
     <Card
+      className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
       style={{
         display: hidden ? "none" : "flex",
       }}
@@ -85,12 +116,9 @@ export default function PostCard({
                   className="flex items-center gap-2"
                 >
                   <Avatar
-                    size="sm"
-                    className="w-6 h-6"
+                    size={24}
                     src={post.author.profilePicture}
-                    classNames={{
-                      base: "bg-transparent",
-                    }}
+                    style={{ backgroundColor: "transparent" }}
                   />
                   <p>{post.author.name}</p>
                 </Link>
@@ -141,12 +169,9 @@ export default function PostCard({
                 className="flex items-center gap-2"
               >
                 <Avatar
-                  size="sm"
-                  className="w-6 h-6"
+                  size={24}
                   src={post.author.profilePicture}
-                  classNames={{
-                    base: "bg-transparent",
-                  }}
+                  style={{ backgroundColor: "transparent" }}
                 />
                 <p>{post.author.name}</p>
               </Link>
@@ -160,9 +185,9 @@ export default function PostCard({
             <div className="p-2" />
 
             <ThemedProse>
-              <div
+              <MentionedContent
+                html={post.content}
                 className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                dangerouslySetInnerHTML={{ __html: cleanMentionsHtml(post.content) }}
               />
             </ThemedProse>
 
@@ -187,7 +212,7 @@ export default function PostCard({
 
             {post.tags.length > 0 && <div className="p-2" />}
 
-            <div className="flex gap-3">
+            <div className="relative z-20 flex gap-3">
               <LikeButton
                 likes={post.likes.length}
                 liked={post.hasLiked}
@@ -198,240 +223,248 @@ export default function PostCard({
                   {post.comments.length}
                 </Button>
               </Link>
-              <Dropdown
-                trigger={
-                  <Button size="sm">
-                    <MoreVertical size={16} />
-                  </Button>
-                }
-              >
-                <Dropdown.Item
-                  key="copy"
-                  icon="link"
-                  description="PostCard.Copy.Description"
-                  onClick={async () => {
-                    navigator.clipboard.writeText(
-                      `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
-                    );
-                    addToast({
-                      title: t("PostCard.Copy.Success"),
-                    });
-                  }}
+              <div className="relative z-30">
+                <Dropdown
+                  onOpenChange={setDropdownOpen}
+                  trigger={
+                    <Button size="sm">
+                      <MoreVertical size={16} />
+                    </Button>
+                  }
                 >
-                  PostCard.Copy.Title
-                </Dropdown.Item>
-                {user?.slug == post.author.slug ? (
                   <Dropdown.Item
-                    key="delete"
-                    icon="trash"
-                    description="PostCard.Delete.Description"
+                    key="copy"
+                    icon="link"
+                    description="PostCard.Copy.Description"
                     onClick={async () => {
-                      const response = await deletePost(post.id);
-
-                      if (response.ok) {
-                        addToast({
-                          title: t("PostCard.Delete.Success"),
-                        });
-                        setHidden(true);
-                      } else {
-                        addToast({
-                          title: t("PostCard.Delete.Error"),
-                        });
-                      }
+                      navigator.clipboard.writeText(
+                        `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
+                      );
+                      addToast({
+                        title: t("PostCard.Copy.Success"),
+                      });
                     }}
                   >
-                    PostCard.Delete.Title
+                    PostCard.Copy.Title
                   </Dropdown.Item>
-                ) : (
-                  <></>
-                )}
-                {user?.mod ? (
-                  <>
+                  {user?.slug == post.author.slug ? (
                     <Dropdown.Item
-                      key="remove"
-                      icon="x"
-                      description="PostCard.Remove.Description"
+                      key="delete"
+                      icon="trash"
+                      description="PostCard.Delete.Description"
                       onClick={async () => {
                         const response = await deletePost(post.id);
 
                         if (response.ok) {
                           addToast({
-                            title: t("PostCard.Remove.Success"),
+                            title: t("PostCard.Delete.Success"),
                           });
                           setHidden(true);
                         } else {
                           addToast({
-                            title: t("PostCard.Remove.Error"),
+                            title: t("PostCard.Delete.Error"),
                           });
                         }
                       }}
                     >
-                      PostCard.Remove.Title
+                      PostCard.Delete.Title
                     </Dropdown.Item>
-                    {post.sticky ? (
+                  ) : (
+                    <></>
+                  )}
+                  {user?.mod ? (
+                    <>
                       <Dropdown.Item
-                        key="unsticky"
-                        icon="staroff"
-                        description="PostCard.Unsticky.Description"
+                        key="remove"
+                        icon="x"
+                        description="PostCard.Remove.Description"
                         onClick={async () => {
-                          const response = await stickPost(post.id, false);
+                          const response = await deletePost(post.id);
 
                           if (response.ok) {
                             addToast({
-                              title: t("PostCard.Unsticky.Success"),
+                              title: t("PostCard.Remove.Success"),
                             });
-                            window.location.reload();
+                            setHidden(true);
                           } else {
                             addToast({
-                              title: t("PostCard.Unsticky.Error"),
+                              title: t("PostCard.Remove.Error"),
                             });
                           }
                         }}
                       >
-                        PostCard.Unsticky.Title
+                        PostCard.Remove.Title
                       </Dropdown.Item>
-                    ) : (
-                      <Dropdown.Item
-                        key="sticky"
-                        icon="star"
-                        description="PostCard.Sticky.Description"
-                        onClick={async () => {
-                          const response = await stickPost(post.id, true);
+                      {post.sticky ? (
+                        <Dropdown.Item
+                          key="unsticky"
+                          icon="staroff"
+                          description="PostCard.Unsticky.Description"
+                          onClick={async () => {
+                            const response = await stickPost(post.id, false);
 
-                          if (response.ok) {
-                            addToast({
-                              title: t("PostCard.Sticky.Success"),
-                            });
-                            window.location.reload();
-                          } else {
-                            addToast({
-                              title: t("PostCard.Sticky.Error"),
-                            });
-                          }
-                        }}
-                      >
-                        PostCard.Sticky.Title
-                      </Dropdown.Item>
-                    )}
-                    {user?.admin && !post.author.mod ? (
-                      <Dropdown.Item
-                        key="promote-mod"
-                        icon="shield"
-                        description="PostCard.Promote.Description"
-                        onClick={async () => {
-                          const response = await assignMod(
-                            post.author.slug,
-                            true
-                          );
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.Unsticky.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.Unsticky.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.Unsticky.Title
+                        </Dropdown.Item>
+                      ) : (
+                        <Dropdown.Item
+                          key="sticky"
+                          icon="star"
+                          description="PostCard.Sticky.Description"
+                          onClick={async () => {
+                            const response = await stickPost(post.id, true);
 
-                          if (response.ok) {
-                            addToast({
-                              title: t("PostCard.Promote.Success"),
-                            });
-                            window.location.reload();
-                          } else {
-                            addToast({
-                              title: t("PostCard.Promote.Error"),
-                            });
-                          }
-                        }}
-                      >
-                        PostCard.Promote.Title
-                      </Dropdown.Item>
-                    ) : (
-                      <></>
-                    )}
-                    {user?.admin && post.author.mod && !post.author.admin ? (
-                      <Dropdown.Item
-                        key="demote-mod"
-                        icon="shieldx"
-                        description="PostCard.Demote.Description"
-                        onClick={async () => {
-                          const response = await assignMod(
-                            post.author.slug,
-                            false
-                          );
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.Sticky.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.Sticky.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.Sticky.Title
+                        </Dropdown.Item>
+                      )}
+                      {user?.admin && !post.author.mod ? (
+                        <Dropdown.Item
+                          key="promote-mod"
+                          icon="shield"
+                          description="PostCard.Promote.Description"
+                          onClick={async () => {
+                            const response = await assignMod(
+                              post.author.slug,
+                              true
+                            );
 
-                          if (response.ok) {
-                            addToast({
-                              title: t("PostCard.Demote.Success"),
-                            });
-                            window.location.reload();
-                          } else {
-                            addToast({
-                              title: t("PostCard.Demote.Error"),
-                            });
-                          }
-                        }}
-                      >
-                        PostCard.Demote.Title
-                      </Dropdown.Item>
-                    ) : (
-                      <></>
-                    )}
-                    {user?.admin && !post.author.admin ? (
-                      <Dropdown.Item
-                        key="promote-admin"
-                        icon="shieldalert"
-                        description="PostCard.PromoteAdmin.Description"
-                        onClick={async () => {
-                          const response = await assignAdmin(
-                            post.author.slug,
-                            true
-                          );
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.Promote.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.Promote.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.Promote.Title
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      {user?.admin && post.author.mod && !post.author.admin ? (
+                        <Dropdown.Item
+                          key="demote-mod"
+                          icon="shieldx"
+                          description="PostCard.Demote.Description"
+                          onClick={async () => {
+                            const response = await assignMod(
+                              post.author.slug,
+                              false
+                            );
 
-                          if (response.ok) {
-                            addToast({
-                              title: t("PostCard.PromoteAdmin.Success"),
-                            });
-                            window.location.reload();
-                          } else {
-                            addToast({
-                              title: t("PostCard.PromoteAdmin.Error"),
-                            });
-                          }
-                        }}
-                      >
-                        PostCard.PromoteAdmin.Title
-                      </Dropdown.Item>
-                    ) : (
-                      <></>
-                    )}
-                    {user?.admin &&
-                    post.author.admin &&
-                    post.author.id !== user.id ? (
-                      <Dropdown.Item
-                        key="demote-admin"
-                        icon="shieldx"
-                        description="PostCard.DemoteAdmin.Description"
-                        onClick={async () => {
-                          const response = await assignAdmin(
-                            post.author.slug,
-                            false
-                          );
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.Demote.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.Demote.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.Demote.Title
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      {user?.admin && !post.author.admin ? (
+                        <Dropdown.Item
+                          key="promote-admin"
+                          icon="shieldalert"
+                          description="PostCard.PromoteAdmin.Description"
+                          onClick={async () => {
+                            const response = await assignAdmin(
+                              post.author.slug,
+                              true
+                            );
 
-                          if (response.ok) {
-                            addToast({
-                              title: t("PostCard.DemoteAdmin.Success"),
-                            });
-                            window.location.reload();
-                          } else {
-                            addToast({
-                              title: t("PostCard.DemoteAdmin.Error"),
-                            });
-                          }
-                        }}
-                      >
-                        PostCard.DemoteAdmin.Title
-                      </Dropdown.Item>
-                    ) : (
-                      <></>
-                    )}
-                  </>
-                ) : (
-                  <></>
-                )}
-              </Dropdown>
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.PromoteAdmin.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.PromoteAdmin.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.PromoteAdmin.Title
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                      {user?.admin &&
+                      post.author.admin &&
+                      post.author.id !== user.id ? (
+                        <Dropdown.Item
+                          key="demote-admin"
+                          icon="shieldx"
+                          description="PostCard.DemoteAdmin.Description"
+                          onClick={async () => {
+                            const response = await assignAdmin(
+                              post.author.slug,
+                              false
+                            );
+
+                            if (response.ok) {
+                              addToast({
+                                title: t("PostCard.DemoteAdmin.Success"),
+                              });
+                              window.location.reload();
+                            } else {
+                              addToast({
+                                title: t("PostCard.DemoteAdmin.Error"),
+                              });
+                            }
+                          }}
+                        >
+                          PostCard.DemoteAdmin.Title
+                        </Dropdown.Item>
+                      ) : (
+                        <></>
+                      )}
+                    </>
+                  ) : (
+                    <></>
+                  )}
+                </Dropdown>
+              </div>
+              <PostReactions
+                postId={post.id}
+                reactions={post.reactions}
+                onOverlayChange={setReactionsOpen}
+              />
             </div>
           </div>
         ))}
@@ -465,12 +498,9 @@ export default function PostCard({
               className="flex items-center gap-2"
             >
               <Avatar
-                size="sm"
-                className="w-6 h-6"
+                size={24}
                 src={post.author.profilePicture}
-                classNames={{
-                  base: "bg-transparent",
-                }}
+                style={{ backgroundColor: "transparent" }}
               />
               <p>{post.author.name}</p>
             </Link>
@@ -512,12 +542,9 @@ export default function PostCard({
               className="flex items-center gap-2"
             >
               <Avatar
-                size="sm"
-                className="w-6 h-6"
+                size={24}
                 src={post.author.profilePicture}
-                classNames={{
-                  base: "bg-transparent",
-                }}
+                style={{ backgroundColor: "transparent" }}
               />
               <p>{post.author.name}</p>
             </Link>

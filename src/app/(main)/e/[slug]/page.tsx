@@ -1,10 +1,9 @@
 "use client";
 
-import { Button } from "@/framework/Button";
-import { Spinner } from "@/framework/Spinner";
+import { Button } from "bioloom-ui";
+import { Spinner } from "bioloom-ui";
 import { getEvent } from "@/requests/event";
 import { EventType } from "@/types/EventType";
-import { Image } from "@heroui/react";
 import { BadgePlus, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -30,11 +29,9 @@ export default function EventPage() {
     <>
       {event?.icon && (
         <div className="flex w-full justify-center items-center pt-4">
-          <Image
-            isBlurred
-            isZoomed
+          <img
             alt="Event image"
-            className="aspect-square w-full hover:scale-110"
+            className="aspect-square w-full object-cover transition-transform duration-300 hover:scale-110"
             height={300}
             src={event?.icon}
           />

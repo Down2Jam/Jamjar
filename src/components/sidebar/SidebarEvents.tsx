@@ -1,16 +1,16 @@
 "use client";
 
-import { Avatar, Badge } from "@heroui/react";
+import { Avatar, Badge } from "bioloom-ui";
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
 import Timer from "../timers/Timer";
 import Link from "next/link";
 import { getIcon } from "@/helpers/icon";
-import Text from "@/framework/Text";
-import { Card } from "@/framework/Card";
-import { Hstack } from "@/framework/Stack";
-import { Button } from "@/framework/Button";
+import { Text } from "bioloom-ui";
+import { Card } from "bioloom-ui";
+import { Hstack } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 
 export default function SidebarEvents() {
   const [events, setEvents] = useState<EventType[]>([]);
@@ -66,7 +66,7 @@ export default function SidebarEvents() {
                     <Hstack justify="center" gap={4}>
                       <Badge
                         content={getIcon(event.icon, 16)}
-                        size="sm"
+                        size={20}
                         className="min-w-8 min-h-8"
                       >
                         <Avatar src={event.host.profilePicture} />
@@ -105,7 +105,7 @@ export default function SidebarEvents() {
                     <Hstack justify="center" gap={4}>
                       <Badge
                         content={getIcon(event.icon, 16)}
-                        size="sm"
+                        size={20}
                         className="min-w-8 min-h-8"
                       >
                         <Avatar src={event.host.profilePicture} />

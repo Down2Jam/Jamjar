@@ -1,9 +1,9 @@
 "use client";
 
-import { Card } from "@/framework/Card";
-import Icon from "@/framework/Icon";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Card } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { handleApplication, handleInvite } from "@/helpers/team";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";

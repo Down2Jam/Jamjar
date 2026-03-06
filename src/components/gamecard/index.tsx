@@ -1,6 +1,6 @@
-import { Card } from "@/framework/Card";
-import { Hstack, Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Card } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { GameType } from "@/types/GameType";
 import { SiHtml5, SiLinux } from "@icons-pack/react-simple-icons";

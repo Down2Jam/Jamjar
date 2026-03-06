@@ -1,13 +1,13 @@
 "use client";
 
-import { Avatar } from "@heroui/react";
+import { Avatar } from "bioloom-ui";
 import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
 import { Megaphone, NotebookText } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { Card } from "@/framework/Card";
-import Text from "@/framework/Text";
+import { Card } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 
 export default function StickyPostCard({ post }: { post: PostType }) {
   const { colors } = useTheme();
@@ -46,12 +46,9 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               className="flex items-center gap-2"
             >
               <Avatar
-                size="sm"
-                className="w-6 h-6"
+                size={24}
                 src={post.author.profilePicture}
-                classNames={{
-                  base: "bg-transparent",
-                }}
+                style={{ backgroundColor: "transparent" }}
               />
               <p>{post.author.name}</p>
             </Link>

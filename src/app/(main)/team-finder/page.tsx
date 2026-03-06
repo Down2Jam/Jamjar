@@ -1,6 +1,6 @@
 import TeamFinder from "@/components/team-finder";
-import { Vstack } from "@/framework/Stack";
-import Text from "@/framework/Text";
+import { Vstack } from "bioloom-ui";
+import { Text } from "bioloom-ui";
 import { Suspense } from "react";
 
 export default function GamesPage() {

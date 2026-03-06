@@ -30,7 +30,35 @@ export default function ThemedProse({
   } as React.CSSProperties;
 
   return (
-    <article className={`prose max-w-none ${className}`} style={proseVars}>
+    <article
+      className={`prose max-w-none
+        [&_a]:underline
+        [&_a]:underline-offset-2
+        [&_a:hover]:opacity-80
+        [&_blockquote]:my-4
+        [&_blockquote]:border-l-4
+        [&_blockquote]:pl-4
+        [&_blockquote]:italic
+        [&_ul]:my-4
+        [&_ul]:list-disc
+        [&_ul]:pl-6
+        [&_ol]:my-4
+        [&_ol]:list-decimal
+        [&_ol]:pl-6
+        [&_li]:my-1
+        [&_pre]:my-4
+        [&_pre]:overflow-x-auto
+        [&_pre]:rounded-xl
+        [&_pre]:border
+        [&_pre]:p-4
+        [&_code]:rounded
+        [&_code]:px-1.5
+        [&_code]:py-0.5
+        [&_pre_code]:bg-transparent
+        [&_pre_code]:p-0
+        ${className}`}
+      style={proseVars}
+    >
       {children}
     </article>
   );

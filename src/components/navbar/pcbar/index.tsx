@@ -6,30 +6,13 @@
  * @created 2025-7-22
  */
 "use client";
-import { Navbar as NavbarBase, NavbarContent } from "@heroui/navbar";
+import { Navbar, NavbarContent } from "bioloom-ui";
 import SearchBar from "./SearchBar";
 import Brand from "./Brand";
-import { Divider } from "@heroui/divider";
+import { Divider } from "bioloom-ui";
 import NavbarButton from "./NavbarButton";
-import {
-  Bell,
-  CalendarPlus,
-  Dice3,
-  Gamepad,
-  Gamepad2,
-  Info,
-  LogIn,
-  MessageCircle,
-  Music,
-  Sparkles,
-  SquarePen,
-  Swords,
-  Trophy,
-  Users,
-  Vote,
-} from "lucide-react";
 import { useJam } from "@/hooks/useJam";
-import { addToast } from "@heroui/react";
+import { addToast } from "bioloom-ui";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
 import NavbarUser from "./NavbarUser";
 import { UserType } from "@/types/UserType";
@@ -45,8 +28,8 @@ import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { LanguageInfo } from "@/types/LanguageInfoType";
-import { Button } from "@/framework/Button";
-import { Badge } from "@/framework/Badge";
+import { Button } from "bioloom-ui";
+import { Badge } from "bioloom-ui";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -106,9 +89,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   }, [pathname, jam]);
 
   return (
-    <NavbarBase
+    <Navbar
       maxWidth="2xl"
-      className="p-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="px-1 py-6 duration-500 ease-in-out transition-color shadow-2xl"
       style={{
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
@@ -119,7 +102,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         backgroundColor: siteTheme.colors["crust"],
       }}
       isBordered
-      height={40}
+      height={48}
     >
       {/* Navbar Left */}
       <NavbarContent justify="start">
@@ -140,7 +123,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 color="green"
               /> */}
               <NavbarButton
-                icon={<Dice3 size={16} />}
+                icon="dice3"
                 href="/lucky"
                 name="Navbar.Lucky.Title"
                 description="Navbar.Lucky.Description"
@@ -158,7 +141,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 color="yellow"
               /> */}
               <NavbarButton
-                icon={<Music size={16} />}
+                icon="music"
                 href="/music"
                 name="Navbar.Music.Title"
                 description="Navbar.Music.Description"
@@ -175,7 +158,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
       <NavbarContent justify="end" className="gap-2">
         {isLgUp && (
           <NavbarButton
-            icon={<Info size={16} />}
+            icon="info"
             href="/about"
             name="Navbar.About.Title"
             description="Navbar.About.Description"
@@ -184,7 +167,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           />
         )}
         <NavbarButton
-          icon={<Gamepad size={16} />}
+          icon="gamepad"
           href="/games"
           name="Navbar.Games.Title"
           description="Navbar.Games.Description"
@@ -193,7 +176,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         />
         {jamPhase == "Upcoming Jam" && isLgUp && (
           <NavbarButton
-            icon={<Trophy size={16} />}
+            icon="trophy"
             href="/results"
             name="Navbar.Results.Title"
             description="Navbar.Results.Description"
@@ -203,7 +186,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {jamPhase == "Suggestion" && isLgUp && (
           <NavbarButton
-            icon={<Sparkles size={16} />}
+            icon="sparkles"
             href="/theme-suggestions"
             name="Navbar.ThemeSuggestions.Title"
             description="Navbar.ThemeSuggestions.Description"
@@ -213,7 +196,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {jamPhase == "Elimination" && isLgUp && (
           <NavbarButton
-            icon={<Swords size={16} />}
+            icon="swords"
             href="/theme-elimination"
             name="Navbar.ThemeElimination.Title"
             description="Navbar.ThemeElimination.Description"
@@ -223,7 +206,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {jamPhase == "Voting" && isLgUp && (
           <NavbarButton
-            icon={<Vote size={16} />}
+            icon="vote"
             href="/theme-voting"
             name="Navbar.ThemeVoting.Title"
             description="Navbar.ThemeVoting.Description"
@@ -239,7 +222,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             jamPhase == "Submission" ||
             jamPhase == "Rating") && (
             <NavbarButton
-              icon={<Gamepad2 size={16} />}
+              icon="gamepad2"
               name={hasGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
               href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
               description={
@@ -254,7 +237,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         {/* Logged out */}
         {!user && isLgUp && (
           <NavbarButton
-            icon={<MessageCircle size={16} />}
+            icon="messagecircle"
             href="/home"
             name="Navbar.Forum.Title"
             description="Navbar.Forum.Description"
@@ -266,7 +249,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           isMdUp &&
           (hasCookie("hasLoggedIn") ? (
             <NavbarButton
-              icon={<LogIn size={16} />}
+              icon="login"
               href="/login"
               name="Navbar.Login.Title"
               description="Navbar.Login.Description"
@@ -275,7 +258,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             />
           ) : (
             <NavbarButton
-              icon={<LogIn size={16} />}
+              icon="login"
               href="/signup"
               name="Navbar.Join.Title"
               description="Navbar.Join.Description"
@@ -286,7 +269,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         {/* Logged in */}
         {user && isLgUp && (
           <NavbarButton
-            icon={<SquarePen size={16} />}
+            icon="squarepen"
             href="/create-post"
             name="Navbar.CreatePost.Title"
             description="Navbar.CreatePost.Description"
@@ -296,7 +279,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {user && isMdUp && jam && isInJam && (
           <NavbarButton
-            icon={<Users size={16} />}
+            icon="users"
             href={
               user.teams.filter((team) => team.jamId == jam.id).length > 0
                 ? "/team"
@@ -318,7 +301,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {user && isMdUp && jam && !isInJam && (
           <NavbarButton
-            icon={<CalendarPlus size={16} />}
+            icon="calendarplus"
             onPress={async () => {
               const currentJamResponse = await getCurrentJam();
               const currentJam = currentJamResponse?.jam;
@@ -359,21 +342,25 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 icon="sidiscord"
                 href="https://discord.d2jam.com"
                 target="_blank"
+                variant="ghost"
               />
               <Button
                 icon="sibluesky"
                 href="https://bluesky.d2jam.com"
                 target="_blank"
+                variant="ghost"
               />
               <Button
                 icon="siyoutube"
                 href="https://youtube.d2jam.com"
                 target="_blank"
+                variant="ghost"
               />
               <Button
                 icon="siinstagram"
                 href="https://instagram.d2jam.com"
                 target="_blank"
+                variant="ghost"
               />
             </div>
           </>
@@ -388,7 +375,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                   content={user.receivedNotifications.length}
                 >
                   <NavbarButton
-                    icon={<Bell size={16} />}
+                    icon="bell"
                     href="/inbox"
                     name="Navbar.Inbox.Title"
                     description="Navbar.Inbox.Description"
@@ -399,7 +386,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 </Badge>
               ) : (
                 <NavbarButton
-                  icon={<Bell size={16} />}
+                  icon="bell"
                   href="/inbox"
                   name="Navbar.Inbox.Title"
                   description="Navbar.Inbox.Description"
@@ -412,6 +399,6 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           </>
         )}
       </NavbarContent>
-    </NavbarBase>
+    </Navbar>
   );
 }
