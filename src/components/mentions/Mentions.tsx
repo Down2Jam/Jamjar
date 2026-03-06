@@ -35,6 +35,8 @@ function getMentionType(text: string): MentionType | null {
   const letter = extractLetter(text);
   if (letter === "u") {
     return MentionType.User;
+  } else if (letter === "g") {
+    return MentionType.Game;
   }
   if (letter === "g") {
     return MentionType.Game;
@@ -143,8 +145,7 @@ const Mentions = Extension.create({
                   }
 
                   const mention = `${symbol}${slug}`;
-                  const start =
-                    pos + match.index + prefix.length;
+                  const start = pos + match.index + prefix.length;
                   const end = start + mention.length;
                   const href = `${window.location.origin}/${type === MentionType.User ? "u" : "g"}/${slug}`;
 

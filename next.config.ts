@@ -12,25 +12,31 @@ const withNextIntl = createNextIntlPlugin();
 const plugins = [withAnalyzer, withNextIntl];
 
 // -- Remote Image Patterns --
-// Allow images from any https site
-const remotePatterns: RemotePattern[] = [
-  {
-    protocol: "https",
-    hostname: "**",
-  },
-];
+// Do not allow arbitrary remote hosts in production.
+const imageHostAllowlist = (
+  process.env.NEXT_IMAGE_ALLOWED_HOSTS ??
+  "d2jam.com,www.d2jam.com,static-cdn.jtvnw.net"
+)
+  .split(",")
+  .map((host) => host.trim().toLowerCase())
+  .filter(Boolean);
+
+const remotePatterns: RemotePattern[] = imageHostAllowlist.map((hostname) => ({
+  protocol: "https",
+  hostname,
+}));
 
 // Allow images from the local machine (covers dev/staging configs)
-remotePatterns.push(
-  {
+if (process.env.NEXT_PUBLIC_MODE === "DEV") {
+  remotePatterns.push({
     protocol: "http",
     hostname: "localhost",
-  },
-  {
+  });
+  remotePatterns.push({
     protocol: "http",
     hostname: "127.0.0.1",
-  }
-);
+  });
+}
 
 // -- Base config --
 const nextConfig: NextConfig = {

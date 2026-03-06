@@ -3,6 +3,14 @@ services:
   nextjs-app:
     build:
       context: .
+    user: "node"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "127.0.0.1:3004:3000"
     environment:

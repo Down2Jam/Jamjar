@@ -101,9 +101,7 @@ const replaceTextMentions = (
     }
 
     if (lastIndex < raw.length) {
-      fragment.appendChild(
-        documentNode.createTextNode(raw.slice(lastIndex)),
-      );
+      fragment.appendChild(documentNode.createTextNode(raw.slice(lastIndex)));
     }
 
     textNode.replaceWith(fragment);
@@ -114,7 +112,10 @@ const cleanMentionHtml = (html: string, type: "user" | "game") => {
   if (typeof DOMParser === "undefined") return html;
 
   const parser = new DOMParser();
-  const documentNode = parser.parseFromString(`<body>${html}</body>`, "text/html");
+  const documentNode = parser.parseFromString(
+    `<body>${html}</body>`,
+    "text/html",
+  );
   const root = documentNode.body;
   const anchorRegex = type === "user" ? getUserLinkRegex() : getGameLinkRegex();
 
