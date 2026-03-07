@@ -490,10 +490,10 @@ const styleStringToObject = (value: string): CSSProperties =>
     if (!key || !val) return acc;
     const camelKey = key.replace(/-([a-z])/g, (_match, char: string) =>
       char.toUpperCase(),
-    ) as keyof CSSProperties;
+    );
     acc[camelKey] = val;
     return acc;
-  }, {} as CSSProperties);
+  }, {} as Record<string, string>) as CSSProperties;
 
 const htmlAttributeToReactProp = (
   name: string,

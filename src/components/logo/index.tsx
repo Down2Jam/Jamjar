@@ -8,7 +8,7 @@ export default function Logo({
   className = null,
   width = 256,
 }: {
-  ref?: RefObject<SVGSVGElement> | null;
+  ref?: RefObject<SVGSVGElement | null> | null;
   className?: string | null;
   width?: number;
 }) {

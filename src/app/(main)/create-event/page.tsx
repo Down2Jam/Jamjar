@@ -111,7 +111,7 @@ export default function CreatePostPage() {
 
   const toLocalInputValue = (value?: ZonedDateTime) => {
     if (!value) return "";
-    const date = value.toDate(getLocalTimeZone());
+    const date = value.toDate();
     const pad = (num: number) => String(num).padStart(2, "0");
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
       date.getDate()

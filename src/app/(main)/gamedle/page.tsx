@@ -207,7 +207,7 @@ function getOverallRating(
   }
 
   const values = game.ratings
-    .filter((rating) => rating.categoryId === overallCategory.id)
+    .filter((rating) => rating.category?.id === overallCategory.id)
     .map((rating) => rating.value);
 
   if (values.length === 0) {

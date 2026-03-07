@@ -594,9 +594,7 @@ export default function Editor({
       Link,
       Mentions,
       emojiExtension,
-      ImageResize.configure({
-        allowBase64: false,
-      }).extend({
+      ImageResize.extend({
         addAttributes() {
           return {
             ...this.parent?.(),
@@ -729,7 +727,10 @@ export default function Editor({
           editor
             ?.chain()
             .focus()
-            .setImage({ src: json.data })
+            .insertContent({
+              type: "image",
+              attrs: { src: json.data },
+            })
             .run();
           return true;
         };

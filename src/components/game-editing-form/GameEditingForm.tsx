@@ -105,6 +105,13 @@ const INPUT_METHOD_OPTIONS: {
   { value: "Other", label: "Other", icon: "morehorizontal" },
 ];
 
+const INPUT_METHOD_VALUES = new Set<InputMethodType>(
+  INPUT_METHOD_OPTIONS.map((option) => option.value)
+);
+
+const isInputMethodType = (value: string): value is InputMethodType =>
+  INPUT_METHOD_VALUES.has(value as InputMethodType);
+
 const TIME_OPTIONS = [
   "Under 5 mins",
   "5–10 mins",
@@ -342,7 +349,9 @@ export default function GameEditingForm({
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
     setEmotePrefixInput(game?.emotePrefix ?? "");
-    setInputMethods(new Set(game?.inputMethods ?? []));
+    setInputMethods(
+      new Set((game?.inputMethods ?? []).filter(isInputMethodType))
+    );
     setEstOneRun(game?.estOneRun ?? "");
     setEstAnyPercent(game?.estAnyPercent ?? "");
     setEstHundredPercent(game?.estHundredPercent ?? "");

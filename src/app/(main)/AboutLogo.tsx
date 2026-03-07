@@ -6,7 +6,7 @@ import Logo from "@/components/logo";
 
 export default function AboutLogo() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<SVGSVGElement>(null);
+  const imageRef = useRef<SVGSVGElement | null>(null);
   const reducedMotion = usePrefersReducedMotion();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

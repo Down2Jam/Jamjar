@@ -274,7 +274,8 @@ function OverlayModal({
   );
 }
 
-export interface ModalContentProps extends HTMLAttributes<HTMLDivElement> {
+export interface ModalContentProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   children: ReactNode | ((onClose: () => void) => ReactNode);
 }
 

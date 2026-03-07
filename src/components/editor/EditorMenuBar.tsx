@@ -119,7 +119,14 @@ export default function EditorMenuBar({
           addToast({
             title: data.message,
           });
-          editor?.commands.setImage({ src: data.data });
+          editor
+            ?.chain()
+            .focus()
+            .insertContent({
+              type: "image",
+              attrs: { src: data.data },
+            })
+            .run();
         });
       } else {
         addToast({

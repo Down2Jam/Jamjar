@@ -26,34 +26,25 @@ const Editor = dynamic(() => import("@/components/editor"), {
 });
 const Select = dynamic(() => import("react-select"), {
   ssr: false,
-});
+}) as typeof import("react-select").default;
+
+type TagOption = {
+  value: string;
+  label: ReactNode;
+  id?: number;
+  isFixed: boolean;
+};
 
 export default function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<MultiValue<{
-    value: string;
-    label: ReactNode;
-    isFixed: boolean;
-  }> | null>(null);
+  const [selectedTags, setSelectedTags] = useState<MultiValue<TagOption> | null>(
+    null
+  );
   const [mounted, setMounted] = useState<boolean>(false);
-  const [options, setOptions] = useState<
-    {
-      value: string;
-      label: ReactNode;
-      id: number;
-      isFixed: boolean;
-    }[]
-  >();
-  const [fixedOptions, setFixedOptions] = useState<
-    {
-      value: string;
-      label: ReactNode;
-      id: number;
-      isFixed: boolean;
-    }[]
-  >();
+  const [options, setOptions] = useState<TagOption[]>();
+  const [fixedOptions, setFixedOptions] = useState<TagOption[]>();
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
 
@@ -67,12 +58,7 @@ export default function CreatePostPage() {
         setUser(localuser);
 
         if (tagResponse.ok) {
-          const newoptions: {
-            value: string;
-            label: ReactNode;
-            id: number;
-            isFixed: boolean;
-          }[] = [];
+          const newoptions: TagOption[] = [];
 
           for (const tag of (await tagResponse.json()).data) {
             if (tag.modOnly && !localuser.mod) {
@@ -104,11 +90,7 @@ export default function CreatePostPage() {
   }, []);
 
   const styles: StylesConfig<
-    {
-      value: string;
-      label: ReactNode;
-      isFixed: boolean;
-    },
+    TagOption,
     true
   > = {
     multiValue: (base, state) => {
@@ -291,7 +273,7 @@ export default function CreatePostPage() {
               </Text>
             </div>
             {mounted && (
-              <Select
+              <Select<TagOption, true>
                 styles={styles}
                 isMulti
                 value={selectedTags}

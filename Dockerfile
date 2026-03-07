@@ -3,6 +3,8 @@ FROM node:24.14.0-alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY packages/bioloom-ui/package.json packages/bioloom-ui/package.json
+COPY packages/bioloom-miniplayer/package.json packages/bioloom-miniplayer/package.json
 RUN npm ci
 
 COPY . .

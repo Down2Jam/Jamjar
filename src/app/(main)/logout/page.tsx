@@ -1,7 +1,7 @@
 "use client";
 
 import { redirect } from "next/navigation";
-import { React, useEffect } from "react";
+import { useEffect } from "react";
 import { logout as logoutUser } from "@/requests/auth";
 import { addToast } from "bioloom-ui";
 

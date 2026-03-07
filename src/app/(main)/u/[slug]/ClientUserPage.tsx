@@ -46,6 +46,17 @@ type RarityTier =
   | "Bronze"
   | "Default";
 
+type ProfileSection =
+  | "bio"
+  | "games"
+  | "music"
+  | "posts"
+  | "comments"
+  | "recommendations"
+  | "achievements"
+  | "scores"
+  | "emotes";
+
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
   loading: () => <div className="min-h-[160px]" />,
@@ -284,15 +295,7 @@ export default function ClientUserPage({
   const [recType, setRecType] = useState<"games" | "posts" | "tracks">("games");
   const [recSelected, setRecSelected] = useState<number[]>([]);
   const [profileSection, setProfileSection] = useState<
-    | "bio"
-    | "games"
-    | "music"
-    | "posts"
-    | "comments"
-    | "recommendations"
-    | "achievements"
-    | "scores"
-    | "emotes"
+    ProfileSection
   >("bio");
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
@@ -786,7 +789,7 @@ export default function ClientUserPage({
               }}
             >
               <Avatar
-                src={avatarSrc}
+                src={avatarSrc ?? undefined}
                 className="rounded-full bg-transparent"
                 size={96}
                 style={
@@ -959,25 +962,37 @@ export default function ClientUserPage({
               <Hstack className="ml-auto flex-wrap items-center justify-end gap-2">
                 {[
                   {
-                    key: "games",
+                    key: "games" as ProfileSection,
                     label: "Games",
                     count: publishedGames.length,
                   },
-                  { key: "music", label: "Music", count: user.tracks.length },
-                  { key: "posts", label: "Posts", count: postsCount },
                   {
-                    key: "comments",
+                    key: "music" as ProfileSection,
+                    label: "Music",
+                    count: user.tracks.length,
+                  },
+                  {
+                    key: "posts" as ProfileSection,
+                    label: "Posts",
+                    count: postsCount,
+                  },
+                  {
+                    key: "comments" as ProfileSection,
                     label: "Comments",
                     count: commentsCount,
                   },
                   {
-                    key: "achievements",
+                    key: "achievements" as ProfileSection,
                     label: "Achievements",
                     count: achievementsCount,
                   },
-                  { key: "scores", label: "Scores", count: scoresCount },
                   {
-                    key: "emotes",
+                    key: "scores" as ProfileSection,
+                    label: "Scores",
+                    count: scoresCount,
+                  },
+                  {
+                    key: "emotes" as ProfileSection,
                     label: "Emotes",
                     count: user.userEmotes?.length,
                   },
