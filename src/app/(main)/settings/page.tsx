@@ -22,6 +22,28 @@ import { Textarea } from "bioloom-ui";
 import { useEmojis } from "@/providers/EmojiProvider";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 
+const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+function buildDefaultEmotePrefix(source?: string | null) {
+  const normalized = String(source ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+  let prefix = normalized.slice(0, 6);
+  let seed = 0;
+  const seedSource = normalized || "jamjar";
+  for (let i = 0; i < seedSource.length; i++) {
+    seed = (seed * 31 + seedSource.charCodeAt(i)) >>> 0;
+  }
+  while (prefix.length < 6) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    prefix += PREFIX_CHARS[seed % PREFIX_CHARS.length];
+  }
+
+  return prefix;
+}
+
 export default function UserPage() {
   const [user, setUser] = useState<UserType>();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
@@ -162,8 +184,12 @@ export default function UserPage() {
       (emoji.scopeUserId === user.id || emoji.ownerUser?.id === user.id),
   );
 
+  const cleanedPrefixInput = emotePrefixInput
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
   const emotePrefix =
-    emotePrefixInput.trim().toLowerCase() || user.emotePrefix || "------";
+    cleanedPrefixInput || user.emotePrefix || buildDefaultEmotePrefix(name);
   const cleanedEmoteSlug = emoteSlug
     .trim()
     .toLowerCase()
@@ -289,11 +315,6 @@ export default function UserPage() {
         onSubmit={async (e) => {
           e.preventDefault();
 
-          const cleanedPrefix = emotePrefixInput
-            .trim()
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "");
-
           if (!name) {
             addToast({
               title: "You need to enter a name",
@@ -301,7 +322,7 @@ export default function UserPage() {
             return;
           }
 
-          if (cleanedPrefix && cleanedPrefix.length !== 6) {
+          if (cleanedPrefixInput && cleanedPrefixInput.length !== 6) {
             addToast({ title: "Emote prefix must be exactly 6 characters." });
             return;
           }
@@ -317,7 +338,7 @@ export default function UserPage() {
             bannerPicture,
             Array.from(primaryRoles),
             Array.from(secondaryRoles),
-            cleanedPrefix || null,
+            cleanedPrefixInput || buildDefaultEmotePrefix(name),
             undefined,
             undefined,
             undefined,
