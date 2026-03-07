@@ -308,7 +308,7 @@ export default function PostPage() {
                               }
                               setPost((prev) =>
                                 prev
-                                  ? { ...prev, deletedAt: new Date().toISOString() }
+                                  ? { ...prev, deletedAt: new Date() }
                                   : prev,
                               );
                             } else {
@@ -342,7 +342,7 @@ export default function PostPage() {
                                 }
                                 setPost((prev) =>
                                   prev
-                                    ? { ...prev, removedAt: new Date().toISOString() }
+                                    ? { ...prev, removedAt: new Date() }
                                     : prev,
                                 );
                               } else {
