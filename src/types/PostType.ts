@@ -11,6 +11,9 @@ export interface PostType {
   content: string;
   author: UserType;
   createdAt: Date;
+  editedAt?: Date | null;
+  deletedAt?: Date | null;
+  removedAt?: Date | null;
   comments: CommentType[];
   tags: TagType[];
   likes: [];

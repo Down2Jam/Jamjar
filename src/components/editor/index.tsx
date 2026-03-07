@@ -728,7 +728,7 @@ export default function Editor({
             ?.chain()
             .focus()
             .insertContent({
-              type: "image",
+              type: "imageResize",
               attrs: { src: json.data },
             })
             .run();
@@ -848,7 +848,7 @@ export default function Editor({
                   ?.chain()
                   .focus()
                   .insertContentAt(coordinates.pos, {
-                    type: "image",
+                    type: "imageResize",
                     attrs: { src: data.data },
                   })
                   .run();

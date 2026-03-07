@@ -7,6 +7,7 @@ import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { NotificationType as AppNotification } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
+import Link from "next/link";
 
 type Props = {
   notification: AppNotification;
@@ -23,7 +24,7 @@ export default function GeneralNotification({
         <Vstack align="start" gap={0}>
           <Hstack>
             <Icon name="bell" color="text" size={16} />
-            <Text size="lg">Notification</Text>
+            <Text size="lg">{notification.title || "Notification"}</Text>
           </Hstack>
         </Vstack>
 
@@ -34,6 +35,13 @@ export default function GeneralNotification({
         )}
 
         <Hstack className="py-2">
+          {notification.link && (
+            <Link href={notification.link}>
+              <Button color="default" icon="arrowright">
+                View
+              </Button>
+            </Link>
+          )}
           <Button
             color="blue"
             icon="check"

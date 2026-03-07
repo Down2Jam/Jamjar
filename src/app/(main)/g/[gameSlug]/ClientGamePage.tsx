@@ -117,6 +117,15 @@ function toCanonicalItchEmbedUrl(url?: string | null) {
   }
 }
 
+const YT_ID_REGEX =
+  /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
+
+function extractYouTubeId(url?: string | null): string | null {
+  if (!url) return null;
+  const match = url.match(YT_ID_REGEX);
+  return match ? match[1] : null;
+}
+
 function getPlacementGradient(
   placement: number,
   colors: Record<string, string>
@@ -364,6 +373,9 @@ export default function ClientGamePage({
   }
 
   const itchEmbedUrl = toCanonicalItchEmbedUrl(game.itchEmbedUrl);
+  const trailerId = extractYouTubeId(game.trailerUrl);
+  const screenshots = (game.screenshots ?? []).filter(Boolean);
+  const hasMedia = Boolean(trailerId || screenshots.length > 0);
 
   return (
     <>
@@ -470,7 +482,7 @@ export default function ClientGamePage({
             </Hstack>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
-            <Card>
+            <Card className="order-40">
               <Vstack align="stretch">
                 <Hstack>
                   {isEditable && (
@@ -571,6 +583,62 @@ export default function ClientGamePage({
                 )}
               </Vstack>
             </Card>
+            {hasMedia && (
+              <Card className="order-20">
+                <Vstack align="stretch" gap={3}>
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    MEDIA
+                  </p>
+                  {trailerId && (
+                    <div
+                      className="w-full overflow-hidden rounded-xl"
+                      style={{
+                        aspectRatio: "16 / 9",
+                        backgroundColor: colors["base"],
+                        border: `1px solid ${colors["crust"]}`,
+                      }}
+                    >
+                      <iframe
+                        src={`https://www.youtube-nocookie.com/embed/${trailerId}`}
+                        title={`${game.name} trailer`}
+                        className="h-full w-full"
+                        style={{ border: 0 }}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {screenshots.length > 0 && (
+                    <div className="grid grid-cols-1 gap-3">
+                      {screenshots.map((screenshot, index) => (
+                        <Link
+                          key={`${screenshot}-${index}`}
+                          href={screenshot}
+                          target="_blank"
+                        >
+                          <img
+                            src={screenshot}
+                            alt={`${game.name} screenshot ${index + 1}`}
+                            className="w-full rounded-xl object-cover"
+                            style={{
+                              backgroundColor: colors["base"],
+                              border: `1px solid ${colors["crust"]}`,
+                            }}
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </Vstack>
+              </Card>
+            )}
             <Card>
               <Vstack align="start">
                 <p
@@ -776,7 +844,7 @@ export default function ClientGamePage({
               </Vstack>
             </Card>
             {game.leaderboards && game.leaderboards.length > 0 && (
-              <Card>
+              <Card className="order-10">
                 <Vstack align="start">
                   <p
                     className="text-xs"
@@ -1028,7 +1096,7 @@ export default function ClientGamePage({
               </Card>
             )}
             {game.achievements && game.achievements.length > 0 && (
-              <Card>
+              <Card className="order-30">
                 <Vstack align="start">
                   <p
                     className="text-xs"
@@ -1062,6 +1130,10 @@ export default function ClientGamePage({
                       })
                       .map((achievement) => {
                         const haveCount = achievement.users.length;
+                        const isLoggedIn = Boolean(user);
+                        const hasAchievement = achievement.users.some(
+                          (u) => u.id === user?.id
+                        );
                         const { tier, pct } = getRarityTier(
                           haveCount,
                           engagedUserIds.size
@@ -1104,19 +1176,17 @@ export default function ClientGamePage({
                                       </Text>
                                       <Text
                                         color={
-                                          achievement.users.some(
-                                            (u) => u.id === user?.id
-                                          )
+                                          hasAchievement
                                             ? "red"
                                             : "green"
                                         }
                                         size="xs"
                                       >
-                                        {achievement.users.some(
-                                          (u) => u.id === user?.id
-                                        )
-                                          ? "Click to mark as unachieved"
-                                          : "Click to mark as achieved"}
+                                        {isLoggedIn
+                                          ? hasAchievement
+                                            ? "Click to mark as unachieved"
+                                            : "Click to mark as achieved"
+                                          : ""}
                                       </Text>
                                     </Vstack>
                                   </Hstack>
@@ -1158,23 +1228,18 @@ export default function ClientGamePage({
                                     });
                                   }
                                 }}
-                                className="rounded-xl p-1"
+                                disabled={!isLoggedIn}
+                                className={`rounded-xl p-1 ${
+                                  isLoggedIn ? "cursor-pointer" : "cursor-default"
+                                }`}
                                 style={{
                                   backgroundColor: colors["base"],
                                   borderWidth: 2,
                                   borderStyle: "solid",
                                   borderColor: style.border,
                                   boxShadow: style.glow,
-                                  opacity: achievement.users.some(
-                                    (u) => u.id === user?.id
-                                  )
-                                    ? 1
-                                    : 0.5,
-                                  filter: achievement.users.some(
-                                    (u) => u.id === user?.id
-                                  )
-                                    ? ""
-                                    : "grayscale(1)",
+                                  opacity: hasAchievement ? 1 : 0.5,
+                                  filter: hasAchievement ? "" : "grayscale(1)",
                                 }}
                               >
                                 <Image
@@ -1198,11 +1263,7 @@ export default function ClientGamePage({
                                   backgroundColor: colors["mantle"],
                                   color: style.text,
                                   border: `1px solid ${style.border}`,
-                                  filter: achievement.users.some(
-                                    (u) => u.id === user?.id
-                                  )
-                                    ? ""
-                                    : "grayscale(1)",
+                                  filter: hasAchievement ? "" : "grayscale(1)",
                                 }}
                               >
                                 {tier}
@@ -1242,7 +1303,7 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
-            <Card>
+            <Card className="order-50">
               <Vstack align="start">
                 <p
                   className="text-xs"
@@ -1512,7 +1573,7 @@ export default function ClientGamePage({
           ?.sort((a, b) => b.id - a.id)
           .map((comment) => (
             <div key={comment.id}>
-              <CommentCard comment={comment} />
+              <CommentCard comment={comment} user={user} />
             </div>
           ))}
       </div>

@@ -628,7 +628,7 @@ export default function Posts() {
             <div className="flex flex-col gap-3 mt-4">
               {posts[currentPost]?.comments.map((comment) => (
                 <div key={comment.id}>
-                  <CommentCard comment={comment} />
+                  <CommentCard comment={comment} user={user} />
                 </div>
               ))}
             </div>

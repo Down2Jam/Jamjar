@@ -2,6 +2,7 @@
 
 import { GameCard } from "@/components/gamecard";
 import PostCard from "@/components/posts/PostCard";
+import CommentCard from "@/components/posts/CommentCard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import ThemedProse from "@/components/themed-prose";
 import {
@@ -689,8 +690,24 @@ export default function ClientUserPage({
     if (!user) return [];
     return bestPerLeaderboardForUser(user.scores);
   }, [user]);
-  const postsCount = user?.posts.length ?? 0;
-  const commentsCount = user?.comments.length ?? 0;
+  const canSeeModeratedContent = Boolean(self?.mod || self?.admin);
+  const visiblePosts = useMemo(
+    () =>
+      (user?.posts ?? []).filter(
+        (post) => canSeeModeratedContent || (!post.deletedAt && !post.removedAt),
+      ),
+    [canSeeModeratedContent, user?.posts],
+  );
+  const visibleComments = useMemo(
+    () =>
+      (user?.comments ?? []).filter(
+        (comment) =>
+          canSeeModeratedContent || (!comment.deletedAt && !comment.removedAt),
+      ),
+    [canSeeModeratedContent, user?.comments],
+  );
+  const postsCount = visiblePosts.length;
+  const commentsCount = visibleComments.length;
   const recommendationsCount =
     recGames.length + recPosts.length + recTracks.length;
   const scoresCount = bestScores.length;
@@ -1340,16 +1357,21 @@ export default function ClientUserPage({
                   <Text size="lg" weight="semibold">
                     Posts
                   </Text>
-                  {user.posts.length === 0 ? (
+                  {visiblePosts.length === 0 ? (
                     <Text size="sm" color="textFaded">
                       No posts yet.
                     </Text>
                   ) : (
                     <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                      {user.posts
+                      {visiblePosts
                         .sort((a, b) => b.id - a.id)
                         .map((post) => (
-                          <PostCard post={post} style="Compact" key={post.id} />
+                          <PostCard
+                            post={post}
+                            style="Compact"
+                            key={post.id}
+                            user={self}
+                          />
                         ))}
                     </section>
                   )}
@@ -1362,68 +1384,20 @@ export default function ClientUserPage({
                   <Text size="lg" weight="semibold">
                     Comments
                   </Text>
-                  {user.comments.length === 0 ? (
+                  {visibleComments.length === 0 ? (
                     <Text size="sm" color="textFaded">
                       No comments yet.
                     </Text>
                   ) : (
                     <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                      {user.comments
+                      {visibleComments
                         .sort((a, b) => b.id - a.id)
                         .map((comment) => (
-                          <Card
+                          <CommentCard
                             key={comment.id}
-                            href={
-                              comment.game
-                                ? `/g/${comment.game?.slug}`
-                                : comment.post
-                                  ? `/p/${comment.post.slug}`
-                                  : undefined
-                            }
-                          >
-                            <Vstack align="start">
-                              {comment.game ? (
-                                <Hstack>
-                                  <Icon
-                                    name="gamepad2"
-                                    color="textFaded"
-                                    size={20}
-                                  />
-                                  <Text color="textFaded" size="sm">
-                                    Comment on {comment.game.name}
-                                  </Text>
-                                </Hstack>
-                              ) : comment.post ? (
-                                <Hstack>
-                                  <Icon
-                                    name="messagessquare"
-                                    color="textFaded"
-                                    size={20}
-                                  />
-                                  <Text color="textFaded" size="sm">
-                                    Comment on {comment.post.title}
-                                  </Text>
-                                </Hstack>
-                              ) : (
-                                <Hstack>
-                                  <Icon
-                                    name="messagecircle"
-                                    color="textFaded"
-                                    size={20}
-                                  />
-                                  <Text color="textFaded" size="sm">
-                                    Replying to comment
-                                  </Text>
-                                </Hstack>
-                              )}
-                              <ThemedProse>
-                                <MentionedContent
-                                  html={comment.content}
-                                  className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-                                />
-                              </ThemedProse>
-                            </Vstack>
-                          </Card>
+                            comment={comment}
+                            user={self}
+                          />
                         ))}
                     </section>
                   )}

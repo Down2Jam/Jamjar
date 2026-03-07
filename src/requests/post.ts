@@ -47,6 +47,23 @@ export async function deletePost(postId: number) {
     body: JSON.stringify({
       postId,
       username: getCookie("user"),
+      mode: "delete",
+    }),
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
+}
+
+export async function removePost(postId: number) {
+  return fetch(`${BASE_URL}/post`, {
+    body: JSON.stringify({
+      postId,
+      username: getCookie("user"),
+      mode: "remove",
     }),
     method: "DELETE",
     headers: {
@@ -74,6 +91,29 @@ export async function stickPost(postId: number, sticky: boolean) {
       credentials: "include",
     }
   );
+}
+
+export async function updatePost(
+  postId: number,
+  updates: {
+    title?: string;
+    content?: string;
+    tags?: number[];
+  }
+) {
+  return fetch(`${BASE_URL}/post`, {
+    body: JSON.stringify({
+      postId,
+      username: getCookie("user"),
+      ...updates,
+    }),
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
 }
 
 export async function togglePostReaction(

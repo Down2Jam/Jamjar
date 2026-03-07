@@ -50,7 +50,7 @@ export function AccordionItem({
         border: `1px solid ${colors.base}`,
         borderRadius: 8,
         backgroundColor: colors.mantle,
-        overflow: "hidden",
+        overflow: open ? "visible" : "hidden",
       }}
     >
       <button
@@ -83,12 +83,12 @@ export function AccordionItem({
       <div
         style={{
           maxHeight: open ? undefined : "0px", // code here to possibly make it animate, issue is if you set it to a px value so it does it clips things in the game edit page
-          overflow: "hidden",
+          overflow: open ? "visible" : "hidden",
           transition: "max-height 0.3s ease",
         }}
       >
         <div
-          className="px-4 py-2 border-t"
+          className="relative z-20 overflow-visible px-4 py-2 border-t"
           style={{ borderColor: colors.base }}
         >
           {children}

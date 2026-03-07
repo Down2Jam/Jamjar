@@ -242,6 +242,7 @@ function Dropdown({
     <div
       ref={rootRef}
       className="relative inline-block"
+      style={{ zIndex: open ? 90 : undefined }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

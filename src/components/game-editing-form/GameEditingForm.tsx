@@ -106,7 +106,7 @@ const INPUT_METHOD_OPTIONS: {
 ];
 
 const INPUT_METHOD_VALUES = new Set<InputMethodType>(
-  INPUT_METHOD_OPTIONS.map((option) => option.value)
+  INPUT_METHOD_OPTIONS.map((option) => option.value),
 );
 
 const isInputMethodType = (value: string): value is InputMethodType =>
@@ -203,7 +203,7 @@ export default function GameEditingForm({
   const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
   const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState("");
@@ -222,7 +222,7 @@ export default function GameEditingForm({
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
   const [teams, setTeams] = useState<TeamType[]>([]);
   const [category, setCategory] = useState<"REGULAR" | "ODA" | "EXTRA">(
-    "REGULAR"
+    "REGULAR",
   );
   const [waitingPost, setWaitingPost] = useState(false);
   const [chosenRatingCategories, setChosenRatingCategories] = useState<
@@ -251,7 +251,7 @@ export default function GameEditingForm({
   const [savingGameEmote, setSavingGameEmote] = useState(false);
   const [gameEmoteArtistSlug, setGameEmoteArtistSlug] = useState("");
   const [editingGameEmoteId, setEditingGameEmoteId] = useState<number | null>(
-    null
+    null,
   );
   const [editingGameEmoteSlug, setEditingGameEmoteSlug] = useState("");
   const [editingGameEmoteImage, setEditingGameEmoteImage] = useState<
@@ -260,9 +260,9 @@ export default function GameEditingForm({
   const [editingGameEmoteArtistSlug, setEditingGameEmoteArtistSlug] =
     useState("");
   const [savingEditGameEmote, setSavingEditGameEmote] = useState(false);
-  const [gameEmoteArtistMatches, setGameEmoteArtistMatches] = useState<UserType[]>(
-    []
-  );
+  const [gameEmoteArtistMatches, setGameEmoteArtistMatches] = useState<
+    UserType[]
+  >([]);
   const [gameEmoteArtistOpen, setGameEmoteArtistOpen] = useState(false);
   const [gameEmoteArtistIndex, setGameEmoteArtistIndex] = useState(0);
   const [editGameEmoteArtistMatches, setEditGameEmoteArtistMatches] = useState<
@@ -283,7 +283,7 @@ export default function GameEditingForm({
         return next;
       });
     },
-    []
+    [],
   );
   const creatingTeamRef = useRef(false);
   const teamCheckDoneRef = useRef(false);
@@ -294,7 +294,7 @@ export default function GameEditingForm({
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
 
   const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
-    new Set()
+    new Set(),
   );
   const [estOneRun, setEstOneRun] = useState<string>("");
   const [estAnyPercent, setEstAnyPercent] = useState<string>("");
@@ -324,12 +324,12 @@ export default function GameEditingForm({
     setFlags(
       game?.flags
         ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
-        .filter((index) => index !== -1) || []
+        .filter((index) => index !== -1) || [],
     );
     setTags(
       game?.tags
         ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
-        .filter((index) => index !== -1) || []
+        .filter((index) => index !== -1) || [],
     );
     setLeaderboards(game?.leaderboards || []);
     const desiredCategory =
@@ -339,18 +339,18 @@ export default function GameEditingForm({
 
     setCategory(shouldForceExtra ? "EXTRA" : desiredCategory);
     setChosenRatingCategories(
-      game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || []
+      game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || [],
     );
     setChosenMajRatingCategories(
       game?.majRatingCategories?.map((ratingCategory) => ratingCategory.id) ||
-        []
+        [],
     );
     setScreenshots(game?.screenshots ?? []);
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
     setEmotePrefixInput(game?.emotePrefix ?? "");
     setInputMethods(
-      new Set((game?.inputMethods ?? []).filter(isInputMethodType))
+      new Set((game?.inputMethods ?? []).filter(isInputMethodType)),
     );
     setEstOneRun(game?.estOneRun ?? "");
     setEstAnyPercent(game?.estAnyPercent ?? "");
@@ -389,7 +389,7 @@ export default function GameEditingForm({
         const data = await teamResponse.json();
         const filteredTeams = data.data.filter((team: TeamType) => !team.game);
         const matchingSlugTeam = data.data.filter(
-          (team: TeamType) => game && team.game?.slug === game.slug
+          (team: TeamType) => game && team.game?.slug === game.slug,
         );
 
         if (matchingSlugTeam.length !== 0) {
@@ -431,8 +431,8 @@ export default function GameEditingForm({
         const flagsData = await flagsResponse.json();
         setAllFlags(
           flagsData.data.sort((a: FlagType, b: FlagType) =>
-            a.name.localeCompare(b.name)
-          )
+            a.name.localeCompare(b.name),
+          ),
         );
 
         const tagsResponse = await getGameTags();
@@ -465,7 +465,7 @@ export default function GameEditingForm({
           creatingTeamRef.current = true;
 
           const alreadyHas = teamsRef.current.some(
-            (t) => t.jamId === activeJam?.jam?.id
+            (t) => t.jamId === activeJam?.jam?.id,
           );
           if (!alreadyHas) {
             const created = await createTeam(); // should return truthy or handle 409
@@ -528,6 +528,10 @@ export default function GameEditingForm({
       color: "#fff",
       zIndex: 100,
     }),
+    menuPortal: (styles) => ({
+      ...styles,
+      zIndex: 120,
+    }),
     option: (styles, { isFocused }) => ({
       ...styles,
       backgroundColor: isFocused ? "#333" : undefined,
@@ -544,7 +548,7 @@ export default function GameEditingForm({
 
   const uploadTo = async (
     endpoint: "image" | "music",
-    file: File
+    file: File,
   ): Promise<string | null> => {
     const formData = new FormData();
     formData.append("upload", file);
@@ -597,7 +601,7 @@ export default function GameEditingForm({
           console.error(e);
         }
       }, 250),
-    []
+    [],
   );
 
   const doEmoteArtistSearch = useMemo(
@@ -619,7 +623,7 @@ export default function GameEditingForm({
           const res = await searchUsers(q);
           if (res.status === 200) {
             const data = await res.json();
-            const matches = Array.isArray(data) ? data : data?.data ?? [];
+            const matches = Array.isArray(data) ? data : (data?.data ?? []);
             const slice = matches.slice(0, 6);
             if (scope === "edit") {
               setEditGameEmoteArtistMatches(slice);
@@ -635,7 +639,7 @@ export default function GameEditingForm({
           console.error(e);
         }
       }, 200),
-    []
+    [],
   );
 
   const gameEmotes = useMemo(() => {
@@ -643,7 +647,7 @@ export default function GameEditingForm({
     return emojis.filter(
       (emoji) =>
         emoji.scopeType === "GAME" &&
-        (emoji.scopeGameId === game.id || emoji.ownerGame?.id === game.id)
+        (emoji.scopeGameId === game.id || emoji.ownerGame?.id === game.id),
     );
   }, [emojis, game?.id]);
 
@@ -793,7 +797,7 @@ export default function GameEditingForm({
                   estOneRun || null,
                   estAnyPercent || null,
                   estHundredPercent || null,
-                  cleanedPrefix || null
+                  cleanedPrefix || null,
                 )
               : postGame(
                   title,
@@ -822,7 +826,7 @@ export default function GameEditingForm({
                   estOneRun || null,
                   estAnyPercent || null,
                   estHundredPercent || null,
-                  cleanedPrefix || null
+                  cleanedPrefix || null,
                 );
 
             const response = await request;
@@ -872,7 +876,7 @@ export default function GameEditingForm({
           <Tabs addBottomTabs>
             <Tab title="General" icon="cog">
               <Vstack align="stretch">
-                <Card>
+                <Card className="relative z-20 overflow-visible">
                   <Vstack align="start">
                     <Hstack>
                       <Icon name="cog" color="textFaded" size={12} />
@@ -886,7 +890,7 @@ export default function GameEditingForm({
                     </Text>
                   </Vstack>
                 </Card>
-                <Card>
+                <Card className="relative z-30 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Name.Title</Text>
@@ -909,7 +913,7 @@ export default function GameEditingForm({
                     />
                   </Vstack>
                 </Card>
-                <Card>
+                <Card className="relative z-20 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Slug.Title</Text>
@@ -935,7 +939,7 @@ export default function GameEditingForm({
 
                 {
                   <>
-                    <Card>
+                    <Card className="relative z-20 overflow-visible">
                       <Vstack align="start">
                         <div>
                           <Text color="text">CreateGame.Category.Title</Text>
@@ -987,7 +991,7 @@ export default function GameEditingForm({
                   </>
                 }
 
-                <Card>
+                <Card className="relative z-0">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Description.Title</Text>
@@ -1004,7 +1008,7 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
 
-                <Card>
+                <Card className="relative z-10 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Short.Title</Text>
@@ -1049,7 +1053,10 @@ export default function GameEditingForm({
                       <div className="flex flex-col gap-2">
                         {Array.isArray(downloadLinks) &&
                           downloadLinks.map((link, index) => (
-                            <div key={link.id} className="flex gap-2">
+                            <div
+                              key={link.id}
+                              className="relative z-20 flex gap-2"
+                            >
                               <Input
                                 className="flex-grow"
                                 placeholder="CreateGame.Links.Placeholder"
@@ -1069,10 +1076,10 @@ export default function GameEditingForm({
 
                                     if (
                                       !downloadLinks[index].url.startsWith(
-                                        "http://"
+                                        "http://",
                                       ) &&
                                       !downloadLinks[index].url.startsWith(
-                                        "https://"
+                                        "https://",
                                       )
                                     ) {
                                       const newUrl =
@@ -1082,7 +1089,7 @@ export default function GameEditingForm({
                                       setDownloadLinks(newLinks);
                                       const input =
                                         document.querySelector<HTMLInputElement>(
-                                          `#download-link-${index}`
+                                          `#download-link-${index}`,
                                         );
                                       if (input) {
                                         input.value = newUrl;
@@ -1139,8 +1146,8 @@ export default function GameEditingForm({
                                 onClick={() => {
                                   setDownloadLinks(
                                     downloadLinks.filter(
-                                      (l) => l.id !== link.id
-                                    )
+                                      (l) => l.id !== link.id,
+                                    ),
                                   );
                                 }}
                               >
@@ -1169,7 +1176,7 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
                 {teams.length > 1 && !prevSlug && (
-                  <Card>
+                  <Card className="relative z-20 overflow-visible">
                     <Vstack align="start">
                       <div>
                         <Text color="text">Team</Text>
@@ -1214,7 +1221,7 @@ export default function GameEditingForm({
                   (activeJamResponse.phase == "Jamming" ||
                     activeJamResponse.phase == "Submission" ||
                     (activeJamResponse.phase == "Rating" && !prevSlug)) && (
-                    <Card>
+                    <Card className="relative z-0">
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -1230,7 +1237,7 @@ export default function GameEditingForm({
                               <Switch
                                 checked={
                                   chosenRatingCategories.filter(
-                                    (category2) => category2 == category3.id
+                                    (category2) => category2 == category3.id,
                                   ).length > 0
                                 }
                                 onChange={(value) => {
@@ -1242,8 +1249,9 @@ export default function GameEditingForm({
                                   } else {
                                     setChosenRatingCategories(
                                       chosenRatingCategories.filter(
-                                        (category2) => category2 != category3.id
-                                      )
+                                        (category2) =>
+                                          category2 != category3.id,
+                                      ),
                                     );
                                   }
                                 }}
@@ -1260,14 +1268,15 @@ export default function GameEditingForm({
                             {category3.askMajorityContent &&
                               category == "REGULAR" &&
                               chosenRatingCategories.filter(
-                                (category2) => category2 == category3.id
+                                (category2) => category2 == category3.id,
                               ).length > 0 && (
                                 <Hstack className="pl-5 pt-2">
                                   <Switch
                                     key={category3.id + "maj"}
                                     checked={
                                       chosenMajRatingCategories.filter(
-                                        (category2) => category2 == category3.id
+                                        (category2) =>
+                                          category2 == category3.id,
                                       ).length > 0
                                     }
                                     onChange={(value) => {
@@ -1280,8 +1289,8 @@ export default function GameEditingForm({
                                         setChosenMajRatingCategories(
                                           chosenMajRatingCategories.filter(
                                             (category2) =>
-                                              category2 != category3.id
-                                          )
+                                              category2 != category3.id,
+                                          ),
                                         );
                                       }
                                     }}
@@ -1335,29 +1344,6 @@ export default function GameEditingForm({
                         }
                       }}
                     />
-
-                    {thumbnailUrl && (
-                      <Vstack align="start">
-                        <div className="bg-[#222222] h-[200px] w-[360px] relative">
-                          <Image
-                            src={thumbnailUrl}
-                            alt={`${title}'s thumbnail`}
-                            className="object-cover"
-                            fill
-                          />
-                        </div>
-                        <Button
-                          icon="trash"
-                          color="red"
-                          size="sm"
-                          onClick={() => {
-                            setThumbnailUrl(null);
-                          }}
-                        >
-                          Remove Thumbnail
-                        </Button>
-                      </Vstack>
-                    )}
                   </Vstack>
                 </Card>
 
@@ -1381,29 +1367,6 @@ export default function GameEditingForm({
                         }
                       }}
                     />
-
-                    {bannerUrl && (
-                      <Vstack align="start">
-                        <div className="bg-[#222222] h-[120px] w-[734px] relative">
-                          <Image
-                            src={bannerUrl}
-                            alt={`${title}'s banner`}
-                            className="object-cover"
-                            fill
-                          />
-                        </div>
-                        <Button
-                          icon="trash"
-                          color="red"
-                          size="sm"
-                          onClick={() => {
-                            setBannerUrl(null);
-                          }}
-                        >
-                          Remove Banner
-                        </Button>
-                      </Vstack>
-                    )}
                   </Vstack>
                 </Card>
 
@@ -1422,7 +1385,7 @@ export default function GameEditingForm({
                           value
                             .toLowerCase()
                             .replace(/[^a-z0-9]/g, "")
-                            .slice(0, 6)
+                            .slice(0, 6),
                         )
                       }
                       name="gameEmotePrefix"
@@ -1473,14 +1436,14 @@ export default function GameEditingForm({
                               setGameEmoteArtistIndex((prev) =>
                                 prev + 1 >= gameEmoteArtistMatches.length
                                   ? 0
-                                  : prev + 1
+                                  : prev + 1,
                               );
                             } else if (event.key === "ArrowUp") {
                               event.preventDefault();
                               setGameEmoteArtistIndex((prev) =>
                                 prev === 0
                                   ? gameEmoteArtistMatches.length - 1
-                                  : prev - 1
+                                  : prev - 1,
                               );
                             } else if (event.key === "Enter") {
                               event.preventDefault();
@@ -1496,10 +1459,10 @@ export default function GameEditingForm({
                           }}
                           disabled={!game?.slug}
                         />
-                              {gameEmoteArtistOpen &&
-                                gameEmoteArtistMatches.length > 0 && (
-                                  <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
-                                    {gameEmoteArtistMatches.map((u, index) => (
+                        {gameEmoteArtistOpen &&
+                          gameEmoteArtistMatches.length > 0 && (
+                            <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
+                              {gameEmoteArtistMatches.map((u, index) => (
                                 <button
                                   key={u.id}
                                   type="button"
@@ -1517,7 +1480,9 @@ export default function GameEditingForm({
                                   }}
                                 >
                                   <img
-                                    src={u.profilePicture || "/images/D2J_Icon.png"}
+                                    src={
+                                      u.profilePicture || "/images/D2J_Icon.png"
+                                    }
                                     alt={u.name}
                                     className="h-5 w-5 rounded-full"
                                     loading="lazy"
@@ -1582,7 +1547,7 @@ export default function GameEditingForm({
                               game.slug,
                               cleanedGameEmoteSlug,
                               gameEmoteImage,
-                              gameEmoteArtistSlug.trim() || null
+                              gameEmoteArtistSlug.trim() || null,
                             );
                             const data = await response
                               .json()
@@ -1635,11 +1600,11 @@ export default function GameEditingForm({
                               onClick={() => {
                                 setEditingGameEmoteId(emoji.id);
                                 setEditingGameEmoteSlug(
-                                  emoji.slug.replace(gameEmotePrefix, "")
+                                  emoji.slug.replace(gameEmotePrefix, ""),
                                 );
                                 setEditingGameEmoteImage(emoji.image);
                                 setEditingGameEmoteArtistSlug(
-                                  emoji.artistUser?.slug ?? ""
+                                  emoji.artistUser?.slug ?? "",
                                 );
                               }}
                             >
@@ -1707,16 +1672,17 @@ export default function GameEditingForm({
                                   if (event.key === "ArrowDown") {
                                     event.preventDefault();
                                     setEditGameEmoteArtistIndex((prev) =>
-                                      prev + 1 >= editGameEmoteArtistMatches.length
+                                      prev + 1 >=
+                                      editGameEmoteArtistMatches.length
                                         ? 0
-                                        : prev + 1
+                                        : prev + 1,
                                     );
                                   } else if (event.key === "ArrowUp") {
                                     event.preventDefault();
                                     setEditGameEmoteArtistIndex((prev) =>
                                       prev === 0
                                         ? editGameEmoteArtistMatches.length - 1
-                                        : prev - 1
+                                        : prev - 1,
                                     );
                                   } else if (event.key === "Enter") {
                                     event.preventDefault();
@@ -1736,38 +1702,45 @@ export default function GameEditingForm({
                               {editGameEmoteArtistOpen &&
                                 editGameEmoteArtistMatches.length > 0 && (
                                   <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
-                                    {editGameEmoteArtistMatches.map((u, index) => (
-                                      <button
-                                        key={u.id}
-                                        type="button"
-                                        className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
-                                        style={{
-                                          backgroundColor:
-                                            index === editGameEmoteArtistIndex
-                                              ? "rgba(59,130,246,0.3)"
-                                              : "transparent",
-                                        }}
-                                        onMouseDown={(event) => {
-                                          event.preventDefault();
-                                          setEditingGameEmoteArtistSlug(u.slug);
-                                          setEditGameEmoteArtistOpen(false);
-                                        }}
-                                      >
-                                        <img
-                                          src={u.profilePicture || "/images/D2J_Icon.png"}
-                                          alt={u.name}
-                                          className="h-5 w-5 rounded-full"
-                                          loading="lazy"
-                                          decoding="async"
-                                        />
-                                        <div className="flex flex-col text-sm">
-                                          <span>{u.name}</span>
-                                          <span className="text-xs opacity-70">
-                                            @{u.slug}
-                                          </span>
-                                        </div>
-                                      </button>
-                                    ))}
+                                    {editGameEmoteArtistMatches.map(
+                                      (u, index) => (
+                                        <button
+                                          key={u.id}
+                                          type="button"
+                                          className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
+                                          style={{
+                                            backgroundColor:
+                                              index === editGameEmoteArtistIndex
+                                                ? "rgba(59,130,246,0.3)"
+                                                : "transparent",
+                                          }}
+                                          onMouseDown={(event) => {
+                                            event.preventDefault();
+                                            setEditingGameEmoteArtistSlug(
+                                              u.slug,
+                                            );
+                                            setEditGameEmoteArtistOpen(false);
+                                          }}
+                                        >
+                                          <img
+                                            src={
+                                              u.profilePicture ||
+                                              "/images/D2J_Icon.png"
+                                            }
+                                            alt={u.name}
+                                            className="h-5 w-5 rounded-full"
+                                            loading="lazy"
+                                            decoding="async"
+                                          />
+                                          <div className="flex flex-col text-sm">
+                                            <span>{u.name}</span>
+                                            <span className="text-xs opacity-70">
+                                              @{u.slug}
+                                            </span>
+                                          </div>
+                                        </button>
+                                      ),
+                                    )}
                                   </div>
                                 )}
                             </div>
@@ -1835,7 +1808,7 @@ export default function GameEditingForm({
                                           null,
                                         scopeUserId: null,
                                         scopeGameId: game?.id ?? null,
-                                      }
+                                      },
                                     );
                                     const data = await response
                                       .json()
@@ -1913,7 +1886,7 @@ export default function GameEditingForm({
                                   size="sm"
                                   onClick={() =>
                                     setScreenshots((prev) =>
-                                      prev.filter((_, idx) => idx !== i)
+                                      prev.filter((_, idx) => idx !== i),
                                     )
                                   }
                                 >
@@ -2026,7 +1999,7 @@ export default function GameEditingForm({
                       >
                         <iframe
                           src={`https://www.youtube-nocookie.com/embed/${extractYouTubeId(
-                            trailerUrl
+                            trailerUrl,
                           )}`}
                           title="Trailer"
                           className="w-full h-full"
@@ -2044,10 +2017,10 @@ export default function GameEditingForm({
                       <Text color="text">Playable Embed (Itch Widget)</Text>
                       <Text color="textFaded" size="xs">
                         Paste your Itch widget URL here, such as
-                        {" https://itch.io/embed/123456 "}. Use the
-                        embed/widget link from Itch, not the normal
-                        game page URL. This will show below the game name and
-                        above the description as a playable embed.
+                        {" https://itch.io/embed/123456 "}. Use the embed/widget
+                        link from Itch, not the normal game page URL. This will
+                        show below the game name and above the description as a
+                        playable embed.
                       </Text>
                     </div>
                     <Input
@@ -2055,7 +2028,10 @@ export default function GameEditingForm({
                       value={itchEmbedUrl}
                       onValueChange={setItchEmbedUrl}
                       onBlur={() => {
-                        if (itchEmbedUrl && !toCanonicalItchEmbedUrl(itchEmbedUrl)) {
+                        if (
+                          itchEmbedUrl &&
+                          !toCanonicalItchEmbedUrl(itchEmbedUrl)
+                        ) {
                           addToast({
                             title:
                               "That doesn't look like a valid Itch widget URL.",
@@ -2104,7 +2080,7 @@ export default function GameEditingForm({
                                     size="sm"
                                     onClick={() =>
                                       setSongs((prev) =>
-                                        prev.filter((s) => s.id !== song.id)
+                                        prev.filter((s) => s.id !== song.id),
                                       )
                                     }
                                   >
@@ -2126,8 +2102,8 @@ export default function GameEditingForm({
                                       prev.map((s) =>
                                         s.id === song.id
                                           ? { ...s, slug: val }
-                                          : s
-                                      )
+                                          : s,
+                                      ),
                                     )
                                   }
                                 />
@@ -2145,8 +2121,8 @@ export default function GameEditingForm({
                                       prev.map((s) =>
                                         s.id === song.id
                                           ? { ...s, name: val }
-                                          : s
-                                      )
+                                          : s,
+                                      ),
                                     )
                                   }
                                 />
@@ -2176,7 +2152,7 @@ export default function GameEditingForm({
                                               license:
                                                 licenseFlagsToLabel(nextFlags),
                                             };
-                                          })
+                                          }),
                                         )
                                       }
                                     />
@@ -2208,7 +2184,7 @@ export default function GameEditingForm({
                                               license:
                                                 licenseFlagsToLabel(nextFlags),
                                             };
-                                          })
+                                          }),
                                         )
                                       }
                                       disabled={!song.licenseAttribution}
@@ -2246,7 +2222,7 @@ export default function GameEditingForm({
                                               license:
                                                 licenseFlagsToLabel(nextFlags),
                                             };
-                                          })
+                                          }),
                                         )
                                       }
                                       disabled={!song.licenseAttribution}
@@ -2279,7 +2255,7 @@ export default function GameEditingForm({
                                               license:
                                                 licenseFlagsToLabel(nextFlags),
                                             };
-                                          })
+                                          }),
                                         )
                                       }
                                       disabled={
@@ -2308,8 +2284,8 @@ export default function GameEditingForm({
                                         prev.map((s) =>
                                           s.id === song.id
                                             ? { ...s, allowDownload: val }
-                                            : s
-                                        )
+                                            : s,
+                                        ),
                                       )
                                     }
                                   />
@@ -2379,8 +2355,8 @@ export default function GameEditingForm({
                                                             u.profilePicture,
                                                         },
                                                       }
-                                                    : s
-                                                )
+                                                    : s,
+                                                ),
                                               );
                                               // clear query/results for this song
                                               setArtistQuery((prev) => ({
@@ -2434,8 +2410,8 @@ export default function GameEditingForm({
                                                     composerId: null,
                                                     composer: null,
                                                   }
-                                                : s
-                                            )
+                                                : s,
+                                            ),
                                           )
                                         }
                                       >
@@ -2476,7 +2452,7 @@ export default function GameEditingForm({
                                         if (!file) return;
                                         const newUrl = await uploadTo(
                                           "music",
-                                          file
+                                          file,
                                         );
                                         if (!newUrl) return;
                                         setSongs((prev) =>
@@ -2489,11 +2465,11 @@ export default function GameEditingForm({
                                                     s.name ||
                                                     file.name.replace(
                                                       /\.[^/.]+$/,
-                                                      ""
+                                                      "",
                                                     ),
                                                 }
-                                              : s
-                                          )
+                                              : s,
+                                          ),
                                         );
                                         addToast({ title: "Song replaced" });
                                       };
@@ -2579,6 +2555,8 @@ export default function GameEditingForm({
                     {isMounted && (
                       <Select
                         styles={styles}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
                         isMulti
                         isClearable={false}
                         onChange={(value) => setTags(value.map((i) => i.id))}
@@ -2627,6 +2605,8 @@ export default function GameEditingForm({
                     {isMounted && (
                       <Select
                         styles={styles}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
                         isMulti
                         isClearable={false}
                         onChange={(value) => setFlags(value.map((i) => i.id))}
@@ -2697,7 +2677,7 @@ export default function GameEditingForm({
                     subtitle="Times it would take people to complete runs / playthroughs of the game"
                     icon="trophy"
                   >
-                    <Card>
+                    <Card className="relative z-30 overflow-visible">
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -2725,7 +2705,7 @@ export default function GameEditingForm({
                         </Dropdown>
                       </Vstack>
                     </Card>
-                    <Card>
+                    <Card className="relative z-20 overflow-visible">
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -2753,7 +2733,7 @@ export default function GameEditingForm({
                         </Dropdown>
                       </Vstack>
                     </Card>
-                    <Card>
+                    <Card className="relative z-10 overflow-visible">
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -2960,7 +2940,7 @@ export default function GameEditingForm({
                               color="red"
                               onClick={() =>
                                 setLeaderboards(
-                                  leaderboards.filter((_, i) => i !== index)
+                                  leaderboards.filter((_, i) => i !== index),
                                 )
                               }
                             >
@@ -3015,7 +2995,7 @@ export default function GameEditingForm({
                                     size="sm"
                                     onClick={() =>
                                       setAchievements((prev) =>
-                                        prev.filter((_, i) => i !== idx)
+                                        prev.filter((_, i) => i !== idx),
                                       )
                                     }
                                   >

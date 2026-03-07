@@ -123,7 +123,7 @@ export default function EditorMenuBar({
             ?.chain()
             .focus()
             .insertContent({
-              type: "image",
+              type: "imageResize",
               attrs: { src: data.data },
             })
             .run();

@@ -8,8 +8,12 @@ export interface CommentType {
   children: CommentType[];
   author: UserType;
   createdAt: Date;
+  editedAt?: Date | null;
+  deletedAt?: Date | null;
+  removedAt?: Date | null;
   likes: [];
   hasLiked: boolean;
   game?: GameType;
   post?: PostType;
+  comment?: CommentType;
 }

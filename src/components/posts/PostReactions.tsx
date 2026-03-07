@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { addToast, Button, Popover } from "bioloom-ui";
+import { addToast, Button, Input, Popover, Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
 import { redirect } from "next/navigation";
 import { togglePostReaction } from "@/requests/post";
 import { useEmojis } from "@/providers/EmojiProvider";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 
-const MAX_UNIQUE_REACTIONS = 10;
+const MAX_UNIQUE_REACTIONS = 20;
 
 type PostReactionsProps = {
   postId: number;
@@ -28,6 +28,7 @@ export default function PostReactions({
     reactions ?? [],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [emojiQuery, setEmojiQuery] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
   const [hoveredReactionId, setHoveredReactionId] = useState<number | null>(
     null,
@@ -53,6 +54,12 @@ export default function PostReactions({
   }, [pickerOpen]);
 
   useEffect(() => {
+    if (!pickerOpen) {
+      setEmojiQuery("");
+    }
+  }, [pickerOpen]);
+
+  useEffect(() => {
     onOverlayChange?.(pickerOpen || hoveredReactionId !== null);
   }, [hoveredReactionId, onOverlayChange, pickerOpen]);
 
@@ -66,6 +73,19 @@ export default function PostReactions({
     }
     return sortedEmojis.filter((emoji) => !usedReactionIds.has(emoji.id));
   }, [current, sortedEmojis]);
+  const filteredEmojis = useMemo(() => {
+    const query = emojiQuery.trim().toLowerCase();
+    if (!query) return availableEmojis.slice(0, 48);
+    return availableEmojis
+      .filter((emoji) => emoji.slug.includes(query))
+      .sort((a, b) => {
+        const aStarts = a.slug.startsWith(query) ? 1 : 0;
+        const bStarts = b.slug.startsWith(query) ? 1 : 0;
+        if (aStarts !== bStarts) return bStarts - aStarts;
+        return a.slug.localeCompare(b.slug);
+      })
+      .slice(0, 48);
+  }, [availableEmojis, emojiQuery]);
 
   const handleToggle = async (emoji: ReactionType) => {
     if (!getCookie("token")) {
@@ -180,32 +200,46 @@ export default function PostReactions({
             position="bottom-left"
             padding={8}
           >
-            <div className="grid grid-cols-6 gap-2 max-w-[240px] max-h-40 overflow-y-auto">
-              {availableEmojis.map((emoji) => {
-                return (
-                  <Button
-                    key={emoji.id}
-                    size="sm"
-                    variant="ghost"
-                    color="default"
-                    leftSlot={
-                      <img
-                        src={emoji.image}
-                        alt={`:${emoji.slug}:`}
-                        className="h-4 w-4"
-                        loading="lazy"
-                        decoding="async"
+            <div className="flex w-64 flex-col gap-2">
+              <Input
+                value={emojiQuery}
+                onValueChange={setEmojiQuery}
+                placeholder="Search emoji"
+                size="sm"
+              />
+              {filteredEmojis.length === 0 ? (
+                <Text size="xs" color="textFaded">
+                  No emojis found.
+                </Text>
+              ) : (
+                <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
+                  {filteredEmojis.map((emoji) => {
+                    return (
+                      <Button
+                        key={emoji.id}
+                        size="sm"
+                        variant="ghost"
+                        color="default"
+                        leftSlot={
+                          <img
+                            src={emoji.image}
+                            alt={`:${emoji.slug}:`}
+                            className="h-4 w-4"
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        }
+                        tooltip={`:${emoji.slug}:`}
+                        onClick={() => {
+                          handleToggle(emoji);
+                          setPickerOpen(false);
+                        }}
+                        disabled={updating === emoji.slug}
                       />
-                    }
-                    tooltip={`:${emoji.slug}:`}
-                    onClick={() => {
-                      handleToggle(emoji);
-                      setPickerOpen(false);
-                    }}
-                    disabled={updating === emoji.slug}
-                  />
-                );
-              })}
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </Popover>
         </div>

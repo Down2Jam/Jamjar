@@ -1,7 +1,6 @@
 "use client";
 
 import { addToast, Avatar } from "bioloom-ui";
-import { formatDistance } from "date-fns";
 import Link from "next/link";
 import { PostType } from "@/types/PostType";
 import { MoreVertical } from "lucide-react";
@@ -10,7 +9,7 @@ import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { TagType } from "@/types/TagType";
-import { deletePost, stickPost } from "@/requests/post";
+import { deletePost, removePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
@@ -22,6 +21,7 @@ import { Text } from "bioloom-ui";
 import { useTranslations } from "next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
+import ContentStatusMeta from "./ContentStatusMeta";
 
 export default function PostCard({
   post,
@@ -38,6 +38,7 @@ export default function PostCard({
   setCurrentPost?: Dispatch<SetStateAction<number>>;
   onOpen?: (val1: boolean) => void;
 }) {
+  const [currentPostData, setCurrentPostData] = useState<PostType>(post);
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -47,6 +48,10 @@ export default function PostCard({
   const t = useTranslations();
   const actionsOpen = dropdownOpen || reactionsOpen;
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setCurrentPostData(post);
+  }, [post]);
 
   useEffect(() => {
     if (closeTimerRef.current) {
@@ -72,6 +77,21 @@ export default function PostCard({
     };
   }, [actionsOpen]);
 
+  const canSeeModerated = Boolean(user?.mod || user?.admin);
+  const isModerated = Boolean(
+    currentPostData.deletedAt || currentPostData.removedAt
+  );
+  const isAuthor = user?.slug === currentPostData.author.slug;
+  const titleText = isModerated
+    ? currentPostData.removedAt
+      ? "[Removed Post]"
+      : "[Deleted Post]"
+    : currentPostData.title;
+
+  if (hidden || (isModerated && !canSeeModerated)) {
+    return null;
+  }
+
   return (
     <Card
       className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
@@ -84,13 +104,13 @@ export default function PostCard({
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-4">
               <Link
-                href={`/p/${post.slug}`}
+                href={`/p/${currentPostData.slug}`}
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
                     if (onOpen) {
                       e.preventDefault();
                     }
-                    if (setCurrentPost && index) {
+                    if (setCurrentPost && index !== undefined) {
                       setCurrentPost(index);
                     }
                     if (onOpen) {
@@ -99,7 +119,7 @@ export default function PostCard({
                   }
                 }}
               >
-                <p>{post.title}</p>
+                <p>{titleText}</p>
               </Link>
 
               <div
@@ -112,21 +132,22 @@ export default function PostCard({
                   PostCard.By
                 </Text>
                 <Link
-                  href={`/u/${post.author.slug}`}
+                  href={`/u/${currentPostData.author.slug}`}
                   className="flex items-center gap-2"
                 >
                   <Avatar
                     size={24}
-                    src={post.author.profilePicture}
+                    src={currentPostData.author.profilePicture}
                     style={{ backgroundColor: "transparent" }}
                   />
-                  <p>{post.author.name}</p>
+                  <p>{currentPostData.author.name}</p>
                 </Link>
-                <p>
-                  {formatDistance(new Date(post.createdAt), new Date(), {
-                    addSuffix: true,
-                  })}
-                </p>
+                <ContentStatusMeta
+                  createdAt={currentPostData.createdAt}
+                  editedAt={currentPostData.editedAt}
+                  deletedAt={currentPostData.deletedAt}
+                  removedAt={currentPostData.removedAt}
+                />
               </div>
             </div>
             <Button icon="plus" onClick={() => setMinimized(false)}></Button>
@@ -135,13 +156,13 @@ export default function PostCard({
           <div className="w-full">
             <div className="flex justify-between items-center">
               <Link
-                href={`/p/${post.slug}`}
+                href={`/p/${currentPostData.slug}`}
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
                     if (onOpen) {
                       e.preventDefault();
                     }
-                    if (setCurrentPost && index) {
+                    if (setCurrentPost && index !== undefined) {
                       setCurrentPost(index);
                     }
                     if (onOpen) {
@@ -150,7 +171,7 @@ export default function PostCard({
                   }
                 }}
               >
-                <p className="text-2xl">{post.title}</p>
+                <p className="text-2xl">{titleText}</p>
               </Link>
               <Button icon="minus" onClick={() => setMinimized(true)}></Button>
             </div>
@@ -165,37 +186,47 @@ export default function PostCard({
                 PostCard.By
               </Text>
               <Link
-                href={`/u/${post.author.slug}`}
+                href={`/u/${currentPostData.author.slug}`}
                 className="flex items-center gap-2"
               >
                 <Avatar
                   size={24}
-                  src={post.author.profilePicture}
+                  src={currentPostData.author.profilePicture}
                   style={{ backgroundColor: "transparent" }}
                 />
-                <p>{post.author.name}</p>
+                <p>{currentPostData.author.name}</p>
               </Link>
-              <p>
-                {formatDistance(new Date(post.createdAt), new Date(), {
-                  addSuffix: true,
-                })}
-              </p>
+              <ContentStatusMeta
+                createdAt={currentPostData.createdAt}
+                editedAt={currentPostData.editedAt}
+                deletedAt={currentPostData.deletedAt}
+                removedAt={currentPostData.removedAt}
+              />
             </div>
 
             <div className="p-2" />
 
-            <ThemedProse>
-              <MentionedContent
-                html={post.content}
-                className="!duration-250 !ease-linear !transition-all max-w-full break-words"
-              />
-            </ThemedProse>
+            {isModerated ? (
+              <Text color="textFaded" size="sm">
+                {currentPostData.removedAt
+                  ? "This post was removed."
+                  : "This post was deleted."}
+              </Text>
+            ) : (
+              <ThemedProse>
+                <MentionedContent
+                  html={currentPostData.content}
+                  className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                />
+              </ThemedProse>
+            )}
 
             <div className="p-2" />
 
-            {post.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
+            {!isModerated &&
+            currentPostData.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
               <div className="flex gap-1">
-                {post.tags
+                {currentPostData.tags
                   .filter((tag) => tag.name != "D2Jam")
                   .map((tag: TagType) => (
                     <Chip
@@ -210,17 +241,18 @@ export default function PostCard({
               <></>
             )}
 
-            {post.tags.length > 0 && <div className="p-2" />}
+            {!isModerated && currentPostData.tags.length > 0 && <div className="p-2" />}
 
+            {!isModerated && (
             <div className="relative z-20 flex gap-3">
               <LikeButton
-                likes={post.likes.length}
-                liked={post.hasLiked}
-                parentId={post.id}
+                likes={currentPostData.likes.length}
+                liked={currentPostData.hasLiked}
+                parentId={currentPostData.id}
               />
-              <Link href={`/p/${post.slug}#create-comment`}>
+              <Link href={`/p/${currentPostData.slug}#create-comment`}>
                 <Button size="sm" icon="messagecircle">
-                  {post.comments.length}
+                  {currentPostData.comments.length}
                 </Button>
               </Link>
               <div className="relative z-30">
@@ -238,7 +270,7 @@ export default function PostCard({
                     description="PostCard.Copy.Description"
                     onClick={async () => {
                       navigator.clipboard.writeText(
-                        `${window.location.protocol}//${window.location.hostname}/p/${post.slug}`
+                        `${window.location.protocol}//${window.location.hostname}/p/${currentPostData.slug}`
                       );
                       addToast({
                         title: t("PostCard.Copy.Success"),
@@ -247,19 +279,33 @@ export default function PostCard({
                   >
                     PostCard.Copy.Title
                   </Dropdown.Item>
-                  {user?.slug == post.author.slug ? (
+                  {isAuthor ? (
+                    <Dropdown.Item
+                      key="edit"
+                      href={`/p/${currentPostData.slug}?edit=1`}
+                      icon="squarepen"
+                      description="Edit your post"
+                    >
+                      Edit
+                    </Dropdown.Item>
+                  ) : null}
+                  {isAuthor ? (
                     <Dropdown.Item
                       key="delete"
                       icon="trash"
                       description="PostCard.Delete.Description"
                       onClick={async () => {
-                        const response = await deletePost(post.id);
+                        const response = await deletePost(currentPostData.id);
 
                         if (response.ok) {
                           addToast({
                             title: t("PostCard.Delete.Success"),
                           });
-                          setHidden(true);
+                          setCurrentPostData((prev) => ({
+                            ...prev,
+                            deletedAt: new Date(),
+                          }));
+                          setHidden(!canSeeModerated);
                         } else {
                           addToast({
                             title: t("PostCard.Delete.Error"),
@@ -272,20 +318,24 @@ export default function PostCard({
                   ) : (
                     <></>
                   )}
-                  {user?.mod ? (
+                  {user?.mod || user?.admin ? (
                     <>
                       <Dropdown.Item
                         key="remove"
                         icon="x"
                         description="PostCard.Remove.Description"
                         onClick={async () => {
-                          const response = await deletePost(post.id);
+                          const response = await removePost(currentPostData.id);
 
                           if (response.ok) {
                             addToast({
                               title: t("PostCard.Remove.Success"),
                             });
-                            setHidden(true);
+                            setCurrentPostData((prev) => ({
+                              ...prev,
+                              removedAt: new Date(),
+                            }));
+                            setHidden(!canSeeModerated);
                           } else {
                             addToast({
                               title: t("PostCard.Remove.Error"),
@@ -295,13 +345,13 @@ export default function PostCard({
                       >
                         PostCard.Remove.Title
                       </Dropdown.Item>
-                      {post.sticky ? (
+                      {currentPostData.sticky ? (
                         <Dropdown.Item
                           key="unsticky"
                           icon="staroff"
                           description="PostCard.Unsticky.Description"
                           onClick={async () => {
-                            const response = await stickPost(post.id, false);
+                            const response = await stickPost(currentPostData.id, false);
 
                             if (response.ok) {
                               addToast({
@@ -323,7 +373,7 @@ export default function PostCard({
                           icon="star"
                           description="PostCard.Sticky.Description"
                           onClick={async () => {
-                            const response = await stickPost(post.id, true);
+                            const response = await stickPost(currentPostData.id, true);
 
                             if (response.ok) {
                               addToast({
@@ -340,14 +390,14 @@ export default function PostCard({
                           PostCard.Sticky.Title
                         </Dropdown.Item>
                       )}
-                      {user?.admin && !post.author.mod ? (
+                      {user?.admin && !currentPostData.author.mod ? (
                         <Dropdown.Item
                           key="promote-mod"
                           icon="shield"
                           description="PostCard.Promote.Description"
                           onClick={async () => {
                             const response = await assignMod(
-                              post.author.slug,
+                              currentPostData.author.slug,
                               true
                             );
 
@@ -368,14 +418,16 @@ export default function PostCard({
                       ) : (
                         <></>
                       )}
-                      {user?.admin && post.author.mod && !post.author.admin ? (
+                      {user?.admin &&
+                      currentPostData.author.mod &&
+                      !currentPostData.author.admin ? (
                         <Dropdown.Item
                           key="demote-mod"
                           icon="shieldx"
                           description="PostCard.Demote.Description"
                           onClick={async () => {
                             const response = await assignMod(
-                              post.author.slug,
+                              currentPostData.author.slug,
                               false
                             );
 
@@ -396,14 +448,14 @@ export default function PostCard({
                       ) : (
                         <></>
                       )}
-                      {user?.admin && !post.author.admin ? (
+                      {user?.admin && !currentPostData.author.admin ? (
                         <Dropdown.Item
                           key="promote-admin"
                           icon="shieldalert"
                           description="PostCard.PromoteAdmin.Description"
                           onClick={async () => {
                             const response = await assignAdmin(
-                              post.author.slug,
+                              currentPostData.author.slug,
                               true
                             );
 
@@ -425,15 +477,15 @@ export default function PostCard({
                         <></>
                       )}
                       {user?.admin &&
-                      post.author.admin &&
-                      post.author.id !== user.id ? (
+                      currentPostData.author.admin &&
+                      currentPostData.author.id !== user.id ? (
                         <Dropdown.Item
                           key="demote-admin"
                           icon="shieldx"
                           description="PostCard.DemoteAdmin.Description"
                           onClick={async () => {
                             const response = await assignAdmin(
-                              post.author.slug,
+                              currentPostData.author.slug,
                               false
                             );
 
@@ -461,23 +513,23 @@ export default function PostCard({
                 </Dropdown>
               </div>
               <PostReactions
-                postId={post.id}
-                reactions={post.reactions}
+                postId={currentPostData.id}
+                reactions={currentPostData.reactions}
                 onOverlayChange={setReactionsOpen}
               />
-            </div>
+            </div>)}
           </div>
         ))}
       {style == "Compact" && (
         <div>
           <Link
-            href={`/p/${post.slug}`}
+            href={`/p/${currentPostData.slug}`}
             onClick={(e) => {
               if (window.innerWidth > 500) {
                 if (onOpen) {
                   e.preventDefault();
                 }
-                if (setCurrentPost && index) {
+                if (setCurrentPost && index !== undefined) {
                   setCurrentPost(index);
                 }
                 if (onOpen) {
@@ -486,7 +538,7 @@ export default function PostCard({
               }
             }}
           >
-            <p className="text-2xl">{post.title}</p>
+            <p className="text-2xl">{titleText}</p>
           </Link>
 
           <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
@@ -494,34 +546,35 @@ export default function PostCard({
               PostCard.By
             </Text>
             <Link
-              href={`/u/${post.author.slug}`}
+              href={`/u/${currentPostData.author.slug}`}
               className="flex items-center gap-2"
             >
               <Avatar
                 size={24}
-                src={post.author.profilePicture}
+                src={currentPostData.author.profilePicture}
                 style={{ backgroundColor: "transparent" }}
               />
-              <p>{post.author.name}</p>
+              <p>{currentPostData.author.name}</p>
             </Link>
-            <p>
-              {formatDistance(new Date(post.createdAt), new Date(), {
-                addSuffix: true,
-              })}
-            </p>
+            <ContentStatusMeta
+              createdAt={currentPostData.createdAt}
+              editedAt={currentPostData.editedAt}
+              deletedAt={currentPostData.deletedAt}
+              removedAt={currentPostData.removedAt}
+            />
           </div>
         </div>
       )}
       {style == "Ultra" && (
         <div className="flex items-center gap-4">
           <Link
-            href={`/p/${post.slug}`}
+            href={`/p/${currentPostData.slug}`}
             onClick={(e) => {
               if (window.innerWidth > 500) {
                 if (onOpen) {
                   e.preventDefault();
                 }
-                if (setCurrentPost && index) {
+                if (setCurrentPost && index !== undefined) {
                   setCurrentPost(index);
                 }
                 if (onOpen) {
@@ -530,7 +583,7 @@ export default function PostCard({
               }
             }}
           >
-            <p>{post.title}</p>
+            <p>{titleText}</p>
           </Link>
 
           <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
@@ -538,21 +591,22 @@ export default function PostCard({
               PostCard.By
             </Text>
             <Link
-              href={`/u/${post.author.slug}`}
+              href={`/u/${currentPostData.author.slug}`}
               className="flex items-center gap-2"
             >
               <Avatar
                 size={24}
-                src={post.author.profilePicture}
+                src={currentPostData.author.profilePicture}
                 style={{ backgroundColor: "transparent" }}
               />
-              <p>{post.author.name}</p>
+              <p>{currentPostData.author.name}</p>
             </Link>
-            <p>
-              {formatDistance(new Date(post.createdAt), new Date(), {
-                addSuffix: true,
-              })}
-            </p>
+            <ContentStatusMeta
+              createdAt={currentPostData.createdAt}
+              editedAt={currentPostData.editedAt}
+              deletedAt={currentPostData.deletedAt}
+              removedAt={currentPostData.removedAt}
+            />
           </div>
         </div>
       )}
