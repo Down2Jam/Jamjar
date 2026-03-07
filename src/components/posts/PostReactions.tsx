@@ -8,6 +8,8 @@ import { togglePostReaction } from "@/requests/post";
 import { useEmojis } from "@/providers/EmojiProvider";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 
+const MAX_UNIQUE_REACTIONS = 10;
+
 type PostReactionsProps = {
   postId: number;
   reactions?: ReactionSummaryType[];
@@ -22,11 +24,13 @@ export default function PostReactions({
   onOverlayChange,
 }: PostReactionsProps) {
   const { emojis } = useEmojis();
-  const [current, setCurrent] = useState<ReactionSummaryType[]>(reactions ?? []);
+  const [current, setCurrent] = useState<ReactionSummaryType[]>(
+    reactions ?? [],
+  );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [updating, setUpdating] = useState<string | null>(null);
   const [hoveredReactionId, setHoveredReactionId] = useState<number | null>(
-    null
+    null,
   );
   const pickerRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +59,13 @@ export default function PostReactions({
   const sortedEmojis = useMemo(() => {
     return [...emojis].sort((a, b) => a.slug.localeCompare(b.slug));
   }, [emojis]);
+  const availableEmojis = useMemo(() => {
+    const usedReactionIds = new Set(current.map((entry) => entry.reaction.id));
+    if (current.length >= MAX_UNIQUE_REACTIONS) {
+      return [];
+    }
+    return sortedEmojis.filter((emoji) => !usedReactionIds.has(emoji.id));
+  }, [current, sortedEmojis]);
 
   const handleToggle = async (emoji: ReactionType) => {
     if (!getCookie("token")) {
@@ -83,7 +94,7 @@ export default function PostReactions({
     }
   };
 
-  if (current.length === 0 && sortedEmojis.length === 0) {
+  if (current.length === 0 && availableEmojis.length === 0) {
     return null;
   }
 
@@ -155,7 +166,7 @@ export default function PostReactions({
         </div>
       ))}
 
-      {sortedEmojis.length > 0 && (
+      {availableEmojis.length > 0 && (
         <div ref={pickerRef} className="relative z-30">
           <Button
             size="sm"
@@ -170,16 +181,13 @@ export default function PostReactions({
             padding={8}
           >
             <div className="grid grid-cols-6 gap-2 max-w-[240px] max-h-40 overflow-y-auto">
-              {sortedEmojis.map((emoji) => {
-                const reacted = current.find(
-                  (entry) => entry.reaction.id === emoji.id
-                )?.reacted;
+              {availableEmojis.map((emoji) => {
                 return (
                   <Button
                     key={emoji.id}
                     size="sm"
-                    variant={reacted ? "standard" : "ghost"}
-                    color={reacted ? "blue" : "default"}
+                    variant="ghost"
+                    color="default"
                     leftSlot={
                       <img
                         src={emoji.image}
