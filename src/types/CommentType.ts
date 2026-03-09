@@ -5,7 +5,7 @@ import { UserType } from "./UserType";
 export interface CommentType {
   id: number;
   content: string;
-  children: CommentType[];
+  children?: CommentType[];
   author: UserType;
   createdAt: Date;
   editedAt?: Date | null;

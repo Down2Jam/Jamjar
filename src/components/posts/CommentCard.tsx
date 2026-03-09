@@ -42,6 +42,7 @@ export default function CommentCard({
     currentComment.deletedAt || currentComment.removedAt
   );
   const isAuthor = user?.slug === currentComment.author.slug;
+  const childComments = currentComment.children ?? [];
 
   useEffect(() => {
     setCurrentComment(comment);
@@ -261,10 +262,10 @@ export default function CommentCard({
           </>
         )}
 
-        {currentComment.children.length > 0 &&
-          (currentComment.children[0].author ? (
+        {childComments.length > 0 &&
+          (childComments[0].author ? (
             <div className="flex flex-col gap-3">
-              {currentComment.children.map((comment) => (
+              {childComments.map((comment) => (
                 <CommentCard key={comment.id} comment={comment} user={user} />
               ))}
             </div>
