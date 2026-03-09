@@ -296,9 +296,7 @@ export default function ClientUserPage({
   }>({ games: [], posts: [], tracks: [] });
   const [recType, setRecType] = useState<"games" | "posts" | "tracks">("games");
   const [recSelected, setRecSelected] = useState<number[]>([]);
-  const [profileSection, setProfileSection] = useState<
-    ProfileSection
-  >("bio");
+  const [profileSection, setProfileSection] = useState<ProfileSection>("bio");
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [defaultPfps, setDefaultPfps] = useState<string[]>([]);
@@ -701,7 +699,8 @@ export default function ClientUserPage({
   const visiblePosts = useMemo(
     () =>
       (user?.posts ?? []).filter(
-        (post) => canSeeModeratedContent || (!post.deletedAt && !post.removedAt),
+        (post) =>
+          canSeeModeratedContent || (!post.deletedAt && !post.removedAt),
       ),
     [canSeeModeratedContent, user?.posts],
   );
@@ -1314,7 +1313,7 @@ export default function ClientUserPage({
               </>
             )}
             {profileSection === "emotes" && (
-              <Hstack>
+              <Hstack wrap>
                 {emotes.map((emote) => (
                   <Card key={emote.id}>
                     <Vstack align="center" gap={2}>

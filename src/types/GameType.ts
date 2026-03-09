@@ -5,6 +5,7 @@ import { FlagType } from "./FlagType";
 import { GameTagType } from "./GameTagType";
 import { JamType } from "./JamType";
 import { LeaderboardType } from "./LeaderboardType";
+import { ReactionType } from "./ReactionType";
 import { RatingCategoryType } from "./RatingCategoryType";
 import { RatingType } from "./RatingType";
 import { TeamType } from "./TeamType";
@@ -52,6 +53,7 @@ export interface GameType {
   themeJustification: string;
   achievements: AchievementType[];
   leaderboards: LeaderboardType[];
+  gameEmotes?: ReactionType[];
   flags: FlagType[];
   tags: GameTagType[];
   comments: CommentType[];

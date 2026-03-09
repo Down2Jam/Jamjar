@@ -461,6 +461,7 @@ export default function ClientGamePage({
     { label: "To beat", value: game?.estAnyPercent },
     { label: "100%", value: game?.estHundredPercent },
   ].filter((entry) => entry.value);
+  const gameEmotes = game?.gameEmotes ?? [];
   const hasGameplayDetails =
     gameplayDetails.length > 0 || playtimeDetails.length > 0;
 
@@ -1695,6 +1696,32 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
+            {gameEmotes.length > 0 && (
+              <Card>
+                <Vstack align="stretch">
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    EMOTES
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {gameEmotes.map((emoji) => (
+                      <Chip
+                        key={emoji.id}
+                        avatarSrc={emoji.image}
+                        avatarAlt={`:${emoji.slug}:`}
+                      >
+                        <Text size="sm">:{emoji.slug}:</Text>
+                      </Chip>
+                    ))}
+                  </div>
+                </Vstack>
+              </Card>
+            )}
             {game.tracks && game.tracks.length > 0 && (
               <Card>
                 <Vstack align="stretch">
@@ -1837,8 +1864,7 @@ export default function ClientGamePage({
             </Card>
             <Popover
               shown={
-                isScreenshotViewerOpen &&
-                selectedMedia?.type === "screenshot"
+                isScreenshotViewerOpen && selectedMedia?.type === "screenshot"
               }
               anchorToScreen
               position="center"
