@@ -1006,52 +1006,56 @@ export default function ClientGamePage({
             {hasGameplayDetails && (
               <Card className="order-25">
                 <Vstack align="stretch" gap={3}>
-                  <p
-                    className="text-xs"
-                    style={{
-                      color: colors["textFaded"],
-                    }}
-                  >
-                    INPUT METHODS
-                  </p>
                   {gameplayDetails.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {gameplayDetails.map((method) => (
-                        <Chip key={method.label} icon={method.icon}>
-                          {method.label}
-                        </Chip>
-                      ))}
-                    </div>
-                  )}
-                  <p
-                    className="text-xs"
-                    style={{
-                      color: colors["textFaded"],
-                    }}
-                  >
-                    PLAYTIME
-                  </p>
-                  {playtimeDetails.length > 0 && (
-                    <Vstack align="stretch" gap={2}>
-                      <div className="grid grid-cols-1 gap-2">
-                        {playtimeDetails.map((entry) => (
-                          <div
-                            key={entry.label}
-                            className="flex items-center justify-between rounded-lg px-3 py-2"
-                            style={{
-                              backgroundColor: colors["base"],
-                            }}
-                          >
-                            <Text size="sm" color="textFaded">
-                              {entry.label}
-                            </Text>
-                            <Text size="sm" color="textFaded">
-                              {entry.value}
-                            </Text>
-                          </div>
+                    <>
+                      <p
+                        className="text-xs"
+                        style={{
+                          color: colors["textFaded"],
+                        }}
+                      >
+                        INPUT METHODS
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {gameplayDetails.map((method) => (
+                          <Chip key={method.label} icon={method.icon}>
+                            {method.label}
+                          </Chip>
                         ))}
                       </div>
-                    </Vstack>
+                    </>
+                  )}
+                  {playtimeDetails.length > 0 && (
+                    <>
+                      <p
+                        className="text-xs"
+                        style={{
+                          color: colors["textFaded"],
+                        }}
+                      >
+                        PLAYTIME
+                      </p>
+                      <Vstack align="stretch" gap={2}>
+                        <div className="grid grid-cols-1 gap-2">
+                          {playtimeDetails.map((entry) => (
+                            <div
+                              key={entry.label}
+                              className="flex items-center justify-between rounded-lg px-3 py-2"
+                              style={{
+                                backgroundColor: colors["base"],
+                              }}
+                            >
+                              <Text size="sm" color="textFaded">
+                                {entry.label}
+                              </Text>
+                              <Text size="sm" color="textFaded">
+                                {entry.value}
+                              </Text>
+                            </div>
+                          ))}
+                        </div>
+                      </Vstack>
+                    </>
                   )}
                 </Vstack>
               </Card>

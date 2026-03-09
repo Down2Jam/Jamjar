@@ -1038,8 +1038,8 @@ export default function ClientUserPage({
 
         {profileSection === "bio" ? (
           <Hstack align="stretch">
-            <Card>
-              {(user.links?.length || isOwner) && (
+            {(user.links?.length || isOwner) && (
+              <Card>
                 <div
                   role={isOwner ? "button" : undefined}
                   tabIndex={isOwner ? 0 : -1}
@@ -1106,50 +1106,52 @@ export default function ClientUserPage({
                     />
                   )}
                 </div>
-              )}
-            </Card>
-            <Card>
-              <div
-                role={isOwner ? "button" : undefined}
-                tabIndex={isOwner ? 0 : -1}
-                onClick={(event) => {
-                  if (!isOwner) return;
-                  const target = event.target as HTMLElement;
-                  if (target.closest("a")) return;
-                  setBioDraft(user.bio ?? "");
-                  openBio();
-                }}
-                onKeyDown={(event) => {
-                  if (!isOwner) return;
-                  if (event.key !== "Enter" && event.key !== " ") return;
-                  setBioDraft(user.bio ?? "");
-                  openBio();
-                }}
-                className={`relative w-full rounded-lg p-2 text-left ${
-                  isOwner ? "group cursor-pointer" : "cursor-default"
-                }`}
-              >
-                <Vstack align="start" className="gap-2 w-full">
-                  <Text weight="semibold">Bio</Text>
-                  <ThemedProse>
-                    <MentionedContent
-                      html={
-                        user.bio && user.bio != "<p></p>"
-                          ? user.bio
-                          : "Click to add a bio"
-                      }
-                      className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+              </Card>
+            )}
+            {((user.bio && user.bio != "<p></p>") || isOwner) && (
+              <Card>
+                <div
+                  role={isOwner ? "button" : undefined}
+                  tabIndex={isOwner ? 0 : -1}
+                  onClick={(event) => {
+                    if (!isOwner) return;
+                    const target = event.target as HTMLElement;
+                    if (target.closest("a")) return;
+                    setBioDraft(user.bio ?? "");
+                    openBio();
+                  }}
+                  onKeyDown={(event) => {
+                    if (!isOwner) return;
+                    if (event.key !== "Enter" && event.key !== " ") return;
+                    setBioDraft(user.bio ?? "");
+                    openBio();
+                  }}
+                  className={`relative w-full rounded-lg p-2 text-left ${
+                    isOwner ? "group cursor-pointer" : "cursor-default"
+                  }`}
+                >
+                  <Vstack align="start" className="gap-2 w-full">
+                    <Text weight="semibold">Bio</Text>
+                    <ThemedProse>
+                      <MentionedContent
+                        html={
+                          user.bio && user.bio != "<p></p>"
+                            ? user.bio
+                            : "Click to add a bio"
+                        }
+                        className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                      />
+                    </ThemedProse>
+                  </Vstack>
+                  {isOwner && (
+                    <div
+                      className="absolute inset-0 rounded-lg border border-dashed opacity-0 group-hover:opacity-100 transition-opacity"
+                      style={{ borderColor: colors["grayDark"] }}
                     />
-                  </ThemedProse>
-                </Vstack>
-                {isOwner && (
-                  <div
-                    className="absolute inset-0 rounded-lg border border-dashed opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ borderColor: colors["grayDark"] }}
-                  />
-                )}
-              </div>
-            </Card>
+                  )}
+                </div>
+              </Card>
+            )}
           </Hstack>
         ) : (
           <Vstack align="stretch" gap={4} className="w-full">

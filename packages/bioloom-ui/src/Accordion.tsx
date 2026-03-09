@@ -56,7 +56,7 @@ export function AccordionItem({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full justify-between px-4 py-3 text-left"
+        className="flex w-full cursor-pointer justify-between px-4 py-3 text-left"
         style={{ color: colors.text }}
       >
         <div className="flex flex-col gap-1">
