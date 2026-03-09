@@ -368,7 +368,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
 ) {
   const { colors } = useTheme();
 
-  const IconComponent = iconMap[name];
+  const IconComponent = iconMap[name] ?? iconMap.circlehelp;
 
   return (
     <IconComponent
