@@ -14,6 +14,7 @@ import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Text } from "bioloom-ui";
+import { PlatformType } from "@/types/DownloadLinkType";
 
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
@@ -31,6 +32,99 @@ type TypeOption = {
   icon?: IconName;
   description?: string;
 };
+
+type InputMethodFilter =
+  | "KeyboardMouse"
+  | "Gamepad"
+  | "Touch"
+  | "KeyboardOnly"
+  | "MouseOnly"
+  | "Motion"
+  | "VR"
+  | "Other";
+
+type BuildTypeFilter = PlatformType;
+
+type FilterOption = {
+  id: string;
+  name: string;
+  icon?: IconName;
+  description?: string;
+};
+
+const INPUT_METHOD_OPTIONS: Record<
+  InputMethodFilter,
+  { name: string; icon: IconName }
+> = {
+  KeyboardMouse: { name: "Keyboard + Mouse", icon: "keyboard" },
+  Gamepad: { name: "Gamepad / Controller", icon: "gamepad2" },
+  Touch: { name: "Touch", icon: "touchpad" },
+  KeyboardOnly: { name: "Keyboard Only", icon: "keyboard" },
+  MouseOnly: { name: "Mouse Only", icon: "mouse" },
+  Motion: { name: "Motion Controls", icon: "move3d" },
+  VR: { name: "VR", icon: "headset" },
+  Other: { name: "Other", icon: "morehorizontal" },
+};
+
+const BUILD_TYPE_OPTIONS: Record<BuildTypeFilter, { name: string; icon: IconName }> =
+  {
+    Windows: { name: "Windows", icon: "monitor" },
+    MacOS: { name: "macOS", icon: "custommacos" },
+    Linux: { name: "Linux", icon: "terminal" },
+    Web: { name: "Web", icon: "globe" },
+    Mobile: { name: "Mobile", icon: "smartphone" },
+    Other: { name: "Other", icon: "morehorizontal" },
+    SourceCode: { name: "Source Code", icon: "code2" },
+  };
+
+const BUILD_TYPE_ORDER: BuildTypeFilter[] = [
+  "Web",
+  "Windows",
+  "MacOS",
+  "Linux",
+  "Mobile",
+  "SourceCode",
+  "Other",
+];
+
+const INPUT_METHOD_ORDER: InputMethodFilter[] = [
+  "KeyboardMouse",
+  "Gamepad",
+  "Touch",
+  "KeyboardOnly",
+  "MouseOnly",
+  "Motion",
+  "VR",
+  "Other",
+];
+
+function parseMultiValueParam(value: string | null): Set<string> {
+  if (!value) return new Set();
+  return new Set(
+    value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter(Boolean)
+  );
+}
+
+function serializeMultiValueParam(values: Set<string>): string {
+  return Array.from(values).sort().join(",");
+}
+
+function getGameBuildTypes(game: GameType): Set<BuildTypeFilter> {
+  const buildTypes = new Set<BuildTypeFilter>();
+
+  if (game.itchEmbedUrl) {
+    buildTypes.add("Web");
+  }
+
+  game.downloadLinks.forEach((link) => {
+    buildTypes.add(link.platform);
+  });
+
+  return buildTypes;
+}
 
 function formatJamWindow(
   startISO?: string,
@@ -110,6 +204,49 @@ export default function Games() {
   }, []);
   const [typeFilter, setTypeFilter] =
     useState<TypeOption["id"]>(initialTypeParam);
+  const initialTagsParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("tags")
+          ),
+    []
+  );
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTagsParam);
+  const initialInputMethodsParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("inputMethods")
+          ),
+    []
+  );
+  const [selectedInputMethods, setSelectedInputMethods] =
+    useState<Set<string>>(initialInputMethodsParam);
+  const initialBuildTypesParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("buildTypes")
+          ),
+    []
+  );
+  const [selectedBuildTypes, setSelectedBuildTypes] =
+    useState<Set<string>>(initialBuildTypesParam);
+  const initialExcludedFlagsParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("excludeFlags")
+          ),
+    []
+  );
+  const [excludedFlags, setExcludedFlags] =
+    useState<Set<string>>(initialExcludedFlagsParam);
 
   const typeOptions: TypeOption[] = [
     { id: "all", name: "All Categories", icon: "layers" },
@@ -172,6 +309,20 @@ export default function Games() {
         params.set(key, value);
       } else {
         // Delete when value is "all" to keep URLs clean.
+        params.delete(key);
+      }
+      router.push(`?${params.toString()}`);
+    },
+    [router]
+  );
+
+  const updateMultiQueryParam = useCallback(
+    (key: string, values: Set<string>) => {
+      const params = new URLSearchParams(window.location.search);
+      const serialized = serializeMultiValueParam(values);
+      if (serialized) {
+        params.set(key, serialized);
+      } else {
         params.delete(key);
       }
       router.push(`?${params.toString()}`);
@@ -316,16 +467,143 @@ export default function Games() {
     };
   }, [sort, jamId, jamDetecting]);
 
+  const tagOptions = useMemo<FilterOption[]>(() => {
+    if (!games) return [];
+
+    const seen = new Map<string, FilterOption>();
+    games.forEach((game) => {
+      (game.tags ?? []).forEach((tag) => {
+        const id = String(tag.id);
+        if (!seen.has(id)) {
+          seen.set(id, {
+            id,
+            name: tag.name,
+            icon: tag.icon as IconName,
+            description: tag.description,
+          });
+        }
+      });
+    });
+
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [games]);
+
+  const inputMethodOptions = useMemo<FilterOption[]>(() => {
+    if (!games) return [];
+
+    const used = new Set<InputMethodFilter>();
+    games.forEach((game) => {
+      (game.inputMethods ?? []).forEach((method) => {
+        if (method in INPUT_METHOD_OPTIONS) {
+          used.add(method as InputMethodFilter);
+        }
+      });
+    });
+
+    return INPUT_METHOD_ORDER.filter((method) => used.has(method)).map((method) => ({
+      id: method,
+      name: INPUT_METHOD_OPTIONS[method].name,
+      icon: INPUT_METHOD_OPTIONS[method].icon,
+    }));
+  }, [games]);
+
+  const buildTypeOptions = useMemo<FilterOption[]>(() => {
+    if (!games) return [];
+
+    const used = new Set<BuildTypeFilter>();
+    games.forEach((game) => {
+      getGameBuildTypes(game).forEach((buildType) => used.add(buildType));
+    });
+
+    return BUILD_TYPE_ORDER.filter((buildType) => used.has(buildType)).map(
+      (buildType) => ({
+        id: buildType,
+        name: BUILD_TYPE_OPTIONS[buildType].name,
+        icon: BUILD_TYPE_OPTIONS[buildType].icon,
+      })
+    );
+  }, [games]);
+
+  const flagOptions = useMemo<FilterOption[]>(() => {
+    if (!games) return [];
+
+    const seen = new Map<string, FilterOption>();
+    games.forEach((game) => {
+      (game.flags ?? []).forEach((flag) => {
+        const id = String(flag.id);
+        if (!seen.has(id)) {
+          seen.set(id, {
+            id,
+            name: flag.name,
+            icon: flag.icon as IconName,
+            description: flag.description,
+          });
+        }
+      });
+    });
+
+    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [games]);
+
   const displayedGames = useMemo(() => {
     if (!games) return [];
-    if (typeFilter === "all") return games;
+    return games.filter((game) => {
+      if (typeFilter !== "all") {
+        const wanted = typeFilter.toLowerCase();
+        const t = game.category ?? "";
+        if (String(t).toLowerCase() !== wanted) {
+          return false;
+        }
+      }
 
-    const wanted = typeFilter.toLowerCase();
-    return games.filter((g) => {
-      const t = g.category ?? "";
-      return String(t).toLowerCase() === wanted;
+      if (selectedTags.size > 0) {
+        const gameTags = new Set((game.tags ?? []).map((tag) => String(tag.id)));
+        if (!Array.from(selectedTags).some((tagId) => gameTags.has(tagId))) {
+          return false;
+        }
+      }
+
+      if (selectedInputMethods.size > 0) {
+        const gameInputMethods = new Set(game.inputMethods ?? []);
+        if (
+          !Array.from(selectedInputMethods).some((method) =>
+            gameInputMethods.has(method)
+          )
+        ) {
+          return false;
+        }
+      }
+
+      if (selectedBuildTypes.size > 0) {
+        const gameBuildTypes = getGameBuildTypes(game);
+        if (
+          !Array.from(selectedBuildTypes).some((buildType) =>
+            gameBuildTypes.has(buildType as BuildTypeFilter)
+          )
+        ) {
+          return false;
+        }
+      }
+
+      if (excludedFlags.size > 0) {
+        const gameFlags = new Set(
+          (game.flags ?? []).map((flag) => String(flag.id))
+        );
+        if (Array.from(excludedFlags).some((flagId) => gameFlags.has(flagId))) {
+          return false;
+        }
+      }
+
+      return true;
     });
-  }, [games, typeFilter]);
+  }, [
+    excludedFlags,
+    games,
+    selectedBuildTypes,
+    selectedInputMethods,
+    selectedTags,
+    typeFilter,
+  ]);
 
   if (!hasData && (showBusy || jamDetecting)) {
     return (
@@ -424,6 +702,110 @@ export default function Games() {
               </Dropdown.Item>
             ))}
           </Dropdown>
+
+          {tagOptions.length > 0 && (
+            <Dropdown
+              multiple
+              selectedValues={selectedTags}
+              onSelectionChange={(values) => {
+                const next = new Set(
+                  Array.from(values, (value) => String(value))
+                );
+                setSelectedTags(next);
+                updateMultiQueryParam("tags", next);
+              }}
+              placeholder="Tags"
+            >
+              {tagOptions.map((tag) => (
+                <Dropdown.Item
+                  key={tag.id}
+                  value={tag.id}
+                  icon={tag.icon}
+                  description={tag.description}
+                >
+                  {tag.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
+          )}
+
+          {inputMethodOptions.length > 0 && (
+            <Dropdown
+              multiple
+              selectedValues={selectedInputMethods}
+              onSelectionChange={(values) => {
+                const next = new Set(
+                  Array.from(values, (value) => String(value))
+                );
+                setSelectedInputMethods(next);
+                updateMultiQueryParam("inputMethods", next);
+              }}
+              placeholder="Input Methods"
+            >
+              {inputMethodOptions.map((method) => (
+                <Dropdown.Item
+                  key={method.id}
+                  value={method.id}
+                  icon={method.icon}
+                  description={method.description}
+                >
+                  {method.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
+          )}
+
+          {buildTypeOptions.length > 0 && (
+            <Dropdown
+              multiple
+              selectedValues={selectedBuildTypes}
+              onSelectionChange={(values) => {
+                const next = new Set(
+                  Array.from(values, (value) => String(value))
+                );
+                setSelectedBuildTypes(next);
+                updateMultiQueryParam("buildTypes", next);
+              }}
+              placeholder="Build Types"
+            >
+              {buildTypeOptions.map((buildType) => (
+                <Dropdown.Item
+                  key={buildType.id}
+                  value={buildType.id}
+                  icon={buildType.icon}
+                  description={buildType.description}
+                >
+                  {buildType.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
+          )}
+
+          {flagOptions.length > 0 && (
+            <Dropdown
+              multiple
+              selectedValues={excludedFlags}
+              onSelectionChange={(values) => {
+                const next = new Set(
+                  Array.from(values, (value) => String(value))
+                );
+                setExcludedFlags(next);
+                updateMultiQueryParam("excludeFlags", next);
+              }}
+              placeholder="Exclude Flags"
+            >
+              {flagOptions.map((flag) => (
+                <Dropdown.Item
+                  key={flag.id}
+                  value={flag.id}
+                  icon={flag.icon}
+                  description={flag.description}
+                >
+                  {flag.name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
+          )}
         </Hstack>
       </Vstack>
 
