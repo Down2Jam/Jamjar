@@ -3,6 +3,7 @@ import { BASE_URL } from "./config";
 import { PlatformType } from "@/types/DownloadLinkType";
 import { AchievementType } from "@/types/AchievementType";
 import { LeaderboardType } from "@/types/LeaderboardType";
+import { GameEmbedAspectRatio } from "@/types/GameType";
 
 export async function getCurrentGame() {
   return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
@@ -66,6 +67,7 @@ export async function postGame(
   screenshots: string[],
   trailerUrl: string | null,
   itchEmbedUrl: string | null,
+  itchEmbedAspectRatio: GameEmbedAspectRatio | null,
   inputMethods: string[],
   estOneRun: string | null,
   estAnyPercent: string | null,
@@ -96,6 +98,7 @@ export async function postGame(
       screenshots,
       trailerUrl,
       itchEmbedUrl,
+      itchEmbedAspectRatio,
       inputMethods,
       estOneRun,
       estAnyPercent,
@@ -145,6 +148,7 @@ export async function updateGame(
   screenshots: string[],
   trailerUrl: string | null,
   itchEmbedUrl: string | null,
+  itchEmbedAspectRatio: GameEmbedAspectRatio | null,
   inputMethods: string[],
   estOneRun: string | null,
   estAnyPercent: string | null,
@@ -174,6 +178,7 @@ export async function updateGame(
       screenshots,
       trailerUrl,
       itchEmbedUrl,
+      itchEmbedAspectRatio,
       inputMethods,
       estOneRun,
       estAnyPercent,

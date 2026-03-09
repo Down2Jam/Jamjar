@@ -10,6 +10,19 @@ import { RatingType } from "./RatingType";
 import { TeamType } from "./TeamType";
 import { TrackType } from "./TrackType";
 
+export type GameEmbedAspectRatio =
+  | "16 / 9"
+  | "16 / 10"
+  | "21 / 9"
+  | "4 / 3"
+  | "5 / 4"
+  | "1 / 1"
+  | "3 / 2"
+  | "2 / 3"
+  | "3 / 4"
+  | "9 / 16"
+  | "10 / 16";
+
 export interface GameType {
   id: number;
   slug: string;
@@ -22,6 +35,7 @@ export interface GameType {
   screenshots?: string[];
   trailerUrl?: string | null;
   itchEmbedUrl?: string | null;
+  itchEmbedAspectRatio?: GameEmbedAspectRatio | null;
   inputMethods?: string[];
   estOneRun?: string | null;
   estAnyPercent?: string | null;

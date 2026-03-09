@@ -25,7 +25,7 @@ import { AchievementType } from "@/types/AchievementType";
 import { DownloadLinkType, PlatformType } from "@/types/DownloadLinkType";
 import { FlagType } from "@/types/FlagType";
 import { GameTagType } from "@/types/GameTagType";
-import { GameType } from "@/types/GameType";
+import { GameEmbedAspectRatio, GameType } from "@/types/GameType";
 import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
@@ -108,6 +108,32 @@ const INPUT_METHOD_OPTIONS: {
 const INPUT_METHOD_VALUES = new Set<InputMethodType>(
   INPUT_METHOD_OPTIONS.map((option) => option.value),
 );
+
+const ITCH_EMBED_ASPECT_RATIO_OPTIONS: GameEmbedAspectRatio[] = [
+  "16 / 9",
+  "16 / 10",
+  "21 / 9",
+  "4 / 3",
+  "5 / 4",
+  "1 / 1",
+  "3 / 2",
+  "2 / 3",
+  "3 / 4",
+  "9 / 16",
+  "10 / 16",
+];
+
+const normalizeItchEmbedAspectRatio = (
+  value?: string | null,
+): GameEmbedAspectRatio => {
+  if (
+    value &&
+    ITCH_EMBED_ASPECT_RATIO_OPTIONS.includes(value as GameEmbedAspectRatio)
+  ) {
+    return value as GameEmbedAspectRatio;
+  }
+  return "16 / 9";
+};
 
 const isInputMethodType = (value: string): value is InputMethodType =>
   INPUT_METHOD_VALUES.has(value as InputMethodType);
@@ -291,6 +317,8 @@ export default function GameEditingForm({
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
+  const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
+    useState<GameEmbedAspectRatio>("16 / 9");
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
 
   const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
@@ -348,6 +376,9 @@ export default function GameEditingForm({
     setScreenshots(game?.screenshots ?? []);
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
+    setItchEmbedAspectRatio(
+      normalizeItchEmbedAspectRatio(game?.itchEmbedAspectRatio),
+    );
     setEmotePrefixInput(game?.emotePrefix ?? "");
     setInputMethods(
       new Set((game?.inputMethods ?? []).filter(isInputMethodType)),
@@ -793,6 +824,9 @@ export default function GameEditingForm({
                   screenshots,
                   trailerUrl || null,
                   toCanonicalItchEmbedUrl(itchEmbedUrl) || null,
+                  toCanonicalItchEmbedUrl(itchEmbedUrl)
+                    ? itchEmbedAspectRatio
+                    : null,
                   Array.from(inputMethods),
                   estOneRun || null,
                   estAnyPercent || null,
@@ -822,6 +856,9 @@ export default function GameEditingForm({
                   screenshots,
                   trailerUrl || null,
                   toCanonicalItchEmbedUrl(itchEmbedUrl) || null,
+                  toCanonicalItchEmbedUrl(itchEmbedUrl)
+                    ? itchEmbedAspectRatio
+                    : null,
                   Array.from(inputMethods),
                   estOneRun || null,
                   estAnyPercent || null,
@@ -2039,10 +2076,35 @@ export default function GameEditingForm({
                         }
                       }}
                     />
+                    <div>
+                      <Text color="text">Embed aspect ratio</Text>
+                      <Text color="textFaded" size="xs">
+                        Choose the shape that best matches your playable game.
+                      </Text>
+                    </div>
+                    <Dropdown
+                      selectedValue={itchEmbedAspectRatio}
+                      onSelect={(value) =>
+                        setItchEmbedAspectRatio(
+                          normalizeItchEmbedAspectRatio(
+                            typeof value === "string" ? value : null,
+                          ),
+                        )
+                      }
+                    >
+                      {ITCH_EMBED_ASPECT_RATIO_OPTIONS.map((value) => (
+                        <Dropdown.Item key={value} value={value}>
+                          {value}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown>
                     {itchEmbedUrl && toCanonicalItchEmbedUrl(itchEmbedUrl) && (
                       <div
                         className="w-full rounded-xl overflow-hidden"
-                        style={{ aspectRatio: "16 / 9", background: "#111" }}
+                        style={{
+                          aspectRatio: itchEmbedAspectRatio,
+                          background: "#111",
+                        }}
                       >
                         <iframe
                           src={toCanonicalItchEmbedUrl(itchEmbedUrl) ?? ""}

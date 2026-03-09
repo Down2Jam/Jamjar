@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { use, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { addToast } from "bioloom-ui";
@@ -14,7 +14,7 @@ import {
   TableCell,
 } from "bioloom-ui";
 import { Pagination } from "bioloom-ui";
-import { GameType } from "@/types/GameType";
+import { GameEmbedAspectRatio, GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
 import { getSelf } from "@/requests/user";
@@ -23,8 +23,11 @@ import {
   AlertTriangle,
   Award,
   Badge as LucideBadge,
+  ChevronLeft,
+  ChevronRight,
   CircleHelp,
   MessageCircleMore,
+  Play,
   Star,
 } from "lucide-react";
 import CommentCard from "@/components/posts/CommentCard";
@@ -71,6 +74,17 @@ const platformOrder: Record<string, number> = {
   Mobile: 5,
 };
 
+const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
+  KeyboardMouse: { label: "Keyboard + Mouse", icon: "keyboard" },
+  Gamepad: { label: "Gamepad / Controller", icon: "gamepad2" },
+  Touch: { label: "Touch", icon: "touchpad" },
+  KeyboardOnly: { label: "Keyboard Only", icon: "keyboard" },
+  MouseOnly: { label: "Mouse Only", icon: "mouse" },
+  Motion: { label: "Motion Controls", icon: "move3d" },
+  VR: { label: "VR", icon: "headset" },
+  Other: { label: "Other", icon: "morehorizontal" },
+};
+
 function getPlatformIcon(platform: string): IconName | undefined {
   switch (platform) {
     case "Linux":
@@ -90,7 +104,7 @@ function getPlatformIcon(platform: string): IconName | undefined {
 
 function gradientTextStyle(
   gradient: string,
-  fallback: string
+  fallback: string,
 ): React.CSSProperties {
   return {
     backgroundImage: gradient,
@@ -117,6 +131,32 @@ function toCanonicalItchEmbedUrl(url?: string | null) {
   }
 }
 
+const ITCH_EMBED_ASPECT_RATIO_OPTIONS: GameEmbedAspectRatio[] = [
+  "16 / 9",
+  "16 / 10",
+  "21 / 9",
+  "4 / 3",
+  "5 / 4",
+  "1 / 1",
+  "3 / 2",
+  "2 / 3",
+  "3 / 4",
+  "9 / 16",
+  "10 / 16",
+];
+
+function normalizeItchEmbedAspectRatio(
+  value?: string | null,
+): GameEmbedAspectRatio {
+  if (
+    value &&
+    ITCH_EMBED_ASPECT_RATIO_OPTIONS.includes(value as GameEmbedAspectRatio)
+  ) {
+    return value as GameEmbedAspectRatio;
+  }
+  return "16 / 9";
+}
+
 const YT_ID_REGEX =
   /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
 
@@ -126,9 +166,19 @@ function extractYouTubeId(url?: string | null): string | null {
   return match ? match[1] : null;
 }
 
+type GameMediaItem =
+  | { type: "trailer"; id: string; thumbnail: string }
+  | { type: "screenshot"; src: string; index: number };
+
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady?: (() => void) | null;
+  }
+}
+
 function getPlacementGradient(
   placement: number,
-  colors: Record<string, string>
+  colors: Record<string, string>,
 ) {
   if (placement === 1)
     return {
@@ -179,13 +229,16 @@ export default function ClientGamePage({
   const [hoverStars, setHoverStars] = useState<{ [key: number]: number }>({});
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const [selectedStars, setSelectedStars] = useState<{ [key: number]: number }>(
-    {}
+    {},
   );
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
   >([]);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
+  const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   const { siteTheme, colors } = useTheme();
   const t = useTranslations();
@@ -224,7 +277,7 @@ export default function ClientGamePage({
     | "Default";
   function getRarityTier(
     haveCount: number,
-    totalEngaged: number
+    totalEngaged: number,
   ): { tier: RarityTier; pct: number } {
     const pct = totalEngaged > 0 ? (haveCount / totalEngaged) * 100 : 0;
 
@@ -301,12 +354,12 @@ export default function ClientGamePage({
                 .reduce(
                   (
                     acc: { [key: number]: number },
-                    rating: { categoryId: number; value: number }
+                    rating: { categoryId: number; value: number },
                   ) => {
                     acc[rating.categoryId] = rating.value;
                     return acc;
                   },
-                  {}
+                  {},
                 );
 
               setSelectedStars(ratings);
@@ -319,6 +372,14 @@ export default function ClientGamePage({
     };
 
     fetchGameAndUser();
+  }, [gameSlug]);
+
+  useEffect(() => {
+    setIsItchEmbedActive(false);
+  }, [gameSlug]);
+
+  useEffect(() => {
+    setCurrentMediaIndex(0);
   }, [gameSlug]);
 
   function ordinal_suffix_of(i: number) {
@@ -361,6 +422,178 @@ export default function ClientGamePage({
     return json.data as string; // URL
   };
 
+  const itchEmbedUrl = toCanonicalItchEmbedUrl(game?.itchEmbedUrl);
+  const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
+    game?.itchEmbedAspectRatio,
+  );
+  const trailerId = extractYouTubeId(game?.trailerUrl);
+  const screenshots = (game?.screenshots ?? []).filter(Boolean);
+  const mediaItems = useMemo<GameMediaItem[]>(() => {
+    const items: GameMediaItem[] = [];
+
+    if (trailerId) {
+      items.push({
+        type: "trailer",
+        id: trailerId,
+        thumbnail: `https://img.youtube.com/vi/${trailerId}/mqdefault.jpg`,
+      });
+    }
+
+    for (let index = 0; index < screenshots.length; index += 1) {
+      const src = screenshots[index];
+      items.push({ type: "screenshot", src, index });
+    }
+
+    return items;
+  }, [screenshots, trailerId]);
+  const selectedMedia = mediaItems[currentMediaIndex] ?? null;
+  const hasMedia = Boolean(trailerId || screenshots.length > 0);
+  const trailerPlayerId = trailerId && game ? `game-trailer-${game.id}` : null;
+  const firstScreenshotIndex = mediaItems.findIndex(
+    (item) => item.type === "screenshot",
+  );
+  const gameplayDetails = (game?.inputMethods ?? [])
+    .map((method) => inputMethodMeta[method])
+    .filter(Boolean);
+  const playtimeDetails = [
+    { label: "Per run", value: game?.estOneRun },
+    { label: "To beat", value: game?.estAnyPercent },
+    { label: "100%", value: game?.estHundredPercent },
+  ].filter((entry) => entry.value);
+  const hasGameplayDetails =
+    gameplayDetails.length > 0 || playtimeDetails.length > 0;
+
+  useEffect(() => {
+    if (!selectedMedia || mediaItems.length === 0) {
+      setCurrentMediaIndex(0);
+      return;
+    }
+
+    if (currentMediaIndex >= mediaItems.length) {
+      setCurrentMediaIndex(0);
+    }
+  }, [currentMediaIndex, mediaItems, selectedMedia]);
+
+  const subscribeToTrailerEvents = () => {
+    const iframeWindow = trailerFrameRef.current?.contentWindow;
+    if (!iframeWindow || !trailerPlayerId) return;
+
+    const messages = [
+      { event: "listening", id: trailerPlayerId, channel: "widget" },
+      {
+        event: "command",
+        func: "addEventListener",
+        args: ["onStateChange"],
+        id: trailerPlayerId,
+        channel: "widget",
+      },
+    ];
+
+    for (const message of messages) {
+      iframeWindow.postMessage(
+        JSON.stringify(message),
+        "https://www.youtube-nocookie.com",
+      );
+      iframeWindow.postMessage(
+        JSON.stringify(message),
+        "https://www.youtube.com",
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (
+      !selectedMedia ||
+      selectedMedia.type !== "trailer" ||
+      firstScreenshotIndex < 0
+    ) {
+      return;
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.origin !== "https://www.youtube-nocookie.com" &&
+        event.origin !== "https://www.youtube.com"
+      ) {
+        return;
+      }
+
+      let payload: unknown = event.data;
+      if (typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          return;
+        }
+      }
+
+      if (
+        typeof payload === "object" &&
+        payload !== null &&
+        "event" in payload &&
+        "info" in payload
+      ) {
+        const ytPayload = payload as {
+          event?: string;
+          info?: number;
+        };
+
+        if (ytPayload.event === "onStateChange" && ytPayload.info === 0) {
+          setCurrentMediaIndex(firstScreenshotIndex);
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    subscribeToTrailerEvents();
+
+    return () => {
+      window.removeEventListener("message", handleMessage);
+    };
+  }, [firstScreenshotIndex, selectedMedia, trailerPlayerId]);
+
+  useEffect(() => {
+    if (!selectedMedia || selectedMedia.type !== "screenshot") return;
+
+    const screenshotIndices = mediaItems.reduce<number[]>(
+      (acc, item, index) => {
+        if (item.type === "screenshot") acc.push(index);
+        return acc;
+      },
+      [],
+    );
+
+    if (screenshotIndices.length <= 1) return;
+
+    const currentScreenshotPosition =
+      screenshotIndices.indexOf(currentMediaIndex);
+    if (currentScreenshotPosition === -1) return;
+
+    const timeout = window.setTimeout(() => {
+      const nextIndex =
+        screenshotIndices[
+          (currentScreenshotPosition + 1) % screenshotIndices.length
+        ];
+      setCurrentMediaIndex(nextIndex);
+    }, 5000);
+
+    return () => window.clearTimeout(timeout);
+  }, [currentMediaIndex, mediaItems, selectedMedia]);
+
+  const showPreviousMedia = () => {
+    if (mediaItems.length <= 1) return;
+    setCurrentMediaIndex((prev) =>
+      prev === 0 ? mediaItems.length - 1 : prev - 1,
+    );
+  };
+
+  const showNextMedia = () => {
+    if (mediaItems.length <= 1) return;
+    setCurrentMediaIndex((prev) =>
+      prev === mediaItems.length - 1 ? 0 : prev + 1,
+    );
+  };
+
   if (!game) return <div>Loading...</div>;
 
   // Check if the logged-in user is the creator or a contributor
@@ -371,11 +604,6 @@ export default function ClientGamePage({
   if (!game.published && !isEditable) {
     return <p>This game has not been published</p>;
   }
-
-  const itchEmbedUrl = toCanonicalItchEmbedUrl(game.itchEmbedUrl);
-  const trailerId = extractYouTubeId(game.trailerUrl);
-  const screenshots = (game.screenshots ?? []).filter(Boolean);
-  const hasMedia = Boolean(trailerId || screenshots.length > 0);
 
   return (
     <>
@@ -429,8 +657,8 @@ export default function ClientGamePage({
                     game.category == "REGULAR"
                       ? "blue"
                       : game.category == "ODA"
-                      ? "purple"
-                      : "pink"
+                        ? "purple"
+                        : "pink"
                   }
                   key={game.category}
                 >
@@ -440,20 +668,61 @@ export default function ClientGamePage({
             </div>
             {itchEmbedUrl && (
               <div
-                className="w-full rounded-xl overflow-hidden"
+                className="w-full rounded-xl overflow-hidden relative"
                 style={{
-                  aspectRatio: "16 / 9",
+                  aspectRatio: itchEmbedAspectRatio,
                   backgroundColor: colors["base"],
                   border: `1px solid ${colors["crust"]}`,
                 }}
               >
-                <iframe
-                  src={itchEmbedUrl}
-                  title={`${game.name} playable embed`}
-                  className="w-full h-full"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                />
+                {isItchEmbedActive ? (
+                  <iframe
+                    src={itchEmbedUrl}
+                    title={`${game.name} playable embed`}
+                    className="w-full h-full"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsItchEmbedActive(true)}
+                    className="absolute inset-0 flex cursor-pointer items-center justify-center transition-opacity hover:opacity-95"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.38) 100%)",
+                    }}
+                    aria-label={`Play ${game.name}`}
+                  >
+                    <div
+                      className="flex flex-col items-center gap-3"
+                      style={{ color: colors["text"] }}
+                    >
+                      <div
+                        className="flex items-center justify-center rounded-full"
+                        style={{
+                          width: "4.5rem",
+                          height: "4.5rem",
+                          backgroundColor: colors["mantle"],
+                          border: `1px solid ${colors["surface0"]}`,
+                          boxShadow: `0 16px 32px ${colors["crust"]}66`,
+                        }}
+                      >
+                        <Play
+                          size={28}
+                          fill="currentColor"
+                          style={{ marginLeft: "0.2rem" }}
+                        />
+                      </div>
+                      <Text
+                        className="font-semibold"
+                        style={{ color: colors["text"] }}
+                      >
+                        Click to play
+                      </Text>
+                    </div>
+                  </button>
+                )}
               </div>
             )}
             <ThemedProse>
@@ -467,8 +736,8 @@ export default function ClientGamePage({
                   game.downloadLinks.sort(
                     (a, b) =>
                       (platformOrder[a.platform] ?? 99) -
-                      (platformOrder[b.platform] ?? 99)
-                  )
+                      (platformOrder[b.platform] ?? 99),
+                  ),
                 ),
               ].map((downloadLink) => (
                 <Button
@@ -594,47 +863,195 @@ export default function ClientGamePage({
                   >
                     MEDIA
                   </p>
-                  {trailerId && (
-                    <div
-                      className="w-full overflow-hidden rounded-xl"
-                      style={{
-                        aspectRatio: "16 / 9",
-                        backgroundColor: colors["base"],
-                        border: `1px solid ${colors["crust"]}`,
-                      }}
-                    >
-                      <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${trailerId}`}
-                        title={`${game.name} trailer`}
-                        className="h-full w-full"
-                        style={{ border: 0 }}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                      />
-                    </div>
-                  )}
-                  {screenshots.length > 0 && (
-                    <div className="grid grid-cols-1 gap-3">
-                      {screenshots.map((screenshot, index) => (
-                        <Link
-                          key={`${screenshot}-${index}`}
-                          href={screenshot}
-                          target="_blank"
-                        >
-                          <img
-                            src={screenshot}
-                            alt={`${game.name} screenshot ${index + 1}`}
-                            className="w-full rounded-xl object-cover"
-                            style={{
-                              backgroundColor: colors["base"],
-                              border: `1px solid ${colors["crust"]}`,
-                            }}
-                            loading="lazy"
-                            decoding="async"
+                  {selectedMedia && (
+                    <>
+                      <div
+                        className="relative w-full overflow-hidden rounded-xl"
+                        style={{
+                          aspectRatio: "16 / 9",
+                          backgroundColor: colors["base"],
+                          border: `1px solid ${colors["crust"]}`,
+                        }}
+                      >
+                        {selectedMedia.type === "trailer" ? (
+                          <iframe
+                            id={trailerPlayerId ?? undefined}
+                            ref={trailerFrameRef}
+                            src={`https://www.youtube-nocookie.com/embed/${selectedMedia.id}?enablejsapi=1&rel=0&origin=${encodeURIComponent(
+                              typeof window === "undefined"
+                                ? BASE_URL
+                                : window.location.origin,
+                            )}`}
+                            title={`${game.name} trailer`}
+                            className="h-full w-full"
+                            style={{ border: 0 }}
+                            onLoad={subscribeToTrailerEvents}
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
                           />
-                        </Link>
+                        ) : (
+                          <a
+                            href={selectedMedia.src}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block h-full w-full cursor-pointer"
+                          >
+                            <img
+                              src={selectedMedia.src}
+                              alt={`${game.name} screenshot ${selectedMedia.index + 1}`}
+                              className="block h-full w-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </a>
+                        )}
+                        {mediaItems.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={showPreviousMedia}
+                              className="absolute left-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full p-2 transition-colors"
+                              style={{
+                                backgroundColor: `${colors["mantle"]}dd`,
+                                color: colors["text"],
+                                border: `1px solid ${colors["surface0"]}`,
+                              }}
+                              aria-label="Show previous media"
+                            >
+                              <ChevronLeft size={18} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={showNextMedia}
+                              className="absolute right-3 top-1/2 z-10 flex -translate-y-1/2 cursor-pointer items-center justify-center rounded-full p-2 transition-colors"
+                              style={{
+                                backgroundColor: `${colors["mantle"]}dd`,
+                                color: colors["text"],
+                                border: `1px solid ${colors["surface0"]}`,
+                              }}
+                              aria-label="Show next media"
+                            >
+                              <ChevronRight size={18} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 xl:grid-cols-6">
+                        {mediaItems.map((item, index) => {
+                          const isSelected = index === currentMediaIndex;
+                          const thumbnailSrc =
+                            item.type === "trailer" ? item.thumbnail : item.src;
+                          const label =
+                            item.type === "trailer"
+                              ? "Trailer"
+                              : `Screenshot ${item.index + 1}`;
+
+                          return (
+                            <button
+                              key={
+                                item.type === "trailer"
+                                  ? `trailer-${item.id}`
+                                  : `${item.src}-${item.index}`
+                              }
+                              type="button"
+                              onClick={() => setCurrentMediaIndex(index)}
+                              className="relative cursor-pointer overflow-hidden rounded-lg text-left transition-all"
+                              style={{
+                                aspectRatio: "16 / 9",
+                                border: `1px solid ${
+                                  isSelected ? colors["blue"] : colors["crust"]
+                                }`,
+                                boxShadow: isSelected
+                                  ? `0 0 0 1px ${colors["blue"]}`
+                                  : "none",
+                                backgroundColor: colors["base"],
+                              }}
+                              aria-label={`Show ${label.toLowerCase()}`}
+                            >
+                              <img
+                                src={thumbnailSrc}
+                                alt={`${game.name} ${label.toLowerCase()}`}
+                                className={`h-full w-full object-cover transition ${
+                                  isSelected
+                                    ? "brightness-100"
+                                    : "brightness-75 hover:brightness-100"
+                                }`}
+                                loading="lazy"
+                                decoding="async"
+                              />
+                              {item.type === "trailer" && (
+                                <div
+                                  className="absolute inset-0 flex items-center justify-center"
+                                  style={{
+                                    background:
+                                      "linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.34) 100%)",
+                                  }}
+                                >
+                                  <Play
+                                    size={24}
+                                    fill="currentColor"
+                                    style={{ color: "#fff" }}
+                                  />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
+                </Vstack>
+              </Card>
+            )}
+            {hasGameplayDetails && (
+              <Card className="order-25">
+                <Vstack align="stretch" gap={3}>
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    INPUT METHODS
+                  </p>
+                  {gameplayDetails.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {gameplayDetails.map((method) => (
+                        <Chip key={method.label} icon={method.icon}>
+                          {method.label}
+                        </Chip>
                       ))}
                     </div>
+                  )}
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    PLAYTIME
+                  </p>
+                  {playtimeDetails.length > 0 && (
+                    <Vstack align="stretch" gap={2}>
+                      <div className="grid grid-cols-1 gap-2">
+                        {playtimeDetails.map((entry) => (
+                          <div
+                            key={entry.label}
+                            className="flex items-center justify-between rounded-lg px-3 py-2"
+                            style={{
+                              backgroundColor: colors["base"],
+                            }}
+                          >
+                            <Text size="sm" color="textFaded">
+                              {entry.label}
+                            </Text>
+                            <Text size="sm" color="textFaded">
+                              {entry.value}
+                            </Text>
+                          </div>
+                        ))}
+                      </div>
+                    </Vstack>
                   )}
                 </Vstack>
               </Card>
@@ -657,12 +1074,12 @@ export default function ClientGamePage({
                         .sort(
                           (a, b) =>
                             (game.scores[a].placement || 0) -
-                            (game.scores[b].placement || 0)
+                            (game.scores[b].placement || 0),
                         )
                         .map((score) => {
                           const { gradient, first } = getPlacementGradient(
                             game.scores[score].placement,
-                            colors
+                            colors,
                           );
 
                           return (
@@ -683,7 +1100,7 @@ export default function ClientGamePage({
                                 className="w-fit"
                               >
                                 {(game.scores[score].averageScore / 2).toFixed(
-                                  2
+                                  2,
                                 )}{" "}
                                 stars
                               </span>
@@ -696,7 +1113,7 @@ export default function ClientGamePage({
                                   >
                                     (
                                     {ordinal_suffix_of(
-                                      game.scores[score].placement
+                                      game.scores[score].placement,
                                     )}
                                     )
                                   </span>
@@ -736,7 +1153,7 @@ export default function ClientGamePage({
                                 A: game.scores[score].averageScore / 2,
                                 B: game.scores[score].averageUnrankedScore / 2,
                                 fullMark: 5,
-                              })
+                              }),
                             )}
                           >
                             <PolarGrid stroke={colors["crust"]} />
@@ -843,258 +1260,6 @@ export default function ClientGamePage({
                 </div>
               </Vstack>
             </Card>
-            {game.leaderboards && game.leaderboards.length > 0 && (
-              <Card className="order-10">
-                <Vstack align="start">
-                  <p
-                    className="text-xs"
-                    style={{
-                      color: colors["textFaded"],
-                    }}
-                  >
-                    LEADERBOARD
-                  </p>
-
-                  <Tabs>
-                    {game.leaderboards.map((leaderboard) => (
-                      <Tab
-                        key={leaderboard.id}
-                        title={leaderboard.name}
-                        icon={
-                          leaderboard.type == "SCORE"
-                            ? "trophy"
-                            : leaderboard.type == "GOLF"
-                            ? "landplot"
-                            : leaderboard.type == "SPEEDRUN"
-                            ? "rabbit"
-                            : "turtle"
-                        }
-                      >
-                        {leaderboard.scores && (
-                          <>
-                            <div />
-                            <Table
-                              bottomContent={
-                                (leaderboard.onlyBest
-                                  ? Array.from(
-                                      leaderboard.scores
-                                        .reduce((acc, score) => {
-                                          if (
-                                            !acc.has(score.user.id) ||
-                                            acc.get(score.user.id).data <
-                                              score.data
-                                          ) {
-                                            acc.set(score.user.id, score);
-                                          }
-                                          return acc;
-                                        }, new Map())
-                                        .values()
-                                    )
-                                  : leaderboard.scores
-                                ).length >= leaderboard.maxUsersShown ? (
-                                  <div className="flex w-full justify-center">
-                                    <Pagination
-                                      showControls
-                                      color="primary"
-                                      variant="faded"
-                                      page={page}
-                                      total={Math.ceil(
-                                        (leaderboard.onlyBest
-                                          ? Array.from(
-                                              leaderboard.scores
-                                                .reduce((acc, score) => {
-                                                  if (
-                                                    !acc.has(score.user.id) ||
-                                                    acc.get(score.user.id)
-                                                      .data < score.data
-                                                  ) {
-                                                    acc.set(
-                                                      score.user.id,
-                                                      score
-                                                    );
-                                                  }
-                                                  return acc;
-                                                }, new Map())
-                                                .values()
-                                            )
-                                          : leaderboard.scores
-                                        ).length / leaderboard.maxUsersShown
-                                      )}
-                                      onChange={(page) => setPage(page)}
-                                    />
-                                  </div>
-                                ) : undefined
-                              }
-                            >
-                              <TableHeader>
-                                <TableColumn>#</TableColumn>
-                                <TableColumn>User</TableColumn>
-                                <TableColumn>
-                                  {leaderboard.type == "SCORE" ||
-                                  leaderboard.type == "GOLF"
-                                    ? "Score"
-                                    : "Time"}
-                                </TableColumn>
-                                <TableColumn>Actions</TableColumn>
-                              </TableHeader>
-                              <TableBody>
-                                {(leaderboard.onlyBest
-                                  ? Array.from(
-                                      leaderboard.scores
-                                        .reduce((acc, score) => {
-                                          if (
-                                            !acc.has(score.user.id) ||
-                                            (acc.get(score.user.id).data <
-                                              score.data &&
-                                              (leaderboard.type == "SCORE" ||
-                                                leaderboard.type ==
-                                                  "ENDURANCE")) ||
-                                            (acc.get(score.user.id).data >
-                                              score.data &&
-                                              (leaderboard.type == "GOLF" ||
-                                                leaderboard.type == "SPEEDRUN"))
-                                          ) {
-                                            acc.set(score.user.id, score);
-                                          }
-                                          return acc;
-                                        }, new Map())
-                                        .values()
-                                    )
-                                  : leaderboard.scores
-                                )
-                                  .sort((a, b) => {
-                                    if (
-                                      leaderboard.type == "GOLF" ||
-                                      leaderboard.type == "SPEEDRUN"
-                                    ) {
-                                      return a.data - b.data;
-                                    } else {
-                                      return b.data - a.data;
-                                    }
-                                  })
-                                  .slice(
-                                    0 + leaderboard.maxUsersShown * (page - 1),
-                                    leaderboard.maxUsersShown * page
-                                  )
-                                  .map((score, i) => (
-                                    <TableRow key={score.id}>
-                                      <TableCell
-                                        style={{
-                                          color: colors["textFaded"],
-                                        }}
-                                      >
-                                        {i +
-                                          1 +
-                                          leaderboard.maxUsersShown *
-                                            (page - 1)}
-                                      </TableCell>
-                                      <TableCell>
-                                        <Link
-                                          href={`/u/${score.user.slug}`}
-                                          underline={false}
-                                        >
-                                          <Hstack>
-                                            <Avatar
-                                              src={score.user.profilePicture}
-                                              size={24}
-                                            />
-                                            <Text color="text">
-                                              {score.user.name}
-                                            </Text>
-                                          </Hstack>
-                                        </Link>
-                                      </TableCell>
-                                      <TableCell
-                                        style={{
-                                          color: colors["blue"],
-                                        }}
-                                      >
-                                        {leaderboard.type == "GOLF" ||
-                                        leaderboard.type == "SCORE"
-                                          ? score.data /
-                                            10 ** leaderboard.decimalPlaces
-                                          : (() => {
-                                              const totalMilliseconds =
-                                                score.data;
-                                              const hours = Math.floor(
-                                                totalMilliseconds / 3600000
-                                              );
-                                              const minutes = Math.floor(
-                                                (totalMilliseconds % 3600000) /
-                                                  60000
-                                              );
-                                              const seconds = Math.floor(
-                                                (totalMilliseconds % 60000) /
-                                                  1000
-                                              );
-                                              const milliseconds =
-                                                totalMilliseconds % 1000;
-
-                                              return `${
-                                                hours > 0 ? `${hours}:` : ""
-                                              }${minutes
-                                                .toString()
-                                                .padStart(2, "0")}:${seconds
-                                                .toString()
-                                                .padStart(2, "0")}${
-                                                milliseconds > 0
-                                                  ? `.${milliseconds
-                                                      .toString()
-                                                      .padStart(3, "0")}`
-                                                  : ""
-                                              }`;
-                                            })()}
-                                      </TableCell>
-                                      <TableCell className="flex gap-2">
-                                        <Button
-                                          icon="eye"
-                                          onClick={() => {
-                                            setSelectedScore(score.evidence);
-                                            setIsOpen(true);
-                                          }}
-                                          size="sm"
-                                        />
-                                        {(isEditable ||
-                                          score.user.id == user?.id ||
-                                          user?.mod) && (
-                                          <Button
-                                            color="red"
-                                            icon="trash"
-                                            onClick={async () => {
-                                              const success = await deleteScore(
-                                                score.id
-                                              );
-                                              if (success) {
-                                                window.location.reload();
-                                              }
-                                            }}
-                                            size="sm"
-                                          />
-                                        )}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                              </TableBody>
-                            </Table>
-                          </>
-                        )}
-                        <div className="mt-2">
-                          <Button
-                            icon="plus"
-                            onClick={() => {
-                              setSelectedLeaderboard(leaderboard);
-                              setIsOpen2(true);
-                            }}
-                          >
-                            Submit Score
-                          </Button>
-                        </div>
-                      </Tab>
-                    ))}
-                  </Tabs>
-                </Vstack>
-              </Card>
-            )}
             {game.achievements && game.achievements.length > 0 && (
               <Card className="order-30">
                 <Vstack align="start">
@@ -1113,8 +1278,8 @@ export default function ClientGamePage({
                       game.achievements.filter(
                         (achievement) =>
                           achievement.users.filter(
-                            (user2) => user?.id === user2.id
-                          ).length > 0
+                            (user2) => user?.id === user2.id,
+                          ).length > 0,
                       ).length
                     }
                     /{game.achievements.length}
@@ -1132,11 +1297,11 @@ export default function ClientGamePage({
                         const haveCount = achievement.users.length;
                         const isLoggedIn = Boolean(user);
                         const hasAchievement = achievement.users.some(
-                          (u) => u.id === user?.id
+                          (u) => u.id === user?.id,
                         );
                         const { tier, pct } = getRarityTier(
                           haveCount,
-                          engagedUserIds.size
+                          engagedUserIds.size,
                         );
                         const style = rarityStyles[tier];
 
@@ -1175,11 +1340,7 @@ export default function ClientGamePage({
                                         {pct.toFixed(1)}% of users achieved
                                       </Text>
                                       <Text
-                                        color={
-                                          hasAchievement
-                                            ? "red"
-                                            : "green"
-                                        }
+                                        color={hasAchievement ? "red" : "green"}
                                         size="xs"
                                       >
                                         {isLoggedIn
@@ -1197,7 +1358,7 @@ export default function ClientGamePage({
                                 onClick={async () => {
                                   if (!user) return;
                                   const hasIt = achievement.users.some(
-                                    (u) => u.id === user.id
+                                    (u) => u.id === user.id,
                                   );
                                   const method = hasIt ? "DELETE" : "POST";
                                   const res = await fetch(
@@ -1207,19 +1368,19 @@ export default function ClientGamePage({
                                       headers: {
                                         "Content-Type": "application/json",
                                         authorization: `Bearer ${getCookie(
-                                          "token"
+                                          "token",
                                         )}`,
                                       },
                                       credentials: "include",
                                       body: JSON.stringify({
                                         achievementId: achievement.id,
                                       }),
-                                    }
+                                    },
                                   );
                                   if (res.ok) {
                                     achievement.users = hasIt
                                       ? achievement.users.filter(
-                                          (u) => u.id !== user.id
+                                          (u) => u.id !== user.id,
                                         )
                                       : [...achievement.users, user];
                                     setGame({
@@ -1230,7 +1391,9 @@ export default function ClientGamePage({
                                 }}
                                 disabled={!isLoggedIn}
                                 className={`rounded-xl p-1 ${
-                                  isLoggedIn ? "cursor-pointer" : "cursor-default"
+                                  isLoggedIn
+                                    ? "cursor-pointer"
+                                    : "cursor-default"
                                 }`}
                                 style={{
                                   backgroundColor: colors["base"],
@@ -1276,6 +1439,258 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
+            {game.leaderboards && game.leaderboards.length > 0 && (
+              <Card className="order-10">
+                <Vstack align="start">
+                  <p
+                    className="text-xs"
+                    style={{
+                      color: colors["textFaded"],
+                    }}
+                  >
+                    LEADERBOARD
+                  </p>
+
+                  <Tabs>
+                    {game.leaderboards.map((leaderboard) => (
+                      <Tab
+                        key={leaderboard.id}
+                        title={leaderboard.name}
+                        icon={
+                          leaderboard.type == "SCORE"
+                            ? "trophy"
+                            : leaderboard.type == "GOLF"
+                              ? "landplot"
+                              : leaderboard.type == "SPEEDRUN"
+                                ? "rabbit"
+                                : "turtle"
+                        }
+                      >
+                        {leaderboard.scores && (
+                          <>
+                            <div />
+                            <Table
+                              bottomContent={
+                                (leaderboard.onlyBest
+                                  ? Array.from(
+                                      leaderboard.scores
+                                        .reduce((acc, score) => {
+                                          if (
+                                            !acc.has(score.user.id) ||
+                                            acc.get(score.user.id).data <
+                                              score.data
+                                          ) {
+                                            acc.set(score.user.id, score);
+                                          }
+                                          return acc;
+                                        }, new Map())
+                                        .values(),
+                                    )
+                                  : leaderboard.scores
+                                ).length >= leaderboard.maxUsersShown ? (
+                                  <div className="flex w-full justify-center">
+                                    <Pagination
+                                      showControls
+                                      color="primary"
+                                      variant="faded"
+                                      page={page}
+                                      total={Math.ceil(
+                                        (leaderboard.onlyBest
+                                          ? Array.from(
+                                              leaderboard.scores
+                                                .reduce((acc, score) => {
+                                                  if (
+                                                    !acc.has(score.user.id) ||
+                                                    acc.get(score.user.id)
+                                                      .data < score.data
+                                                  ) {
+                                                    acc.set(
+                                                      score.user.id,
+                                                      score,
+                                                    );
+                                                  }
+                                                  return acc;
+                                                }, new Map())
+                                                .values(),
+                                            )
+                                          : leaderboard.scores
+                                        ).length / leaderboard.maxUsersShown,
+                                      )}
+                                      onChange={(page) => setPage(page)}
+                                    />
+                                  </div>
+                                ) : undefined
+                              }
+                            >
+                              <TableHeader>
+                                <TableColumn>#</TableColumn>
+                                <TableColumn>User</TableColumn>
+                                <TableColumn>
+                                  {leaderboard.type == "SCORE" ||
+                                  leaderboard.type == "GOLF"
+                                    ? "Score"
+                                    : "Time"}
+                                </TableColumn>
+                                <TableColumn>Actions</TableColumn>
+                              </TableHeader>
+                              <TableBody>
+                                {(leaderboard.onlyBest
+                                  ? Array.from(
+                                      leaderboard.scores
+                                        .reduce((acc, score) => {
+                                          if (
+                                            !acc.has(score.user.id) ||
+                                            (acc.get(score.user.id).data <
+                                              score.data &&
+                                              (leaderboard.type == "SCORE" ||
+                                                leaderboard.type ==
+                                                  "ENDURANCE")) ||
+                                            (acc.get(score.user.id).data >
+                                              score.data &&
+                                              (leaderboard.type == "GOLF" ||
+                                                leaderboard.type == "SPEEDRUN"))
+                                          ) {
+                                            acc.set(score.user.id, score);
+                                          }
+                                          return acc;
+                                        }, new Map())
+                                        .values(),
+                                    )
+                                  : leaderboard.scores
+                                )
+                                  .sort((a, b) => {
+                                    if (
+                                      leaderboard.type == "GOLF" ||
+                                      leaderboard.type == "SPEEDRUN"
+                                    ) {
+                                      return a.data - b.data;
+                                    } else {
+                                      return b.data - a.data;
+                                    }
+                                  })
+                                  .slice(
+                                    0 + leaderboard.maxUsersShown * (page - 1),
+                                    leaderboard.maxUsersShown * page,
+                                  )
+                                  .map((score, i) => (
+                                    <TableRow key={score.id}>
+                                      <TableCell
+                                        style={{
+                                          color: colors["textFaded"],
+                                        }}
+                                      >
+                                        {i +
+                                          1 +
+                                          leaderboard.maxUsersShown *
+                                            (page - 1)}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Link
+                                          href={`/u/${score.user.slug}`}
+                                          underline={false}
+                                        >
+                                          <Hstack>
+                                            <Avatar
+                                              src={score.user.profilePicture}
+                                              size={24}
+                                            />
+                                            <Text color="text">
+                                              {score.user.name}
+                                            </Text>
+                                          </Hstack>
+                                        </Link>
+                                      </TableCell>
+                                      <TableCell
+                                        style={{
+                                          color: colors["blue"],
+                                        }}
+                                      >
+                                        {leaderboard.type == "GOLF" ||
+                                        leaderboard.type == "SCORE"
+                                          ? score.data /
+                                            10 ** leaderboard.decimalPlaces
+                                          : (() => {
+                                              const totalMilliseconds =
+                                                score.data;
+                                              const hours = Math.floor(
+                                                totalMilliseconds / 3600000,
+                                              );
+                                              const minutes = Math.floor(
+                                                (totalMilliseconds % 3600000) /
+                                                  60000,
+                                              );
+                                              const seconds = Math.floor(
+                                                (totalMilliseconds % 60000) /
+                                                  1000,
+                                              );
+                                              const milliseconds =
+                                                totalMilliseconds % 1000;
+
+                                              return `${
+                                                hours > 0 ? `${hours}:` : ""
+                                              }${minutes
+                                                .toString()
+                                                .padStart(2, "0")}:${seconds
+                                                .toString()
+                                                .padStart(2, "0")}${
+                                                milliseconds > 0
+                                                  ? `.${milliseconds
+                                                      .toString()
+                                                      .padStart(3, "0")}`
+                                                  : ""
+                                              }`;
+                                            })()}
+                                      </TableCell>
+                                      <TableCell className="flex gap-2">
+                                        <Button
+                                          icon="eye"
+                                          onClick={() => {
+                                            setSelectedScore(score.evidence);
+                                            setIsOpen(true);
+                                          }}
+                                          size="sm"
+                                        />
+                                        {(isEditable ||
+                                          score.user.id == user?.id ||
+                                          user?.mod) && (
+                                          <Button
+                                            color="red"
+                                            icon="trash"
+                                            onClick={async () => {
+                                              const success = await deleteScore(
+                                                score.id,
+                                              );
+                                              if (success) {
+                                                window.location.reload();
+                                              }
+                                            }}
+                                            size="sm"
+                                          />
+                                        )}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                              </TableBody>
+                            </Table>
+                          </>
+                        )}
+                        <div className="mt-2">
+                          <Button
+                            icon="plus"
+                            onClick={() => {
+                              setSelectedLeaderboard(leaderboard);
+                              setIsOpen2(true);
+                            }}
+                          >
+                            Submit Score
+                          </Button>
+                        </div>
+                      </Tab>
+                    ))}
+                  </Tabs>
+                </Vstack>
+              </Card>
+            )}
             {game.tracks && game.tracks.length > 0 && (
               <Card>
                 <Vstack align="stretch">
@@ -1317,7 +1732,7 @@ export default function ClientGamePage({
                   Ratings Received:{" "}
                   {Math.round(
                     game.ratings.length /
-                      (game.ratingCategories.length + ratingCategories.length)
+                      (game.ratingCategories.length + ratingCategories.length),
                   )}
                 </Chip>
                 {game.category !== "EXTRA" && (
@@ -1332,11 +1747,11 @@ export default function ClientGamePage({
                                 team.game &&
                                 team.game.jamId == game.jamId &&
                                 team.game.published &&
-                                team.game.category !== "EXTRA"
-                            ).length > 0
+                                team.game.category !== "EXTRA",
+                            ).length > 0,
                         ).length /
                           (game.ratingCategories.length +
-                            ratingCategories.length)
+                            ratingCategories.length),
                       )}
                     </Chip>
 
@@ -1348,10 +1763,11 @@ export default function ClientGamePage({
                               team.game &&
                               team.game.jamId == game.jamId &&
                               team.game.published &&
-                              team.game.category !== "EXTRA"
-                          ).length > 0
+                              team.game.category !== "EXTRA",
+                          ).length > 0,
                       ).length /
-                        (game.ratingCategories.length + ratingCategories.length)
+                        (game.ratingCategories.length +
+                          ratingCategories.length),
                     ) < 5 && (
                       <Tooltip
                         content="This game needs 5 ratings received in order to be ranked after the rating period"
@@ -1377,10 +1793,10 @@ export default function ClientGamePage({
                                   (cur2.game.ratingCategories.length +
                                     ratingCategories.length)
                                 : 0),
-                            0
+                            0,
                           ),
-                        0
-                      )
+                        0,
+                      ),
                     )}
                   </Chip>
                   {Math.round(
@@ -1395,10 +1811,10 @@ export default function ClientGamePage({
                                 (cur2.game.ratingCategories.length +
                                   ratingCategories.length)
                               : 0),
-                          0
+                          0,
                         ),
-                      0
-                    )
+                      0,
+                    ),
                   ) < 5 && (
                     <Tooltip
                       content="This game needs 5 ratings given in order to be ranked after the rating period"
@@ -1441,10 +1857,10 @@ export default function ClientGamePage({
                 selectedLeaderboard?.type == "SCORE"
                   ? "trophy"
                   : selectedLeaderboard?.type == "GOLF"
-                  ? "landplot"
-                  : selectedLeaderboard?.type == "SPEEDRUN"
-                  ? "rabbit"
-                  : "turtle"
+                    ? "landplot"
+                    : selectedLeaderboard?.type == "SPEEDRUN"
+                      ? "rabbit"
+                      : "turtle"
               }
               title={selectedLeaderboard?.name || "Leaderboard"}
               onSubmit={async (form) => {
@@ -1487,7 +1903,7 @@ export default function ClientGamePage({
                 const ok = await postScore(
                   finalScore,
                   evidenceUrl,
-                  selectedLeaderboard.id
+                  selectedLeaderboard.id,
                 );
                 if (ok) {
                   setIsOpen2(false);
@@ -1703,8 +2119,8 @@ function StarElement({
             !newlyClicked
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value
-              ? colors["yellow"]
-              : colors["base"],
+                ? colors["yellow"]
+                : colors["base"],
         }}
       />
       {/* Half Star (Overlapping Left Side) */}
@@ -1720,8 +2136,8 @@ function StarElement({
             !newlyClicked
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value - 1
-              ? colors["yellow"]
-              : colors["base"],
+                ? colors["yellow"]
+                : colors["base"],
         }} // Show only left half
       />
       {/* Left Half (Triggers value - 1) */}
