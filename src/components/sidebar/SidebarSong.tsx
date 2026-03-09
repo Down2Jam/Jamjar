@@ -76,6 +76,7 @@ export default function SidebarSong({
               href={song}
               download
               icon="download"
+              externalIcon={false}
             >
               Download
             </Button>

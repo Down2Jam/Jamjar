@@ -238,6 +238,7 @@ export default function ClientGamePage({
     useState<ActiveJamResponse | null>(null);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
   const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
 
   const { siteTheme, colors } = useTheme();
@@ -890,10 +891,9 @@ export default function ClientGamePage({
                             allowFullScreen
                           />
                         ) : (
-                          <a
-                            href={selectedMedia.src}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => setIsScreenshotViewerOpen(true)}
                             className="block h-full w-full cursor-pointer"
                           >
                             <img
@@ -903,7 +903,7 @@ export default function ClientGamePage({
                               loading="lazy"
                               decoding="async"
                             />
-                          </a>
+                          </button>
                         )}
                         {mediaItems.length > 1 && (
                           <>
@@ -1835,6 +1835,28 @@ export default function ClientGamePage({
                 </Hstack>
               </Vstack>
             </Card>
+            <Popover
+              shown={
+                isScreenshotViewerOpen &&
+                selectedMedia?.type === "screenshot"
+              }
+              anchorToScreen
+              position="center"
+              padding={0}
+              className="!border-0 !bg-transparent !shadow-none"
+              backdrop
+              onClose={() => setIsScreenshotViewerOpen(false)}
+            >
+              {selectedMedia?.type === "screenshot" && (
+                <div className="relative inline-flex max-h-[90vh] max-w-[92vw] items-center justify-center p-4">
+                  <img
+                    src={selectedMedia.src}
+                    alt={`${game.name} screenshot ${selectedMedia.index + 1}`}
+                    className="max-h-[84vh] max-w-full object-contain"
+                  />
+                </div>
+              )}
+            </Popover>
             <Popover
               showCloseButton
               position="center"

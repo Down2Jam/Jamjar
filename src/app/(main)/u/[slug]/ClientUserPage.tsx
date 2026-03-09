@@ -14,6 +14,7 @@ import {
   Dropdown,
   Hstack,
   Icon,
+  ImageCropData,
   ImageInput,
   Input,
   Link,
@@ -402,9 +403,15 @@ export default function ClientUserPage({
     return trimmed.length > 0 ? trimmed : null;
   };
 
-  const uploadImage = async (file: File) => {
+  const uploadImage = async (file: File, crop?: ImageCropData) => {
     const formData = new FormData();
     formData.append("upload", file);
+    if (crop) {
+      formData.append("cropLeft", String(crop.left));
+      formData.append("cropTop", String(crop.top));
+      formData.append("cropWidth", String(crop.width));
+      formData.append("cropHeight", String(crop.height));
+    }
 
     const response = await fetch(
       process.env.NEXT_PUBLIC_MODE === "PROD"
@@ -1622,9 +1629,9 @@ export default function ClientUserPage({
                     width={120}
                     height={120}
                     placeholder="Upload"
-                    onSelect={async (file) => {
+                    onSelect={async (file, crop) => {
                       try {
-                        const url = await uploadImage(file);
+                        const url = await uploadImage(file, crop);
                         setAvatarDraft(url);
                       } catch (error) {
                         console.error(error);
@@ -1710,9 +1717,9 @@ export default function ClientUserPage({
                     width={440}
                     height={40}
                     placeholder="Upload"
-                    onSelect={async (file) => {
+                    onSelect={async (file, crop) => {
                       try {
-                        const url = await uploadImage(file);
+                        const url = await uploadImage(file, crop);
                         setBannerDraft(url);
                       } catch (error) {
                         console.error(error);
@@ -1798,9 +1805,9 @@ export default function ClientUserPage({
                     width={320}
                     height={180}
                     placeholder="Upload"
-                    onSelect={async (file) => {
+                    onSelect={async (file, crop) => {
                       try {
-                        const url = await uploadImage(file);
+                        const url = await uploadImage(file, crop);
                         setBackgroundDraft(url);
                       } catch (error) {
                         console.error(error);

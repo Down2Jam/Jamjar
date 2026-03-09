@@ -5,7 +5,7 @@ import { Card } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import { Input } from "bioloom-ui";
-import { ImageInput } from "bioloom-ui";
+import { ImageCropData, ImageInput } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -628,9 +628,16 @@ export default function GameEditingForm({
   const uploadTo = async (
     endpoint: "image" | "music",
     file: File,
+    crop?: ImageCropData,
   ): Promise<string | null> => {
     const formData = new FormData();
     formData.append("upload", file);
+    if (crop && endpoint === "image") {
+      formData.append("cropLeft", String(crop.left));
+      formData.append("cropTop", String(crop.top));
+      formData.append("cropWidth", String(crop.width));
+      formData.append("cropHeight", String(crop.height));
+    }
     const url =
       process.env.NEXT_PUBLIC_MODE === "PROD"
         ? `https://d2jam.com/api/v1/${endpoint}`
@@ -1422,8 +1429,8 @@ export default function GameEditingForm({
                       width={360}
                       height={200}
                       placeholder="Upload thumbnail"
-                      onSelect={async (file) => {
-                        const url = await uploadTo("image", file);
+                      onSelect={async (file, crop) => {
+                        const url = await uploadTo("image", file, crop);
                         if (url) {
                           setThumbnailUrl(url);
                         }
@@ -1445,8 +1452,8 @@ export default function GameEditingForm({
                       width={734}
                       height={120}
                       placeholder="Upload banner"
-                      onSelect={async (file) => {
-                        const url = await uploadTo("image", file);
+                      onSelect={async (file, crop) => {
+                        const url = await uploadTo("image", file, crop);
                         if (url) {
                           setBannerUrl(url);
                         }
@@ -1605,8 +1612,8 @@ export default function GameEditingForm({
                               height={80}
                               placeholder="Upload"
                               disabled={!game?.slug}
-                              onSelect={async (file) => {
-                                const url = await uploadTo("image", file);
+                              onSelect={async (file, crop) => {
+                                const url = await uploadTo("image", file, crop);
                                 if (url) {
                                   setGameEmoteImage(url);
                                 }
@@ -1861,8 +1868,8 @@ export default function GameEditingForm({
                                     width={80}
                                     height={80}
                                     placeholder="Upload"
-                                    onSelect={async (file) => {
-                                      const url = await uploadTo("image", file);
+                                    onSelect={async (file, crop) => {
+                                      const url = await uploadTo("image", file, crop);
                                       if (url) {
                                         setEditingGameEmoteImage(url);
                                       }
@@ -2060,7 +2067,7 @@ export default function GameEditingForm({
                                 : "Add screenshot"
                             }
                             disabled={screenshots.length >= 5}
-                            onSelect={async (file) => {
+                            onSelect={async (file, crop) => {
                               if (screenshots.length >= 5) {
                                 addToast({
                                   title:
@@ -2068,7 +2075,7 @@ export default function GameEditingForm({
                                 });
                                 return;
                               }
-                              const url = await uploadTo("image", file);
+                              const url = await uploadTo("image", file, crop);
                               if (!url) return;
                               setScreenshots((prev) =>
                                 [...prev, url].slice(0, 5),
@@ -3312,8 +3319,8 @@ export default function GameEditingForm({
                                     width={80}
                                     height={80}
                                     placeholder="Upload image"
-                                    onSelect={async (file) => {
-                                      const url = await uploadTo("image", file);
+                                    onSelect={async (file, crop) => {
+                                      const url = await uploadTo("image", file, crop);
                                       if (!url) return;
                                       setAchievements((prev) => {
                                         const copy = [...prev];

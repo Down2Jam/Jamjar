@@ -24,6 +24,12 @@ export function GameCard({
   rated?: boolean;
 }) {
   const { colors } = useTheme();
+  const buildPlatforms = [
+    ...new Set([
+      ...(game.itchEmbedUrl ? (["Web"] as const) : []),
+      ...(game.downloadLinks ?? []).map((type) => type.platform),
+    ]),
+  ].sort((a, b) => (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99));
 
   return (
     <Link href={`/g/${game.slug}`}>
@@ -114,16 +120,7 @@ export function GameCard({
             </Text>
           </Vstack>
           <Hstack>
-            {[
-              ...new Set(
-                game.downloadLinks
-                  .map((type) => type.platform)
-                  .sort(
-                    (a, b) =>
-                      (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99)
-                  )
-              ),
-            ].map((platform) => {
+            {buildPlatforms.map((platform) => {
               switch (platform) {
                 case "Linux":
                   return <SiLinux key="linux" />;

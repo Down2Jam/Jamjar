@@ -16,7 +16,8 @@ import Text from "./Text";
 
 export type ImageInputProps = {
   value?: string | null;
-  onSelect: (file: File) => void | Promise<void>;
+  onSelect: (file: File, crop?: ImageCropData) => void | Promise<void>;
+  onClear?: () => void;
   accept?: string;
   disabled?: boolean;
   width?: number | string;
@@ -26,6 +27,17 @@ export type ImageInputProps = {
   placeholder?: string;
   icon?: IconName;
   enableCrop?: boolean;
+  maxOutputSize?: number;
+  maxOutputWidth?: number;
+  maxOutputHeight?: number;
+  showClearButton?: boolean;
+};
+
+export type ImageCropData = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
 };
 
 const toCssSize = (value?: number | string) =>
@@ -67,6 +79,7 @@ const hexToRgba = (hex: string | undefined, alpha: number) => {
 export default function ImageInput({
   value,
   onSelect,
+  onClear,
   accept = "image/*",
   disabled = false,
   width,
@@ -76,6 +89,10 @@ export default function ImageInput({
   placeholder = "Add image",
   icon = "plus",
   enableCrop = true,
+  maxOutputSize = 1024,
+  maxOutputWidth,
+  maxOutputHeight,
+  showClearButton = true,
 }: ImageInputProps) {
   const { colors } = useTheme();
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -87,6 +104,9 @@ export default function ImageInput({
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [flipX, setFlipX] = useState(false);
+  const [flipY, setFlipY] = useState(false);
   const [saving, setSaving] = useState(false);
   const dragState = useRef<{ x: number; y: number } | null>(null);
 
@@ -137,9 +157,9 @@ export default function ImageInput({
 
   const clampOffset = (
     nextOffset: { x: number; y: number },
-    nextZoom: number
+    nextZoom: number,
+    nextRotation = rotation
   ) => {
-    const ratio = resolvedRatio || 1;
     const cropW = previewSize.width;
     const cropH = previewSize.height;
     if (!imageSize.width || !imageSize.height) return nextOffset;
@@ -148,10 +168,15 @@ export default function ImageInput({
       cropH / imageSize.height
     );
     const scale = baseScale * nextZoom;
+    const radians = (nextRotation * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(radians));
+    const sin = Math.abs(Math.sin(radians));
     const scaledW = imageSize.width * scale;
     const scaledH = imageSize.height * scale;
-    const maxX = Math.max(0, (scaledW - cropW) / 2);
-    const maxY = Math.max(0, (scaledH - cropH) / 2);
+    const boundsW = scaledW * cos + scaledH * sin;
+    const boundsH = scaledW * sin + scaledH * cos;
+    const maxX = Math.max(0, (boundsW - cropW) / 2);
+    const maxY = Math.max(0, (boundsH - cropH) / 2);
     return {
       x: Math.max(-maxX, Math.min(maxX, nextOffset.x)),
       y: Math.max(-maxY, Math.min(maxY, nextOffset.y)),
@@ -170,6 +195,9 @@ export default function ImageInput({
     setCropSrc(url);
     setZoom(1);
     setOffset({ x: 0, y: 0 });
+    setRotation(0);
+    setFlipX(false);
+    setFlipY(false);
     setCropOpen(true);
   };
 
@@ -181,6 +209,9 @@ export default function ImageInput({
     setImageSize({ width: 0, height: 0 });
     setOffset({ x: 0, y: 0 });
     setZoom(1);
+    setRotation(0);
+    setFlipX(false);
+    setFlipY(false);
   };
 
   const handleConfirmCrop = async () => {
@@ -189,13 +220,12 @@ export default function ImageInput({
     img.src = cropSrc;
     await img.decode();
 
-    const cropW = previewSize.width;
-    const cropH = previewSize.height;
-    const baseScale = Math.max(
-      cropW / img.naturalWidth,
-      cropH / img.naturalHeight
-    );
+    const cropW = Math.max(1, Math.round(previewSize.width));
+    const cropH = Math.max(1, Math.round(previewSize.height));
+    const baseScale = Math.max(cropW / img.naturalWidth, cropH / img.naturalHeight);
     const scale = baseScale * zoom;
+    const radians = (rotation * Math.PI) / 180;
+
     const scaledW = img.naturalWidth * scale;
     const scaledH = img.naturalHeight * scale;
     const imgLeft = (cropW - scaledW) / 2 + offset.x;
@@ -205,29 +235,67 @@ export default function ImageInput({
     const sourceW = Math.min(img.naturalWidth, cropW / scale);
     const sourceH = Math.min(img.naturalHeight, cropH / scale);
 
+    const cropData: ImageCropData = {
+      left: Math.max(0, Math.round(sourceX)),
+      top: Math.max(0, Math.round(sourceY)),
+      width: Math.max(1, Math.round(sourceW)),
+      height: Math.max(1, Math.round(sourceH)),
+    };
+
+    const isAnimatedGif =
+      cropFile.type === "image/gif" &&
+      rotation % 360 === 0 &&
+      !flipX &&
+      !flipY;
+
+    if (isAnimatedGif) {
+      setSaving(true);
+      try {
+        await onSelect(cropFile, cropData);
+        handleCloseCrop();
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
+
+    const stageCanvas = document.createElement("canvas");
+    stageCanvas.width = cropW;
+    stageCanvas.height = cropH;
+    const stageCtx = stageCanvas.getContext("2d");
+    if (!stageCtx) {
+      handleCloseCrop();
+      return;
+    }
+
+    stageCtx.clearRect(0, 0, cropW, cropH);
+    stageCtx.translate(cropW / 2 + offset.x, cropH / 2 + offset.y);
+    stageCtx.rotate(radians);
+    stageCtx.scale((flipX ? -1 : 1) * scale, (flipY ? -1 : 1) * scale);
+    stageCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+
     const canvas = document.createElement("canvas");
-    canvas.width = Math.round(sourceW);
-    canvas.height = Math.round(sourceH);
+    let outW = cropW;
+    let outH = cropH;
+    const maxW = maxOutputWidth ?? maxOutputSize;
+    const maxH = maxOutputHeight ?? maxOutputSize;
+    if (outW > maxW || outH > maxH) {
+      const downscale = Math.min(maxW / outW, maxH / outH);
+      outW = Math.max(1, Math.round(outW * downscale));
+      outH = Math.max(1, Math.round(outH * downscale));
+    }
+    canvas.width = outW;
+    canvas.height = outH;
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       handleCloseCrop();
       return;
     }
 
-    ctx.drawImage(
-      img,
-      sourceX,
-      sourceY,
-      sourceW,
-      sourceH,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
+    ctx.drawImage(stageCanvas, 0, 0, canvas.width, canvas.height);
 
     const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, cropFile.type || "image/png", 0.92)
+      canvas.toBlob(resolve, cropFile.type || "image/png", 0.85)
     );
     if (!blob) {
       handleCloseCrop();
@@ -249,16 +317,20 @@ export default function ImageInput({
       return {
         transform: "translate(-50%, -50%)",
         userSelect: "none",
+        transformOrigin: "center",
         pointerEvents: "none",
       } as const;
     }
-    const baseScale = Math.max(
-      previewSize.width / imageSize.width,
-      previewSize.height / imageSize.height
-    );
-    const scale = baseScale * zoom;
+    const cropW = previewSize.width;
+    const cropH = previewSize.height;
+    const baseScale = Math.max(cropW / imageSize.width, cropH / imageSize.height);
+    const displayScale = baseScale * zoom;
     return {
-      transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) scale(${scale})`,
+      width: `${imageSize.width}px`,
+      height: `${imageSize.height}px`,
+      maxWidth: "none",
+      maxHeight: "none",
+      transform: `translate(calc(-50% + ${offset.x}px), calc(-50% + ${offset.y}px)) rotate(${rotation}deg) scaleX(${flipX ? -displayScale : displayScale}) scaleY(${flipY ? -displayScale : displayScale})`,
       transformOrigin: "center",
       userSelect: "none",
       pointerEvents: "none",
@@ -269,6 +341,11 @@ export default function ImageInput({
     <>
       <div
         className={`relative ${className}`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => {
+          setHovered(false);
+          setDragActive(false);
+        }}
         style={{
           width: "100%",
           maxWidth: maxWidth,
@@ -277,15 +354,34 @@ export default function ImageInput({
           minHeight: resolvedHeight,
         }}
       >
+        {Boolean(value) && showClearButton && onClear && (
+          <button
+            type="button"
+            aria-label="Remove image"
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (disabled) return;
+              onClear();
+            }}
+            disabled={disabled}
+            className="absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full border transition-opacity duration-150"
+            style={{
+              borderColor: colors["grayDark"],
+              backgroundColor: hexToRgba(colors["mantle"], 0.85),
+              color: colors["text"],
+              opacity: hovered ? 1 : 0,
+              pointerEvents: hovered ? "auto" : "none",
+              cursor: disabled ? "not-allowed" : "pointer",
+            }}
+          >
+            <Icon name="x" size={14} />
+          </button>
+        )}
         <button
           type="button"
           aria-label={placeholder}
           onClick={() => inputRef.current?.click()}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => {
-            setHovered(false);
-            setDragActive(false);
-          }}
           onDragOver={(event) => {
             event.preventDefault();
             if (disabled) return;
@@ -429,15 +525,53 @@ export default function ImageInput({
                 <input
                   type="range"
                   min={1}
-                  max={3}
+                  max={4}
                   step={0.01}
                   value={zoom}
                   onChange={(event) => {
                     const nextZoom = Number(event.target.value);
                     setZoom(nextZoom);
-                    setOffset((prev) => clampOffset(prev, nextZoom));
+                    setOffset((prev) => clampOffset(prev, nextZoom, rotation));
                   }}
                 />
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    color={flipX ? "blue" : "default"}
+                    onClick={() => setFlipX((prev) => !prev)}
+                  >
+                    Flip Horizontal
+                  </Button>
+                  <Button
+                    size="sm"
+                    color={flipY ? "blue" : "default"}
+                    onClick={() => setFlipY((prev) => !prev)}
+                  >
+                    Flip Vertical
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="default"
+                    onClick={() => {
+                      const next = ((rotation - 90) % 360 + 360) % 360;
+                      setRotation(next);
+                      setOffset((prev) => clampOffset(prev, zoom, next));
+                    }}
+                  >
+                    Rotate Left
+                  </Button>
+                  <Button
+                    size="sm"
+                    color="default"
+                    onClick={() => {
+                      const next = (rotation + 90) % 360;
+                      setRotation(next);
+                      setOffset((prev) => clampOffset(prev, zoom, next));
+                    }}
+                  >
+                    Rotate Right
+                  </Button>
+                </div>
               </Vstack>
             </Vstack>
           </ModalBody>

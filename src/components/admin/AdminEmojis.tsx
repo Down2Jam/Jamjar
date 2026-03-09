@@ -6,6 +6,7 @@ import {
   Button,
   Card,
   Hstack,
+  ImageCropData,
   Input,
   Spinner,
   Table,
@@ -64,10 +65,17 @@ export default function AdminEmojis() {
 
   const uploadImage = async (
     file: File,
+    crop: ImageCropData | undefined,
     onUploaded: (url: string) => void
   ) => {
     const formData = new FormData();
     formData.append("upload", file);
+    if (crop) {
+      formData.append("cropLeft", String(crop.left));
+      formData.append("cropTop", String(crop.top));
+      formData.append("cropWidth", String(crop.width));
+      formData.append("cropHeight", String(crop.height));
+    }
 
     const url =
       process.env.NEXT_PUBLIC_MODE === "PROD"
@@ -286,7 +294,7 @@ export default function AdminEmojis() {
               </Text>
               <ImageInput
                 value={image}
-                onSelect={(file) => uploadImage(file, setImage)}
+                onSelect={(file, crop) => uploadImage(file, crop, setImage)}
                 disabled={uploading}
                 width={80}
                 height={80}
@@ -423,7 +431,9 @@ export default function AdminEmojis() {
                   </Text>
                   <ImageInput
                     value={editImage}
-                    onSelect={(file) => uploadImage(file, setEditImage)}
+                    onSelect={(file, crop) =>
+                      uploadImage(file, crop, setEditImage)
+                    }
                     disabled={uploading}
                     width={80}
                     height={80}

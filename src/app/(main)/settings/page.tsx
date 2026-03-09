@@ -3,7 +3,7 @@
 import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
-import { addToast, Avatar, Form, ImageInput } from "bioloom-ui";
+import { addToast, Avatar, Form, ImageCropData, ImageInput } from "bioloom-ui";
 import { redirect, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getSelf, updateUser } from "@/requests/user";
@@ -293,6 +293,37 @@ export default function UserPage() {
     }, 200);
   };
 
+  const uploadImage = async (file: File, crop?: ImageCropData) => {
+    const formData = new FormData();
+    formData.append("upload", file);
+    if (crop) {
+      formData.append("cropLeft", String(crop.left));
+      formData.append("cropTop", String(crop.top));
+      formData.append("cropWidth", String(crop.width));
+      formData.append("cropHeight", String(crop.height));
+    }
+
+    const response = await fetch(
+      process.env.NEXT_PUBLIC_MODE === "PROD"
+        ? "https://d2jam.com/api/v1/image"
+        : "http://localhost:3005/api/v1/image",
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          authorization: `Bearer ${getCookie("token")}`,
+        },
+        credentials: "include",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image");
+    }
+
+    return response.json();
+  };
+
   return (
     <div className="flex items-center justify-center">
       <Form
@@ -459,36 +490,13 @@ export default function UserPage() {
                 width={120}
                 height={120}
                 placeholder="Upload"
-                onSelect={async (file) => {
-                  const formData = new FormData();
-                  formData.append("upload", file);
-
+                onSelect={async (file, crop) => {
                   try {
-                    const response = await fetch(
-                      process.env.NEXT_PUBLIC_MODE === "PROD"
-                        ? "https://d2jam.com/api/v1/image"
-                        : "http://localhost:3005/api/v1/image",
-                      {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                          authorization: `Bearer ${getCookie("token")}`,
-                        },
-                        credentials: "include",
-                      },
-                    );
-
-                    if (response.ok) {
-                      const data = await response.json();
-                      setProfilePicture(data.data);
-                      addToast({
-                        title: data.message,
-                      });
-                    } else {
-                      addToast({
-                        title: "Failed to upload image",
-                      });
-                    }
+                    const data = await uploadImage(file, crop);
+                    setProfilePicture(data.data);
+                    addToast({
+                      title: data.message,
+                    });
                   } catch (error) {
                     console.error(error);
                     addToast({
@@ -653,31 +661,11 @@ export default function UserPage() {
                   width={80}
                   height={80}
                   placeholder="Upload"
-                  onSelect={async (file) => {
-                    const formData = new FormData();
-                    formData.append("upload", file);
+                  onSelect={async (file, crop) => {
                     try {
-                      const response = await fetch(
-                        process.env.NEXT_PUBLIC_MODE === "PROD"
-                          ? "https://d2jam.com/api/v1/image"
-                          : "http://localhost:3005/api/v1/image",
-                        {
-                          method: "POST",
-                          body: formData,
-                          headers: {
-                            authorization: `Bearer ${getCookie("token")}`,
-                          },
-                          credentials: "include",
-                        },
-                      );
-
-                      if (response.ok) {
-                        const data = await response.json();
-                        setEmoteImage(data.data);
-                        addToast({ title: data.message });
-                      } else {
-                        addToast({ title: "Failed to upload image" });
-                      }
+                      const data = await uploadImage(file, crop);
+                      setEmoteImage(data.data);
+                      addToast({ title: data.message });
                     } catch (error) {
                       console.error(error);
                       addToast({ title: "Error uploading image" });
@@ -897,30 +885,11 @@ export default function UserPage() {
                         width={80}
                         height={80}
                         placeholder="Upload"
-                        onSelect={async (file) => {
-                          const formData = new FormData();
-                          formData.append("upload", file);
+                        onSelect={async (file, crop) => {
                           try {
-                            const response = await fetch(
-                              process.env.NEXT_PUBLIC_MODE === "PROD"
-                                ? "https://d2jam.com/api/v1/image"
-                                : "http://localhost:3005/api/v1/image",
-                              {
-                                method: "POST",
-                                body: formData,
-                                headers: {
-                                  authorization: `Bearer ${getCookie("token")}`,
-                                },
-                                credentials: "include",
-                              },
-                            );
-                            if (response.ok) {
-                              const data = await response.json();
-                              setEditingEmoteImage(data.data);
-                              addToast({ title: data.message });
-                            } else {
-                              addToast({ title: "Failed to upload image" });
-                            }
+                            const data = await uploadImage(file, crop);
+                            setEditingEmoteImage(data.data);
+                            addToast({ title: data.message });
                           } catch (error) {
                             console.error(error);
                             addToast({ title: "Error uploading image" });
@@ -1015,36 +984,13 @@ export default function UserPage() {
                 width={440}
                 height={40}
                 placeholder="Upload"
-                onSelect={async (file) => {
-                  const formData = new FormData();
-                  formData.append("upload", file);
-
+                onSelect={async (file, crop) => {
                   try {
-                    const response = await fetch(
-                      process.env.NEXT_PUBLIC_MODE === "PROD"
-                        ? "https://d2jam.com/api/v1/image"
-                        : "http://localhost:3005/api/v1/image",
-                      {
-                        method: "POST",
-                        body: formData,
-                        headers: {
-                          authorization: `Bearer ${getCookie("token")}`,
-                        },
-                        credentials: "include",
-                      },
-                    );
-
-                    if (response.ok) {
-                      const data = await response.json();
-                      setBannerPicture(data.data);
-                      addToast({
-                        title: data.message,
-                      });
-                    } else {
-                      addToast({
-                        title: "Failed to upload image",
-                      });
-                    }
+                    const data = await uploadImage(file, crop);
+                    setBannerPicture(data.data);
+                    addToast({
+                      title: data.message,
+                    });
                   } catch (error) {
                     console.error(error);
                     addToast({
