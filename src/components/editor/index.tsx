@@ -563,7 +563,9 @@ export default function Editor({
       History,
       HorizontalRule,
       Blockquote,
-      Heading,
+      Heading.configure({
+        levels: [1, 2, 3],
+      }),
       ListItem,
       OrderedList,
       BulletList,
@@ -920,7 +922,7 @@ export default function Editor({
   return (
     <div className="w-full">
       <EditorMenuBar editor={editor} size={size} />
-      <ThemedProse>
+      <ThemedProse className="[&_.ProseMirror_h1]:my-0 [&_.ProseMirror_h1]:text-inherit [&_.ProseMirror_h1]:leading-inherit [&_.ProseMirror_h2]:my-0 [&_.ProseMirror_h2]:text-inherit [&_.ProseMirror_h2]:leading-inherit [&_.ProseMirror_h3]:my-0 [&_.ProseMirror_h3]:text-inherit [&_.ProseMirror_h3]:leading-inherit [&_.ProseMirror_p]:my-3 [&_.ProseMirror_p:empty]:h-auto [&_.ProseMirror_p:empty]:my-3 [&_.ProseMirror_p>br:only-child]:inline">
         <EditorContent editor={editor} />
       </ThemedProse>
       {mentionOpen && mentionMatches.length > 0 && mentionCoords && (

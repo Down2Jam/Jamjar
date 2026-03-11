@@ -22,9 +22,9 @@ import {
 import EditorMenuButton from "./EditorMenuButton";
 import { getCookie } from "@/helpers/cookie";
 import { Hstack } from "bioloom-ui";
-import { addToast } from "bioloom-ui";
+import { addToast, Button } from "bioloom-ui";
 import { useEmojis } from "@/providers/EmojiProvider";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Popover, Text, Input } from "bioloom-ui";
 
 type EditorMenuProps = {
@@ -40,6 +40,7 @@ export default function EditorMenuBar({
   const { emojis } = useEmojis();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
+  const pickerRef = useRef<HTMLDivElement | null>(null);
 
   const addLink = () => {
     const url = prompt("Enter link URL:");
@@ -246,9 +247,30 @@ export default function EditorMenuBar({
   ];
 
   const visibleButtons = buttons.filter((b) => !(isXS && b.hideOnXS));
+
+  useEffect(() => {
+    if (!emojiOpen) return;
+    const handleDown = (event: MouseEvent) => {
+      if (!pickerRef.current) return;
+      if (!pickerRef.current.contains(event.target as Node)) {
+        setEmojiOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleDown, true);
+    return () => {
+      document.removeEventListener("mousedown", handleDown, true);
+    };
+  }, [emojiOpen]);
+
+  useEffect(() => {
+    if (!emojiOpen) {
+      setEmojiQuery("");
+    }
+  }, [emojiOpen]);
+
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
-    if (!query) return emojis.slice(0, 48);
+    if (!query) return emojis;
     return emojis
       .filter((emoji) => emoji.slug.includes(query))
       .sort((a, b) => {
@@ -256,8 +278,7 @@ export default function EditorMenuBar({
         const bStarts = b.slug.startsWith(query) ? 1 : 0;
         if (aStarts !== bStarts) return bStarts - aStarts;
         return a.slug.localeCompare(b.slug);
-      })
-      .slice(0, 48);
+      });
   }, [emojiQuery, emojis]);
 
   return (
@@ -273,7 +294,7 @@ export default function EditorMenuBar({
           {icon}
         </EditorMenuButton>
       ))}
-      <div className="relative">
+      <div ref={pickerRef} className="relative z-30">
         <EditorMenuButton
           onClick={() => setEmojiOpen((open) => !open)}
           isActive={emojiOpen}
@@ -288,7 +309,7 @@ export default function EditorMenuBar({
           position="bottom-left"
           padding={8}
         >
-          <div className="flex flex-col gap-2 w-64">
+          <div className="flex w-64 flex-col gap-2">
             <Input
               value={emojiQuery}
               onValueChange={setEmojiQuery}
@@ -300,26 +321,30 @@ export default function EditorMenuBar({
                 No emojis found.
               </Text>
             ) : (
-              <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto">
+              <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
                 {filteredEmojis.map((emoji) => (
-                  <button
+                  <Button
                     key={emoji.id}
-                    type="button"
-                    className="flex items-center justify-center rounded-md border border-transparent hover:border-white/20"
+                    size="sm"
+                    variant="ghost"
+                    color="default"
+                    leftSlot={
+                      <img
+                        src={emoji.image}
+                        alt={`:${emoji.slug}:`}
+                        className="h-4 w-4"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    }
+                    tooltip={`:${emoji.slug}:`}
                     onClick={() => {
                       editor.chain().focus().insertContent(`:${emoji.slug}:`).run();
                       setEmojiOpen(false);
                       setEmojiQuery("");
                     }}
                   >
-                    <img
-                      src={emoji.image}
-                      alt={`:${emoji.slug}:`}
-                      className="h-5 w-5"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </button>
+                  </Button>
                 ))}
               </div>
             )}

@@ -11,7 +11,7 @@ export default function ThemedProse({
   // Map your theme tokens -> prose variables
   const proseVars = {
     // text
-    ["--tw-prose-body"]: colors["textFaded"],
+    ["--tw-prose-body"]: colors["text"],
     ["--tw-prose-headings"]: colors["text"],
     ["--tw-prose-lead"]: colors["text"],
     ["--tw-prose-links"]: colors["blue"],
@@ -32,6 +32,23 @@ export default function ThemedProse({
   return (
     <article
       className={`prose max-w-none
+        [&_h1]:my-4
+        [&_h1]:text-4xl
+        [&_h1]:font-semibold
+        [&_h1]:leading-tight
+        [&_h2]:my-4
+        [&_h2]:text-3xl
+        [&_h2]:font-semibold
+        [&_h2]:leading-tight
+        [&_h3]:my-3
+        [&_h3]:text-2xl
+        [&_h3]:font-semibold
+        [&_h3]:leading-snug
+        [&_p]:my-3
+        [&_p:empty]:block
+        [&_p:empty]:h-[1.25em]
+        [&_p:empty]:my-3
+        [&_p>br:only-child]:block
         [&_a]:underline
         [&_a]:underline-offset-2
         [&_a:hover]:opacity-80

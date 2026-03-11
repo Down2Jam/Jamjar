@@ -89,7 +89,7 @@ export default function ImageInput({
   placeholder = "Add image",
   icon = "plus",
   enableCrop = true,
-  maxOutputSize = 1024,
+  maxOutputSize,
   maxOutputWidth,
   maxOutputHeight,
   showClearButton = true,
@@ -259,27 +259,17 @@ export default function ImageInput({
       return;
     }
 
-    const stageCanvas = document.createElement("canvas");
-    stageCanvas.width = cropW;
-    stageCanvas.height = cropH;
-    const stageCtx = stageCanvas.getContext("2d");
-    if (!stageCtx) {
-      handleCloseCrop();
-      return;
-    }
-
-    stageCtx.clearRect(0, 0, cropW, cropH);
-    stageCtx.translate(cropW / 2 + offset.x, cropH / 2 + offset.y);
-    stageCtx.rotate(radians);
-    stageCtx.scale((flipX ? -1 : 1) * scale, (flipY ? -1 : 1) * scale);
-    stageCtx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
-
     const canvas = document.createElement("canvas");
-    let outW = cropW;
-    let outH = cropH;
-    const maxW = maxOutputWidth ?? maxOutputSize;
-    const maxH = maxOutputHeight ?? maxOutputSize;
-    if (outW > maxW || outH > maxH) {
+    const resolutionScale = 1 / scale;
+    let outW = Math.max(1, Math.round(cropW * resolutionScale));
+    let outH = Math.max(1, Math.round(cropH * resolutionScale));
+    const maxW = maxOutputWidth ?? maxOutputSize ?? Number.POSITIVE_INFINITY;
+    const maxH = maxOutputHeight ?? maxOutputSize ?? Number.POSITIVE_INFINITY;
+    if (
+      Number.isFinite(maxW) &&
+      Number.isFinite(maxH) &&
+      (outW > maxW || outH > maxH)
+    ) {
       const downscale = Math.min(maxW / outW, maxH / outH);
       outW = Math.max(1, Math.round(outW * downscale));
       outH = Math.max(1, Math.round(outH * downscale));
@@ -292,7 +282,15 @@ export default function ImageInput({
       return;
     }
 
-    ctx.drawImage(stageCanvas, 0, 0, canvas.width, canvas.height);
+    const outputScale = outW / cropW;
+    ctx.clearRect(0, 0, outW, outH);
+    ctx.translate(outW / 2 + offset.x * outputScale, outH / 2 + offset.y * outputScale);
+    ctx.rotate(radians);
+    ctx.scale(
+      (flipX ? -1 : 1) * scale * outputScale,
+      (flipY ? -1 : 1) * scale * outputScale
+    );
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
 
     const blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, cropFile.type || "image/png", 0.85)

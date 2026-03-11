@@ -615,7 +615,7 @@ export default function ClientGamePage({
           borderColor: siteTheme.colors["base"],
           color: siteTheme.colors["text"],
         }}
-        className="border-2 relative rounded-xl overflow-hidden"
+        className="border-2 relative rounded-xl overflow-visible"
       >
         <div
           className="h-60 relative"

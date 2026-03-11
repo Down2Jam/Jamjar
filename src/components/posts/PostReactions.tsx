@@ -75,7 +75,7 @@ export default function PostReactions({
   }, [current, sortedEmojis]);
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
-    if (!query) return availableEmojis.slice(0, 48);
+    if (!query) return availableEmojis;
     return availableEmojis
       .filter((emoji) => emoji.slug.includes(query))
       .sort((a, b) => {
@@ -83,8 +83,7 @@ export default function PostReactions({
         const bStarts = b.slug.startsWith(query) ? 1 : 0;
         if (aStarts !== bStarts) return bStarts - aStarts;
         return a.slug.localeCompare(b.slug);
-      })
-      .slice(0, 48);
+      });
   }, [availableEmojis, emojiQuery]);
 
   const handleToggle = async (emoji: ReactionType) => {
@@ -97,11 +96,20 @@ export default function PostReactions({
     try {
       const response = await togglePostReaction(postId, emoji.id);
       if (!response.ok) {
+        let message = "Failed to update reaction";
+        try {
+          const data = await response.json();
+          if (typeof data?.message === "string" && data.message) {
+            message = data.message;
+          }
+        } catch {
+          // Ignore invalid error payloads and keep the generic message.
+        }
         if (response.status === 401) {
           redirect("/login");
           return;
         }
-        addToast({ title: "Failed to update reaction" });
+        addToast({ title: message });
         return;
       }
       const data = await response.json();

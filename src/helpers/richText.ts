@@ -275,7 +275,11 @@ markdown.use(markdownItTaskLists, {
   labelAfter: true,
 });
 
-export const isHtmlContent = (value: string) => /<\/?[a-z][\s\S]*>/i.test(value);
+const htmlDocumentStartRegex =
+  /^\s*<(?:p|div|section|article|h[1-6]|ul|ol|li|blockquote|pre|code|table|thead|tbody|tr|td|th|img|iframe|figure|figcaption|hr|br)\b/i;
+
+export const isHtmlContent = (value: string) =>
+  htmlDocumentStartRegex.test(value.trim());
 
 const expandEmbedMarkdownTokens = (value: string) =>
   value
@@ -345,6 +349,18 @@ const preprocessMarkdown = (value: string) =>
     .replace(/==([^\n]+?)==/g, "<mark>$1</mark>")
     .replace(/\^\{([^{}]+)\}/g, "<sup>$1</sup>")
     .replace(/_\{([^{}]+)\}/g, "<sub>$1</sub>");
+
+const preserveVisualBlankLines = (value: string) =>
+  value.replace(/(?:\r?\n){3,}/g, (match) => {
+    const newlineCount = (match.match(/\n/g) ?? []).length;
+    const blankParagraphs = Array.from({
+      length: Math.max(1, newlineCount - 2),
+    })
+      .map(() => "<p><br></p>")
+      .join("\n\n");
+
+    return `\n\n${blankParagraphs}\n\n`;
+  });
 
 export const markdownToEditorContent = (value: string) =>
   preprocessMarkdown(value);
@@ -471,7 +487,9 @@ export const renderRichTextToHtml = (value: string) => {
   }
   return sanitize(
     decorateMentionTokensInHtml(
-      repairQuotedParagraphs(markdown.render(preprocessMarkdown(content))),
+      repairQuotedParagraphs(
+        markdown.render(preserveVisualBlankLines(preprocessMarkdown(content))),
+      ),
     ),
   );
 };
