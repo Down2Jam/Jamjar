@@ -38,6 +38,7 @@ export interface ReactionSummaryType {
   reaction: ReactionType;
   count: number;
   reacted: boolean;
+  isFirstReactor?: boolean;
   users?: Array<{
     id: number;
     slug: string;

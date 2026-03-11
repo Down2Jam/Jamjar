@@ -85,6 +85,12 @@ export default function PostReactions({
         return a.slug.localeCompare(b.slug);
       });
   }, [availableEmojis, emojiQuery]);
+  const canAddNewReaction = useMemo(() => {
+    const firstReactionCount = current.filter(
+      (entry) => entry.isFirstReactor,
+    ).length;
+    return firstReactionCount < 2;
+  }, [current]);
 
   const handleToggle = async (emoji: ReactionType) => {
     if (!getCookie("token")) {
@@ -96,6 +102,13 @@ export default function PostReactions({
     try {
       const response = await togglePostReaction(postId, emoji.id);
       if (!response.ok) {
+        if (response.status === 401) {
+          redirect("/login");
+          return;
+        }
+        if (response.status === 409) {
+          return;
+        }
         let message = "Failed to update reaction";
         try {
           const data = await response.json();
@@ -104,10 +117,6 @@ export default function PostReactions({
           }
         } catch {
           // Ignore invalid error payloads and keep the generic message.
-        }
-        if (response.status === 401) {
-          redirect("/login");
-          return;
         }
         addToast({ title: message });
         return;
@@ -194,7 +203,7 @@ export default function PostReactions({
         </div>
       ))}
 
-      {availableEmojis.length > 0 && (
+      {canAddNewReaction && availableEmojis.length > 0 && (
         <div ref={pickerRef} className="relative z-30">
           <Button
             size="sm"
