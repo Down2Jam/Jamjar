@@ -25,25 +25,84 @@ type Props = {
 function getDescriptor(n: NotificationType) {
   const c = n.comment;
   const type = n.type;
+  const game = c?.game ?? n.game ?? null;
+  const post = c?.post ?? n.post ?? null;
+  const track = c?.track ?? n.track ?? null;
 
-  if (type === "GAME_COMMENT" && c?.game?.slug) {
+  if (type === "GAME_COMMENT" && game?.slug) {
     return {
       title: "New comment on your game",
       icon: "messagecircle",
-      subtitle: `${c.author?.name ?? "Someone"} commented on ${
-        c.game.name ?? "your game"
+      subtitle: `${c?.author?.name ?? "Someone"} commented on ${
+        game.name ?? "your game"
       }`,
-      href: `/g/${c.game.slug}?comment=${c.id}#comment-${c.id}`,
+      href: c
+        ? `/g/${game.slug}?comment=${c.id}#comment-${c.id}`
+        : `/g/${game.slug}`,
     };
   }
 
-  if (type === "POST_COMMENT" && c?.post?.slug) {
+  if (type === "TRACK_COMMENT" && track?.slug) {
+    return {
+      title: "New comment on your track",
+      icon: "music",
+      subtitle: `${c?.author?.name ?? "Someone"} commented on ${
+        track.name ?? "your track"
+      }`,
+      href: c
+        ? `/m/${track.slug}?comment=${c.id}#comment-${c.id}`
+        : `/m/${track.slug}`,
+    };
+  }
+
+  if (type === "POST_COMMENT" && post?.slug) {
     return {
       title: "New comment on your post",
       icon: "messagecircle",
-      subtitle: `${c.author?.name ?? "Someone"} commented on ${c.post.title}`,
-      href: `/p/${c.post.slug}?comment=${c.id}#comment-${c.id}`,
+      subtitle: `${c?.author?.name ?? "Someone"} commented on ${post.title}`,
+      href: c
+        ? `/p/${post.slug}?comment=${c.id}#comment-${c.id}`
+        : `/p/${post.slug}`,
     };
+  }
+
+  if (type === "COMMENT_REPLY") {
+    if (track?.slug) {
+      return {
+        title: "New reply to your comment",
+        icon: "reply",
+        subtitle: `${c?.author?.name ?? "Someone"} replied on ${
+          track.name ?? "your track"
+        }`,
+        href: c
+          ? `/m/${track.slug}?comment=${c.id}#comment-${c.id}`
+          : `/m/${track.slug}`,
+      };
+    }
+
+    if (game?.slug) {
+      return {
+        title: "New reply to your comment",
+        icon: "reply",
+        subtitle: `${c?.author?.name ?? "Someone"} replied on ${
+          game.name ?? "your game"
+        }`,
+        href: c
+          ? `/g/${game.slug}?comment=${c.id}#comment-${c.id}`
+          : `/g/${game.slug}`,
+      };
+    }
+
+    if (post?.slug) {
+      return {
+        title: "New reply to your comment",
+        icon: "reply",
+        subtitle: `${c?.author?.name ?? "Someone"} replied on ${post.title}`,
+        href: c
+          ? `/p/${post.slug}?comment=${c.id}#comment-${c.id}`
+          : `/p/${post.slug}`,
+      };
+    }
   }
 
   return {
@@ -75,8 +134,6 @@ export default function CommentNotification({
   const [posting, setPosting] = useState(false);
 
   const c = notification.comment;
-
-  console.log(c);
 
   if (!c) return null;
 

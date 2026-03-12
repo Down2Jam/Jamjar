@@ -7,6 +7,7 @@ import { TeamInviteType } from "./TeamInviteType";
 export type NotificationKind =
   | "GENERAL"
   | "GAME_COMMENT"
+  | "TRACK_COMMENT"
   | "COMMENT_REPLY"
   | "POST_COMMENT"
   | "FOLLOW"
@@ -20,6 +21,7 @@ export type NotificationData = {
   userSlug?: string;
   postSlug?: string;
   gameSlug?: string;
+  trackSlug?: string;
   teamSlug?: string;
   [key: string]: unknown;
 };
@@ -44,6 +46,7 @@ export interface NotificationType {
   postId?: number | null;
   commentId?: number | null;
   gameId?: number | null;
+  trackId?: number | null;
   teamId?: number | null;
   teamInviteId?: number | null;
   teamApplicationId?: number | null;
@@ -51,4 +54,19 @@ export interface NotificationType {
   teamApplication?: TeamApplicationType;
   teamInvite?: TeamInviteType;
   comment?: CommentType;
+  game?: {
+    id: number;
+    slug: string;
+    name?: string | null;
+  } | null;
+  post?: {
+    id: number;
+    slug: string;
+    title?: string | null;
+  } | null;
+  track?: {
+    id: number;
+    slug: string;
+    name?: string | null;
+  } | null;
 }

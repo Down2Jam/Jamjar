@@ -69,6 +69,7 @@ export default function SidebarMusic() {
             {featured.map((track, index) => (
               <SidebarSong
                 key={index}
+                slug={track.slug}
                 name={track.name}
                 artist={track.composer}
                 thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}

@@ -20,6 +20,7 @@ import {
   postGame,
   updateGame,
 } from "@/requests/game";
+import { getTrackFlags, getTrackTags } from "@/requests/track";
 import { getTeamsUser } from "@/requests/team";
 import { AchievementType } from "@/types/AchievementType";
 import { DownloadLinkType, PlatformType } from "@/types/DownloadLinkType";
@@ -45,11 +46,23 @@ import { Switch } from "bioloom-ui";
 import { getIcon } from "@/helpers/icon";
 import { Textarea } from "bioloom-ui";
 import Editor from "@/components/editor";
+import {
+  licenseFlagsToLabel,
+  LicenseFlags,
+  licenseModeForFlags,
+  LicenseMode,
+  parseLicenseFlags,
+  SINGLE_TRACK_TAG_CATEGORIES,
+  TRACK_CREDIT_ROLE_OPTIONS,
+  TRACK_TAG_CATEGORY_HELPERS,
+} from "@/components/tracks/editingShared";
 import { redirect, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { getSelf, searchUsers } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { TrackType } from "@/types/TrackType";
+import { TrackFlagType } from "@/types/TrackFlagType";
+import { TrackTagType } from "@/types/TrackTagType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { useEmojis } from "@/providers/EmojiProvider";
 import { debounce } from "lodash";
@@ -67,6 +80,9 @@ type InputMethodType =
   | "Motion"
   | "VR"
   | "Other";
+
+const MIN_EMOTE_PREFIX_LENGTH = 4;
+const MAX_EMOTE_PREFIX_LENGTH = 8;
 
 const YT_ID_REGEX =
   /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
@@ -161,38 +177,41 @@ const LB_ICON: Record<LeaderboardTypeType, IconName> = {
 
 const lbIconFor = (t: LeaderboardTypeType): IconName => LB_ICON[t] ?? "trophy";
 
+type SongCreditEdit = {
+  id: number;
+  role: string;
+  userId: number | null;
+  user?: Pick<
+    UserType,
+    "id" | "name" | "slug" | "profilePicture" | "short"
+  > | null;
+};
+
+type SongLinkEdit = {
+  id: number;
+  label: string;
+  url: string;
+};
+
 type SongEdit = {
   id: number;
   slug: string;
   name: string;
   url: string;
+  commentary?: string | null;
+  tagIds: number[];
+  flagIds: number[];
+  bpm?: number | null;
+  musicalKey?: string | null;
+  softwareUsed: string[];
   license: string;
   allowDownload: boolean;
   licenseAttribution: boolean;
   licenseCommercial: boolean;
   licenseDerivatives: boolean;
   licenseShareAlike: boolean;
-  composerId: number | null;
-  composer?: Pick<UserType, "id" | "name" | "slug" | "profilePicture"> | null;
-};
-
-type LicenseFlags = {
-  attribution: boolean;
-  commercial: boolean;
-  derivatives: boolean;
-  shareAlike: boolean;
-};
-
-type LicenseMode = "ARR" | "CC0" | "CC_BY";
-
-const licenseModeForFlags = (flags: LicenseFlags): LicenseMode => {
-  if (!flags.attribution && !flags.commercial && !flags.derivatives) {
-    return "ARR";
-  }
-  if (!flags.attribution && flags.commercial) {
-    return "CC0";
-  }
-  return "CC_BY";
+  links: SongLinkEdit[];
+  credits: SongCreditEdit[];
 };
 
 const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => ({
@@ -208,58 +227,6 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => ({
   }),
 });
 
-const licenseFlagsToLabel = (flags: LicenseFlags) => {
-  if (
-    !flags.attribution &&
-    !flags.commercial &&
-    !flags.derivatives &&
-    !flags.shareAlike
-  ) {
-    return "All rights reserved";
-  }
-
-  if (!flags.attribution && flags.commercial) return "CC0";
-  const prefix = "CC BY";
-  const suffixParts: string[] = [];
-  if (!flags.commercial) suffixParts.push("NC");
-  if (!flags.derivatives) {
-    suffixParts.push("ND");
-  } else if (flags.shareAlike) {
-    suffixParts.push("SA");
-  }
-  return suffixParts.length > 0 ? `${prefix}-${suffixParts.join("-")}` : prefix;
-};
-
-const parseLicenseFlags = (license?: string | null): LicenseFlags => {
-  const normalized = (license ?? "").toUpperCase().replace(/\s+/g, " ").trim();
-  if (!normalized || normalized === "ALL RIGHTS RESERVED") {
-    return {
-      attribution: false,
-      commercial: false,
-      derivatives: false,
-      shareAlike: false,
-    };
-  }
-  if (normalized.startsWith("CC0")) {
-    return {
-      attribution: false,
-      commercial: true,
-      derivatives: true,
-      shareAlike: false,
-    };
-  }
-
-  const hasNc = normalized.includes("NC");
-  const hasNd = normalized.includes("ND");
-  const hasSa = normalized.includes("SA");
-  return {
-    attribution: true,
-    commercial: !hasNc,
-    derivatives: !hasNd,
-    shareAlike: !hasNd && hasSa,
-  };
-};
-
 export default function GameEditingForm({
   game = null,
 }: {
@@ -271,6 +238,8 @@ export default function GameEditingForm({
   >([]);
   const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
+  const [allTrackTags, setAllTrackTags] = useState<TrackTagType[]>([]);
+  const [allTrackFlags, setAllTrackFlags] = useState<TrackFlagType[]>([]);
   const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
     null,
   );
@@ -438,21 +407,55 @@ export default function GameEditingForm({
         slug: s.slug,
         name: s.name,
         url: s.url,
+        commentary: s.commentary ?? "",
+        tagIds: (s.tags ?? []).map((tag) => tag.id),
+        flagIds: (s.flags ?? []).map((flag) => flag.id),
+        bpm: s.bpm ?? null,
+        musicalKey: s.musicalKey ?? "",
+        softwareUsed: s.softwareUsed ?? [],
         license: licenseFlagsToLabel(flags),
         allowDownload: Boolean(s.allowDownload),
         licenseAttribution: flags.attribution,
         licenseCommercial: flags.commercial,
         licenseDerivatives: flags.derivatives,
         licenseShareAlike: flags.shareAlike,
-        composerId: s.composerId,
-        composer: s.composer
-          ? {
-              id: s.composer.id,
-              name: s.composer.name,
-              slug: s.composer.slug,
-              profilePicture: s.composer.profilePicture,
-            }
-          : null,
+        links: (s.links ?? []).map((link) => ({
+          id: link.id,
+          label: link.label,
+          url: link.url,
+        })),
+        credits:
+          (s.credits?.length ?? 0) > 0
+            ? (s.credits ?? []).map((credit) => ({
+                id: credit.id,
+                role: credit.role,
+                userId: credit.userId,
+                user: credit.user
+                  ? {
+                      id: credit.user.id,
+                      name: credit.user.name,
+                      slug: credit.user.slug,
+                      profilePicture: credit.user.profilePicture,
+                      short: credit.user.short,
+                    }
+                  : null,
+              }))
+            : s.composer
+              ? [
+                  {
+                    id: -s.id,
+                    role: "Composer",
+                    userId: s.composer.id,
+                    user: {
+                      id: s.composer.id,
+                      name: s.composer.name,
+                      slug: s.composer.slug,
+                      profilePicture: s.composer.profilePicture,
+                      short: s.composer.short,
+                    },
+                  },
+                ]
+              : [],
       };
     }) as SongEdit[];
     setSongs(incomingSongs);
@@ -518,6 +521,14 @@ export default function GameEditingForm({
         const tagsData = await tagsResponse.json();
         setAllTags(tagsData.data);
 
+        const trackTagsResponse = await getTrackTags();
+        const trackTagsData = await trackTagsResponse.json();
+        setAllTrackTags(trackTagsData.data ?? []);
+
+        const trackFlagsResponse = await getTrackFlags();
+        const trackFlagsData = await trackFlagsResponse.json();
+        setAllTrackFlags(trackFlagsData.data ?? []);
+
         const activeJam = await getCurrentJam();
         setActiveJam(activeJam);
 
@@ -573,7 +584,7 @@ export default function GameEditingForm({
       id: number;
       label: ReactNode;
     },
-    true
+    boolean
   > = {
     multiValue: (base) => {
       return {
@@ -616,6 +627,24 @@ export default function GameEditingForm({
       backgroundColor: isFocused ? "#333" : undefined,
     }),
   };
+
+  const trackTagCategories = useMemo(
+    () =>
+      [
+        ...new Set(
+          allTrackTags.map((tag) => tag.category?.name).filter(Boolean),
+        ),
+      ].sort((a, b) => {
+        const aPriority =
+          allTrackTags.find((tag) => tag.category?.name === a)?.category
+            ?.priority ?? 0;
+        const bPriority =
+          allTrackTags.find((tag) => tag.category?.name === b)?.category
+            ?.priority ?? 0;
+        return bPriority - aPriority || a.localeCompare(b);
+      }),
+    [allTrackTags],
+  );
 
   const sanitizeSlug = (value: string): string => {
     return value
@@ -662,10 +691,6 @@ export default function GameEditingForm({
       return null;
     }
   };
-
-  useEffect(() => {
-    console.log(artistResults);
-  }, [artistResults]);
 
   const doArtistSearch = useMemo(
     () =>
@@ -797,8 +822,12 @@ export default function GameEditingForm({
             .trim()
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "");
-          if (cleanedPrefix && cleanedPrefix.length !== 6) {
-            addToast({ title: "Emote prefix must be exactly 6 characters." });
+          if (
+            cleanedPrefix &&
+            (cleanedPrefix.length < MIN_EMOTE_PREFIX_LENGTH ||
+              cleanedPrefix.length > MAX_EMOTE_PREFIX_LENGTH)
+          ) {
+            addToast({ title: "Emote prefix must be 4 to 8 characters." });
             return;
           }
           setWaitingPost(true);
@@ -825,7 +854,19 @@ export default function GameEditingForm({
             const payloadSongs = songs.map((s) => ({
               name: s.name,
               url: s.url,
-              composerId: s.composerId,
+              commentary: s.commentary || null,
+              tagIds: s.tagIds,
+              flagIds: s.flagIds,
+              bpm: s.bpm ?? null,
+              musicalKey: s.musicalKey?.trim() || null,
+              softwareUsed: s.softwareUsed,
+              links: s.links,
+              credits: s.credits
+                .filter((credit) => credit.userId && credit.role.trim())
+                .map((credit) => ({
+                  role: credit.role.trim(),
+                  userId: credit.userId as number,
+                })),
               id: s.id,
               slug: s.slug,
               license: s.license || null,
@@ -833,9 +874,9 @@ export default function GameEditingForm({
             }));
 
             for (const song of payloadSongs) {
-              if (!song.composerId) {
+              if ((song.credits?.length ?? 0) === 0) {
                 addToast({
-                  title: `${song.name} is missing a composer`,
+                  title: `${song.name} is missing a credited person`,
                 });
                 return;
               }
@@ -1473,7 +1514,8 @@ export default function GameEditingForm({
                         <div>
                           <Text color="text">Emote Prefix</Text>
                           <Text color="textFaded" size="xs">
-                            Choose a 6-character prefix for this game's emotes.
+                            Choose a 4 to 8 character prefix for this game's
+                            emotes.
                           </Text>
                         </div>
                         <Input
@@ -1483,12 +1525,12 @@ export default function GameEditingForm({
                               value
                                 .toLowerCase()
                                 .replace(/[^a-z0-9]/g, "")
-                                .slice(0, 6),
+                                .slice(0, MAX_EMOTE_PREFIX_LENGTH),
                             )
                           }
                           name="gameEmotePrefix"
                           placeholder="e.g. jam123"
-                          maxLength={6}
+                          maxLength={MAX_EMOTE_PREFIX_LENGTH}
                         />
                       </Vstack>
                     </Card>
@@ -1869,7 +1911,11 @@ export default function GameEditingForm({
                                     height={80}
                                     placeholder="Upload"
                                     onSelect={async (file, crop) => {
-                                      const url = await uploadTo("image", file, crop);
+                                      const url = await uploadTo(
+                                        "image",
+                                        file,
+                                        crop,
+                                      );
                                       if (url) {
                                         setEditingGameEmoteImage(url);
                                       }
@@ -2339,6 +2385,431 @@ export default function GameEditingForm({
                                     }
                                   />
                                   <div className="w-full">
+                                    <Text color="text">Commentary</Text>
+                                    <Text color="textFaded" size="xs">
+                                      Notes, context, or production details for
+                                      the track page.
+                                    </Text>
+                                  </div>
+                                  <Editor
+                                    content={song.commentary ?? ""}
+                                    setContent={(val) =>
+                                      setSongs((prev) =>
+                                        prev.map((s) =>
+                                          s.id === song.id
+                                            ? { ...s, commentary: val }
+                                            : s,
+                                        ),
+                                      )
+                                    }
+                                    size="sm"
+                                    format="markdown"
+                                  />
+                                  {trackTagCategories.length > 0 && (
+                                    <Vstack
+                                      align="start"
+                                      className="w-full gap-3"
+                                    >
+                                      <div className="w-full">
+                                        <Text color="text">Track Tags</Text>
+                                        <Text color="textFaded" size="xs">
+                                          Help listeners find this track by
+                                          genre, mood, use case, and looping.
+                                        </Text>
+                                      </div>
+                                      {trackTagCategories.map(
+                                        (categoryName) => {
+                                          const categoryTags =
+                                            allTrackTags.filter(
+                                              (tag) =>
+                                                tag.category?.name ===
+                                                categoryName,
+                                            );
+                                          const selectedCategoryTags =
+                                            categoryTags.filter((tag) =>
+                                              song.tagIds.includes(tag.id),
+                                            );
+                                          const isSingleCategory =
+                                            SINGLE_TRACK_TAG_CATEGORIES.has(
+                                              categoryName,
+                                            );
+
+                                          return (
+                                            <div
+                                              key={`${song.id}-${categoryName}`}
+                                              className="w-full"
+                                            >
+                                              <Text color="text" size="sm">
+                                                {categoryName}
+                                              </Text>
+                                              <Text color="textFaded" size="xs">
+                                                {TRACK_TAG_CATEGORY_HELPERS[
+                                                  categoryName
+                                                ] ??
+                                                  (isSingleCategory
+                                                    ? "Choose one"
+                                                    : "Choose any that fit")}
+                                              </Text>
+                                              {isMounted && (
+                                                isSingleCategory ? (
+                                                  <Select
+                                                    styles={styles}
+                                                    menuPortalTarget={
+                                                      document.body
+                                                    }
+                                                    menuPosition="fixed"
+                                                    isClearable
+                                                    onChange={(value) => {
+                                                      const nextIds =
+                                                        value &&
+                                                        "id" in value
+                                                          ? [value.id]
+                                                          : [];
+                                                      setSongs((prev) =>
+                                                        prev.map((s) => {
+                                                          if (s.id !== song.id)
+                                                            return s;
+
+                                                          const preservedIds =
+                                                            s.tagIds.filter(
+                                                              (id) =>
+                                                                !categoryTags.some(
+                                                                  (tag) =>
+                                                                    tag.id ===
+                                                                    id,
+                                                                ),
+                                                            );
+
+                                                          return {
+                                                            ...s,
+                                                            tagIds: [
+                                                              ...preservedIds,
+                                                              ...nextIds,
+                                                            ],
+                                                          };
+                                                        }),
+                                                      );
+                                                    }}
+                                                    value={(() => {
+                                                      const selected =
+                                                        selectedCategoryTags[0];
+                                                      return selected
+                                                        ? {
+                                                            value:
+                                                              selected.name,
+                                                            id: selected.id,
+                                                            label:
+                                                              selected.name,
+                                                          }
+                                                        : null;
+                                                    })()}
+                                                    options={categoryTags.map(
+                                                      (tag) => ({
+                                                        value: tag.name,
+                                                        id: tag.id,
+                                                        label: tag.name,
+                                                      }),
+                                                    )}
+                                                  />
+                                                ) : (
+                                                  <Select
+                                                    styles={styles}
+                                                    menuPortalTarget={
+                                                      document.body
+                                                    }
+                                                    menuPosition="fixed"
+                                                    isMulti
+                                                    isClearable
+                                                    onChange={(value) => {
+                                                      const nextIds =
+                                                        value.map(
+                                                          (item) => item.id,
+                                                        );
+                                                      setSongs((prev) =>
+                                                        prev.map((s) => {
+                                                          if (s.id !== song.id)
+                                                            return s;
+
+                                                          const preservedIds =
+                                                            s.tagIds.filter(
+                                                              (id) =>
+                                                                !categoryTags.some(
+                                                                  (tag) =>
+                                                                    tag.id ===
+                                                                    id,
+                                                                ),
+                                                            );
+
+                                                          return {
+                                                            ...s,
+                                                            tagIds: [
+                                                              ...preservedIds,
+                                                              ...nextIds,
+                                                            ],
+                                                          };
+                                                        }),
+                                                      );
+                                                    }}
+                                                    value={selectedCategoryTags.map(
+                                                      (tag) => ({
+                                                        value: tag.name,
+                                                        id: tag.id,
+                                                        label: tag.name,
+                                                      }),
+                                                    )}
+                                                    options={categoryTags.map(
+                                                      (tag) => ({
+                                                        value: tag.name,
+                                                        id: tag.id,
+                                                        label: tag.name,
+                                                      }),
+                                                    )}
+                                                  />
+                                                )
+                                              )}
+                                            </div>
+                                          );
+                                        },
+                                      )}
+                                    </Vstack>
+                                  )}
+                                  {allTrackFlags.length > 0 && (
+                                    <div className="w-full">
+                                      <Text color="text">Track Flags</Text>
+                                      <Text color="textFaded" size="xs">
+                                        Warnings or special status for this
+                                        track.
+                                      </Text>
+                                      {isMounted && (
+                                        <Select
+                                          styles={styles}
+                                          menuPortalTarget={document.body}
+                                          menuPosition="fixed"
+                                          isMulti
+                                          isClearable
+                                          onChange={(value) =>
+                                            setSongs((prev) =>
+                                              prev.map((s) =>
+                                                s.id === song.id
+                                                  ? {
+                                                      ...s,
+                                                      flagIds: value.map(
+                                                        (item) => item.id,
+                                                      ),
+                                                    }
+                                                  : s,
+                                              ),
+                                            )
+                                          }
+                                          value={allTrackFlags
+                                            .filter((flag) =>
+                                              song.flagIds.includes(flag.id),
+                                            )
+                                            .map((flag) => ({
+                                              value: flag.name,
+                                              id: flag.id,
+                                              label: flag.name,
+                                            }))}
+                                          options={allTrackFlags.map(
+                                            (flag) => ({
+                                              value: flag.name,
+                                              id: flag.id,
+                                              label: flag.name,
+                                            }),
+                                          )}
+                                        />
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="grid w-full gap-3 md:grid-cols-2">
+                                    <div>
+                                      <Text color="text">BPM</Text>
+                                      <Text color="textFaded" size="xs">
+                                        Optional tempo metadata.
+                                      </Text>
+                                      <Input
+                                        type="number"
+                                        value={
+                                          song.bpm == null
+                                            ? ""
+                                            : String(song.bpm)
+                                        }
+                                        onValueChange={(val) =>
+                                          setSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? {
+                                                    ...s,
+                                                    bpm: val
+                                                      ? Number(val)
+                                                      : null,
+                                                  }
+                                                : s,
+                                            ),
+                                          )
+                                        }
+                                        placeholder="120"
+                                      />
+                                    </div>
+                                    <div>
+                                      <Text color="text">Key</Text>
+                                      <Text color="textFaded" size="xs">
+                                        Example: C minor, F# major.
+                                      </Text>
+                                      <Input
+                                        value={song.musicalKey ?? ""}
+                                        onValueChange={(val) =>
+                                          setSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? { ...s, musicalKey: val }
+                                                : s,
+                                            ),
+                                          )
+                                        }
+                                        placeholder="C minor"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="w-full">
+                                    <Text color="text">Software Used</Text>
+                                    <Text color="textFaded" size="xs">
+                                      Comma-separated tools or DAWs.
+                                    </Text>
+                                    <Input
+                                      value={song.softwareUsed.join(", ")}
+                                      onValueChange={(val) =>
+                                        setSongs((prev) =>
+                                          prev.map((s) =>
+                                            s.id === song.id
+                                              ? {
+                                                  ...s,
+                                                  softwareUsed: val
+                                                    .split(",")
+                                                    .map((item) => item.trim())
+                                                    .filter(Boolean),
+                                                }
+                                              : s,
+                                          ),
+                                        )
+                                      }
+                                      placeholder="Ableton Live, Kontakt, Famitracker"
+                                    />
+                                  </div>
+                                  <div className="w-full">
+                                    <Text color="text">Links</Text>
+                                    <Text color="textFaded" size="xs">
+                                      External pages for this track.
+                                    </Text>
+                                    <Vstack
+                                      align="start"
+                                      className="w-full gap-2"
+                                    >
+                                      {song.links.map((link) => (
+                                        <Hstack
+                                          key={link.id}
+                                          className="w-full gap-2"
+                                        >
+                                          <Input
+                                            value={link.label}
+                                            onValueChange={(val) =>
+                                              setSongs((prev) =>
+                                                prev.map((s) =>
+                                                  s.id === song.id
+                                                    ? {
+                                                        ...s,
+                                                        links: s.links.map(
+                                                          (cur) =>
+                                                            cur.id === link.id
+                                                              ? {
+                                                                  ...cur,
+                                                                  label: val,
+                                                                }
+                                                              : cur,
+                                                        ),
+                                                      }
+                                                    : s,
+                                                ),
+                                              )
+                                            }
+                                            placeholder="Bandcamp"
+                                          />
+                                          <Input
+                                            value={link.url}
+                                            onValueChange={(val) =>
+                                              setSongs((prev) =>
+                                                prev.map((s) =>
+                                                  s.id === song.id
+                                                    ? {
+                                                        ...s,
+                                                        links: s.links.map(
+                                                          (cur) =>
+                                                            cur.id === link.id
+                                                              ? {
+                                                                  ...cur,
+                                                                  url: val,
+                                                                }
+                                                              : cur,
+                                                        ),
+                                                      }
+                                                    : s,
+                                                ),
+                                              )
+                                            }
+                                            placeholder="https://..."
+                                          />
+                                          <Button
+                                            size="sm"
+                                            icon="trash"
+                                            color="red"
+                                            onClick={() =>
+                                              setSongs((prev) =>
+                                                prev.map((s) =>
+                                                  s.id === song.id
+                                                    ? {
+                                                        ...s,
+                                                        links: s.links.filter(
+                                                          (cur) =>
+                                                            cur.id !== link.id,
+                                                        ),
+                                                      }
+                                                    : s,
+                                                ),
+                                              )
+                                            }
+                                          />
+                                        </Hstack>
+                                      ))}
+                                      <Button
+                                        size="sm"
+                                        icon="plus"
+                                        onClick={() =>
+                                          setSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? {
+                                                    ...s,
+                                                    links: [
+                                                      ...s.links,
+                                                      {
+                                                        id:
+                                                          Date.now() +
+                                                          Math.random(),
+                                                        label: "",
+                                                        url: "",
+                                                      },
+                                                    ],
+                                                  }
+                                                : s,
+                                            ),
+                                          )
+                                        }
+                                      >
+                                        Add Link
+                                      </Button>
+                                    </Vstack>
+                                  </div>
+                                  <div className="w-full">
                                     <Text color="text">License</Text>
                                     <Text color="textFaded" size="xs">
                                       Choose how others can use this track.
@@ -2549,13 +3020,12 @@ export default function GameEditingForm({
                                   </Hstack>
 
                                   <div className="w-full">
-                                    <Text color="text">Composer</Text>
+                                    <Text color="text">Credits</Text>
                                     <Text color="textFaded" size="xs">
-                                      The person who made the song (linked to
-                                      account on the site)
+                                      The people who made this song (linked to
+                                      accounts on the site)
                                     </Text>
                                   </div>
-
                                   <div className="w-full relative">
                                     <Input
                                       placeholder="Search users..."
@@ -2595,19 +3065,42 @@ export default function GameEditingForm({
                                                     s.id === song.id
                                                       ? {
                                                           ...s,
-                                                          composerId: u.id,
-                                                          composer: {
-                                                            id: u.id,
-                                                            name: u.name,
-                                                            slug: u.slug,
-                                                            profilePicture:
-                                                              u.profilePicture,
-                                                          },
+                                                          credits:
+                                                            s.credits.some(
+                                                              (credit) =>
+                                                                credit.userId ===
+                                                                u.id,
+                                                            )
+                                                              ? s.credits
+                                                              : [
+                                                                  ...s.credits,
+                                                                  {
+                                                                    id:
+                                                                      Date.now() +
+                                                                      Math.random(),
+                                                                    role:
+                                                                      s.credits
+                                                                        .length ===
+                                                                      0
+                                                                        ? "Composer"
+                                                                        : "",
+                                                                    userId:
+                                                                      u.id,
+                                                                    user: {
+                                                                      id: u.id,
+                                                                      name: u.name,
+                                                                      slug: u.slug,
+                                                                      profilePicture:
+                                                                        u.profilePicture,
+                                                                      short:
+                                                                        u.short,
+                                                                    },
+                                                                  },
+                                                                ],
                                                         }
                                                       : s,
                                                   ),
                                                 );
-                                                // clear query/results for this song
                                                 setArtistQuery((prev) => ({
                                                   ...prev,
                                                   [song.id]: "",
@@ -2638,39 +3131,209 @@ export default function GameEditingForm({
                                         </Vstack>
                                       </Card>
                                     )}
-
-                                    {song.composerId && (
-                                      <Hstack className="mt-2 items-center gap-2">
-                                        <Avatar
-                                          src={song.composer?.profilePicture}
-                                          size={24}
-                                        />
-                                        <Text size="sm" color="textFaded">
-                                          Selected:{" "}
-                                          {song.composer?.name ??
-                                            `User #${song.composerId}`}
-                                        </Text>
-                                        <Button
-                                          size="xs"
-                                          onClick={() =>
-                                            setSongs((prev) =>
-                                              prev.map((s) =>
-                                                s.id === song.id
-                                                  ? {
-                                                      ...s,
-                                                      composerId: null,
-                                                      composer: null,
-                                                    }
-                                                  : s,
-                                              ),
-                                            )
-                                          }
-                                        >
-                                          Clear
-                                        </Button>
-                                      </Hstack>
-                                    )}
                                   </div>
+                                  <Vstack
+                                    align="start"
+                                    className="w-full gap-3"
+                                  >
+                                    {song.credits.map((credit) => (
+                                      <Card key={credit.id} className="w-full">
+                                        <Vstack
+                                          align="start"
+                                          className="w-full gap-2"
+                                        >
+                                          <Hstack className="w-full gap-2">
+                                            <Dropdown
+                                              selectedValue={credit.role}
+                                              onSelect={(value) =>
+                                                setSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          credits:
+                                                            s.credits.map(
+                                                              (cur) =>
+                                                                cur.id ===
+                                                                credit.id
+                                                                  ? {
+                                                                      ...cur,
+                                                                      role:
+                                                                        typeof value ===
+                                                                        "string"
+                                                                          ? value
+                                                                          : "",
+                                                                    }
+                                                                  : cur,
+                                                            ),
+                                                        }
+                                                      : s,
+                                                  ),
+                                                )
+                                              }
+                                              placeholder="Role"
+                                            >
+                                              {TRACK_CREDIT_ROLE_OPTIONS.map(
+                                                (role) => (
+                                                  <Dropdown.Item
+                                                    key={role}
+                                                    value={role}
+                                                  >
+                                                    {role}
+                                                  </Dropdown.Item>
+                                                ),
+                                              )}
+                                            </Dropdown>
+                                            <Button
+                                              size="sm"
+                                              icon="trash"
+                                              color="red"
+                                              onClick={() =>
+                                                setSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          credits:
+                                                            s.credits.filter(
+                                                              (cur) =>
+                                                                cur.id !==
+                                                                credit.id,
+                                                            ),
+                                                        }
+                                                      : s,
+                                                  ),
+                                                )
+                                              }
+                                            />
+                                          </Hstack>
+                                          {!credit.userId && (
+                                            <Input
+                                              placeholder="Search users..."
+                                              value={
+                                                artistQuery[credit.id] ?? ""
+                                              }
+                                              onValueChange={(value) => {
+                                                setArtistQuery((prev) => ({
+                                                  ...prev,
+                                                  [credit.id]: value,
+                                                }));
+                                                doArtistSearch(
+                                                  credit.id,
+                                                  value,
+                                                );
+                                              }}
+                                            />
+                                          )}
+                                          {!credit.userId &&
+                                            (artistResults[credit.id]?.length ??
+                                              0) > 0 && (
+                                              <Card className="w-full">
+                                                <Vstack align="stretch">
+                                                  {artistResults[
+                                                    credit.id
+                                                  ]!.map((u) => (
+                                                    <div
+                                                      key={u.id}
+                                                      className="flex cursor-pointer items-center justify-between rounded-lg p-3 transition-colors"
+                                                      style={{
+                                                        backgroundColor:
+                                                          hoveredUserId === u.id
+                                                            ? colors["base"]
+                                                            : colors["mantle"],
+                                                      }}
+                                                      onMouseEnter={() =>
+                                                        setHoveredUserId(u.id)
+                                                      }
+                                                      onMouseLeave={() =>
+                                                        setHoveredUserId(null)
+                                                      }
+                                                      onClick={() => {
+                                                        setSongs((prev) =>
+                                                          prev.map((s) =>
+                                                            s.id === song.id
+                                                              ? {
+                                                                  ...s,
+                                                                  credits:
+                                                                    s.credits.map(
+                                                                      (cur) =>
+                                                                        cur.id ===
+                                                                        credit.id
+                                                                          ? {
+                                                                              ...cur,
+                                                                              userId:
+                                                                                u.id,
+                                                                              user: {
+                                                                                id: u.id,
+                                                                                name: u.name,
+                                                                                slug: u.slug,
+                                                                                profilePicture:
+                                                                                  u.profilePicture,
+                                                                                short:
+                                                                                  u.short,
+                                                                              },
+                                                                            }
+                                                                          : cur,
+                                                                    ),
+                                                                }
+                                                              : s,
+                                                          ),
+                                                        );
+                                                        setArtistQuery(
+                                                          (prev) => ({
+                                                            ...prev,
+                                                            [credit.id]: "",
+                                                          }),
+                                                        );
+                                                        setArtistResults(
+                                                          (prev) => ({
+                                                            ...prev,
+                                                            [credit.id]: [],
+                                                          }),
+                                                        );
+                                                      }}
+                                                    >
+                                                      <Hstack>
+                                                        <Avatar
+                                                          src={u.profilePicture}
+                                                        />
+                                                        <Vstack
+                                                          gap={0}
+                                                          align="start"
+                                                        >
+                                                          <Text>{u.name}</Text>
+                                                          <Text
+                                                            color="textFaded"
+                                                            size="xs"
+                                                          >
+                                                            {u.short ||
+                                                              "General.NoDescription"}
+                                                          </Text>
+                                                        </Vstack>
+                                                      </Hstack>
+                                                    </div>
+                                                  ))}
+                                                </Vstack>
+                                              </Card>
+                                            )}
+                                          {credit.userId && (
+                                            <Hstack className="items-center gap-2">
+                                              <Avatar
+                                                src={
+                                                  credit.user?.profilePicture
+                                                }
+                                                size={24}
+                                              />
+                                              <Text size="sm" color="textFaded">
+                                                {credit.user?.name ??
+                                                  `User #${credit.userId}`}
+                                              </Text>
+                                            </Hstack>
+                                          )}
+                                        </Vstack>
+                                      </Card>
+                                    ))}
+                                  </Vstack>
                                   <div className="w-full">
                                     <Text color="text">Song</Text>
                                     <Text color="textFaded" size="xs">
@@ -2758,14 +3421,20 @@ export default function GameEditingForm({
                                 url,
                                 name: baseName,
                                 slug: sanitizeSlug(baseName),
+                                commentary: "",
+                                tagIds: [],
+                                flagIds: [],
+                                bpm: null,
+                                musicalKey: "",
+                                softwareUsed: [],
                                 license: "All rights reserved",
                                 allowDownload: false,
                                 licenseAttribution: false,
                                 licenseCommercial: false,
                                 licenseDerivatives: false,
                                 licenseShareAlike: false,
-                                composerId: null,
-                                composer: null,
+                                links: [],
+                                credits: [],
                               },
                             ]);
                             addToast({ title: "Song uploaded" });
@@ -3320,7 +3989,11 @@ export default function GameEditingForm({
                                     height={80}
                                     placeholder="Upload image"
                                     onSelect={async (file, crop) => {
-                                      const url = await uploadTo("image", file, crop);
+                                      const url = await uploadTo(
+                                        "image",
+                                        file,
+                                        crop,
+                                      );
                                       if (!url) return;
                                       setAchievements((prev) => {
                                         const copy = [...prev];

@@ -1348,6 +1348,7 @@ export default function ClientUserPage({
                   .map((track) => (
                     <SidebarSong
                       key={track.id}
+                      slug={track.slug}
                       name={track.name}
                       artist={track.composer}
                       thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}

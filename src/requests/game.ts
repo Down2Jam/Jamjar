@@ -58,7 +58,15 @@ export async function postGame(
   songs: {
     name: string;
     url: string;
-    composerId: number | null;
+    commentary?: string | null;
+    tagIds?: number[];
+    flagIds?: number[];
+    bpm?: number | null;
+    musicalKey?: string | null;
+    softwareUsed?: string[];
+    links?: Array<{ label: string; url: string }>;
+    credits?: Array<{ role: string; userId: number }>;
+    composerId?: number | null;
     id: number;
     slug: string;
     license?: string | null;
@@ -139,7 +147,15 @@ export async function updateGame(
   songs: {
     name: string;
     url: string;
-    composerId: number | null;
+    commentary?: string | null;
+    tagIds?: number[];
+    flagIds?: number[];
+    bpm?: number | null;
+    musicalKey?: string | null;
+    softwareUsed?: string[];
+    links?: Array<{ label: string; url: string }>;
+    credits?: Array<{ role: string; userId: number }>;
+    composerId?: number | null;
     id: number;
     slug: string;
     license?: string | null;

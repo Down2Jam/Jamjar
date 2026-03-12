@@ -1,5 +1,6 @@
 import { GameType } from "./GameType";
 import { PostType } from "./PostType";
+import { TrackType } from "./TrackType";
 import { UserType } from "./UserType";
 
 export interface CommentType {
@@ -14,6 +15,7 @@ export interface CommentType {
   likes: [];
   hasLiked: boolean;
   game?: GameType;
+  track?: TrackType;
   post?: PostType;
   comment?: CommentType;
 }

@@ -23,6 +23,9 @@ import { useEmojis } from "@/providers/EmojiProvider";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 
 const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+const MIN_EMOTE_PREFIX_LENGTH = 4;
+const MAX_EMOTE_PREFIX_LENGTH = 8;
+const DEFAULT_EMOTE_PREFIX_LENGTH = 6;
 
 function buildDefaultEmotePrefix(source?: string | null) {
   const normalized = String(source ?? "")
@@ -30,13 +33,20 @@ function buildDefaultEmotePrefix(source?: string | null) {
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
 
-  let prefix = normalized.slice(0, 6);
+  if (
+    normalized.length >= MIN_EMOTE_PREFIX_LENGTH &&
+    normalized.length <= MAX_EMOTE_PREFIX_LENGTH
+  ) {
+    return normalized;
+  }
+
+  let prefix = normalized.slice(0, DEFAULT_EMOTE_PREFIX_LENGTH);
   let seed = 0;
   const seedSource = normalized || "jamjar";
   for (let i = 0; i < seedSource.length; i++) {
     seed = (seed * 31 + seedSource.charCodeAt(i)) >>> 0;
   }
-  while (prefix.length < 6) {
+  while (prefix.length < DEFAULT_EMOTE_PREFIX_LENGTH) {
     seed = (seed * 1664525 + 1013904223) >>> 0;
     prefix += PREFIX_CHARS[seed % PREFIX_CHARS.length];
   }
@@ -353,8 +363,12 @@ export default function UserPage() {
             return;
           }
 
-          if (cleanedPrefixInput && cleanedPrefixInput.length !== 6) {
-            addToast({ title: "Emote prefix must be exactly 6 characters." });
+          if (
+            cleanedPrefixInput &&
+            (cleanedPrefixInput.length < MIN_EMOTE_PREFIX_LENGTH ||
+              cleanedPrefixInput.length > MAX_EMOTE_PREFIX_LENGTH)
+          ) {
+            addToast({ title: "Emote prefix must be 4 to 8 characters." });
             return;
           }
 
@@ -563,12 +577,12 @@ export default function UserPage() {
                     value
                       .toLowerCase()
                       .replace(/[^a-z0-9]/g, "")
-                      .slice(0, 6),
+                      .slice(0, MAX_EMOTE_PREFIX_LENGTH),
                   )
                 }
                 name="emotePrefix"
                 placeholder="e.g. abc123"
-                maxLength={6}
+                maxLength={MAX_EMOTE_PREFIX_LENGTH}
               />
             </Vstack>
             <Hstack className="items-end flex-wrap">

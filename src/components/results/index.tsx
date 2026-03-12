@@ -9,7 +9,9 @@ import { Text } from "bioloom-ui";
 import { getJams } from "@/helpers/jam";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { getResults } from "@/requests/game";
+import { getTrackResults } from "@/requests/track";
 import { GameResultType } from "@/types/GameResultType";
+import { TrackResultType } from "@/types/TrackResultType";
 import { Award, Badge } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -110,6 +112,7 @@ function formatJamWindow(
 export default function Results() {
   const searchParams = useSearchParams();
   const [games, setGames] = useState<GameResultType[]>([]);
+  const [tracks, setTracks] = useState<TrackResultType[]>([]);
   const [category, setCategory] = useState<"REGULAR" | "ODA">(
     (["REGULAR", "ODA"].includes(
       searchParams.get("category") as "REGULAR" | "ODA"
@@ -235,11 +238,19 @@ export default function Results() {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getResults(category, contentType, sort, jamId);
+      const [gameResponse, trackResponse] = await Promise.all([
+        getResults(category, contentType, sort, jamId),
+        getTrackResults(jamId),
+      ]);
 
-      if (response.ok) {
-        const gameData = (await response.json()).data;
+      if (gameResponse.ok) {
+        const gameData = (await gameResponse.json()).data;
         setGames(gameData);
+      }
+
+      if (trackResponse.ok) {
+        const trackData = (await trackResponse.json()).data;
+        setTracks(trackData);
       }
     };
 
@@ -482,6 +493,69 @@ export default function Results() {
               </Card>
             );
           })}
+
+        {tracks.length > 0 && (
+          <section className="mt-8">
+            <h2 className="mb-4 text-2xl">Music</h2>
+            <Vstack align="stretch">
+              {tracks.map((track) => {
+                const overall = track.categoryAverages.find(
+                  (avg) => avg.categoryName === "Overall"
+                );
+
+                if (!overall) return null;
+
+                const { gradient, first } = getPlacementGradient(
+                  overall.placement,
+                  colors
+                );
+
+                return (
+                  <Card key={track.id} className="flex items-center gap-4">
+                    <Hstack gap={12}>
+                      <img
+                        alt={`${track.name} art`}
+                        className="z-0 h-[108px] w-[192px] object-cover"
+                        height={108}
+                        width={192}
+                        src={track.game.thumbnail ?? "/images/D2J_Icon.png"}
+                      />
+                      <div className="flex flex-col">
+                        <Link href={`/m/${track.slug}`}>{track.name}</Link>
+                        <Text size="sm" color="textFaded">
+                          {track.composer.name} for {track.game.name}
+                        </Text>
+                        <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
+                          <Text size="sm" color="textFaded">
+                            Overall
+                          </Text>
+                          <span
+                            style={gradientTextStyle(gradient, first)}
+                            className="w-fit"
+                          >
+                            {(overall.averageScore / 2).toFixed(2)} stars
+                          </span>
+                          <Text color="textFaded">
+                            ({ordinal_suffix_of(overall.placement)})
+                          </Text>
+                          <span className="flex items-center justify-center">
+                            {overall.placement >= 1 && overall.placement <= 3 && (
+                              <Award size={16} style={{ color: first }} />
+                            )}
+                            {overall.placement >= 4 &&
+                              overall.placement <= 10 && (
+                                <Badge size={12} style={{ color: first }} />
+                              )}
+                          </span>
+                        </div>
+                      </div>
+                    </Hstack>
+                  </Card>
+                );
+              })}
+            </Vstack>
+          </section>
+        )}
       </Vstack>
     </main>
   );

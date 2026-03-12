@@ -9,9 +9,11 @@ import { Spinner } from "bioloom-ui";
 // CreateComment.tsx
 export default function CreateComment({
   gameId,
+  trackId,
   size = "sm",
 }: {
-  gameId: number;
+  gameId?: number | null;
+  trackId?: number | null;
   size?: "xs" | "sm";
 }) {
   const [content, setContent] = useState("");
@@ -49,7 +51,13 @@ export default function CreateComment({
 
             setWaitingPost(true);
 
-            const response = await postComment(content, null, null, gameId);
+            const response = await postComment(
+              content,
+              null,
+              null,
+              gameId ?? null,
+              trackId ?? null
+            );
 
             if (response.status === 401) {
               addToast({

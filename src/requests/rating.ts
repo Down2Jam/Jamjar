@@ -20,3 +20,23 @@ export async function postRating(
     }),
   });
 }
+
+export async function postTrackRating(
+  trackId: number,
+  categoryId: number,
+  value: number
+) {
+  return fetch(`${BASE_URL}/track-rating`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      trackId,
+      categoryId,
+      value,
+    }),
+  });
+}

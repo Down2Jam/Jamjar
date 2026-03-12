@@ -13,6 +13,7 @@ import { GameCard } from "../gamecard";
 import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { PlatformType } from "@/types/DownloadLinkType";
 
@@ -51,6 +52,8 @@ type FilterOption = {
   icon?: IconName;
   description?: string;
 };
+
+type MoreFilterId = "hideOwnGame" | "hideRatedGames";
 
 const INPUT_METHOD_OPTIONS: Record<
   InputMethodFilter,
@@ -247,6 +250,17 @@ export default function Games() {
   );
   const [excludedFlags, setExcludedFlags] =
     useState<Set<string>>(initialExcludedFlagsParam);
+  const initialMoreFiltersParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("more")
+          ),
+    []
+  );
+  const [selectedMoreFilters, setSelectedMoreFilters] =
+    useState<Set<string>>(initialMoreFiltersParam);
 
   const typeOptions: TypeOption[] = [
     { id: "all", name: "All Categories", icon: "layers" },
@@ -545,9 +559,49 @@ export default function Games() {
     return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [games]);
 
+  const moreOptions: Array<{
+    id: MoreFilterId;
+    name: string;
+    icon: IconName;
+    description: string;
+  }> = [
+    {
+      id: "hideOwnGame",
+      name: "Hide Own Game",
+      icon: "eye",
+      description: "Hide games from teams you are on",
+    },
+    {
+      id: "hideRatedGames",
+      name: "Hide Rated Games",
+      icon: "star",
+      description: "Hide games you have already rated",
+    },
+  ];
+
   const displayedGames = useMemo(() => {
     if (!games) return [];
+    const hideOwnGame = selectedMoreFilters.has("hideOwnGame");
+    const hideRatedGames = selectedMoreFilters.has("hideRatedGames");
+
     return games.filter((game) => {
+      if (hideOwnGame && user) {
+        const isOwnGame =
+          game.team?.ownerId === user.id ||
+          game.team?.users?.some((member) => member.id === user.id);
+        if (isOwnGame) {
+          return false;
+        }
+      }
+
+      if (
+        hideRatedGames &&
+        user &&
+        game.ratings.some((rating) => rating.userId === user.id)
+      ) {
+        return false;
+      }
+
       if (typeFilter !== "all") {
         const wanted = typeFilter.toLowerCase();
         const t = game.category ?? "";
@@ -601,8 +655,10 @@ export default function Games() {
     games,
     selectedBuildTypes,
     selectedInputMethods,
+    selectedMoreFilters,
     selectedTags,
     typeFilter,
+    user,
   ]);
 
   if (!hasData && (showBusy || jamDetecting)) {
@@ -806,6 +862,30 @@ export default function Games() {
               ))}
             </Dropdown>
           )}
+
+          <Dropdown
+            multiple
+            selectedValues={selectedMoreFilters}
+            onSelectionChange={(values) => {
+              const next = new Set(
+                Array.from(values, (value) => String(value))
+              );
+              setSelectedMoreFilters(next);
+              updateMultiQueryParam("more", next);
+            }}
+            trigger={<Button icon="morehorizontal">More</Button>}
+          >
+            {moreOptions.map((option) => (
+              <Dropdown.Item
+                key={option.id}
+                value={option.id}
+                icon={option.icon}
+                description={option.description}
+              >
+                {option.name}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
         </Hstack>
       </Vstack>
 

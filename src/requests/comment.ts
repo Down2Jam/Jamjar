@@ -5,7 +5,8 @@ export async function postComment(
   content: string,
   postId: number | null,
   commentId: number | null = null,
-  gameId: number | null = null
+  gameId: number | null = null,
+  trackId: number | null = null
 ) {
   return fetch(`${BASE_URL}/comment`, {
     body: JSON.stringify({
@@ -13,6 +14,7 @@ export async function postComment(
       postId,
       commentId,
       gameId,
+      trackId,
       username: getCookie("user"),
     }),
     method: "POST",

@@ -1737,6 +1737,7 @@ export default function ClientGamePage({
                   {game.tracks.map((track) => (
                     <SidebarSong
                       key={track.id}
+                      slug={track.slug}
                       name={track.name}
                       artist={track.composer}
                       thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
@@ -2076,6 +2077,9 @@ function StarRow({
 }) {
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
   const { colors } = useTheme();
+  const themeJustification = text?.trim();
+  const showThemeJustification =
+    name.toLowerCase() === "theme" && Boolean(themeJustification);
 
   return (
     <div className="flex items-center gap-4">
@@ -2099,23 +2103,36 @@ function StarRow({
       </div>
       <Text color="textFaded">{name}</Text>
       <Tooltip content={description} position="top">
-        <CircleHelp
-          size={16}
-          style={{
-            color: colors["textFaded"],
-          }}
-        />
+        <span className="inline-flex items-center">
+          <CircleHelp
+            size={16}
+            style={{
+              color: colors["textFaded"],
+            }}
+          />
+        </span>
       </Tooltip>
-      {text && (
+      {showThemeJustification && (
         <Tooltip
           content={
-            <div>
+            <div className="max-w-80 whitespace-normal">
               <p className="text-lg font-bold">Theme Justification</p>
-              <p>{text}</p>
+              <p>{themeJustification}</p>
             </div>
           }
+          position="top"
         >
-          <MessageCircleMore size={16} />
+          <span
+            className="inline-flex items-center"
+            aria-label="Theme justification"
+          >
+            <MessageCircleMore
+              size={16}
+              style={{
+                color: colors["textFaded"],
+              }}
+            />
+          </span>
         </Tooltip>
       )}
     </div>

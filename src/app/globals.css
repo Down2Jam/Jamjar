@@ -46,3 +46,21 @@ html:not([data-theme-ready="true"]) *::after {
   vertical-align: -0.15em;
   margin: 0 0.05em;
 }
+
+.mention-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  vertical-align: middle;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.mention-chip img {
+  display: block;
+  flex: none;
+  margin: 0 !important;
+  max-width: none !important;
+}

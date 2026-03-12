@@ -17,6 +17,10 @@ export default async function SidebarStats() {
       (prev: number, cur: GameType) =>
         cur.ratings.length /
           (cur.ratingCategories.length + ratingCategories.length) +
+        (cur.tracks?.reduce(
+          (trackPrev, track) => trackPrev + (track.ratings?.length ?? 0),
+          0,
+        ) ?? 0) +
         prev,
       0
     ) || 0

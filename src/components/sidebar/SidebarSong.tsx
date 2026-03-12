@@ -12,6 +12,7 @@ import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 
 interface SidebarSongProps {
+  slug?: string;
   name: string;
   artist: UserType;
   thumbnail: string;
@@ -22,6 +23,7 @@ interface SidebarSongProps {
 }
 
 export default function SidebarSong({
+  slug,
   name,
   thumbnail,
   song,
@@ -44,7 +46,9 @@ export default function SidebarSong({
             alt="Song Thumbnail"
           />
           <Vstack className="z-10" align="start" gap={0}>
-            <Text>{name}</Text>
+            <Link href={slug ? `/m/${slug}` : `/g/${game.slug}`} underline={false}>
+              <Text>{name}</Text>
+            </Link>
             <Link href={`/g/${game.slug}`} underline={false}>
               <Text size="xs" color="textFaded">
                 {game.name}

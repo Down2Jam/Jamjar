@@ -18,7 +18,7 @@ export default function SearchResultTrack({
   return (
     <Card
       key={track.id}
-      href={`/g/${track.game.slug}`}
+      href={`/m/${track.slug}`}
       onPress={onPress}
       backgroundImage={track.game.banner || track.game.thumbnail}
     >
