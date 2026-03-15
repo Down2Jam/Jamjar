@@ -45,6 +45,17 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   transpilePackages: ["bioloom-ui", "bioloom-miniplayer"],
+  async rewrites() {
+    if (process.env.NEXT_PUBLIC_MODE === "DEV") {
+      return [
+        {
+          source: "/api/v1/:path*",
+          destination: "https://d2jam.com/api/v1/:path*",
+        },
+      ];
+    }
+    return [];
+  },
 };
 
 // -- Apply and export --
