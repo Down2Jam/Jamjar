@@ -29,6 +29,11 @@ import ThemedProse from "@/components/themed-prose";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
+import {
+  emitTrackRatingSync,
+  subscribeToTrackRatingSync,
+} from "@/helpers/trackRatingSync";
+import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import CreateComment from "@/components/create-comment";
 import CommentCard from "@/components/posts/CommentCard";
 import Link from "next/link";
@@ -68,6 +73,7 @@ export default function ClientTrackPage({
     {},
   );
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const effectiveHideRatings = useEffectiveHideRatings(user);
@@ -137,6 +143,31 @@ export default function ClientTrackPage({
       [overallCategory.id]: track?.viewerRating?.value ?? 0,
     }));
   }, [overallCategory, track?.viewerRating?.value]);
+
+  useEffect(() => {
+    return subscribeToTrackRatingSync(({ trackId, categoryId, value }) => {
+      if (!track || track.id !== trackId || !overallCategory) return;
+      if (overallCategory.id !== categoryId) return;
+
+      setSelectedStars((current) => ({
+        ...current,
+        [categoryId]: value,
+      }));
+      setTrack((prev) =>
+        prev
+          ? {
+              ...prev,
+              viewerRating: {
+                id: prev.viewerRating?.id ?? -1,
+                value,
+                userId: user?.id ?? -1,
+                categoryId,
+              },
+            }
+          : prev,
+      );
+    });
+  }, [overallCategory, track, user?.id]);
 
   if (isLoading) {
     return (
@@ -406,6 +437,12 @@ export default function ClientTrackPage({
                           hoverCategory={hoverCategory}
                           setHoverCategory={setHoverCategory}
                           onRate={async (value) => {
+                            const previous = selectedRating;
+                            emitTrackRatingSync({
+                              trackId: track.id,
+                              categoryId: overallCategory.id,
+                              value,
+                            });
                             try {
                               setSavingRating(true);
                               const response = await postTrackRating(
@@ -421,9 +458,14 @@ export default function ClientTrackPage({
                                   title:
                                     payload?.message ?? "Failed to save rating",
                                 });
+                                emitTrackRatingSync({
+                                  trackId: track.id,
+                                  categoryId: overallCategory.id,
+                                  value: previous,
+                                });
                                 setSelectedStars((current) => ({
                                   ...current,
-                                  [overallCategory.id]: selectedRating,
+                                  [overallCategory.id]: previous,
                                 }));
                                 return;
                               }
@@ -502,10 +544,19 @@ export default function ClientTrackPage({
                   </Text>
                   {track.allowDownload && (
                     <Button
-                      href={track.url}
-                      download
+                      loading={isDownloading}
                       icon="download"
-                      externalIcon={false}
+                      onClick={async () => {
+                        try {
+                          setIsDownloading(true);
+                          await downloadTrackBySlug(track.slug, track.name);
+                        } catch (error) {
+                          console.error(error);
+                          addToast({ title: "Failed to download track" });
+                        } finally {
+                          setIsDownloading(false);
+                        }
+                      }}
                     >
                       Download Track
                     </Button>

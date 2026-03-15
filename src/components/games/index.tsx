@@ -54,7 +54,17 @@ type FilterOption = {
   description?: string;
 };
 
-type MoreFilterId = "hideOwnGame" | "hideRatedGames";
+type MoreFilterId =
+  | "hideOwnGame"
+  | "hideRatedGames"
+  | "moveOwnGameToEnd"
+  | "moveRatedGamesToEnd";
+
+const DEFAULT_MORE_FILTERS = new Set<MoreFilterId>([
+  "moveOwnGameToEnd",
+  "moveRatedGamesToEnd",
+]);
+const EMPTY_MORE_FILTERS_PARAM = "none";
 
 const INPUT_METHOD_OPTIONS: Record<
   InputMethodFilter,
@@ -116,6 +126,27 @@ function parseMultiValueParam(value: string | null): Set<string> {
 
 function serializeMultiValueParam(values: Set<string>): string {
   return Array.from(values).sort().join(",");
+}
+
+function getInitialMoreFilters(value: string | null): Set<string> {
+  if (!value) {
+    return new Set(DEFAULT_MORE_FILTERS);
+  }
+
+  if (value === EMPTY_MORE_FILTERS_PARAM) {
+    return new Set();
+  }
+
+  const parsed = parseMultiValueParam(value);
+  return parsed.size > 0 ? parsed : new Set();
+}
+
+function serializeMoreFiltersParam(values: Set<string>): string {
+  if (values.size === 0) {
+    return EMPTY_MORE_FILTERS_PARAM;
+  }
+
+  return serializeMultiValueParam(values);
 }
 
 function getGameBuildTypes(game: GameType): Set<BuildTypeFilter> {
@@ -266,8 +297,8 @@ export default function Games() {
   const initialMoreFiltersParam = useMemo(
     () =>
       typeof window === "undefined"
-        ? new Set<string>()
-        : parseMultiValueParam(
+        ? new Set<string>(DEFAULT_MORE_FILTERS)
+        : getInitialMoreFilters(
             new URLSearchParams(window.location.search).get("more"),
           ),
     [],
@@ -359,6 +390,15 @@ export default function Games() {
       } else {
         params.delete(key);
       }
+      navigateToSearchIfChanged(router, params);
+    },
+    [router],
+  );
+
+  const updateMoreQueryParam = useCallback(
+    (values: Set<string>) => {
+      const params = new URLSearchParams(window.location.search);
+      params.set("more", serializeMoreFiltersParam(values));
       navigateToSearchIfChanged(router, params);
     },
     [router],
@@ -602,14 +642,28 @@ export default function Games() {
       icon: "star",
       description: "Hide games you have already rated",
     },
+    {
+      id: "moveOwnGameToEnd",
+      name: "Move Own Game To End",
+      icon: "move3d",
+      description: "Show your own games after other games",
+    },
+    {
+      id: "moveRatedGamesToEnd",
+      name: "Move Rated Games To End",
+      icon: "staroff",
+      description: "Show unrated games first and keep rated games at the end",
+    },
   ];
 
   const displayedGames = useMemo(() => {
     if (!games) return [];
     const hideOwnGame = selectedMoreFilters.has("hideOwnGame");
     const hideRatedGames = selectedMoreFilters.has("hideRatedGames");
+    const moveOwnGameToEnd = selectedMoreFilters.has("moveOwnGameToEnd");
+    const moveRatedGamesToEnd = selectedMoreFilters.has("moveRatedGamesToEnd");
 
-    return games.filter((game) => {
+    const filteredGames = games.filter((game) => {
       if (hideOwnGame && user) {
         const isOwnGame =
           game.team?.ownerId === user.id ||
@@ -677,6 +731,45 @@ export default function Games() {
 
       return true;
     });
+
+    if (!user || (!moveOwnGameToEnd && !moveRatedGamesToEnd)) {
+      return filteredGames;
+    }
+
+    const regularUnratedGames: GameType[] = [];
+    const ownGames: GameType[] = [];
+    const regularRatedGames: GameType[] = [];
+
+    filteredGames.forEach((game) => {
+      const isOwnGame =
+        game.team?.ownerId === user.id ||
+        game.team?.users?.some((member) => member.id === user.id);
+      const isRatedGame = game.ratings.some(
+        (rating) => rating.userId === user.id,
+      );
+
+      if (moveOwnGameToEnd && isOwnGame) {
+        ownGames.push(game);
+        return;
+      }
+
+      if (moveRatedGamesToEnd && isRatedGame) {
+        regularRatedGames.push(game);
+        return;
+      }
+
+      regularUnratedGames.push(game);
+    });
+
+    if (moveOwnGameToEnd && moveRatedGamesToEnd) {
+      return [...regularUnratedGames, ...ownGames, ...regularRatedGames];
+    }
+
+    if (moveOwnGameToEnd) {
+      return [...regularUnratedGames, ...ownGames];
+    }
+
+    return [...regularUnratedGames, ...regularRatedGames];
   }, [
     excludedFlags,
     games,
@@ -900,7 +993,7 @@ export default function Games() {
                 Array.from(values, (value) => String(value)),
               );
               setSelectedMoreFilters(next);
-              updateMultiQueryParam("more", next);
+              updateMoreQueryParam(next);
             }}
             trigger={<Button icon="morehorizontal">More</Button>}
           >

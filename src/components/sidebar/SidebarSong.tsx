@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "bioloom-ui";
+import { addToast } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
@@ -14,6 +15,7 @@ import Image from "next/image";
 import { Link } from "bioloom-ui";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Star } from "lucide-react";
 import { useState } from "react";
 
@@ -57,6 +59,7 @@ export default function SidebarSong({
   const { playItem } = useMusic();
   const { colors } = useTheme();
   const [hoverValue, setHoverValue] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
   const displayValue = hoverValue || ratingValue;
   const backgroundUseLabel = allowBackgroundUse
     ? allowBackgroundUseAttribution
@@ -114,10 +117,21 @@ export default function SidebarSong({
               <Button
                 size="xs"
                 variant="ghost"
-                href={song}
-                download
+                loading={isDownloading}
                 icon="download"
-                externalIcon={false}
+                onClick={async () => {
+                  if (!slug) return;
+
+                  try {
+                    setIsDownloading(true);
+                    await downloadTrackBySlug(slug, name);
+                  } catch (error) {
+                    console.error(error);
+                    addToast({ title: "Failed to download track" });
+                  } finally {
+                    setIsDownloading(false);
+                  }
+                }}
               >
                 Download
               </Button>

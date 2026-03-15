@@ -69,6 +69,10 @@ import { Card } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { getTrackRatingCategories } from "@/requests/track";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
+import {
+  emitTrackRatingSync,
+  subscribeToTrackRatingSync,
+} from "@/helpers/trackRatingSync";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -77,8 +81,6 @@ const platformOrder: Record<string, number> = {
   Web: 4,
   Mobile: 5,
 };
-
-const ITCH_EMBED_STALL_TIMEOUT_MS = 12000;
 
 const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
   KeyboardMouse: { label: "Keyboard + Mouse", icon: "keyboard" },
@@ -249,7 +251,6 @@ export default function ClientGamePage({
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
-  const [showItchEmbedRecovery, setShowItchEmbedRecovery] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
   const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
@@ -417,12 +418,20 @@ export default function ClientGamePage({
 
   useEffect(() => {
     setIsItchEmbedActive(false);
-    setShowItchEmbedRecovery(false);
   }, [gameSlug]);
 
   useEffect(() => {
     setCurrentMediaIndex(0);
   }, [gameSlug]);
+
+  useEffect(() => {
+    return subscribeToTrackRatingSync(({ trackId, value }) => {
+      setTrackSelectedStars((prev) => ({
+        ...prev,
+        [trackId]: value,
+      }));
+    });
+  }, []);
 
   function ordinal_suffix_of(i: number) {
     const j = i % 10,
@@ -468,38 +477,6 @@ export default function ClientGamePage({
   const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
     game?.itchEmbedAspectRatio,
   );
-  const itchGamePageUrl = useMemo(() => {
-    const links = game?.downloadLinks ?? [];
-
-    const preferredLink = links.find((link) => {
-      try {
-        const parsed = new URL(link.url);
-        const hostname = parsed.hostname.toLowerCase();
-        const pathname = parsed.pathname.replace(/\/+$/, "");
-
-        if (!hostname.endsWith("itch.io")) return false;
-        return !/^\/embed(?:-upload)?\/\d+$/.test(pathname);
-      } catch {
-        return false;
-      }
-    });
-
-    return preferredLink?.url ?? itchEmbedUrl;
-  }, [game?.downloadLinks, itchEmbedUrl]);
-
-  useEffect(() => {
-    if (!isItchEmbedActive || !itchEmbedUrl) {
-      setShowItchEmbedRecovery(false);
-      return;
-    }
-
-    setShowItchEmbedRecovery(false);
-    const timeoutId = window.setTimeout(() => {
-      setShowItchEmbedRecovery(true);
-    }, ITCH_EMBED_STALL_TIMEOUT_MS);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [isItchEmbedActive, itchEmbedUrl]);
 
   const trailerId = extractYouTubeId(game?.trailerUrl);
   const screenshots = (game?.screenshots ?? []).filter(Boolean);
@@ -752,52 +729,14 @@ export default function ClientGamePage({
                 }}
               >
                 {isItchEmbedActive ? (
-                  <>
-                    <iframe
-                      key={itchEmbedUrl}
-                      src={itchEmbedUrl}
-                      title={`${game.name} playable embed`}
-                      className="w-full h-full"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                    />
-                    {showItchEmbedRecovery && (
-                      <div
-                        className="absolute bottom-4 left-1/2 z-10 flex w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 flex-col gap-3 rounded-xl p-4 backdrop-blur-sm"
-                        style={{
-                          backgroundColor: `${colors["mantle"]}F2`,
-                          border: `1px solid ${colors["surface0"]}`,
-                          boxShadow: `0 18px 48px ${colors["crust"]}66`,
-                        }}
-                      >
-                        <Text
-                          className="font-semibold"
-                          style={{ color: colors["text"] }}
-                        >
-                          Embed still loading?
-                        </Text>
-                        <Text style={{ color: colors["subtext0"] }}>
-                          This linked web build may be outdated. Let the
-                          developer know and open the game on itch directly.
-                        </Text>
-                        <div className="flex flex-wrap gap-3">
-                          <Link
-                            href={itchGamePageUrl ?? itchEmbedUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center rounded-md px-4 py-2"
-                            style={{
-                              backgroundColor: colors["surface0"],
-                              color: colors["text"],
-                              border: `1px solid ${colors["surface1"]}`,
-                            }}
-                          >
-                            Open on itch
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  <iframe
+                    key={itchEmbedUrl}
+                    src={itchEmbedUrl}
+                    title={`${game.name} playable embed`}
+                    className="w-full h-full"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                  />
                 ) : (
                   <button
                     type="button"
@@ -1882,6 +1821,12 @@ export default function ClientGamePage({
                       }
                       onRate={async (value) => {
                         if (!trackOverallCategory) return;
+                        const previous = trackSelectedStars[track.id] ?? 0;
+                        emitTrackRatingSync({
+                          trackId: track.id,
+                          categoryId: trackOverallCategory.id,
+                          value,
+                        });
                         setTrackSelectedStars((prev) => ({
                           ...prev,
                           [track.id]: value,
@@ -1901,14 +1846,14 @@ export default function ClientGamePage({
                             title:
                               payload?.message ?? "Failed to save track rating",
                           });
+                          emitTrackRatingSync({
+                            trackId: track.id,
+                            categoryId: trackOverallCategory.id,
+                            value: previous,
+                          });
                           setTrackSelectedStars((prev) => ({
                             ...prev,
-                            [track.id]:
-                              (user?.trackRatings ?? []).find(
-                                (rating) =>
-                                  rating.trackId === track.id &&
-                                  rating.categoryId === trackOverallCategory.id,
-                              )?.value ?? 0,
+                            [track.id]: previous,
                           }));
                         }
                       }}

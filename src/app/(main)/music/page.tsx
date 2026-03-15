@@ -13,7 +13,11 @@ import { useRouter } from "next/navigation";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
 import { IconName } from "bioloom-ui";
-import { getTrackRatingCategories, getTrackTags, getTracks } from "@/requests/track";
+import {
+  getTrackRatingCategories,
+  getTrackTags,
+  getTracks,
+} from "@/requests/track";
 import { TrackTagType } from "@/types/TrackTagType";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { getSelf } from "@/requests/user";
@@ -21,6 +25,10 @@ import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import { UserType } from "@/types/UserType";
 import { addToast } from "bioloom-ui";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
+import {
+  emitTrackRatingSync,
+  subscribeToTrackRatingSync,
+} from "@/helpers/trackRatingSync";
 
 type JamOption = {
   id: string;
@@ -32,7 +40,17 @@ type JamOption = {
 const MORE_FILTERS = {
   downloadable: "downloadable",
   backgroundSafe: "backgroundSafe",
+  hideOwnMusic: "hideOwnMusic",
+  hideRatedMusic: "hideRatedMusic",
+  moveOwnMusicToEnd: "moveOwnMusicToEnd",
+  moveRatedMusicToEnd: "moveRatedMusicToEnd",
 } as const;
+
+const DEFAULT_MORE_FILTERS = new Set<string>([
+  MORE_FILTERS.moveOwnMusicToEnd,
+  MORE_FILTERS.moveRatedMusicToEnd,
+]);
+const EMPTY_MORE_FILTERS_PARAM = "none";
 
 function parseMultiValueParam(value: string | null): Set<string> {
   if (!value) return new Set();
@@ -46,6 +64,27 @@ function parseMultiValueParam(value: string | null): Set<string> {
 
 function serializeMultiValueParam(values: Set<string>): string {
   return Array.from(values).sort().join(",");
+}
+
+function getInitialMoreFilters(value: string | null): Set<string> {
+  if (!value) {
+    return new Set(DEFAULT_MORE_FILTERS);
+  }
+
+  if (value === EMPTY_MORE_FILTERS_PARAM) {
+    return new Set();
+  }
+
+  const parsed = parseMultiValueParam(value);
+  return parsed.size > 0 ? parsed : new Set();
+}
+
+function serializeMoreFiltersParam(values: Set<string>): string {
+  if (values.size === 0) {
+    return EMPTY_MORE_FILTERS_PARAM;
+  }
+
+  return serializeMultiValueParam(values);
 }
 
 function formatJamWindow(
@@ -188,8 +227,8 @@ export default function MusicPage() {
   const initialMoreParam = useMemo(
     () =>
       typeof window === "undefined"
-        ? new Set<string>()
-        : parseMultiValueParam(
+        ? new Set<string>(DEFAULT_MORE_FILTERS)
+        : getInitialMoreFilters(
             new URLSearchParams(window.location.search).get("more"),
           ),
     [],
@@ -219,6 +258,15 @@ export default function MusicPage() {
       } else {
         params.delete(key);
       }
+      navigateToSearchIfChanged(router, params);
+    },
+    [router],
+  );
+
+  const updateMoreQueryParam = useCallback(
+    (values: Set<string>) => {
+      const params = new URLSearchParams(window.location.search);
+      params.set("more", serializeMoreFiltersParam(values));
       navigateToSearchIfChanged(router, params);
     },
     [router],
@@ -413,6 +461,15 @@ export default function MusicPage() {
   }, []);
 
   useEffect(() => {
+    return subscribeToTrackRatingSync(({ trackId, value }) => {
+      setTrackSelectedStars((prev) => ({
+        ...prev,
+        [trackId]: value,
+      }));
+    });
+  }, []);
+
+  useEffect(() => {
     if (jamDetecting) return;
 
     let cancelled = false;
@@ -472,8 +529,16 @@ export default function MusicPage() {
   }, [music]);
 
   const displayedMusic = useMemo(() => {
-    return music.filter((track) => {
+    const filteredMusic = music.filter((track) => {
       const tagIds = new Set((track.tags ?? []).map((tag) => String(tag.id)));
+      const isOwnMusic = Boolean(
+        user &&
+        (track.game?.team?.ownerId === user.id ||
+          track.game?.team?.users?.some((member) => member.id === user.id)),
+      );
+      const hasRatedTrack = Boolean(
+        user && track.id && (trackSelectedStars[track.id] ?? 0) > 0,
+      );
 
       if (
         selectedGenres.size > 0 &&
@@ -516,9 +581,64 @@ export default function MusicPage() {
       ) {
         return false;
       }
+      if (selectedMoreFilters.has(MORE_FILTERS.hideOwnMusic) && isOwnMusic) {
+        return false;
+      }
+      if (
+        selectedMoreFilters.has(MORE_FILTERS.hideRatedMusic) &&
+        hasRatedTrack
+      ) {
+        return false;
+      }
 
       return true;
     });
+
+    const moveOwnMusicToEnd = selectedMoreFilters.has(
+      MORE_FILTERS.moveOwnMusicToEnd,
+    );
+    const moveRatedMusicToEnd = selectedMoreFilters.has(
+      MORE_FILTERS.moveRatedMusicToEnd,
+    );
+
+    if (!user || (!moveOwnMusicToEnd && !moveRatedMusicToEnd)) {
+      return filteredMusic;
+    }
+
+    const regularUnratedTracks: TrackType[] = [];
+    const ownTracks: TrackType[] = [];
+    const regularRatedTracks: TrackType[] = [];
+
+    filteredMusic.forEach((track) => {
+      const isOwnMusic =
+        track.game?.team?.ownerId === user.id ||
+        track.game?.team?.users?.some((member) => member.id === user.id);
+      const hasRatedTrack = Boolean(
+        track.id && (trackSelectedStars[track.id] ?? 0) > 0,
+      );
+
+      if (moveOwnMusicToEnd && isOwnMusic) {
+        ownTracks.push(track);
+        return;
+      }
+
+      if (moveRatedMusicToEnd && hasRatedTrack) {
+        regularRatedTracks.push(track);
+        return;
+      }
+
+      regularUnratedTracks.push(track);
+    });
+
+    if (moveOwnMusicToEnd && moveRatedMusicToEnd) {
+      return [...regularUnratedTracks, ...ownTracks, ...regularRatedTracks];
+    }
+
+    if (moveOwnMusicToEnd) {
+      return [...regularUnratedTracks, ...ownTracks];
+    }
+
+    return [...regularUnratedTracks, ...regularRatedTracks];
   }, [
     music,
     selectedGenres,
@@ -527,6 +647,8 @@ export default function MusicPage() {
     selectedMoreFilters,
     selectedMoods,
     selectedUseCases,
+    trackSelectedStars,
+    user,
   ]);
 
   return (
@@ -696,7 +818,7 @@ export default function MusicPage() {
           onSelectionChange={(values) => {
             const next = new Set(Array.from(values, (value) => String(value)));
             setSelectedMoreFilters(next);
-            updateMultiQueryParam("more", next);
+            updateMoreQueryParam(next);
           }}
           placeholder="More"
         >
@@ -711,6 +833,30 @@ export default function MusicPage() {
             description="Only show tracks marked safe for background use in streams and videos"
           >
             Stream / Video Safe
+          </Dropdown.Item>
+          <Dropdown.Item
+            value={MORE_FILTERS.hideOwnMusic}
+            description="Hide tracks from teams you are on"
+          >
+            Hide Own Music
+          </Dropdown.Item>
+          <Dropdown.Item
+            value={MORE_FILTERS.hideRatedMusic}
+            description="Hide tracks you have already rated"
+          >
+            Hide Rated Music
+          </Dropdown.Item>
+          <Dropdown.Item
+            value={MORE_FILTERS.moveOwnMusicToEnd}
+            description="Show your own tracks after other tracks"
+          >
+            Move Own Music To End
+          </Dropdown.Item>
+          <Dropdown.Item
+            value={MORE_FILTERS.moveRatedMusicToEnd}
+            description="Show unrated tracks first and keep rated tracks at the end"
+          >
+            Move Rated Music To End
           </Dropdown.Item>
         </Dropdown>
       </Hstack>
@@ -759,6 +905,11 @@ export default function MusicPage() {
               if (!track.id || !trackOverallCategory) return;
 
               const previous = trackSelectedStars[track.id] ?? 0;
+              emitTrackRatingSync({
+                trackId: track.id,
+                categoryId: trackOverallCategory.id,
+                value,
+              });
               setTrackSelectedStars((prev) => ({
                 ...prev,
                 [track.id!]: value,
@@ -774,6 +925,11 @@ export default function MusicPage() {
                 const payload = await response.json().catch(() => null);
                 addToast({
                   title: payload?.message ?? "Failed to save track rating",
+                });
+                emitTrackRatingSync({
+                  trackId: track.id,
+                  categoryId: trackOverallCategory.id,
+                  value: previous,
                 });
                 setTrackSelectedStars((prev) => ({
                   ...prev,

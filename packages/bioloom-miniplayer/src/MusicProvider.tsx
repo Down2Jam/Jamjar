@@ -7,6 +7,11 @@ import { postTrackRating } from "@/requests/rating";
 import { getTrackRatingCategories } from "@/requests/track";
 import { getSelf } from "@/requests/user";
 import {
+  emitTrackRatingSync,
+  subscribeToTrackRatingSync,
+  upsertTrackRatingRecord,
+} from "@/helpers/trackRatingSync";
+import {
   addToast,
   Button,
   Icon,
@@ -661,6 +666,12 @@ function MiniPlayer() {
     );
   }, [current?.id, ratingCategoryId, viewerTrackRatings]);
 
+  useEffect(() => {
+    return subscribeToTrackRatingSync((payload) => {
+      setViewerTrackRatings((prev) => upsertTrackRatingRecord(prev, payload));
+    });
+  }, []);
+
   if (!current) return null;
 
   const isTeamMember = Boolean(
@@ -708,7 +719,7 @@ function MiniPlayer() {
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (e.button !== 0) return;
     const target = e.target as HTMLElement;
-    if (target.closest("button, input, a")) return;
+    if (target.closest("button, input, a, [data-no-drag='true']")) return;
     if (!dragRef.current) return;
     e.preventDefault();
     const rect = dragRef.current.getBoundingClientRect();
@@ -949,6 +960,7 @@ function MiniPlayer() {
                       buttonSize="xs"
                     >
                       <div
+                        data-no-drag="true"
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -959,7 +971,10 @@ function MiniPlayer() {
                         <Text color="text" size="xs">
                           Rate
                         </Text>
-                        <div style={{ display: "flex", gap: 4 }}>
+                        <div
+                          data-no-drag="true"
+                          style={{ display: "flex", gap: 4 }}
+                        >
                           {[2, 4, 6, 8, 10].map((value) => (
                             <div
                               key={`mini-player-rating-${current.id}-${value}`}
@@ -988,6 +1003,11 @@ function MiniPlayer() {
                                 const trackId = current.id;
 
                                 const previous = selectedRating;
+                                emitTrackRatingSync({
+                                  trackId,
+                                  categoryId: ratingCategoryId,
+                                  value,
+                                });
                                 setSelectedRating(value);
                                 setSavingRating(true);
 
@@ -1007,25 +1027,22 @@ function MiniPlayer() {
                                         payload?.message ??
                                         "Failed to save track rating",
                                     });
+                                    emitTrackRatingSync({
+                                      trackId,
+                                      categoryId: ratingCategoryId,
+                                      value: previous,
+                                    });
                                     setSelectedRating(previous);
                                     return;
                                   }
 
-                                  setViewerTrackRatings((prev) => {
-                                    const next = prev.filter(
-                                      (rating) =>
-                                        !(
-                                          rating.trackId === trackId &&
-                                          rating.categoryId === ratingCategoryId
-                                        ),
-                                    );
-                                    next.push({
+                                  setViewerTrackRatings((prev) =>
+                                    upsertTrackRatingRecord(prev, {
                                       trackId,
                                       categoryId: ratingCategoryId,
                                       value,
-                                    });
-                                    return next;
-                                  });
+                                    }),
+                                  );
                                 } finally {
                                   setSavingRating(false);
                                 }
@@ -1068,7 +1085,8 @@ function MiniPlayer() {
                                   if (!ratingDisabled)
                                     setHoverRating(value - 1);
                                 }}
-                                onClick={async () => {
+                                onClick={async (event) => {
+                                  event.stopPropagation();
                                   if (
                                     ratingDisabled ||
                                     !current.id ||
@@ -1080,6 +1098,11 @@ function MiniPlayer() {
                                   const trackId = current.id;
                                   const nextValue = value - 1;
                                   const previous = selectedRating;
+                                  emitTrackRatingSync({
+                                    trackId,
+                                    categoryId: ratingCategoryId,
+                                    value: nextValue,
+                                  });
                                   setSelectedRating(nextValue);
                                   setSavingRating(true);
 
@@ -1099,26 +1122,22 @@ function MiniPlayer() {
                                           payload?.message ??
                                           "Failed to save track rating",
                                       });
+                                      emitTrackRatingSync({
+                                        trackId,
+                                        categoryId: ratingCategoryId,
+                                        value: previous,
+                                      });
                                       setSelectedRating(previous);
                                       return;
                                     }
 
-                                    setViewerTrackRatings((prev) => {
-                                      const next = prev.filter(
-                                        (rating) =>
-                                          !(
-                                            rating.trackId === trackId &&
-                                            rating.categoryId ===
-                                              ratingCategoryId
-                                          ),
-                                      );
-                                      next.push({
+                                    setViewerTrackRatings((prev) =>
+                                      upsertTrackRatingRecord(prev, {
                                         trackId,
                                         categoryId: ratingCategoryId,
                                         value: nextValue,
-                                      });
-                                      return next;
-                                    });
+                                      }),
+                                    );
                                   } finally {
                                     setSavingRating(false);
                                   }
@@ -1135,7 +1154,8 @@ function MiniPlayer() {
                                 onMouseEnter={() => {
                                   if (!ratingDisabled) setHoverRating(value);
                                 }}
-                                onClick={async () => {
+                                onClick={async (event) => {
+                                  event.stopPropagation();
                                   if (
                                     ratingDisabled ||
                                     !current.id ||
@@ -1146,6 +1166,11 @@ function MiniPlayer() {
 
                                   const trackId = current.id;
                                   const previous = selectedRating;
+                                  emitTrackRatingSync({
+                                    trackId,
+                                    categoryId: ratingCategoryId,
+                                    value,
+                                  });
                                   setSelectedRating(value);
                                   setSavingRating(true);
 
@@ -1165,26 +1190,22 @@ function MiniPlayer() {
                                           payload?.message ??
                                           "Failed to save track rating",
                                       });
+                                      emitTrackRatingSync({
+                                        trackId,
+                                        categoryId: ratingCategoryId,
+                                        value: previous,
+                                      });
                                       setSelectedRating(previous);
                                       return;
                                     }
 
-                                    setViewerTrackRatings((prev) => {
-                                      const next = prev.filter(
-                                        (rating) =>
-                                          !(
-                                            rating.trackId === trackId &&
-                                            rating.categoryId ===
-                                              ratingCategoryId
-                                          ),
-                                      );
-                                      next.push({
+                                    setViewerTrackRatings((prev) =>
+                                      upsertTrackRatingRecord(prev, {
                                         trackId,
                                         categoryId: ratingCategoryId,
                                         value,
-                                      });
-                                      return next;
-                                    });
+                                      }),
+                                    );
                                   } finally {
                                     setSavingRating(false);
                                   }
