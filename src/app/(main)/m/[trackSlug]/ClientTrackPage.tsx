@@ -27,6 +27,8 @@ import {
 } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
 import MentionedContent from "@/components/mentions/MentionedContent";
+import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
+import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import CreateComment from "@/components/create-comment";
 import CommentCard from "@/components/posts/CommentCard";
 import Link from "next/link";
@@ -68,6 +70,7 @@ export default function ClientTrackPage({
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
+  const effectiveHideRatings = useEffectiveHideRatings(user);
 
   useEffect(() => {
     params.then(({ trackSlug }) => setTrackSlug(trackSlug));
@@ -167,9 +170,7 @@ export default function ClientTrackPage({
     track.game?.jamId != null &&
     activeJamResponse.jam.id === track.game.jamId;
   const canShowResults =
-    Boolean(activeJamResponse) &&
-    !isTeamMember &&
-    (!isCurrentJamTrack || user?.id === 3);
+    Boolean(activeJamResponse) && !isTeamMember && !isCurrentJamTrack;
   const canRateDuringJam =
     Boolean(user) &&
     !isTeamMember &&
@@ -200,14 +201,14 @@ export default function ClientTrackPage({
   return (
     <div className="p-4">
       <div
-        className="relative overflow-hidden rounded-2xl border"
+        className="relative overflow-visible rounded-2xl border"
         style={{
           borderColor: colors["base"],
           background: `linear-gradient(135deg, ${colors["mantle"]}, ${colors["crust"]})`,
         }}
       >
         <div
-          className="absolute inset-0 opacity-25"
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] opacity-25"
           style={{
             backgroundImage: `url(${track.game.banner || track.game.thumbnail || "/images/D2J_Icon.png"})`,
             backgroundSize: "cover",
@@ -234,6 +235,11 @@ export default function ClientTrackPage({
             </Hstack>
             <div className="w-full max-w-6xl">
               <TrackWaveformPlayer
+                slug={track.slug}
+                name={track.name}
+                artist={primaryArtist}
+                game={track.game}
+                thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
                 url={track.url}
                 comments={track.timestampComments ?? []}
                 canComment={Boolean(user)}
@@ -348,138 +354,143 @@ export default function ClientTrackPage({
                 <Text size="xs" color="textFaded">
                   RATING
                 </Text>
-                {canShowResults && overallScore ? (
-                  <>
-                    <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
+                <RatingVisibilityGate
+                  hiddenByPreference={effectiveHideRatings}
+                  hiddenText="Ratings are hidden by your settings."
+                >
+                  <Vstack align="start" className="gap-3">
+                    {canShowResults && overallScore ? (
+                      <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
+                        <Text size="sm" color="textFaded">
+                          Overall
+                        </Text>
+                        <Text color="text">
+                          {(overallScore.averageScore / 2).toFixed(2)} stars
+                        </Text>
+                        {overallScore.placement !== -1 && (
+                          <Text color="textFaded">
+                            ({ordinalSuffixOf(overallScore.placement)})
+                          </Text>
+                        )}
+                        <span className="flex items-center justify-center">
+                          {overallScore.placement >= 1 &&
+                            overallScore.placement <= 3 && (
+                              <Award
+                                size={16}
+                                style={{ color: colors["yellow"] }}
+                              />
+                            )}
+                          {overallScore.placement >= 4 &&
+                            overallScore.placement <= 10 && (
+                              <LucideBadge
+                                size={12}
+                                style={{ color: colors["blue"] }}
+                              />
+                            )}
+                        </span>
+                      </div>
+                    ) : (
+                      overallCategory &&
+                      canRateDuringJam && (
+                        <TrackStarRow
+                          categoryId={overallCategory.id}
+                          name="Overall"
+                          description={
+                            overallCategory.description || "Your overall rating"
+                          }
+                          disabled={savingRating || isTeamMember}
+                          hoverStars={hoverStars}
+                          setHoverStars={setHoverStars}
+                          selectedStars={selectedStars}
+                          setSelectedStars={setSelectedStars}
+                          hoverCategory={hoverCategory}
+                          setHoverCategory={setHoverCategory}
+                          onRate={async (value) => {
+                            try {
+                              setSavingRating(true);
+                              const response = await postTrackRating(
+                                track.id,
+                                overallCategory.id,
+                                value,
+                              );
+                              if (!response.ok) {
+                                const payload = await response
+                                  .json()
+                                  .catch(() => null);
+                                addToast({
+                                  title:
+                                    payload?.message ?? "Failed to save rating",
+                                });
+                                setSelectedStars((current) => ({
+                                  ...current,
+                                  [overallCategory.id]: selectedRating,
+                                }));
+                                return;
+                              }
+                              setTrack((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      viewerRating: {
+                                        id: prev.viewerRating?.id ?? -1,
+                                        value,
+                                        userId: user?.id ?? -1,
+                                        categoryId: overallCategory.id,
+                                      },
+                                    }
+                                  : prev,
+                              );
+                            } finally {
+                              setSavingRating(false);
+                            }
+                          }}
+                        />
+                      )
+                    )}
+                    {canShowResults && overallScore && (
                       <Text size="sm" color="textFaded">
-                        Overall
+                        {(overallScore.averageUnrankedScore / 2).toFixed(2)}{" "}
+                        public average from {overallScore.ratingCount} ratings
                       </Text>
-                      <Text color="text">
-                        {(overallScore.averageScore / 2).toFixed(2)} stars
+                    )}
+                    {isTeamMember && (
+                      <Text size="xs" color="textFaded">
+                        You can&apos;t rate your own track.
                       </Text>
-                      {overallScore.placement !== -1 && (
-                        <Text color="textFaded">
-                          ({ordinalSuffixOf(overallScore.placement)})
+                    )}
+                    {!user && isCurrentJamTrack && (
+                      <Text size="xs" color="textFaded">
+                        You must be logged in to rate tracks.
+                      </Text>
+                    )}
+                    {user &&
+                      !isTeamMember &&
+                      isCurrentJamTrack &&
+                      !canRateDuringJam && (
+                        <Text size="xs" color="textFaded">
+                          It is not the rating period.
                         </Text>
                       )}
-                      <span className="flex items-center justify-center">
-                        {overallScore.placement >= 1 &&
-                          overallScore.placement <= 3 && (
-                            <Award
-                              size={16}
-                              style={{ color: colors["yellow"] }}
-                            />
-                          )}
-                        {overallScore.placement >= 4 &&
-                          overallScore.placement <= 10 && (
-                            <LucideBadge
-                              size={12}
-                              style={{ color: colors["blue"] }}
-                            />
-                          )}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  overallCategory &&
-                  canRateDuringJam && (
-                    <TrackStarRow
-                      categoryId={overallCategory.id}
-                      name="Overall"
-                      description={
-                        overallCategory.description || "Your overall rating"
-                      }
-                      disabled={savingRating || isTeamMember}
-                      hoverStars={hoverStars}
-                      setHoverStars={setHoverStars}
-                      selectedStars={selectedStars}
-                      setSelectedStars={setSelectedStars}
-                      hoverCategory={hoverCategory}
-                      setHoverCategory={setHoverCategory}
-                      onRate={async (value) => {
-                        try {
-                          setSavingRating(true);
-                          const response = await postTrackRating(
-                            track.id,
-                            overallCategory.id,
-                            value,
-                          );
-                          if (!response.ok) {
-                            const payload = await response
-                              .json()
-                              .catch(() => null);
-                            addToast({
-                              title:
-                                payload?.message ?? "Failed to save rating",
-                            });
-                            setSelectedStars((current) => ({
-                              ...current,
-                              [overallCategory.id]: selectedRating,
-                            }));
-                            return;
-                          }
-                          setTrack((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  viewerRating: {
-                                    id: prev.viewerRating?.id ?? -1,
-                                    value,
-                                    userId: user?.id ?? -1,
-                                    categoryId: overallCategory.id,
-                                  },
-                                }
-                              : prev,
-                          );
-                        } finally {
-                          setSavingRating(false);
-                        }
-                      }}
-                    />
-                  )
-                )}
-                {canShowResults && overallScore && (
-                  <Text size="sm" color="textFaded">
-                    {(overallScore.averageUnrankedScore / 2).toFixed(2)} public
-                    average from {overallScore.ratingCount} ratings
-                  </Text>
-                )}
-                {isTeamMember && (
-                  <Text size="xs" color="textFaded">
-                    You can&apos;t rate your own track.
-                  </Text>
-                )}
-                {!user && isCurrentJamTrack && (
-                  <Text size="xs" color="textFaded">
-                    You must be logged in to rate tracks.
-                  </Text>
-                )}
-                {user &&
-                  !isTeamMember &&
-                  isCurrentJamTrack &&
-                  !canRateDuringJam && (
-                    <Text size="xs" color="textFaded">
-                      It is not the rating period.
-                    </Text>
-                  )}
-                {user &&
-                  !isTeamMember &&
-                  isCurrentJamTrack &&
-                  canRateDuringJam && (
-                    <Text size="xs" color="textFaded">
-                      Ratings are automatically saved.
-                    </Text>
-                  )}
-                {user &&
-                  !isTeamMember &&
-                  isCurrentJamTrack &&
-                  canRateDuringJam &&
-                  !raterHasPublishedGame && (
-                    <Text size="xs" color="textFaded">
-                      Your ratings will not count towards the rankings as you
-                      did not submit a game.
-                    </Text>
-                  )}
+                    {user &&
+                      !isTeamMember &&
+                      isCurrentJamTrack &&
+                      canRateDuringJam && (
+                        <Text size="xs" color="textFaded">
+                          Ratings are automatically saved.
+                        </Text>
+                      )}
+                    {user &&
+                      !isTeamMember &&
+                      isCurrentJamTrack &&
+                      canRateDuringJam &&
+                      !raterHasPublishedGame && (
+                        <Text size="xs" color="textFaded">
+                          Your ratings will not count towards the rankings as
+                          you did not submit a game.
+                        </Text>
+                      )}
+                  </Vstack>
+                </RatingVisibilityGate>
               </Vstack>
             </Card>
 
@@ -511,7 +522,8 @@ export default function ClientTrackPage({
             {(track.bpm ||
               track.musicalKey ||
               (track.softwareUsed?.length ?? 0) > 0 ||
-              track.license) && (
+              track.license ||
+              track.allowBackgroundUse) && (
               <Card className="w-full">
                 <Vstack align="start" className="gap-3">
                   <Text size="xs" color="textFaded">
@@ -520,6 +532,9 @@ export default function ClientTrackPage({
                   {track.bpm && <Chip>BPM: {track.bpm}</Chip>}
                   {track.musicalKey && <Chip>Key: {track.musicalKey}</Chip>}
                   {track.license && <Chip>License: {track.license}</Chip>}
+                  {track.allowBackgroundUse && (
+                    <Chip>Background use in streams/videos allowed</Chip>
+                  )}
                   {(track.softwareUsed?.length ?? 0) > 0 && (
                     <>
                       <Text size="sm" color="textFaded">
@@ -541,26 +556,28 @@ export default function ClientTrackPage({
                 <Text size="xs" color="textFaded">
                   STATS
                 </Text>
-                <Chip>Ratings Received: {track.ratings?.length ?? 0}</Chip>
-                <Hstack>
-                  <Chip>
-                    Ranked Ratings Received:{" "}
-                    {overallScore?.rankedRatingCount ?? 0}
-                  </Chip>
-                  {(overallScore?.rankedRatingCount ?? 0) < 5 && (
-                    <Tooltip
-                      content="This track needs 5 ranked ratings received in order to place in music results."
-                      position="top"
-                    >
-                      <AlertTriangle
-                        size={16}
-                        style={{
-                          color: colors["red"],
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </Hstack>
+                <Vstack align="start" className="gap-3">
+                  <Chip>Ratings Received: {track.ratings?.length ?? 0}</Chip>
+                  <Hstack>
+                    <Chip>
+                      Ranked Ratings Received:{" "}
+                      {overallScore?.rankedRatingCount ?? 0}
+                    </Chip>
+                    {(overallScore?.rankedRatingCount ?? 0) < 5 && (
+                      <Tooltip
+                        content="This track needs 5 ranked ratings received in order to place in music results."
+                        position="top"
+                      >
+                        <AlertTriangle
+                          size={16}
+                          style={{
+                            color: colors["red"],
+                          }}
+                        />
+                      </Tooltip>
+                    )}
+                  </Hstack>
+                </Vstack>
               </Vstack>
             </Card>
           </Vstack>

@@ -154,6 +154,7 @@ import {
   Waves,
   X,
   ZoomOut,
+  ThumbsUp,
 } from "lucide-react";
 import { useTheme } from "./theme";
 import {
@@ -313,6 +314,7 @@ const iconMap = {
   syringe: Syringe,
   tags: Tags,
   terminal: Terminal,
+  thumbsup: ThumbsUp,
   touchpad: Touchpad,
   trainfront: TrainFront,
   trash: Trash,
@@ -364,7 +366,7 @@ export interface IconProps extends Omit<LucideProps, "color" | "size"> {
 
 const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
   { name = "circlehelp", size = 24, color, ...rest },
-  ref
+  ref,
 ) {
   const { colors } = useTheme();
 

@@ -19,6 +19,7 @@ import { Card } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Hstack } from "bioloom-ui";
+import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 export default function Events() {
   const searchParams = useSearchParams();
@@ -42,7 +43,7 @@ export default function Events() {
     } else {
       params.delete(key);
     }
-    router.push(`?${params.toString()}`);
+    navigateToSearchIfChanged(router, params);
   };
 
   useEffect(() => {

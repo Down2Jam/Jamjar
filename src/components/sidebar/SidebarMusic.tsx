@@ -30,6 +30,7 @@ export default function SidebarMusic() {
 
         const qs = new URLSearchParams();
         if (jamId) qs.set("jamId", jamId);
+        qs.set("sort", "recommended");
 
         const res = await fetch(
           `${BASE_URL}/tracks${qs.toString() ? `?${qs.toString()}` : ""}`
@@ -52,7 +53,7 @@ export default function SidebarMusic() {
   }, []);
 
   const featured = useMemo(
-    () => [...music].sort(() => Math.random() - 0.5).slice(0, 5),
+    () => music.slice(0, 5),
     [music]
   );
 
@@ -77,6 +78,10 @@ export default function SidebarMusic() {
                 song={track.url}
                 license={track.license}
                 allowDownload={track.allowDownload}
+                allowBackgroundUse={track.allowBackgroundUse}
+                allowBackgroundUseAttribution={
+                  track.allowBackgroundUseAttribution
+                }
               />
             ))}
           </div>

@@ -33,6 +33,8 @@ import { getSelf, getUser, updateUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import MentionedContent from "@/components/mentions/MentionedContent";
+import { computeEffectiveRecommendationItems } from "@/helpers/recommendations";
+import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import { use, useEffect, useMemo, useState } from "react";
@@ -296,11 +298,14 @@ export default function ClientUserPage({
   }>({ games: [], posts: [], tracks: [] });
   const [recType, setRecType] = useState<"games" | "posts" | "tracks">("games");
   const [recSelected, setRecSelected] = useState<number[]>([]);
+  const [recHidden, setRecHidden] = useState<number[]>([]);
   const [profileSection, setProfileSection] = useState<ProfileSection>("bio");
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [defaultPfps, setDefaultPfps] = useState<string[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [activeJamResponse, setActiveJamResponse] =
+    useState<ActiveJamResponse | null>(null);
   const {
     isOpen: isAvatarOpen,
     onOpen: openAvatar,
@@ -383,12 +388,6 @@ export default function ClientUserPage({
   };
   const isOwner = !!self && !!user && self.id === user.id;
 
-  useEffect(() => {
-    if (profileSection === "recommendations") {
-      setProfileSection("bio");
-    }
-  }, [profileSection]);
-
   const refreshUser = async () => {
     const response = await getUser(`${slug}`);
     const json = await response.json();
@@ -435,12 +434,16 @@ export default function ClientUserPage({
 
   useEffect(() => {
     const fetchUser = async () => {
-      await refreshUser();
+      const [_, selfRes, jamRes] = await Promise.all([
+        refreshUser(),
+        getSelf(),
+        getCurrentJam(),
+      ]);
 
-      const selfRes = await getSelf();
       if (selfRes.ok) {
         setSelf(await selfRes.json());
       }
+      setActiveJamResponse(jamRes);
     };
 
     fetchUser();
@@ -509,11 +512,14 @@ export default function ClientUserPage({
     if (!user) return;
     setRecType(type);
     if (type === "games") {
-      setRecSelected((user.recommendedGames ?? []).map((g) => g.id));
+      setRecSelected(user.recommendedGameOverrideIds ?? []);
+      setRecHidden(user.recommendedGameHiddenIds ?? []);
     } else if (type === "posts") {
       setRecSelected((user.recommendedPosts ?? []).map((p) => p.id));
+      setRecHidden([]);
     } else {
-      setRecSelected((user.recommendedTracks ?? []).map((t) => t.id));
+      setRecSelected(user.recommendedTrackOverrideIds ?? []);
+      setRecHidden(user.recommendedTrackHiddenIds ?? []);
     }
     setRecSearch("");
     setRecResults({ games: [], posts: [], tracks: [] });
@@ -524,18 +530,12 @@ export default function ClientUserPage({
     if (!user) return;
     setSavingProfile(true);
     const payload = {
-      recommendedGameIds:
-        recType === "games"
-          ? recSelected
-          : (user.recommendedGames ?? []).map((g) => g.id),
+      recommendedGameIds: recType === "games" ? recSelected : undefined,
       recommendedPostIds:
         recType === "posts"
           ? recSelected
           : (user.recommendedPosts ?? []).map((p) => p.id),
-      recommendedTrackIds:
-        recType === "tracks"
-          ? recSelected
-          : (user.recommendedTracks ?? []).map((t) => t.id),
+      recommendedTrackIds: recType === "tracks" ? recSelected : undefined,
     };
 
     const response = await updateUser(
@@ -555,6 +555,8 @@ export default function ClientUserPage({
       payload.recommendedGameIds,
       payload.recommendedPostIds,
       payload.recommendedTrackIds,
+      recType === "games" ? recHidden : undefined,
+      recType === "tracks" ? recHidden : undefined,
     );
 
     if (response.ok) {
@@ -676,9 +678,36 @@ export default function ClientUserPage({
       );
     });
 
-  const recGames = user?.recommendedGames ?? [];
+  const activeJamId = activeJamResponse?.jam?.id ?? null;
+  const recGames = useMemo(
+    () =>
+      (user?.recommendedGames ?? []).filter(
+        (game) => activeJamId != null && game.jam?.id === activeJamId,
+      ),
+    [activeJamId, user?.recommendedGames],
+  );
   const recPosts = user?.recommendedPosts ?? [];
-  const recTracks = user?.recommendedTracks ?? [];
+  const recTracks = useMemo(
+    () =>
+      (user?.recommendedTracks ?? []).filter(
+        (track) => activeJamId != null && track.game?.jamId === activeJamId,
+      ),
+    [activeJamId, user?.recommendedTracks],
+  );
+  const recGameCandidates = useMemo(
+    () =>
+      (user?.recommendedGameCandidates ?? []).filter(
+        (game) => activeJamId != null && game.jam?.id === activeJamId,
+      ),
+    [activeJamId, user?.recommendedGameCandidates],
+  );
+  const recTrackCandidates = useMemo(
+    () =>
+      (user?.recommendedTrackCandidates ?? []).filter(
+        (track) => activeJamId != null && track.game?.jamId === activeJamId,
+      ),
+    [activeJamId, user?.recommendedTrackCandidates],
+  );
   const emotes = user?.userEmotes ?? [];
   const publishedGames = useMemo(() => {
     if (!user) return [];
@@ -714,23 +743,101 @@ export default function ClientUserPage({
   );
   const postsCount = visiblePosts.length;
   const commentsCount = visibleComments.length;
+  const ratedGamesCount = recGameCandidates.length;
+  const ratedTracksCount = recTrackCandidates.length;
+  const hasActiveJam = activeJamId != null;
+  const canShowRecommendedGames = hasActiveJam && ratedGamesCount >= 10;
+  const canShowRecommendedTracks = hasActiveJam && ratedTracksCount >= 10;
+  const visibleRecommendedGames = useMemo(
+    () => recGames.slice(0, 3),
+    [recGames],
+  );
+  const visibleRecommendedTracks = recTracks.slice(0, 3);
+  const hasVisibleRecommendedGames =
+    canShowRecommendedGames && visibleRecommendedGames.length > 0;
+  const hasVisibleRecommendedTracks =
+    canShowRecommendedTracks && visibleRecommendedTracks.length > 0;
+  const hasRecommendationsTab =
+    hasActiveJam && (hasVisibleRecommendedGames || hasVisibleRecommendedTracks);
   const recommendationsCount =
-    recGames.length + recPosts.length + recTracks.length;
+    (hasVisibleRecommendedGames ? visibleRecommendedGames.length : 0) +
+    (hasVisibleRecommendedTracks ? visibleRecommendedTracks.length : 0);
   const scoresCount = bestScores.length;
   const achievementsCount = user?.achievements.length ?? 0;
-
-  const recSelectedItems = useMemo(() => {
+  const recommendationLimit = recType === "posts" ? 5 : 3;
+  const recSourceItems = useMemo(() => {
     const source =
       recType === "games"
-        ? [...recGames, ...recResults.games]
+        ? [...recGames, ...recGameCandidates, ...recResults.games]
         : recType === "posts"
           ? [...recPosts, ...recResults.posts]
-          : [...recTracks, ...recResults.tracks];
+          : [...recTracks, ...recTrackCandidates, ...recResults.tracks];
 
+    return source.filter(
+      (item, index, array) =>
+        array.findIndex((candidate) => candidate.id === item.id) === index,
+    );
+  }, [
+    recGameCandidates,
+    recGames,
+    recPosts,
+    recResults.games,
+    recResults.posts,
+    recResults.tracks,
+    recTrackCandidates,
+    recTracks,
+    recType,
+  ]);
+
+  const recSelectedItems = useMemo(() => {
     return recSelected
-      .map((id) => source.find((item) => item.id === id))
+      .map((id) => recSourceItems.find((item) => item.id === id))
       .filter((item) => item !== undefined);
-  }, [recType, recSelected, recGames, recPosts, recTracks, recResults]);
+  }, [recSelected, recSourceItems]);
+
+  const recPreviewItems = useMemo(() => {
+    if (recType === "games") {
+      return computeEffectiveRecommendationItems(
+        recSourceItems,
+        recSelected,
+        recHidden,
+      );
+    }
+    if (recType === "tracks") {
+      return computeEffectiveRecommendationItems(
+        recSourceItems,
+        recSelected,
+        recHidden,
+      );
+    }
+    return [];
+  }, [recHidden, recSelected, recSourceItems, recType]);
+
+  const recAvailableCount = useMemo(() => {
+    if (recType === "games") {
+      return recSourceItems.filter((game) => !recHidden.includes(game.id))
+        .length;
+    }
+    if (recType === "tracks") {
+      return recSourceItems.filter((track) => !recHidden.includes(track.id))
+        .length;
+    }
+    return 0;
+  }, [recHidden, recSourceItems, recType]);
+
+  const recHiddenItems = useMemo(
+    () =>
+      recHidden
+        .map((id) => recSourceItems.find((item) => item.id === id))
+        .filter((item) => item !== undefined),
+    [recHidden, recSourceItems],
+  );
+
+  useEffect(() => {
+    if (profileSection === "recommendations" && !hasRecommendationsTab) {
+      setProfileSection("bio");
+    }
+  }, [hasRecommendationsTab, profileSection]);
 
   if (!user) {
     return <></>;
@@ -985,6 +1092,11 @@ export default function ClientUserPage({
               <Hstack className="ml-auto flex-wrap items-center justify-end gap-2">
                 {[
                   {
+                    key: "recommendations" as ProfileSection,
+                    label: "Recommended",
+                    count: recommendationsCount,
+                  },
+                  {
                     key: "games" as ProfileSection,
                     label: "Games",
                     count: publishedGames.length,
@@ -1019,24 +1131,32 @@ export default function ClientUserPage({
                     label: "Emotes",
                     count: user.userEmotes?.length,
                   },
-                ].map((section) => (
-                  <Button
-                    key={section.key}
-                    size="sm"
-                    variant="ghost"
-                    color={profileSection === section.key ? "blue" : "default"}
-                    onClick={() =>
-                      setProfileSection((prev) =>
-                        prev === section.key ? "bio" : section.key,
-                      )
-                    }
-                  >
-                    {section.label}
-                    <span className="ml-1 text-xs opacity-70">
-                      {section.count}
-                    </span>
-                  </Button>
-                ))}
+                ]
+                  .filter(
+                    (section) =>
+                      section.key !== "recommendations" ||
+                      hasRecommendationsTab,
+                  )
+                  .map((section) => (
+                    <Button
+                      key={section.key}
+                      size="sm"
+                      variant="ghost"
+                      color={
+                        profileSection === section.key ? "blue" : "default"
+                      }
+                      onClick={() =>
+                        setProfileSection((prev) =>
+                          prev === section.key ? "bio" : section.key,
+                        )
+                      }
+                    >
+                      {section.label}
+                      <span className="ml-1 text-xs opacity-70">
+                        {section.count}
+                      </span>
+                    </Button>
+                  ))}
               </Hstack>
             </Hstack>
           </Vstack>
@@ -1163,20 +1283,15 @@ export default function ClientUserPage({
           <Vstack align="stretch" gap={4} className="w-full">
             {profileSection === "recommendations" && (
               <>
-                <Card>
+                {hasVisibleRecommendedGames && (
                   <Vstack align="stretch" gap={3}>
                     <Hstack justify="between" className="flex-wrap gap-2">
-                      <Vstack align="start" gap={1}>
-                        <Text size="lg" weight="semibold">
-                          Recommended Games
-                        </Text>
-                        <Text size="sm" color="textFaded">
-                          Up to 5 games you want people to check out.
-                        </Text>
-                      </Vstack>
-                      {isOwner && (
-                        <Button
-                          size="sm"
+                      <Text size="lg" weight="semibold" color="text">
+                        Recommended Games
+                      </Text>
+                    {isOwner && canShowRecommendedGames && (
+                      <Button
+                        size="sm"
                           icon="pencil"
                           onClick={() => openRecommendations("games")}
                         >
@@ -1184,49 +1299,20 @@ export default function ClientUserPage({
                         </Button>
                       )}
                     </Hstack>
-                    {recGames.length === 0 ? (
-                      <Text size="sm" color="textFaded">
-                        No recommended games yet.
-                      </Text>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {recGames.map((game) => (
-                          <Link key={game.id} href={`/g/${game.slug}`}>
-                            <Card className="h-full">
-                              <Hstack className="gap-3 items-center">
-                                <img
-                                  src={game.thumbnail ?? "/images/D2J_Icon.png"}
-                                  alt={game.name}
-                                  className="h-12 w-20 rounded-md object-cover"
-                                  loading="lazy"
-                                  decoding="async"
-                                />
-                                <Vstack align="start" gap={0}>
-                                  <Text weight="semibold">{game.name}</Text>
-                                  <Text size="xs" color="textFaded">
-                                    /g/{game.slug}
-                                  </Text>
-                                </Vstack>
-                              </Hstack>
-                            </Card>
-                          </Link>
-                        ))}
-                      </div>
-                    )}
+                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {visibleRecommendedGames.map((game) => (
+                        <GameCard key={game.id} game={game} />
+                      ))}
+                    </section>
                   </Vstack>
-                </Card>
-                <Card>
+                )}
+                {hasVisibleRecommendedTracks && (
                   <Vstack align="stretch" gap={3}>
                     <Hstack justify="between" className="flex-wrap gap-2">
-                      <Vstack align="start" gap={1}>
-                        <Text size="lg" weight="semibold">
-                          Recommended Music
-                        </Text>
-                        <Text size="sm" color="textFaded">
-                          Up to 5 tracks from across the site.
-                        </Text>
-                      </Vstack>
-                      {isOwner && (
+                      <Text size="lg" weight="semibold">
+                        Recommended Music
+                      </Text>
+                      {isOwner && canShowRecommendedTracks && (
                         <Button
                           size="sm"
                           icon="pencil"
@@ -1236,80 +1322,36 @@ export default function ClientUserPage({
                         </Button>
                       )}
                     </Hstack>
-                    {recTracks.length === 0 ? (
-                      <Text size="sm" color="textFaded">
-                        No recommended tracks yet.
-                      </Text>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {recTracks.map((track) => (
-                          <Card key={track.id}>
-                            <Hstack className="gap-3 items-center">
-                              <img
-                                src={
-                                  track.game?.thumbnail ??
-                                  "/images/D2J_Icon.png"
+                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {visibleRecommendedTracks.map((track) => (
+                        <SidebarSong
+                          key={track.id}
+                          slug={track.slug}
+                          name={track.name}
+                          artist={track.composer ?? { name: "Unknown" }}
+                          thumbnail={
+                            track.game?.thumbnail || "/images/D2J_Icon.png"
+                          }
+                          game={
+                            track.game
+                              ? {
+                                  ...track.game,
+                                  thumbnail: track.game.thumbnail ?? undefined,
                                 }
-                                alt={track.name}
-                                className="h-12 w-20 rounded-md object-cover"
-                                loading="lazy"
-                                decoding="async"
-                              />
-                              <Vstack align="start" gap={0}>
-                                <Text weight="semibold">{track.name}</Text>
-                                <Text size="xs" color="textFaded">
-                                  {track.composer?.name ?? "Unknown"} -{" "}
-                                  {track.game?.name ?? "Unknown game"}
-                                </Text>
-                              </Vstack>
-                            </Hstack>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
+                              : {}
+                          }
+                          song={track.url}
+                          license={track.license}
+                          allowDownload={track.allowDownload}
+                          allowBackgroundUse={track.allowBackgroundUse}
+                          allowBackgroundUseAttribution={
+                            track.allowBackgroundUseAttribution
+                          }
+                        />
+                      ))}
+                    </section>
                   </Vstack>
-                </Card>
-                <Card>
-                  <Vstack align="stretch" gap={3}>
-                    <Hstack justify="between" className="flex-wrap gap-2">
-                      <Vstack align="start" gap={1}>
-                        <Text size="lg" weight="semibold">
-                          Recommended Posts
-                        </Text>
-                        <Text size="sm" color="textFaded">
-                          Up to 5 posts worth reading.
-                        </Text>
-                      </Vstack>
-                      {isOwner && (
-                        <Button
-                          size="sm"
-                          icon="pencil"
-                          onClick={() => openRecommendations("posts")}
-                        >
-                          Edit
-                        </Button>
-                      )}
-                    </Hstack>
-                    {recPosts.length === 0 ? (
-                      <Text size="sm" color="textFaded">
-                        No recommended posts yet.
-                      </Text>
-                    ) : (
-                      <Vstack align="stretch" gap={2}>
-                        {recPosts.map((post) => (
-                          <Link key={post.id} href={`/p/${post.slug}`}>
-                            <Card>
-                              <Text weight="semibold">{post.title}</Text>
-                              <Text size="xs" color="textFaded">
-                                /p/{post.slug}
-                              </Text>
-                            </Card>
-                          </Link>
-                        ))}
-                      </Vstack>
-                    )}
-                  </Vstack>
-                </Card>
+                )}
               </>
             )}
             {profileSection === "emotes" && (
@@ -1352,10 +1394,17 @@ export default function ClientUserPage({
                       name={track.name}
                       artist={track.composer}
                       thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
-                      game={track.game}
+                      game={{
+                        ...track.game,
+                        thumbnail: track.game.thumbnail ?? undefined,
+                      }}
                       song={track.url}
                       license={track.license}
                       allowDownload={track.allowDownload}
+                      allowBackgroundUse={track.allowBackgroundUse}
+                      allowBackgroundUseAttribution={
+                        track.allowBackgroundUseAttribution
+                      }
                     />
                   ))}
               </section>
@@ -2177,13 +2226,55 @@ export default function ClientUserPage({
                   <Text size="xl" color="text">
                     Edit recommendations
                   </Text>
-                  <Text size="sm" color="textFaded">
-                    Choose up to 5 {recType}.
-                  </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={3}>
+                  {recType !== "posts" && (
+                    <Vstack align="stretch" gap={2}>
+                      <Text size="sm" color="textFaded">
+                        Currently shown
+                      </Text>
+                      {recPreviewItems.length === 0 ? (
+                        <Text size="sm" color="textFaded">
+                          No recommendations will be shown.
+                        </Text>
+                      ) : (
+                        recPreviewItems.map((item) => (
+                          <Card key={`preview-${item.id}`}>
+                            <Hstack justify="between" className="gap-3">
+                              <Vstack align="start" gap={0}>
+                                <Text weight="semibold">
+                                  {"title" in item
+                                    ? String(item.title)
+                                    : String(item.name)}
+                                </Text>
+                              </Vstack>
+                              {recAvailableCount > recPreviewItems.length && (
+                                <Button
+                                  size="sm"
+                                  color="red"
+                                  icon="eye"
+                                  onClick={() => {
+                                    setRecHidden((prev) =>
+                                      prev.includes(item.id)
+                                        ? prev
+                                        : [...prev, item.id],
+                                    );
+                                    setRecSelected((prev) =>
+                                      prev.filter((id) => id !== item.id),
+                                    );
+                                  }}
+                                >
+                                  Hide
+                                </Button>
+                              )}
+                            </Hstack>
+                          </Card>
+                        ))
+                      )}
+                    </Vstack>
+                  )}
                   <Input
                     value={recSearch}
                     onValueChange={setRecSearch}
@@ -2217,14 +2308,22 @@ export default function ClientUserPage({
                             <Button
                               size="sm"
                               icon="plus"
-                              disabled={recSelected.length >= 5}
-                              onClick={() =>
+                              disabled={
+                                recSelected.length >= recommendationLimit
+                              }
+                              onClick={() => {
+                                setRecHidden((prev) =>
+                                  prev.filter((id) => id !== item.id),
+                                );
                                 setRecSelected((prev) =>
                                   prev.includes(item.id)
                                     ? prev
-                                    : [...prev, item.id].slice(0, 5),
-                                )
-                              }
+                                    : [...prev, item.id].slice(
+                                        0,
+                                        recommendationLimit,
+                                      ),
+                                );
+                              }}
                             >
                               Add
                             </Button>
@@ -2235,11 +2334,12 @@ export default function ClientUserPage({
 
                   <Vstack align="stretch" gap={2}>
                     <Text size="sm" color="textFaded">
-                      Selected ({recSelected.length}/5)
+                      Manual overrides ({recSelected.length}/
+                      {recommendationLimit})
                     </Text>
                     {recSelectedItems.length === 0 ? (
                       <Text size="sm" color="textFaded">
-                        No items selected.
+                        No manual overrides.
                       </Text>
                     ) : (
                       recSelectedItems.map((item) => (
@@ -2273,6 +2373,55 @@ export default function ClientUserPage({
                       ))
                     )}
                   </Vstack>
+
+                  {recType !== "posts" && (
+                    <Vstack align="stretch" gap={2}>
+                      <Text size="sm" color="textFaded">
+                        Hidden recommendations ({recHiddenItems.length})
+                      </Text>
+                      {recHiddenItems.length === 0 ? (
+                        <Text size="sm" color="textFaded">
+                          No hidden recommendations.
+                        </Text>
+                      ) : (
+                        <div className="max-h-40 overflow-y-auto pr-1">
+                          <Vstack align="stretch" gap={2}>
+                            {recHiddenItems.map((item) => (
+                              <Card key={`hidden-${item.id}`}>
+                                <Hstack justify="between" className="gap-3">
+                                  <Vstack align="start" gap={0}>
+                                    <Text size="sm">
+                                      {"title" in item ? item.title : item.name}
+                                    </Text>
+                                    {"slug" in item && (
+                                      <Text size="xs" color="textFaded">
+                                        {"title" in item
+                                          ? `/p/${item.slug}`
+                                          : `/g/${item.slug}`}
+                                      </Text>
+                                    )}
+                                  </Vstack>
+                                  <Button
+                                    size="sm"
+                                    icon="eye"
+                                    onClick={() =>
+                                      setRecHidden((prev) =>
+                                        prev.filter(
+                                          (itemId) => itemId !== item.id,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    Unhide
+                                  </Button>
+                                </Hstack>
+                              </Card>
+                            ))}
+                          </Vstack>
+                        </div>
+                      )}
+                    </Vstack>
+                  )}
                 </Vstack>
               </ModalBody>
               <ModalFooter>

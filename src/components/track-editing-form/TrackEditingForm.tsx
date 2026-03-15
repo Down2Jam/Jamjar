@@ -2,6 +2,11 @@
 
 import Editor from "@/components/editor";
 import {
+  backgroundUsageAttributionAllowedByDefault,
+  backgroundUsageAttributionWithLicenseDefaults,
+  backgroundUsageAllowedByDefault,
+  backgroundUsageRequiredByLicense,
+  backgroundUsageWithLicenseDefaults,
   licenseFlagsToLabel,
   licenseModeForFlags,
   LicenseFlags,
@@ -59,10 +64,24 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
   const [softwareUsed, setSoftwareUsed] = useState(
     (track.softwareUsed ?? []).join(", "),
   );
-  const [allowDownload, setAllowDownload] = useState(Boolean(track.allowDownload));
-  const [licenseFlags, setLicenseFlags] = useState<LicenseFlags>(
+  const [allowDownload, setAllowDownload] = useState(
+    Boolean(track.allowDownload),
+  );
+  const [licenseFlags, setLicenseFlags] = useState<LicenseFlags>(() =>
     parseLicenseFlags(track.license),
   );
+  const [allowBackgroundUse, setAllowBackgroundUse] = useState(() => {
+    const flags = parseLicenseFlags(track.license);
+    return track.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags);
+  });
+  const [allowBackgroundUseAttribution, setAllowBackgroundUseAttribution] =
+    useState(() => {
+      const flags = parseLicenseFlags(track.license);
+      return (
+        track.allowBackgroundUseAttribution ??
+        backgroundUsageAttributionAllowedByDefault(flags)
+      );
+    });
   const [links, setLinks] = useState<LinkDraft[]>(
     (track.links ?? []).map((link) => ({
       id: String(link.id),
@@ -134,10 +153,8 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
   const trackTagCategories = useMemo(
     () =>
       Array.from(tagsByCategory.keys()).sort((a, b) => {
-        const aPriority =
-          tagsByCategory.get(a)?.[0]?.category?.priority ?? 0;
-        const bPriority =
-          tagsByCategory.get(b)?.[0]?.category?.priority ?? 0;
+        const aPriority = tagsByCategory.get(a)?.[0]?.category?.priority ?? 0;
+        const bPriority = tagsByCategory.get(b)?.[0]?.category?.priority ?? 0;
         return bPriority - aPriority || a.localeCompare(b);
       }),
     [tagsByCategory],
@@ -186,6 +203,12 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
     }),
   };
   const licenseMode = licenseModeForFlags(licenseFlags);
+  const backgroundUsageRequired =
+    backgroundUsageRequiredByLicense(licenseFlags);
+  const backgroundUsageEnabled = backgroundUsageRequired
+    ? true
+    : allowBackgroundUse;
+  const downloadRequired = licenseMode !== "ARR" || backgroundUsageEnabled;
 
   const handleCreditSearch = async (value: string) => {
     setCreditQuery(value);
@@ -234,7 +257,11 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               Notes, context, or production details for the track page.
             </Text>
           </div>
-          <Editor content={commentary} setContent={setCommentary} format="markdown" />
+          <Editor
+            content={commentary}
+            setContent={setCommentary}
+            format="markdown"
+          />
 
           <Hstack className="w-full items-start gap-3">
             <Vstack align="start" className="w-full gap-2">
@@ -332,7 +359,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       color="red"
                       icon="trash"
                       onClick={() =>
-                        setCredits((prev) => prev.filter((cur) => cur.id !== credit.id))
+                        setCredits((prev) =>
+                          prev.filter((cur) => cur.id !== credit.id),
+                        )
                       }
                     />
                   </Hstack>
@@ -472,7 +501,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 menuPosition="fixed"
                 isMulti
                 isClearable
-                onChange={(value) => setSelectedFlagIds(value.map((item) => item.id))}
+                onChange={(value) =>
+                  setSelectedFlagIds(value.map((item) => item.id))
+                }
                 value={trackFlags
                   .filter((flag) => selectedFlagIds.includes(flag.id))
                   .map((flag) => ({
@@ -526,7 +557,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                     color="red"
                     icon="trash"
                     onClick={() =>
-                      setLinks((prev) => prev.filter((cur) => cur.id !== link.id))
+                      setLinks((prev) =>
+                        prev.filter((cur) => cur.id !== link.id),
+                      )
                     }
                   >
                     Remove Link
@@ -548,20 +581,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             </Button>
           </Vstack>
 
-          <Hstack className="w-full items-center gap-3">
-            <Switch
-              checked={licenseMode === "ARR" ? allowDownload : true}
-              onChange={setAllowDownload}
-              disabled={licenseMode !== "ARR"}
-            />
-            <Vstack align="start" gap={0}>
-              <Text size="sm">Allow downloads</Text>
-              <Text size="xs" color="textFaded">
-                Let listeners download this track.
-              </Text>
-            </Vstack>
-          </Hstack>
-
           <div className="w-full">
             <Text color="text">License</Text>
             <Text color="textFaded" size="xs">
@@ -572,33 +591,69 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             selectedValue={licenseMode}
             onSelect={(value) => {
               const mode = value as LicenseMode;
+              const previousFlags = licenseFlags;
               if (mode === "ARR") {
-                setLicenseFlags({
+                const nextFlags = {
                   attribution: false,
                   commercial: false,
                   derivatives: false,
                   shareAlike: false,
-                });
-                setAllowDownload(false);
+                };
+                const nextAllowBackgroundUse =
+                  backgroundUsageWithLicenseDefaults(
+                    allowBackgroundUse,
+                    previousFlags,
+                    nextFlags,
+                  );
+                setLicenseFlags(nextFlags);
+                setAllowDownload(nextAllowBackgroundUse);
+                setAllowBackgroundUse(nextAllowBackgroundUse);
+                setAllowBackgroundUseAttribution(false);
                 return;
               }
               if (mode === "CC0") {
-                setLicenseFlags({
+                const nextFlags = {
                   attribution: false,
                   commercial: true,
                   derivatives: true,
                   shareAlike: false,
-                });
+                };
+                setLicenseFlags(nextFlags);
                 setAllowDownload(true);
+                setAllowBackgroundUse(
+                  backgroundUsageWithLicenseDefaults(
+                    allowBackgroundUse,
+                    previousFlags,
+                    nextFlags,
+                  ),
+                );
+                setAllowBackgroundUseAttribution(
+                  backgroundUsageAttributionWithLicenseDefaults(
+                    allowBackgroundUseAttribution,
+                    previousFlags,
+                    nextFlags,
+                  ),
+                );
                 return;
               }
-              setLicenseFlags({
+              const nextFlags = {
                 attribution: true,
                 commercial: true,
                 derivatives: true,
                 shareAlike: false,
-              });
+              };
+              setLicenseFlags(nextFlags);
               setAllowDownload(true);
+              setAllowBackgroundUse(
+                backgroundUsageWithLicenseDefaults(
+                  allowBackgroundUse,
+                  previousFlags,
+                  nextFlags,
+                ),
+              );
+              setAllowBackgroundUseAttribution(
+                true,
+              );
             }}
           >
             <Dropdown.Item
@@ -620,9 +675,144 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               CC BY-based
             </Dropdown.Item>
           </Dropdown>
+          {licenseMode === "CC_BY" && (
+            <>
+              <Hstack className="w-full items-center gap-3">
+                <Switch checked disabled onChange={() => {}} />
+                <Vstack align="start" gap={0}>
+                  <Text color="text" size="sm">
+                    Require attribution
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    Credit the composer when used.
+                  </Text>
+                </Vstack>
+              </Hstack>
+              <Hstack className="w-full items-center gap-3">
+                <Switch
+                  checked={licenseFlags.commercial}
+                  onChange={(value) =>
+                    setLicenseFlags((current) => ({
+                      ...current,
+                      attribution: true,
+                      commercial: value,
+                    }))
+                  }
+                />
+                <Vstack align="start" gap={0}>
+                  <Text color="text" size="sm">
+                    Allow commercial use
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    Let others use it commercially.
+                  </Text>
+                </Vstack>
+              </Hstack>
+              <Hstack className="w-full items-center gap-3">
+                <Switch
+                  checked={licenseFlags.derivatives}
+                  onChange={(value) =>
+                    setLicenseFlags((current) => ({
+                      ...current,
+                      attribution: true,
+                      derivatives: value,
+                      shareAlike: value ? current.shareAlike : false,
+                    }))
+                  }
+                />
+                <Vstack align="start" gap={0}>
+                  <Text color="text" size="sm">
+                    Allow derivatives
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    Allow remixes or adaptations.
+                  </Text>
+                </Vstack>
+              </Hstack>
+              <Hstack className="w-full items-center gap-3">
+                <Switch
+                  checked={licenseFlags.shareAlike}
+                  onChange={(value) =>
+                    setLicenseFlags((current) => ({
+                      ...current,
+                      attribution: true,
+                      shareAlike: value,
+                    }))
+                  }
+                  disabled={!licenseFlags.derivatives}
+                />
+                <Vstack align="start" gap={0}>
+                  <Text color="text" size="sm">
+                    Share alike
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    Derivatives must use the same license.
+                  </Text>
+                </Vstack>
+              </Hstack>
+            </>
+          )}
           <Text size="xs" color="textFaded">
             License applied: {licenseFlagsToLabel(licenseFlags)}
           </Text>
+
+          <Hstack className="w-full items-start gap-3">
+            <Switch
+              checked={backgroundUsageRequired ? true : allowBackgroundUse}
+              onChange={(value) => {
+                if (backgroundUsageRequired) return;
+                if (value) {
+                  setAllowDownload(true);
+                  setAllowBackgroundUseAttribution((current) => current);
+                } else {
+                  setAllowBackgroundUseAttribution(false);
+                }
+                setAllowBackgroundUse(value);
+              }}
+              disabled={backgroundUsageRequired}
+            />
+            <Vstack align="start" gap={0} className="min-w-0 flex-1">
+              <Text size="sm">Allow background use in streams and videos</Text>
+              <Text size="xs" color="textFaded">
+                Let people use this track as background music in commercial
+                videos and streams not related to the game (where the music is
+                not the main focus) separate from the main license.
+              </Text>
+            </Vstack>
+          </Hstack>
+
+          <Hstack className="w-full items-start gap-3">
+            <Switch
+              checked={
+                licenseMode === "CC0" ? false : allowBackgroundUseAttribution
+              }
+              onChange={setAllowBackgroundUseAttribution}
+              disabled={!backgroundUsageEnabled || licenseMode === "CC0"}
+            />
+            <Vstack align="start" gap={0} className="min-w-0 flex-1">
+              <Text size="sm">
+                Require attribution for stream and video background use
+              </Text>
+              <Text size="xs" color="textFaded">
+                When people use this song in the background of streams or videos
+                they must credit you in some way.
+              </Text>
+            </Vstack>
+          </Hstack>
+
+          <Hstack className="w-full items-start gap-3">
+            <Switch
+              checked={downloadRequired ? true : allowDownload}
+              onChange={setAllowDownload}
+              disabled={downloadRequired}
+            />
+            <Vstack align="start" gap={0} className="min-w-0 flex-1">
+              <Text size="sm">Allow downloads</Text>
+              <Text size="xs" color="textFaded">
+                Let listeners download this track.
+              </Text>
+            </Vstack>
+          </Hstack>
 
           <Hstack className="w-full justify-between">
             <Button href={`/m/${track.slug}`} variant="ghost">
@@ -652,6 +842,8 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       .map((value) => value.trim())
                       .filter(Boolean),
                     allowDownload,
+                    allowBackgroundUse,
+                    allowBackgroundUseAttribution,
                     license: licenseFlagsToLabel(licenseFlags),
                     tagIds: selectedTagIds,
                     flagIds: selectedFlagIds,

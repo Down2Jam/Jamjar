@@ -2,11 +2,21 @@ import { Card } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { GameType } from "@/types/GameType";
 import { SiHtml5, SiLinux } from "@icons-pack/react-simple-icons";
 import { Grid2X2, Smartphone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+type GameCardGame = {
+  slug: string;
+  name: string;
+  short?: string | null;
+  thumbnail?: string | null;
+  itchEmbedUrl?: string | null;
+  category?: "ODA" | "REGULAR" | "EXTRA";
+  downloadLinks?: Array<{ platform: string }>;
+  jam?: { name?: string | null; color?: string | null };
+};
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -20,10 +30,12 @@ export function GameCard({
   game,
   rated = false,
 }: {
-  game: GameType;
+  game: GameCardGame;
   rated?: boolean;
 }) {
   const { colors } = useTheme();
+  const jamColor = game.jam?.color || "green";
+  const jamName = game.jam?.name || "Game Jam";
   const buildPlatforms = [
     ...new Set([
       ...(game.itchEmbedUrl ? (["Web"] as const) : []),
@@ -43,11 +55,11 @@ export function GameCard({
           className="absolute top-0 left-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
           style={{
             color: colors["text"],
-            backgroundColor: colors[game.jam.color || "green"] + "aa",
-            borderColor: colors[game.jam.color || "green"],
+            backgroundColor: colors[jamColor] + "aa",
+            borderColor: colors[jamColor],
           }}
         >
-          {game.jam.name}
+          {jamName}
         </div>
         <div
           className="absolute top-0 right-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"

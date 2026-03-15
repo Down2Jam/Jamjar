@@ -1,6 +1,21 @@
 "use client";
 
-import { Button, Icon, Popover, Text, Hstack, Vstack } from "bioloom-ui";
+import { getCurrentJam } from "@/helpers/jam";
+import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
+import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
+import { postTrackRating } from "@/requests/rating";
+import { getTrackRatingCategories } from "@/requests/track";
+import { getSelf } from "@/requests/user";
+import {
+  addToast,
+  Button,
+  Icon,
+  Popover,
+  Text,
+  Hstack,
+  Vstack,
+} from "bioloom-ui";
+import Link from "next/link";
 import {
   createContext,
   useCallback,
@@ -11,6 +26,7 @@ import {
   useState,
 } from "react";
 import { useTheme } from "bioloom-ui";
+import { Star } from "lucide-react";
 
 export type TrackComposer = {
   name?: string;
@@ -18,11 +34,21 @@ export type TrackComposer = {
 };
 
 export type TrackGame = {
+  id?: number;
+  jamId?: number;
   name?: string;
   thumbnail?: string;
+  slug?: string;
+  team?: {
+    users?: Array<{
+      id: number;
+    }>;
+  };
 };
 
 export type TrackType = {
+  id?: number;
+  slug?: string;
   url: string;
   name: string;
   composer: TrackComposer;
@@ -30,6 +56,8 @@ export type TrackType = {
 };
 
 export type PlayableTrack = {
+  id?: number;
+  slug?: string;
   name: string;
   artist: TrackComposer;
   thumbnail: string;
@@ -150,7 +178,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
       setShown(true);
     },
-    [volume, music, ensureAudioContext]
+    [volume, music, ensureAudioContext],
   );
 
   useEffect(() => {
@@ -168,7 +196,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         const nextIdx = fs[fs.length - 1];
         if (currentIndex != null) {
           setBackStack((bs) =>
-            bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex]
+            bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex],
           );
         }
         setTimeout(() => void playIndex(nextIdx), 0);
@@ -187,7 +215,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     if (currentIndex != null) {
       setBackStack((bs) =>
-        bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex]
+        bs[bs.length - 1] === currentIndex ? bs : [...bs, currentIndex],
       );
     }
     setFwdStack([]);
@@ -204,7 +232,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       if (!a) return;
       a.currentTime = Math.min(Math.max(0, t), duration || 0);
     },
-    [duration]
+    [duration],
   );
 
   useEffect(() => {
@@ -252,7 +280,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       setFwdStack((fs) =>
         currentIndex == null || fs[fs.length - 1] === currentIndex
           ? fs
-          : [...fs, currentIndex]
+          : [...fs, currentIndex],
       );
 
       setTimeout(() => void playIndex(target), 0);
@@ -298,7 +326,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         setBackStack((bs) =>
           currentIndex == null || bs[bs.length - 1] === currentIndex
             ? bs
-            : [...bs, currentIndex]
+            : [...bs, currentIndex],
         );
         setFwdStack([]);
         await playIndex(i);
@@ -312,13 +340,13 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       setBackStack((bs) =>
         currentIndex == null || bs[bs.length - 1] === currentIndex
           ? bs
-          : [...bs, currentIndex]
+          : [...bs, currentIndex],
       );
       setFwdStack([]);
       setCurrentIndex(null);
       await audio.play();
     },
-    [currentIndex, playIndex, volume, music, ensureAudioContext]
+    [currentIndex, playIndex, volume, music, ensureAudioContext],
   );
 
   const value = useMemo(
@@ -362,7 +390,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       repeatState,
       stop,
       shown,
-    ]
+    ],
   );
 
   return (
@@ -370,6 +398,8 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       value={{
         ...value,
         current: {
+          id: value.current?.id,
+          slug: value.current?.slug,
           song: value.current?.url || "",
           name: value.current?.name || "",
           artist: value.current?.composer || {},
@@ -411,6 +441,21 @@ function MiniPlayer() {
   } = useMusic();
   const [progress, setProgress] = useState({ time: 0, duration: 0 });
   const { colors } = useTheme();
+  const [hoverRating, setHoverRating] = useState(0);
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [ratingCategoryId, setRatingCategoryId] = useState<number | null>(null);
+  const [viewerId, setViewerId] = useState<number | null>(null);
+  const [viewerTeamGameIds, setViewerTeamGameIds] = useState<number[]>([]);
+  const [viewerTrackRatings, setViewerTrackRatings] = useState<
+    Array<{ trackId: number; categoryId: number; value: number }>
+  >([]);
+  const [activeJamId, setActiveJamId] = useState<number | null>(null);
+  const [activeJamPhase, setActiveJamPhase] = useState<string | null>(null);
+  const [savingRating, setSavingRating] = useState(false);
+  const [hideRatings, setHideRatings] = useState(false);
+  const [autoHideRatingsWhileStreaming, setAutoHideRatingsWhileStreaming] =
+    useState(false);
+  const [viewerTwitch, setViewerTwitch] = useState<string | null>(null);
   const [minimized, setMinimized] = useState<boolean>(() => {
     const stored = readStorage(storageKey.minimized);
     if (stored === "true") return true;
@@ -430,6 +475,11 @@ function MiniPlayer() {
     offsetY: 0,
   });
   const hasSpawnedRef = useRef(false);
+  const effectiveHideRatings = useEffectiveHideRatings({
+    hideRatings,
+    autoHideRatingsWhileStreaming,
+    twitch: viewerTwitch ?? undefined,
+  });
 
   const marginLeftTop = 16;
   const marginRightBottom = 38;
@@ -446,11 +496,11 @@ function MiniPlayer() {
     const rectHeight = dragRef.current.offsetHeight;
     const maxLeft = Math.max(
       marginLeftTop,
-      window.innerWidth - rectWidth - marginRightBottom
+      window.innerWidth - rectWidth - marginRightBottom,
     );
     const maxTop = Math.max(
       marginLeftTop,
-      window.innerHeight - rectHeight - marginRightBottom
+      window.innerHeight - rectHeight - marginRightBottom,
     );
 
     switch (corner) {
@@ -511,7 +561,6 @@ function MiniPlayer() {
     return () => cancelAnimationFrame(raf);
   }, [audioEl]);
 
-
   useEffect(() => {
     if (!position) return;
     const handleResize = () => {
@@ -527,7 +576,116 @@ function MiniPlayer() {
     writeStorage(storageKey.minimized, minimized ? "true" : "false");
   }, [minimized]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const [userResponse, jamResponse, categoriesResponse] =
+          await Promise.all([
+            getSelf().catch(() => null),
+            getCurrentJam().catch(() => null),
+            getTrackRatingCategories().catch(() => null),
+          ]);
+
+        if (cancelled) return;
+
+        if (userResponse?.ok) {
+          const user = await userResponse.json();
+          if (cancelled) return;
+          setViewerId(user?.id ?? null);
+          setViewerTeamGameIds(
+            Array.isArray(user?.teams)
+              ? user.teams
+                  .map(
+                    (team: { game?: { id?: number } | null }) => team.game?.id,
+                  )
+                  .filter((id: number | undefined): id is number =>
+                    Number.isInteger(id),
+                  )
+              : [],
+          );
+          setViewerTrackRatings(
+            Array.isArray(user?.trackRatings) ? user.trackRatings : [],
+          );
+          setHideRatings(Boolean(user?.hideRatings));
+          setAutoHideRatingsWhileStreaming(
+            Boolean(user?.autoHideRatingsWhileStreaming),
+          );
+          setViewerTwitch(user?.twitch ?? null);
+        } else {
+          setViewerId(null);
+          setViewerTeamGameIds([]);
+          setViewerTrackRatings([]);
+          setHideRatings(false);
+          setAutoHideRatingsWhileStreaming(false);
+          setViewerTwitch(null);
+        }
+
+        setActiveJamId(jamResponse?.jam?.id ?? null);
+        setActiveJamPhase(jamResponse?.phase ?? null);
+
+        if (categoriesResponse?.ok) {
+          const payload = await categoriesResponse.json();
+          const overall =
+            payload?.data?.find(
+              (category: { id: number; name: string }) =>
+                category.name === "Overall",
+            ) ?? null;
+          setRatingCategoryId(overall?.id ?? null);
+        } else {
+          setRatingCategoryId(null);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!current?.id || !ratingCategoryId) {
+      setSelectedRating(0);
+      return;
+    }
+
+    setSelectedRating(
+      viewerTrackRatings.find(
+        (rating) =>
+          rating.trackId === current.id &&
+          rating.categoryId === ratingCategoryId,
+      )?.value ?? 0,
+    );
+  }, [current?.id, ratingCategoryId, viewerTrackRatings]);
+
   if (!current) return null;
+
+  const isTeamMember = Boolean(
+    viewerId &&
+    current.game.team?.users?.some((member) => member.id === viewerId),
+  );
+  const isCurrentJamTrack =
+    activeJamId != null &&
+    current.game.jamId != null &&
+    activeJamId === current.game.jamId;
+  const canRateDuringJam =
+    Boolean(viewerId) &&
+    !isTeamMember &&
+    isCurrentJamTrack &&
+    (activeJamPhase === "Rating" || activeJamPhase === "Submission");
+  const showRating =
+    !minimized &&
+    !isTeamMember &&
+    current.id != null &&
+    Boolean(viewerId) &&
+    Boolean(ratingCategoryId) &&
+    canRateDuringJam;
+  const ratingDisabled =
+    savingRating || !viewerId || !ratingCategoryId || !canRateDuringJam;
+  const displayRating = hoverRating || selectedRating;
 
   const clampPosition = (left: number, top: number) => {
     if (!dragRef.current) return { left, top };
@@ -535,11 +693,11 @@ function MiniPlayer() {
     const rectHeight = dragRef.current.offsetHeight;
     const maxLeft = Math.max(
       marginLeftTop,
-      window.innerWidth - rectWidth - marginRightBottom
+      window.innerWidth - rectWidth - marginRightBottom,
     );
     const maxTop = Math.max(
       marginLeftTop,
-      window.innerHeight - rectHeight - marginRightBottom
+      window.innerHeight - rectHeight - marginRightBottom,
     );
     return {
       left: Math.min(Math.max(marginLeftTop, left), maxLeft),
@@ -609,6 +767,7 @@ function MiniPlayer() {
     <Popover
       position="bottom-left"
       showCloseButton
+      disableHoverScale
       closeButtonPosition="top-left"
       onClose={stop}
       startsShown={true}
@@ -639,83 +798,134 @@ function MiniPlayer() {
         }}
       >
         <Hstack>
-            <Vstack align="stretch">
+          <Vstack align="stretch">
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                <img
-                  src={current.thumbnail}
-                  width={minimized ? 28 : 56}
-                  height={minimized ? 28 : 56}
-                  style={{ borderRadius: 8, objectFit: "cover" }}
-                  alt=""
-                />
-                <div style={{ minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontSize: minimized ? 12 : 14,
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {current.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: minimized ? 10 : 12,
-                      color: colors["textFaded"],
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
-                    {current.game.name ?? ""} -{" "}
-                    {current.artist.name || current.artist.slug || ""}
-                  </div>
+              <img
+                src={current.thumbnail}
+                width={minimized ? 28 : 56}
+                height={minimized ? 28 : 56}
+                style={{ borderRadius: 8, objectFit: "cover" }}
+                alt=""
+              />
+              <div style={{ minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: minimized ? 12 : 14,
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {current.slug ? (
+                    <Link href={`/m/${current.slug}`}>{current.name}</Link>
+                  ) : (
+                    current.name
+                  )}
                 </div>
-
-                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-                  <Button
-                    onClick={prev}
-                    disabled={!canPrev}
-                    size={minimized ? "xs" : "md"}
-                  >
-                    <Icon
-                      name="skipback"
-                      color={canPrev ? "text" : "textFaded"}
-                      size={minimized ? 16 : 24}
-                    />
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      toggle();
-                      if (!shown) {
-                        setShown(true);
-                      }
-                    }}
-                    size={minimized ? "xs" : "md"}
-                  >
-                    <Icon
-                      name={isPlaying ? "pause" : "play"}
-                      size={minimized ? 16 : 24}
-                    />
-                  </Button>
-                  <Button onClick={next} size={minimized ? "xs" : "md"}>
-                    <Icon name="skipforward" size={minimized ? 16 : 24} />
-                  </Button>
+                <div
+                  style={{
+                    fontSize: minimized ? 10 : 12,
+                    color: colors["textFaded"],
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {current.game.slug ? (
+                    <Link href={`/g/${current.game.slug}`}>
+                      {current.game.name ?? ""}
+                    </Link>
+                  ) : (
+                    (current.game.name ?? "")
+                  )}{" "}
+                  -{" "}
+                  {current.artist.slug ? (
+                    <Link href={`/u/${current.artist.slug}`}>
+                      {current.artist.name || current.artist.slug || ""}
+                    </Link>
+                  ) : (
+                    current.artist.name || current.artist.slug || ""
+                  )}
                 </div>
               </div>
 
-              {!minimized && (
-                <Hstack>
-                  <Vstack className="w-full" align="stretch">
+              <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                <Button
+                  onClick={prev}
+                  disabled={!canPrev}
+                  size={minimized ? "xs" : "md"}
+                >
+                  <Icon
+                    name="skipback"
+                    color={canPrev ? "text" : "textFaded"}
+                    size={minimized ? 16 : 24}
+                  />
+                </Button>
+                <Button
+                  onClick={() => {
+                    toggle();
+                    if (!shown) {
+                      setShown(true);
+                    }
+                  }}
+                  size={minimized ? "xs" : "md"}
+                >
+                  <Icon
+                    name={isPlaying ? "pause" : "play"}
+                    size={minimized ? 16 : 24}
+                  />
+                </Button>
+                <Button onClick={next} size={minimized ? "xs" : "md"}>
+                  <Icon name="skipforward" size={minimized ? 16 : 24} />
+                </Button>
+              </div>
+            </div>
+
+            {!minimized && (
+              <Hstack>
+                <Vstack className="w-full" align="stretch">
+                  <input
+                    type="range"
+                    min={0}
+                    max={progress.duration || 0}
+                    step={0.01}
+                    value={Number.isFinite(progress.time) ? progress.time : 0}
+                    onChange={(e) => seek(parseFloat(e.target.value))}
+                    style={{
+                      width: "100%",
+                      marginTop: 8,
+                      WebkitAppearance: "none",
+                      height: "4px",
+                      borderRadius: "4px",
+                      background: `linear-gradient(to right, 
+      ${colors["blue"]} 0%, 
+      ${colors["indigo"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
+      ${colors["base"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
+      ${colors["base"]} 100%)`,
+                      outline: "none",
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 6,
+                    }}
+                  >
+                    <Text color="text" size="xs">
+                      Volume
+                    </Text>
                     <input
                       type="range"
                       min={0}
-                      max={progress.duration || 0}
+                      max={1}
                       step={0.01}
-                      value={Number.isFinite(progress.time) ? progress.time : 0}
-                      onChange={(e) => seek(parseFloat(e.target.value))}
+                      value={volume}
+                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      aria-label="Volume"
                       style={{
                         width: "100%",
                         marginTop: 8,
@@ -723,77 +933,298 @@ function MiniPlayer() {
                         height: "4px",
                         borderRadius: "4px",
                         background: `linear-gradient(to right, 
-      ${colors["blue"]} 0%, 
-      ${colors["indigo"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
-      ${colors["base"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
-      ${colors["base"]} 100%)`,
-                        outline: "none",
-                      }}
-                    />
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                        marginTop: 6,
-                      }}
-                    >
-                      <Text color="text" size="xs">
-                        Volume
-                      </Text>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={volume}
-                        onChange={(e) => setVolume(parseFloat(e.target.value))}
-                        aria-label="Volume"
-                        style={{
-                          width: "100%",
-                          marginTop: 8,
-                          WebkitAppearance: "none",
-                          height: "4px",
-                          borderRadius: "4px",
-                          background: `linear-gradient(to right, 
       ${colors["yellow"]} 0%, 
       ${colors["orange"]} ${(volume / 1) * 100}%, 
       ${colors["base"]} ${(volume / 1) * 100}%, 
       ${colors["base"]} 100%)`,
-                          outline: "none",
+                        outline: "none",
+                      }}
+                    />
+                  </div>
+
+                  {showRating && (
+                    <RatingVisibilityGate
+                      hiddenByPreference={effectiveHideRatings}
+                      hiddenText="Ratings are hidden by your settings."
+                      buttonSize="xs"
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginTop: 8,
                         }}
-                      />
-                    </div>
-                  </Vstack>
-                </Hstack>
-              )}
-            </Vstack>
-            <Vstack>
+                      >
+                        <Text color="text" size="xs">
+                          Rate
+                        </Text>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          {[2, 4, 6, 8, 10].map((value) => (
+                            <div
+                              key={`mini-player-rating-${current.id}-${value}`}
+                              style={{
+                                cursor: ratingDisabled ? "default" : "pointer",
+                                display: "inline-flex",
+                                position: "relative",
+                                width: 16,
+                                height: 16,
+                              }}
+                              onMouseEnter={() => {
+                                if (!ratingDisabled) setHoverRating(value);
+                              }}
+                              onMouseLeave={() => {
+                                if (!ratingDisabled) setHoverRating(0);
+                              }}
+                              onClick={async () => {
+                                if (
+                                  ratingDisabled ||
+                                  !current.id ||
+                                  !ratingCategoryId
+                                ) {
+                                  return;
+                                }
+
+                                const trackId = current.id;
+
+                                const previous = selectedRating;
+                                setSelectedRating(value);
+                                setSavingRating(true);
+
+                                try {
+                                  const response = await postTrackRating(
+                                    trackId,
+                                    ratingCategoryId,
+                                    value,
+                                  );
+
+                                  if (!response.ok) {
+                                    const payload = await response
+                                      .json()
+                                      .catch(() => null);
+                                    addToast({
+                                      title:
+                                        payload?.message ??
+                                        "Failed to save track rating",
+                                    });
+                                    setSelectedRating(previous);
+                                    return;
+                                  }
+
+                                  setViewerTrackRatings((prev) => {
+                                    const next = prev.filter(
+                                      (rating) =>
+                                        !(
+                                          rating.trackId === trackId &&
+                                          rating.categoryId === ratingCategoryId
+                                        ),
+                                    );
+                                    next.push({
+                                      trackId,
+                                      categoryId: ratingCategoryId,
+                                      value,
+                                    });
+                                    return next;
+                                  });
+                                } finally {
+                                  setSavingRating(false);
+                                }
+                              }}
+                            >
+                              <Star
+                                size={16}
+                                fill="currentColor"
+                                className="absolute"
+                                style={{
+                                  color:
+                                    displayRating >= value
+                                      ? colors["yellow"]
+                                      : colors["base"],
+                                  transition: "color 150ms ease",
+                                }}
+                              />
+                              <Star
+                                size={16}
+                                fill="currentColor"
+                                className="absolute"
+                                style={{
+                                  clipPath: "inset(0 50% 0 0)",
+                                  color:
+                                    displayRating >= value - 1
+                                      ? colors["yellow"]
+                                      : colors["base"],
+                                  transition: "color 150ms ease",
+                                }}
+                              />
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  left: 0,
+                                  top: 0,
+                                  width: 8,
+                                  height: 16,
+                                }}
+                                onMouseEnter={() => {
+                                  if (!ratingDisabled)
+                                    setHoverRating(value - 1);
+                                }}
+                                onClick={async () => {
+                                  if (
+                                    ratingDisabled ||
+                                    !current.id ||
+                                    !ratingCategoryId
+                                  ) {
+                                    return;
+                                  }
+
+                                  const trackId = current.id;
+                                  const nextValue = value - 1;
+                                  const previous = selectedRating;
+                                  setSelectedRating(nextValue);
+                                  setSavingRating(true);
+
+                                  try {
+                                    const response = await postTrackRating(
+                                      trackId,
+                                      ratingCategoryId,
+                                      nextValue,
+                                    );
+
+                                    if (!response.ok) {
+                                      const payload = await response
+                                        .json()
+                                        .catch(() => null);
+                                      addToast({
+                                        title:
+                                          payload?.message ??
+                                          "Failed to save track rating",
+                                      });
+                                      setSelectedRating(previous);
+                                      return;
+                                    }
+
+                                    setViewerTrackRatings((prev) => {
+                                      const next = prev.filter(
+                                        (rating) =>
+                                          !(
+                                            rating.trackId === trackId &&
+                                            rating.categoryId ===
+                                              ratingCategoryId
+                                          ),
+                                      );
+                                      next.push({
+                                        trackId,
+                                        categoryId: ratingCategoryId,
+                                        value: nextValue,
+                                      });
+                                      return next;
+                                    });
+                                  } finally {
+                                    setSavingRating(false);
+                                  }
+                                }}
+                              />
+                              <div
+                                style={{
+                                  position: "absolute",
+                                  right: 0,
+                                  top: 0,
+                                  width: 8,
+                                  height: 16,
+                                }}
+                                onMouseEnter={() => {
+                                  if (!ratingDisabled) setHoverRating(value);
+                                }}
+                                onClick={async () => {
+                                  if (
+                                    ratingDisabled ||
+                                    !current.id ||
+                                    !ratingCategoryId
+                                  ) {
+                                    return;
+                                  }
+
+                                  const trackId = current.id;
+                                  const previous = selectedRating;
+                                  setSelectedRating(value);
+                                  setSavingRating(true);
+
+                                  try {
+                                    const response = await postTrackRating(
+                                      trackId,
+                                      ratingCategoryId,
+                                      value,
+                                    );
+
+                                    if (!response.ok) {
+                                      const payload = await response
+                                        .json()
+                                        .catch(() => null);
+                                      addToast({
+                                        title:
+                                          payload?.message ??
+                                          "Failed to save track rating",
+                                      });
+                                      setSelectedRating(previous);
+                                      return;
+                                    }
+
+                                    setViewerTrackRatings((prev) => {
+                                      const next = prev.filter(
+                                        (rating) =>
+                                          !(
+                                            rating.trackId === trackId &&
+                                            rating.categoryId ===
+                                              ratingCategoryId
+                                          ),
+                                      );
+                                      next.push({
+                                        trackId,
+                                        categoryId: ratingCategoryId,
+                                        value,
+                                      });
+                                      return next;
+                                    });
+                                  } finally {
+                                    setSavingRating(false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </RatingVisibilityGate>
+                  )}
+                </Vstack>
+              </Hstack>
+            )}
+          </Vstack>
+          <Vstack>
             <Button
               onClick={() => setMinimized(!minimized)}
               size={minimized ? "xs" : "md"}
             >
+              <Icon
+                name={minimized ? "maximize2" : "minimize2"}
+                size={minimized ? 16 : 24}
+              />
+            </Button>
+            {!minimized && (
+              <Button onClick={toggleRepeatState}>
                 <Icon
-                  name={minimized ? "maximize2" : "minimize2"}
-                  size={minimized ? 16 : 24}
-                />
-              </Button>
-              {!minimized && (
-                <Button onClick={toggleRepeatState}>
-                  <Icon
-                    name={
-                      repeatState === "autoplay"
-                        ? "infinity"
-                        : repeatState === "repeat"
+                  name={
+                    repeatState === "autoplay"
+                      ? "infinity"
+                      : repeatState === "repeat"
                         ? "repeat"
                         : "refreshcwoff"
-                    }
-                  />
-                </Button>
-              )}
-            </Vstack>
-          </Hstack>
+                  }
+                />
+              </Button>
+            )}
+          </Vstack>
+        </Hstack>
       </div>
     </Popover>
   );

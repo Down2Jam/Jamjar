@@ -22,6 +22,7 @@ import MentionedContent from "../mentions/MentionedContent";
 import { Dropdown } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import ContentStatusMeta from "./ContentStatusMeta";
+import CommentReactions from "./CommentReactions";
 
 export default function CommentCard({
   comment,
@@ -36,6 +37,7 @@ export default function CommentCard({
   const [waitingPost, setWaitingPost] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftContent, setDraftContent] = useState(comment.content);
+  const [reactionsOpen, setReactionsOpen] = useState(false);
   const { colors } = useTheme();
   const canSeeModerated = Boolean(user?.mod || user?.admin);
   const isModerated = Boolean(
@@ -54,7 +56,8 @@ export default function CommentCard({
   }
 
   return (
-    <Card>
+    <div id={`comment-${currentComment.id}`}>
+      <Card>
       <div>
         <div
           className="flex items-center gap-3 text-xs pt-1"
@@ -146,6 +149,11 @@ export default function CommentCard({
           >
             <Reply size={16} />
           </Button>
+          <CommentReactions
+            commentId={currentComment.id}
+            reactions={currentComment.reactions}
+            onOverlayChange={setReactionsOpen}
+          />
           {(isAuthor || user?.mod || user?.admin) && (
             <Dropdown
               trigger={
@@ -281,6 +289,7 @@ export default function CommentCard({
             </Button>
           ))}
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

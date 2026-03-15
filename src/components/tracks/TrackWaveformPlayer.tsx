@@ -1,5 +1,6 @@
 "use client";
 
+import { useMusic } from "bioloom-miniplayer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addToast,
@@ -42,11 +43,28 @@ const truncateComment = (content: string) =>
   content.length > 30 ? `${content.slice(0, 30)}...` : content;
 
 export default function TrackWaveformPlayer({
+  slug,
+  name,
+  artist,
+  game,
+  thumbnail,
   url,
   comments,
   canComment,
   onSubmitTimestampComment,
 }: {
+  slug: string;
+  name: string;
+  artist: {
+    name?: string;
+    slug?: string;
+  };
+  game: {
+    name?: string;
+    slug?: string;
+    thumbnail?: string;
+  };
+  thumbnail?: string | null;
   url: string;
   comments: TimestampComment[];
   canComment: boolean;
@@ -54,13 +72,13 @@ export default function TrackWaveformPlayer({
 }) {
   const { colors } = useTheme();
   const { emojis } = useEmojis();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { audioEl, current, isPlaying, playItem, seek, shown, setShown } =
+    useMusic();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const pickerRef = useRef<HTMLDivElement | null>(null);
   const [peaks, setPeaks] = useState<number[]>([]);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [commentDraft, setCommentDraft] = useState("");
   const [savingComment, setSavingComment] = useState(false);
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
@@ -78,35 +96,7 @@ export default function TrackWaveformPlayer({
     leftPercent: number;
   } | null>(null);
 
-  useEffect(() => {
-    const audio = new Audio(url);
-    audio.preload = "auto";
-    audio.crossOrigin = "anonymous";
-    audioRef.current = audio;
-
-    const onLoadedMetadata = () => setDuration(audio.duration || 0);
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
-
-    let raf = 0;
-    const tick = () => {
-      setCurrentTime(audio.currentTime || 0);
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      audio.pause();
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
-    };
-  }, [url]);
+  const isCurrentTrack = current?.song === url || current?.slug === slug;
 
   useEffect(() => {
     let cancelled = false;
@@ -134,6 +124,7 @@ export default function TrackWaveformPlayer({
         });
 
         setPeaks(nextPeaks);
+        setDuration(buffer.duration || 0);
         void audioContext.close();
       } catch (error) {
         console.error("Failed to decode waveform", error);
@@ -144,6 +135,42 @@ export default function TrackWaveformPlayer({
       cancelled = true;
     };
   }, [url]);
+
+  useEffect(() => {
+    if (!audioEl || !isCurrentTrack) {
+      setCurrentTime(0);
+      return;
+    }
+
+    const sync = () => {
+      setCurrentTime(audioEl.currentTime || 0);
+      setDuration(audioEl.duration || duration || 0);
+    };
+
+    const onLoadedMetadata = () => sync();
+    const onSeeked = () => sync();
+    const onTimeUpdate = () => sync();
+
+    audioEl.addEventListener("loadedmetadata", onLoadedMetadata);
+    audioEl.addEventListener("seeked", onSeeked);
+    audioEl.addEventListener("timeupdate", onTimeUpdate);
+
+    let raf = 0;
+    const tick = () => {
+      sync();
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    sync();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      audioEl.removeEventListener("loadedmetadata", onLoadedMetadata);
+      audioEl.removeEventListener("seeked", onSeeked);
+      audioEl.removeEventListener("timeupdate", onTimeUpdate);
+    };
+  }, [audioEl, duration, isCurrentTrack]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -210,10 +237,27 @@ export default function TrackWaveformPlayer({
   }, [emojiQuery, emojis]);
 
   const seekTo = (nextTime: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.min(Math.max(0, nextTime), duration || 0);
-    setCurrentTime(audio.currentTime);
+    const clampedTime = Math.min(Math.max(0, nextTime), duration || 0);
+    if (isCurrentTrack) {
+      seek(clampedTime);
+      setCurrentTime(clampedTime);
+      return;
+    }
+
+    void playItem({
+      slug,
+      name,
+      artist,
+      thumbnail: thumbnail || game.thumbnail || "",
+      game,
+      song: url,
+    }).then(() => {
+      seek(clampedTime);
+      setCurrentTime(clampedTime);
+      if (!shown) {
+        setShown(true);
+      }
+    });
   };
 
   useEffect(() => {
@@ -411,16 +455,32 @@ export default function TrackWaveformPlayer({
 
       <Hstack className="w-full items-center gap-3">
         <Button
-          aria-label={isPlaying ? "Pause" : "Play"}
-          icon={isPlaying ? "pause" : "play"}
-          tooltip={isPlaying ? "Pause" : "Play"}
-          onClick={() => {
-            const audio = audioRef.current;
-            if (!audio) return;
-            if (audio.paused) {
-              void audio.play();
-            } else {
-              audio.pause();
+          aria-label={isCurrentTrack && isPlaying ? "Pause" : "Play"}
+          icon={isCurrentTrack && isPlaying ? "pause" : "play"}
+          tooltip={isCurrentTrack && isPlaying ? "Pause" : "Play"}
+          onClick={async () => {
+            if (isCurrentTrack && audioEl) {
+              if (audioEl.paused) {
+                await audioEl.play();
+              } else {
+                audioEl.pause();
+              }
+              if (!shown) {
+                setShown(true);
+              }
+              return;
+            }
+
+            await playItem({
+              slug,
+              name,
+              artist,
+              thumbnail: thumbnail || game.thumbnail || "",
+              game,
+              song: url,
+            });
+            if (!shown) {
+              setShown(true);
             }
           }}
         />

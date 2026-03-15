@@ -4,32 +4,41 @@ import { PlatformType } from "@/types/DownloadLinkType";
 import { AchievementType } from "@/types/AchievementType";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { GameEmbedAspectRatio } from "@/types/GameType";
+import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getCurrentGame() {
-  return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
-    headers: { authorization: `Bearer ${getCookie("token")}` },
-    credentials: "include",
-  });
+  return cachedFetch(
+    `${BASE_URL}/self/current-game?username=${getCookie("user")}`,
+    {
+      headers: { authorization: `Bearer ${getCookie("token")}` },
+      credentials: "include",
+    },
+    { ttlMs: 15_000 },
+  );
 }
 
 export async function getRatingCategories(always: boolean = false) {
-  return fetch(
-    `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`
+  return cachedFetch(
+    `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`,
+    undefined,
+    { ttlMs: 300_000 },
   );
 }
 
 export async function getFlags() {
-  return fetch(`${BASE_URL}/flags`);
+  return cachedFetch(`${BASE_URL}/flags`, undefined, { ttlMs: 300_000 });
 }
 
 export async function getGameTags() {
-  return fetch(`${BASE_URL}/gametags`);
+  return cachedFetch(`${BASE_URL}/gametags`, undefined, { ttlMs: 300_000 });
 }
 
 export async function getGame(gameSlug: string) {
-  return fetch(`${BASE_URL}/games/${gameSlug}`, {
+  return cachedFetch(`${BASE_URL}/games/${gameSlug}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 30_000,
   });
 }
 
@@ -71,6 +80,8 @@ export async function postGame(
     slug: string;
     license?: string | null;
     allowDownload?: boolean;
+    allowBackgroundUse?: boolean;
+    allowBackgroundUseAttribution?: boolean;
   }[],
   screenshots: string[],
   trailerUrl: string | null,
@@ -82,7 +93,7 @@ export async function postGame(
   estHundredPercent: string | null,
   emotePrefix: string | null
 ) {
-  return fetch(`${BASE_URL}/game`, {
+  const response = await fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
       name: title,
       slug: gameSlug,
@@ -120,6 +131,12 @@ export async function postGame(
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/(games|game|self|user|jam|results)/);
+  }
+
+  return response;
 }
 
 export async function updateGame(
@@ -160,6 +177,8 @@ export async function updateGame(
     slug: string;
     license?: string | null;
     allowDownload?: boolean;
+    allowBackgroundUse?: boolean;
+    allowBackgroundUseAttribution?: boolean;
   }[],
   screenshots: string[],
   trailerUrl: string | null,
@@ -171,7 +190,7 @@ export async function updateGame(
   estHundredPercent: string | null,
   emotePrefix: string | null
 ) {
-  return fetch(`${BASE_URL}/games/${previousGameSlug}`, {
+  const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
       name: title,
       slug: gameSlug,
@@ -208,6 +227,12 @@ export async function updateGame(
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/(games|game|self|user|jam|results)/);
+  }
+
+  return response;
 }
 
 export async function getGames(sort: string, jamId?: string) {
@@ -216,7 +241,9 @@ export async function getGames(sort: string, jamId?: string) {
     params.set("jamId", jamId);
   }
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`);
+  return cachedFetch(`${BASE_URL}/games?${params.toString()}`, undefined, {
+    ttlMs: 20_000,
+  });
 }
 
 export async function getResults(
@@ -225,7 +252,7 @@ export async function getResults(
   sort: string,
   jam: string
 ) {
-  return fetch(
+  return cachedFetch(
     `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}${
       jam && jam !== "all" ? `&jamId=${jam}` : ``
     }`,
@@ -234,6 +261,9 @@ export async function getResults(
       headers: {
         authorization: `Bearer ${getCookie("token")}`,
       },
-    }
+    },
+    {
+      ttlMs: 20_000,
+    },
   );
 }

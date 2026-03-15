@@ -17,6 +17,7 @@ import { Icon } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
+import { Switch } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Textarea } from "bioloom-ui";
 import { useEmojis } from "@/providers/EmojiProvider";
@@ -66,6 +67,9 @@ export default function UserPage() {
   const pathname = usePathname();
   const [waitingSave, setWaitingSave] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
+  const [hideRatings, setHideRatings] = useState(false);
+  const [autoHideRatingsWhileStreaming, setAutoHideRatingsWhileStreaming] =
+    useState(false);
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [roles, setRoles] = useState<RoleType[]>([]);
@@ -134,6 +138,10 @@ export default function UserPage() {
           setShort(data.short ?? "");
           setName(data.name ?? "");
           setEmail(data.email ?? "");
+          setHideRatings(Boolean(data.hideRatings));
+          setAutoHideRatingsWhileStreaming(
+            Boolean(data.autoHideRatingsWhileStreaming),
+          );
           setEmotePrefixInput(data.emotePrefix ?? "");
           setPrimaryRoles(
             new Set(data.primaryRoles.map((role: RoleType) => role.slug)) ??
@@ -212,6 +220,47 @@ export default function UserPage() {
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9_-]/g, "")
     .slice(0, 44);
+
+  const setsEqual = (a: Set<string>, b: Set<string>) =>
+    a.size === b.size && Array.from(a).every((value) => b.has(value));
+
+  const resetSettingsForm = () => {
+    setProfilePicture(user.profilePicture ?? null);
+    setBannerPicture(user.bannerPicture ?? null);
+    setBio(user.bio ?? "");
+    setShort(user.short ?? "");
+    setName(user.name ?? "");
+    setHideRatings(Boolean(user.hideRatings));
+    setAutoHideRatingsWhileStreaming(
+      Boolean(user.autoHideRatingsWhileStreaming),
+    );
+    setPrimaryRoles(
+      new Set(user.primaryRoles.map((role) => role.slug)) ?? new Set(),
+    );
+    setSecondaryRoles(
+      new Set(user.secondaryRoles.map((role) => role.slug)) ?? new Set(),
+    );
+    setEmotePrefixInput(user.emotePrefix ?? "");
+  };
+
+  const hasUnsavedChanges =
+    profilePicture !== (user.profilePicture ?? null) ||
+    bannerPicture !== (user.bannerPicture ?? null) ||
+    bio !== (user.bio ?? "") ||
+    short !== (user.short ?? "") ||
+    name !== (user.name ?? "") ||
+    hideRatings !== Boolean(user.hideRatings) ||
+    autoHideRatingsWhileStreaming !==
+      Boolean(user.autoHideRatingsWhileStreaming) ||
+    cleanedPrefixInput !== (user.emotePrefix ?? "") ||
+    !setsEqual(
+      primaryRoles,
+      new Set(user.primaryRoles.map((role) => role.slug) ?? []),
+    ) ||
+    !setsEqual(
+      secondaryRoles,
+      new Set(user.secondaryRoles.map((role) => role.slug) ?? []),
+    );
 
   const scheduleEmoteArtistFetch = (value: string) => {
     const query = value.trim();
@@ -337,22 +386,11 @@ export default function UserPage() {
   return (
     <div className="flex items-center justify-center">
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
+        className={`w-full max-w-2xl flex flex-col gap-4 ${
+          hasUnsavedChanges ? "pb-28" : ""
+        }`}
         validationErrors={errors}
-        onReset={() => {
-          setProfilePicture(user.profilePicture ?? null);
-          setBannerPicture(user.bannerPicture ?? null);
-          setBio(user.bio ?? "");
-          setShort(user.short ?? "");
-          setName(user.name ?? "");
-          setPrimaryRoles(
-            new Set(user.primaryRoles.map((role) => role.slug)) ?? new Set(),
-          );
-          setSecondaryRoles(
-            new Set(user.secondaryRoles.map((role) => role.slug)) ?? new Set(),
-          );
-          setEmotePrefixInput(user.emotePrefix ?? "");
-        }}
+        onReset={resetSettingsForm}
         onSubmit={async (e) => {
           e.preventDefault();
 
@@ -391,6 +429,10 @@ export default function UserPage() {
             undefined,
             undefined,
             undefined,
+            undefined,
+            undefined,
+            hideRatings,
+            autoHideRatingsWhileStreaming,
           );
 
           if (response.ok) {
@@ -456,6 +498,63 @@ export default function UserPage() {
               <Button size="sm" onClick={() => setShowEmail(!showEmail)}>
                 {showEmail ? "Settings.Email.Hide" : "Settings.Email.Show"}
               </Button>
+            </Vstack>
+          </Card>
+        </Stack>
+
+        <Stack align="stretch" className="flex-col lg:flex-row">
+          <Card className="flex-1">
+            <Vstack align="start" className="gap-3">
+              <div>
+                <Text color="text">Connected Twitch Channel</Text>
+                <Text color="textFaded" size="xs">
+                  If you want your Twitch account connected, contact Ategon on
+                  Discord.
+                </Text>
+              </div>
+              <Input
+                value={user.twitch ?? ""}
+                disabled
+                name="twitch"
+                placeholder="No Twitch channel connected"
+                type="text"
+              />
+            </Vstack>
+          </Card>
+
+          <Card className="flex-1">
+            <Vstack align="start" className="gap-4">
+              <Hstack align="start" className="w-full gap-3">
+                <Switch
+                  checked={hideRatings}
+                  onChange={setHideRatings}
+                  className="shrink-0 mt-1"
+                />
+                <Vstack align="start" gap={0} className="min-w-0 flex-1">
+                  <Text color="text">Hide ratings behind buttons</Text>
+                  <Text color="textFaded" size="xs">
+                    Keep ratings hidden until you press a button to reveal them
+                    on game, track, music, and player views.
+                  </Text>
+                </Vstack>
+              </Hstack>
+
+              <Hstack align="start" className="w-full gap-3">
+                <Switch
+                  checked={autoHideRatingsWhileStreaming}
+                  onChange={setAutoHideRatingsWhileStreaming}
+                  disabled={!user.twitch}
+                  className="shrink-0 mt-1"
+                />
+                <Vstack align="start" gap={0} className="min-w-0 flex-1">
+                  <Text color="text">Auto-hide while streaming</Text>
+                  <Text color="textFaded" size="xs">
+                    If your connected Twitch channel is live with the `d2jam`
+                    tag, ratings hide automatically until the stream goes
+                    offline.
+                  </Text>
+                </Vstack>
+              </Hstack>
             </Vstack>
           </Card>
         </Stack>
@@ -1116,20 +1215,31 @@ export default function UserPage() {
           </Card>
         </Hstack>
 
-        <div className="flex gap-2 mb-4">
-          {waitingSave ? (
-            <Spinner />
-          ) : (
-            <>
-              <Button type="submit" color="blue" icon="save">
-                Save
-              </Button>
-              <Button type="reset" icon="rotateccw">
-                Reset
-              </Button>
-            </>
-          )}
-        </div>
+        {hasUnsavedChanges && (
+          <div className="fixed bottom-4 left-1/2 z-50 w-[min(48rem,calc(100%-2rem))] -translate-x-1/2">
+            <Card>
+              <Hstack justify="between" className="gap-3 flex-wrap">
+                <Text color="text" weight="semibold">
+                  You have unsaved changes
+                </Text>
+                <Hstack className="gap-2">
+                  {waitingSave ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      <Button type="submit" color="blue" icon="save">
+                        Save
+                      </Button>
+                      <Button type="reset" icon="rotateccw">
+                        Cancel
+                      </Button>
+                    </>
+                  )}
+                </Hstack>
+              </Hstack>
+            </Card>
+          </div>
+        )}
       </Form>
     </div>
   );

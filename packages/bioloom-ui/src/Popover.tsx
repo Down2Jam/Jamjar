@@ -39,6 +39,7 @@ interface PopoverProps {
   onHoverChange?: (val: boolean) => void;
   positionerStyle?: React.CSSProperties;
   transformOrigin?: string;
+  disableHoverScale?: boolean;
 }
 
 export default function Popover({
@@ -62,6 +63,7 @@ export default function Popover({
   onHoverChange,
   positionerStyle: positionerStyleProp,
   transformOrigin,
+  disableHoverScale = false,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
@@ -117,7 +119,8 @@ export default function Popover({
         return { top: closeOffset, left: closeOffset };
     }
   }, [closeButtonPosition]);
-  const hoverScale = hovered && showCloseButton ? 1.015 : 1;
+  const hoverScale =
+    hovered && showCloseButton && !disableHoverScale ? 1.015 : 1;
 
   // ----- Positioner (no animation, no transforms from Framer)
   const computedPositionerStyle: React.CSSProperties = useMemo(() => {

@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
+const SESSION_DURATION_DAYS = 14;
+
 export default function UserPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -71,8 +73,11 @@ export default function UserPage() {
             return;
           }
 
-          document.cookie = `token=${token}`;
-          document.cookie = `user=${user.slug}`;
+          Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/" });
+          Cookies.set("user", user.slug, {
+            expires: SESSION_DURATION_DAYS,
+            path: "/",
+          });
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
 
           addToast({

@@ -24,6 +24,7 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from "recharts";
+import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 type JamOption = {
   id: string;
@@ -182,7 +183,7 @@ export default function Results() {
       } else {
         params.delete(key);
       }
-      router.replace(`?${params.toString()}`);
+      navigateToSearchIfChanged(router, params, "replace");
     },
     [router]
   );

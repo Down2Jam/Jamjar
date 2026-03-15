@@ -19,6 +19,7 @@ import { PlatformType } from "@/types/DownloadLinkType";
 
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
+import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 type JamOption = {
   id: string;
@@ -69,16 +70,18 @@ const INPUT_METHOD_OPTIONS: Record<
   Other: { name: "Other", icon: "morehorizontal" },
 };
 
-const BUILD_TYPE_OPTIONS: Record<BuildTypeFilter, { name: string; icon: IconName }> =
-  {
-    Windows: { name: "Windows", icon: "monitor" },
-    MacOS: { name: "macOS", icon: "custommacos" },
-    Linux: { name: "Linux", icon: "terminal" },
-    Web: { name: "Web", icon: "globe" },
-    Mobile: { name: "Mobile", icon: "smartphone" },
-    Other: { name: "Other", icon: "morehorizontal" },
-    SourceCode: { name: "Source Code", icon: "code2" },
-  };
+const BUILD_TYPE_OPTIONS: Record<
+  BuildTypeFilter,
+  { name: string; icon: IconName }
+> = {
+  Windows: { name: "Windows", icon: "monitor" },
+  MacOS: { name: "macOS", icon: "custommacos" },
+  Linux: { name: "Linux", icon: "terminal" },
+  Web: { name: "Web", icon: "globe" },
+  Mobile: { name: "Mobile", icon: "smartphone" },
+  Other: { name: "Other", icon: "morehorizontal" },
+  SourceCode: { name: "Source Code", icon: "code2" },
+};
 
 const BUILD_TYPE_ORDER: BuildTypeFilter[] = [
   "Web",
@@ -107,7 +110,7 @@ function parseMultiValueParam(value: string | null): Set<string> {
     value
       .split(",")
       .map((entry) => entry.trim())
-      .filter(Boolean)
+      .filter(Boolean),
   );
 }
 
@@ -131,7 +134,7 @@ function getGameBuildTypes(game: GameType): Set<BuildTypeFilter> {
 
 function formatJamWindow(
   startISO?: string,
-  jammingHours?: number
+  jammingHours?: number,
 ): string | undefined {
   if (!startISO || !jammingHours || Number.isNaN(Number(jammingHours)))
     return undefined;
@@ -159,6 +162,7 @@ function formatJamWindow(
 }
 
 const restrictedSorts = new Set<GameSort>([
+  "recommended",
   "karma",
   "leastratings",
   "danger",
@@ -173,13 +177,18 @@ export default function Games() {
   const [games, setGames] = useState<GameType[]>();
   const [user, setUser] = useState<UserType>();
 
-  const sortParam = (searchParams.get("sort") as GameSort) || "karma";
+  const sortParam = (searchParams.get("sort") as GameSort) || "recommended";
   const [sort, setSort] = useState<GameSort>(
-    (["karma", "random", "leastratings", "danger", "ratingbalance"].includes(
-      sortParam
-    ) &&
+    ([
+      "recommended",
+      "karma",
+      "random",
+      "leastratings",
+      "danger",
+      "ratingbalance",
+    ].includes(sortParam) &&
       (sortParam as GameSort)) ||
-      "karma"
+      "recommended",
   );
   const hasUserSelected = useRef(false);
   const hasAppliedDefault = useRef(false);
@@ -195,7 +204,7 @@ export default function Games() {
   const [hasData, setHasData] = useState(false);
   const [showBusy, setShowBusy] = useState(false);
   const [currentJamId, setCurrentJamId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
 
   const initialTypeParam = useMemo(() => {
@@ -212,55 +221,60 @@ export default function Games() {
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("tags")
+            new URLSearchParams(window.location.search).get("tags"),
           ),
-    []
+    [],
   );
-  const [selectedTags, setSelectedTags] = useState<Set<string>>(initialTagsParam);
+  const [selectedTags, setSelectedTags] =
+    useState<Set<string>>(initialTagsParam);
   const initialInputMethodsParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("inputMethods")
+            new URLSearchParams(window.location.search).get("inputMethods"),
           ),
-    []
+    [],
   );
-  const [selectedInputMethods, setSelectedInputMethods] =
-    useState<Set<string>>(initialInputMethodsParam);
+  const [selectedInputMethods, setSelectedInputMethods] = useState<Set<string>>(
+    initialInputMethodsParam,
+  );
   const initialBuildTypesParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("buildTypes")
+            new URLSearchParams(window.location.search).get("buildTypes"),
           ),
-    []
+    [],
   );
-  const [selectedBuildTypes, setSelectedBuildTypes] =
-    useState<Set<string>>(initialBuildTypesParam);
+  const [selectedBuildTypes, setSelectedBuildTypes] = useState<Set<string>>(
+    initialBuildTypesParam,
+  );
   const initialExcludedFlagsParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("excludeFlags")
+            new URLSearchParams(window.location.search).get("excludeFlags"),
           ),
-    []
+    [],
   );
-  const [excludedFlags, setExcludedFlags] =
-    useState<Set<string>>(initialExcludedFlagsParam);
+  const [excludedFlags, setExcludedFlags] = useState<Set<string>>(
+    initialExcludedFlagsParam,
+  );
   const initialMoreFiltersParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("more")
+            new URLSearchParams(window.location.search).get("more"),
           ),
-    []
+    [],
   );
-  const [selectedMoreFilters, setSelectedMoreFilters] =
-    useState<Set<string>>(initialMoreFiltersParam);
+  const [selectedMoreFilters, setSelectedMoreFilters] = useState<Set<string>>(
+    initialMoreFiltersParam,
+  );
 
   const typeOptions: TypeOption[] = [
     { id: "all", name: "All Categories", icon: "layers" },
@@ -276,6 +290,12 @@ export default function Games() {
     GameSort,
     { name: string; icon: IconName; description: string }
   > = {
+    recommended: {
+      name: "Recommended",
+      icon: "thumbsup",
+      description:
+        "Like Karma, but gives a small boost to games people enjoy as well",
+    },
     karma: {
       name: "Karma",
       icon: "sparkles",
@@ -325,9 +345,9 @@ export default function Games() {
         // Delete when value is "all" to keep URLs clean.
         params.delete(key);
       }
-      router.push(`?${params.toString()}`);
+      navigateToSearchIfChanged(router, params);
     },
-    [router]
+    [router],
   );
 
   const updateMultiQueryParam = useCallback(
@@ -339,9 +359,9 @@ export default function Games() {
       } else {
         params.delete(key);
       }
-      router.push(`?${params.toString()}`);
+      navigateToSearchIfChanged(router, params);
     },
-    [router]
+    [router],
   );
 
   useEffect(() => {
@@ -396,7 +416,7 @@ export default function Games() {
             icon: res?.jam?.icon,
             description: `${formatJamWindow(
               res?.jam?.startTime,
-              res?.jam?.jammingHours
+              res?.jam?.jammingHours,
             )}`,
           });
 
@@ -439,8 +459,7 @@ export default function Games() {
 
         const params = new URLSearchParams(window.location.search);
         params.set("jam", ratingDefault);
-        const qs = params.toString();
-        router.replace(qs ? `?${qs}` : "?");
+        navigateToSearchIfChanged(router, params, "replace");
       }
 
       setJamDetecting(false);
@@ -460,7 +479,7 @@ export default function Games() {
         setIsLoading(true);
         const gameResponse = await getGames(
           sort,
-          jamId !== "all" ? jamId : undefined
+          jamId !== "all" ? jamId : undefined,
         );
         if (cancelled) return;
         const data = await gameResponse.json();
@@ -499,7 +518,9 @@ export default function Games() {
       });
     });
 
-    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(seen.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }, [games]);
 
   const inputMethodOptions = useMemo<FilterOption[]>(() => {
@@ -514,11 +535,13 @@ export default function Games() {
       });
     });
 
-    return INPUT_METHOD_ORDER.filter((method) => used.has(method)).map((method) => ({
-      id: method,
-      name: INPUT_METHOD_OPTIONS[method].name,
-      icon: INPUT_METHOD_OPTIONS[method].icon,
-    }));
+    return INPUT_METHOD_ORDER.filter((method) => used.has(method)).map(
+      (method) => ({
+        id: method,
+        name: INPUT_METHOD_OPTIONS[method].name,
+        icon: INPUT_METHOD_OPTIONS[method].icon,
+      }),
+    );
   }, [games]);
 
   const buildTypeOptions = useMemo<FilterOption[]>(() => {
@@ -534,7 +557,7 @@ export default function Games() {
         id: buildType,
         name: BUILD_TYPE_OPTIONS[buildType].name,
         icon: BUILD_TYPE_OPTIONS[buildType].icon,
-      })
+      }),
     );
   }, [games]);
 
@@ -556,7 +579,9 @@ export default function Games() {
       });
     });
 
-    return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return Array.from(seen.values()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }, [games]);
 
   const moreOptions: Array<{
@@ -611,7 +636,9 @@ export default function Games() {
       }
 
       if (selectedTags.size > 0) {
-        const gameTags = new Set((game.tags ?? []).map((tag) => String(tag.id)));
+        const gameTags = new Set(
+          (game.tags ?? []).map((tag) => String(tag.id)),
+        );
         if (!Array.from(selectedTags).some((tagId) => gameTags.has(tagId))) {
           return false;
         }
@@ -621,7 +648,7 @@ export default function Games() {
         const gameInputMethods = new Set(game.inputMethods ?? []);
         if (
           !Array.from(selectedInputMethods).some((method) =>
-            gameInputMethods.has(method)
+            gameInputMethods.has(method),
           )
         ) {
           return false;
@@ -632,7 +659,7 @@ export default function Games() {
         const gameBuildTypes = getGameBuildTypes(game);
         if (
           !Array.from(selectedBuildTypes).some((buildType) =>
-            gameBuildTypes.has(buildType as BuildTypeFilter)
+            gameBuildTypes.has(buildType as BuildTypeFilter),
           )
         ) {
           return false;
@@ -641,7 +668,7 @@ export default function Games() {
 
       if (excludedFlags.size > 0) {
         const gameFlags = new Set(
-          (game.flags ?? []).map((flag) => String(flag.id))
+          (game.flags ?? []).map((flag) => String(flag.id)),
         );
         if (Array.from(excludedFlags).some((flagId) => gameFlags.has(flagId))) {
           return false;
@@ -696,7 +723,9 @@ export default function Games() {
             {Object.entries(sorts)
               .filter(
                 (sort) =>
-                  !(isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts)
+                  !(
+                    isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts
+                  ),
               )
               .map(([key, sort]) => (
                 <Dropdown.Item
@@ -765,7 +794,7 @@ export default function Games() {
               selectedValues={selectedTags}
               onSelectionChange={(values) => {
                 const next = new Set(
-                  Array.from(values, (value) => String(value))
+                  Array.from(values, (value) => String(value)),
                 );
                 setSelectedTags(next);
                 updateMultiQueryParam("tags", next);
@@ -791,7 +820,7 @@ export default function Games() {
               selectedValues={selectedInputMethods}
               onSelectionChange={(values) => {
                 const next = new Set(
-                  Array.from(values, (value) => String(value))
+                  Array.from(values, (value) => String(value)),
                 );
                 setSelectedInputMethods(next);
                 updateMultiQueryParam("inputMethods", next);
@@ -817,7 +846,7 @@ export default function Games() {
               selectedValues={selectedBuildTypes}
               onSelectionChange={(values) => {
                 const next = new Set(
-                  Array.from(values, (value) => String(value))
+                  Array.from(values, (value) => String(value)),
                 );
                 setSelectedBuildTypes(next);
                 updateMultiQueryParam("buildTypes", next);
@@ -843,7 +872,7 @@ export default function Games() {
               selectedValues={excludedFlags}
               onSelectionChange={(values) => {
                 const next = new Set(
-                  Array.from(values, (value) => String(value))
+                  Array.from(values, (value) => String(value)),
                 );
                 setExcludedFlags(next);
                 updateMultiQueryParam("excludeFlags", next);
@@ -868,7 +897,7 @@ export default function Games() {
             selectedValues={selectedMoreFilters}
             onSelectionChange={(values) => {
               const next = new Set(
-                Array.from(values, (value) => String(value))
+                Array.from(values, (value) => String(value)),
               );
               setSelectedMoreFilters(next);
               updateMultiQueryParam("more", next);

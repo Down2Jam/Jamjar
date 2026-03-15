@@ -11,6 +11,8 @@ export interface TrackType {
   url: string;
   license?: string | null;
   allowDownload?: boolean;
+  allowBackgroundUse?: boolean;
+  allowBackgroundUseAttribution?: boolean;
   bpm?: number | null;
   musicalKey?: string | null;
   softwareUsed?: string[];

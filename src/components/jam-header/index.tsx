@@ -20,7 +20,7 @@ export default function JamHeader() {
     index: number,
     nextEventIndex: number,
     currentDate: Date,
-    eventDateObj: Date | null
+    eventDateObj: Date | null,
   ) => {
     if (
       eventDateObj &&
@@ -105,7 +105,7 @@ export default function JamHeader() {
       };
     if (jamPhase === "Rating")
       return {
-        text: "JamHeader.Rate",
+        text: "JamHeader.RateGames",
         href: "/games",
       };
     return { text: "" };
@@ -156,7 +156,7 @@ export default function JamHeader() {
           new Date(activeJamResponse.jam.startTime).getTime() -
             activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
             activeJamResponse.jam.slaughterHours * 1000 * 60 * 60 -
-            activeJamResponse.jam.suggestionHours * 1000 * 60 * 60
+            activeJamResponse.jam.suggestionHours * 1000 * 60 * 60,
         ),
     },
     {
@@ -167,7 +167,7 @@ export default function JamHeader() {
         new Date(
           new Date(activeJamResponse.jam.startTime).getTime() -
             activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
-            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60
+            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60,
         ),
     },
     {
@@ -177,7 +177,7 @@ export default function JamHeader() {
         activeJamResponse.jam &&
         new Date(
           new Date(activeJamResponse.jam.startTime).getTime() -
-            activeJamResponse.jam.votingHours * 1000 * 60 * 60
+            activeJamResponse.jam.votingHours * 1000 * 60 * 60,
         ),
     },
     {
@@ -195,7 +195,7 @@ export default function JamHeader() {
         new Date(
           new Date(activeJamResponse.jam.startTime).getTime() +
             activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
-            activeJamResponse.jam.submissionHours * 1000 * 60 * 60
+            activeJamResponse.jam.submissionHours * 1000 * 60 * 60,
         ),
     },
     {
@@ -207,7 +207,7 @@ export default function JamHeader() {
           new Date(activeJamResponse.jam.startTime).getTime() +
             activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
             activeJamResponse.jam.submissionHours * 1000 * 60 * 60 +
-            activeJamResponse.jam.ratingHours * 1000 * 60 * 60
+            activeJamResponse.jam.ratingHours * 1000 * 60 * 60,
         ),
     },
   ];
@@ -217,7 +217,7 @@ export default function JamHeader() {
   }));
 
   const nextEventIndex = sortedEvents.findIndex(
-    (event) => event.date && event.date >= currentDate
+    (event) => event.date && event.date >= currentDate,
   );
 
   // Helper function to get ordinal suffix
@@ -273,25 +273,6 @@ export default function JamHeader() {
                     {new Date(
                       activeJamResponse.phase == "Rating"
                         ? new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
-                          activeJamResponse.jam.submissionHours * 60 * 60 * 1000
-                        : activeJamResponse.jam.startTime
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                    })}{" "}
-                    {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
-                          activeJamResponse.jam.submissionHours * 60 * 60 * 1000
-                        : activeJamResponse.jam.startTime
-                    ).getDate()}
-                    {getOrdinalSuffix(
-                      new Date(
-                        activeJamResponse.phase == "Rating"
-                          ? new Date(
-                              activeJamResponse.jam.startTime
-                            ).getTime() +
                             activeJamResponse.jam.jammingHours *
                               60 *
                               60 *
@@ -300,42 +281,44 @@ export default function JamHeader() {
                               60 *
                               60 *
                               1000
-                          : activeJamResponse.jam.startTime
-                      ).getDate()
-                    )}
-                    {" - "}
-                    {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
-                          activeJamResponse.jam.submissionHours *
-                            60 *
-                            60 *
-                            1000 +
-                          activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                        : new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                        : activeJamResponse.jam.startTime,
                     ).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
                     {new Date(
                       activeJamResponse.phase == "Rating"
                         ? new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
-                          activeJamResponse.jam.submissionHours *
-                            60 *
-                            60 *
-                            1000 +
-                          activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                        : new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+                            activeJamResponse.jam.jammingHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.submissionHours *
+                              60 *
+                              60 *
+                              1000
+                        : activeJamResponse.jam.startTime,
                     ).getDate()}
                     {getOrdinalSuffix(
                       new Date(
                         activeJamResponse.phase == "Rating"
                           ? new Date(
-                              activeJamResponse.jam.startTime
+                              activeJamResponse.jam.startTime,
                             ).getTime() +
+                              activeJamResponse.jam.jammingHours *
+                                60 *
+                                60 *
+                                1000 +
+                              activeJamResponse.jam.submissionHours *
+                                60 *
+                                60 *
+                                1000
+                          : activeJamResponse.jam.startTime,
+                      ).getDate(),
+                    )}
+                    {" - "}
+                    {new Date(
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
                             activeJamResponse.jam.jammingHours *
                               60 *
                               60 *
@@ -345,11 +328,49 @@ export default function JamHeader() {
                               60 *
                               1000 +
                             activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                          : new Date(
-                              activeJamResponse.jam.startTime
+                        : new Date(activeJamResponse.jam.startTime).getTime() +
+                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                    ).toLocaleDateString("en-US", {
+                      month: "long",
+                    })}{" "}
+                    {new Date(
+                      activeJamResponse.phase == "Rating"
+                        ? new Date(activeJamResponse.jam.startTime).getTime() +
+                            activeJamResponse.jam.jammingHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.submissionHours *
+                              60 *
+                              60 *
+                              1000 +
+                            activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                        : new Date(activeJamResponse.jam.startTime).getTime() +
+                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                    ).getDate()}
+                    {getOrdinalSuffix(
+                      new Date(
+                        activeJamResponse.phase == "Rating"
+                          ? new Date(
+                              activeJamResponse.jam.startTime,
                             ).getTime() +
-                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000
-                      ).getDate()
+                              activeJamResponse.jam.jammingHours *
+                                60 *
+                                60 *
+                                1000 +
+                              activeJamResponse.jam.submissionHours *
+                                60 *
+                                60 *
+                                1000 +
+                              activeJamResponse.jam.ratingHours * 60 * 60 * 1000
+                          : new Date(
+                              activeJamResponse.jam.startTime,
+                            ).getTime() +
+                              activeJamResponse.jam.jammingHours *
+                                60 *
+                                60 *
+                                1000,
+                      ).getDate(),
                     )}
                   </>
                 ) : (
@@ -363,8 +384,38 @@ export default function JamHeader() {
         {activeJamResponse &&
           activeJamResponse.jam &&
           activeJamResponse.phase != "Upcoming Jam" &&
-          (getPhaseObj(activeJamResponse.phase) &&
-          getPhaseObj(activeJamResponse.phase).href ? (
+          (activeJamResponse.phase == "Rating" ? (
+            <div
+              className="grid grid-cols-2"
+              style={{
+                backgroundColor: colors["blueDarkDark"],
+              }}
+            >
+              <Link
+                href="/games"
+                className="hover:underline"
+                style={{
+                  color: colors["blue"],
+                }}
+              >
+                <div className="p-4 text-center flex justify-center">
+                  <Text weight="semibold">JamHeader.RateGames</Text>
+                </div>
+              </Link>
+              <Link
+                href="/music"
+                className="hover:underline"
+                style={{
+                  color: colors["blue"],
+                }}
+              >
+                <div className="p-4 text-center flex justify-center">
+                  <Text weight="semibold">JamHeader.RateMusic</Text>
+                </div>
+              </Link>
+            </div>
+          ) : getPhaseObj(activeJamResponse.phase) &&
+            getPhaseObj(activeJamResponse.phase).href ? (
             <Link
               href={getPhaseObj(activeJamResponse.phase).href || "/"}
               className="hover:underline"
@@ -408,7 +459,7 @@ export default function JamHeader() {
                 index,
                 nextEventIndex,
                 currentDate,
-                event.date
+                event.date,
               ),
             }}
           >

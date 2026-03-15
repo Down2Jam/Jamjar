@@ -115,6 +115,7 @@ export default function InboxPage() {
             );
 
           case "GAME_COMMENT":
+          case "TRACK_COMMENT":
           case "POST_COMMENT":
           case "COMMENT_REPLY":
             return (

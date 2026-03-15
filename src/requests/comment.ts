@@ -55,3 +55,21 @@ export async function deleteComment(commentId: number, mode: "delete" | "remove"
     credentials: "include",
   });
 }
+
+export async function toggleCommentReaction(
+  commentId: number,
+  reactionId: number
+) {
+  return fetch(`${BASE_URL}/comment/reaction`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      commentId,
+      reactionId,
+    }),
+  });
+}

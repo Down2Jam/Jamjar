@@ -1,49 +1,66 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PostTime } from "@/types/PostTimes";
+import { cachedFetch, invalidateRequestCache } from "./cache";
 
-export async function getPosts(sort: string, time: PostTime, sticky: boolean, tagRules?: { [key: number]: number }, userSlug?: string) {
+export async function getPosts(
+  sort: string,
+  time: PostTime,
+  sticky: boolean,
+  tagRules?: { [key: number]: number },
+  userSlug?: string,
+) {
   let url = `${BASE_URL}/posts?sort=${sort}&time=${time}`;
 
-  if (sticky) url += '&sticky=true';
+  if (sticky) url += "&sticky=true";
   if (userSlug) url += `&user=${userSlug}`;
 
-  if (tagRules) url += `&tags=${
-    Object.entries(tagRules)
-    .map((key) => `${key}`)
-    .join("_")
-  }`;
+  if (tagRules) {
+    url += `&tags=${Object.entries(tagRules)
+      .map((key) => `${key}`)
+      .join("_")}`;
+  }
 
-  return fetch(url);
+  return cachedFetch(url, undefined, { ttlMs: 20_000 });
 }
 
 export async function getPost(postSlug: string, userSlug?: string) {
   let url = `${BASE_URL}/post?slug=${postSlug}`;
   if (userSlug) url += `&user=${userSlug}`;
-  return fetch(url);
+  return cachedFetch(url, undefined, { ttlMs: 20_000 });
 }
 
-export async function postPost(title: string, content: string, sticky: boolean, tags: (number | undefined)[]) {
-  return fetch(`${BASE_URL}/post`, {
-      body: JSON.stringify({
-        title,
-        content,
-        sticky,
-        username: getCookie("user"),
-        tags,
-      }),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${getCookie("token")}`,
-      },
-      credentials: "include",
-    }
-  );
+export async function postPost(
+  title: string,
+  content: string,
+  sticky: boolean,
+  tags: (number | undefined)[],
+) {
+  const response = await fetch(`${BASE_URL}/post`, {
+    body: JSON.stringify({
+      title,
+      content,
+      sticky,
+      username: getCookie("user"),
+      tags,
+    }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }
 
 export async function deletePost(postId: number) {
-  return fetch(`${BASE_URL}/post`, {
+  const response = await fetch(`${BASE_URL}/post`, {
     body: JSON.stringify({
       postId,
       username: getCookie("user"),
@@ -56,10 +73,16 @@ export async function deletePost(postId: number) {
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }
 
 export async function removePost(postId: number) {
-  return fetch(`${BASE_URL}/post`, {
+  const response = await fetch(`${BASE_URL}/post`, {
     body: JSON.stringify({
       postId,
       username: getCookie("user"),
@@ -72,25 +95,34 @@ export async function removePost(postId: number) {
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }
 
 export async function stickPost(postId: number, sticky: boolean) {
-  return fetch(`${BASE_URL}/post`, {
-      body: JSON.stringify({
-        postId,
-        sticky,
-        username: getCookie("user"),
-      }),
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        authorization: `Bearer ${getCookie(
-          "token"
-        )}`,
-      },
-      credentials: "include",
-    }
-  );
+  const response = await fetch(`${BASE_URL}/post`, {
+    body: JSON.stringify({
+      postId,
+      sticky,
+      username: getCookie("user"),
+    }),
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }
 
 export async function updatePost(
@@ -99,9 +131,9 @@ export async function updatePost(
     title?: string;
     content?: string;
     tags?: number[];
-  }
+  },
 ) {
-  return fetch(`${BASE_URL}/post`, {
+  const response = await fetch(`${BASE_URL}/post`, {
     body: JSON.stringify({
       postId,
       username: getCookie("user"),
@@ -114,13 +146,16 @@ export async function updatePost(
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }
 
-export async function togglePostReaction(
-  postId: number,
-  reactionId: number
-) {
-  return fetch(`${BASE_URL}/post/reaction`, {
+export async function togglePostReaction(postId: number, reactionId: number) {
+  const response = await fetch(`${BASE_URL}/post/reaction`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -132,4 +167,10 @@ export async function togglePostReaction(
       reactionId,
     }),
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
+  }
+
+  return response;
 }

@@ -33,6 +33,7 @@ import { Text } from "bioloom-ui";
 import { useTranslations } from "next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
+import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -133,7 +134,7 @@ export default function Posts() {
     } else {
       params.delete(key);
     }
-    router.push(`?${params.toString()}`);
+    navigateToSearchIfChanged(router, params);
   };
 
   useEffect(() => {

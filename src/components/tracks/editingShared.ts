@@ -64,6 +64,49 @@ export const licenseFlagsToLabel = (flags: LicenseFlags) => {
   return suffixParts.length > 0 ? `${prefix}-${suffixParts.join("-")}` : prefix;
 };
 
+export const backgroundUsageAllowedByDefault = (flags: LicenseFlags) => {
+  if (!flags.attribution && flags.commercial && flags.derivatives) {
+    return true;
+  }
+
+  return (
+    flags.attribution &&
+    flags.commercial &&
+    flags.derivatives &&
+    !flags.shareAlike
+  );
+};
+
+export const backgroundUsageRequiredByLicense = (flags: LicenseFlags) =>
+  backgroundUsageAllowedByDefault(flags);
+
+export const backgroundUsageAttributionAllowedByDefault = (
+  flags: LicenseFlags,
+) => licenseModeForFlags(flags) !== "CC0";
+
+export const backgroundUsageWithLicenseDefaults = (
+  currentValue: boolean,
+  previousFlags: LicenseFlags,
+  nextFlags: LicenseFlags,
+) => {
+  const previousDefault = backgroundUsageAllowedByDefault(previousFlags);
+  const nextDefault = backgroundUsageAllowedByDefault(nextFlags);
+
+  return currentValue === previousDefault ? nextDefault : currentValue;
+};
+
+export const backgroundUsageAttributionWithLicenseDefaults = (
+  currentValue: boolean,
+  previousFlags: LicenseFlags,
+  nextFlags: LicenseFlags,
+) => {
+  const previousDefault =
+    backgroundUsageAttributionAllowedByDefault(previousFlags);
+  const nextDefault = backgroundUsageAttributionAllowedByDefault(nextFlags);
+
+  return currentValue === previousDefault ? nextDefault : currentValue;
+};
+
 export const parseLicenseFlags = (license?: string | null): LicenseFlags => {
   const normalized = (license ?? "").toUpperCase().replace(/\s+/g, " ").trim();
   if (!normalized || normalized === "ALL RIGHTS RESERVED") {

@@ -22,12 +22,34 @@ type Props = {
   onMarkRead: (notificationId: number) => Promise<void> | void;
 };
 
+function resolveCommentTarget(comment: NotificationType["comment"] | undefined | null) {
+  let current = comment;
+
+  while (current) {
+    if (current.game || current.post || current.track) {
+      return {
+        game: current.game ?? null,
+        post: current.post ?? null,
+        track: current.track ?? null,
+      };
+    }
+    current = current.comment;
+  }
+
+  return {
+    game: null,
+    post: null,
+    track: null,
+  };
+}
+
 function getDescriptor(n: NotificationType) {
   const c = n.comment;
   const type = n.type;
-  const game = c?.game ?? n.game ?? null;
-  const post = c?.post ?? n.post ?? null;
-  const track = c?.track ?? n.track ?? null;
+  const resolvedTarget = resolveCommentTarget(c);
+  const game = n.game ?? resolvedTarget.game ?? null;
+  const post = n.post ?? resolvedTarget.post ?? null;
+  const track = n.track ?? resolvedTarget.track ?? null;
 
   if (type === "GAME_COMMENT" && game?.slug) {
     return {
@@ -106,23 +128,13 @@ function getDescriptor(n: NotificationType) {
   }
 
   return {
-    title: "a",
+    title: "New comment activity",
     icon: "messagecircle",
-    subtitle: `b`,
-    href: `/`,
+    subtitle: `${c?.author?.name ?? "Someone"} replied to your comment`,
+    href:
+      n.link ??
+      (c ? `?comment=${c.id}#comment-${c.id}` : "/"),
   };
-
-  // return {
-  //   title: "New reply to your comment",
-  //   icon: "reply",
-  //   subtitle: `${c?.author?.name ?? "Someone"} replied to your comment`,
-  //   href:
-  //     (c?.threadRoot?.targetGame?.slug &&
-  //       `/g/${c.threadRoot.targetGame.slug}?comment=${c.id}#comment-${c.id}`) ||
-  //     (c?.threadRoot?.targetPost?.slug &&
-  //       `/p/${c.threadRoot.targetPost.slug}?comment=${c.id}#comment-${c.id}`) ||
-  //     `#comment-${c?.id ?? ""}`,
-  // };
 }
 
 export default function CommentNotification({

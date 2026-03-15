@@ -34,7 +34,7 @@ import CommentCard from "@/components/posts/CommentCard";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
-import { postRating } from "@/requests/rating";
+import { postRating, postTrackRating } from "@/requests/rating";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
@@ -63,8 +63,12 @@ import { Popover } from "bioloom-ui";
 import { Modal } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
+import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
+import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { Card } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
+import { getTrackRatingCategories } from "@/requests/track";
+import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -234,6 +238,12 @@ export default function ClientGamePage({
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
   >([]);
+  const [trackSelectedStars, setTrackSelectedStars] = useState<
+    Record<number, number>
+  >({});
+  const [trackOverallCategory, setTrackOverallCategory] =
+    useState<TrackRatingCategoryType | null>(null);
+  const effectiveHideRatings = useEffectiveHideRatings(user);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
@@ -337,6 +347,16 @@ export default function ClientGamePage({
       const ratingCategories = await ratingResponse.json();
       setRatingCategories(ratingCategories.data);
 
+      const trackRatingResponse = await getTrackRatingCategories();
+      if (trackRatingResponse.ok) {
+        const payload = await trackRatingResponse.json();
+        const overall =
+          payload?.data?.find(
+            (category: TrackRatingCategoryType) => category.name === "Overall",
+          ) ?? null;
+        setTrackOverallCategory(overall);
+      }
+
       const jamData = await getCurrentJam();
       setActiveJamResponse(jamData);
 
@@ -364,6 +384,23 @@ export default function ClientGamePage({
                 );
 
               setSelectedStars(ratings);
+
+              const trackRatings = (userData.trackRatings ?? []).reduce(
+                (
+                  acc: Record<number, number>,
+                  rating: {
+                    trackId: number;
+                    value: number;
+                    categoryId: number;
+                  },
+                ) => {
+                  acc[rating.trackId] = rating.value;
+                  return acc;
+                },
+                {},
+              );
+
+              setTrackSelectedStars(trackRatings);
             }
           }
         } catch (error) {
@@ -1072,8 +1109,7 @@ export default function ClientGamePage({
                   RATINGS
                 </p>
                 {activeJamResponse &&
-                  (activeJamResponse?.jam?.id != game.jamId ||
-                    user?.id === 3) && (
+                  activeJamResponse?.jam?.id != game.jamId && (
                     <>
                       {Object.keys(game?.scores || {})
                         .sort(
@@ -1229,31 +1265,38 @@ export default function ClientGamePage({
                     (activeJamResponse?.phase == "Rating" ||
                       activeJamResponse?.phase == "Submission") && (
                       <Vstack align="start">
-                        <Text size="xs" color="textFaded">
-                          Ratings are automatically saved
-                        </Text>
-                        {[...game.ratingCategories, ...ratingCategories]
-                          .sort((a, b) => b.order - a.order)
-                          .map((ratingCategory) => (
-                            <StarRow
-                              key={ratingCategory.id}
-                              id={ratingCategory.id}
-                              name={t(ratingCategory.name)}
-                              text={
-                                ratingCategory.name == "Theme"
-                                  ? game.themeJustification
-                                  : ""
-                              }
-                              description={t(ratingCategory.description)}
-                              hoverStars={hoverStars}
-                              setHoverStars={setHoverStars}
-                              hoverCategory={hoverCategory}
-                              setHoverCategory={setHoverCategory}
-                              selectedStars={selectedStars}
-                              setSelectedStars={setSelectedStars}
-                              gameId={game.id}
-                            />
-                          ))}
+                        <RatingVisibilityGate
+                          hiddenByPreference={effectiveHideRatings}
+                          hiddenText="Ratings are hidden by your settings."
+                        >
+                          <Vstack align="start">
+                            <Text size="xs" color="textFaded">
+                              Ratings are automatically saved
+                            </Text>
+                            {[...game.ratingCategories, ...ratingCategories]
+                              .sort((a, b) => b.order - a.order)
+                              .map((ratingCategory) => (
+                                <StarRow
+                                  key={ratingCategory.id}
+                                  id={ratingCategory.id}
+                                  name={t(ratingCategory.name)}
+                                  text={
+                                    ratingCategory.name == "Theme"
+                                      ? game.themeJustification
+                                      : ""
+                                  }
+                                  description={t(ratingCategory.description)}
+                                  hoverStars={hoverStars}
+                                  setHoverStars={setHoverStars}
+                                  hoverCategory={hoverCategory}
+                                  setHoverCategory={setHoverCategory}
+                                  selectedStars={selectedStars}
+                                  setSelectedStars={setSelectedStars}
+                                  gameId={game.id}
+                                />
+                              ))}
+                          </Vstack>
+                        </RatingVisibilityGate>
                         <Text size="sm" color="textFaded">
                           Leave some feedback for the creators - what did you
                           like, what could be improved? (shows below the game
@@ -1737,6 +1780,7 @@ export default function ClientGamePage({
                   {game.tracks.map((track) => (
                     <SidebarSong
                       key={track.id}
+                      trackId={track.id}
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
@@ -1745,6 +1789,53 @@ export default function ClientGamePage({
                       song={track.url}
                       license={track.license}
                       allowDownload={track.allowDownload}
+                      allowBackgroundUse={track.allowBackgroundUse}
+                      allowBackgroundUseAttribution={
+                        track.allowBackgroundUseAttribution
+                      }
+                      ratingValue={trackSelectedStars[track.id] ?? 0}
+                      showRating={!isEditable}
+                      hideRatings={effectiveHideRatings}
+                      ratingDisabled={
+                        !user ||
+                        isEditable ||
+                        activeJamResponse?.jam?.id !== game.jamId ||
+                        (activeJamResponse?.phase !== "Rating" &&
+                          activeJamResponse?.phase !== "Submission") ||
+                        !trackOverallCategory
+                      }
+                      onRate={async (value) => {
+                        if (!trackOverallCategory) return;
+                        setTrackSelectedStars((prev) => ({
+                          ...prev,
+                          [track.id]: value,
+                        }));
+
+                        const response = await postTrackRating(
+                          track.id,
+                          trackOverallCategory.id,
+                          value,
+                        );
+
+                        if (!response.ok) {
+                          const payload = await response
+                            .json()
+                            .catch(() => null);
+                          addToast({
+                            title:
+                              payload?.message ?? "Failed to save track rating",
+                          });
+                          setTrackSelectedStars((prev) => ({
+                            ...prev,
+                            [track.id]:
+                              (user?.trackRatings ?? []).find(
+                                (rating) =>
+                                  rating.trackId === track.id &&
+                                  rating.categoryId === trackOverallCategory.id,
+                              )?.value ?? 0,
+                          }));
+                        }
+                      }}
                     />
                   ))}
                 </Vstack>
@@ -1760,17 +1851,35 @@ export default function ClientGamePage({
                 >
                   STATS
                 </p>
-                <Chip>
-                  Ratings Received:{" "}
-                  {Math.round(
-                    game.ratings.length /
-                      (game.ratingCategories.length + ratingCategories.length),
-                  )}
-                </Chip>
-                {game.category !== "EXTRA" && (
-                  <Hstack>
-                    <Chip>
-                      Ranked Ratings Received:{" "}
+                <Vstack align="start">
+                  <Chip>
+                    Ratings Received:{" "}
+                    {Math.round(
+                      game.ratings.length /
+                        (game.ratingCategories.length +
+                          ratingCategories.length),
+                    )}
+                  </Chip>
+                  {game.category !== "EXTRA" && (
+                    <Hstack>
+                      <Chip>
+                        Ranked Ratings Received:{" "}
+                        {Math.round(
+                          game.ratings.filter(
+                            (rating) =>
+                              rating.user.teams.filter(
+                                (team) =>
+                                  team.game &&
+                                  team.game.jamId == game.jamId &&
+                                  team.game.published &&
+                                  team.game.category !== "EXTRA",
+                              ).length > 0,
+                          ).length /
+                            (game.ratingCategories.length +
+                              ratingCategories.length),
+                        )}
+                      </Chip>
+
                       {Math.round(
                         game.ratings.filter(
                           (rating) =>
@@ -1784,35 +1893,37 @@ export default function ClientGamePage({
                         ).length /
                           (game.ratingCategories.length +
                             ratingCategories.length),
+                      ) < 5 && (
+                        <Tooltip
+                          content="This game needs 5 ratings received in order to be ranked after the rating period"
+                          position="top"
+                        >
+                          <AlertTriangle size={16} className="text-red-500" />
+                        </Tooltip>
+                      )}
+                    </Hstack>
+                  )}
+                  <Hstack>
+                    <Chip>
+                      Ratings Given:{" "}
+                      {Math.round(
+                        game.team.users.reduce(
+                          (prev, cur) =>
+                            prev +
+                            cur.ratings.reduce(
+                              (prev2, cur2) =>
+                                prev2 +
+                                (cur2.game.jamId === game.jamId
+                                  ? 1 /
+                                    (cur2.game.ratingCategories.length +
+                                      ratingCategories.length)
+                                  : 0),
+                              0,
+                            ),
+                          0,
+                        ),
                       )}
                     </Chip>
-
-                    {Math.round(
-                      game.ratings.filter(
-                        (rating) =>
-                          rating.user.teams.filter(
-                            (team) =>
-                              team.game &&
-                              team.game.jamId == game.jamId &&
-                              team.game.published &&
-                              team.game.category !== "EXTRA",
-                          ).length > 0,
-                      ).length /
-                        (game.ratingCategories.length +
-                          ratingCategories.length),
-                    ) < 5 && (
-                      <Tooltip
-                        content="This game needs 5 ratings received in order to be ranked after the rating period"
-                        position="top"
-                      >
-                        <AlertTriangle size={16} className="text-red-500" />
-                      </Tooltip>
-                    )}
-                  </Hstack>
-                )}
-                <Hstack>
-                  <Chip>
-                    Ratings Given:{" "}
                     {Math.round(
                       game.team.users.reduce(
                         (prev, cur) =>
@@ -1829,38 +1940,21 @@ export default function ClientGamePage({
                           ),
                         0,
                       ),
+                    ) < 5 && (
+                      <Tooltip
+                        content="This game needs 5 ratings given in order to be ranked after the rating period"
+                        position="top"
+                      >
+                        <AlertTriangle
+                          size={16}
+                          style={{
+                            color: colors["red"],
+                          }}
+                        />
+                      </Tooltip>
                     )}
-                  </Chip>
-                  {Math.round(
-                    game.team.users.reduce(
-                      (prev, cur) =>
-                        prev +
-                        cur.ratings.reduce(
-                          (prev2, cur2) =>
-                            prev2 +
-                            (cur2.game.jamId === game.jamId
-                              ? 1 /
-                                (cur2.game.ratingCategories.length +
-                                  ratingCategories.length)
-                              : 0),
-                          0,
-                        ),
-                      0,
-                    ),
-                  ) < 5 && (
-                    <Tooltip
-                      content="This game needs 5 ratings given in order to be ranked after the rating period"
-                      position="top"
-                    >
-                      <AlertTriangle
-                        size={16}
-                        style={{
-                          color: colors["red"],
-                        }}
-                      />
-                    </Tooltip>
-                  )}
-                </Hstack>
+                  </Hstack>
+                </Vstack>
               </Vstack>
             </Card>
             <Popover

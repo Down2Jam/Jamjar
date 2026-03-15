@@ -16,13 +16,10 @@ import { addToast } from "bioloom-ui";
 import { getCurrentJam, joinJam } from "@/helpers/jam";
 import NavbarUser from "./NavbarUser";
 import { UserType } from "@/types/UserType";
-import { GameType } from "@/types/GameType";
 import { useEffect, useState } from "react";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
-import { getCurrentGame } from "@/requests/game";
 import { JamType } from "@/types/JamType";
-import { usePathname } from "next/navigation";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
@@ -42,32 +39,25 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
 
   const [isInJam, setIsInJam] = useState<boolean>();
   const [user, setUser] = useState<UserType>();
-  const [hasGame, setHasGame] = useState<GameType | null>();
-  const pathname = usePathname();
   const { siteTheme } = useTheme();
 
+  const currentJamTeam = jam
+    ? user?.teams.find((team) => team.jamId == jam.id)
+    : undefined;
+  const hasGame = currentJamTeam?.game ?? null;
+
   useEffect(() => {
-    loadData();
+    if (!isLoggedIn) {
+      setUser(undefined);
+      setIsInJam(false);
+      return;
+    }
+
     async function loadData() {
       try {
-        if (!hasCookie("token")) {
-          setUser(undefined);
-          return;
-        }
         const response = await getSelf();
         const user = await response.json();
-        // Check if user has a game in current jam
-        const gameResponse = await getCurrentGame();
-        if (gameResponse.ok) {
-          const gameData = (await gameResponse.json()).data;
-          if (gameData && gameData.length > 0) {
-            setHasGame(gameData[0]);
-          } else {
-            setHasGame(null);
-          }
-        } else {
-          setHasGame(null);
-        }
+
         if (
           jam &&
           user.jams.filter((userjam: JamType) => userjam.id == jam.id).length >
@@ -86,7 +76,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         console.error(error);
       }
     }
-  }, [pathname, jam]);
+
+    loadData();
+  }, [isLoggedIn, jam]);
 
   return (
     <Navbar
@@ -280,18 +272,10 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         {user && isMdUp && jam && isInJam && (
           <NavbarButton
             icon="users"
-            href={
-              user.teams.filter((team) => team.jamId == jam.id).length > 0
-                ? "/team"
-                : "/team-finder"
-            }
-            name={
-              user.teams.filter((team) => team.jamId == jam.id).length > 0
-                ? "Navbar.MyTeam.Title"
-                : "Navbar.TeamFinder.Title"
-            }
+            href={currentJamTeam ? "/team" : "/team-finder"}
+            name={currentJamTeam ? "Navbar.MyTeam.Title" : "Navbar.TeamFinder.Title"}
             description={
-              user.teams.filter((team) => team.jamId == jam.id).length > 0
+              currentJamTeam
                 ? "Navbar.MyTeam.Description"
                 : "Navbar.TeamFinder.Description"
             }

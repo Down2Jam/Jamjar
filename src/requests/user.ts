@@ -1,19 +1,24 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
+import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getSelf() {
   const userCookie = getCookie("user");
   const tokenCookie = getCookie("token");
   //if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
 
-  return fetch(`${BASE_URL}/self?username=${userCookie}`, {
+  return cachedFetch(`${BASE_URL}/self?username=${userCookie}`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
+  }, {
+    ttlMs: 15_000,
   });
 }
 
 export async function getUser(userSlug: string) {
-  return fetch(`${BASE_URL}/user?targetUserSlug=${userSlug}`);
+  return cachedFetch(`${BASE_URL}/user?targetUserSlug=${userSlug}`, undefined, {
+    ttlMs: 30_000,
+  });
 }
 
 export async function searchUsers(query: string) {
@@ -42,7 +47,11 @@ export async function updateUser(
   profileBackground?: string | null,
   recommendedGameIds?: number[],
   recommendedPostIds?: number[],
-  recommendedTrackIds?: number[]
+  recommendedTrackIds?: number[],
+  recommendedHiddenGameIds?: number[],
+  recommendedHiddenTrackIds?: number[],
+  hideRatings?: boolean,
+  autoHideRatingsWhileStreaming?: boolean
 ) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
@@ -64,9 +73,13 @@ export async function updateUser(
     recommendedGameIds,
     recommendedPostIds,
     recommendedTrackIds,
+    recommendedHiddenGameIds,
+    recommendedHiddenTrackIds,
+    hideRatings,
+    autoHideRatingsWhileStreaming,
   };
 
-  return fetch(`${BASE_URL}/user`, {
+  const response = await fetch(`${BASE_URL}/user`, {
     body: JSON.stringify(payload),
     method: "PUT",
     headers: {
@@ -75,4 +88,10 @@ export async function updateUser(
     },
     credentials: "include",
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/(self|user|jam)/);
+  }
+
+  return response;
 }

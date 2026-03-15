@@ -68,6 +68,42 @@ const getEmbedHost = () => {
   return "d2jam.com";
 };
 
+const parseHmsTimestampToSeconds = (value?: string | null) => {
+  if (!value) return null;
+
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return null;
+
+  if (/^\d+$/.test(normalized)) {
+    return Number(normalized);
+  }
+
+  const match = normalized.match(
+    /^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s?)?$/,
+  );
+  if (!match) return null;
+
+  const hours = Number(match[1] ?? 0);
+  const minutes = Number(match[2] ?? 0);
+  const seconds = Number(match[3] ?? 0);
+  const total = hours * 3600 + minutes * 60 + seconds;
+
+  return total > 0 ? total : null;
+};
+
+const getYouTubeStartSeconds = (url: string) => {
+  try {
+    const parsed = new URL(url);
+    const start =
+      parseHmsTimestampToSeconds(parsed.searchParams.get("t")) ??
+      parseHmsTimestampToSeconds(parsed.searchParams.get("start"));
+
+    return start && start > 0 ? start : null;
+  } catch {}
+
+  return null;
+};
+
 const extractYouTubeId = (url: string) => {
   try {
     const parsed = new URL(url);
@@ -94,19 +130,35 @@ const extractYouTubeId = (url: string) => {
 
 export const toCanonicalYouTubeUrl = (url: string) => {
   const id = extractYouTubeId(url);
-  return id ? `https://www.youtube.com/watch?v=${id}` : null;
+  if (!id) return null;
+
+  const canonical = new URL(`https://www.youtube.com/watch?v=${id}`);
+  const start = getYouTubeStartSeconds(url);
+  if (start) {
+    canonical.searchParams.set("t", String(start));
+  }
+
+  return canonical.toString();
 };
 
 export const youtubeEmbedHtml = (url: string) => {
   const id = extractYouTubeId(url);
   if (!id) return null;
-  return `<div class="embed embed-youtube"><iframe width="320" height="180" src="https://www.youtube-nocookie.com/embed/${id}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+  const embedUrl = new URL(`https://www.youtube-nocookie.com/embed/${id}`);
+  const start = getYouTubeStartSeconds(url);
+  if (start) {
+    embedUrl.searchParams.set("start", String(start));
+  }
+  return `<div class="embed embed-youtube"><iframe width="320" height="180" src="${embedUrl.toString()}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
 };
 
 type TwitchEmbed =
-  | { kind: "video"; value: string }
+  | { kind: "video"; value: string; time?: string | null }
   | { kind: "channel"; value: string }
   | { kind: "clip"; value: string };
+
+const getTwitchTimestamp = (parsed: URL) =>
+  parsed.searchParams.get("t") ?? parsed.searchParams.get("time");
 
 const parseTwitchEmbed = (url: string): TwitchEmbed | null => {
   try {
@@ -123,13 +175,25 @@ const parseTwitchEmbed = (url: string): TwitchEmbed | null => {
         const video = parsed.searchParams.get("video");
         const channel = parsed.searchParams.get("channel");
         const clip = parsed.searchParams.get("clip");
-        if (video) return { kind: "video", value: video.replace(/^v/, "") };
+        if (video) {
+          return {
+            kind: "video",
+            value: video.replace(/^v/, ""),
+            time: getTwitchTimestamp(parsed),
+          };
+        }
         if (channel) return { kind: "channel", value: channel };
         if (clip) return { kind: "clip", value: clip };
       }
 
       const videoMatch = parsed.pathname.match(/^\/videos\/(\d+)/);
-      if (videoMatch) return { kind: "video", value: videoMatch[1] };
+      if (videoMatch) {
+        return {
+          kind: "video",
+          value: videoMatch[1],
+          time: getTwitchTimestamp(parsed),
+        };
+      }
 
       const clipMatch = parsed.pathname.match(/^\/[^/]+\/clip\/([^/]+)/);
       if (clipMatch) return { kind: "clip", value: clipMatch[1] };
@@ -146,7 +210,11 @@ export const toCanonicalTwitchUrl = (url: string) => {
   const embed = parseTwitchEmbed(url);
   if (!embed) return null;
   if (embed.kind === "video") {
-    return `https://www.twitch.tv/videos/${embed.value}`;
+    const canonical = new URL(`https://www.twitch.tv/videos/${embed.value}`);
+    if (embed.time) {
+      canonical.searchParams.set("t", embed.time);
+    }
+    return canonical.toString();
   }
   if (embed.kind === "clip") {
     return `https://clips.twitch.tv/${embed.value}`;
@@ -159,7 +227,14 @@ export const twitchEmbedHtml = (url: string) => {
   if (!embed) return null;
   const parent = encodeURIComponent(getEmbedHost());
   if (embed.kind === "video") {
-    return `<div class="embed embed-twitch"><iframe src="https://player.twitch.tv/?video=v${embed.value}&parent=${parent}&autoplay=false" height="480" width="100%" allowfullscreen frameborder="0"></iframe></div>`;
+    const embedUrl = new URL("https://player.twitch.tv/");
+    embedUrl.searchParams.set("video", `v${embed.value}`);
+    embedUrl.searchParams.set("parent", getEmbedHost());
+    embedUrl.searchParams.set("autoplay", "false");
+    if (embed.time) {
+      embedUrl.searchParams.set("time", embed.time);
+    }
+    return `<div class="embed embed-twitch"><iframe src="${embedUrl.toString()}" height="480" width="100%" allowfullscreen frameborder="0"></iframe></div>`;
   }
   if (embed.kind === "clip") {
     return `<div class="embed embed-twitch"><iframe src="https://clips.twitch.tv/embed?clip=${encodeURIComponent(embed.value)}&parent=${parent}&autoplay=false" height="360" width="100%" allowfullscreen frameborder="0"></iframe></div>`;
@@ -554,7 +629,7 @@ const inlineHtmlToMarkdown = (node: Node): string => {
   if (tag === "sub") return `_{${inner}}`;
   if (tag === "s" || tag === "strike" || tag === "del") return `~~${inner}~~`;
   if (tag === "code") return `\`${inner}\``;
-  if (tag === "br") return "\\\n";
+  if (tag === "br") return "\n";
 
   return inner;
 };

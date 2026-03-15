@@ -47,6 +47,11 @@ import { getIcon } from "@/helpers/icon";
 import { Textarea } from "bioloom-ui";
 import Editor from "@/components/editor";
 import {
+  backgroundUsageAttributionAllowedByDefault,
+  backgroundUsageAttributionWithLicenseDefaults,
+  backgroundUsageAllowedByDefault,
+  backgroundUsageRequiredByLicense,
+  backgroundUsageWithLicenseDefaults,
   licenseFlagsToLabel,
   LicenseFlags,
   licenseModeForFlags,
@@ -206,6 +211,8 @@ type SongEdit = {
   softwareUsed: string[];
   license: string;
   allowDownload: boolean;
+  allowBackgroundUse: boolean;
+  allowBackgroundUseAttribution: boolean;
   licenseAttribution: boolean;
   licenseCommercial: boolean;
   licenseDerivatives: boolean;
@@ -214,18 +221,46 @@ type SongEdit = {
   credits: SongCreditEdit[];
 };
 
-const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => ({
-  ...song,
-  licenseAttribution: flags.attribution,
-  licenseCommercial: flags.commercial,
-  licenseDerivatives: flags.derivatives,
-  licenseShareAlike: flags.derivatives ? flags.shareAlike : false,
-  allowDownload: licenseModeForFlags(flags) !== "ARR",
-  license: licenseFlagsToLabel({
+const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
+  const normalizedFlags = {
     ...flags,
     shareAlike: flags.derivatives ? flags.shareAlike : false,
-  }),
-});
+  };
+  const nextAllowBackgroundUse = backgroundUsageWithLicenseDefaults(
+    song.allowBackgroundUse,
+    {
+      attribution: song.licenseAttribution,
+      commercial: song.licenseCommercial,
+      derivatives: song.licenseDerivatives,
+      shareAlike: song.licenseShareAlike,
+    },
+    normalizedFlags,
+  );
+
+  return {
+    ...song,
+    licenseAttribution: flags.attribution,
+    licenseCommercial: flags.commercial,
+    licenseDerivatives: flags.derivatives,
+    licenseShareAlike: normalizedFlags.shareAlike,
+    allowBackgroundUse: nextAllowBackgroundUse,
+    allowDownload:
+      licenseModeForFlags(flags) !== "ARR" || nextAllowBackgroundUse,
+    allowBackgroundUseAttribution: nextAllowBackgroundUse
+      ? backgroundUsageAttributionWithLicenseDefaults(
+          song.allowBackgroundUseAttribution,
+          {
+            attribution: song.licenseAttribution,
+            commercial: song.licenseCommercial,
+            derivatives: song.licenseDerivatives,
+            shareAlike: song.licenseShareAlike,
+          },
+          normalizedFlags,
+        )
+      : false,
+    license: licenseFlagsToLabel(normalizedFlags),
+  };
+};
 
 export default function GameEditingForm({
   game = null,
@@ -277,6 +312,9 @@ export default function GameEditingForm({
   const t = useTranslations();
 
   const [songs, setSongs] = useState<SongEdit[]>([]);
+  const [softwareUsedDrafts, setSoftwareUsedDrafts] = useState<
+    Record<number, string>
+  >({});
   const [artistQuery, setArtistQuery] = useState<Record<number, string>>({});
   const [artistResults, setArtistResults] = useState<
     Record<number, UserType[]>
@@ -343,7 +381,7 @@ export default function GameEditingForm({
 
   const inCurrentJamContext =
     !!activeJamResponse?.jam &&
-    (activeJamResponse.jam.id === game?.jam.id || !game);
+    (activeJamResponse.jam.id === game?.jam?.id || !game);
 
   const isRatingPhase = activeJamResponse?.phase === "Rating";
 
@@ -362,16 +400,6 @@ export default function GameEditingForm({
     setBannerUrl(game?.banner || null);
     setDownloadLinks(game?.downloadLinks || []);
     setAchievements(game?.achievements || []);
-    setFlags(
-      game?.flags
-        ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
-        .filter((index) => index !== -1) || [],
-    );
-    setTags(
-      game?.tags
-        ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
-        .filter((index) => index !== -1) || [],
-    );
     setLeaderboards(game?.leaderboards || []);
     const desiredCategory =
       game?.category ?? (isRatingPhase ? "EXTRA" : "REGULAR");
@@ -415,6 +443,11 @@ export default function GameEditingForm({
         softwareUsed: s.softwareUsed ?? [],
         license: licenseFlagsToLabel(flags),
         allowDownload: Boolean(s.allowDownload),
+        allowBackgroundUse:
+          s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
+        allowBackgroundUseAttribution:
+          s.allowBackgroundUseAttribution ??
+          backgroundUsageAttributionAllowedByDefault(flags),
         licenseAttribution: flags.attribution,
         licenseCommercial: flags.commercial,
         licenseDerivatives: flags.derivatives,
@@ -459,6 +492,11 @@ export default function GameEditingForm({
       };
     }) as SongEdit[];
     setSongs(incomingSongs);
+    setSoftwareUsedDrafts(
+      Object.fromEntries(
+        incomingSongs.map((song) => [song.id, song.softwareUsed.join(", ")]),
+      ),
+    );
 
     async function loadData() {
       const teamResponse = await getTeamsUser();
@@ -479,14 +517,23 @@ export default function GameEditingForm({
     }
 
     loadData();
-  }, [
-    game,
-    allTags,
-    allFlags,
-    activeJamResponse,
-    inCurrentJamContext,
-    isRatingPhase,
-  ]);
+  }, [game, activeJamResponse, inCurrentJamContext, isRatingPhase]);
+
+  useEffect(() => {
+    setFlags(
+      game?.flags
+        ?.map((flag) => allFlags.findIndex((f) => f.id === flag.id))
+        .filter((index) => index !== -1) || [],
+    );
+  }, [game, allFlags]);
+
+  useEffect(() => {
+    setTags(
+      game?.tags
+        ?.map((tag) => allTags.findIndex((f) => f.id === tag.id))
+        .filter((index) => index !== -1) || [],
+    );
+  }, [game, allTags]);
 
   useEffect(() => {
     setIsItchPreviewActive(false);
@@ -871,6 +918,8 @@ export default function GameEditingForm({
               slug: s.slug,
               license: s.license || null,
               allowDownload: s.allowDownload,
+              allowBackgroundUse: s.allowBackgroundUse,
+              allowBackgroundUseAttribution: s.allowBackgroundUseAttribution,
             }));
 
             for (const song of payloadSongs) {
@@ -1350,7 +1399,7 @@ export default function GameEditingForm({
                 )}
                 {activeJamResponse &&
                   activeJamResponse.jam &&
-                  (activeJamResponse.jam.id === game?.jam.id || !game) &&
+                  (activeJamResponse.jam.id === game?.jam?.id || !game) &&
                   (activeJamResponse.phase == "Jamming" ||
                     activeJamResponse.phase == "Submission" ||
                     (activeJamResponse.phase == "Rating" && !prevSlug)) && (
@@ -2450,8 +2499,8 @@ export default function GameEditingForm({
                                                     ? "Choose one"
                                                     : "Choose any that fit")}
                                               </Text>
-                                              {isMounted && (
-                                                isSingleCategory ? (
+                                              {isMounted &&
+                                                (isSingleCategory ? (
                                                   <Select
                                                     styles={styles}
                                                     menuPortalTarget={
@@ -2461,8 +2510,7 @@ export default function GameEditingForm({
                                                     isClearable
                                                     onChange={(value) => {
                                                       const nextIds =
-                                                        value &&
-                                                        "id" in value
+                                                        value && "id" in value
                                                           ? [value.id]
                                                           : [];
                                                       setSongs((prev) =>
@@ -2521,10 +2569,9 @@ export default function GameEditingForm({
                                                     isMulti
                                                     isClearable
                                                     onChange={(value) => {
-                                                      const nextIds =
-                                                        value.map(
-                                                          (item) => item.id,
-                                                        );
+                                                      const nextIds = value.map(
+                                                        (item) => item.id,
+                                                      );
                                                       setSongs((prev) =>
                                                         prev.map((s) => {
                                                           if (s.id !== song.id)
@@ -2565,8 +2612,7 @@ export default function GameEditingForm({
                                                       }),
                                                     )}
                                                   />
-                                                )
-                                              )}
+                                                ))}
                                             </div>
                                           );
                                         },
@@ -2677,8 +2723,15 @@ export default function GameEditingForm({
                                       Comma-separated tools or DAWs.
                                     </Text>
                                     <Input
-                                      value={song.softwareUsed.join(", ")}
-                                      onValueChange={(val) =>
+                                      value={
+                                        softwareUsedDrafts[song.id] ??
+                                        song.softwareUsed.join(", ")
+                                      }
+                                      onValueChange={(val) => {
+                                        setSoftwareUsedDrafts((prev) => ({
+                                          ...prev,
+                                          [song.id]: val,
+                                        }));
                                         setSongs((prev) =>
                                           prev.map((s) =>
                                             s.id === song.id
@@ -2691,8 +2744,8 @@ export default function GameEditingForm({
                                                 }
                                               : s,
                                           ),
-                                        )
-                                      }
+                                        );
+                                      }}
                                       placeholder="Ableton Live, Kontakt, Famitracker"
                                     />
                                   </div>
@@ -2816,208 +2869,386 @@ export default function GameEditingForm({
                                     </Text>
                                   </div>
                                   <Vstack align="start" className="gap-2">
-                                    <Dropdown
-                                      selectedValue={licenseModeForFlags({
+                                    {(() => {
+                                      const backgroundUsageRequired =
+                                        backgroundUsageRequiredByLicense({
+                                          attribution: song.licenseAttribution,
+                                          commercial: song.licenseCommercial,
+                                          derivatives: song.licenseDerivatives,
+                                          shareAlike: song.licenseShareAlike,
+                                        });
+                                      const licenseMode = licenseModeForFlags({
                                         attribution: song.licenseAttribution,
                                         commercial: song.licenseCommercial,
                                         derivatives: song.licenseDerivatives,
                                         shareAlike: song.licenseShareAlike,
-                                      })}
-                                      onSelect={(value) => {
-                                        setSongs((prev) =>
-                                          prev.map((s) => {
-                                            if (s.id !== song.id) return s;
-                                            const mode = value as LicenseMode;
-                                            if (mode === "ARR") {
-                                              return applyLicenseFlags(s, {
-                                                attribution: false,
-                                                commercial: false,
-                                                derivatives: false,
-                                                shareAlike: false,
-                                              });
-                                            }
-                                            if (mode === "CC0") {
-                                              return applyLicenseFlags(s, {
-                                                attribution: false,
-                                                commercial: true,
-                                                derivatives: true,
-                                                shareAlike: false,
-                                              });
-                                            }
-                                            return applyLicenseFlags(s, {
-                                              attribution: true,
-                                              commercial: true,
-                                              derivatives: true,
-                                              shareAlike: false,
-                                            });
-                                          }),
-                                        );
-                                      }}
-                                    >
-                                      <Dropdown.Item
-                                        value="ARR"
-                                        description="No reuse permissions granted."
-                                      >
-                                        All rights reserved
-                                      </Dropdown.Item>
-                                      <Dropdown.Item
-                                        value="CC0"
-                                        description="Public domain style release with no attribution required."
-                                      >
-                                        CC0
-                                      </Dropdown.Item>
-                                      <Dropdown.Item
-                                        value="CC_BY"
-                                        description="Creative Commons with attribution and configurable restrictions."
-                                      >
-                                        CC BY-based
-                                      </Dropdown.Item>
-                                    </Dropdown>
-                                    {licenseModeForFlags({
-                                      attribution: song.licenseAttribution,
-                                      commercial: song.licenseCommercial,
-                                      derivatives: song.licenseDerivatives,
-                                      shareAlike: song.licenseShareAlike,
-                                    }) === "CC_BY" && (
-                                      <>
-                                        <Hstack className="w-full items-center gap-3">
-                                          <Switch
-                                            checked
-                                            disabled
-                                            onChange={() => {}}
-                                          />
-                                          <Vstack align="start" gap={0}>
-                                            <Text color="text" size="sm">
-                                              Require attribution
-                                            </Text>
-                                            <Text color="textFaded" size="xs">
-                                              Credit the composer when used.
-                                            </Text>
-                                          </Vstack>
-                                        </Hstack>
-                                        <Hstack className="w-full items-center gap-3">
-                                          <Switch
-                                            checked={song.licenseCommercial}
-                                            onChange={(val) =>
+                                      });
+                                      const downloadRequired =
+                                        licenseMode !== "ARR" ||
+                                        (backgroundUsageRequired
+                                          ? true
+                                          : song.allowBackgroundUse);
+
+                                      return (
+                                        <>
+                                          <Dropdown
+                                            selectedValue={licenseModeForFlags({
+                                              attribution:
+                                                song.licenseAttribution,
+                                              commercial:
+                                                song.licenseCommercial,
+                                              derivatives:
+                                                song.licenseDerivatives,
+                                              shareAlike:
+                                                song.licenseShareAlike,
+                                            })}
+                                            onSelect={(value) => {
                                               setSongs((prev) =>
                                                 prev.map((s) => {
                                                   if (s.id !== song.id)
                                                     return s;
-                                                  return applyLicenseFlags(s, {
-                                                    attribution: true,
-                                                    commercial: val,
-                                                    derivatives:
-                                                      s.licenseDerivatives,
-                                                    shareAlike:
-                                                      s.licenseShareAlike,
-                                                  });
+                                                  const mode =
+                                                    value as LicenseMode;
+                                                  if (mode === "ARR") {
+                                                    return applyLicenseFlags(
+                                                      s,
+                                                      {
+                                                        attribution: false,
+                                                        commercial: false,
+                                                        derivatives: false,
+                                                        shareAlike: false,
+                                                      },
+                                                    );
+                                                  }
+                                                  if (mode === "CC0") {
+                                                    return applyLicenseFlags(
+                                                      s,
+                                                      {
+                                                        attribution: false,
+                                                        commercial: true,
+                                                        derivatives: true,
+                                                        shareAlike: false,
+                                                      },
+                                                    );
+                                                  }
+                                                  return {
+                                                    ...applyLicenseFlags(s, {
+                                                      attribution: true,
+                                                      commercial: true,
+                                                      derivatives: true,
+                                                      shareAlike: false,
+                                                    }),
+                                                    allowBackgroundUseAttribution:
+                                                      true,
+                                                  };
                                                 }),
-                                              )
-                                            }
-                                          />
-                                          <Vstack align="start" gap={0}>
-                                            <Text color="text" size="sm">
-                                              Allow commercial use
-                                            </Text>
-                                            <Text color="textFaded" size="xs">
-                                              Let others use it commercially.
-                                            </Text>
-                                          </Vstack>
-                                        </Hstack>
-                                        <Hstack className="w-full items-center gap-3">
-                                          <Switch
-                                            checked={song.licenseDerivatives}
-                                            onChange={(val) =>
-                                              setSongs((prev) =>
-                                                prev.map((s) => {
-                                                  if (s.id !== song.id)
-                                                    return s;
-                                                  return applyLicenseFlags(s, {
-                                                    attribution: true,
-                                                    commercial:
-                                                      s.licenseCommercial,
-                                                    derivatives: val,
-                                                    shareAlike: val
-                                                      ? s.licenseShareAlike
-                                                      : false,
-                                                  });
-                                                }),
-                                              )
-                                            }
-                                          />
-                                          <Vstack align="start" gap={0}>
-                                            <Text color="text" size="sm">
-                                              Allow derivatives
-                                            </Text>
-                                            <Text color="textFaded" size="xs">
-                                              Allow remixes or adaptations.
-                                            </Text>
-                                          </Vstack>
-                                        </Hstack>
-                                        <Hstack className="w-full items-center gap-3">
-                                          <Switch
-                                            checked={song.licenseShareAlike}
-                                            onChange={(val) =>
-                                              setSongs((prev) =>
-                                                prev.map((s) => {
-                                                  if (s.id !== song.id)
-                                                    return s;
-                                                  return applyLicenseFlags(s, {
-                                                    attribution: true,
-                                                    commercial:
-                                                      s.licenseCommercial,
-                                                    derivatives:
-                                                      s.licenseDerivatives,
-                                                    shareAlike: val,
-                                                  });
-                                                }),
-                                              )
-                                            }
-                                            disabled={!song.licenseDerivatives}
-                                          />
-                                          <Vstack align="start" gap={0}>
-                                            <Text color="text" size="sm">
-                                              Share alike
-                                            </Text>
-                                            <Text color="textFaded" size="xs">
-                                              Derivatives must use the same
-                                              license.
-                                            </Text>
-                                          </Vstack>
-                                        </Hstack>
-                                      </>
-                                    )}
-                                    <Text size="xs" color="textFaded">
-                                      License applied: {song.license}
-                                    </Text>
+                                              );
+                                            }}
+                                          >
+                                            <Dropdown.Item
+                                              value="ARR"
+                                              description="No reuse permissions granted."
+                                            >
+                                              All rights reserved
+                                            </Dropdown.Item>
+                                            <Dropdown.Item
+                                              value="CC0"
+                                              description="Public domain style release with no attribution required."
+                                            >
+                                              CC0
+                                            </Dropdown.Item>
+                                            <Dropdown.Item
+                                              value="CC_BY"
+                                              description="Creative Commons with attribution and configurable restrictions."
+                                            >
+                                              CC BY-based
+                                            </Dropdown.Item>
+                                          </Dropdown>
+                                          {licenseModeForFlags({
+                                            attribution:
+                                              song.licenseAttribution,
+                                            commercial: song.licenseCommercial,
+                                            derivatives:
+                                              song.licenseDerivatives,
+                                            shareAlike: song.licenseShareAlike,
+                                          }) === "CC_BY" && (
+                                            <>
+                                              <Hstack className="w-full items-center gap-3">
+                                                <Switch
+                                                  checked
+                                                  disabled
+                                                  onChange={() => {}}
+                                                />
+                                                <Vstack align="start" gap={0}>
+                                                  <Text color="text" size="sm">
+                                                    Require attribution
+                                                  </Text>
+                                                  <Text
+                                                    color="textFaded"
+                                                    size="xs"
+                                                  >
+                                                    Credit the composer when
+                                                    used.
+                                                  </Text>
+                                                </Vstack>
+                                              </Hstack>
+                                              <Hstack className="w-full items-center gap-3">
+                                                <Switch
+                                                  checked={
+                                                    song.licenseCommercial
+                                                  }
+                                                  onChange={(val) =>
+                                                    setSongs((prev) =>
+                                                      prev.map((s) => {
+                                                        if (s.id !== song.id)
+                                                          return s;
+                                                        return applyLicenseFlags(
+                                                          s,
+                                                          {
+                                                            attribution: true,
+                                                            commercial: val,
+                                                            derivatives:
+                                                              s.licenseDerivatives,
+                                                            shareAlike:
+                                                              s.licenseShareAlike,
+                                                          },
+                                                        );
+                                                      }),
+                                                    )
+                                                  }
+                                                />
+                                                <Vstack align="start" gap={0}>
+                                                  <Text color="text" size="sm">
+                                                    Allow commercial use
+                                                  </Text>
+                                                  <Text
+                                                    color="textFaded"
+                                                    size="xs"
+                                                  >
+                                                    Let others use it
+                                                    commercially.
+                                                  </Text>
+                                                </Vstack>
+                                              </Hstack>
+                                              <Hstack className="w-full items-center gap-3">
+                                                <Switch
+                                                  checked={
+                                                    song.licenseDerivatives
+                                                  }
+                                                  onChange={(val) =>
+                                                    setSongs((prev) =>
+                                                      prev.map((s) => {
+                                                        if (s.id !== song.id)
+                                                          return s;
+                                                        return applyLicenseFlags(
+                                                          s,
+                                                          {
+                                                            attribution: true,
+                                                            commercial:
+                                                              s.licenseCommercial,
+                                                            derivatives: val,
+                                                            shareAlike: val
+                                                              ? s.licenseShareAlike
+                                                              : false,
+                                                          },
+                                                        );
+                                                      }),
+                                                    )
+                                                  }
+                                                />
+                                                <Vstack align="start" gap={0}>
+                                                  <Text color="text" size="sm">
+                                                    Allow derivatives
+                                                  </Text>
+                                                  <Text
+                                                    color="textFaded"
+                                                    size="xs"
+                                                  >
+                                                    Allow remixes or
+                                                    adaptations.
+                                                  </Text>
+                                                </Vstack>
+                                              </Hstack>
+                                              <Hstack className="w-full items-center gap-3">
+                                                <Switch
+                                                  checked={
+                                                    song.licenseShareAlike
+                                                  }
+                                                  onChange={(val) =>
+                                                    setSongs((prev) =>
+                                                      prev.map((s) => {
+                                                        if (s.id !== song.id)
+                                                          return s;
+                                                        return applyLicenseFlags(
+                                                          s,
+                                                          {
+                                                            attribution: true,
+                                                            commercial:
+                                                              s.licenseCommercial,
+                                                            derivatives:
+                                                              s.licenseDerivatives,
+                                                            shareAlike: val,
+                                                          },
+                                                        );
+                                                      }),
+                                                    )
+                                                  }
+                                                  disabled={
+                                                    !song.licenseDerivatives
+                                                  }
+                                                />
+                                                <Vstack align="start" gap={0}>
+                                                  <Text color="text" size="sm">
+                                                    Share alike
+                                                  </Text>
+                                                  <Text
+                                                    color="textFaded"
+                                                    size="xs"
+                                                  >
+                                                    Derivatives must use the
+                                                    same license.
+                                                  </Text>
+                                                </Vstack>
+                                              </Hstack>
+                                            </>
+                                          )}
+                                          <Text size="xs" color="textFaded">
+                                            License applied: {song.license}
+                                          </Text>
+                                          <Hstack className="w-full items-start gap-3">
+                                            <Switch
+                                              checked={
+                                                backgroundUsageRequired
+                                                  ? true
+                                                  : song.allowBackgroundUse
+                                              }
+                                              onChange={(val) => {
+                                                if (backgroundUsageRequired) {
+                                                  return;
+                                                }
+                                                setSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          allowBackgroundUse:
+                                                            val,
+                                                          allowBackgroundUseAttribution:
+                                                            val
+                                                              ? s.allowBackgroundUseAttribution
+                                                              : false,
+                                                          allowDownload: val
+                                                            ? true
+                                                            : s.allowDownload,
+                                                        }
+                                                      : s,
+                                                  ),
+                                                );
+                                              }}
+                                              disabled={backgroundUsageRequired}
+                                            />
+                                            <Vstack
+                                              align="start"
+                                              gap={0}
+                                              className="min-w-0 flex-1"
+                                            >
+                                              <Text color="text" size="sm">
+                                                Allow background use in streams
+                                                and videos
+                                              </Text>
+                                              <Text color="textFaded" size="xs">
+                                                Let people use this track as
+                                                background music in commercial
+                                                videos and streams not related
+                                                to the game (where the music is
+                                                not the main focus) separate
+                                                from the main license.
+                                              </Text>
+                                            </Vstack>
+                                          </Hstack>
+                                          <Hstack className="w-full items-start gap-3">
+                                            <Switch
+                                              checked={
+                                                licenseMode === "CC0"
+                                                  ? false
+                                                  : song.allowBackgroundUseAttribution
+                                              }
+                                              onChange={(val) =>
+                                                setSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          allowBackgroundUseAttribution:
+                                                            val,
+                                                        }
+                                                      : s,
+                                                  ),
+                                                )
+                                              }
+                                              disabled={
+                                                !(backgroundUsageRequired
+                                                  ? true
+                                                  : song.allowBackgroundUse) ||
+                                                licenseMode === "CC0"
+                                              }
+                                            />
+                                            <Vstack
+                                              align="start"
+                                              gap={0}
+                                              className="min-w-0 flex-1"
+                                            >
+                                              <Text color="text" size="sm">
+                                                Require attribution for stream
+                                                and video background use
+                                              </Text>
+                                              <Text color="textFaded" size="xs">
+                                                When people use this song in the
+                                                background of streams or videos
+                                                they must credit you in some
+                                                way.
+                                              </Text>
+                                            </Vstack>
+                                          </Hstack>
+                                          <Hstack className="w-full items-start gap-3">
+                                            <Switch
+                                              checked={
+                                                downloadRequired
+                                                  ? true
+                                                  : song.allowDownload
+                                              }
+                                              onChange={(val) =>
+                                                setSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          allowDownload: val,
+                                                        }
+                                                      : s,
+                                                  ),
+                                                )
+                                              }
+                                              disabled={downloadRequired}
+                                            />
+                                            <Vstack
+                                              align="start"
+                                              gap={0}
+                                              className="min-w-0 flex-1"
+                                            >
+                                              <Text color="text" size="sm">
+                                                Allow downloads
+                                              </Text>
+                                              <Text color="textFaded" size="xs">
+                                                Let listeners download this
+                                                track.
+                                              </Text>
+                                            </Vstack>
+                                          </Hstack>
+                                        </>
+                                      );
+                                    })()}
                                   </Vstack>
-                                  <Hstack className="w-full items-center gap-3">
-                                    <Switch
-                                      checked={
-                                        licenseMode === "ARR"
-                                          ? song.allowDownload
-                                          : true
-                                      }
-                                      onChange={(val) =>
-                                        setSongs((prev) =>
-                                          prev.map((s) =>
-                                            s.id === song.id
-                                              ? { ...s, allowDownload: val }
-                                              : s,
-                                          ),
-                                        )
-                                      }
-                                      disabled={licenseMode !== "ARR"}
-                                    />
-                                    <Vstack align="start" gap={0}>
-                                      <Text color="text" size="sm">
-                                        Allow downloads
-                                      </Text>
-                                      <Text color="textFaded" size="xs">
-                                        Let listeners download this track.
-                                      </Text>
-                                    </Vstack>
-                                  </Hstack>
 
                                   <div className="w-full">
                                     <Text color="text">Credits</Text>
@@ -3414,10 +3645,11 @@ export default function GameEditingForm({
                             const url = await uploadTo("music", file);
                             if (!url) return;
                             const baseName = file.name.replace(/\.[^/.]+$/, "");
+                            const songId = Date.now();
                             setSongs((prev) => [
                               ...prev,
                               {
-                                id: Date.now(),
+                                id: songId,
                                 url,
                                 name: baseName,
                                 slug: sanitizeSlug(baseName),
@@ -3429,6 +3661,8 @@ export default function GameEditingForm({
                                 softwareUsed: [],
                                 license: "All rights reserved",
                                 allowDownload: false,
+                                allowBackgroundUse: false,
+                                allowBackgroundUseAttribution: true,
                                 licenseAttribution: false,
                                 licenseCommercial: false,
                                 licenseDerivatives: false,
@@ -3437,6 +3671,10 @@ export default function GameEditingForm({
                                 credits: [],
                               },
                             ]);
+                            setSoftwareUsedDrafts((prev) => ({
+                              ...prev,
+                              [songId]: "",
+                            }));
                             addToast({ title: "Song uploaded" });
                           };
                           input.click();
@@ -4084,7 +4322,7 @@ export default function GameEditingForm({
             {game &&
               game.published &&
               activeJamResponse?.jam &&
-              activeJamResponse?.jam.id == game.jam.id &&
+              activeJamResponse?.jam.id == game?.jam?.id &&
               (activeJamResponse?.phase == "Jamming" ||
                 activeJamResponse?.phase == "Submission" ||
                 (activeJamResponse?.phase == "Rating" &&

@@ -531,7 +531,8 @@
     "JamSoon": "Theme will be revealed on jam start",
     "NoTheme": "No top-scoring theme available",
     "Submissions": "Submissions close soon",
-    "Rate": "Go rate games!"
+    "RateGames": "Go rate games!",
+    "RateMusic": "Go rate music!"
   },
   "Stats": {
     "Timer": "Jam starts in",

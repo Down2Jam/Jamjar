@@ -1,11 +1,11 @@
 "use client";
 
 import SidebarSong from "@/components/sidebar/SidebarSong";
+import { postTrackRating } from "@/requests/rating";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { BASE_URL } from "@/requests/config";
 import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
@@ -13,8 +13,14 @@ import { useRouter } from "next/navigation";
 import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
 import { IconName } from "bioloom-ui";
-import { getTrackTags } from "@/requests/track";
+import { getTrackRatingCategories, getTrackTags, getTracks } from "@/requests/track";
 import { TrackTagType } from "@/types/TrackTagType";
+import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
+import { getSelf } from "@/requests/user";
+import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
+import { UserType } from "@/types/UserType";
+import { addToast } from "bioloom-ui";
+import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 type JamOption = {
   id: string;
@@ -23,13 +29,18 @@ type JamOption = {
   description?: string;
 };
 
+const MORE_FILTERS = {
+  downloadable: "downloadable",
+  backgroundSafe: "backgroundSafe",
+} as const;
+
 function parseMultiValueParam(value: string | null): Set<string> {
   if (!value) return new Set();
   return new Set(
     value
       .split(",")
       .map((entry) => entry.trim())
-      .filter(Boolean)
+      .filter(Boolean),
   );
 }
 
@@ -39,7 +50,7 @@ function serializeMultiValueParam(values: Set<string>): string {
 
 function formatJamWindow(
   startISO?: string,
-  jammingHours?: number
+  jammingHours?: number,
 ): string | undefined {
   if (!startISO || !jammingHours || Number.isNaN(Number(jammingHours)))
     return undefined;
@@ -70,26 +81,51 @@ export default function MusicPage() {
   const { colors } = useTheme();
   const router = useRouter();
   const restrictedSorts = useMemo(
-    () => new Set<GameSort>(["karma", "leastratings", "danger", "ratingbalance"]),
+    () =>
+      new Set<GameSort>([
+        "recommended",
+        "karma",
+        "leastratings",
+        "danger",
+        "ratingbalance",
+      ]),
     [],
   );
 
   const [music, setMusic] = useState<TrackType[]>([]);
+  const [user, setUser] = useState<UserType | null>(null);
   const [allTrackTags, setAllTrackTags] = useState<TrackTagType[]>([]);
+  const [trackSelectedStars, setTrackSelectedStars] = useState<
+    Record<number, number>
+  >({});
+  const [trackOverallCategory, setTrackOverallCategory] =
+    useState<TrackRatingCategoryType | null>(null);
+  const effectiveHideRatings = useEffectiveHideRatings(user);
   const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
   const [currentJamId, setCurrentJamId] = useState<string | null>(null);
+  const [activeJamPhase, setActiveJamPhase] = useState<string | null>(null);
 
   const hasAppliedDefault = useRef(false);
   const hasUserSelected = useRef(false);
   const sortParam = useMemo(() => {
-    if (typeof window === "undefined") return "karma";
-    return (new URLSearchParams(window.location.search).get("sort") as GameSort) ?? "karma";
+    if (typeof window === "undefined") return "recommended";
+    return (
+      (new URLSearchParams(window.location.search).get("sort") as GameSort) ??
+      "recommended"
+    );
   }, []);
   const [sort, setSort] = useState<GameSort>(
-    (["karma", "random", "leastratings", "danger", "ratingbalance"].includes(sortParam) &&
-      sortParam) ||
+    ([
+      "recommended",
       "karma",
+      "random",
+      "leastratings",
+      "danger",
+      "ratingbalance",
+    ].includes(sortParam) &&
+      sortParam) ||
+      "recommended",
   );
 
   const initialJamParam = useMemo(() => {
@@ -104,40 +140,62 @@ export default function MusicPage() {
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("genres")
+            new URLSearchParams(window.location.search).get("genres"),
           ),
-    []
+    [],
   );
-  const [selectedGenres, setSelectedGenres] = useState<Set<string>>(
-    initialGenresParam
-  );
+  const [selectedGenres, setSelectedGenres] =
+    useState<Set<string>>(initialGenresParam);
   const initialMoodsParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("moods")
+            new URLSearchParams(window.location.search).get("moods"),
           ),
-    []
+    [],
   );
-  const [selectedMoods, setSelectedMoods] = useState<Set<string>>(initialMoodsParam);
+  const [selectedMoods, setSelectedMoods] =
+    useState<Set<string>>(initialMoodsParam);
   const initialUseCasesParam = useMemo(
     () =>
       typeof window === "undefined"
         ? new Set<string>()
         : parseMultiValueParam(
-            new URLSearchParams(window.location.search).get("useCases")
+            new URLSearchParams(window.location.search).get("useCases"),
           ),
-    []
+    [],
   );
-  const [selectedUseCases, setSelectedUseCases] = useState<Set<string>>(
-    initialUseCasesParam
+  const [selectedUseCases, setSelectedUseCases] =
+    useState<Set<string>>(initialUseCasesParam);
+  const initialLicensesParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("licenses"),
+          ),
+    [],
   );
+  const [selectedLicenses, setSelectedLicenses] =
+    useState<Set<string>>(initialLicensesParam);
   const initialLoopingParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     return new URLSearchParams(window.location.search).get("looping") ?? "all";
   }, []);
-  const [selectedLooping, setSelectedLooping] = useState<string>(initialLoopingParam);
+  const [selectedLooping, setSelectedLooping] =
+    useState<string>(initialLoopingParam);
+  const initialMoreParam = useMemo(
+    () =>
+      typeof window === "undefined"
+        ? new Set<string>()
+        : parseMultiValueParam(
+            new URLSearchParams(window.location.search).get("more"),
+          ),
+    [],
+  );
+  const [selectedMoreFilters, setSelectedMoreFilters] =
+    useState<Set<string>>(initialMoreParam);
 
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
@@ -147,9 +205,9 @@ export default function MusicPage() {
       } else {
         params.delete(key);
       }
-      router.push(`?${params.toString()}`);
+      navigateToSearchIfChanged(router, params);
     },
-    [router]
+    [router],
   );
 
   const updateMultiQueryParam = useCallback(
@@ -161,9 +219,9 @@ export default function MusicPage() {
       } else {
         params.delete(key);
       }
-      router.push(`?${params.toString()}`);
+      navigateToSearchIfChanged(router, params);
     },
-    [router]
+    [router],
   );
 
   useEffect(() => {
@@ -191,7 +249,7 @@ export default function MusicPage() {
             icon: res?.jam?.icon,
             description: formatJamWindow(
               res?.jam?.startTime,
-              res?.jam?.jammingHours
+              res?.jam?.jammingHours,
             ),
           });
         }
@@ -199,6 +257,8 @@ export default function MusicPage() {
         if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
           ratingDefault = currentJamId ?? null;
         }
+
+        setActiveJamPhase(res?.phase ?? null);
       } catch {}
 
       try {
@@ -235,8 +295,7 @@ export default function MusicPage() {
 
         const params = new URLSearchParams(window.location.search);
         params.set("jam", ratingDefault);
-        const qs = params.toString();
-        router.replace(qs ? `?${qs}` : "?");
+        navigateToSearchIfChanged(router, params, "replace");
       }
 
       setJamDetecting(false);
@@ -253,11 +312,21 @@ export default function MusicPage() {
     [restrictedSorts],
   );
 
-  const sorts: Record<GameSort, { name: string; icon: IconName; description: string }> = {
+  const sorts: Record<
+    GameSort,
+    { name: string; icon: IconName; description: string }
+  > = {
+    recommended: {
+      name: "Recommended",
+      icon: "thumbsup",
+      description:
+        "Like Karma, but gives a small boost to tracks people enjoy as well",
+    },
     karma: {
       name: "Karma",
       icon: "sparkles",
-      description: "Shows tracks from people who are rating and giving good feedback on music pages",
+      description:
+        "Shows tracks from people who are rating and giving good feedback on music pages",
     },
     random: {
       name: "Random",
@@ -287,15 +356,55 @@ export default function MusicPage() {
       setSort("random");
       updateQueryParam("sort", "random");
     }
-  }, [canUseRestrictedSorts, isRestricted, jamDetecting, sort, updateQueryParam]);
+  }, [
+    canUseRestrictedSorts,
+    isRestricted,
+    jamDetecting,
+    sort,
+    updateQueryParam,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const response = await getTrackTags();
-      const payload = await response.json().catch(() => null);
+      const [tagResponse, categoryResponse, userResponse] = await Promise.all([
+        getTrackTags(),
+        getTrackRatingCategories().catch(() => null),
+        getSelf().catch(() => null),
+      ]);
+      const payload = await tagResponse.json().catch(() => null);
       if (cancelled) return;
       setAllTrackTags(Array.isArray(payload?.data) ? payload.data : []);
+
+      if (categoryResponse?.ok) {
+        const categoryPayload = await categoryResponse.json().catch(() => null);
+        if (cancelled) return;
+        const overall =
+          categoryPayload?.data?.find(
+            (category: TrackRatingCategoryType) => category.name === "Overall",
+          ) ?? null;
+        setTrackOverallCategory(overall);
+      }
+
+      if (userResponse?.ok) {
+        const userPayload = await userResponse.json().catch(() => null);
+        if (cancelled) return;
+        setUser(userPayload);
+        const ratings = (userPayload?.trackRatings ?? []).reduce(
+          (
+            acc: Record<number, number>,
+            rating: { trackId: number; value: number; categoryId: number },
+          ) => {
+            acc[rating.trackId] = rating.value;
+            return acc;
+          },
+          {},
+        );
+        setTrackSelectedStars(ratings);
+      } else {
+        setUser(null);
+        setTrackSelectedStars({});
+      }
     })();
 
     return () => {
@@ -308,13 +417,7 @@ export default function MusicPage() {
 
     let cancelled = false;
     (async () => {
-      const qs = new URLSearchParams();
-      if (jamId && jamId !== "all") qs.set("jamId", jamId);
-      qs.set("sort", sort);
-
-      const res = await fetch(
-        `${BASE_URL}/tracks${qs.toString() ? `?${qs}` : ""}`
-      );
+      const res = await getTracks(sort, jamId);
       const json = await res.json();
       if (cancelled) return;
 
@@ -339,7 +442,7 @@ export default function MusicPage() {
 
   const availableTagIds = useMemo(() => {
     return new Set(
-      music.flatMap((track) => (track.tags ?? []).map((tag) => String(tag.id)))
+      music.flatMap((track) => (track.tags ?? []).map((tag) => String(tag.id))),
     );
   }, [music]);
 
@@ -347,7 +450,9 @@ export default function MusicPage() {
     const grouped = new Map<string, TrackTagType[]>();
 
     tagsByCategory.forEach((tags, categoryName) => {
-      const visibleTags = tags.filter((tag) => availableTagIds.has(String(tag.id)));
+      const visibleTags = tags.filter((tag) =>
+        availableTagIds.has(String(tag.id)),
+      );
       if (visibleTags.length > 0) {
         grouped.set(categoryName, visibleTags);
       }
@@ -355,6 +460,16 @@ export default function MusicPage() {
 
     return grouped;
   }, [availableTagIds, tagsByCategory]);
+
+  const availableLicenses = useMemo(() => {
+    return Array.from(
+      new Set(
+        music
+          .map((track) => track.license?.trim())
+          .filter((license): license is string => Boolean(license)),
+      ),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [music]);
 
   const displayedMusic = useMemo(() => {
     return music.filter((track) => {
@@ -383,13 +498,33 @@ export default function MusicPage() {
       if (selectedLooping !== "all" && !tagIds.has(selectedLooping)) {
         return false;
       }
+      if (
+        selectedLicenses.size > 0 &&
+        !selectedLicenses.has(track.license?.trim() ?? "")
+      ) {
+        return false;
+      }
+      if (
+        selectedMoreFilters.has(MORE_FILTERS.downloadable) &&
+        !track.allowDownload
+      ) {
+        return false;
+      }
+      if (
+        selectedMoreFilters.has(MORE_FILTERS.backgroundSafe) &&
+        !track.allowBackgroundUse
+      ) {
+        return false;
+      }
 
       return true;
     });
   }, [
     music,
     selectedGenres,
+    selectedLicenses,
     selectedLooping,
+    selectedMoreFilters,
     selectedMoods,
     selectedUseCases,
   ]);
@@ -413,7 +548,10 @@ export default function MusicPage() {
           }}
         >
           {Object.entries(sorts)
-            .filter(([key]) => !(isRestricted(key as GameSort) && !canUseRestrictedSorts))
+            .filter(
+              ([key]) =>
+                !(isRestricted(key as GameSort) && !canUseRestrictedSorts),
+            )
             .map(([key, value]) => (
               <Dropdown.Item
                 key={key}
@@ -455,7 +593,9 @@ export default function MusicPage() {
             multiple
             selectedValues={selectedGenres}
             onSelectionChange={(values) => {
-              const next = new Set(Array.from(values, (value) => String(value)));
+              const next = new Set(
+                Array.from(values, (value) => String(value)),
+              );
               setSelectedGenres(next);
               updateMultiQueryParam("genres", next);
             }}
@@ -474,7 +614,9 @@ export default function MusicPage() {
             multiple
             selectedValues={selectedMoods}
             onSelectionChange={(values) => {
-              const next = new Set(Array.from(values, (value) => String(value)));
+              const next = new Set(
+                Array.from(values, (value) => String(value)),
+              );
               setSelectedMoods(next);
               updateMultiQueryParam("moods", next);
             }}
@@ -493,7 +635,9 @@ export default function MusicPage() {
             multiple
             selectedValues={selectedUseCases}
             onSelectionChange={(values) => {
-              const next = new Set(Array.from(values, (value) => String(value)));
+              const next = new Set(
+                Array.from(values, (value) => String(value)),
+              );
               setSelectedUseCases(next);
               updateMultiQueryParam("useCases", next);
             }}
@@ -519,19 +663,65 @@ export default function MusicPage() {
             <Dropdown.Item value="all">All Looping</Dropdown.Item>
             {visibleTagsByCategory.get("Looping")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
-            {tag.name}
+                {tag.name}
               </Dropdown.Item>
             ))}
           </Dropdown>
         )}
+
+        {availableLicenses.length > 0 && (
+          <Dropdown
+            multiple
+            selectedValues={selectedLicenses}
+            onSelectionChange={(values) => {
+              const next = new Set(
+                Array.from(values, (value) => String(value)),
+              );
+              setSelectedLicenses(next);
+              updateMultiQueryParam("licenses", next);
+            }}
+            placeholder="Licenses"
+          >
+            {availableLicenses.map((license) => (
+              <Dropdown.Item key={license} value={license}>
+                {license}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
+        )}
+
+        <Dropdown
+          multiple
+          selectedValues={selectedMoreFilters}
+          onSelectionChange={(values) => {
+            const next = new Set(Array.from(values, (value) => String(value)));
+            setSelectedMoreFilters(next);
+            updateMultiQueryParam("more", next);
+          }}
+          placeholder="More"
+        >
+          <Dropdown.Item
+            value={MORE_FILTERS.downloadable}
+            description="Only show tracks that can be downloaded"
+          >
+            Downloadable
+          </Dropdown.Item>
+          <Dropdown.Item
+            value={MORE_FILTERS.backgroundSafe}
+            description="Only show tracks marked safe for background use in streams and videos"
+          >
+            Stream / Video Safe
+          </Dropdown.Item>
+        </Dropdown>
       </Hstack>
 
       {/* List */}
       <Vstack align="stretch" className="w-[488px]">
         {displayedMusic.map((track, index) => (
           <SidebarSong
-            key={index}
+            key={track.id ?? index}
             slug={track.slug}
+            trackId={track.id}
             name={track.name}
             artist={track.composer}
             thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
@@ -539,6 +729,58 @@ export default function MusicPage() {
             song={track.url}
             license={track.license}
             allowDownload={track.allowDownload}
+            allowBackgroundUse={track.allowBackgroundUse}
+            allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
+            showRating={
+              Boolean(user) &&
+              !track.game?.team?.users?.some(
+                (member) => member.id === user?.id,
+              ) &&
+              currentJamId != null &&
+              String(track.game?.jamId ?? "") === currentJamId &&
+              (activeJamPhase === "Rating" ||
+                activeJamPhase === "Submission") &&
+              Boolean(trackOverallCategory)
+            }
+            hideRatings={effectiveHideRatings}
+            ratingValue={track.id ? (trackSelectedStars[track.id] ?? 0) : 0}
+            ratingDisabled={
+              !user ||
+              track.game?.team?.users?.some(
+                (member) => member.id === user.id,
+              ) ||
+              currentJamId == null ||
+              String(track.game?.jamId ?? "") !== currentJamId ||
+              (activeJamPhase !== "Rating" &&
+                activeJamPhase !== "Submission") ||
+              !trackOverallCategory
+            }
+            onRate={async (value) => {
+              if (!track.id || !trackOverallCategory) return;
+
+              const previous = trackSelectedStars[track.id] ?? 0;
+              setTrackSelectedStars((prev) => ({
+                ...prev,
+                [track.id!]: value,
+              }));
+
+              const response = await postTrackRating(
+                track.id,
+                trackOverallCategory.id,
+                value,
+              );
+
+              if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                addToast({
+                  title: payload?.message ?? "Failed to save track rating",
+                });
+                setTrackSelectedStars((prev) => ({
+                  ...prev,
+                  [track.id!]: previous,
+                }));
+              }
+            }}
           />
         ))}
         {displayedMusic.length === 0 && !jamDetecting && (

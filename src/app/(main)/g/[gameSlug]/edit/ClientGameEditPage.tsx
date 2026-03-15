@@ -4,9 +4,8 @@ import { Card } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { getTeamsUser } from "@/requests/team";
+import { getGame } from "@/requests/game";
 import { GameType } from "@/types/GameType";
-import { TeamType } from "@/types/TeamType";
 import { use, useEffect, useState } from "react";
 import GameEditingForm from "../../../../../components/game-editing-form/GameEditingForm";
 import { Icon } from "bioloom-ui";
@@ -24,17 +23,10 @@ export default function ClientGameEditPage({
   useEffect(() => {
     const load = async () => {
       try {
-        const teamResponse = await getTeamsUser();
+        const gameResponse = await getGame(gameSlug);
 
-        if (teamResponse.status == 200) {
-          const data = await teamResponse.json();
-          const matchingSlugTeam = data.data.filter((team: TeamType) => {
-            return team.game?.slug === gameSlug;
-          });
-
-          if (matchingSlugTeam.length !== 0) {
-            setGame(matchingSlugTeam[0].game);
-          }
+        if (gameResponse.ok) {
+          setGame(await gameResponse.json());
         }
 
         setLoading(false);

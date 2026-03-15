@@ -1,14 +1,13 @@
 "use client";
 
 import { addToast } from "bioloom-ui";
-import { redirect, usePathname } from "next/navigation";
+import { redirect } from "next/navigation";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { Button, Navbar, NavbarItem } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Dropdown } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { getSelf } from "@/requests/user";
-import { hasCookie } from "@/helpers/cookie";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 
@@ -22,16 +21,15 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
   const { colors } = useTheme();
 
   const [user, setUser] = useState<UserType>();
-  const pathname = usePathname();
 
   useEffect(() => {
-    loadData();
+    if (!isLoggedIn) {
+      setUser(undefined);
+      return;
+    }
+
     async function loadData() {
       try {
-        if (!hasCookie("token")) {
-          setUser(undefined);
-          return;
-        }
         const response = await getSelf();
         const user = await response.json();
         if (response.status == 200) {
@@ -43,7 +41,9 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         console.error(error);
       }
     }
-  }, [pathname]);
+
+    loadData();
+  }, [isLoggedIn]);
 
   return (
     <Navbar

@@ -1,10 +1,24 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
+import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getTrack(trackSlug: string) {
-  return fetch(`${BASE_URL}/tracks/${trackSlug}`, {
+  return cachedFetch(`${BASE_URL}/tracks/${trackSlug}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 30_000,
+  });
+}
+
+export async function getTracks(sort: string, jamId?: string) {
+  const params = new URLSearchParams({ sort });
+  if (jamId && jamId !== "all") {
+    params.set("jamId", jamId);
+  }
+
+  return cachedFetch(`${BASE_URL}/tracks?${params.toString()}`, undefined, {
+    ttlMs: 20_000,
   });
 }
 
@@ -19,13 +33,15 @@ export async function updateTrack(
     musicalKey?: string | null;
     softwareUsed?: string[];
     allowDownload?: boolean;
+    allowBackgroundUse?: boolean;
+    allowBackgroundUseAttribution?: boolean;
     license?: string | null;
     composerId?: number;
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
   },
 ) {
-  return fetch(`${BASE_URL}/tracks/${trackSlug}`, {
+  const response = await fetch(`${BASE_URL}/tracks/${trackSlug}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -34,19 +50,29 @@ export async function updateTrack(
     credentials: "include",
     body: JSON.stringify(payload),
   });
+
+  if (response.ok) {
+    invalidateRequestCache(/\/(tracks|results|self|user|jam)/);
+  }
+
+  return response;
 }
 
 export async function getTrackTags() {
-  return fetch(`${BASE_URL}/tracktags`, {
+  return cachedFetch(`${BASE_URL}/tracktags`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 300_000,
   });
 }
 
 export async function getTrackFlags() {
-  return fetch(`${BASE_URL}/trackflags`, {
+  return cachedFetch(`${BASE_URL}/trackflags`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 300_000,
   });
 }
 
@@ -57,16 +83,20 @@ export async function getTrackResults(jamId: string) {
     jam: jamId,
   });
 
-  return fetch(`${BASE_URL}/results?${params.toString()}`, {
+  return cachedFetch(`${BASE_URL}/results?${params.toString()}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 20_000,
   });
 }
 
 export async function getTrackRatingCategories() {
-  return fetch(`${BASE_URL}/track-rating-categories`, {
+  return cachedFetch(`${BASE_URL}/track-rating-categories`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
+  }, {
+    ttlMs: 300_000,
   });
 }
 
