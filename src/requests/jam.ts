@@ -1,18 +1,13 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getJams() {
-  return cachedFetch(`${BASE_URL}/jams`, undefined, {
-    ttlMs: 300_000,
-  });
+  return fetch(`${BASE_URL}/jams`);
 }
 
 export async function getCurrentJam() {
-  return cachedFetch(`${BASE_URL}/jam`, {
+  return fetch(`${BASE_URL}/jam`, {
     next: { revalidate: 300 },
-  }, {
-    ttlMs: 60_000,
   });
 }
 
@@ -30,20 +25,14 @@ export async function joinJam(jamId: number) {
     },
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/(jam|jams|self|user)/);
-  }
-
   return response;
 }
 
 export async function hasJoinedCurrentJam() {
-  return cachedFetch(`${BASE_URL}/jam/participation`, {
+  return fetch(`${BASE_URL}/jam/participation`, {
     credentials: "include",
     headers: {
       Authorization: `Bearer ${getCookie("token")}`,
     },
-  }, {
-    ttlMs: 15_000,
   });
 }

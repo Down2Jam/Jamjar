@@ -1,24 +1,19 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getSelf() {
   const userCookie = getCookie("user");
   const tokenCookie = getCookie("token");
   //if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
 
-  return cachedFetch(`${BASE_URL}/self?username=${userCookie}`, {
+  return fetch(`${BASE_URL}/self?username=${userCookie}`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
-  }, {
-    ttlMs: 15_000,
   });
 }
 
 export async function getUser(userSlug: string) {
-  return cachedFetch(`${BASE_URL}/user?targetUserSlug=${userSlug}`, undefined, {
-    ttlMs: 30_000,
-  });
+  return fetch(`${BASE_URL}/user?targetUserSlug=${userSlug}`);
 }
 
 export async function searchUsers(query: string) {
@@ -88,10 +83,6 @@ export async function updateUser(
     },
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/(self|user|jam)/);
-  }
 
   return response;
 }
