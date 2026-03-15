@@ -78,6 +78,8 @@ const platformOrder: Record<string, number> = {
   Mobile: 5,
 };
 
+const ITCH_EMBED_STALL_TIMEOUT_MS = 12000;
+
 const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
   KeyboardMouse: { label: "Keyboard + Mouse", icon: "keyboard" },
   Gamepad: { label: "Gamepad / Controller", icon: "gamepad2" },
@@ -247,6 +249,8 @@ export default function ClientGamePage({
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
+  const [itchEmbedAttempt, setItchEmbedAttempt] = useState(0);
+  const [showItchEmbedRecovery, setShowItchEmbedRecovery] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
   const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
@@ -414,6 +418,8 @@ export default function ClientGamePage({
 
   useEffect(() => {
     setIsItchEmbedActive(false);
+    setItchEmbedAttempt(0);
+    setShowItchEmbedRecovery(false);
   }, [gameSlug]);
 
   useEffect(() => {
@@ -464,6 +470,48 @@ export default function ClientGamePage({
   const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
     game?.itchEmbedAspectRatio,
   );
+  const activeItchEmbedUrl = useMemo(() => {
+    if (!itchEmbedUrl) return null;
+
+    const url = new URL(itchEmbedUrl);
+    if (itchEmbedAttempt > 0) {
+      url.searchParams.set("d2jam_retry", String(itchEmbedAttempt));
+    }
+    return url.toString();
+  }, [itchEmbedAttempt, itchEmbedUrl]);
+  const itchGamePageUrl = useMemo(() => {
+    const links = game?.downloadLinks ?? [];
+
+    const preferredLink = links.find((link) => {
+      try {
+        const parsed = new URL(link.url);
+        const hostname = parsed.hostname.toLowerCase();
+        const pathname = parsed.pathname.replace(/\/+$/, "");
+
+        if (!hostname.endsWith("itch.io")) return false;
+        return !/^\/embed(?:-upload)?\/\d+$/.test(pathname);
+      } catch {
+        return false;
+      }
+    });
+
+    return preferredLink?.url ?? itchEmbedUrl;
+  }, [game?.downloadLinks, itchEmbedUrl]);
+
+  useEffect(() => {
+    if (!isItchEmbedActive || !itchEmbedUrl) {
+      setShowItchEmbedRecovery(false);
+      return;
+    }
+
+    setShowItchEmbedRecovery(false);
+    const timeoutId = window.setTimeout(() => {
+      setShowItchEmbedRecovery(true);
+    }, ITCH_EMBED_STALL_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isItchEmbedActive, itchEmbedAttempt, itchEmbedUrl]);
+
   const trailerId = extractYouTubeId(game?.trailerUrl);
   const screenshots = (game?.screenshots ?? []).filter(Boolean);
   const mediaItems = useMemo<GameMediaItem[]>(() => {
@@ -715,13 +763,61 @@ export default function ClientGamePage({
                 }}
               >
                 {isItchEmbedActive ? (
-                  <iframe
-                    src={itchEmbedUrl}
-                    title={`${game.name} playable embed`}
-                    className="w-full h-full"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                  />
+                  <>
+                    <iframe
+                      key={activeItchEmbedUrl}
+                      src={activeItchEmbedUrl ?? itchEmbedUrl}
+                      title={`${game.name} playable embed`}
+                      className="w-full h-full"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                    />
+                    {showItchEmbedRecovery && (
+                      <div
+                        className="absolute bottom-4 left-1/2 z-10 flex w-[min(32rem,calc(100%-2rem))] -translate-x-1/2 flex-col gap-3 rounded-xl p-4 backdrop-blur-sm"
+                        style={{
+                          backgroundColor: `${colors["mantle"]}F2`,
+                          border: `1px solid ${colors["surface0"]}`,
+                          boxShadow: `0 18px 48px ${colors["crust"]}66`,
+                        }}
+                      >
+                        <Text
+                          className="font-semibold"
+                          style={{ color: colors["text"] }}
+                        >
+                          Embed still loading?
+                        </Text>
+                        <Text style={{ color: colors["subtext0"] }}>
+                          This linked web build may be outdated. Let the
+                          developer know and open the game on itch directly.
+                        </Text>
+                        <div className="flex flex-wrap gap-3">
+                          <Button
+                            color="blue"
+                            onClick={() => {
+                              setShowItchEmbedRecovery(false);
+                              setItchEmbedAttempt((current) => current + 1);
+                            }}
+                          >
+                            Retry embed
+                          </Button>
+                          <Link
+                            href={itchGamePageUrl ?? itchEmbedUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center rounded-md px-4 py-2"
+                            style={{
+                              backgroundColor: colors["surface0"],
+                              color: colors["text"],
+                              border: `1px solid ${colors["surface1"]}`,
+                            }}
+                          >
+                            Open on itch
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <button
                     type="button"

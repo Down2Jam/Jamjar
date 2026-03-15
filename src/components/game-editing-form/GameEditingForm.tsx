@@ -88,6 +88,7 @@ type InputMethodType =
 
 const MIN_EMOTE_PREFIX_LENGTH = 4;
 const MAX_EMOTE_PREFIX_LENGTH = 8;
+const ITCH_EMBED_STALL_TIMEOUT_MS = 12000;
 
 const YT_ID_REGEX =
   /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
@@ -368,6 +369,8 @@ export default function GameEditingForm({
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
   const [isItchPreviewActive, setIsItchPreviewActive] = useState(false);
+  const [itchPreviewAttempt, setItchPreviewAttempt] = useState(0);
+  const [showItchPreviewRecovery, setShowItchPreviewRecovery] = useState(false);
   const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
     useState<GameEmbedAspectRatio>("16 / 9");
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
@@ -537,7 +540,36 @@ export default function GameEditingForm({
 
   useEffect(() => {
     setIsItchPreviewActive(false);
+    setItchPreviewAttempt(0);
+    setShowItchPreviewRecovery(false);
   }, [itchEmbedUrl]);
+
+  useEffect(() => {
+    const canonicalUrl = toCanonicalItchEmbedUrl(itchEmbedUrl);
+
+    if (!isItchPreviewActive || !canonicalUrl) {
+      setShowItchPreviewRecovery(false);
+      return;
+    }
+
+    setShowItchPreviewRecovery(false);
+    const timeoutId = window.setTimeout(() => {
+      setShowItchPreviewRecovery(true);
+    }, ITCH_EMBED_STALL_TIMEOUT_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isItchPreviewActive, itchEmbedUrl, itchPreviewAttempt]);
+
+  const activeItchPreviewUrl = useMemo(() => {
+    const canonicalUrl = toCanonicalItchEmbedUrl(itchEmbedUrl);
+    if (!canonicalUrl) return null;
+
+    const url = new URL(canonicalUrl);
+    if (itchPreviewAttempt > 0) {
+      url.searchParams.set("d2jam_retry", String(itchPreviewAttempt));
+    }
+    return url.toString();
+  }, [itchEmbedUrl, itchPreviewAttempt]);
 
   const refreshTeams = useCallback(async () => {
     const teamResponse = await getTeamsUser();
@@ -2302,15 +2334,52 @@ export default function GameEditingForm({
                               }}
                             >
                               {isItchPreviewActive ? (
-                                <iframe
-                                  src={
-                                    toCanonicalItchEmbedUrl(itchEmbedUrl) ?? ""
-                                  }
-                                  title="Playable Itch Embed"
-                                  className="w-full h-full"
-                                  style={{ border: 0 }}
-                                  allowFullScreen
-                                />
+                                <>
+                                  <iframe
+                                    key={activeItchPreviewUrl}
+                                    src={activeItchPreviewUrl ?? ""}
+                                    title="Playable Itch Embed"
+                                    className="w-full h-full"
+                                    style={{ border: 0 }}
+                                    allowFullScreen
+                                  />
+                                  {showItchPreviewRecovery && (
+                                    <div className="absolute bottom-4 left-1/2 z-10 flex w-[min(30rem,calc(100%-2rem))] -translate-x-1/2 flex-col gap-3 rounded-xl border border-white/10 bg-black/80 p-4 text-white backdrop-blur-sm">
+                                      <Text className="font-semibold">
+                                        Embed still loading?
+                                      </Text>
+                                      <Text style={{ color: "rgba(255,255,255,0.72)" }}>
+                                        Retry the preview or open it on itch if
+                                        the first boot hangs.
+                                      </Text>
+                                      <div className="flex flex-wrap gap-3">
+                                        <Button
+                                          color="blue"
+                                          onClick={() => {
+                                            setShowItchPreviewRecovery(false);
+                                            setItchPreviewAttempt(
+                                              (current) => current + 1,
+                                            );
+                                          }}
+                                        >
+                                          Retry preview
+                                        </Button>
+                                        <a
+                                          href={
+                                            toCanonicalItchEmbedUrl(
+                                              itchEmbedUrl,
+                                            ) ?? "#"
+                                          }
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/10 px-4 py-2"
+                                        >
+                                          Open on itch
+                                        </a>
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
                               ) : (
                                 <button
                                   type="button"
