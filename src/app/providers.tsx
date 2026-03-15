@@ -11,7 +11,7 @@ import { merge } from "lodash";
 import { AbstractIntlMessages, NextIntlClientProvider } from "next-intl";
 import { useEffect, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
 import { useTracks } from "@/hooks/queries";
 
 const queryClient = new QueryClient({
@@ -28,10 +28,12 @@ export default function Providers({
   children,
   locale,
   messages,
+  dehydratedState,
 }: Readonly<{
   children: React.ReactNode;
   locale: string;
   messages: AbstractIntlMessages;
+  dehydratedState?: DehydratedState;
 }>) {
   const { isMobile } = useBreakpoint();
   const { previewLocale } = useLanguagePreview();
@@ -67,23 +69,25 @@ export default function Providers({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ShortcutProvider>
-        <SiteThemeProvider>
-          <BioloomThemeBridge>
-            <NextIntlClientProvider locale={activeLocale} messages={activeMessages}>
-              <EmojiProvider>
-                <MusicProvider>
-                  <MusicTrackLoader />
-                  <ToastProvider
-                    placement={isMobile ? "top-center" : "bottom-right"}
-                  />
-                  {children}
-                </MusicProvider>
-              </EmojiProvider>
-            </NextIntlClientProvider>
-          </BioloomThemeBridge>
-        </SiteThemeProvider>
-      </ShortcutProvider>
+      <HydrationBoundary state={dehydratedState}>
+        <ShortcutProvider>
+          <SiteThemeProvider>
+            <BioloomThemeBridge>
+              <NextIntlClientProvider locale={activeLocale} messages={activeMessages}>
+                <EmojiProvider>
+                  <MusicProvider>
+                    <MusicTrackLoader />
+                    <ToastProvider
+                      placement={isMobile ? "top-center" : "bottom-right"}
+                    />
+                    {children}
+                  </MusicProvider>
+                </EmojiProvider>
+              </NextIntlClientProvider>
+            </BioloomThemeBridge>
+          </SiteThemeProvider>
+        </ShortcutProvider>
+      </HydrationBoundary>
     </QueryClientProvider>
   );
 }
