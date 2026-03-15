@@ -2,16 +2,16 @@
 
 import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getCurrentJam, ActiveJamResponse } from "../../helpers/jam";
+import { ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
 import { JamPhase } from "@/types/JamType";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Text } from "bioloom-ui";
 import Link from "next/link";
+import { useCurrentJam } from "@/hooks/queries";
 
 export default function JamHeader() {
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const { data: activeJamResponse } = useCurrentJam();
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { siteTheme, colors } = useTheme();
@@ -20,7 +20,7 @@ export default function JamHeader() {
     index: number,
     nextEventIndex: number,
     currentDate: Date,
-    eventDateObj: Date | null,
+    eventDateObj: Date | null | undefined,
   ) => {
     if (
       eventDateObj &&
@@ -111,38 +111,27 @@ export default function JamHeader() {
     return { text: "" };
   };
 
-  // Fetch active jam details
+  // Fetch top theme when jam is in relevant phase
   useEffect(() => {
-    const fetchData = async () => {
-      const jamData = await getCurrentJam();
+    if (
+      (activeJamResponse?.phase === "Jamming" ||
+        activeJamResponse?.phase === "Submission" ||
+        activeJamResponse?.phase === "Rating") &&
+      activeJamResponse.jam
+    ) {
+      getTheme()
+        .then((response) => {
+          if (response.ok) return response.json();
+        })
+        .then((data) => {
+          if (data?.data) setTopTheme(data.data.suggestion);
+        })
+        .catch((error) => console.error("Error fetching top themes:", error));
+    }
+  }, [activeJamResponse]);
 
-      setActiveJamResponse(jamData);
-
-      // If we're in Jamming phase, fetch top themes and pick the first one
-      if (
-        (jamData?.phase === "Jamming" ||
-          jamData?.phase === "Submission" ||
-          jamData?.phase === "Rating") &&
-        jamData.jam
-      ) {
-        try {
-          const response = await getTheme();
-
-          if (response.ok) {
-            const theme = (await response.json()).data;
-            setTopTheme(theme.suggestion);
-          } else {
-            console.error("Failed to fetch top themes.", response.status);
-          }
-        } catch (error) {
-          console.error("Error fetching top themes:", error);
-        }
-      }
-    };
-
-    fetchData();
-
-    const timer = setInterval(() => setCurrentDate(new Date()), 1000 * 60); // Update every minute
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDate(new Date()), 1000 * 60);
     return () => clearInterval(timer);
   }, []);
 

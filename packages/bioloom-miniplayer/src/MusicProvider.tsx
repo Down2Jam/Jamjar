@@ -1,11 +1,12 @@
 "use client";
 
-import { getCurrentJam } from "@/helpers/jam";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import { postTrackRating } from "@/requests/rating";
 import { getTrackRatingCategories } from "@/requests/track";
-import { getSelf } from "@/requests/user";
+import { useCurrentJam, useSelf } from "@/hooks/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import {
   emitTrackRatingSync,
   subscribeToTrackRatingSync,
@@ -449,18 +450,39 @@ function MiniPlayer() {
   const [hoverRating, setHoverRating] = useState(0);
   const [selectedRating, setSelectedRating] = useState(0);
   const [ratingCategoryId, setRatingCategoryId] = useState<number | null>(null);
-  const [viewerId, setViewerId] = useState<number | null>(null);
-  const [viewerTeamGameIds, setViewerTeamGameIds] = useState<number[]>([]);
-  const [viewerTrackRatings, setViewerTrackRatings] = useState<
-    Array<{ trackId: number; categoryId: number; value: number }>
-  >([]);
-  const [activeJamId, setActiveJamId] = useState<number | null>(null);
-  const [activeJamPhase, setActiveJamPhase] = useState<string | null>(null);
   const [savingRating, setSavingRating] = useState(false);
-  const [hideRatings, setHideRatings] = useState(false);
-  const [autoHideRatingsWhileStreaming, setAutoHideRatingsWhileStreaming] =
-    useState(false);
-  const [viewerTwitch, setViewerTwitch] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const { data: currentJamData } = useCurrentJam();
+  const { data: userData } = useSelf();
+
+  const activeJamId = currentJamData?.jam?.id ?? null;
+  const activeJamPhase = currentJamData?.phase ?? null;
+  const viewerId = userData?.id ?? null;
+  const viewerTeamGameIds = useMemo(
+    () =>
+      Array.isArray(userData?.teams)
+        ? userData.teams
+            .map((team: { game?: { id?: number } | null }) => team.game?.id)
+            .filter((id: number | undefined): id is number =>
+              Number.isInteger(id),
+            )
+        : [],
+    [userData],
+  );
+  const viewerTrackRatings: Array<{
+    trackId: number;
+    categoryId: number;
+    value: number;
+  }> = useMemo(
+    () => (Array.isArray(userData?.trackRatings) ? userData.trackRatings : []),
+    [userData],
+  );
+  const hideRatings = Boolean(userData?.hideRatings);
+  const autoHideRatingsWhileStreaming = Boolean(
+    userData?.autoHideRatingsWhileStreaming,
+  );
+  const viewerTwitch = userData?.twitch ?? null;
   const [minimized, setMinimized] = useState<boolean>(() => {
     const stored = readStorage(storageKey.minimized);
     if (stored === "true") return true;
@@ -586,49 +608,8 @@ function MiniPlayer() {
 
     (async () => {
       try {
-        const [userResponse, jamResponse, categoriesResponse] =
-          await Promise.all([
-            getSelf().catch(() => null),
-            getCurrentJam().catch(() => null),
-            getTrackRatingCategories().catch(() => null),
-          ]);
-
+        const categoriesResponse = await getTrackRatingCategories().catch(() => null);
         if (cancelled) return;
-
-        if (userResponse?.ok) {
-          const user = await userResponse.json();
-          if (cancelled) return;
-          setViewerId(user?.id ?? null);
-          setViewerTeamGameIds(
-            Array.isArray(user?.teams)
-              ? user.teams
-                  .map(
-                    (team: { game?: { id?: number } | null }) => team.game?.id,
-                  )
-                  .filter((id: number | undefined): id is number =>
-                    Number.isInteger(id),
-                  )
-              : [],
-          );
-          setViewerTrackRatings(
-            Array.isArray(user?.trackRatings) ? user.trackRatings : [],
-          );
-          setHideRatings(Boolean(user?.hideRatings));
-          setAutoHideRatingsWhileStreaming(
-            Boolean(user?.autoHideRatingsWhileStreaming),
-          );
-          setViewerTwitch(user?.twitch ?? null);
-        } else {
-          setViewerId(null);
-          setViewerTeamGameIds([]);
-          setViewerTrackRatings([]);
-          setHideRatings(false);
-          setAutoHideRatingsWhileStreaming(false);
-          setViewerTwitch(null);
-        }
-
-        setActiveJamId(jamResponse?.jam?.id ?? null);
-        setActiveJamPhase(jamResponse?.phase ?? null);
 
         if (categoriesResponse?.ok) {
           const payload = await categoriesResponse.json();
@@ -1036,13 +1017,7 @@ function MiniPlayer() {
                                     return;
                                   }
 
-                                  setViewerTrackRatings((prev) =>
-                                    upsertTrackRatingRecord(prev, {
-                                      trackId,
-                                      categoryId: ratingCategoryId,
-                                      value,
-                                    }),
-                                  );
+                                  queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
                                 } finally {
                                   setSavingRating(false);
                                 }
@@ -1131,13 +1106,7 @@ function MiniPlayer() {
                                       return;
                                     }
 
-                                    setViewerTrackRatings((prev) =>
-                                      upsertTrackRatingRecord(prev, {
-                                        trackId,
-                                        categoryId: ratingCategoryId,
-                                        value: nextValue,
-                                      }),
-                                    );
+                                    queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
                                   } finally {
                                     setSavingRating(false);
                                   }
@@ -1199,13 +1168,7 @@ function MiniPlayer() {
                                       return;
                                     }
 
-                                    setViewerTrackRatings((prev) =>
-                                      upsertTrackRatingRecord(prev, {
-                                        trackId,
-                                        categoryId: ratingCategoryId,
-                                        value,
-                                      }),
-                                    );
+                                    queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
                                   } finally {
                                     setSavingRating(false);
                                   }

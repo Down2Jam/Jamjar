@@ -13,7 +13,7 @@ import { Divider } from "bioloom-ui";
 import NavbarButton from "./NavbarButton";
 import { useJam } from "@/hooks/useJam";
 import { addToast } from "bioloom-ui";
-import { getCurrentJam, joinJam } from "@/helpers/jam";
+import { joinJam } from "@/helpers/jam";
 import NavbarUser from "./NavbarUser";
 import { GameType } from "@/types/GameType";
 import { hasCookie } from "@/helpers/cookie";
@@ -265,9 +265,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon="calendarplus"
             onPress={async () => {
-              const currentJamResponse = await getCurrentJam();
-              const currentJam = currentJamResponse?.jam;
-              if (!currentJam) {
+              if (!jam) {
                 addToast({
                   title: "Navbar.NoJamToast.Title",
                   description: "Navbar.NoJamToast.Description",
@@ -277,7 +275,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 });
                 return;
               }
-              if (await joinJam(currentJam.id)) {
+              if (await joinJam(jam.id)) {
                 setIsInJam(true);
               }
             }}

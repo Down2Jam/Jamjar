@@ -25,7 +25,7 @@ import {
   leaveTeam,
 } from "@/helpers/team";
 import { TeamInviteType } from "@/types/TeamInviteType";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { Card } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
@@ -57,26 +57,11 @@ export default function EditTeamPage() {
   const [body, setBody] = useState<string>("");
   const [users, setUsers] = useState<UserType[]>([]);
   const [invitations, setInvitations] = useState<TeamInviteType[]>([]);
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const { data: activeJamResponse } = useCurrentJam();
   const [name, setName] = useState<string>("");
   const { colors } = useTheme();
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
 
-  // Fetch the current jam phase using helpers/jam
-  useEffect(() => {
-    const fetchCurrentJamPhase = async () => {
-      try {
-        const activeJam = await getCurrentJam();
-        setActiveJamResponse(activeJam); // Set active jam details
-      } catch (error) {
-        console.error("Error fetching current jam:", error);
-      } finally {
-      }
-    };
-
-    fetchCurrentJamPhase();
-  }, []);
 
   useEffect(() => {
     loadUser();
@@ -90,8 +75,7 @@ export default function EditTeamPage() {
 
         const response = await getSelf();
 
-        const jamResponse = await getCurrentJam();
-        const currentJam = jamResponse?.jam;
+        const currentJam = activeJamResponse?.jam;
 
         if (response.status == 200) {
           const data = await response.json();
@@ -139,7 +123,7 @@ export default function EditTeamPage() {
         console.error(error);
       }
     }
-  }, []);
+  }, [activeJamResponse]);
 
   function changeTeam(newid: number) {
     setSelectedTeam(newid);

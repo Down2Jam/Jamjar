@@ -2,11 +2,10 @@
 
 import { getCookie } from "@/helpers/cookie";
 import {
-  ActiveJamResponse,
-  getCurrentJam,
   hasJoinedCurrentJam,
   joinJam,
 } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { ThemeType } from "@/types/ThemeType";
 import { useEffect, useState } from "react";
 import { getThemes, postThemeVotingVote } from "@/requests/theme";
@@ -19,18 +18,13 @@ import { Icon } from "bioloom-ui";
 
 export default function VotingPage() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
-  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
-    null
-  );
+  const { data: activeJamResponse } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const activeJam = await getCurrentJam();
-        setActiveJam(activeJam); // Set active jam details
-
         const joined = await hasJoinedCurrentJam();
         setHasJoined(joined);
       } catch (error) {

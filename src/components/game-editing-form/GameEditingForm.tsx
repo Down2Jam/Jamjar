@@ -10,7 +10,7 @@ import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { sanitize } from "@/helpers/sanitize";
 import useHasMounted from "@/hooks/useHasMounted";
 import {
@@ -276,9 +276,7 @@ export default function GameEditingForm({
   const [allTags, setAllTags] = useState<GameTagType[]>([]);
   const [allTrackTags, setAllTrackTags] = useState<TrackTagType[]>([]);
   const [allTrackFlags, setAllTrackFlags] = useState<TrackFlagType[]>([]);
-  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
-    null,
-  );
+  const { data: activeJamResponse } = useCurrentJam();
   const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState("");
   const [short, setShort] = useState("");
@@ -609,9 +607,6 @@ export default function GameEditingForm({
         const trackFlagsData = await trackFlagsResponse.json();
         setAllTrackFlags(trackFlagsData.data ?? []);
 
-        const activeJam = await getCurrentJam();
-        setActiveJam(activeJam);
-
         // always get *fresh* teams before deciding to create one
         await refreshTeams();
 
@@ -628,14 +623,14 @@ export default function GameEditingForm({
         if (!localuser) return;
 
         const hasTeamForJam =
-          !!activeJam?.jam?.id &&
-          localuser.teams.some((t) => t.jamId === activeJam.jam?.id);
+          !!activeJamResponse?.jam?.id &&
+          localuser.teams.some((t) => t.jamId === activeJamResponse.jam?.id);
 
         if (!hasTeamForJam && !creatingTeamRef.current) {
           creatingTeamRef.current = true;
 
           const alreadyHas = teamsRef.current.some(
-            (t) => t.jamId === activeJam?.jam?.id,
+            (t) => t.jamId === activeJamResponse?.jam?.id,
           );
           if (!alreadyHas) {
             const created = await createTeam(); // should return truthy or handle 409
@@ -656,7 +651,7 @@ export default function GameEditingForm({
       }
     };
     load();
-  }, [refreshTeams]);
+  }, [refreshTeams, activeJamResponse]);
 
   const styles: StylesConfig<
     {

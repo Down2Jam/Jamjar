@@ -10,8 +10,8 @@ import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentJam } from "@/helpers/jam";
 import { getJams } from "@/requests/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { IconName } from "bioloom-ui";
 import {
   getTrackRatingCategories,
@@ -119,6 +119,7 @@ function formatJamWindow(
 export default function MusicPage() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { data: currentJamData } = useCurrentJam();
   const restrictedSorts = useMemo(
     () =>
       new Set<GameSort>([
@@ -280,19 +281,19 @@ export default function MusicPage() {
       const options: JamOption[] = [{ id: "all", name: "All Jams" }];
 
       let ratingDefault: string | null = null;
-      try {
-        const res = await getCurrentJam();
+      {
+        const res = currentJamData;
         const isRatingPhase =
           res?.phase === "Rating" ||
           res?.phase === "Submission" ||
           res?.phase === "Jamming";
-        const currentJamId = res?.jam?.id?.toString();
+        const detectedJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
-        if (currentJamId) {
-          setCurrentJamId(currentJamId);
+        if (detectedJamId) {
+          setCurrentJamId(detectedJamId);
           options.push({
-            id: currentJamId,
+            id: detectedJamId,
             name: currentJamName,
             icon: res?.jam?.icon,
             description: formatJamWindow(
@@ -303,11 +304,11 @@ export default function MusicPage() {
         }
 
         if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
-          ratingDefault = currentJamId ?? null;
+          ratingDefault = detectedJamId ?? null;
         }
 
         setActiveJamPhase(res?.phase ?? null);
-      } catch {}
+      }
 
       try {
         if (typeof getJams === "function") {
@@ -352,7 +353,7 @@ export default function MusicPage() {
     return () => {
       cancelled = true;
     };
-  }, [router, initialJamParam]);
+  }, [router, initialJamParam, currentJamData]);
 
   const canUseRestrictedSorts = Boolean(currentJamId) && jamId === currentJamId;
   const isRestricted = useCallback(
