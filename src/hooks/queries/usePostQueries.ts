@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getPosts, getPost } from "@/requests/post";
 import { PostTime } from "@/types/PostTimes";
 import { queryKeys } from "./queryKeys";
@@ -23,6 +23,7 @@ export function usePosts(
       return unwrapArray<PostType>(json);
     },
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
