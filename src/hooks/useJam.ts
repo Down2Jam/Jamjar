@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCurrentJam } from "@/helpers/jam"; // Adjust this path if needed
-import type { JamType, JamPhase } from "@/types/JamType"; // Adjust types
+import { useCurrentJam } from "@/hooks/queries";
+import type { JamType, JamPhase } from "@/types/JamType";
 
 type UseJamReturn = {
   jam: JamType | null;
@@ -10,18 +9,10 @@ type UseJamReturn = {
 };
 
 export function useJam(): UseJamReturn {
-  const [jam, setJam] = useState<JamType | null>(null);
-  const [jamPhase, setJamPhase] = useState<JamPhase | null>(null);
+  const { data } = useCurrentJam();
 
-  useEffect(() => {
-    const fetchJam = async () => {
-      const jamResponse = await getCurrentJam();
-      setJam(jamResponse?.jam || null);
-      setJamPhase(jamResponse?.phase || null);
-    };
-
-    fetchJam();
-  }, []);
-
-  return { jam, jamPhase };
+  return {
+    jam: data?.jam ?? null,
+    jamPhase: data?.phase ?? null,
+  };
 }

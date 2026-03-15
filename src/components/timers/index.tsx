@@ -1,29 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
 import Timer from "./Timer";
-import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import useHasMounted from "@/hooks/useHasMounted";
+import { useCurrentJam } from "@/hooks/queries";
 
 export default function Timers() {
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
-
-  // Fetch the current jam phase using helpers/jam
-  useEffect(() => {
-    const fetchCurrentJamPhase = async () => {
-      try {
-        const activeJam = await getCurrentJam();
-        setActiveJamResponse(activeJam); // Set active jam details
-      } catch (error) {
-        console.error("Error fetching current jam:", error);
-      } finally {
-      }
-    };
-
-    fetchCurrentJamPhase();
-  }, []);
-
+  const { data: activeJamResponse } = useCurrentJam();
   const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
 

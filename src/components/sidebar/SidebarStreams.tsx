@@ -1,37 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "next/image";
-import { getStreamers } from "@/requests/streamer";
 import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
+import { useStreamers } from "@/hooks/queries";
 
 export default function SidebarStreams() {
-  const [streamers, setStreamers] = useState<FeaturedStreamerType[]>([]);
+  const { data: streamers = [] as FeaturedStreamerType[], isLoading } =
+    useStreamers();
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
   const { colors, siteTheme } = useTheme();
-
-  useEffect(() => {
-    const fetchStreamers = async () => {
-      try {
-        const response = await getStreamers();
-        if (!response.ok) {
-          throw new Error("Failed to fetch featured streamers");
-        }
-
-        const data: FeaturedStreamerType[] = (await response.json()).data;
-        setStreamers(data);
-      } catch (error) {
-        console.error("Error fetching featured streamers:", error);
-      }
-    };
-
-    fetchStreamers();
-  }, []);
 
   // Function to handle moving to the previous streamer
 
@@ -62,7 +45,7 @@ export default function SidebarStreams() {
     );
   };
 
-  if (streamers.length === 0) {
+  if (isLoading || streamers.length === 0) {
     return <div>Loading featured streamers...</div>;
   }
 

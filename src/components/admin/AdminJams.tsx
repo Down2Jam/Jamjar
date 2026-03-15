@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getCurrentJam, getJams } from "@/helpers/jam";
-import type { ActiveJamResponse } from "@/helpers/jam";
+import { useMemo } from "react";
+import { useCurrentJam, useJams } from "@/hooks/queries";
 import type { JamType } from "@/types/JamType";
 import {
   Button,
@@ -57,45 +56,19 @@ function formatPhaseHours(jam: JamType) {
 }
 
 export default function AdminJams() {
-  const [jams, setJams] = useState<JamType[]>([]);
-  const [activeJam, setActiveJam] = useState<ActiveJamResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: activeJam, isLoading: activeJamLoading } = useCurrentJam();
+  const { data: rawJams, isLoading: jamsLoading } = useJams();
 
-  useEffect(() => {
-    let active = true;
+  const loading = activeJamLoading || jamsLoading;
 
-    const loadJams = async () => {
-      setLoading(true);
-      try {
-        const [jamList, currentJam] = await Promise.all([
-          getJams(),
-          getCurrentJam(),
-        ]);
-        if (!active) return;
-
-        const sorted = [...jamList].sort((a, b) => {
-          const aTime = a.startTime ? new Date(a.startTime).getTime() : 0;
-          const bTime = b.startTime ? new Date(b.startTime).getTime() : 0;
-          return bTime - aTime;
-        });
-
-        setJams(sorted);
-        setActiveJam(currentJam ?? null);
-      } catch (error) {
-        console.error("Failed to load jams", error);
-        if (!active) return;
-        setJams([]);
-        setActiveJam(null);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadJams();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const jams = useMemo(() => {
+    const list = Array.isArray(rawJams) ? rawJams : [];
+    return [...list].sort((a, b) => {
+      const aTime = a.startTime ? new Date(a.startTime).getTime() : 0;
+      const bTime = b.startTime ? new Date(b.startTime).getTime() : 0;
+      return bTime - aTime;
+    });
+  }, [rawJams]);
 
   const activeJamId = activeJam?.jam?.id;
   const totalJamCount = jams.length;

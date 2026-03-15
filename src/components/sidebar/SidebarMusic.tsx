@@ -4,56 +4,15 @@ import SidebarSong from "./SidebarSong";
 import useHasMounted from "@/hooks/useHasMounted";
 import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { useEffect, useMemo, useState } from "react";
-import { TrackType } from "@/types/TrackType";
-import { BASE_URL } from "@/requests/config";
-
-import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
+import { useMemo } from "react";
+import { useTracks } from "@/hooks/queries";
 
 export default function SidebarMusic() {
   const hasMounted = useHasMounted();
-  const [music, setMusic] = useState<TrackType[]>([]);
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        let jamId: string | undefined;
-        try {
-          const active: ActiveJamResponse | null = await getCurrentJam();
-          const phase = active?.phase ?? "";
-          const inWindow =
-            phase === "Jamming" || phase === "Submission" || phase === "Rating";
-          if (active?.jam?.id && inWindow) {
-            jamId = active.jam.id.toString();
-          }
-        } catch {}
-
-        const qs = new URLSearchParams();
-        if (jamId) qs.set("jamId", jamId);
-        qs.set("sort", "recommended");
-
-        const res = await fetch(
-          `${BASE_URL}/tracks${qs.toString() ? `?${qs.toString()}` : ""}`
-        );
-        const json = await res.json();
-        const tracks: TrackType[] = Array.isArray(json)
-          ? json
-          : Array.isArray(json?.data)
-          ? json.data
-          : [];
-
-        setMusic(tracks);
-      } catch (err) {
-        console.error(err);
-        setMusic([]);
-      }
-    }
-
-    loadData();
-  }, []);
+  const { data: music } = useTracks();
 
   const featured = useMemo(
-    () => music.slice(0, 5),
+    () => [...(music ?? [])].sort(() => Math.random() - 0.5).slice(0, 5),
     [music]
   );
 

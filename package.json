@@ -16,11 +16,12 @@
     "packages/*"
   ],
   "dependencies": {
-    "@internationalized/date": "^3.7.0",
     "@icons-pack/react-simple-icons": "^13.12.0",
+    "@internationalized/date": "^3.7.0",
     "@next/bundle-analyzer": "^16.1.6",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/typography": "^0.5.19",
+    "@tanstack/react-query": "^5.90.21",
     "@tiptap/extension-blockquote": "^3.20.1",
     "@tiptap/extension-bold": "^3.20.1",
     "@tiptap/extension-bullet-list": "^3.20.1",

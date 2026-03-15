@@ -4,9 +4,6 @@ import { GameType } from "@/types/GameType";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getGames } from "@/requests/game";
-import { UserType } from "@/types/UserType";
-import { getSelf } from "@/requests/user";
 import { IconName } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { GameCard } from "../gamecard";
@@ -16,9 +13,7 @@ import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { PlatformType } from "@/types/DownloadLinkType";
-
-import { getCurrentJam } from "@/helpers/jam";
-import { getJams } from "@/requests/jam";
+import { useSelf, useCurrentJam, useJams, useGames as useGamesQuery } from "@/hooks/queries";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 type JamOption = {
@@ -204,10 +199,6 @@ export default function Games() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [games, setGames] = useState<GameType[]>();
-  const [user, setUser] = useState<UserType>();
-
   const sortParam = (searchParams.get("sort") as GameSort) || "recommended";
   const [sort, setSort] = useState<GameSort>(
     ([
@@ -230,13 +221,8 @@ export default function Games() {
     return p ?? "all";
   }, []);
   const [jamId, setJamId] = useState<string>(initialJamParam);
-  const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
-  const [hasData, setHasData] = useState(false);
   const [showBusy, setShowBusy] = useState(false);
-  const [currentJamId, setCurrentJamId] = useState<string | undefined>(
-    undefined,
-  );
 
   const initialTypeParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
@@ -314,8 +300,99 @@ export default function Games() {
     { id: "Extra", name: "Extra", icon: "calendar" },
   ];
 
+  // Fetch user via TanStack Query
+  const { data: user } = useSelf();
+
+  // Fetch current jam and all jams via TanStack Query
+  const { data: currentJamData } = useCurrentJam();
+  const { data: allJams } = useJams();
+
+  const currentJamId = currentJamData?.jam?.id?.toString();
+
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
   const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
+
+  // Build jam options from query data
+  const jamOptions = useMemo<JamOption[]>(() => {
+    const options: JamOption[] = [
+      {
+        id: "all",
+        name: "All Jams",
+      },
+    ];
+
+    if (currentJamData?.jam) {
+      const cjId = currentJamData.jam.id?.toString();
+      if (cjId) {
+        options.push({
+          id: cjId,
+          name: currentJamData.jam.name || "Current Jam",
+          icon: currentJamData.jam.icon,
+          description: `${formatJamWindow(
+            currentJamData.jam.startTime,
+            currentJamData.jam.jammingHours
+          )}`,
+        });
+      }
+    }
+
+    if (Array.isArray(allJams)) {
+      allJams.forEach((j: { id?: number; name?: string; icon?: IconName; startTime?: string; jammingHours?: number }) => {
+        const id = String(j?.id ?? "");
+        if (id && j?.name && !options.find((o) => o.id === id)) {
+          options.push({
+            id,
+            name: j.name,
+            icon: j.icon,
+            description: formatJamWindow(j?.startTime, j?.jammingHours),
+          });
+        }
+      });
+    }
+
+    return options;
+  }, [currentJamData, allJams]);
+
+  // Handle jam detection and default selection
+  useEffect(() => {
+    if (!currentJamData && !allJams) return; // still loading
+
+    const isRatingPhase =
+      currentJamData?.phase === "Rating" ||
+      currentJamData?.phase === "Submission" ||
+      currentJamData?.phase === "Jamming";
+
+    let ratingDefault: string | null = null;
+    if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
+      ratingDefault = currentJamId ?? null;
+    }
+
+    if (
+      !hasAppliedDefault.current &&
+      !hasUserSelected.current &&
+      ratingDefault
+    ) {
+      hasAppliedDefault.current = true;
+      setJamId(ratingDefault);
+
+      const params = new URLSearchParams(window.location.search);
+      params.set("jam", ratingDefault);
+      const qs = params.toString();
+      router.replace(qs ? `?${qs}` : "?");
+    }
+
+    setJamDetecting(false);
+  }, [currentJamData, allJams, router, initialJamParam, currentJamId]);
+
+  // Fetch games via TanStack Query
+  const { data: games, isLoading: gamesLoading } = useGamesQuery(
+    sort,
+    jamId !== "all" ? jamId : undefined,
+    !jamDetecting
+  );
+
+  const hasData = Array.isArray(games);
+  const isLoading = gamesLoading;
 
   const sorts: Record<
     GameSort,
@@ -416,135 +493,11 @@ export default function Games() {
     }
   }, [sort, jamId, currentJamId, updateQueryParam, jamDetecting]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const response = await getSelf();
-        setUser(await response.json());
-      } catch {}
-    })();
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      setJamDetecting(true);
-      const options: JamOption[] = [
-        {
-          id: "all",
-          name: "All Jams",
-        },
-      ];
-
-      let ratingDefault: string | null = null;
-      try {
-        const res = await getCurrentJam();
-        const isRatingPhase =
-          res?.phase === "Rating" ||
-          res?.phase === "Submission" ||
-          res?.phase === "Jamming";
-        const currentJamId = res?.jam?.id?.toString();
-        const currentJamName = res?.jam?.name || "Current Jam";
-
-        setCurrentJamId(currentJamId || undefined);
-
-        if (currentJamId)
-          options.push({
-            id: currentJamId,
-            name: currentJamName,
-            icon: res?.jam?.icon,
-            description: `${formatJamWindow(
-              res?.jam?.startTime,
-              res?.jam?.jammingHours,
-            )}`,
-          });
-
-        if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
-          ratingDefault = currentJamId ?? null;
-        }
-      } catch {}
-
-      try {
-        if (typeof getJams === "function") {
-          const jr = await getJams();
-          const js = await jr.json();
-          if (Array.isArray(js)) {
-            js.forEach((j) => {
-              const id = String(j?.id ?? "");
-              if (id && j?.name && !options.find((o) => o.id === id)) {
-                options.push({
-                  id,
-                  name: j.name,
-                  icon: j.icon,
-                  description: formatJamWindow(j?.startTime, j?.jammingHours),
-                });
-              }
-            });
-          }
-        }
-      } catch {}
-
-      if (cancelled) return;
-
-      setJamOptions(options);
-
-      if (
-        !hasAppliedDefault.current &&
-        !hasUserSelected.current &&
-        ratingDefault
-      ) {
-        hasAppliedDefault.current = true;
-        setJamId(ratingDefault);
-
-        const params = new URLSearchParams(window.location.search);
-        params.set("jam", ratingDefault);
-        navigateToSearchIfChanged(router, params, "replace");
-      }
-
-      setJamDetecting(false);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router, initialJamParam]);
-
-  useEffect(() => {
-    if (jamDetecting) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        setIsLoading(true);
-        const gameResponse = await getGames(
-          sort,
-          jamId !== "all" ? jamId : undefined,
-        );
-        if (cancelled) return;
-        const data = await gameResponse.json();
-        setGames(data);
-        if (Array.isArray(data)) setHasData(true);
-      } catch (error) {
-        if (!cancelled) {
-          console.error(error);
-          setGames(undefined);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [sort, jamId, jamDetecting]);
-
   const tagOptions = useMemo<FilterOption[]>(() => {
     if (!games) return [];
 
     const seen = new Map<string, FilterOption>();
-    games.forEach((game) => {
+    games.forEach((game: GameType) => {
       (game.tags ?? []).forEach((tag) => {
         const id = String(tag.id);
         if (!seen.has(id)) {
@@ -567,7 +520,7 @@ export default function Games() {
     if (!games) return [];
 
     const used = new Set<InputMethodFilter>();
-    games.forEach((game) => {
+    games.forEach((game: GameType) => {
       (game.inputMethods ?? []).forEach((method) => {
         if (method in INPUT_METHOD_OPTIONS) {
           used.add(method as InputMethodFilter);
@@ -588,7 +541,7 @@ export default function Games() {
     if (!games) return [];
 
     const used = new Set<BuildTypeFilter>();
-    games.forEach((game) => {
+    games.forEach((game: GameType) => {
       getGameBuildTypes(game).forEach((buildType) => used.add(buildType));
     });
 
@@ -605,7 +558,7 @@ export default function Games() {
     if (!games) return [];
 
     const seen = new Map<string, FilterOption>();
-    games.forEach((game) => {
+    games.forEach((game: GameType) => {
       (game.flags ?? []).forEach((flag) => {
         const id = String(flag.id);
         if (!seen.has(id)) {
@@ -663,7 +616,7 @@ export default function Games() {
     const moveOwnGameToEnd = selectedMoreFilters.has("moveOwnGameToEnd");
     const moveRatedGamesToEnd = selectedMoreFilters.has("moveRatedGamesToEnd");
 
-    const filteredGames = games.filter((game) => {
+    return games.filter((game: GameType) => {
       if (hideOwnGame && user) {
         const isOwnGame =
           game.team?.ownerId === user.id ||
@@ -1013,7 +966,7 @@ export default function Games() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {displayedGames && displayedGames.length > 0 ? (
-          displayedGames.map((game) => (
+          displayedGames.map((game: GameType) => (
             <GameCard
               key={game.id}
               game={game}
