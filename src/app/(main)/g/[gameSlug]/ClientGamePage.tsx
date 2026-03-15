@@ -249,7 +249,6 @@ export default function ClientGamePage({
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
-  const [itchEmbedAttempt, setItchEmbedAttempt] = useState(0);
   const [showItchEmbedRecovery, setShowItchEmbedRecovery] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
@@ -418,7 +417,6 @@ export default function ClientGamePage({
 
   useEffect(() => {
     setIsItchEmbedActive(false);
-    setItchEmbedAttempt(0);
     setShowItchEmbedRecovery(false);
   }, [gameSlug]);
 
@@ -470,15 +468,6 @@ export default function ClientGamePage({
   const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
     game?.itchEmbedAspectRatio,
   );
-  const activeItchEmbedUrl = useMemo(() => {
-    if (!itchEmbedUrl) return null;
-
-    const url = new URL(itchEmbedUrl);
-    if (itchEmbedAttempt > 0) {
-      url.searchParams.set("d2jam_retry", String(itchEmbedAttempt));
-    }
-    return url.toString();
-  }, [itchEmbedAttempt, itchEmbedUrl]);
   const itchGamePageUrl = useMemo(() => {
     const links = game?.downloadLinks ?? [];
 
@@ -510,7 +499,7 @@ export default function ClientGamePage({
     }, ITCH_EMBED_STALL_TIMEOUT_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [isItchEmbedActive, itchEmbedAttempt, itchEmbedUrl]);
+  }, [isItchEmbedActive, itchEmbedUrl]);
 
   const trailerId = extractYouTubeId(game?.trailerUrl);
   const screenshots = (game?.screenshots ?? []).filter(Boolean);
@@ -765,8 +754,8 @@ export default function ClientGamePage({
                 {isItchEmbedActive ? (
                   <>
                     <iframe
-                      key={activeItchEmbedUrl}
-                      src={activeItchEmbedUrl ?? itchEmbedUrl}
+                      key={itchEmbedUrl}
+                      src={itchEmbedUrl}
                       title={`${game.name} playable embed`}
                       className="w-full h-full"
                       style={{ border: 0 }}
@@ -792,15 +781,6 @@ export default function ClientGamePage({
                           developer know and open the game on itch directly.
                         </Text>
                         <div className="flex flex-wrap gap-3">
-                          <Button
-                            color="blue"
-                            onClick={() => {
-                              setShowItchEmbedRecovery(false);
-                              setItchEmbedAttempt((current) => current + 1);
-                            }}
-                          >
-                            Retry embed
-                          </Button>
                           <Link
                             href={itchGamePageUrl ?? itchEmbedUrl}
                             target="_blank"
