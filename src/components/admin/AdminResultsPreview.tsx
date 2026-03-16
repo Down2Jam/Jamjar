@@ -24,7 +24,7 @@ export default function AdminResultsPreview() {
           </Hstack>
         </Vstack>
       </Card>
-      <Results />
+      <Results preview />
     </div>
   );
 }

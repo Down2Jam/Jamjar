@@ -250,12 +250,26 @@ export async function getResults(
   category: string,
   contentType: string,
   sort: string,
-  jam: string
+  jam: string,
+  preview: boolean = false,
 ) {
+  const params = new URLSearchParams({
+    category,
+    contentType,
+    sort,
+    jam,
+  });
+
+  if (jam && jam !== "all") {
+    params.set("jamId", jam);
+  }
+
+  if (preview) {
+    params.set("preview", "1");
+  }
+
   return cachedFetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}${
-      jam && jam !== "all" ? `&jamId=${jam}` : ``
-    }`,
+    `${BASE_URL}/results?${params.toString()}`,
     {
       credentials: "include",
       headers: {

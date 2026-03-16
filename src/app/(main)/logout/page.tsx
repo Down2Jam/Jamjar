@@ -1,11 +1,13 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { logout as logoutUser } from "@/requests/auth";
 import { addToast } from "bioloom-ui";
 
 export default function UserPage() {
+  const router = useRouter();
+
   useEffect(() => {
     async function logout() {
       const response = await logoutUser();
@@ -19,7 +21,8 @@ export default function UserPage() {
         addToast({
           title: "Successfully logged out",
         });
-        redirect("/");
+        router.replace("/");
+        router.refresh();
       } else {
         addToast({
           title: "Error while trying to log out",
@@ -28,7 +31,7 @@ export default function UserPage() {
     }
 
     logout();
-  });
+  }, [router]);
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">

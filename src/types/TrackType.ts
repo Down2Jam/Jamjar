@@ -67,6 +67,7 @@ export interface TrackType {
       averageUnrankedScore: number;
       ratingCount: number;
       rankedRatingCount: number;
+      ratingsGivenCount: number;
     };
   };
 }

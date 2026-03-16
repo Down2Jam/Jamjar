@@ -381,10 +381,11 @@ export default function GameEditingForm({
   const [estOneRun, setEstOneRun] = useState<string>("");
   const [estAnyPercent, setEstAnyPercent] = useState<string>("");
   const [estHundredPercent, setEstHundredPercent] = useState<string>("");
+  const gameJamId = game?.jam?.id ?? game?.jamId;
 
   const inCurrentJamContext =
     !!activeJamResponse?.jam &&
-    (activeJamResponse.jam.id === game?.jam?.id || !game);
+    (activeJamResponse.jam.id === gameJamId || !game);
 
   const isRatingPhase = activeJamResponse?.phase === "Rating";
 
@@ -4371,7 +4372,7 @@ export default function GameEditingForm({
             )}
             {(!game || !game.published) &&
               activeJamResponse?.jam &&
-              (activeJamResponse?.jam.id == game?.jam.id || !game) &&
+              (activeJamResponse?.jam.id == gameJamId || !game) &&
               (activeJamResponse?.phase == "Jamming" ||
                 activeJamResponse?.phase == "Submission" ||
                 (activeJamResponse?.phase == "Rating" &&
@@ -4391,7 +4392,7 @@ export default function GameEditingForm({
             {game &&
               game.published &&
               activeJamResponse?.jam &&
-              activeJamResponse?.jam.id == game?.jam?.id &&
+              activeJamResponse?.jam.id == gameJamId &&
               (activeJamResponse?.phase == "Jamming" ||
                 activeJamResponse?.phase == "Submission" ||
                 (activeJamResponse?.phase == "Rating" &&

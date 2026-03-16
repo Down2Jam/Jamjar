@@ -76,12 +76,24 @@ export async function getTrackFlags() {
   });
 }
 
-export async function getTrackResults(jamId: string) {
+export async function getTrackResults(
+  jamId: string,
+  preview: boolean = false,
+  category?: "REGULAR" | "ODA",
+) {
   const params = new URLSearchParams({
     contentType: "MUSIC",
     sort: "OVERALL",
     jam: jamId,
   });
+
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (preview) {
+    params.set("preview", "1");
+  }
 
   return cachedFetch(`${BASE_URL}/results?${params.toString()}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },

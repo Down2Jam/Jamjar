@@ -609,14 +609,36 @@ export default function ClientTrackPage({
                 </Text>
                 <Vstack align="start" className="gap-3">
                   <Chip>Ratings Received: {track.ratings?.length ?? 0}</Chip>
+                  {track.game.category !== "EXTRA" && (
+                    <Hstack>
+                      <Chip>
+                        Ranked Ratings Received:{" "}
+                        {overallScore?.rankedRatingCount ?? 0}
+                      </Chip>
+                      {(overallScore?.rankedRatingCount ?? 0) < 5 && (
+                        <Tooltip
+                          content="This track needs 5 ranked ratings received in order to place in music results."
+                          position="top"
+                        >
+                          <AlertTriangle
+                            size={16}
+                            style={{
+                              color: colors["red"],
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Hstack>
+                  )}
                   <Hstack>
                     <Chip>
-                      Ranked Ratings Received:{" "}
-                      {overallScore?.rankedRatingCount ?? 0}
+                      Ratings Given:{" "}
+                      {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
-                    {(overallScore?.rankedRatingCount ?? 0) < 5 && (
+                    {track.game.category !== "EXTRA" &&
+                      Math.round(overallScore?.ratingsGivenCount ?? 0) < 5 && (
                       <Tooltip
-                        content="This track needs 5 ranked ratings received in order to place in music results."
+                        content="This track's team needs 5 songs rated in order for it to place in music results."
                         position="top"
                       >
                         <AlertTriangle
@@ -626,7 +648,7 @@ export default function ClientTrackPage({
                           }}
                         />
                       </Tooltip>
-                    )}
+                      )}
                   </Hstack>
                 </Vstack>
               </Vstack>

@@ -110,10 +110,15 @@ function formatJamWindow(
   return `${dFmt.format(start)} – ${dFmt.format(end)}`;
 }
 
-export default function Results() {
+export default function Results({ preview = false }: { preview?: boolean }) {
   const searchParams = useSearchParams();
   const [games, setGames] = useState<GameResultType[]>([]);
   const [tracks, setTracks] = useState<TrackResultType[]>([]);
+  const [view, setView] = useState<"GAMES" | "MUSIC">(
+    (["GAMES", "MUSIC"].includes(searchParams.get("view") as "GAMES" | "MUSIC") &&
+      (searchParams.get("view") as "GAMES" | "MUSIC")) ||
+      "GAMES"
+  );
   const [category, setCategory] = useState<"REGULAR" | "ODA">(
     (["REGULAR", "ODA"].includes(
       searchParams.get("category") as "REGULAR" | "ODA"
@@ -239,24 +244,33 @@ export default function Results() {
 
   useEffect(() => {
     const getData = async () => {
-      const [gameResponse, trackResponse] = await Promise.all([
-        getResults(category, contentType, sort, jamId),
-        getTrackResults(jamId),
-      ]);
+      if (view === "GAMES") {
+        const gameResponse = await getResults(
+          category,
+          contentType,
+          sort,
+          jamId,
+          preview
+        );
 
-      if (gameResponse.ok) {
-        const gameData = (await gameResponse.json()).data;
-        setGames(gameData);
+        if (gameResponse.ok) {
+          const gameData = (await gameResponse.json()).data;
+          setGames(gameData);
+        }
+        setTracks([]);
+        return;
       }
 
+      const trackResponse = await getTrackResults(jamId, preview, category);
       if (trackResponse.ok) {
         const trackData = (await trackResponse.json()).data;
         setTracks(trackData);
       }
+      setGames([]);
     };
 
     getData();
-  }, [category, contentType, sort, jamId]);
+  }, [category, contentType, sort, jamId, preview, view]);
 
   const { siteTheme } = useTheme();
 
@@ -296,6 +310,22 @@ export default function Results() {
 
       <Hstack>
         <Dropdown
+          trigger={<Button>{view === "GAMES" ? "Games" : "Music"}</Button>}
+          onSelect={(key) => {
+            const next = key as "GAMES" | "MUSIC";
+            setView(next);
+            updateQueryParam("view", key as string);
+          }}
+        >
+          <Dropdown.Item value="GAMES" icon="gamepad2">
+            Games
+          </Dropdown.Item>
+          <Dropdown.Item value="MUSIC" icon="music">
+            Music
+          </Dropdown.Item>
+        </Dropdown>
+
+        <Dropdown
           trigger={<Button>{category}</Button>}
           onSelect={(key) => {
             setCategory(key as "REGULAR" | "ODA");
@@ -318,7 +348,7 @@ export default function Results() {
           </Dropdown.Item>
         </Dropdown>
 
-        {category === "REGULAR" && (
+        {view === "GAMES" && category === "REGULAR" && (
           <Dropdown
             trigger={<Button>{contentType}</Button>}
             onSelect={(key) => {
@@ -343,32 +373,38 @@ export default function Results() {
           </Dropdown>
         )}
 
-        <Dropdown
-          trigger={<Button>{sort}</Button>}
-          onSelect={(key) => {
-            setSort(
-              key as
-                | "OVERALL"
-                | "GAMEPLAY"
-                | "AUDIO"
-                | "GRAPHICS"
-                | "CREATIVITY"
-                | "EMOTIONALDELIVERY"
-                | "THEME"
-            );
-            updateQueryParam("sort", key as string);
-          }}
-        >
-          <Dropdown.Item value="OVERALL">Overall</Dropdown.Item>
-          <Dropdown.Item value="GAMEPLAY">Gameplay</Dropdown.Item>
-          <Dropdown.Item value="AUDIO">Audio</Dropdown.Item>
-          <Dropdown.Item value="GRAPHICS">Graphics</Dropdown.Item>
-          <Dropdown.Item value="CREATIVITY">Creativity</Dropdown.Item>
-          <Dropdown.Item value="EMOTIONALDELIVERY">
-            Emotional Delivery
-          </Dropdown.Item>
-          <Dropdown.Item value="THEME">Theme</Dropdown.Item>
-        </Dropdown>
+        {view === "GAMES" ? (
+          <Dropdown
+            trigger={<Button>{sort}</Button>}
+            onSelect={(key) => {
+              setSort(
+                key as
+                  | "OVERALL"
+                  | "GAMEPLAY"
+                  | "AUDIO"
+                  | "GRAPHICS"
+                  | "CREATIVITY"
+                  | "EMOTIONALDELIVERY"
+                  | "THEME"
+              );
+              updateQueryParam("sort", key as string);
+            }}
+          >
+            <Dropdown.Item value="OVERALL">Overall</Dropdown.Item>
+            <Dropdown.Item value="GAMEPLAY">Gameplay</Dropdown.Item>
+            <Dropdown.Item value="AUDIO">Audio</Dropdown.Item>
+            <Dropdown.Item value="GRAPHICS">Graphics</Dropdown.Item>
+            <Dropdown.Item value="CREATIVITY">Creativity</Dropdown.Item>
+            <Dropdown.Item value="EMOTIONALDELIVERY">
+              Emotional Delivery
+            </Dropdown.Item>
+            <Dropdown.Item value="THEME">Theme</Dropdown.Item>
+          </Dropdown>
+        ) : (
+          <Button disabled icon="music">
+            Overall
+          </Button>
+        )}
 
         <Dropdown
           trigger={
@@ -394,7 +430,8 @@ export default function Results() {
       </Hstack>
 
       <Vstack className="pt-4" align="stretch">
-        {games &&
+        {view === "GAMES" &&
+          games &&
           games.map((game) => {
             const radarData = game.categoryAverages.map((avg) => ({
               subject: t(avg.categoryName),
@@ -495,9 +532,8 @@ export default function Results() {
             );
           })}
 
-        {tracks.length > 0 && (
-          <section className="mt-8">
-            <h2 className="mb-4 text-2xl">Music</h2>
+        {view === "MUSIC" && (
+          <section>
             <Vstack align="stretch">
               {tracks.map((track) => {
                 const overall = track.categoryAverages.find(

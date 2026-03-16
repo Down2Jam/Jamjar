@@ -19,6 +19,7 @@ import { UserType } from "@/types/UserType";
 import { useEffect, useState } from "react";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
+import { getCurrentGame } from "@/requests/game";
 import { JamType } from "@/types/JamType";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
@@ -27,6 +28,7 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
+import { GameType } from "@/types/GameType";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -39,24 +41,30 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
 
   const [isInJam, setIsInJam] = useState<boolean>();
   const [user, setUser] = useState<UserType>();
+  const [currentJamGame, setCurrentJamGame] = useState<GameType | null>(null);
   const { siteTheme } = useTheme();
 
-  const currentJamTeam = jam
-    ? user?.teams.find((team) => team.jamId == jam.id)
-    : undefined;
-  const hasGame = currentJamTeam?.game ?? null;
+  const currentJamTeams = jam
+    ? (user?.teams ?? []).filter((team) => team.jamId == jam.id)
+    : [];
+  const currentJamTeam =
+    currentJamTeams.find((team) => team.game?.published) ?? currentJamTeams[0];
 
   useEffect(() => {
     if (!isLoggedIn) {
       setUser(undefined);
       setIsInJam(false);
+      setCurrentJamGame(null);
       return;
     }
 
     async function loadData() {
       try {
-        const response = await getSelf();
-        const user = await response.json();
+        const [userResponse, currentGameResponse] = await Promise.all([
+          getSelf(),
+          getCurrentGame().catch(() => null),
+        ]);
+        const user = await userResponse.json();
 
         if (
           jam &&
@@ -67,10 +75,20 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         } else {
           setIsInJam(false);
         }
-        if (response.status == 200) {
+        if (userResponse.status == 200) {
           setUser(user);
         } else {
           setUser(undefined);
+        }
+
+        if (currentGameResponse?.ok) {
+          const payload = await currentGameResponse.json().catch(() => null);
+          const games = Array.isArray(payload?.data) ? payload.data : [];
+          const preferredGame =
+            games.find((game: GameType) => game?.published) ?? games[0] ?? null;
+          setCurrentJamGame(preferredGame);
+        } else {
+          setCurrentJamGame(null);
         }
       } catch (error) {
         console.error(error);
@@ -215,10 +233,10 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             jamPhase == "Rating") && (
             <NavbarButton
               icon="gamepad2"
-              name={hasGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
-              href={hasGame ? "/g/" + hasGame.slug : "/create-game"}
+              name={currentJamGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
+              href={currentJamGame ? "/g/" + currentJamGame.slug : "/create-game"}
               description={
-                hasGame
+                currentJamGame
                   ? "Navbar.MyGame.Description"
                   : "Navbar.CreateGame.Description"
               }

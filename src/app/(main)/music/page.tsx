@@ -2,7 +2,7 @@
 
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { postTrackRating } from "@/requests/rating";
-import { Hstack, Vstack } from "bioloom-ui";
+import { Button, Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
@@ -820,7 +820,7 @@ export default function MusicPage() {
             setSelectedMoreFilters(next);
             updateMoreQueryParam(next);
           }}
-          placeholder="More"
+          trigger={<Button icon="morehorizontal">More</Button>}
         >
           <Dropdown.Item
             value={MORE_FILTERS.downloadable}
