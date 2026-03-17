@@ -74,6 +74,14 @@ export async function getTrackResults(
     jam: jamId,
   });
 
+  if (category) {
+    params.set("category", category);
+  }
+
+  if (preview) {
+    params.set("preview", "1");
+  }
+
   return fetch(`${BASE_URL}/results?${params.toString()}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",

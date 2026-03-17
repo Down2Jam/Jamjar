@@ -6,13 +6,10 @@ import { LeaderboardType } from "@/types/LeaderboardType";
 import { GameEmbedAspectRatio } from "@/types/GameType";
 
 export async function getCurrentGame() {
-  return fetch(
-    `${BASE_URL}/self/current-game?username=${getCookie("user")}`,
-    {
-      headers: { authorization: `Bearer ${getCookie("token")}` },
-      credentials: "include",
-    },
-  );
+  return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
+    headers: { authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
 }
 
 export async function getRatingCategories(always: boolean = false) {
@@ -85,7 +82,7 @@ export async function postGame(
   estOneRun: string | null,
   estAnyPercent: string | null,
   estHundredPercent: string | null,
-  emotePrefix: string | null
+  emotePrefix: string | null,
 ) {
   const response = await fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -178,7 +175,7 @@ export async function updateGame(
   estOneRun: string | null,
   estAnyPercent: string | null,
   estHundredPercent: string | null,
-  emotePrefix: string | null
+  emotePrefix: string | null,
 ) {
   const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -237,15 +234,25 @@ export async function getResults(
   jam: string,
   preview: boolean = false,
 ) {
-  return fetch(
-    `${BASE_URL}/results?category=${category}&contentType=${contentType}&sort=${sort}&jam=${jam}${
-      jam && jam !== "all" ? `&jamId=${jam}` : ``
-    }`,
-    {
-      credentials: "include",
-      headers: {
-        authorization: `Bearer ${getCookie("token")}`,
-      },
+  const params = new URLSearchParams({
+    category,
+    contentType,
+    sort,
+    jam,
+  });
+
+  if (jam && jam !== "all") {
+    params.set("jamId", jam);
+  }
+
+  if (preview) {
+    params.set("preview", "1");
+  }
+
+  return fetch(`${BASE_URL}/results?${params.toString()}`, {
+    credentials: "include",
+    headers: {
+      authorization: `Bearer ${getCookie("token")}`,
     },
-  );
+  });
 }

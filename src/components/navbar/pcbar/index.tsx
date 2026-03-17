@@ -43,10 +43,12 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const { siteTheme } = useTheme();
   const [isInJam, setIsInJam] = useState<boolean | undefined>(undefined);
 
-  const currentJamTeam = jam
-    ? user?.teams.find((team: { jamId: number }) => team.jamId == jam.id)
-    : undefined;
-  const hasGame: GameType | null =
+  const currentJamTeams = jam
+    ? (user?.teams ?? []).filter((team) => team.jamId == jam.id)
+    : [];
+  const currentJamTeam =
+    currentJamTeams.find((team) => team.game?.published) ?? currentJamTeams[0];
+  const currentJamGame: GameType | null =
     currentGameData && currentGameData.length > 0 ? currentGameData[0] : null;
 
   // Derive isInJam from user + jam data
@@ -54,8 +56,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
     isInJam !== undefined
       ? isInJam
       : user && jam
-        ? (user.jams?.filter((userjam: JamType) => userjam.id == jam.id).length ?? 0) >
-          0
+        ? (user.jams?.filter((userjam: JamType) => userjam.id == jam.id)
+            .length ?? 0) > 0
         : false;
 
   return (
@@ -193,8 +195,14 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             jamPhase == "Rating") && (
             <NavbarButton
               icon="gamepad2"
-              name={currentJamGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
-              href={currentJamGame ? "/g/" + currentJamGame.slug : "/create-game"}
+              name={
+                currentJamGame
+                  ? "Navbar.MyGame.Title"
+                  : "Navbar.CreateGame.Title"
+              }
+              href={
+                currentJamGame ? "/g/" + currentJamGame.slug : "/create-game"
+              }
               description={
                 currentJamGame
                   ? "Navbar.MyGame.Description"
@@ -251,7 +259,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <NavbarButton
             icon="users"
             href={currentJamTeam ? "/team" : "/team-finder"}
-            name={currentJamTeam ? "Navbar.MyTeam.Title" : "Navbar.TeamFinder.Title"}
+            name={
+              currentJamTeam ? "Navbar.MyTeam.Title" : "Navbar.TeamFinder.Title"
+            }
             description={
               currentJamTeam
                 ? "Navbar.MyTeam.Description"
