@@ -616,7 +616,7 @@ export default function Games() {
     const moveOwnGameToEnd = selectedMoreFilters.has("moveOwnGameToEnd");
     const moveRatedGamesToEnd = selectedMoreFilters.has("moveRatedGamesToEnd");
 
-    return games.filter((game: GameType) => {
+    const filteredGames = games.filter((game: GameType) => {
       if (hideOwnGame && user) {
         const isOwnGame =
           game.team?.ownerId === user.id ||

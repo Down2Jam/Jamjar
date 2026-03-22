@@ -1,4 +1,3 @@
-import { invalidateRequestCache } from "./cache";
 import { BASE_URL } from "./config";
 
 export async function signup(
@@ -24,14 +23,8 @@ export async function login(username: string, password: string) {
 }
 
 export async function logout() {
-  const response = await fetch(`${BASE_URL}/session`, {
+  return fetch(`${BASE_URL}/session`, {
     method: "DELETE",
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/(self|user|jam|games|tracks|posts|events|results)/);
-  }
-
-  return response;
 }

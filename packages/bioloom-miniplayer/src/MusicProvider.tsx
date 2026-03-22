@@ -459,6 +459,11 @@ function MiniPlayer() {
   const activeJamId = currentJamData?.jam?.id ?? null;
   const activeJamPhase = currentJamData?.phase ?? null;
   const viewerId = userData?.id ?? null;
+  type ViewerTrackRating = {
+    trackId: number;
+    categoryId: number;
+    value: number;
+  };
   const viewerTeamGameIds = useMemo(
     () =>
       Array.isArray(userData?.teams)
@@ -470,14 +475,14 @@ function MiniPlayer() {
         : [],
     [userData],
   );
-  const viewerTrackRatings: Array<{
-    trackId: number;
-    categoryId: number;
-    value: number;
-  }> = useMemo(
-    () => (Array.isArray(userData?.trackRatings) ? userData.trackRatings : []),
-    [userData],
-  );
+  const [viewerTrackRatings, setViewerTrackRatings] = useState<
+    ViewerTrackRating[]
+  >(() => (Array.isArray(userData?.trackRatings) ? userData.trackRatings : []));
+  useEffect(() => {
+    setViewerTrackRatings(
+      Array.isArray(userData?.trackRatings) ? userData.trackRatings : [],
+    );
+  }, [userData?.trackRatings]);
   const hideRatings = Boolean(userData?.hideRatings);
   const autoHideRatingsWhileStreaming = Boolean(
     userData?.autoHideRatingsWhileStreaming,

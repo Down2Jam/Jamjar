@@ -67,6 +67,7 @@ export default function ClientTrackPage({
   const [overallCategory, setOverallCategory] =
     useState<TrackRatingCategoryType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
   const [hoverStars, setHoverStars] = useState<{ [key: number]: number }>({});
   const [selectedStars, setSelectedStars] = useState<{ [key: number]: number }>(
