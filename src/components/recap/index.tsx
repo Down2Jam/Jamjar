@@ -552,6 +552,18 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   }> = [];
 
   const recapStats = useMemo(() => {
+    const gamesCommentedOn = new Set(
+      (user?.comments ?? [])
+        .filter((comment: any) => comment.game?.jamId === selectedJamId)
+        .map((comment: any) => comment.game?.id)
+        .filter((value: unknown): value is number => Number.isInteger(value)),
+    ).size;
+    const tracksCommentedOn = new Set(
+      (user?.comments ?? [])
+        .filter((comment: any) => comment.track?.game?.jamId === selectedJamId)
+        .map((comment: any) => comment.track?.id)
+        .filter((value: unknown): value is number => Number.isInteger(value)),
+    ).size;
     const gamesRated = new Set(
       (user?.ratings ?? [])
         .filter((rating: any) => rating.game?.jamId === selectedJamId)
@@ -564,19 +576,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     ).size;
 
     return {
-      commentsOnGame: flattenCommentContents(recapData.gameDetail?.comments)
-        .length,
-      commentsOnMusic: recapData.trackDetails.reduce(
-        (total, track) => total + flattenCommentContents(track.comments).length,
-        0,
-      ),
+      commentsOnGame: gamesCommentedOn,
+      commentsOnMusic: tracksCommentedOn,
       gamesRated,
       tracksRated,
     };
   }, [
-    recapData.gameDetail,
-    recapData.trackDetails,
     selectedJamId,
+    user?.comments,
     user?.ratings,
     user?.trackRatings,
   ]);

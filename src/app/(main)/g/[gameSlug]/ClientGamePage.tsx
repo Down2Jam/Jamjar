@@ -297,6 +297,14 @@ export default function ClientGamePage({
 
   const { siteTheme, colors } = useTheme();
   const t = useTranslations();
+  const isCurrentJamGame = activeJamResponse?.jam?.id == game?.jamId;
+  const isRatingOpenPhase =
+    activeJamResponse?.phase == "Rating" ||
+    activeJamResponse?.phase == "Submission";
+  const shouldShowCurrentJamResults =
+    activeJamResponse?.phase == "Post-Jam Refinement" ||
+    activeJamResponse?.phase == "Post-Jam Rating";
+  const shouldShowResults = !isCurrentJamGame || shouldShowCurrentJamResults;
 
   const engagedUserIds = useMemo(() => {
     const ids = new Set<number>();
@@ -1160,8 +1168,7 @@ export default function ClientGamePage({
                 >
                   RATINGS
                 </p>
-                {activeJamResponse &&
-                  activeJamResponse?.jam?.id != game.jamId && (
+                {activeJamResponse && shouldShowResults && (
                     <>
                       {Object.keys(game?.scores || {})
                         .sort(
@@ -1275,12 +1282,12 @@ export default function ClientGamePage({
                       </div>
                     </>
                   )}
-                {isEditable && activeJamResponse?.jam?.id == game.jamId && (
+                {isEditable && isCurrentJamGame && isRatingOpenPhase && (
                   <Text size="xs" color="textFaded">
                     You can&apos;t rate your own game
                   </Text>
                 )}
-                {!user && activeJamResponse?.jam?.id == game.jamId && (
+                {!user && isCurrentJamGame && isRatingOpenPhase && (
                   <Text size="xs" color="textFaded">
                     You must be logged in to rate games
                   </Text>
@@ -1288,9 +1295,9 @@ export default function ClientGamePage({
                 {!isEditable &&
                   user?.teams.filter((team) => team.game && team.game.published)
                     .length == 0 &&
-                  activeJamResponse?.jam?.id == game.jamId &&
-                  activeJamResponse?.phase != "Rating" &&
-                  activeJamResponse?.phase != "Submission" && (
+                  isCurrentJamGame &&
+                  !isRatingOpenPhase &&
+                  !shouldShowCurrentJamResults && (
                     <Text size="xs" color="textFaded">
                       It is not the rating period
                     </Text>
@@ -1298,9 +1305,8 @@ export default function ClientGamePage({
                 {!isEditable &&
                   user?.teams.filter((team) => team.game && team.game.published)
                     .length == 0 &&
-                  activeJamResponse?.jam?.id == game.jamId &&
-                  (activeJamResponse?.phase == "Rating" ||
-                    activeJamResponse?.phase == "Submission") && (
+                  isCurrentJamGame &&
+                  isRatingOpenPhase && (
                     <Text size="xs" color="textFaded">
                       Your ratings will not count towards the rankings as you
                       did not submit a game
@@ -1309,9 +1315,8 @@ export default function ClientGamePage({
                 <div>
                   {user &&
                     !isEditable &&
-                    activeJamResponse?.jam?.id == game.jamId &&
-                    (activeJamResponse?.phase == "Rating" ||
-                      activeJamResponse?.phase == "Submission") && (
+                    isCurrentJamGame &&
+                    isRatingOpenPhase && (
                       <Vstack align="start">
                         <RatingVisibilityGate
                           hiddenByPreference={effectiveHideRatings}
