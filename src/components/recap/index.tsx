@@ -15,13 +15,11 @@ import {
 import { Gamepad2, Headphones, MessageSquareText, Star } from "lucide-react";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { useJams, useSelf, useUser } from "@/hooks/queries";
-import { getGame, getGames, getResults } from "@/requests/game";
-import { getTrack, getTrackResults, getTracks } from "@/requests/track";
+import { getGame } from "@/requests/game";
+import { getTrack } from "@/requests/track";
 import { getRecapVisibility, updateRecapVisibility } from "@/requests/recap";
 import type { GameType } from "@/types/GameType";
-import type { GameResultType } from "@/types/GameResultType";
 import type { JamType } from "@/types/JamType";
-import type { TrackResultType } from "@/types/TrackResultType";
 import type { TrackType } from "@/types/TrackType";
 
 type RecapProps = {
@@ -38,10 +36,6 @@ type VisibilityState = {
 type RecapDataState = {
   gameDetail: GameType | null;
   trackDetails: TrackType[];
-  games: GameType[];
-  tracks: TrackType[];
-  gameResults: GameResultType[];
-  trackResults: TrackResultType[];
 };
 
 const STOP_WORDS = new Set([
@@ -407,10 +401,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const [recapData, setRecapData] = useState<RecapDataState>({
     gameDetail: null,
     trackDetails: [],
-    games: [],
-    tracks: [],
-    gameResults: [],
-    trackResults: [],
   });
 
   const isOwner = targetUserSlug ? self?.slug === effectiveSlug : true;
@@ -472,44 +462,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       try {
         const ownerGame = getUserGameForJam(user, jamId);
 
-        const [
-          gamesResponse,
-          tracksResponse,
-          regularResultsResponse,
-          odaResultsResponse,
-          regularTrackResultsResponse,
-          odaTrackResultsResponse,
-        ] = await Promise.all([
-          getGames("newest", String(jamId)),
-          getTracks("newest", String(jamId)),
-          getResults(
-            "REGULAR",
-            "MAJORITYCONTENT",
-            "OVERALL",
-            String(jamId),
-            false,
-            true,
-          ),
-          getResults(
-            "ODA",
-            "MAJORITYCONTENT",
-            "OVERALL",
-            String(jamId),
-            false,
-            true,
-          ),
-          getTrackResults(String(jamId), false, "REGULAR", true),
-          getTrackResults(String(jamId), false, "ODA", true),
-        ]);
-
-        const gamesJson = await gamesResponse.json();
-        const tracksJson = await tracksResponse.json();
-        const regularResultsJson = await regularResultsResponse.json();
-        const odaResultsJson = await odaResultsResponse.json();
-        const regularTrackResultsJson =
-          await regularTrackResultsResponse.json();
-        const odaTrackResultsJson = await odaTrackResultsResponse.json();
-
         const gameDetail = ownerGame
           ? ((await (await getGame(ownerGame.slug, true)).json()) as GameType)
           : null;
@@ -528,16 +480,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         setRecapData({
           gameDetail,
           trackDetails,
-          games: gamesJson ?? [],
-          tracks: tracksJson?.data ?? tracksJson ?? [],
-          gameResults: [
-            ...(regularResultsJson?.data ?? regularResultsJson ?? []),
-            ...(odaResultsJson?.data ?? odaResultsJson ?? []),
-          ],
-          trackResults: [
-            ...(regularTrackResultsJson?.data ?? regularTrackResultsJson ?? []),
-            ...(odaTrackResultsJson?.data ?? odaTrackResultsJson ?? []),
-          ],
         });
       } catch (loadError) {
         console.error(loadError);
@@ -569,51 +511,22 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     [jams, selectedJamId],
   );
 
-  const overallGameScore = useMemo(
-    () => getOverallGameScore(recapData.gameDetail),
-    [recapData.gameDetail],
-  );
-
-  const gameScoreEntries = useMemo(
-    () => getScoreEntries(recapData.gameDetail?.scores),
-    [recapData.gameDetail],
-  );
-
-  const totalEligibleGamesInCategory = useMemo(() => {
-    if (!recapData.gameDetail?.category) return 0;
-    return recapData.gameResults.filter(
-      (game) => game.category === recapData.gameDetail?.category,
-    ).length;
-  }, [recapData.gameDetail, recapData.gameResults]);
-
   const gameCommentWords = useMemo(
     () => getTopWords(flattenCommentContents(recapData.gameDetail?.comments)),
     [recapData.gameDetail],
   );
-
-  const playedGames = useMemo(() => {
-    const ratedIds = new Set(
-      (user?.ratings ?? [])
-        .filter((rating: any) => rating.game?.jamId === selectedJamId)
-        .map((rating: any) => rating.gameId),
-    );
-
-    return recapData.games.filter((game) => ratedIds.has(game.id));
-  }, [recapData.games, selectedJamId, user?.ratings]);
-
-  const notableGames = useMemo(() => {
-    return recapData.gameResults
-      .map((game) => ({
-        game,
-        placements: game.categoryAverages
-          .filter(
-            (category) => category.placement > 0 && category.placement <= 3,
-          )
-          .sort((a, b) => a.placement - b.placement),
-      }))
-      .filter((entry) => entry.placements.length > 0)
-      .sort((a, b) => a.placements[0].placement - b.placements[0].placement);
-  }, [recapData.gameResults]);
+  const gameScoreEntries: Array<{
+    key: string;
+    label: string;
+    averageScore: number;
+    placement: number;
+  }> = [];
+  const totalEligibleGamesInCategory = 0;
+  const playedGames: GameType[] = [];
+  const notableGames: Array<{
+    game: GameType;
+    placements: Array<{ placement: number; categoryName: string }>;
+  }> = [];
 
   const musicCommentWords = useMemo(() => {
     return getTopWords(
@@ -622,47 +535,34 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       ),
     );
   }, [recapData.trackDetails]);
+  const ratedTracks: TrackType[] = [];
+  const notableTracks: Array<{
+    track: TrackType;
+    placements: Array<{ placement: number; categoryName: string }>;
+  }> = [];
+  const trackRecapCards: Array<{
+    track: TrackType;
+    entries: Array<{
+      key: string;
+      label: string;
+      averageScore: number;
+      placement: number;
+    }>;
+    totalEligibleTracks: number;
+  }> = [];
 
-  const ratedTracks = useMemo(() => {
-    const ratedIds = new Set(
+  const recapStats = useMemo(() => {
+    const gamesRated = new Set(
+      (user?.ratings ?? [])
+        .filter((rating: any) => rating.game?.jamId === selectedJamId)
+        .map((rating: any) => rating.gameId),
+    ).size;
+    const tracksRated = new Set(
       (user?.trackRatings ?? [])
         .filter((rating: any) => rating.track?.game?.jamId === selectedJamId)
         .map((rating: any) => rating.trackId),
-    );
+    ).size;
 
-    return recapData.tracks.filter((track) => ratedIds.has(track.id));
-  }, [recapData.tracks, selectedJamId, user?.trackRatings]);
-
-  const notableTracks = useMemo(() => {
-    return recapData.trackResults
-      .map((track) => ({
-        track,
-        placements: track.categoryAverages
-          .filter(
-            (category) => category.placement > 0 && category.placement <= 3,
-          )
-          .sort((a, b) => a.placement - b.placement),
-      }))
-      .filter((entry) => entry.placements.length > 0)
-      .sort((a, b) => a.placements[0].placement - b.placements[0].placement);
-  }, [recapData.trackResults]);
-
-  const trackRecapCards = useMemo(() => {
-    return recapData.trackDetails.map((track) => {
-      const entries = getScoreEntries(track.scores);
-      const totalEligibleTracks = recapData.trackResults.filter(
-        (candidate) => candidate.game?.category === track.game?.category,
-      ).length;
-
-      return {
-        track,
-        entries,
-        totalEligibleTracks,
-      };
-    });
-  }, [recapData.trackDetails, recapData.trackResults]);
-
-  const recapStats = useMemo(() => {
     return {
       commentsOnGame: flattenCommentContents(recapData.gameDetail?.comments)
         .length,
@@ -670,14 +570,15 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         (total, track) => total + flattenCommentContents(track.comments).length,
         0,
       ),
-      gamesPlayed: playedGames.length,
-      tracksRated: ratedTracks.length,
+      gamesRated,
+      tracksRated,
     };
   }, [
-    playedGames.length,
-    ratedTracks.length,
     recapData.gameDetail,
     recapData.trackDetails,
+    selectedJamId,
+    user?.ratings,
+    user?.trackRatings,
   ]);
 
   const handleJamChange = (jamValue: string) => {
@@ -808,7 +709,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
               <StatCard
                 icon={<Gamepad2 size={18} color={colors.green} />}
                 label="Games rated"
-                value={String(recapStats.gamesPlayed)}
+                value={String(recapStats.gamesRated)}
               />
               <StatCard
                 icon={<Star size={18} color={colors.purple} />}
@@ -830,73 +731,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
       {!loadingData ? (
         <>
-          {false && (
-            <div>
-              <Section
-                title="Your Game"
-                subtitle="How your game landed once the ratings settled."
-              >
-                {recapData.gameDetail ? (
-                  <div className="flex flex-col gap-6 w-full">
-                    <Card className="p-6 md:p-8">
-                      <Vstack align="start" gap={4}>
-                        <Text size="2xl" weight="bold">
-                          {recapData.gameDetail?.name}
-                        </Text>
-                        <Text color="textFaded">
-                          Category by category, here is how your game scored.
-                        </Text>
-                        <Hstack wrap>
-                          <Button
-                            href={`/g/${recapData.gameDetail?.slug ?? ""}`}
-                            icon="gamepad2"
-                          >
-                            Open game page
-                          </Button>
-                          <Button
-                            href={`/results?jam=${selectedJamId}&view=GAMES&category=${recapData.gameDetail?.category ?? "REGULAR"}&contentType=MAJORITYCONTENT&sort=OVERALL`}
-                            variant="ghost"
-                            icon="trophy"
-                          >
-                            Open leaderboard
-                          </Button>
-                        </Hstack>
-                      </Vstack>
-                    </Card>
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 w-full">
-                      {gameScoreEntries.map((entry, index) => {
-                        const accentPalette = [
-                          colors.yellow,
-                          colors.green,
-                          colors.blue,
-                          colors.purple,
-                          colors.red,
-                        ];
-
-                        return (
-                          <ScoreCategoryCard
-                            key={entry.key}
-                            title={entry.label}
-                            stars={entry.averageScore / 2}
-                            note={getScoreCallout(
-                              entry,
-                              totalEligibleGamesInCategory,
-                            )}
-                            accent={accentPalette[index % accentPalette.length]}
-                          />
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <Text color="textFaded">
-                    No published game was found for this jam.
-                  </Text>
-                )}
-              </Section>
-            </div>
-          )}
-
           <div className={gameCommentWords.length > 0 ? "" : "hidden"}>
             <Section
               title="Words People Used"
@@ -921,44 +755,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
               ) : null}
             </Section>
           </div>
-
-          {false && (
-            <div>
-              <Section
-                title="Games You Played"
-                subtitle="A quick visual snapshot of what you rated in this jam."
-              >
-                <Text color="textFaded">
-                  You rated {playedGames.length} game
-                  {playedGames.length === 1 ? "" : "s"}.
-                </Text>
-                <div className="grid gap-4 md:grid-cols-3 w-full">
-                  {playedGames.slice(0, 6).map((game) => (
-                    <a
-                      key={game.id}
-                      href={`/g/${game.slug}`}
-                      className="rounded-xl overflow-hidden border"
-                      style={{ borderColor: colors.surface1 }}
-                    >
-                      <div
-                        className="h-32 w-full bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url(${game.thumbnail || "/images/D2J_Banner.png"})`,
-                          backgroundColor: colors.surface0,
-                        }}
-                      />
-                      <div className="p-3">
-                        <Text weight="bold">{game.name}</Text>
-                        <Text size="sm" color="textFaded">
-                          {game.category}
-                        </Text>
-                      </div>
-                    </a>
-                  ))}
-                </div>
-              </Section>
-            </div>
-          )}
 
           {false && (
             <div>
