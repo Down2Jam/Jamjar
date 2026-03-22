@@ -12,6 +12,7 @@ import { getResults } from "@/requests/game";
 import { getTrackResults } from "@/requests/track";
 import { GameResultType } from "@/types/GameResultType";
 import { TrackResultType } from "@/types/TrackResultType";
+import { useMusic } from "bioloom-miniplayer";
 import { Award, Circle, CircleSmall } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -127,6 +128,7 @@ function formatJamWindow(
 }
 
 export default function Results({ preview = false }: { preview?: boolean }) {
+  const { playItem } = useMusic();
   const searchParams = useSearchParams();
   const [games, setGames] = useState<GameResultType[]>([]);
   const [tracks, setTracks] = useState<TrackResultType[]>([]);
@@ -564,10 +566,33 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         src={track.game.thumbnail ?? "/images/D2J_Icon.png"}
                       />
                       <div className="flex flex-col">
-                        <Link href={`/m/${track.slug}`}>{track.name}</Link>
-                        <Text size="sm" color="textFaded">
-                          {track.composer.name} for {track.game.name}
-                        </Text>
+                        <Hstack className="items-start gap-3">
+                          <Vstack align="start" gap={1}>
+                            <Link href={`/m/${track.slug}`}>{track.name}</Link>
+                            <Text size="sm" color="textFaded">
+                              {track.composer.name} for {track.game.name}
+                            </Text>
+                          </Vstack>
+                          <Button
+                            size="xs"
+                            icon="play"
+                            onClick={() =>
+                              playItem({
+                                id: track.id,
+                                slug: track.slug,
+                                name: track.name,
+                                artist: track.composer,
+                                thumbnail:
+                                  track.game.thumbnail ??
+                                  "/images/D2J_Icon.png",
+                                game: track.game,
+                                song: track.url,
+                              })
+                            }
+                          >
+                            Play
+                          </Button>
+                        </Hstack>
                         <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
                           <Text size="sm" color="textFaded">
                             Overall

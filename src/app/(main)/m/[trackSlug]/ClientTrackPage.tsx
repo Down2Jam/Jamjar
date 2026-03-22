@@ -262,14 +262,20 @@ export default function ClientTrackPage({
     activeJamResponse?.jam?.id != null &&
     track.game?.jamId != null &&
     activeJamResponse.jam.id === track.game.jamId;
+  const isRatingOpenPhase =
+    activeJamResponse?.phase === "Rating" ||
+    activeJamResponse?.phase === "Submission";
+  const shouldShowCurrentJamResults =
+    activeJamResponse?.phase === "Post-Jam Refinement" ||
+    activeJamResponse?.phase === "Post-Jam Rating";
   const canShowResults =
-    Boolean(activeJamResponse) && !isTeamMember && !isCurrentJamTrack;
+    Boolean(activeJamResponse) &&
+    (!isCurrentJamTrack || shouldShowCurrentJamResults);
   const canRateDuringJam =
     Boolean(user) &&
     !isTeamMember &&
     isCurrentJamTrack &&
-    (activeJamResponse?.phase === "Rating" ||
-      activeJamResponse?.phase === "Submission");
+    isRatingOpenPhase;
   const raterHasPublishedGame = Boolean(
     user?.teams?.some((team) => team.game && team.game.published),
   );
@@ -573,12 +579,12 @@ export default function ClientTrackPage({
                         public average from {overallScore.ratingCount} ratings
                       </Text>
                     )}
-                    {isTeamMember && (
+                    {isTeamMember && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
                         You can&apos;t rate your own track.
                       </Text>
                     )}
-                    {!user && isCurrentJamTrack && (
+                    {!user && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
                         You must be logged in to rate tracks.
                       </Text>
@@ -586,7 +592,8 @@ export default function ClientTrackPage({
                     {user &&
                       !isTeamMember &&
                       isCurrentJamTrack &&
-                      !canRateDuringJam && (
+                      !isRatingOpenPhase &&
+                      !shouldShowCurrentJamResults && (
                         <Text size="xs" color="textFaded">
                           It is not the rating period.
                         </Text>
