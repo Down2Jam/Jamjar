@@ -13,6 +13,7 @@ export interface GameResultType {
   id: number;
   slug: string;
   name: string;
+  short: string;
   description?: string;
   thumbnail?: string;
   banner?: string;

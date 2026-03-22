@@ -103,6 +103,26 @@ export interface UserType {
   recommendedTrackOverrideIds?: number[];
   recommendedTrackHiddenIds?: number[];
   recommendedTrackCandidateCount?: number;
+  favoriteGameCounts?: Array<{
+    gameId: number;
+    count: number;
+    users: Array<{
+      id: number;
+      slug: string;
+      name: string;
+      profilePicture?: string | null;
+    }>;
+  }>;
+  favoriteTrackCounts?: Array<{
+    trackId: number;
+    count: number;
+    users: Array<{
+      id: number;
+      slug: string;
+      name: string;
+      profilePicture?: string | null;
+    }>;
+  }>;
   userEmotes?: Array<{
     id: number;
     slug: string;
