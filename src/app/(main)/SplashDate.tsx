@@ -1,22 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 import { Text } from "bioloom-ui";
+import { useCurrentJam } from "@/hooks/queries";
 
 export default function SplashDate() {
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const jamData = await getCurrentJam();
-
-      setActiveJamResponse(jamData);
-    };
-
-    fetchData();
-  }, []);
+  const { data: activeJamResponse } = useCurrentJam();
 
   const getOrdinalSuffix = (day: number): string => {
     if (day > 3 && day < 21) return "th";

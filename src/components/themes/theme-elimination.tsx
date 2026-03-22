@@ -1,11 +1,10 @@
 "use client";
 
 import {
-  ActiveJamResponse,
-  getCurrentJam,
   hasJoinedCurrentJam,
   joinJam,
 } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
 import { useEffect, useRef, useState } from "react";
@@ -25,9 +24,7 @@ import { Dropdown } from "bioloom-ui";
 
 export default function ThemeSlaughter() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
-  const [activeJamResponse, setActiveJam] = useState<ActiveJamResponse | null>(
-    null
-  );
+  const { data: activeJamResponse } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [currentTheme, setCurrentTheme] = useState(-1);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
@@ -386,9 +383,6 @@ export default function ThemeSlaughter() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const activeJam = await getCurrentJam();
-        setActiveJam(activeJam); // Set active jam details
-
         const joined = await hasJoinedCurrentJam();
         setHasJoined(joined);
       } catch (error) {

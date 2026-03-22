@@ -9,7 +9,7 @@
 import { SiteThemeType } from "@/types/SiteThemeType";
 import { createContext, useContext, useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { BASE_URL } from "@/requests/config";
+import { useSiteThemes } from "@/hooks/queries";
 
 type ColorsMap = SiteThemeType["colors"];
 
@@ -34,41 +34,26 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
   });
   const [previewedSiteTheme, setPreviewedSiteThemeBacking] =
     useState<SiteThemeType | null>(null);
-  const [allSiteThemes, setAllSiteThemes] = useState<SiteThemeType[]>([]);
   const [isThemeReady, setIsThemeReady] = useState(false);
 
-  async function readThemeFiles() {
-    const res = await fetch(`${BASE_URL}/site-themes`);
-    const { data } = await res.json();
-
-    return data;
-  }
-
-  useEffect(() => {
-    async function loadThemes() {
-      const themes = await readThemeFiles();
-      setAllSiteThemes(themes);
-    }
-
-    loadThemes();
-  }, []);
+  const { data: allSiteThemes = [] } = useSiteThemes();
 
   useEffect(() => {
     if (allSiteThemes.length == 0) return;
 
     const currentTheme = Cookies.get("theme");
-    const match = allSiteThemes.find((t) => t.name === currentTheme);
+    const match = allSiteThemes.find((t: SiteThemeType) => t.name === currentTheme);
 
     if (match) {
       setSiteThemeBacking(match);
     } else {
-      const defaultMatch = allSiteThemes.find((t) => t.name === "Obsidian");
+      const defaultMatch = allSiteThemes.find((t: SiteThemeType) => t.name === "Obsidian");
       setSiteThemeBacking(defaultMatch as SiteThemeType);
     }
   }, [allSiteThemes]);
 
   function setSiteTheme(name: string) {
-    const match = allSiteThemes.find((t) => t.name === name);
+    const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
     if (match) {
       Cookies.set("theme", match.name, { expires: 36500 });
       setSiteThemeBacking(match);
@@ -81,7 +66,7 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const match = allSiteThemes.find((t) => t.name === name);
+    const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
     if (match) {
       setPreviewedSiteThemeBacking(match);
     }
@@ -105,7 +90,7 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
       value={{
         siteTheme: effectiveTheme,
         colors: effectiveTheme.colors,
-        allSiteThemes: allSiteThemes.filter((theme) => !theme.hidden),
+        allSiteThemes: allSiteThemes.filter((theme: SiteThemeType) => !theme.hidden),
         setSiteTheme,
         setPreviewedSiteTheme,
       }}

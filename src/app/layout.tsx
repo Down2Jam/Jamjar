@@ -4,6 +4,9 @@ import "./globals.css";
 import Providers from "./providers";
 import { getLocale, getMessages } from "next-intl/server";
 import { LanguagePreviewProvider } from "@/providers/LanguagePreviewProvider";
+import { QueryClient, dehydrate } from "@tanstack/react-query";
+import { getCurrentJam } from "@/helpers/jam";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -54,11 +57,18 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: queryKeys.jam.current(),
+    queryFn: getCurrentJam,
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen`}>
         <LanguagePreviewProvider>
-          <Providers locale={locale} messages={messages}>
+          <Providers locale={locale} messages={messages} dehydratedState={dehydrate(queryClient)}>
             {children}
           </Providers>
         </LanguagePreviewProvider>

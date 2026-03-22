@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Avatar, Badge } from "bioloom-ui";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EventFilter } from "@/types/EventFilter";
-import { getEvents } from "@/requests/event";
 import { EventType } from "@/types/EventType";
 import Link from "next/link";
 import Timer from "../timers/Timer";
-import { UserType } from "@/types/UserType";
-import { hasCookie } from "@/helpers/cookie";
-import { getSelf } from "@/requests/user";
 import { getIcon } from "@/helpers/icon";
 import { Dropdown } from "bioloom-ui";
 import { Button } from "bioloom-ui";
@@ -20,11 +16,12 @@ import { Text } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Hstack } from "bioloom-ui";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
+import { useEvents, useSelf } from "@/hooks/queries";
+import { hasCookie } from "@/helpers/cookie";
 
 export default function Events() {
   const searchParams = useSearchParams();
 
-  const [events, setEvents] = useState<EventType[]>();
   const [filter, setFilter] = useState<EventFilter>(
     (["upcoming", "current", "past"].includes(
       searchParams.get("filter") as EventFilter
@@ -33,8 +30,12 @@ export default function Events() {
       "current"
   );
   const router = useRouter();
-  const [loading, setLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<UserType>();
+
+  const hasToken = hasCookie("token");
+  const { data: events, isLoading: eventsLoading } = useEvents(filter);
+  const { data: user, isLoading: userLoading } = useSelf(hasToken);
+
+  const loading = eventsLoading || (hasToken && userLoading);
 
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
@@ -45,37 +46,6 @@ export default function Events() {
     }
     navigateToSearchIfChanged(router, params);
   };
-
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-
-      try {
-        // Fetch events
-        const eventsResponse = await getEvents(filter);
-        setEvents((await eventsResponse.json()).data);
-
-        if (!hasCookie("token")) {
-          setUser(undefined);
-          return;
-        }
-
-        const response = await getSelf();
-
-        if (response.status == 200) {
-          setUser(await response.json());
-        } else {
-          setUser(undefined);
-        }
-
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    loadData();
-  }, [filter]);
 
   const filters: Record<
     EventFilter,
@@ -133,7 +103,7 @@ export default function Events() {
         <div className="flex flex-col gap-3 p-4">
           {events && events.length > 0 ? (
             <div className="flex flex-col w-[488px] gap-2">
-              {events.map((event) => (
+              {events.map((event: EventType) => (
                 <Card key={event.id} className="p-2">
                   <Hstack justify="between" gap={4}>
                     <Badge

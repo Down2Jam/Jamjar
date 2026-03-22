@@ -1,7 +1,6 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PostTime } from "@/types/PostTimes";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getPosts(
   sort: string,
@@ -21,13 +20,13 @@ export async function getPosts(
       .join("_")}`;
   }
 
-  return cachedFetch(url, undefined, { ttlMs: 20_000 });
+  return fetch(url);
 }
 
 export async function getPost(postSlug: string, userSlug?: string) {
   let url = `${BASE_URL}/post?slug=${postSlug}`;
   if (userSlug) url += `&user=${userSlug}`;
-  return cachedFetch(url, undefined, { ttlMs: 20_000 });
+  return fetch(url);
 }
 
 export async function postPost(
@@ -52,10 +51,6 @@ export async function postPost(
     credentials: "include",
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
-
   return response;
 }
 
@@ -73,10 +68,6 @@ export async function deletePost(postId: number) {
     },
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
 
   return response;
 }
@@ -96,10 +87,6 @@ export async function removePost(postId: number) {
     credentials: "include",
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
-
   return response;
 }
 
@@ -117,10 +104,6 @@ export async function stickPost(postId: number, sticky: boolean) {
     },
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
 
   return response;
 }
@@ -147,10 +130,6 @@ export async function updatePost(
     credentials: "include",
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
-
   return response;
 }
 
@@ -167,10 +146,6 @@ export async function togglePostReaction(postId: number, reactionId: number) {
       reactionId,
     }),
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/post|\/posts|\/self|\/user/);
-  }
 
   return response;
 }

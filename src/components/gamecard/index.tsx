@@ -158,7 +158,7 @@ export function GameCard({
                 case "Web":
                   return <SiHtml5 key="web" />;
                 default:
-                  return <></>;
+                  return null;
               }
             })}
           </Hstack>

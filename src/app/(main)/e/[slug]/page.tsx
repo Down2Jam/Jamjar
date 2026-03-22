@@ -2,26 +2,13 @@
 
 import { Button } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
-import { getEvent } from "@/requests/event";
-import { EventType } from "@/types/EventType";
+import { useEvent } from "@/hooks/queries";
 import { BadgePlus, TimerIcon } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function EventPage() {
-  const [event, setEvent] = useState<EventType>();
   const { slug } = useParams();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await getEvent(`${slug}`);
-      setEvent((await response.json()).data);
-      setIsLoading(false);
-    };
-
-    fetchData();
-  }, [slug]);
+  const { data: event, isLoading } = useEvent(`${slug}`);
 
   if (isLoading) return <Spinner />;
 

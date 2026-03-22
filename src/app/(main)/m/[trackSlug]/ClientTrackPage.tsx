@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/providers/SiteThemeProvider";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import {
   getTrack,
   getTrackRatingCategories,
@@ -73,9 +73,7 @@ export default function ClientTrackPage({
     {},
   );
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const { data: activeJamResponse } = useCurrentJam();
   const effectiveHideRatings = useEffectiveHideRatings(user);
 
   useEffect(() => {
@@ -118,11 +116,6 @@ export default function ClientTrackPage({
                 category.name === "Overall",
             ) ?? null;
           setOverallCategory(overall);
-        }
-
-        const jamData = await getCurrentJam();
-        if (!cancelled) {
-          setActiveJamResponse(jamData);
         }
       } catch (error) {
         console.error(error);

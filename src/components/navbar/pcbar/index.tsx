@@ -13,13 +13,10 @@ import { Divider } from "bioloom-ui";
 import NavbarButton from "./NavbarButton";
 import { useJam } from "@/hooks/useJam";
 import { addToast } from "bioloom-ui";
-import { getCurrentJam, joinJam } from "@/helpers/jam";
+import { joinJam } from "@/helpers/jam";
 import NavbarUser from "./NavbarUser";
-import { UserType } from "@/types/UserType";
-import { useEffect, useState } from "react";
+import { GameType } from "@/types/GameType";
 import { hasCookie } from "@/helpers/cookie";
-import { getSelf } from "@/requests/user";
-import { getCurrentGame } from "@/requests/game";
 import { JamType } from "@/types/JamType";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
@@ -28,7 +25,8 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
-import { GameType } from "@/types/GameType";
+import { useSelf, useCurrentGame } from "@/hooks/queries";
+import { useState } from "react";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -39,64 +37,28 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const { jamPhase, jam } = useJam();
   const { isLgUp, isXlUp, isMdUp, isLgDown } = useBreakpoint();
 
-  const [isInJam, setIsInJam] = useState<boolean>();
-  const [user, setUser] = useState<UserType>();
-  const [currentJamGame, setCurrentJamGame] = useState<GameType | null>(null);
+  const hasToken = hasCookie("token");
+  const { data: user } = useSelf(hasToken);
+  const { data: currentGameData } = useCurrentGame(hasToken);
   const { siteTheme } = useTheme();
+  const [isInJam, setIsInJam] = useState<boolean | undefined>(undefined);
 
   const currentJamTeams = jam
     ? (user?.teams ?? []).filter((team) => team.jamId == jam.id)
     : [];
   const currentJamTeam =
     currentJamTeams.find((team) => team.game?.published) ?? currentJamTeams[0];
+  const currentJamGame: GameType | null =
+    currentGameData && currentGameData.length > 0 ? currentGameData[0] : null;
 
-  useEffect(() => {
-    if (!isLoggedIn) {
-      setUser(undefined);
-      setIsInJam(false);
-      setCurrentJamGame(null);
-      return;
-    }
-
-    async function loadData() {
-      try {
-        const [userResponse, currentGameResponse] = await Promise.all([
-          getSelf(),
-          getCurrentGame().catch(() => null),
-        ]);
-        const user = await userResponse.json();
-
-        if (
-          jam &&
-          user.jams.filter((userjam: JamType) => userjam.id == jam.id).length >
-            0
-        ) {
-          setIsInJam(true);
-        } else {
-          setIsInJam(false);
-        }
-        if (userResponse.status == 200) {
-          setUser(user);
-        } else {
-          setUser(undefined);
-        }
-
-        if (currentGameResponse?.ok) {
-          const payload = await currentGameResponse.json().catch(() => null);
-          const games = Array.isArray(payload?.data) ? payload.data : [];
-          const preferredGame =
-            games.find((game: GameType) => game?.published) ?? games[0] ?? null;
-          setCurrentJamGame(preferredGame);
-        } else {
-          setCurrentJamGame(null);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadData();
-  }, [isLoggedIn, jam]);
+  // Derive isInJam from user + jam data
+  const computedIsInJam =
+    isInJam !== undefined
+      ? isInJam
+      : user && jam
+        ? (user.jams?.filter((userjam: JamType) => userjam.id == jam.id)
+            .length ?? 0) > 0
+        : false;
 
   return (
     <Navbar
@@ -226,15 +188,21 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         )}
         {user &&
           jam &&
-          isInJam &&
+          computedIsInJam &&
           isLgUp &&
           (jamPhase == "Jamming" ||
             jamPhase == "Submission" ||
             jamPhase == "Rating") && (
             <NavbarButton
               icon="gamepad2"
-              name={currentJamGame ? "Navbar.MyGame.Title" : "Navbar.CreateGame.Title"}
-              href={currentJamGame ? "/g/" + currentJamGame.slug : "/create-game"}
+              name={
+                currentJamGame
+                  ? "Navbar.MyGame.Title"
+                  : "Navbar.CreateGame.Title"
+              }
+              href={
+                currentJamGame ? "/g/" + currentJamGame.slug : "/create-game"
+              }
               description={
                 currentJamGame
                   ? "Navbar.MyGame.Description"
@@ -287,11 +255,13 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             color="lime"
           />
         )}
-        {user && isMdUp && jam && isInJam && (
+        {user && isMdUp && jam && computedIsInJam && (
           <NavbarButton
             icon="users"
             href={currentJamTeam ? "/team" : "/team-finder"}
-            name={currentJamTeam ? "Navbar.MyTeam.Title" : "Navbar.TeamFinder.Title"}
+            name={
+              currentJamTeam ? "Navbar.MyTeam.Title" : "Navbar.TeamFinder.Title"
+            }
             description={
               currentJamTeam
                 ? "Navbar.MyTeam.Description"
@@ -301,13 +271,11 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             hotkey={["G", "T"]}
           />
         )}
-        {user && isMdUp && jam && !isInJam && (
+        {user && isMdUp && jam && !computedIsInJam && (
           <NavbarButton
             icon="calendarplus"
             onPress={async () => {
-              const currentJamResponse = await getCurrentJam();
-              const currentJam = currentJamResponse?.jam;
-              if (!currentJam) {
+              if (!jam) {
                 addToast({
                   title: "Navbar.NoJamToast.Title",
                   description: "Navbar.NoJamToast.Description",
@@ -317,7 +285,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 });
                 return;
               }
-              if (await joinJam(currentJam.id)) {
+              if (await joinJam(jam.id)) {
                 setIsInJam(true);
               }
             }}

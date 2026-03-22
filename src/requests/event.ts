@@ -1,17 +1,12 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getEvents(filter: string) {
-  return cachedFetch(`${BASE_URL}/events?filter=${filter}`, undefined, {
-    ttlMs: 20_000,
-  });
+  return fetch(`${BASE_URL}/events?filter=${filter}`);
 }
 
 export async function getEvent(eventSlug: string) {
-  return cachedFetch(`${BASE_URL}/event?targetEventSlug=${eventSlug}`, undefined, {
-    ttlMs: 20_000,
-  });
+  return fetch(`${BASE_URL}/event?targetEventSlug=${eventSlug}`);
 }
 
 export async function postEvent(
@@ -39,10 +34,6 @@ export async function postEvent(
     },
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/event|\/events|\/self|\/user/);
-  }
 
   return response;
 }

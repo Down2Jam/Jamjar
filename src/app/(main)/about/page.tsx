@@ -1,10 +1,7 @@
 "use client";
 
-import { getCurrentJam } from "@/helpers/jam";
-import { JamType } from "@/types/JamType";
 import { format } from "date-fns";
 import { Users } from "lucide-react";
-import { useEffect, useState } from "react";
 import { toZonedTime } from "date-fns-tz";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Accordion, AccordionItem } from "bioloom-ui";
@@ -13,23 +10,12 @@ import { Card } from "bioloom-ui";
 import { Hstack, Stack, Vstack } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import AboutLogo from "../AboutLogo";
+import { useCurrentJam } from "@/hooks/queries";
 
 export default function AboutPage() {
-  const [jam, setJam] = useState<JamType | null>();
+  const { data: jamResponse } = useCurrentJam();
+  const jam = jamResponse?.jam ?? null;
   const { colors } = useTheme();
-
-  useEffect(() => {
-    loadUser();
-    async function loadUser() {
-      try {
-        const jamResponse = await getCurrentJam();
-        const currentJam = jamResponse?.jam;
-        setJam(currentJam);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  }, []);
 
   return (
     <Vstack>

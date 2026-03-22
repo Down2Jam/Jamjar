@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getThemes } from "@/requests/theme";
+import { useMemo } from "react";
+import { useThemes } from "@/hooks/queries";
 import type { ThemeType } from "@/types/ThemeType";
 import {
   Button,
@@ -23,36 +23,8 @@ type ThemeWithScore = ThemeType & {
 };
 
 export default function AdminThemeEliminationResults() {
-  const [themes, setThemes] = useState<ThemeWithScore[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-
-    const loadThemes = async () => {
-      setLoading(true);
-      try {
-        const response = await getThemes(true);
-        if (!active) return;
-        if (response.ok) {
-          const data = await response.json();
-          setThemes(data.data ?? []);
-        } else {
-          setThemes([]);
-        }
-      } catch (error) {
-        console.error("Failed to load elimination results", error);
-        if (active) setThemes([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadThemes();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data, isLoading: loading } = useThemes(true);
+  const themes: ThemeWithScore[] = data ?? [];
 
   const rankedThemes = useMemo(() => {
     return [...themes].sort(

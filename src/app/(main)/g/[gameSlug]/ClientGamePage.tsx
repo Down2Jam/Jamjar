@@ -37,7 +37,7 @@ import { postScore } from "@/requests/score";
 import { postRating, postTrackRating } from "@/requests/rating";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import {
   Radar,
   RadarChart,
@@ -248,8 +248,7 @@ export default function ClientGamePage({
   const [trackOverallCategory, setTrackOverallCategory] =
     useState<TrackRatingCategoryType | null>(null);
   const effectiveHideRatings = useEffectiveHideRatings(user);
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const { data: activeJamResponse } = useCurrentJam();
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
@@ -360,9 +359,6 @@ export default function ClientGamePage({
           ) ?? null;
         setTrackOverallCategory(overall);
       }
-
-      const jamData = await getCurrentJam();
-      setActiveJamResponse(jamData);
 
       // Fetch the logged-in user data
       if (getCookie("token")) {

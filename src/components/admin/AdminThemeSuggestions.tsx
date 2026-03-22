@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getThemes } from "@/requests/theme";
+import { useThemes } from "@/hooks/queries";
 import type { ThemeType } from "@/types/ThemeType";
 import {
   Button,
@@ -19,36 +18,8 @@ import {
 } from "bioloom-ui";
 
 export default function AdminThemeSuggestions() {
-  const [themes, setThemes] = useState<ThemeType[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let active = true;
-
-    const loadThemes = async () => {
-      setLoading(true);
-      try {
-        const response = await getThemes();
-        if (!active) return;
-        if (response.ok) {
-          const data = await response.json();
-          setThemes(data.data ?? []);
-        } else {
-          setThemes([]);
-        }
-      } catch (error) {
-        console.error("Failed to load theme suggestions", error);
-        if (active) setThemes([]);
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-
-    loadThemes();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data, isLoading: loading } = useThemes(false);
+  const themes: ThemeType[] = data ?? [];
 
   return (
     <main className="flex flex-col gap-6 pb-10">

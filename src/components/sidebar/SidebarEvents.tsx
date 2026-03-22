@@ -1,8 +1,7 @@
 "use client";
 
 import { Avatar, Badge } from "bioloom-ui";
-import { useEffect, useState } from "react";
-import { getEvents } from "@/requests/event";
+import { useEvents } from "@/hooks/queries";
 import { EventType } from "@/types/EventType";
 import Timer from "../timers/Timer";
 import Link from "next/link";
@@ -11,29 +10,20 @@ import { Text } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Hstack } from "bioloom-ui";
 import { Button } from "bioloom-ui";
+import { useMemo } from "react";
 
 export default function SidebarEvents() {
-  const [events, setEvents] = useState<EventType[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const { data: currentEvents, isLoading: isLoadingCurrent } =
+    useEvents("current");
+  const { data: upcomingEvents, isLoading: isLoadingUpcoming } =
+    useEvents("upcoming");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const eventResponse = await getEvents("current");
-        const eventResponse2 = await getEvents("upcoming");
-        setEvents([
-          ...(await eventResponse.json()).data,
-          ...(await eventResponse2.json()).data,
-        ]);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  const isLoading = isLoadingCurrent || isLoadingUpcoming;
 
-    fetchData();
-  }, []);
+  const events: EventType[] = useMemo(
+    () => [...(currentEvents ?? []), ...(upcomingEvents ?? [])],
+    [currentEvents, upcomingEvents]
+  );
 
   if (isLoading) return <></>;
 

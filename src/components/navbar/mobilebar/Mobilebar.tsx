@@ -7,9 +7,8 @@ import { Button, Navbar, NavbarItem } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { Dropdown } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
-import { getSelf } from "@/requests/user";
-import { useEffect, useState } from "react";
-import { UserType } from "@/types/UserType";
+import { hasCookie } from "@/helpers/cookie";
+import { useSelf } from "@/hooks/queries";
 
 type MobilebarProps = {
   isLoggedIn: boolean;
@@ -20,30 +19,8 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
   const hidden = direction === "down";
   const { colors } = useTheme();
 
-  const [user, setUser] = useState<UserType>();
-
-  useEffect(() => {
-    if (!isLoggedIn) {
-      setUser(undefined);
-      return;
-    }
-
-    async function loadData() {
-      try {
-        const response = await getSelf();
-        const user = await response.json();
-        if (response.status == 200) {
-          setUser(user);
-        } else {
-          setUser(undefined);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    loadData();
-  }, [isLoggedIn]);
+  const hasToken = hasCookie("token");
+  const { data: user } = useSelf(hasToken);
 
   return (
     <Navbar

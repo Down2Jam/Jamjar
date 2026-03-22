@@ -3,10 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
-  getCurrentJam,
   hasJoinedCurrentJam,
-  ActiveJamResponse,
 } from "@/helpers/jam";
+import { useCurrentJam } from "@/hooks/queries";
 import { ThemeType } from "@/types/ThemeType";
 import { joinJam } from "@/helpers/jam";
 import {
@@ -119,29 +118,18 @@ export default function ThemeSuggestions() {
   const [userSuggestions, setUserSuggestions] = useState<ThemeType[]>([]);
   const [themeLimit, setThemeLimit] = useState(0);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true); // Loading state for fetching phase
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Fetch the current jam phase using helpers/jam
+  // Derive theme limit and loading from hook data
   useEffect(() => {
-    const fetchCurrentJamPhase = async () => {
-      try {
-        const activeJam = await getCurrentJam();
-        setActiveJamResponse(activeJam); // Set active jam details
-        if (activeJam?.jam) {
-          setThemeLimit(activeJam.jam.themePerUser || Infinity); // Set theme limit
-        }
-      } catch (error) {
-        console.error("Error fetching current jam:", error);
-      } finally {
-        setPhaseLoading(false); // Stop loading when phase is fetched
-      }
-    };
-
-    fetchCurrentJamPhase();
-  }, []);
+    if (jamLoading) return;
+    if (activeJamResponse?.jam) {
+      setThemeLimit(activeJamResponse.jam.themePerUser || Infinity);
+    }
+    setPhaseLoading(false);
+  }, [activeJamResponse, jamLoading]);
 
   // Fetch all suggestions for the logged-in user
   const fetchSuggestions = async () => {

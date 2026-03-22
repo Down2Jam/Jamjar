@@ -1,13 +1,10 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getTrack(trackSlug: string) {
-  return cachedFetch(`${BASE_URL}/tracks/${trackSlug}`, {
+  return fetch(`${BASE_URL}/tracks/${trackSlug}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 30_000,
   });
 }
 
@@ -17,9 +14,7 @@ export async function getTracks(sort: string, jamId?: string) {
     params.set("jamId", jamId);
   }
 
-  return cachedFetch(`${BASE_URL}/tracks?${params.toString()}`, undefined, {
-    ttlMs: 20_000,
-  });
+  return fetch(`${BASE_URL}/tracks?${params.toString()}`);
 }
 
 export async function updateTrack(
@@ -51,28 +46,20 @@ export async function updateTrack(
     body: JSON.stringify(payload),
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/(tracks|results|self|user|jam)/);
-  }
-
   return response;
 }
 
 export async function getTrackTags() {
-  return cachedFetch(`${BASE_URL}/tracktags`, {
+  return fetch(`${BASE_URL}/tracktags`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 300_000,
   });
 }
 
 export async function getTrackFlags() {
-  return cachedFetch(`${BASE_URL}/trackflags`, {
+  return fetch(`${BASE_URL}/trackflags`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 300_000,
   });
 }
 
@@ -95,20 +82,16 @@ export async function getTrackResults(
     params.set("preview", "1");
   }
 
-  return cachedFetch(`${BASE_URL}/results?${params.toString()}`, {
+  return fetch(`${BASE_URL}/results?${params.toString()}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 20_000,
   });
 }
 
 export async function getTrackRatingCategories() {
-  return cachedFetch(`${BASE_URL}/track-rating-categories`, {
+  return fetch(`${BASE_URL}/track-rating-categories`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 300_000,
   });
 }
 

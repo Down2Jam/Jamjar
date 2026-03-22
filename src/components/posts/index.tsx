@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PostCard from "./PostCard";
 import { PostType } from "@/types/PostType";
 import { addToast, Avatar } from "bioloom-ui";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
-import { UserType } from "@/types/UserType";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
-import { getTags } from "@/requests/tag";
-import { getSelf } from "@/requests/user";
-import { getPosts } from "@/requests/post";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import LikeButton from "./LikeButton";
@@ -34,13 +30,12 @@ import { useTranslations } from "next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
+import { useSelf, useTags, usePosts } from "@/hooks/queries";
 
 export default function Posts() {
   const searchParams = useSearchParams();
 
   const { siteTheme, colors } = useTheme();
-  const [posts, setPosts] = useState<PostType[]>();
-  const [stickyPosts, setStickyPosts] = useState<PostType[]>();
   const [sort, setSort] = useState<PostSort>(
     (["newest", "oldest", "top"].includes(
       searchParams.get("sort") as PostSort
@@ -73,18 +68,55 @@ export default function Posts() {
       (searchParams.get("style") as PostStyle)) ||
       "Cozy"
   );
-  const [user, setUser] = useState<UserType>();
   const [oldIsOpen, setOldIsOpen] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [tags, setTags] = useState<{
-    [category: string]: { tags: TagType[]; priority: number };
-  }>();
   const [tagRules, setTagRules] = useState<{ [key: number]: number }>();
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<number>(0);
   const t = useTranslations();
+
+  // TanStack Query hooks
+  const { data: user } = useSelf();
+  const { data: rawTags } = useTags();
+  const { data: posts, isLoading: postsLoading } = usePosts(
+    sort,
+    time,
+    false,
+    tagRules,
+    user?.slug
+  );
+  const { data: stickyPosts, isLoading: stickyLoading } = usePosts(
+    sort,
+    time,
+    true,
+    tagRules,
+    user?.slug
+  );
+
+  const loading = postsLoading || stickyLoading;
+
+  // Transform raw tags into categorized object
+  const tags = useMemo(() => {
+    if (!rawTags) return undefined;
+    const tagObject: {
+      [category: string]: { tags: TagType[]; priority: number };
+    } = {};
+    for (const tag of rawTags) {
+      if (tag.name == "D2Jam") continue;
+      if (tag.category) {
+        if (tag.category.name in tagObject) {
+          tagObject[tag.category.name].tags.push(tag);
+        } else {
+          tagObject[tag.category.name] = {
+            tags: [tag],
+            priority: tag.category.priority,
+          };
+        }
+      }
+    }
+    return tagObject;
+  }, [rawTags]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -136,74 +168,6 @@ export default function Posts() {
     }
     navigateToSearchIfChanged(router, params);
   };
-
-  useEffect(() => {
-    const loadUserAndPosts = async () => {
-      setLoading(true);
-
-      try {
-        const tagResponse = await getTags();
-
-        if (tagResponse.ok) {
-          const tagObject: {
-            [category: string]: { tags: TagType[]; priority: number };
-          } = {};
-
-          for (const tag of (await tagResponse.json()).data) {
-            if (tag.name == "D2Jam") {
-              continue;
-            }
-
-            if (tag.category) {
-              if (tag.category.name in tagObject) {
-                tagObject[tag.category.name].tags.push(tag);
-              } else {
-                tagObject[tag.category.name] = {
-                  tags: [tag],
-                  priority: tag.category.priority,
-                };
-              }
-            }
-          }
-
-          setTags(tagObject);
-        }
-
-        // Fetch the user
-        const userResponse = await getSelf();
-        const userData = userResponse.ok
-          ? await userResponse.json()
-          : undefined;
-        setUser(userData);
-
-        // Fetch posts (with userSlug if user is available)
-        const postsResponse = await getPosts(
-          sort,
-          time,
-          false,
-          tagRules,
-          userData?.slug
-        );
-        setPosts(await postsResponse.json());
-
-        // Sticky posts
-        // Fetch posts (with userSlug if user is available)
-        const stickyPostsResponse = await getPosts(
-          sort,
-          time,
-          true,
-          tagRules,
-          userData?.slug
-        );
-        setStickyPosts(await stickyPostsResponse.json());
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    loadUserAndPosts();
-  }, [sort, time, tagRules]);
 
   const sorts: Record<
     PostSort,
@@ -302,7 +266,7 @@ export default function Posts() {
         stickyPosts &&
         stickyPosts.length > 0 && (
           <Vstack align="stretch" className="p-4">
-            {stickyPosts.map((post) => (
+            {stickyPosts.map((post: PostType) => (
               <StickyPostCard key={post.id} post={post} />
             ))}
           </Vstack>
@@ -474,7 +438,7 @@ export default function Posts() {
       ) : (
         <Vstack align="stretch" className="p-4">
           {posts && posts.length > 0 ? (
-            posts.map((post, index) => (
+            posts.map((post: PostType, index: number) => (
               <PostCard
                 key={post.id}
                 post={post}
@@ -627,7 +591,7 @@ export default function Posts() {
             </Card>
 
             <div className="flex flex-col gap-3 mt-4">
-              {posts[currentPost]?.comments.map((comment) => (
+              {posts[currentPost]?.comments.map((comment: PostType["comments"][number]) => (
                 <div key={comment.id}>
                   <CommentCard comment={comment} user={user} />
                 </div>

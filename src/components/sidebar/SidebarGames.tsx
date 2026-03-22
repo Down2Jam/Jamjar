@@ -1,50 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { GameType } from "@/types/GameType";
-import { getGames } from "@/requests/game";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import Image from "next/image";
 import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import Link from "next/link";
-
-// 👇 Assumes you have these helpers available
-import { getCurrentJam, ActiveJamResponse } from "@/helpers/jam";
+import { useCurrentJam, useGames } from "@/hooks/queries";
+import { useMemo } from "react";
 
 export default function SidebarGames() {
-  const [games, setGames] = useState<GameType[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const { colors } = useTheme();
+  const { data: activeJam } = useCurrentJam();
 
-  useEffect(() => {
-    const fetchGameData = async () => {
-      try {
-        let jamId: string | undefined;
+  const jamId = useMemo(() => {
+    const phase = activeJam?.phase ?? "";
+    const isRatingWindow =
+      phase === "Jamming" || phase === "Submission" || phase === "Rating";
+    if (activeJam?.jam?.id && isRatingWindow) {
+      return activeJam.jam.id.toString();
+    }
+    return undefined;
+  }, [activeJam]);
 
-        try {
-          const active: ActiveJamResponse | null = await getCurrentJam();
-          const phase = active?.phase ?? "";
-          const isRatingWindow =
-            phase === "Jamming" || phase === "Submission" || phase === "Rating";
+  const { data: gamesData, isLoading } = useGames("karma", jamId);
 
-          if (active?.jam?.id && isRatingWindow) {
-            jamId = active.jam.id.toString();
-          }
-        } catch {}
-
-        const gameResponse = await getGames("recommended", jamId);
-        const data = await gameResponse.json();
-        setGames(Array.isArray(data) ? data : data?.data ?? []);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchGameData();
-  }, []);
+  const games: GameType[] = useMemo(
+    () => (Array.isArray(gamesData) ? gamesData : []),
+    [gamesData]
+  );
 
   if (isLoading) return <></>;
   if (games.length === 0) return <></>;

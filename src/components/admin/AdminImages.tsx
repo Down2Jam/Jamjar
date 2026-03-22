@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getAdminImages } from "@/requests/admin";
+import { useMemo } from "react";
+import { useAdminImages } from "@/hooks/queries";
 import { useTheme } from "@/providers/SiteThemeProvider";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 import {
   Button,
   Card,
@@ -43,41 +45,17 @@ const formatBytes = (value: number) => {
 };
 
 export default function AdminImages() {
-  const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<AdminImagesResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading: loading, isError } = useAdminImages();
+  const typedData = data as AdminImagesResponse | undefined;
   const { colors } = useTheme();
-
-  const loadImages = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await getAdminImages();
-      if (!response.ok) {
-        const json = await response.json().catch(() => null);
-        setError(json?.message ?? "Failed to load images");
-        setData(null);
-        return;
-      }
-      const json = await response.json();
-      setData(json.data as AdminImagesResponse);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load images");
-      setData(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadImages();
-  }, []);
+  const queryClient = useQueryClient();
 
   const unusedCount = useMemo(() => {
-    if (!data) return 0;
-    return data.files.filter((file) => file.usageCount === 0).length;
-  }, [data]);
+    if (!typedData) return 0;
+    return typedData.files.filter((file) => file.usageCount === 0).length;
+  }, [typedData]);
+
+  const error = isError ? "Failed to load images" : null;
 
   return (
     <main className="flex flex-col gap-6 pb-10">
@@ -91,7 +69,14 @@ export default function AdminImages() {
               Uploaded images with usage counts and cleanup status.
             </Text>
           </Vstack>
-          <Button icon="rotateccw" onClick={loadImages}>
+          <Button
+            icon="rotateccw"
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: queryKeys.admin.images(),
+              })
+            }
+          >
             Refresh
           </Button>
         </Hstack>
@@ -104,7 +89,7 @@ export default function AdminImages() {
               Total Files
             </Text>
             <Text size="2xl" weight="bold">
-              {data?.totalFiles ?? 0}
+              {typedData?.totalFiles ?? 0}
             </Text>
           </Vstack>
         </Card>
@@ -114,7 +99,7 @@ export default function AdminImages() {
               Total Size
             </Text>
             <Text size="2xl" weight="bold">
-              {formatBytes(data?.totalSize ?? 0)}
+              {formatBytes(typedData?.totalSize ?? 0)}
             </Text>
           </Vstack>
         </Card>
@@ -141,10 +126,10 @@ export default function AdminImages() {
         ) : (
           <Table
             bottomContent={
-              data?.deletedCount ? (
+              typedData?.deletedCount ? (
                 <Text size="xs" color="textFaded">
-                  Deleted {data.deletedCount} stale files (
-                  {formatBytes(data.deletedSize)}).
+                  Deleted {typedData.deletedCount} stale files (
+                  {formatBytes(typedData.deletedSize)}).
                 </Text>
               ) : null
             }
@@ -157,8 +142,8 @@ export default function AdminImages() {
               <TableColumn>Last Modified</TableColumn>
             </TableHeader>
             <TableBody>
-              {data?.files?.length ? (
-                data.files.map((file) => (
+              {typedData?.files?.length ? (
+                typedData.files.map((file) => (
                   <TableRow key={file.name}>
                     <TableCell>
                       <div

@@ -4,41 +4,32 @@ import { PlatformType } from "@/types/DownloadLinkType";
 import { AchievementType } from "@/types/AchievementType";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { GameEmbedAspectRatio } from "@/types/GameType";
-import { cachedFetch, invalidateRequestCache } from "./cache";
 
 export async function getCurrentGame() {
-  return cachedFetch(
-    `${BASE_URL}/self/current-game?username=${getCookie("user")}`,
-    {
-      headers: { authorization: `Bearer ${getCookie("token")}` },
-      credentials: "include",
-    },
-    { ttlMs: 15_000 },
-  );
+  return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
+    headers: { authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
 }
 
 export async function getRatingCategories(always: boolean = false) {
-  return cachedFetch(
+  return fetch(
     `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`,
-    undefined,
-    { ttlMs: 300_000 },
   );
 }
 
 export async function getFlags() {
-  return cachedFetch(`${BASE_URL}/flags`, undefined, { ttlMs: 300_000 });
+  return fetch(`${BASE_URL}/flags`);
 }
 
 export async function getGameTags() {
-  return cachedFetch(`${BASE_URL}/gametags`, undefined, { ttlMs: 300_000 });
+  return fetch(`${BASE_URL}/gametags`);
 }
 
 export async function getGame(gameSlug: string) {
-  return cachedFetch(`${BASE_URL}/games/${gameSlug}`, {
+  return fetch(`${BASE_URL}/games/${gameSlug}`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  }, {
-    ttlMs: 30_000,
   });
 }
 
@@ -91,7 +82,7 @@ export async function postGame(
   estOneRun: string | null,
   estAnyPercent: string | null,
   estHundredPercent: string | null,
-  emotePrefix: string | null
+  emotePrefix: string | null,
 ) {
   const response = await fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -131,10 +122,6 @@ export async function postGame(
     },
     credentials: "include",
   });
-
-  if (response.ok) {
-    invalidateRequestCache(/\/(games|game|self|user|jam|results)/);
-  }
 
   return response;
 }
@@ -188,7 +175,7 @@ export async function updateGame(
   estOneRun: string | null,
   estAnyPercent: string | null,
   estHundredPercent: string | null,
-  emotePrefix: string | null
+  emotePrefix: string | null,
 ) {
   const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -228,10 +215,6 @@ export async function updateGame(
     credentials: "include",
   });
 
-  if (response.ok) {
-    invalidateRequestCache(/\/(games|game|self|user|jam|results)/);
-  }
-
   return response;
 }
 
@@ -241,9 +224,7 @@ export async function getGames(sort: string, jamId?: string) {
     params.set("jamId", jamId);
   }
 
-  return cachedFetch(`${BASE_URL}/games?${params.toString()}`, undefined, {
-    ttlMs: 20_000,
-  });
+  return fetch(`${BASE_URL}/games?${params.toString()}`);
 }
 
 export async function getResults(
@@ -268,16 +249,10 @@ export async function getResults(
     params.set("preview", "1");
   }
 
-  return cachedFetch(
-    `${BASE_URL}/results?${params.toString()}`,
-    {
-      credentials: "include",
-      headers: {
-        authorization: `Bearer ${getCookie("token")}`,
-      },
+  return fetch(`${BASE_URL}/results?${params.toString()}`, {
+    credentials: "include",
+    headers: {
+      authorization: `Bearer ${getCookie("token")}`,
     },
-    {
-      ttlMs: 20_000,
-    },
-  );
+  });
 }

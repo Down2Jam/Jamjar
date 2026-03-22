@@ -1,9 +1,11 @@
 "use client";
 
-import { BASE_URL } from "@/requests/config";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { ReactionType } from "@/types/ReactionType";
+import { useEmojisQuery } from "@/hooks/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 export type EmojiType = ReactionType;
 
@@ -17,38 +19,19 @@ type EmojiContextValue = {
 const EmojiContext = createContext<EmojiContextValue | undefined>(undefined);
 
 export function EmojiProvider({ children }: { children: ReactNode }) {
-  const [emojis, setEmojis] = useState<EmojiType[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { emojis, emojiMap, isLoading } = useEmojisQuery();
+  const queryClient = useQueryClient();
 
-  const loadEmojis = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/emojis`);
-      const data = await response.json();
-      setEmojis(Array.isArray(data?.data) ? data.data : []);
-    } catch (error) {
-      console.error("Failed to load emojis", error);
-      setEmojis([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadEmojis();
-  }, [loadEmojis]);
-
-  const emojiMap = useMemo(() => {
-    const map: Record<string, EmojiType> = {};
-    emojis.forEach((emoji) => {
-      map[emoji.slug] = emoji;
-    });
-    return map;
-  }, [emojis]);
+  const refresh = useMemo(
+    () => async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.emoji.list() });
+    },
+    [queryClient]
+  );
 
   return (
     <EmojiContext.Provider
-      value={{ emojis, emojiMap, loading, refresh: loadEmojis }}
+      value={{ emojis, emojiMap, loading: isLoading, refresh }}
     >
       {children}
     </EmojiContext.Provider>

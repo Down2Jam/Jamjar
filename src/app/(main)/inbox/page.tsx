@@ -5,43 +5,25 @@ import { Icon } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { handleApplication, handleInvite } from "@/helpers/team";
-import { getSelf } from "@/requests/user";
-import { UserType } from "@/types/UserType";
-import { useEffect, useState } from "react";
 import TeamInviteNotification from "./TeamInviteNotification";
 import { deleteNotification } from "@/helpers/notifications";
 import TeamApplicationNotification from "./TeamApplicationNotification";
 import GeneralNotification from "./GeneralNotification";
 import CommentNotification from "./CommentNotification";
+import { useSelf } from "@/hooks/queries";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 export default function InboxPage() {
-  const [user, setUser] = useState<UserType>();
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const self = await getSelf();
-        const data = await self.json();
-        setUser(data);
-      } catch (error) {
-        console.error(error);
-      }
-    })();
-  }, []);
+  const { data: user } = useSelf();
+  const queryClient = useQueryClient();
 
   const notifications = user?.receivedNotifications ?? [];
 
-  const removeNotificationFromState = (id: number) =>
-    setUser((prev) =>
-      prev
-        ? {
-            ...prev,
-            receivedNotifications: prev.receivedNotifications.filter(
-              (n) => n.id !== id
-            ),
-          }
-        : prev
-    );
+  const removeNotificationFromState = async (id: number) => {
+    // Invalidate user query to refetch notifications
+    await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+  };
 
   return (
     <Vstack>
@@ -62,7 +44,7 @@ export default function InboxPage() {
       {notifications.map((notification) => {
         const handleMarkRead = async (id: number) => {
           const res = await deleteNotification(id);
-          if (res.ok) removeNotificationFromState(id);
+          if (res.ok) await removeNotificationFromState(id);
         };
 
         switch (notification.type) {

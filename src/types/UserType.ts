@@ -1,5 +1,6 @@
 import { AchievementType } from "./AchievementType";
 import { CommentType } from "./CommentType";
+import { JamType } from "./JamType";
 import { NotificationType } from "./NotificationType";
 import { PostType } from "./PostType";
 import { RoleType } from "./RoleType";
@@ -136,4 +137,6 @@ export interface UserType {
   posts: PostType[];
   comments: CommentType[];
   receivedNotifications: NotificationType[];
+  jams?: JamType[];
+  email?: string;
 }

@@ -41,6 +41,7 @@ import { use, useEffect, useMemo, useState } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
+import { BASE_URL } from "@/requests/config";
 
 type RarityTier =
   | "Abyssal"
@@ -570,11 +571,7 @@ export default function ClientUserPage({
 
   useEffect(() => {
     if (!isOwner) return;
-    fetch(
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/pfps"
-        : "http://localhost:3005/api/v1/pfps",
-    )
+    fetch(`${BASE_URL}/pfps`)
       .then((res) => res.json())
       .then((data) => setDefaultPfps(data.data))
       .catch((err) => console.error("Failed to load pfps", err));

@@ -7,8 +7,7 @@ import { applyToTeam, createTeam } from "@/helpers/team";
 import { redirect } from "next/navigation";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
-import { getCurrentJam } from "@/helpers/jam";
-import { JamType } from "@/types/JamType";
+import { useCurrentJam } from "@/hooks/queries";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -32,7 +31,8 @@ export default function TeamFinder() {
   const [user, setUser] = useState<UserType>();
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const [sortSet, setSortSet] = useState<boolean>(false);
-  const [jam, setJam] = useState<JamType | null>();
+  const { data: currentJamData } = useCurrentJam();
+  const jam = currentJamData?.jam ?? null;
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
@@ -40,9 +40,6 @@ export default function TeamFinder() {
       try {
         const self = await getSelf();
         const data = await self.json();
-        const jamResponse = await getCurrentJam();
-        const currentJam = jamResponse?.jam;
-        setJam(currentJam);
 
         if (data.primaryRoles.length > 0) setFilter("Primary Role");
         setUser(data);
