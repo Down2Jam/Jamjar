@@ -93,6 +93,50 @@ export default function Timers() {
           />
         </div>
       );
+    } else if (activeJamResponse.phase == "Post-Jam Refinement") {
+      return (
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
+          <Timer
+            name="Post-jam refinement ends in"
+            targetDate={
+              new Date(
+                new Date(activeJamResponse.jam.startTime).getTime() +
+                  activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.submissionHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.ratingHours * 60 * 60 * 1000 +
+                  14 * 24 * 60 * 60 * 1000
+              )
+            }
+          />
+        </div>
+      );
+    } else if (activeJamResponse.phase == "Post-Jam Rating") {
+      return (
+        <div
+          className="transition-color duration-250"
+          style={{
+            color: siteTheme.colors["text"],
+          }}
+        >
+          <Timer
+            name="Post-jam rating ends in"
+            targetDate={
+              new Date(
+                new Date(activeJamResponse.jam.startTime).getTime() +
+                  activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.submissionHours * 60 * 60 * 1000 +
+                  activeJamResponse.jam.ratingHours * 60 * 60 * 1000 +
+                  28 * 24 * 60 * 60 * 1000
+              )
+            }
+          />
+        </div>
+      );
     } else {
       return (
         <div

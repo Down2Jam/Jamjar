@@ -22,9 +22,10 @@ import Image from "next/image";
 import {
   AlertTriangle,
   Award,
-  Badge as LucideBadge,
   ChevronLeft,
   ChevronRight,
+  Circle,
+  CircleSmall,
   CircleHelp,
   MessageCircleMore,
   Play,
@@ -184,39 +185,79 @@ declare global {
   }
 }
 
-function getPlacementGradient(
+function getResultsGradient(
   placement: number,
+  averageScore: number,
   colors: Record<string, string>,
-) {
-  if (placement === 1)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
-      first: colors["red"],
-    };
-  if (placement === 2)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["green"]}, ${colors["gray"]})`,
-      first: colors["gray"],
-    };
-  if (placement === 3)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["red"]}, ${colors["pink"]})`,
-      first: colors["pink"],
-    };
-  if (placement >= 4 && placement <= 5)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["blue"]}, ${colors["indigo"]})`,
-      first: colors["indigo"],
-    };
-  if (placement >= 6 && placement <= 10)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["purple"]}, ${colors["violet"]})`,
-      first: colors["violet"],
-    };
+  ) {
+    if (placement >= 1 && placement <= 3)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
+        first: colors["red"],
+      };
+    if (averageScore >= 8)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
+        first: colors["green"],
+      };
+    if (averageScore >= 7)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
+        first: colors["blueLight"],
+      };
+    if (averageScore >= 6)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
+        first: colors["purple"],
+      };
   return {
     gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
     first: colors["textFaded"],
   };
+}
+
+function getResultsIcon(
+  placement: number,
+  averageScore: number,
+  color: string,
+) {
+  if (placement >= 1 && placement <= 3) {
+    return <Award size={16} style={{ color }} />;
+  }
+  if (averageScore >= 8) {
+    return <Circle size={15} style={{ color }} />;
+  }
+  if (averageScore >= 7) {
+    return <Circle size={13} style={{ color }} />;
+  }
+  if (averageScore >= 6) {
+    return <CircleSmall size={11} style={{ color }} />;
+  }
+  return null;
+}
+
+function compareGameScoreEntries(
+  a: { placement: number; averageScore: number },
+  b: { placement: number; averageScore: number },
+) {
+  const aIsTopBand = a.placement >= 1 && a.placement <= 3;
+  const bIsTopBand = b.placement >= 1 && b.placement <= 3;
+
+  if (aIsTopBand !== bIsTopBand) {
+    return aIsTopBand ? -1 : 1;
+  }
+
+  if (aIsTopBand && bIsTopBand && a.placement !== b.placement) {
+    return a.placement - b.placement;
+  }
+
+  if (a.averageScore !== b.averageScore) {
+    return b.averageScore - a.averageScore;
+  }
+
+  const aPlacement = a.placement > 0 ? a.placement : Number.POSITIVE_INFINITY;
+  const bPlacement = b.placement > 0 ? b.placement : Number.POSITIVE_INFINITY;
+  return aPlacement - bPlacement;
 }
 
 export default function ClientGamePage({
@@ -1125,19 +1166,22 @@ export default function ClientGamePage({
                       {Object.keys(game?.scores || {})
                         .sort(
                           (a, b) =>
-                            (game.scores[a].placement || 0) -
-                            (game.scores[b].placement || 0),
+                            compareGameScoreEntries(
+                              game.scores[a],
+                              game.scores[b],
+                            ),
                         )
                         .map((score) => {
-                          const { gradient, first } = getPlacementGradient(
+                          const { gradient, first } = getResultsGradient(
                             game.scores[score].placement,
+                            game.scores[score].averageScore,
                             colors,
                           );
 
                           return (
                             <div
                               key={score}
-                              className="grid grid-cols-[150px_100px_60px_30px] items-center gap-2"
+                              className="grid grid-cols-[150px_100px_30px] items-center gap-2"
                             >
                               <span
                                 style={{
@@ -1147,48 +1191,41 @@ export default function ClientGamePage({
                               >
                                 {t(score)}:
                               </span>
-                              <span
-                                style={gradientTextStyle(gradient, first)}
-                                className="w-fit"
-                              >
-                                {(game.scores[score].averageScore / 2).toFixed(
-                                  2,
-                                )}{" "}
-                                stars
-                              </span>
                               {game.scores[score].placement &&
-                                game.scores[score].placement !== -1 && (
+                              game.scores[score].placement !== -1 ? (
+                                <Tooltip
+                                  content={ordinal_suffix_of(
+                                    game.scores[score].placement,
+                                  )}
+                                  position="top"
+                                >
                                   <span
-                                    style={{
-                                      color: colors["textFaded"],
-                                    }}
+                                    style={gradientTextStyle(gradient, first)}
+                                    className="w-fit"
                                   >
-                                    (
-                                    {ordinal_suffix_of(
-                                      game.scores[score].placement,
-                                    )}
-                                    )
+                                    {(
+                                      game.scores[score].averageScore / 2
+                                    ).toFixed(2)}{" "}
+                                    stars
                                   </span>
-                                )}
+                                </Tooltip>
+                              ) : (
+                                <span
+                                  style={gradientTextStyle(gradient, first)}
+                                  className="w-fit"
+                                >
+                                  {(game.scores[score].averageScore / 2).toFixed(
+                                    2,
+                                  )}{" "}
+                                  stars
+                                </span>
+                              )}
                               <span className="flex items-center justify-center">
-                                {game.scores[score].placement >= 1 &&
-                                  game.scores[score].placement <= 3 && (
-                                    <Award
-                                      size={16}
-                                      style={{
-                                        color: first,
-                                      }}
-                                    />
-                                  )}
-                                {game.scores[score].placement >= 4 &&
-                                  game.scores[score].placement <= 10 && (
-                                    <LucideBadge
-                                      size={12}
-                                      style={{
-                                        color: first,
-                                      }}
-                                    />
-                                  )}
+                                {getResultsIcon(
+                                  game.scores[score].placement,
+                                  game.scores[score].averageScore,
+                                  first,
+                                )}
                               </span>
                             </div>
                           );

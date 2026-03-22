@@ -28,4 +28,7 @@ export type JamPhase =
   | "Voting"
   | "Jamming"
   | "Submission"
-  | "Rating";
+  | "Rating"
+  | "Post-Jam Refinement"
+  | "Post-Jam Rating"
+  | "No Active Jams";

@@ -625,9 +625,13 @@
       "Title": "Results",
       "Description": "Viewing the results of the jam and how you were rated"
     },
+    "PostRefinement": {
+      "Title": "Post-Jam Refinement",
+      "Description": "Improving and polishing your post-jam release after the main jam results are out"
+    },
     "PostRating": {
-      "Title": "Post Jam Rating Period",
-      "Description": "Playing and giving feedback to other people's post jam improvements"
+      "Title": "Post-Jam Rating",
+      "Description": "Playing and rating the updated post-jam versions after the refinement period"
     },
     "PostResults": {
       "Title": "Post Jam Results",

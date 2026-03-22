@@ -146,10 +146,13 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           hotkey={["G", "E"]}
           color="orange"
         />
-        {jamPhase == "Upcoming Jam" && isLgUp && (
+        {(jamPhase == "Upcoming Jam" ||
+          jamPhase == "Post-Jam Refinement" ||
+          jamPhase == "Post-Jam Rating") &&
+          isLgUp && (
           <NavbarButton
             icon="trophy"
-            href="/results"
+            href="/recap"
             name="Navbar.Results.Title"
             description="Navbar.Results.Description"
             hotkey={["G", "R"]}

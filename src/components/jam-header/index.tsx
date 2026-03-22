@@ -15,6 +15,40 @@ export default function JamHeader() {
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { siteTheme, colors } = useTheme();
+  const POST_JAM_REFINEMENT_MS = 14 * 24 * 60 * 60 * 1000;
+  const POST_JAM_RATING_MS = 14 * 24 * 60 * 60 * 1000;
+
+  const getJamMilestones = (jam?: ActiveJamResponse["jam"] | null) => {
+    if (!jam) return null;
+
+    const start = new Date(jam.startTime).getTime();
+    const themeSubmissionStart =
+      start -
+      jam.votingHours * 1000 * 60 * 60 -
+      jam.slaughterHours * 1000 * 60 * 60 -
+      jam.suggestionHours * 1000 * 60 * 60;
+    const themeEliminationStart =
+      start - jam.votingHours * 1000 * 60 * 60 - jam.slaughterHours * 1000 * 60 * 60;
+    const themeVotingStart = start - jam.votingHours * 1000 * 60 * 60;
+    const ratingStart =
+      start + jam.jammingHours * 1000 * 60 * 60 + jam.submissionHours * 1000 * 60 * 60;
+    const resultsStart = ratingStart + jam.ratingHours * 1000 * 60 * 60;
+    const postJamRefinementStart = resultsStart;
+    const postJamRatingStart = postJamRefinementStart + POST_JAM_REFINEMENT_MS;
+
+    return {
+      themeSubmissionStart,
+      themeEliminationStart,
+      themeVotingStart,
+      jamStart: start,
+      ratingStart,
+      resultsStart,
+      postJamRefinementStart,
+      postJamRatingStart,
+      postJamRefinementEnd: postJamRatingStart,
+      postJamRatingEnd: postJamRatingStart + POST_JAM_RATING_MS,
+    };
+  };
 
   const getStyleForDateDisplay = (
     index: number,
@@ -108,6 +142,14 @@ export default function JamHeader() {
         text: "JamHeader.RateGames",
         href: "/games",
       };
+    if (jamPhase === "Post-Jam Refinement")
+      return {
+        text: "Post-jam refinement in progress",
+      };
+    if (jamPhase === "Post-Jam Rating")
+      return {
+        text: "Post-jam rating in progress",
+      };
     return { text: "" };
   };
 
@@ -138,72 +180,74 @@ export default function JamHeader() {
   const events = [
     {
       name: "Phases.ThemeSubmission.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() -
-            activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
-            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60 -
-            activeJamResponse.jam.suggestionHours * 1000 * 60 * 60,
-        ),
+      date: getJamMilestones(activeJamResponse?.jam)?.themeSubmissionStart,
     },
     {
       name: "Phases.ThemeElimination.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() -
-            activeJamResponse.jam.votingHours * 1000 * 60 * 60 -
-            activeJamResponse.jam.slaughterHours * 1000 * 60 * 60,
-        ),
+      date: getJamMilestones(activeJamResponse?.jam)?.themeEliminationStart,
     },
     {
       name: "Phases.ThemeVoting.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() -
-            activeJamResponse.jam.votingHours * 1000 * 60 * 60,
-        ),
+      date: getJamMilestones(activeJamResponse?.jam)?.themeVotingStart,
     },
     {
       name: "Phases.GameJam.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(activeJamResponse.jam.startTime),
+      date: getJamMilestones(activeJamResponse?.jam)?.jamStart,
     },
     {
       name: "Phases.Rating.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() +
-            activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
-            activeJamResponse.jam.submissionHours * 1000 * 60 * 60,
-        ),
+      date: getJamMilestones(activeJamResponse?.jam)?.ratingStart,
     },
     {
       name: "Phases.Results.Title",
-      date:
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() +
-            activeJamResponse.jam.jammingHours * 1000 * 60 * 60 +
-            activeJamResponse.jam.submissionHours * 1000 * 60 * 60 +
-            activeJamResponse.jam.ratingHours * 1000 * 60 * 60,
-        ),
+      date: getJamMilestones(activeJamResponse?.jam)?.resultsStart,
     },
-  ];
+    {
+      name: "Phases.PostRefinement.Title",
+      date: getJamMilestones(activeJamResponse?.jam)?.postJamRefinementStart,
+    },
+    {
+      name: "Phases.PostRating.Title",
+      date: getJamMilestones(activeJamResponse?.jam)?.postJamRatingStart,
+    },
+  ].map((event) => ({
+    ...event,
+    date: event.date ? new Date(event.date) : null,
+  }));
 
   const sortedEvents = events.map((event) => ({
     ...event,
   }));
+
+  const milestones = getJamMilestones(activeJamResponse?.jam);
+  const phaseDateRange = (() => {
+    if (!activeJamResponse?.jam || !milestones) return null;
+
+    switch (activeJamResponse.phase) {
+      case "Rating":
+        return {
+          start: milestones.ratingStart,
+          end: milestones.resultsStart,
+        };
+      case "Post-Jam Refinement":
+        return {
+          start: milestones.postJamRefinementStart,
+          end: milestones.postJamRefinementEnd,
+        };
+      case "Post-Jam Rating":
+        return {
+          start: milestones.postJamRatingStart,
+          end: milestones.postJamRatingEnd,
+        };
+      default:
+        return {
+          start: milestones.jamStart,
+          end:
+            milestones.jamStart +
+            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+        };
+    }
+  })();
 
   const nextEventIndex = sortedEvents.findIndex(
     (event) => event.date && event.date >= currentDate,
@@ -259,106 +303,31 @@ export default function JamHeader() {
               <p>
                 {activeJamResponse?.jam ? (
                   <>
-                    {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.submissionHours *
-                              60 *
-                              60 *
-                              1000
-                        : activeJamResponse.jam.startTime,
-                    ).toLocaleDateString("en-US", {
+                    {new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
-                    {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.submissionHours *
-                              60 *
-                              60 *
-                              1000
-                        : activeJamResponse.jam.startTime,
-                    ).getDate()}
+                    {new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).getDate()}
                     {getOrdinalSuffix(
-                      new Date(
-                        activeJamResponse.phase == "Rating"
-                          ? new Date(
-                              activeJamResponse.jam.startTime,
-                            ).getTime() +
-                              activeJamResponse.jam.jammingHours *
-                                60 *
-                                60 *
-                                1000 +
-                              activeJamResponse.jam.submissionHours *
-                                60 *
-                                60 *
-                                1000
-                          : activeJamResponse.jam.startTime,
-                      ).getDate(),
+                      new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).getDate(),
                     )}
                     {" - "}
                     {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.submissionHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                        : new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                      phaseDateRange?.end ??
+                        new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
                     ).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
                     {new Date(
-                      activeJamResponse.phase == "Rating"
-                        ? new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.submissionHours *
-                              60 *
-                              60 *
-                              1000 +
-                            activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                        : new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                      phaseDateRange?.end ??
+                        new Date(activeJamResponse.jam.startTime).getTime() +
+                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
                     ).getDate()}
                     {getOrdinalSuffix(
                       new Date(
-                        activeJamResponse.phase == "Rating"
-                          ? new Date(
-                              activeJamResponse.jam.startTime,
-                            ).getTime() +
-                              activeJamResponse.jam.jammingHours *
-                                60 *
-                                60 *
-                                1000 +
-                              activeJamResponse.jam.submissionHours *
-                                60 *
-                                60 *
-                                1000 +
-                              activeJamResponse.jam.ratingHours * 60 * 60 * 1000
-                          : new Date(
-                              activeJamResponse.jam.startTime,
-                            ).getTime() +
-                              activeJamResponse.jam.jammingHours *
-                                60 *
-                                60 *
-                                1000,
+                        phaseDateRange?.end ??
+                          new Date(activeJamResponse.jam.startTime).getTime() +
+                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
                       ).getDate(),
                     )}
                   </>

@@ -40,7 +40,9 @@ function totalHours(jam: JamType) {
     (jam.votingHours ?? 0) +
     (jam.jammingHours ?? 0) +
     (jam.submissionHours ?? 0) +
-    (jam.ratingHours ?? 0)
+    (jam.ratingHours ?? 0) +
+    14 * 24 +
+    14 * 24
   );
 }
 
@@ -52,6 +54,8 @@ function formatPhaseHours(jam: JamType) {
     `Jamming ${jam.jammingHours ?? 0}h`,
     `Submission ${jam.submissionHours ?? 0}h`,
     `Rating ${jam.ratingHours ?? 0}h`,
+    "Post-Jam Refinement 336h",
+    "Post-Jam Rating 336h",
   ].join(" | ");
 }
 

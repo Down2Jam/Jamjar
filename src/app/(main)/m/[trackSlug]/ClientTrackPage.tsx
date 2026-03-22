@@ -41,7 +41,8 @@ import TrackWaveformPlayer from "@/components/tracks/TrackWaveformPlayer";
 import {
   AlertTriangle,
   Award,
-  Badge as LucideBadge,
+  Circle,
+  CircleSmall,
   CircleHelp,
   Star,
 } from "lucide-react";
@@ -53,6 +54,73 @@ function ordinalSuffixOf(i: number) {
   if (j === 2 && k !== 12) return `${i}nd`;
   if (j === 3 && k !== 13) return `${i}rd`;
   return `${i}th`;
+}
+
+function gradientTextStyle(
+  gradient: string,
+  fallback: string,
+): React.CSSProperties {
+  return {
+    backgroundImage: gradient,
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    color: fallback,
+  };
+}
+
+function getResultsGradient(
+  placement: number,
+  averageScore: number,
+  colors: Record<string, string>,
+) {
+  if (placement >= 1 && placement <= 3) {
+    return {
+      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
+      first: colors["red"],
+    };
+  }
+  if (averageScore >= 8) {
+    return {
+      gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
+      first: colors["green"],
+    };
+  }
+  if (averageScore >= 7) {
+    return {
+      gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
+      first: colors["blueLight"],
+    };
+  }
+  if (averageScore >= 6) {
+    return {
+      gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
+      first: colors["purple"],
+    };
+  }
+  return {
+    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
+    first: colors["textFaded"],
+  };
+}
+
+function getResultsIcon(
+  placement: number,
+  averageScore: number,
+  color: string,
+) {
+  if (placement >= 1 && placement <= 3) {
+    return <Award size={16} style={{ color }} />;
+  }
+  if (averageScore >= 8) {
+    return <Circle size={15} style={{ color }} />;
+  }
+  if (averageScore >= 7) {
+    return <Circle size={13} style={{ color }} />;
+  }
+  if (averageScore >= 6) {
+    return <CircleSmall size={11} style={{ color }} />;
+  }
+  return null;
 }
 
 export default function ClientTrackPage({
@@ -222,6 +290,13 @@ export default function ClientTrackPage({
   );
   const overallScore = track.scores?.Overall;
   const primaryArtist = credits[0]?.user ?? track.composer;
+  const overallScoreGradient = overallScore
+    ? getResultsGradient(
+        overallScore.placement,
+        overallScore.averageScore,
+        colors,
+      )
+    : null;
 
   return (
     <div className="p-4">
@@ -385,33 +460,42 @@ export default function ClientTrackPage({
                 >
                   <Vstack align="start" className="gap-3">
                     {canShowResults && overallScore ? (
-                      <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
+                      <div className="grid grid-cols-[120px_100px_30px] items-center gap-2">
                         <Text size="sm" color="textFaded">
                           Overall
                         </Text>
-                        <Text color="text">
-                          {(overallScore.averageScore / 2).toFixed(2)} stars
-                        </Text>
-                        {overallScore.placement !== -1 && (
-                          <Text color="textFaded">
-                            ({ordinalSuffixOf(overallScore.placement)})
-                          </Text>
+                        {overallScore.placement !== -1 ? (
+                          <Tooltip
+                            content={ordinalSuffixOf(overallScore.placement)}
+                            position="top"
+                          >
+                            <span
+                              style={gradientTextStyle(
+                                overallScoreGradient?.gradient ?? "",
+                                overallScoreGradient?.first ?? colors["text"],
+                              )}
+                              className="w-fit"
+                            >
+                              {(overallScore.averageScore / 2).toFixed(2)} stars
+                            </span>
+                          </Tooltip>
+                        ) : (
+                          <span
+                            style={gradientTextStyle(
+                              overallScoreGradient?.gradient ?? "",
+                              overallScoreGradient?.first ?? colors["text"],
+                            )}
+                            className="w-fit"
+                          >
+                            {(overallScore.averageScore / 2).toFixed(2)} stars
+                          </span>
                         )}
                         <span className="flex items-center justify-center">
-                          {overallScore.placement >= 1 &&
-                            overallScore.placement <= 3 && (
-                              <Award
-                                size={16}
-                                style={{ color: colors["yellow"] }}
-                              />
-                            )}
-                          {overallScore.placement >= 4 &&
-                            overallScore.placement <= 10 && (
-                              <LucideBadge
-                                size={12}
-                                style={{ color: colors["blue"] }}
-                              />
-                            )}
+                          {getResultsIcon(
+                            overallScore.placement,
+                            overallScore.averageScore,
+                            overallScoreGradient?.first ?? colors["text"],
+                          )}
                         </span>
                       </div>
                     ) : (

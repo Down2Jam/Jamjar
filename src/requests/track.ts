@@ -67,6 +67,7 @@ export async function getTrackResults(
   jamId: string,
   preview: boolean = false,
   category?: "REGULAR" | "ODA",
+  recap: boolean = false,
 ) {
   const params = new URLSearchParams({
     contentType: "MUSIC",
@@ -80,6 +81,10 @@ export async function getTrackResults(
 
   if (preview) {
     params.set("preview", "1");
+  }
+
+  if (recap) {
+    params.set("recap", "1");
   }
 
   return fetch(`${BASE_URL}/results?${params.toString()}`, {

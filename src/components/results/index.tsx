@@ -12,7 +12,7 @@ import { getResults } from "@/requests/game";
 import { getTrackResults } from "@/requests/track";
 import { GameResultType } from "@/types/GameResultType";
 import { TrackResultType } from "@/types/TrackResultType";
-import { Award, Badge } from "lucide-react";
+import { Award, Circle, CircleSmall } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -46,39 +46,55 @@ function gradientTextStyle(
   };
 }
 
-function getPlacementGradient(
+function getResultsGradient(
   placement: number,
+  averageScore: number,
   colors: Record<string, string>
-) {
-  if (placement === 1)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
-      first: colors["red"],
-    };
-  if (placement === 2)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["green"]}, ${colors["gray"]})`,
-      first: colors["gray"],
-    };
-  if (placement === 3)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["red"]}, ${colors["pink"]})`,
-      first: colors["pink"],
-    };
-  if (placement >= 4 && placement <= 5)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["blue"]}, ${colors["indigo"]})`,
-      first: colors["indigo"],
-    };
-  if (placement >= 6 && placement <= 10)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["purple"]}, ${colors["violet"]})`,
-      first: colors["violet"],
-    };
+  ) {
+    if (placement >= 1 && placement <= 3)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
+        first: colors["red"],
+      };
+    if (averageScore >= 8)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
+        first: colors["green"],
+      };
+    if (averageScore >= 7)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
+        first: colors["blueLight"],
+      };
+    if (averageScore >= 6)
+      return {
+        gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
+        first: colors["purple"],
+      };
   return {
     gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
     first: colors["textFaded"],
   };
+}
+
+function getResultsIcon(
+  placement: number,
+  averageScore: number,
+  color: string,
+) {
+  if (placement >= 1 && placement <= 3) {
+    return <Award size={16} style={{ color }} />;
+  }
+  if (averageScore >= 8) {
+    return <Circle size={15} style={{ color }} />;
+  }
+  if (averageScore >= 7) {
+    return <Circle size={13} style={{ color }} />;
+  }
+  if (averageScore >= 6) {
+    return <CircleSmall size={11} style={{ color }} />;
+  }
+  return null;
 }
 
 function formatJamWindow(
@@ -454,8 +470,9 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                     {game.categoryAverages
                       .sort((a, b) => a.placement - b.placement)
                       .map((category) => {
-                        const { gradient, first } = getPlacementGradient(
+                        const { gradient, first } = getResultsGradient(
                           category.placement,
+                          category.averageScore,
                           colors
                         );
 
@@ -477,23 +494,11 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                               ({ordinal_suffix_of(category.placement)})
                             </Text>
                             <span className="flex items-center justify-center">
-                              {category.placement === 1 && (
-                                <Award size={16} style={{ color: first }} />
+                              {getResultsIcon(
+                                category.placement,
+                                category.averageScore,
+                                first,
                               )}
-                              {category.placement === 2 && (
-                                <Award size={16} style={{ color: first }} />
-                              )}
-                              {category.placement === 3 && (
-                                <Award size={16} style={{ color: first }} />
-                              )}
-                              {category.placement >= 4 &&
-                                category.placement <= 5 && (
-                                  <Badge size={12} style={{ color: first }} />
-                                )}
-                              {category.placement >= 6 &&
-                                category.placement <= 10 && (
-                                  <Badge size={12} style={{ color: first }} />
-                                )}
                             </span>
                           </div>
                         );
@@ -542,8 +547,9 @@ export default function Results({ preview = false }: { preview?: boolean }) {
 
                 if (!overall) return null;
 
-                const { gradient, first } = getPlacementGradient(
+                const { gradient, first } = getResultsGradient(
                   overall.placement,
+                  overall.averageScore,
                   colors
                 );
 
@@ -576,13 +582,11 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                             ({ordinal_suffix_of(overall.placement)})
                           </Text>
                           <span className="flex items-center justify-center">
-                            {overall.placement >= 1 && overall.placement <= 3 && (
-                              <Award size={16} style={{ color: first }} />
+                            {getResultsIcon(
+                              overall.placement,
+                              overall.averageScore,
+                              first,
                             )}
-                            {overall.placement >= 4 &&
-                              overall.placement <= 10 && (
-                                <Badge size={12} style={{ color: first }} />
-                              )}
                           </span>
                         </div>
                       </div>

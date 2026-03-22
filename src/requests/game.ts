@@ -26,11 +26,19 @@ export async function getGameTags() {
   return fetch(`${BASE_URL}/gametags`);
 }
 
-export async function getGame(gameSlug: string) {
-  return fetch(`${BASE_URL}/games/${gameSlug}`, {
+export async function getGame(gameSlug: string, recap: boolean = false) {
+  const params = new URLSearchParams();
+  if (recap) {
+    params.set("recap", "1");
+  }
+
+  return fetch(
+    `${BASE_URL}/games/${gameSlug}${params.toString() ? `?${params.toString()}` : ""}`,
+    {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
-  });
+    },
+  );
 }
 
 export async function postGame(
@@ -233,6 +241,7 @@ export async function getResults(
   sort: string,
   jam: string,
   preview: boolean = false,
+  recap: boolean = false,
 ) {
   const params = new URLSearchParams({
     category,
@@ -247,6 +256,10 @@ export async function getResults(
 
   if (preview) {
     params.set("preview", "1");
+  }
+
+  if (recap) {
+    params.set("recap", "1");
   }
 
   return fetch(`${BASE_URL}/results?${params.toString()}`, {
