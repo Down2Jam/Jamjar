@@ -118,7 +118,10 @@ function ordinal(value: number) {
   return `${value}th`;
 }
 
-function flattenCommentContents(comments: Array<any> | undefined): string[] {
+function flattenCommentContents(
+  comments: Array<any> | undefined,
+  excludedAuthorIds?: Set<number>,
+): string[] {
   if (!Array.isArray(comments)) return [];
 
   const output: string[] = [];
@@ -127,7 +130,17 @@ function flattenCommentContents(comments: Array<any> | undefined): string[] {
   while (stack.length > 0) {
     const comment = stack.pop();
     if (!comment) continue;
-    if (typeof comment.content === "string" && comment.content.trim()) {
+    const authorId = comment.authorId ?? comment.author?.id ?? null;
+    const isExcludedAuthor =
+      authorId != null &&
+      excludedAuthorIds != null &&
+      excludedAuthorIds.has(authorId);
+
+    if (
+      !isExcludedAuthor &&
+      typeof comment.content === "string" &&
+      comment.content.trim()
+    ) {
       output.push(comment.content);
     }
     if (Array.isArray(comment.children) && comment.children.length > 0) {
@@ -606,7 +619,7 @@ function FavoriteFacepile({
 
   return (
     <div className="flex items-center">
-      {users.slice(0, 5).map((entry, index) => (
+      {users.slice(0, 10).map((entry, index) => (
         <a
           key={entry.id}
           href={`/u/${entry.slug}`}
@@ -894,13 +907,12 @@ function TrackScoreCard({
         </Hstack>
 
         <Vstack align="start" gap={1}>
-          <Text
-            size="3xl"
-            weight="bold"
+          <span
+            className="text-3xl font-bold leading-none"
             style={gradientTextStyle(gradient, first)}
           >
-            <span>{(displayEntry.averageScore / 2).toFixed(2)}</span>
-          </Text>
+            {(displayEntry.averageScore / 2).toFixed(2)}
+          </span>
           <Text color="textFaded">stars</Text>
         </Vstack>
 
@@ -1165,9 +1177,22 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     [colors],
   );
 
+  const ownerTeamUserIds = useMemo(
+    () =>
+      new Set(
+        (recapData.gameDetail?.team?.users ?? [])
+          .map((member: any) => member?.id)
+          .filter((value: unknown): value is number => Number.isInteger(value)),
+      ),
+    [recapData.gameDetail?.team?.users],
+  );
+
   const gameCommentWords = useMemo(
-    () => getTopWords(flattenCommentContents(recapData.gameDetail?.comments)),
-    [recapData.gameDetail],
+    () =>
+      getTopWords(
+        flattenCommentContents(recapData.gameDetail?.comments, ownerTeamUserIds),
+      ),
+    [ownerTeamUserIds, recapData.gameDetail],
   );
   const topGamesInJam = useMemo(
     () =>
@@ -1189,10 +1214,10 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const musicCommentWords = useMemo(() => {
     return getTopWords(
       recapData.trackDetails.flatMap((track) =>
-        flattenCommentContents(track.comments),
+        flattenCommentContents(track.comments, ownerTeamUserIds),
       ),
     );
-  }, [recapData.trackDetails]);
+  }, [ownerTeamUserIds, recapData.trackDetails]);
   const notableGames: Array<{
     game: GameResultType;
     placements: Array<{ placement: number; categoryName: string }>;
@@ -1682,13 +1707,12 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                         <Card key={entry.key} className="p-5 md:p-6">
                           <Vstack align="start" gap={3} className="w-full">
                             <Text color="textFaded">{entry.label}</Text>
-                            <Text
-                              size="3xl"
-                              weight="bold"
+                            <span
+                              className="text-3xl font-bold leading-none"
                               style={gradientTextStyle(gradient, first)}
                             >
-                              <span>{(entry.averageScore / 2).toFixed(2)}</span>
-                            </Text>
+                              {(entry.averageScore / 2).toFixed(2)}
+                            </span>
                             <Text color="textFaded">stars</Text>
                           </Vstack>
                         </Card>

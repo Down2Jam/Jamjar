@@ -492,7 +492,7 @@ function MiniPlayer() {
     const stored = readStorage(storageKey.minimized);
     if (stored === "true") return true;
     if (stored === "false") return false;
-    return true;
+    return false;
   });
   const [dragging, setDragging] = useState(false);
   const [position, setPosition] = useState<{ left: number; top: number }>();
