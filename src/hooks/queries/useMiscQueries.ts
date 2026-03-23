@@ -5,6 +5,7 @@ import { getTags } from "@/requests/tag";
 import { getStreamers } from "@/requests/streamer";
 import { getAdminImages } from "@/requests/admin";
 import { BASE_URL } from "@/requests/config";
+import { getTracks } from "@/requests/track";
 import { queryKeys } from "./queryKeys";
 import type { TagType } from "@/types/TagType";
 import type { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
@@ -48,14 +49,15 @@ export function useAdminImages(enabled = true) {
   });
 }
 
-export function useTracks() {
+export function useTracks(sort = "random", jamId?: string, enabled = true) {
   return useQuery<TrackType[]>({
-    queryKey: queryKeys.track.list(),
+    queryKey: [...queryKeys.track.list(), sort, jamId ?? "all"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/tracks`);
-      const data = await res.json();
-      return data.data ?? [];
+      const res = await getTracks(sort, jamId);
+      const json = await res.json();
+      return unwrapArray<TrackType>(json);
     },
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 }

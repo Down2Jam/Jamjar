@@ -13,17 +13,20 @@ export default function SidebarGames() {
   const { colors } = useTheme();
   const { data: activeJam } = useCurrentJam();
 
-  const jamId = useMemo(() => {
+  const { jamId, sort } = useMemo(() => {
     const phase = activeJam?.phase ?? "";
-    const isRatingWindow =
+    const isActiveJamBehavior =
       phase === "Jamming" || phase === "Submission" || phase === "Rating";
-    if (activeJam?.jam?.id && isRatingWindow) {
-      return activeJam.jam.id.toString();
-    }
-    return undefined;
+    return {
+      jamId:
+        activeJam?.jam?.id && isActiveJamBehavior
+          ? activeJam.jam.id.toString()
+          : undefined,
+      sort: isActiveJamBehavior ? "karma" : "score",
+    };
   }, [activeJam]);
 
-  const { data: gamesData, isLoading } = useGames("karma", jamId);
+  const { data: gamesData, isLoading } = useGames(sort, jamId);
 
   const games: GameType[] = useMemo(
     () => (Array.isArray(gamesData) ? gamesData : []),

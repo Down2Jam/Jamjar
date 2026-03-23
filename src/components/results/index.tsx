@@ -279,7 +279,12 @@ export default function Results({ preview = false }: { preview?: boolean }) {
         return;
       }
 
-      const trackResponse = await getTrackResults(jamId, preview, category);
+        const trackResponse = await getTrackResults(
+          jamId,
+          preview,
+          category,
+          "OVERALL"
+        );
       if (trackResponse.ok) {
         const trackData = (await trackResponse.json()).data;
         setTracks(trackData);
@@ -391,25 +396,25 @@ export default function Results({ preview = false }: { preview?: boolean }) {
           </Dropdown>
         )}
 
-        {view === "GAMES" ? (
-          <Dropdown
-            trigger={<Button>{sort}</Button>}
-            onSelect={(key) => {
-              setSort(
-                key as
-                  | "OVERALL"
-                  | "GAMEPLAY"
-                  | "AUDIO"
-                  | "GRAPHICS"
-                  | "CREATIVITY"
-                  | "EMOTIONALDELIVERY"
-                  | "THEME"
-              );
-              updateQueryParam("sort", key as string);
-            }}
-          >
-            <Dropdown.Item value="OVERALL">Overall</Dropdown.Item>
-            <Dropdown.Item value="GAMEPLAY">Gameplay</Dropdown.Item>
+          {view === "GAMES" ? (
+            <Dropdown
+              trigger={<Button>{sort}</Button>}
+              onSelect={(key) => {
+                setSort(
+                  key as
+                    | "OVERALL"
+                    | "GAMEPLAY"
+                    | "AUDIO"
+                    | "GRAPHICS"
+                    | "CREATIVITY"
+                    | "EMOTIONALDELIVERY"
+                    | "THEME"
+                );
+                updateQueryParam("sort", key as string);
+              }}
+            >
+              <Dropdown.Item value="OVERALL">Overall</Dropdown.Item>
+              <Dropdown.Item value="GAMEPLAY">Gameplay</Dropdown.Item>
             <Dropdown.Item value="AUDIO">Audio</Dropdown.Item>
             <Dropdown.Item value="GRAPHICS">Graphics</Dropdown.Item>
             <Dropdown.Item value="CREATIVITY">Creativity</Dropdown.Item>
@@ -417,24 +422,22 @@ export default function Results({ preview = false }: { preview?: boolean }) {
               Emotional Delivery
             </Dropdown.Item>
             <Dropdown.Item value="THEME">Theme</Dropdown.Item>
-          </Dropdown>
-        ) : (
-          <Button disabled icon="music">
-            Overall
-          </Button>
-        )}
+            </Dropdown>
+          ) : (
+            <Button icon="music">Overall</Button>
+          )}
 
-        <Dropdown
-          trigger={
-            <Button>
-              {jamOptions.find((j) => j.id === jamId)?.name || "Select Jam"}
-            </Button>
-          }
-          onSelect={(key) => {
-            setJamId(key as string);
-            updateQueryParam("jam", key as string);
-          }}
-        >
+          <Dropdown
+            trigger={
+              <Button>
+                {jamOptions.find((j) => j.id === jamId)?.name || "Select Jam"}
+              </Button>
+            }
+            onSelect={(key) => {
+              setJamId(key as string);
+              updateQueryParam("jam", key as string);
+            }}
+          >
           {jamOptions.map((jam) => (
             <Dropdown.Item
               key={jam.id}

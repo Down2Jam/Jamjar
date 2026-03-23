@@ -116,6 +116,36 @@ function formatJamWindow(
   return `${dFmt.format(start)} – ${dFmt.format(end)}`;
 }
 
+function getDefaultMusicSort(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): GameSort {
+  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
+  const isActiveJamBehavior =
+    isCurrentJam &&
+    (currentPhase === "Jamming" ||
+      currentPhase === "Submission" ||
+      currentPhase === "Rating");
+
+  return isActiveJamBehavior ? "recommended" : "score";
+}
+
+function getDefaultMusicMoreFilters(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): Set<string> {
+  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
+  const isActiveJamBehavior =
+    isCurrentJam &&
+    (currentPhase === "Jamming" ||
+      currentPhase === "Submission" ||
+      currentPhase === "Rating");
+
+  return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
+}
+
 export default function MusicPage() {
   const { colors } = useTheme();
   const router = useRouter();
@@ -149,14 +179,15 @@ export default function MusicPage() {
   const hasAppliedDefault = useRef(false);
   const hasUserSelected = useRef(false);
   const sortParam = useMemo(() => {
-    if (typeof window === "undefined") return "recommended";
+    if (typeof window === "undefined") return "score";
     return (
       (new URLSearchParams(window.location.search).get("sort") as GameSort) ??
-      "recommended"
+      "score"
     );
   }, []);
   const [sort, setSort] = useState<GameSort>(
     ([
+      "score",
       "recommended",
       "karma",
       "random",
@@ -165,13 +196,17 @@ export default function MusicPage() {
       "ratingbalance",
     ].includes(sortParam) &&
       sortParam) ||
-      "recommended",
+      "score",
   );
 
   const initialJamParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     const p = new URLSearchParams(window.location.search).get("jam");
     return p ?? "all";
+  }, []);
+  const hasMoreParam = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("more");
   }, []);
 
   const [jamId, setJamId] = useState<string>(initialJamParam);
@@ -365,6 +400,12 @@ export default function MusicPage() {
     GameSort,
     { name: string; icon: IconName; description: string }
   > = {
+    score: {
+      name: "Score",
+      icon: "star",
+      description:
+        "Sorts by overall star score, pulling low-rating-count entries toward the middle",
+    },
     recommended: {
       name: "Recommended",
       icon: "thumbsup",
@@ -402,16 +443,40 @@ export default function MusicPage() {
   useEffect(() => {
     if (jamDetecting) return;
     if (!canUseRestrictedSorts && isRestricted(sort)) {
-      setSort("random");
-      updateQueryParam("sort", "random");
+      const nextSort = getDefaultMusicSort(jamId, currentJamId, activeJamPhase);
+      setSort(nextSort);
+      updateQueryParam("sort", nextSort);
     }
   }, [
+    activeJamPhase,
     canUseRestrictedSorts,
+    currentJamId,
     isRestricted,
+    jamId,
     jamDetecting,
     sort,
     updateQueryParam,
   ]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (typeof window === "undefined") return;
+    if (new URLSearchParams(window.location.search).get("sort")) return;
+
+    const nextSort = getDefaultMusicSort(jamId, currentJamId, activeJamPhase);
+    if (sort !== nextSort) {
+      setSort(nextSort);
+    }
+  }, [activeJamPhase, currentJamId, jamDetecting, jamId, sort]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (hasMoreParam) return;
+
+    setSelectedMoreFilters(
+      getDefaultMusicMoreFilters(jamId, currentJamId, activeJamPhase),
+    );
+  }, [activeJamPhase, currentJamId, hasMoreParam, jamDetecting, jamId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -598,11 +663,13 @@ export default function MusicPage() {
     const moveOwnMusicToEnd = selectedMoreFilters.has(
       MORE_FILTERS.moveOwnMusicToEnd,
     );
-    const moveRatedMusicToEnd = selectedMoreFilters.has(
-      MORE_FILTERS.moveRatedMusicToEnd,
-    );
+    const moveRatedMusicToEnd =
+      sort !== "score" &&
+      selectedMoreFilters.has(MORE_FILTERS.moveRatedMusicToEnd);
+    const shouldMoveOwnMusicToEnd =
+      sort !== "score" && moveOwnMusicToEnd;
 
-    if (!user || (!moveOwnMusicToEnd && !moveRatedMusicToEnd)) {
+    if (!user || (!shouldMoveOwnMusicToEnd && !moveRatedMusicToEnd)) {
       return filteredMusic;
     }
 
@@ -618,7 +685,7 @@ export default function MusicPage() {
         track.id && (trackSelectedStars[track.id] ?? 0) > 0,
       );
 
-      if (moveOwnMusicToEnd && isOwnMusic) {
+      if (shouldMoveOwnMusicToEnd && isOwnMusic) {
         ownTracks.push(track);
         return;
       }
@@ -631,11 +698,11 @@ export default function MusicPage() {
       regularUnratedTracks.push(track);
     });
 
-    if (moveOwnMusicToEnd && moveRatedMusicToEnd) {
+    if (shouldMoveOwnMusicToEnd && moveRatedMusicToEnd) {
       return [...regularUnratedTracks, ...ownTracks, ...regularRatedTracks];
     }
 
-    if (moveOwnMusicToEnd) {
+    if (shouldMoveOwnMusicToEnd) {
       return [...regularUnratedTracks, ...ownTracks];
     }
 
@@ -647,6 +714,7 @@ export default function MusicPage() {
     selectedLooping,
     selectedMoreFilters,
     selectedMoods,
+    sort,
     selectedUseCases,
     trackSelectedStars,
     user,
@@ -693,6 +761,15 @@ export default function MusicPage() {
             hasUserSelected.current = true;
             const val = key as string;
             setJamId(val);
+            const nextSort = getDefaultMusicSort(
+              val,
+              currentJamId,
+              activeJamPhase,
+            );
+            if (!isRestricted(sort) || nextSort === "score") {
+              setSort(nextSort);
+              updateQueryParam("sort", nextSort);
+            }
             updateQueryParam("jam", val);
           }}
         >

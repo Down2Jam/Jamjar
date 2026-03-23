@@ -67,11 +67,17 @@ export async function getTrackResults(
   jamId: string,
   preview: boolean = false,
   category?: "REGULAR" | "ODA",
+  sortOrRecap: "OVERALL" | "SCORE" | boolean = "OVERALL",
   recap: boolean = false,
 ) {
+  const sort =
+    typeof sortOrRecap === "string" ? sortOrRecap : "OVERALL";
+  const shouldUseRecap =
+    typeof sortOrRecap === "boolean" ? sortOrRecap : recap;
+
   const params = new URLSearchParams({
     contentType: "MUSIC",
-    sort: "OVERALL",
+    sort,
     jam: jamId,
   });
 
@@ -83,7 +89,7 @@ export async function getTrackResults(
     params.set("preview", "1");
   }
 
-  if (recap) {
+  if (shouldUseRecap) {
     params.set("recap", "1");
   }
 

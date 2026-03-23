@@ -13,7 +13,12 @@ import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { PlatformType } from "@/types/DownloadLinkType";
-import { useSelf, useCurrentJam, useJams, useGames as useGamesQuery } from "@/hooks/queries";
+import {
+  useSelf,
+  useCurrentJam,
+  useJams,
+  useGames as useGamesQuery,
+} from "@/hooks/queries";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 
 type JamOption = {
@@ -195,13 +200,58 @@ const restrictedSorts = new Set<GameSort>([
   "ratingbalance",
 ]);
 
+function getDefaultGameMoreFilters(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): Set<MoreFilterId> {
+  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
+  const isActiveJamBehavior =
+    isCurrentJam &&
+    (currentPhase === "Jamming" ||
+      currentPhase === "Submission" ||
+      currentPhase === "Rating");
+
+  return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
+}
+
+function isActiveJamBehavior(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): boolean {
+  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
+  return (
+    isCurrentJam &&
+    (currentPhase === "Jamming" ||
+      currentPhase === "Submission" ||
+      currentPhase === "Rating")
+  );
+}
+
+function getDefaultGameSort(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): GameSort {
+  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
+  const isActiveJamBehavior =
+    isCurrentJam &&
+    (currentPhase === "Jamming" ||
+      currentPhase === "Submission" ||
+      currentPhase === "Rating");
+
+  return isActiveJamBehavior ? "recommended" : "score";
+}
+
 export default function Games() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const sortParam = (searchParams.get("sort") as GameSort) || "recommended";
+  const sortParam = (searchParams.get("sort") as GameSort) || "score";
   const [sort, setSort] = useState<GameSort>(
     ([
+      "score",
       "recommended",
       "karma",
       "random",
@@ -210,7 +260,7 @@ export default function Games() {
       "ratingbalance",
     ].includes(sortParam) &&
       (sortParam as GameSort)) ||
-      "recommended",
+      "score",
   );
   const hasUserSelected = useRef(false);
   const hasAppliedDefault = useRef(false);
@@ -221,6 +271,10 @@ export default function Games() {
     return p ?? "all";
   }, []);
   const [jamId, setJamId] = useState<string>(initialJamParam);
+  const hasMoreParam = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("more");
+  }, []);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
   const [showBusy, setShowBusy] = useState(false);
 
@@ -308,6 +362,11 @@ export default function Games() {
   const { data: allJams } = useJams();
 
   const currentJamId = currentJamData?.jam?.id?.toString();
+  const showRatedOverlay = isActiveJamBehavior(
+    jamId,
+    currentJamId,
+    currentJamData?.phase,
+  );
 
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
   const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
@@ -398,6 +457,12 @@ export default function Games() {
     GameSort,
     { name: string; icon: IconName; description: string }
   > = {
+    score: {
+      name: "Score",
+      icon: "star",
+      description:
+        "Sorts by overall star score, pulling low-rating-count entries toward the middle",
+    },
     recommended: {
       name: "Recommended",
       icon: "thumbsup",
@@ -488,10 +553,52 @@ export default function Games() {
     if (jamDetecting) return;
 
     if (!canUseRestrictedSorts && isRestricted) {
-      setSort("random");
-      updateQueryParam("sort", "random");
+      const nextSort = getDefaultGameSort(
+        jamId,
+        currentJamId,
+        currentJamData?.phase,
+      );
+      setSort(nextSort);
+      updateQueryParam("sort", nextSort);
     }
-  }, [sort, jamId, currentJamId, updateQueryParam, jamDetecting]);
+  }, [sort, jamId, currentJamId, currentJamData?.phase, updateQueryParam, jamDetecting]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (searchParams.get("sort")) return;
+
+    const nextSort = getDefaultGameSort(
+      jamId,
+      currentJamId,
+      currentJamData?.phase,
+    );
+
+    if (sort !== nextSort) {
+      setSort(nextSort);
+    }
+  }, [
+    currentJamData?.phase,
+    currentJamId,
+    jamDetecting,
+    jamId,
+    searchParams,
+    sort,
+  ]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (hasMoreParam) return;
+
+    setSelectedMoreFilters(
+      getDefaultGameMoreFilters(jamId, currentJamId, currentJamData?.phase),
+    );
+  }, [
+    currentJamData?.phase,
+    currentJamId,
+    hasMoreParam,
+    jamDetecting,
+    jamId,
+  ]);
 
   const tagOptions = useMemo<FilterOption[]>(() => {
     if (!games) return [];
@@ -613,8 +720,10 @@ export default function Games() {
     if (!games) return [];
     const hideOwnGame = selectedMoreFilters.has("hideOwnGame");
     const hideRatedGames = selectedMoreFilters.has("hideRatedGames");
-    const moveOwnGameToEnd = selectedMoreFilters.has("moveOwnGameToEnd");
-    const moveRatedGamesToEnd = selectedMoreFilters.has("moveRatedGamesToEnd");
+    const moveOwnGameToEnd =
+      sort !== "score" && selectedMoreFilters.has("moveOwnGameToEnd");
+    const moveRatedGamesToEnd =
+      sort !== "score" && selectedMoreFilters.has("moveRatedGamesToEnd");
 
     const filteredGames = games.filter((game: GameType) => {
       if (hideOwnGame && user) {
@@ -730,6 +839,7 @@ export default function Games() {
     selectedInputMethods,
     selectedMoreFilters,
     selectedTags,
+    sort,
     typeFilter,
     user,
   ]);
@@ -786,14 +896,23 @@ export default function Games() {
           </Dropdown>
 
           {/* Jam dropdown */}
-          <Dropdown
-            selectedValue={jamId}
-            onSelect={(key) => {
-              const val = key as string;
-              setJamId(val);
-              updateQueryParam("jam", val);
-            }}
-          >
+            <Dropdown
+              selectedValue={jamId}
+              onSelect={(key) => {
+                const val = key as string;
+                setJamId(val);
+                const nextSort = getDefaultGameSort(
+                  val,
+                  currentJamId,
+                  currentJamData?.phase,
+                );
+                if (!isRestricted(sort) || nextSort === "score") {
+                  setSort(nextSort);
+                  updateQueryParam("sort", nextSort);
+                }
+                updateQueryParam("jam", val);
+              }}
+            >
             {jamOptions.map((j) => (
               <Dropdown.Item
                 key={j.id}
@@ -970,7 +1089,10 @@ export default function Games() {
             <GameCard
               key={game.id}
               game={game}
-              rated={game.ratings.some((rating) => rating.userId == user?.id)}
+              rated={
+                showRatedOverlay &&
+                game.ratings.some((rating) => rating.userId == user?.id)
+              }
             />
           ))
         ) : (

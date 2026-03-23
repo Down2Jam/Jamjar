@@ -5,14 +5,30 @@ import useHasMounted from "@/hooks/useHasMounted";
 import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
-import { useTracks } from "@/hooks/queries";
+import { useCurrentJam, useTracks } from "@/hooks/queries";
 
 export default function SidebarMusic() {
   const hasMounted = useHasMounted();
-  const { data: music } = useTracks();
+  const { data: activeJam } = useCurrentJam();
+
+  const { jamId, sort } = useMemo(() => {
+    const phase = activeJam?.phase ?? "";
+    const isActiveJamBehavior =
+      phase === "Jamming" || phase === "Submission" || phase === "Rating";
+
+    return {
+      jamId:
+        activeJam?.jam?.id && isActiveJamBehavior
+          ? activeJam.jam.id.toString()
+          : undefined,
+      sort: isActiveJamBehavior ? "random" : "score",
+    };
+  }, [activeJam]);
+
+  const { data: music } = useTracks(sort, jamId);
 
   const featured = useMemo(
-    () => [...(music ?? [])].sort(() => Math.random() - 0.5).slice(0, 5),
+    () => [...(music ?? [])].slice(0, 5),
     [music]
   );
 
