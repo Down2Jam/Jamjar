@@ -38,6 +38,7 @@ import SidebarSong from "@/components/sidebar/SidebarSong";
 import type { GameType } from "@/types/GameType";
 import type { GameResultType } from "@/types/GameResultType";
 import type { JamType } from "@/types/JamType";
+import type { ReactionType } from "@/types/ReactionType";
 import type { TrackResultType } from "@/types/TrackResultType";
 import type { TrackType } from "@/types/TrackType";
 
@@ -78,6 +79,13 @@ type RarityTier =
   | "Silver"
   | "Bronze"
   | "Default";
+
+type WordCloudEntry = {
+  key: string;
+  label: string;
+  count: number;
+  image?: string;
+};
 
 const STOP_WORDS = new Set([
   "about",
@@ -151,26 +159,52 @@ function flattenCommentContents(
   return output;
 }
 
-function getTopWords(contents: string[], limit = 8) {
-  const counts = new Map<string, number>();
+function getTopWords(
+  contents: string[],
+  emojiMap?: Map<string, { image: string; label: string }>,
+  limit = 8,
+) {
+  const counts = new Map<string, WordCloudEntry>();
 
   contents.forEach((content) => {
     content
-      .toLowerCase()
       .replace(/https?:\/\/\S+/g, " ")
-      .match(/[a-z']+/g)
-      ?.forEach((word) => {
-        const normalized = word.replace(/^'+|'+$/g, "");
-        if (normalized.length < 4) return;
-        if (STOP_WORDS.has(normalized)) return;
-        counts.set(normalized, (counts.get(normalized) ?? 0) + 1);
+      .match(/:[a-z0-9_]+:|[a-z]+(?:'[a-z]+)*/gi)
+      ?.forEach((token) => {
+        const normalized = token.toLowerCase();
+
+        if (
+          normalized.startsWith(":") &&
+          normalized.endsWith(":") &&
+          emojiMap?.has(normalized)
+        ) {
+          const emoji = emojiMap.get(normalized)!;
+          const existing = counts.get(normalized);
+          counts.set(normalized, {
+            key: normalized,
+            label: emoji.label,
+            image: emoji.image,
+            count: (existing?.count ?? 0) + 1,
+          });
+          return;
+        }
+
+        const normalizedWord = normalized.replace(/^'+|'+$/g, "");
+        if (normalizedWord.length < 4) return;
+        if (STOP_WORDS.has(normalizedWord)) return;
+
+        const existing = counts.get(normalizedWord);
+        counts.set(normalizedWord, {
+          key: normalizedWord,
+          label: normalizedWord,
+          count: (existing?.count ?? 0) + 1,
+        });
       });
   });
 
-  return [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+  return [...counts.values()]
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, limit)
-    .map(([word, count]) => ({ word, count }));
 }
 
 function getOverallGameScore(game: GameType | null) {
@@ -503,7 +537,7 @@ function WordCloud({
   words,
   colors,
 }: {
-  words: Array<{ word: string; count: number }>;
+  words: WordCloudEntry[];
   colors: Record<string, string>;
 }) {
   if (words.length === 0) {
@@ -532,10 +566,11 @@ function WordCloud({
           const fontSize = 1 + scale * 1.8;
           const rotation = index % 4 === 0 ? -4 : index % 4 === 2 ? 3 : 0;
           const color = palette[index % palette.length];
+          const imageSize = 28 + scale * 30;
 
           return (
             <span
-              key={entry.word}
+              key={entry.key}
               className="inline-flex items-center rounded-full px-2 py-1 font-semibold tracking-tight transition-transform duration-200 hover:-translate-y-0.5"
               style={{
                 fontSize: `${fontSize}rem`,
@@ -544,7 +579,17 @@ function WordCloud({
                 textShadow: `0 0 18px ${color}22`,
               }}
             >
-              {entry.word}
+              {entry.image ? (
+                <Image
+                  src={entry.image}
+                  alt={entry.label}
+                  width={imageSize}
+                  height={imageSize}
+                  className="object-contain"
+                />
+              ) : (
+                entry.label
+              )}
             </span>
           );
         })}
@@ -1187,12 +1232,32 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     [recapData.gameDetail?.team?.users],
   );
 
+  const ownerGameEmojiMap = useMemo(
+    () =>
+      new Map(
+        (recapData.gameDetail?.gameEmotes ?? [])
+          .filter(
+            (reaction: ReactionType | null | undefined): reaction is ReactionType =>
+              Boolean(reaction?.slug && reaction?.image),
+          )
+          .map((reaction) => [
+            `:${reaction.slug.toLowerCase()}:`,
+            {
+              image: reaction.image,
+              label: `:${reaction.slug}:`,
+            },
+          ]),
+      ),
+    [recapData.gameDetail?.gameEmotes],
+  );
+
   const gameCommentWords = useMemo(
     () =>
       getTopWords(
         flattenCommentContents(recapData.gameDetail?.comments, ownerTeamUserIds),
+        ownerGameEmojiMap,
       ),
-    [ownerTeamUserIds, recapData.gameDetail],
+    [ownerGameEmojiMap, ownerTeamUserIds, recapData.gameDetail],
   );
   const topGamesInJam = useMemo(
     () =>
@@ -1216,8 +1281,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       recapData.trackDetails.flatMap((track) =>
         flattenCommentContents(track.comments, ownerTeamUserIds),
       ),
+      ownerGameEmojiMap,
     );
-  }, [ownerTeamUserIds, recapData.trackDetails]);
+  }, [ownerGameEmojiMap, ownerTeamUserIds, recapData.trackDetails]);
   const notableGames: Array<{
     game: GameResultType;
     placements: Array<{ placement: number; categoryName: string }>;
