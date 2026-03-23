@@ -296,7 +296,6 @@ function gradientTextStyle(gradient: string, first: string) {
   return {
     backgroundImage: gradient,
     WebkitBackgroundClip: "text" as const,
-    backgroundClip: "text" as const,
     color: first,
     WebkitTextFillColor: "transparent",
   };
@@ -972,10 +971,12 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     trackResults: [],
   });
 
-  const isOwner = targetUserSlug ? self?.slug === effectiveSlug : true;
+  const isOwner = targetUserSlug
+    ? self?.slug === effectiveSlug
+    : Boolean(self?.slug);
 
   useEffect(() => {
-    if (!user || jams.length === 0) return;
+    if (jams.length === 0) return;
     const nextJamId = pickDefaultJamId(searchParams.get("jam"), jams, user);
     if (nextJamId && nextJamId !== selectedJamId) {
       setSelectedJamId(nextJamId);
@@ -1010,7 +1011,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   }, [effectiveSlug, selectedJamId]);
 
   useEffect(() => {
-    if (!user || !selectedJamId) return;
+    if (!selectedJamId) return;
     if (
       targetUserSlug &&
       !isOwner &&
@@ -1542,7 +1543,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     return <div>Loading recap...</div>;
   }
 
-  if (!user) {
+  if (targetUserSlug && !user) {
     return <div>Could not load user recap.</div>;
   }
 
@@ -1558,7 +1559,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             This recap is private
           </Text>
           <Text color="textFaded">
-            {user.name} has not shared this jam recap publicly.
+            {user?.name ?? "This user"} has not shared this jam recap publicly.
           </Text>
         </Vstack>
       </Card>
@@ -1581,28 +1582,39 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   Jam Recap
                 </Text>
                 <Text color="textFaded">
-                  {user.name}
+                  {user?.name ?? "D2Jam"}
                   {selectedJam ? ` • ${selectedJam.name}` : ""}
                 </Text>
               </Vstack>
-              <Dropdown
-                onSelect={(key) => handleJamChange(String(key))}
-                trigger={
-                  <Button size="sm" icon="calendar">
-                    {selectedJam?.name ?? "Select jam"}
-                  </Button>
-                }
-              >
-                {jams.map((jam) => (
-                  <Dropdown.Item key={jam.id} value={String(jam.id)}>
-                    {jam.name}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown>
+              <Hstack wrap className="gap-2">
+                <Dropdown
+                  onSelect={(key) => handleJamChange(String(key))}
+                  trigger={
+                    <Button size="sm" icon="calendar">
+                      {selectedJam?.name ?? "Select jam"}
+                    </Button>
+                  }
+                >
+                  {jams.map((jam) => (
+                    <Dropdown.Item key={jam.id} value={String(jam.id)}>
+                      {jam.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+                <Button
+                  size="sm"
+                  href={`/results?jam=${selectedJamId}`}
+                  icon="trophy"
+                >
+                  View Full Results
+                </Button>
+              </Hstack>
             </Hstack>
 
             <Text color="textFaded">
-              A recap of what happened relating to you this game jam!
+              {user
+                ? "A recap of what happened relating to you this game jam!"
+                : "A recap of standout things from this game jam!"}
             </Text>
 
             {visibleStatCards.length > 0 ? (
@@ -2070,25 +2082,30 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           <Card className="p-8 md:p-10">
             <Vstack align="start" gap={4}>
-              <Hstack wrap className="gap-2">
-                <Text size="xl" weight="bold">
-                  Post-jam refinement starts now
-                </Text>
-              </Hstack>
-              <Text color="textFaded">
-                Check what people liked and didn't like about the game and go
-                through and make improvements based on how you want to improve
-                it! There is now a 2 week optional period you can use to work
-                more on your game as well as creating materials and pages to
-                have the content shown in various places outside the jam and
-                then afterwards there will be another optional 2 week period to
-                go through and play updated games!
-              </Text>
-              <Text color="textFaded">
-                The site will be updated to help provide marketing, and outside
-                the jam help in terms of where to post things during the two
-                weeks!
-              </Text>
+              {ownerGame ? (
+                <>
+                  <Hstack wrap className="gap-2">
+                    <Text size="xl" weight="bold">
+                      Post-jam refinement starts now
+                    </Text>
+                  </Hstack>
+                  <Text color="textFaded">
+                    Check what people liked and didn't like about the game and
+                    go through and make improvements based on how you want to
+                    improve it! There is now a 2 week optional period you can
+                    use to work more on your game as well as creating materials
+                    and pages to have the content shown in various places
+                    outside the jam and then afterwards there will be another
+                    optional 2 week period to go through and play updated
+                    games!
+                  </Text>
+                  <Text color="textFaded">
+                    The site will be updated to help provide marketing, and
+                    outside the jam help in terms of where to post things
+                    during the two weeks!
+                  </Text>
+                </>
+              ) : null}
               <Hstack wrap>
                 <Button href={`/results?jam=${selectedJamId}`} icon="trophy">
                   View Full Results
