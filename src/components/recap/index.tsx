@@ -2182,17 +2182,16 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   <Text color="textFaded">
                     Check what people liked and didn't like about the game and
                     go through and make improvements based on how you want to
-                    improve it! There is now a 2 week optional period you can
-                    use to work more on your game as well as creating materials
-                    and pages to have the content shown in various places
-                    outside the jam and then afterwards there will be another
-                    optional 2 week period to go through and play updated
-                    games!
+                    improve it! There is now an optional post-jam refinement
+                    period you can use to keep working on your game, prepare
+                    materials, and get everything ready to be shown outside the
+                    jam. After that, there is a separate post-jam rating period
+                    to go through and play updated games.
                   </Text>
                   <Text color="textFaded">
                     The site will be updated to help provide marketing, and
                     outside the jam help in terms of where to post things
-                    during the two weeks!
+                    during that post-jam window.
                   </Text>
                 </>
               ) : null}

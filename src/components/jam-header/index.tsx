@@ -15,13 +15,15 @@ export default function JamHeader() {
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { siteTheme, colors } = useTheme();
-  const POST_JAM_REFINEMENT_MS = 14 * 24 * 60 * 60 * 1000;
-  const POST_JAM_RATING_MS = 14 * 24 * 60 * 60 * 1000;
 
   const getJamMilestones = (jam?: ActiveJamResponse["jam"] | null) => {
     if (!jam) return null;
 
     const start = new Date(jam.startTime).getTime();
+    const postJamRefinementMs =
+      (jam.postJamRefinementHours ?? 14 * 24) * 60 * 60 * 1000;
+    const postJamRatingMs =
+      (jam.postJamRatingHours ?? 14 * 24) * 60 * 60 * 1000;
     const themeSubmissionStart =
       start -
       jam.votingHours * 1000 * 60 * 60 -
@@ -34,7 +36,7 @@ export default function JamHeader() {
       start + jam.jammingHours * 1000 * 60 * 60 + jam.submissionHours * 1000 * 60 * 60;
     const resultsStart = ratingStart + jam.ratingHours * 1000 * 60 * 60;
     const postJamRefinementStart = resultsStart;
-    const postJamRatingStart = postJamRefinementStart + POST_JAM_REFINEMENT_MS;
+    const postJamRatingStart = postJamRefinementStart + postJamRefinementMs;
 
     return {
       themeSubmissionStart,
@@ -46,7 +48,7 @@ export default function JamHeader() {
       postJamRefinementStart,
       postJamRatingStart,
       postJamRefinementEnd: postJamRatingStart,
-      postJamRatingEnd: postJamRatingStart + POST_JAM_RATING_MS,
+      postJamRatingEnd: postJamRatingStart + postJamRatingMs,
     };
   };
 

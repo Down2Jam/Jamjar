@@ -8,6 +8,10 @@ export default function Timers() {
   const { data: activeJamResponse } = useCurrentJam();
   const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
+  const postJamRefinementHours =
+    activeJamResponse?.jam?.postJamRefinementHours ?? 14 * 24;
+  const postJamRatingHours =
+    activeJamResponse?.jam?.postJamRatingHours ?? 14 * 24;
 
   if (!hasMounted) {
     return <></>;
@@ -109,7 +113,7 @@ export default function Timers() {
                   activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
                   activeJamResponse.jam.submissionHours * 60 * 60 * 1000 +
                   activeJamResponse.jam.ratingHours * 60 * 60 * 1000 +
-                  14 * 24 * 60 * 60 * 1000
+                  postJamRefinementHours * 60 * 60 * 1000
               )
             }
           />
@@ -131,7 +135,10 @@ export default function Timers() {
                   activeJamResponse.jam.jammingHours * 60 * 60 * 1000 +
                   activeJamResponse.jam.submissionHours * 60 * 60 * 1000 +
                   activeJamResponse.jam.ratingHours * 60 * 60 * 1000 +
-                  28 * 24 * 60 * 60 * 1000
+                  (postJamRefinementHours + postJamRatingHours) *
+                    60 *
+                    60 *
+                    1000
               )
             }
           />

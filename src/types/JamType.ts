@@ -11,6 +11,8 @@ export interface JamType {
   jammingHours: number;
   submissionHours: number;
   ratingHours: number;
+  postJamRefinementHours: number;
+  postJamRatingHours: number;
   startTime: string;
   createdAt: Date;
   updatedAt: Date;
