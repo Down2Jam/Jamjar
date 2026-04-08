@@ -7,7 +7,15 @@
       "Title": "Jeux"
     },
     "Results": {
-      "Title": "Résultats"
+      "Title": "Resultats"
+    },
+    "Docs": {
+      "Title": "Docs",
+      "Description": "Browse site documentation and guides"
+    },
+    "PressKit": {
+      "Title": "Press Kit",
+      "Description": "Browse public press materials and references"
     }
   }
 }

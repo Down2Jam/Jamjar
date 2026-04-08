@@ -27,6 +27,7 @@ import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
 import { useSelf, useCurrentGame } from "@/hooks/queries";
 import { useState } from "react";
+import { isPostJamPhase } from "@/helpers/jamDisplay";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -34,7 +35,7 @@ type PCbarProps = {
 };
 
 export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
-  const { jamPhase, jam } = useJam();
+  const { jamPhase, jam, nextJam } = useJam();
   const { isLgUp, isXlUp, isMdUp, isLgDown } = useBreakpoint();
 
   const hasToken = hasCookie("token");
@@ -43,6 +44,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const { siteTheme } = useTheme();
   const [isInJam, setIsInJam] = useState<boolean | undefined>(undefined);
 
+  const joinableJam = isPostJamPhase(jamPhase) && nextJam ? nextJam : jam;
   const currentJamTeams = jam
     ? (user?.teams ?? []).filter((team) => team.jamId == jam.id)
     : [];
@@ -55,8 +57,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const computedIsInJam =
     isInJam !== undefined
       ? isInJam
-      : user && jam
-        ? (user.jams?.filter((userjam: JamType) => userjam.id == jam.id)
+      : user && joinableJam
+        ? (user.jams?.filter((userjam: JamType) => userjam.id == joinableJam.id)
             .length ?? 0) > 0
         : false;
 
@@ -119,7 +121,25 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 description="Navbar.Music.Description"
                 hotkey={["G", "M"]}
                 isIconOnly
+                color="yellow"
+              />
+              <NavbarButton
+                icon="bookcopy"
+                href="/docs"
+                name="Navbar.Docs.Title"
+                description="Navbar.Docs.Description"
+                hotkey={["G", "O"]}
+                isIconOnly
                 color="orange"
+              />
+              <NavbarButton
+                icon="newspaper"
+                href="/press-kit"
+                name="Navbar.PressKit.Title"
+                description="Navbar.PressKit.Description"
+                hotkey={["G", "P"]}
+                isIconOnly
+                color="red"
               />
             </div>
           </>
@@ -150,15 +170,15 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           jamPhase == "Post-Jam Refinement" ||
           jamPhase == "Post-Jam Rating") &&
           isLgUp && (
-          <NavbarButton
-            icon="trophy"
-            href="/recap"
-            name="Navbar.Results.Title"
-            description="Navbar.Results.Description"
-            hotkey={["G", "R"]}
-            color="yellow"
-          />
-        )}
+            <NavbarButton
+              icon="trophy"
+              href="/recap"
+              name="Navbar.Results.Title"
+              description="Navbar.Results.Description"
+              hotkey={["G", "R"]}
+              color="yellow"
+            />
+          )}
         {jamPhase == "Suggestion" && isLgUp && (
           <NavbarButton
             icon="sparkles"
@@ -274,11 +294,11 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             hotkey={["G", "T"]}
           />
         )}
-        {user && isMdUp && jam && !computedIsInJam && (
+        {user && isMdUp && joinableJam && !computedIsInJam && (
           <NavbarButton
             icon="calendarplus"
             onPress={async () => {
-              if (!jam) {
+              if (!joinableJam) {
                 addToast({
                   title: "Navbar.NoJamToast.Title",
                   description: "Navbar.NoJamToast.Description",
@@ -288,7 +308,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 });
                 return;
               }
-              if (await joinJam(jam.id)) {
+              if (await joinJam(joinableJam.id)) {
                 setIsInJam(true);
               }
             }}

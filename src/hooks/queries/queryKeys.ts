@@ -58,6 +58,15 @@ export const queryKeys = {
     detail: (slug: string, userSlug?: string) =>
       [...queryKeys.post.all, "detail", slug, userSlug] as const,
   },
+  documentation: {
+    all: ["documentation"] as const,
+    list: (section: string) =>
+      [...queryKeys.documentation.all, "list", section] as const,
+    detail: (slug: string, section: string) =>
+      [...queryKeys.documentation.all, "detail", slug, section] as const,
+    pressKitMedia: () =>
+      [...queryKeys.documentation.all, "press-kit-media"] as const,
+  },
   event: {
     all: ["event"] as const,
     list: (filter: string) =>

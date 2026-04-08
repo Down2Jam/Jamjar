@@ -11,10 +11,11 @@ import { Hstack, Stack, Vstack } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import AboutLogo from "../AboutLogo";
 import { useCurrentJam } from "@/hooks/queries";
+import { getDisplayJamForPublicView } from "@/helpers/jamDisplay";
 
 export default function AboutPage() {
   const { data: jamResponse } = useCurrentJam();
-  const jam = jamResponse?.jam ?? null;
+  const jam = getDisplayJamForPublicView(jamResponse);
   const { colors } = useTheme();
 
   return (

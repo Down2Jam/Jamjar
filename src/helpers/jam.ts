@@ -4,6 +4,7 @@ import * as jamRequests from "@/requests/jam";
 export interface ActiveJamResponse {
   phase: JamPhase;
   jam: JamType | null; // Jam will be null if no active jam is found
+  nextJam?: JamType | null;
 }
 
 export async function getJams(): Promise<JamType[]> {
@@ -19,6 +20,7 @@ export async function getCurrentJam(): Promise<ActiveJamResponse | null> {
     return {
       phase: data.phase,
       jam: data.jam,
+      nextJam: data.nextJam ?? null,
     };
   } catch (error) {
     console.error("Error fetching active jam:", error);

@@ -114,6 +114,14 @@
       "Title": "Music",
       "Description": "All submitted music to the website"
     },
+    "Docs": {
+      "Title": "Docs",
+      "Description": "Site documentation and guides"
+    },
+    "PressKit": {
+      "Title": "Press Kit",
+      "Description": "A collection of materials for promotional use"
+    },
     "Login": {
       "Title": "Login",
       "Description": "Log into the website"

@@ -9,9 +9,11 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { Text } from "bioloom-ui";
 import Link from "next/link";
 import { useCurrentJam } from "@/hooks/queries";
+import { getDisplayJamForPublicView, isPostJamPhase } from "@/helpers/jamDisplay";
 
 export default function JamHeader() {
   const { data: activeJamResponse } = useCurrentJam();
+  const displayJam = getDisplayJamForPublicView(activeJamResponse);
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { siteTheme, colors } = useTheme();
@@ -182,35 +184,35 @@ export default function JamHeader() {
   const events = [
     {
       name: "Phases.ThemeSubmission.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.themeSubmissionStart,
+      date: getJamMilestones(displayJam)?.themeSubmissionStart,
     },
     {
       name: "Phases.ThemeElimination.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.themeEliminationStart,
+      date: getJamMilestones(displayJam)?.themeEliminationStart,
     },
     {
       name: "Phases.ThemeVoting.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.themeVotingStart,
+      date: getJamMilestones(displayJam)?.themeVotingStart,
     },
     {
       name: "Phases.GameJam.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.jamStart,
+      date: getJamMilestones(displayJam)?.jamStart,
     },
     {
       name: "Phases.Rating.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.ratingStart,
+      date: getJamMilestones(displayJam)?.ratingStart,
     },
     {
       name: "Phases.Results.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.resultsStart,
+      date: getJamMilestones(displayJam)?.resultsStart,
     },
     {
       name: "Phases.PostRefinement.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.postJamRefinementStart,
+      date: getJamMilestones(displayJam)?.postJamRefinementStart,
     },
     {
       name: "Phases.PostRating.Title",
-      date: getJamMilestones(activeJamResponse?.jam)?.postJamRatingStart,
+      date: getJamMilestones(displayJam)?.postJamRatingStart,
     },
   ].map((event) => ({
     ...event,
@@ -221,11 +223,18 @@ export default function JamHeader() {
     ...event,
   }));
 
-  const milestones = getJamMilestones(activeJamResponse?.jam);
+  const milestones = getJamMilestones(displayJam);
   const phaseDateRange = (() => {
-    if (!activeJamResponse?.jam || !milestones) return null;
+    if (!displayJam || !milestones) return null;
 
-    switch (activeJamResponse.phase) {
+    if (isPostJamPhase(activeJamResponse?.phase) && activeJamResponse?.nextJam) {
+      return {
+        start: milestones.jamStart,
+        end: milestones.jamStart + displayJam.jammingHours * 60 * 60 * 1000,
+      };
+    }
+
+    switch (activeJamResponse?.phase) {
       case "Rating":
         return {
           start: milestones.ratingStart,
@@ -246,7 +255,7 @@ export default function JamHeader() {
           start: milestones.jamStart,
           end:
             milestones.jamStart +
-            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+            displayJam.jammingHours * 60 * 60 * 1000,
         };
     }
   })();
@@ -290,10 +299,11 @@ export default function JamHeader() {
             >
               <Calendar />
               <p>
-                {activeJamResponse?.jam && activeJamResponse.phase ? (
+                {displayJam && activeJamResponse?.phase ? (
                   <span className="text-sm font-normal">
-                    {activeJamResponse.jam.name} - {activeJamResponse.phase}{" "}
-                    Phase
+                    {isPostJamPhase(activeJamResponse.phase) && activeJamResponse.nextJam
+                      ? `${activeJamResponse.nextJam.name} - Next Jam`
+                      : `${displayJam.name} - ${activeJamResponse.phase} Phase`}
                   </span>
                 ) : (
                   <span className="text-sm font-normal">(No Active Jams)</span>
@@ -303,33 +313,33 @@ export default function JamHeader() {
 
             <div className="p-4 px-6 font-bold">
               <p>
-                {activeJamResponse?.jam ? (
+                {displayJam ? (
                   <>
-                    {new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).toLocaleDateString("en-US", {
+                    {new Date(phaseDateRange?.start ?? displayJam.startTime).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
-                    {new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).getDate()}
+                    {new Date(phaseDateRange?.start ?? displayJam.startTime).getDate()}
                     {getOrdinalSuffix(
-                      new Date(phaseDateRange?.start ?? activeJamResponse.jam.startTime).getDate(),
+                      new Date(phaseDateRange?.start ?? displayJam.startTime).getDate(),
                     )}
                     {" - "}
                     {new Date(
                       phaseDateRange?.end ??
-                        new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                        new Date(displayJam.startTime).getTime() +
+                          displayJam.jammingHours * 60 * 60 * 1000,
                     ).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
                     {new Date(
                       phaseDateRange?.end ??
-                        new Date(activeJamResponse.jam.startTime).getTime() +
-                          activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                        new Date(displayJam.startTime).getTime() +
+                          displayJam.jammingHours * 60 * 60 * 1000,
                     ).getDate()}
                     {getOrdinalSuffix(
                       new Date(
                         phaseDateRange?.end ??
-                          new Date(activeJamResponse.jam.startTime).getTime() +
-                            activeJamResponse.jam.jammingHours * 60 * 60 * 1000,
+                          new Date(displayJam.startTime).getTime() +
+                            displayJam.jammingHours * 60 * 60 * 1000,
                       ).getDate(),
                     )}
                   </>

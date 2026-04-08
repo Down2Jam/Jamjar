@@ -4,6 +4,7 @@ export * from "./useJamQueries";
 export * from "./useUserQueries";
 export * from "./useGameQueries";
 export * from "./usePostQueries";
+export * from "./useDocumentationQueries";
 export * from "./useEventQueries";
 export * from "./useThemeQueries";
 export * from "./useTeamQueries";

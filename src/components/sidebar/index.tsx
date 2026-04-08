@@ -1,6 +1,7 @@
 import SidebarBanner from "./SidebarBanner";
 import SidebarButtons from "./SidebarButtons";
 import SidebarStats from "./SidebarStats";
+import SidebarNextJam from "./SidebarNextJam";
 import SidebarStreams from "./SidebarStreams";
 import SidebarEvents from "./SidebarEvents";
 import SidebarGames from "./SidebarGames";
@@ -12,6 +13,7 @@ export default function Sidebar() {
       <SidebarBanner />
       <SidebarButtons />
       <SidebarStats />
+      <SidebarNextJam />
       <SidebarStreams />
       <SidebarEvents />
       <SidebarGames />

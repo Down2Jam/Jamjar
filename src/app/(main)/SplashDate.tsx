@@ -2,9 +2,11 @@
 
 import { Text } from "bioloom-ui";
 import { useCurrentJam } from "@/hooks/queries";
+import { getDisplayJamForPublicView } from "@/helpers/jamDisplay";
 
 export default function SplashDate() {
   const { data: activeJamResponse } = useCurrentJam();
+  const displayJam = getDisplayJamForPublicView(activeJamResponse);
 
   const getOrdinalSuffix = (day: number): string => {
     if (day > 3 && day < 21) return "th";
@@ -20,32 +22,32 @@ export default function SplashDate() {
     }
   };
 
-  if (!activeJamResponse?.jam) {
+  if (!displayJam) {
     return <></>;
   }
 
   return (
     <Text color="textLightFaded" className="mx-auto sm:mx-0">
-      {new Date(activeJamResponse.jam.startTime).toLocaleDateString("en-US", {
+      {new Date(displayJam.startTime).toLocaleDateString("en-US", {
         month: "long",
       })}{" "}
-      {new Date(activeJamResponse.jam.startTime).getDate()}
-      {getOrdinalSuffix(new Date(activeJamResponse.jam.startTime).getDate())}
+      {new Date(displayJam.startTime).getDate()}
+      {getOrdinalSuffix(new Date(displayJam.startTime).getDate())}
       {" - "}
       {new Date(
-        new Date(activeJamResponse.jam.startTime).getTime() +
-          activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+        new Date(displayJam.startTime).getTime() +
+          displayJam.jammingHours * 60 * 60 * 1000
       ).toLocaleDateString("en-US", {
         month: "long",
       })}{" "}
       {new Date(
-        new Date(activeJamResponse.jam.startTime).getTime() +
-          activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+        new Date(displayJam.startTime).getTime() +
+          displayJam.jammingHours * 60 * 60 * 1000
       ).getDate()}
       {getOrdinalSuffix(
         new Date(
-          new Date(activeJamResponse.jam.startTime).getTime() +
-            activeJamResponse.jam.jammingHours * 60 * 60 * 1000
+          new Date(displayJam.startTime).getTime() +
+            displayJam.jammingHours * 60 * 60 * 1000
         ).getDate()
       )}
     </Text>

@@ -113,6 +113,14 @@
     "Music": {
       "Title": "Musika",
       "Description": "Lahat nang musika na sinalin sa website"
+    },
+    "Docs": {
+      "Title": "Docs",
+      "Description": "Mga gabay at dokumentasyon ng site"
+    },
+    "PressKit": {
+      "Title": "Press Kit",
+      "Description": "Mga pampublikong materyal para sa press"
     }
   },
   "PostStyle": {

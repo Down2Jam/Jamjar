@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { useCurrentJam } from "@/hooks/queries";
+import { getNextJamForHome } from "@/helpers/jamDisplay";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -32,7 +33,7 @@ export default function TeamFinder() {
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const [sortSet, setSortSet] = useState<boolean>(false);
   const { data: currentJamData } = useCurrentJam();
-  const jam = currentJamData?.jam ?? null;
+  const jam = getNextJamForHome(currentJamData);
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
