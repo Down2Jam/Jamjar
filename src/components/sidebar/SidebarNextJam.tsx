@@ -18,6 +18,9 @@ export default function SidebarNextJam() {
   const hasJoinedNextJam =
     joinedOverride ??
     Boolean(user && nextJam && user.jams?.some((jam) => jam.id === nextJam.id));
+  const hasTeamInNextJam = Boolean(
+    user && nextJam && user.teams?.some((team) => team.jamId === nextJam.id),
+  );
 
   const [ratings, setRatings] = useState<number | null>(null);
 
@@ -124,6 +127,10 @@ export default function SidebarNextJam() {
               }}
             >
               Join Jam
+            </Button>
+          ) : hasTeamInNextJam ? (
+            <Button href="/team" icon="users" color="green">
+              My Team
             </Button>
           ) : (
             <Button href="/team-finder" icon="users" color="green">

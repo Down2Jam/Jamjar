@@ -56,7 +56,7 @@ export default async function SplashPage() {
               <Stack
                 direction="flex-col sm:flex-row"
                 align="stretch"
-                className="mx-auto mt-4 sm:mt-0"
+                className="self-start"
               >
                 {hasLoggedIn ? (
                   <Button href="/login" icon="login" color="blue">

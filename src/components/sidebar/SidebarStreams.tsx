@@ -11,28 +11,34 @@ import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
 
 export default function SidebarStreams() {
-  const { data: streamers = [] as FeaturedStreamerType[], isLoading } =
+  const { data: rawStreamers = [] as FeaturedStreamerType[], isLoading } =
     useStreamers();
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
   const { colors, siteTheme } = useTheme();
+  const blacklistedStreamers = new Set(["morninchai", "lana_lux"]);
+  const streamers = rawStreamers.filter(
+    (streamer) => !blacklistedStreamers.has(streamer.userName.toLowerCase()),
+  );
+  const totalStreamers = streamers.length;
+  const safeCurrentIndex = totalStreamers === 0 ? 0 : currentIndex % totalStreamers;
 
   // Function to handle moving to the previous streamer
 
   const handlePrev = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? streamers.length - 1 : prevIndex - 1
+      prevIndex === 0 ? totalStreamers - 1 : prevIndex - 1
     );
   };
 
   const handlePrevPage = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex <= 2 ? streamers.length - 1 : prevIndex - (prevIndex % 3) - 1
+      prevIndex <= 2 ? totalStreamers - 1 : prevIndex - (prevIndex % 3) - 1
     );
   };
 
   const handleNextPage = () => {
     setCurrentIndex((prevIndex) =>
-      3 + 3 * Math.floor(prevIndex / 3.0) >= streamers.length
+      3 + 3 * Math.floor(prevIndex / 3.0) >= totalStreamers
         ? 0
         : prevIndex + 3 - (prevIndex % 3)
     );
@@ -41,15 +47,19 @@ export default function SidebarStreams() {
   // Function to handle moving to the next streamer
   const handleNext = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === streamers.length - 1 ? 0 : prevIndex + 1
+      prevIndex === totalStreamers - 1 ? 0 : prevIndex + 1
     );
   };
 
-  if (isLoading || streamers.length === 0) {
+  if (isLoading) {
     return <div>Loading featured streamers...</div>;
   }
 
-  const currentStreamer = streamers[currentIndex]; // Get the currently displayed streamer
+  if (totalStreamers === 0) {
+    return null;
+  }
+
+  const currentStreamer = streamers[safeCurrentIndex];
 
   return (
     <a href={`https://twitch.tv/${currentStreamer.userName}`} target="_blank">
@@ -73,7 +83,7 @@ export default function SidebarStreams() {
           />
         )}
         <div className="absolute mt-60 flex z-20 gap-2 justify-center w-[480px] min-w-[480px] max-w-[480px] items-center">
-          {streamers.length > 3 && (
+          {totalStreamers > 3 && (
             <Tooltip content="Previous Page" position="top">
               <Button
                 onClick={(e) => {
@@ -85,7 +95,7 @@ export default function SidebarStreams() {
               />
             </Tooltip>
           )}
-          {streamers.length > 0 + 3 * Math.floor(currentIndex / 3.0) && (
+          {totalStreamers > 0 + 3 * Math.floor(safeCurrentIndex / 3.0) && (
             // <Tooltip
             //   position="top"
             //   content={`${
@@ -96,27 +106,27 @@ export default function SidebarStreams() {
             // >
             <NextImage
               src={
-                streamers[0 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+                streamers[0 + 3 * Math.floor(safeCurrentIndex / 3.0)].thumbnailUrl
               }
               width={120}
               height={68}
               alt={`${
-                streamers[0 + 3 * Math.floor(currentIndex / 3.0)].userName
+                streamers[0 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
               className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
-                currentIndex === 0 + 3 * Math.floor(currentIndex / 3.0)
+                safeCurrentIndex === 0 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setCurrentIndex(0 + 3 * Math.floor(currentIndex / 3.0));
+                setCurrentIndex(0 + 3 * Math.floor(safeCurrentIndex / 3.0));
               }}
             />
             // </Tooltip>
           )}
-          {streamers.length > 1 + 3 * Math.floor(currentIndex / 3.0) && (
+          {totalStreamers > 1 + 3 * Math.floor(safeCurrentIndex / 3.0) && (
             // <Tooltip
             //   position="top"
             //   content={`${
@@ -127,27 +137,27 @@ export default function SidebarStreams() {
             // >
             <NextImage
               src={
-                streamers[1 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+                streamers[1 + 3 * Math.floor(safeCurrentIndex / 3.0)].thumbnailUrl
               }
               width={120}
               height={68}
               alt={`${
-                streamers[1 + 3 * Math.floor(currentIndex / 3.0)].userName
+                streamers[1 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
               className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
-                currentIndex === 1 + 3 * Math.floor(currentIndex / 3.0)
+                safeCurrentIndex === 1 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setCurrentIndex(1 + 3 * Math.floor(currentIndex / 3.0));
+                setCurrentIndex(1 + 3 * Math.floor(safeCurrentIndex / 3.0));
               }}
             />
             // </Tooltip>
           )}
-          {streamers.length > 2 + 3 * Math.floor(currentIndex / 3.0) && (
+          {totalStreamers > 2 + 3 * Math.floor(safeCurrentIndex / 3.0) && (
             // <Tooltip
             //   position="top"
             //   content={`${
@@ -158,27 +168,27 @@ export default function SidebarStreams() {
             // >
             <NextImage
               src={
-                streamers[2 + 3 * Math.floor(currentIndex / 3.0)].thumbnailUrl
+                streamers[2 + 3 * Math.floor(safeCurrentIndex / 3.0)].thumbnailUrl
               }
               width={120}
               height={68}
               alt={`${
-                streamers[2 + 3 * Math.floor(currentIndex / 3.0)].userName
+                streamers[2 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
               className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
-                currentIndex === 2 + 3 * Math.floor(currentIndex / 3.0)
+                safeCurrentIndex === 2 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
-                setCurrentIndex(2 + 3 * Math.floor(currentIndex / 3.0));
+                setCurrentIndex(2 + 3 * Math.floor(safeCurrentIndex / 3.0));
               }}
             />
             // </Tooltip>
           )}
-          {streamers.length > 3 && (
+          {totalStreamers > 3 && (
             <Tooltip content="Next Page" position="top">
               <Button
                 onClick={(e) => {

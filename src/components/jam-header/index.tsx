@@ -9,11 +9,10 @@ import { useTheme } from "@/providers/SiteThemeProvider";
 import { Text } from "bioloom-ui";
 import Link from "next/link";
 import { useCurrentJam } from "@/hooks/queries";
-import { getDisplayJamForPublicView, isPostJamPhase } from "@/helpers/jamDisplay";
 
 export default function JamHeader() {
   const { data: activeJamResponse } = useCurrentJam();
-  const displayJam = getDisplayJamForPublicView(activeJamResponse);
+  const displayJam = activeJamResponse?.jam ?? null;
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const { siteTheme, colors } = useTheme();
@@ -227,13 +226,6 @@ export default function JamHeader() {
   const phaseDateRange = (() => {
     if (!displayJam || !milestones) return null;
 
-    if (isPostJamPhase(activeJamResponse?.phase) && activeJamResponse?.nextJam) {
-      return {
-        start: milestones.jamStart,
-        end: milestones.jamStart + displayJam.jammingHours * 60 * 60 * 1000,
-      };
-    }
-
     switch (activeJamResponse?.phase) {
       case "Rating":
         return {
@@ -263,6 +255,8 @@ export default function JamHeader() {
   const nextEventIndex = sortedEvents.findIndex(
     (event) => event.date && event.date >= currentDate,
   );
+  const effectiveNextEventIndex =
+    nextEventIndex === -1 ? sortedEvents.length : nextEventIndex;
 
   // Helper function to get ordinal suffix
   const getOrdinalSuffix = (day: number): string => {
@@ -301,9 +295,7 @@ export default function JamHeader() {
               <p>
                 {displayJam && activeJamResponse?.phase ? (
                   <span className="text-sm font-normal">
-                    {isPostJamPhase(activeJamResponse.phase) && activeJamResponse.nextJam
-                      ? `${activeJamResponse.nextJam.name} - Next Jam`
-                      : `${displayJam.name} - ${activeJamResponse.phase} Phase`}
+                    {`${displayJam.name} - ${activeJamResponse.phase} Phase`}
                   </span>
                 ) : (
                   <span className="text-sm font-normal">(No Active Jams)</span>
@@ -427,7 +419,7 @@ export default function JamHeader() {
               color: siteTheme.colors["text"],
               ...getStyleForDateDisplay(
                 index,
-                nextEventIndex,
+                effectiveNextEventIndex,
                 currentDate,
                 event.date,
               ),
@@ -436,7 +428,7 @@ export default function JamHeader() {
             <Text
               size="xs"
               color={
-                index === nextEventIndex - 1 &&
+                index === effectiveNextEventIndex - 1 &&
                 event.date &&
                 event.date < currentDate
                   ? "textLight"
@@ -448,7 +440,7 @@ export default function JamHeader() {
             <Text
               weight="bold"
               color={
-                index === nextEventIndex - 1 &&
+                index === effectiveNextEventIndex - 1 &&
                 event.date &&
                 event.date < currentDate
                   ? "textLight"
