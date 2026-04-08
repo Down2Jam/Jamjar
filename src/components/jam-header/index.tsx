@@ -31,10 +31,14 @@ export default function JamHeader() {
       jam.slaughterHours * 1000 * 60 * 60 -
       jam.suggestionHours * 1000 * 60 * 60;
     const themeEliminationStart =
-      start - jam.votingHours * 1000 * 60 * 60 - jam.slaughterHours * 1000 * 60 * 60;
+      start -
+      jam.votingHours * 1000 * 60 * 60 -
+      jam.slaughterHours * 1000 * 60 * 60;
     const themeVotingStart = start - jam.votingHours * 1000 * 60 * 60;
     const ratingStart =
-      start + jam.jammingHours * 1000 * 60 * 60 + jam.submissionHours * 1000 * 60 * 60;
+      start +
+      jam.jammingHours * 1000 * 60 * 60 +
+      jam.submissionHours * 1000 * 60 * 60;
     const resultsStart = ratingStart + jam.ratingHours * 1000 * 60 * 60;
     const postJamRefinementStart = resultsStart;
     const postJamRatingStart = postJamRefinementStart + postJamRefinementMs;
@@ -147,7 +151,7 @@ export default function JamHeader() {
       };
     if (jamPhase === "Post-Jam Refinement")
       return {
-        text: "Post-jam refinement in progress",
+        text: "Post-jam refinement in progress. Update your entries!",
       };
     if (jamPhase === "Post-Jam Rating")
       return {
@@ -245,9 +249,7 @@ export default function JamHeader() {
       default:
         return {
           start: milestones.jamStart,
-          end:
-            milestones.jamStart +
-            displayJam.jammingHours * 60 * 60 * 1000,
+          end: milestones.jamStart + displayJam.jammingHours * 60 * 60 * 1000,
         };
     }
   })();
@@ -307,12 +309,18 @@ export default function JamHeader() {
               <p>
                 {displayJam ? (
                   <>
-                    {new Date(phaseDateRange?.start ?? displayJam.startTime).toLocaleDateString("en-US", {
+                    {new Date(
+                      phaseDateRange?.start ?? displayJam.startTime,
+                    ).toLocaleDateString("en-US", {
                       month: "long",
                     })}{" "}
-                    {new Date(phaseDateRange?.start ?? displayJam.startTime).getDate()}
+                    {new Date(
+                      phaseDateRange?.start ?? displayJam.startTime,
+                    ).getDate()}
                     {getOrdinalSuffix(
-                      new Date(phaseDateRange?.start ?? displayJam.startTime).getDate(),
+                      new Date(
+                        phaseDateRange?.start ?? displayJam.startTime,
+                      ).getDate(),
                     )}
                     {" - "}
                     {new Date(
