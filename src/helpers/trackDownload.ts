@@ -1,4 +1,5 @@
 import { BASE_URL } from "@/requests/config";
+import { PageVersion } from "@/types/GameType";
 
 function parseContentDispositionFilename(contentDisposition: string | null) {
   if (!contentDisposition) return null;
@@ -42,9 +43,18 @@ function extensionFromContentType(contentType: string | null) {
   }
 }
 
-export async function downloadTrackBySlug(trackSlug: string, fallbackName: string) {
+export async function downloadTrackBySlug(
+  trackSlug: string,
+  fallbackName: string,
+  pageVersion?: PageVersion,
+) {
+  const params = new URLSearchParams();
+  if (pageVersion && pageVersion !== "JAM") {
+    params.set("pageVersion", pageVersion);
+  }
+
   const response = await fetch(
-    `${BASE_URL}/music/track/${encodeURIComponent(trackSlug)}/download`,
+    `${BASE_URL}/music/track/${encodeURIComponent(trackSlug)}/download${params.size ? `?${params.toString()}` : ""}`,
     {
       credentials: "include",
     },

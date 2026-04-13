@@ -30,6 +30,7 @@ export interface UserType {
   linkLabels?: string[];
   recommendedGames?: Array<{
     id: number;
+    pageVersion?: "JAM" | "POST_JAM";
     name: string;
     slug: string;
     short?: string | null;
@@ -45,6 +46,7 @@ export interface UserType {
   }>;
   recommendedGameCandidates?: Array<{
     id: number;
+    pageVersion?: "JAM" | "POST_JAM";
     name: string;
     slug: string;
     short?: string | null;
@@ -105,6 +107,7 @@ export interface UserType {
   recommendedTrackCandidateCount?: number;
   favoriteGameCounts?: Array<{
     gameId: number;
+    pageVersion?: "JAM" | "POST_JAM";
     count: number;
     users: Array<{
       id: number;
@@ -137,8 +140,11 @@ export interface UserType {
   ratings: Array<{
     value: number;
     gameId: number;
+    gamePageId?: number;
     categoryId: number;
     userId: number;
+    pageVersion?: "JAM" | "POST_JAM";
+    updatedAt?: Date;
     game: {
       jamId: number;
       ratingCategories: Array<{ id: number }>;

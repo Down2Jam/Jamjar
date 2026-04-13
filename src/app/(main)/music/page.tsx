@@ -8,6 +8,7 @@ import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/SiteThemeProvider";
 import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
+import { ListingPageVersion } from "@/types/GameType";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getJams } from "@/requests/jam";
@@ -29,6 +30,10 @@ import {
   emitTrackRatingSync,
   subscribeToTrackRatingSync,
 } from "@/helpers/trackRatingSync";
+import {
+  getDefaultListingPageVersion,
+  listingPageVersionOptions,
+} from "@/helpers/listingPageVersion";
 
 type JamOption = {
   id: string;
@@ -120,6 +125,7 @@ function getDefaultMusicSort(
   selectedJamId: string,
   currentJamId: string | null | undefined,
   currentPhase: string | null | undefined,
+  pageVersion: ListingPageVersion = "ALL",
 ): GameSort {
   const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
   const isActiveJamBehavior =
@@ -127,8 +133,28 @@ function getDefaultMusicSort(
     (currentPhase === "Jamming" ||
       currentPhase === "Submission" ||
       currentPhase === "Rating");
+  const isCurrentJamPostJamRating =
+    isCurrentJam &&
+    currentPhase === "Post-Jam Rating" &&
+    pageVersion === "POST_JAM";
 
-  return isActiveJamBehavior ? "recommended" : "score";
+  return isActiveJamBehavior || isCurrentJamPostJamRating
+    ? "recommended"
+    : "score";
+}
+
+function canUseScoreSort(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+  pageVersion: ListingPageVersion,
+): boolean {
+  return !(
+    !!currentJamId &&
+    selectedJamId === currentJamId &&
+    currentPhase === "Post-Jam Rating" &&
+    pageVersion === "POST_JAM"
+  );
 }
 
 function getDefaultMusicMoreFilters(
@@ -208,8 +234,21 @@ export default function MusicPage() {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).has("more");
   }, []);
+  const initialPageVersionParam = useMemo(() => {
+    if (typeof window === "undefined") return "ALL" as ListingPageVersion;
+    const value = new URLSearchParams(window.location.search).get("pageVersion");
+    return value === "JAM" || value === "POST_JAM" || value === "ALL"
+      ? (value as ListingPageVersion)
+      : ("ALL" as ListingPageVersion);
+  }, []);
+  const hasPageVersionParam = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("pageVersion");
+  }, []);
 
   const [jamId, setJamId] = useState<string>(initialJamParam);
+  const [pageVersion, setPageVersion] =
+    useState<ListingPageVersion>(initialPageVersionParam);
   const initialGenresParam = useMemo(
     () =>
       typeof window === "undefined"
@@ -318,10 +357,12 @@ export default function MusicPage() {
       let ratingDefault: string | null = null;
       {
         const res = currentJamData;
-        const isRatingPhase =
+        const isCurrentJamDefaultPhase =
           res?.phase === "Rating" ||
           res?.phase === "Submission" ||
-          res?.phase === "Jamming";
+          res?.phase === "Jamming" ||
+          res?.phase === "Post-Jam Refinement" ||
+          res?.phase === "Post-Jam Rating";
         const detectedJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
@@ -338,7 +379,10 @@ export default function MusicPage() {
           });
         }
 
-        if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
+        if (
+          isCurrentJamDefaultPhase &&
+          (initialJamParam === "all" || !initialJamParam)
+        ) {
           ratingDefault = detectedJamId ?? null;
         }
 
@@ -395,6 +439,10 @@ export default function MusicPage() {
     (value: GameSort) => restrictedSorts.has(value),
     [restrictedSorts],
   );
+  const canUseScore = useMemo(
+    () => canUseScoreSort(jamId, currentJamId, activeJamPhase, pageVersion),
+    [activeJamPhase, currentJamId, jamId, pageVersion],
+  );
 
   const sorts: Record<
     GameSort,
@@ -442,8 +490,13 @@ export default function MusicPage() {
 
   useEffect(() => {
     if (jamDetecting) return;
-    if (!canUseRestrictedSorts && isRestricted(sort)) {
-      const nextSort = getDefaultMusicSort(jamId, currentJamId, activeJamPhase);
+    if ((!canUseRestrictedSorts && isRestricted(sort)) || (sort === "score" && !canUseScore)) {
+      const nextSort = getDefaultMusicSort(
+        jamId,
+        currentJamId,
+        activeJamPhase,
+        pageVersion,
+      );
       setSort(nextSort);
       updateQueryParam("sort", nextSort);
     }
@@ -454,8 +507,10 @@ export default function MusicPage() {
     isRestricted,
     jamId,
     jamDetecting,
+    pageVersion,
     sort,
     updateQueryParam,
+    canUseScore,
   ]);
 
   useEffect(() => {
@@ -463,11 +518,16 @@ export default function MusicPage() {
     if (typeof window === "undefined") return;
     if (new URLSearchParams(window.location.search).get("sort")) return;
 
-    const nextSort = getDefaultMusicSort(jamId, currentJamId, activeJamPhase);
+    const nextSort = getDefaultMusicSort(
+      jamId,
+      currentJamId,
+      activeJamPhase,
+      pageVersion,
+    );
     if (sort !== nextSort) {
       setSort(nextSort);
     }
-  }, [activeJamPhase, currentJamId, jamDetecting, jamId, sort]);
+  }, [activeJamPhase, currentJamId, jamDetecting, jamId, pageVersion, sort]);
 
   useEffect(() => {
     if (jamDetecting) return;
@@ -477,6 +537,21 @@ export default function MusicPage() {
       getDefaultMusicMoreFilters(jamId, currentJamId, activeJamPhase),
     );
   }, [activeJamPhase, currentJamId, hasMoreParam, jamDetecting, jamId]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (hasPageVersionParam) return;
+
+    setPageVersion(
+      getDefaultListingPageVersion(jamId, currentJamId, activeJamPhase),
+    );
+  }, [
+    activeJamPhase,
+    currentJamId,
+    hasPageVersionParam,
+    jamDetecting,
+    jamId,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -540,7 +615,7 @@ export default function MusicPage() {
 
     let cancelled = false;
     (async () => {
-      const res = await getTracks(sort, jamId);
+      const res = await getTracks(sort, jamId, pageVersion);
       const json = await res.json();
       if (cancelled) return;
 
@@ -550,7 +625,7 @@ export default function MusicPage() {
     return () => {
       cancelled = true;
     };
-  }, [jamId, jamDetecting, sort]);
+  }, [jamId, jamDetecting, pageVersion, sort]);
 
   const tagsByCategory = useMemo(() => {
     const grouped = new Map<string, TrackTagType[]>();
@@ -603,7 +678,9 @@ export default function MusicPage() {
           track.game?.team?.users?.some((member) => member.id === user.id)),
       );
       const hasRatedTrack = Boolean(
-        user && track.id && (trackSelectedStars[track.id] ?? 0) > 0,
+        user &&
+          (track.sourceTrackId ?? track.id) &&
+          (trackSelectedStars[track.sourceTrackId ?? track.id] ?? 0) > 0,
       );
 
       if (
@@ -682,7 +759,8 @@ export default function MusicPage() {
         track.game?.team?.ownerId === user.id ||
         track.game?.team?.users?.some((member) => member.id === user.id);
       const hasRatedTrack = Boolean(
-        track.id && (trackSelectedStars[track.id] ?? 0) > 0,
+        (track.sourceTrackId ?? track.id) &&
+          (trackSelectedStars[track.sourceTrackId ?? track.id] ?? 0) > 0,
       );
 
       if (shouldMoveOwnMusicToEnd && isOwnMusic) {
@@ -733,7 +811,7 @@ export default function MusicPage() {
           selectedValue={sort}
           onSelect={(key) => {
             const next = key as GameSort;
-            if (isRestricted(next) && !canUseRestrictedSorts) return;
+            if ((isRestricted(next) && !canUseRestrictedSorts) || (next === "score" && !canUseScore)) return;
             setSort(next);
             updateQueryParam("sort", next);
           }}
@@ -741,7 +819,10 @@ export default function MusicPage() {
           {Object.entries(sorts)
             .filter(
               ([key]) =>
-                !(isRestricted(key as GameSort) && !canUseRestrictedSorts),
+                !(
+                  (isRestricted(key as GameSort) && !canUseRestrictedSorts) ||
+                  (key === "score" && !canUseScore)
+                ),
             )
             .map(([key, value]) => (
               <Dropdown.Item
@@ -756,17 +837,65 @@ export default function MusicPage() {
         </Dropdown>
 
         <Dropdown
+          selectedValue={pageVersion}
+          onSelect={(key) => {
+            const next = key as ListingPageVersion;
+            setPageVersion(next);
+            updateQueryParam("pageVersion", next === "ALL" ? "ALL" : next);
+          }}
+        >
+          {listingPageVersionOptions.map((option) => (
+            <Dropdown.Item
+              key={option.value}
+              value={option.value}
+              icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
+              description={option.description}
+            >
+              {option.label}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+
+        <Dropdown
           selectedValue={jamId}
           onSelect={(key) => {
             hasUserSelected.current = true;
             const val = key as string;
             setJamId(val);
+            if (!hasPageVersionParam) {
+              setPageVersion(
+                getDefaultListingPageVersion(val, currentJamId, activeJamPhase),
+              );
+            }
             const nextSort = getDefaultMusicSort(
               val,
               currentJamId,
               activeJamPhase,
+              hasPageVersionParam
+                ? pageVersion
+                : getDefaultListingPageVersion(
+                    val,
+                    currentJamId,
+                    activeJamPhase,
+                  ),
             );
-            if (!isRestricted(sort) || nextSort === "score") {
+            const effectiveNextPageVersion = hasPageVersionParam
+              ? pageVersion
+              : getDefaultListingPageVersion(
+                  val,
+                  currentJamId,
+                  activeJamPhase,
+                );
+            if (
+              (!isRestricted(sort) && !(sort === "score" && !canUseScore)) ||
+              (nextSort === "score" &&
+                canUseScoreSort(
+                  val,
+                  currentJamId,
+                  activeJamPhase,
+                  effectiveNextPageVersion,
+                ))
+            ) {
               setSort(nextSort);
               updateQueryParam("sort", nextSort);
             }
@@ -942,21 +1071,12 @@ export default function MusicPage() {
       {/* List */}
       <Vstack align="stretch" className="w-[488px]">
         {displayedMusic.map((track, index) => (
-          <SidebarSong
-            key={track.id ?? index}
-            slug={track.slug}
-            trackId={track.id}
-            name={track.name}
-            artist={track.composer}
-            thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
-            game={track.game}
-            song={track.url}
-            license={track.license}
-            allowDownload={track.allowDownload}
-            allowBackgroundUse={track.allowBackgroundUse}
-            allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
-            showRating={
+          (() => {
+            const ratingTrackId = track.sourceTrackId ?? track.id;
+            const canRateTrack =
               Boolean(user) &&
+              Boolean(ratingTrackId) &&
+              track.pageVersion !== "POST_JAM" &&
               !track.game?.team?.users?.some(
                 (member) => member.id === user?.id,
               ) &&
@@ -964,58 +1084,74 @@ export default function MusicPage() {
               String(track.game?.jamId ?? "") === currentJamId &&
               (activeJamPhase === "Rating" ||
                 activeJamPhase === "Submission") &&
-              Boolean(trackOverallCategory)
-            }
-            hideRatings={effectiveHideRatings}
-            ratingValue={track.id ? (trackSelectedStars[track.id] ?? 0) : 0}
-            ratingDisabled={
-              !user ||
-              track.game?.team?.users?.some(
-                (member) => member.id === user.id,
-              ) ||
-              currentJamId == null ||
-              String(track.game?.jamId ?? "") !== currentJamId ||
-              (activeJamPhase !== "Rating" &&
-                activeJamPhase !== "Submission") ||
-              !trackOverallCategory
-            }
-            onRate={async (value) => {
-              if (!track.id || !trackOverallCategory) return;
+              Boolean(trackOverallCategory);
 
-              const previous = trackSelectedStars[track.id] ?? 0;
-              emitTrackRatingSync({
-                trackId: track.id,
-                categoryId: trackOverallCategory.id,
-                value,
-              });
-              setTrackSelectedStars((prev) => ({
-                ...prev,
-                [track.id!]: value,
-              }));
+            return (
+              <SidebarSong
+                key={`${track.pageVersion ?? "JAM"}-${ratingTrackId ?? index}-${track.slug}`}
+                slug={track.slug}
+                trackId={ratingTrackId}
+                name={track.name}
+                artist={track.composer}
+                thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
+                game={track.game}
+                pageVersion={track.pageVersion}
+                song={track.url}
+                license={track.license}
+                allowDownload={track.allowDownload}
+                allowBackgroundUse={track.allowBackgroundUse}
+                allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
+                showRating={canRateTrack}
+                hideRatings={effectiveHideRatings}
+                ratingValue={
+                  ratingTrackId ? (trackSelectedStars[ratingTrackId] ?? 0) : 0
+                }
+                ratingDisabled={!canRateTrack}
+                onRate={async (value) => {
+                  if (
+                    !ratingTrackId ||
+                    !trackOverallCategory ||
+                    track.pageVersion === "POST_JAM"
+                  ) {
+                    return;
+                  }
 
-              const response = await postTrackRating(
-                track.id,
-                trackOverallCategory.id,
-                value,
-              );
+                  const previous = trackSelectedStars[ratingTrackId] ?? 0;
+                  emitTrackRatingSync({
+                    trackId: ratingTrackId,
+                    categoryId: trackOverallCategory.id,
+                    value,
+                  });
+                  setTrackSelectedStars((prev) => ({
+                    ...prev,
+                    [ratingTrackId]: value,
+                  }));
 
-              if (!response.ok) {
-                const payload = await response.json().catch(() => null);
-                addToast({
-                  title: payload?.message ?? "Failed to save track rating",
-                });
-                emitTrackRatingSync({
-                  trackId: track.id,
-                  categoryId: trackOverallCategory.id,
-                  value: previous,
-                });
-                setTrackSelectedStars((prev) => ({
-                  ...prev,
-                  [track.id!]: previous,
-                }));
-              }
-            }}
-          />
+                  const response = await postTrackRating(
+                    ratingTrackId,
+                    trackOverallCategory.id,
+                    value,
+                  );
+
+                  if (!response.ok) {
+                    const payload = await response.json().catch(() => null);
+                    addToast({
+                      title: payload?.message ?? "Failed to save track rating",
+                    });
+                    emitTrackRatingSync({
+                      trackId: ratingTrackId,
+                      categoryId: trackOverallCategory.id,
+                      value: previous,
+                    });
+                    setTrackSelectedStars((prev) => ({
+                      ...prev,
+                      [ratingTrackId]: previous,
+                    }));
+                  }
+                }}
+              />
+            );
+          })()
         ))}
         {displayedMusic.length === 0 && !jamDetecting && (
           <Text color="textFaded">No tracks found.</Text>

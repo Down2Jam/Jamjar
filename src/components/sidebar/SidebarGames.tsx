@@ -8,25 +8,36 @@ import { Button } from "bioloom-ui";
 import Link from "next/link";
 import { useCurrentJam, useGames } from "@/hooks/queries";
 import { useMemo } from "react";
+import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 
 export default function SidebarGames() {
   const { colors } = useTheme();
   const { data: activeJam } = useCurrentJam();
 
-  const { jamId, sort } = useMemo(() => {
+  const { jamId, sort, pageVersion } = useMemo(() => {
     const phase = activeJam?.phase ?? "";
     const isActiveJamBehavior =
       phase === "Jamming" || phase === "Submission" || phase === "Rating";
+    const currentJamId = activeJam?.jam?.id?.toString() ?? null;
+    const selectedJamId =
+      activeJam?.jam?.id && (isActiveJamBehavior || phase.startsWith("Post-Jam"))
+        ? activeJam.jam.id.toString()
+        : "all";
     return {
       jamId:
-        activeJam?.jam?.id && isActiveJamBehavior
+        activeJam?.jam?.id && (isActiveJamBehavior || phase.startsWith("Post-Jam"))
           ? activeJam.jam.id.toString()
           : undefined,
       sort: isActiveJamBehavior ? "karma" : "score",
+      pageVersion: getDefaultListingPageVersion(
+        selectedJamId,
+        currentJamId,
+        phase,
+      ),
     };
   }, [activeJam]);
 
-  const { data: gamesData, isLoading } = useGames(sort, jamId);
+  const { data: gamesData, isLoading } = useGames(sort, jamId, pageVersion);
 
   const games: GameType[] = useMemo(
     () => (Array.isArray(gamesData) ? gamesData : []),
@@ -44,7 +55,10 @@ export default function SidebarGames() {
         </Text>
         <div className="flex flex-wrap w-[496px] gap-2 justify-center">
           {games.slice(0, 6).map((game, index) => (
-            <Link key={game.name + index} href={`/g/${game.slug}`}>
+            <Link
+              key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
+              href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+            >
               <div
                 className="w-[128px] h-[72px] rounded-xl border-1 overflow-hidden"
                 style={{
@@ -61,10 +75,13 @@ export default function SidebarGames() {
                 />
               </div>
             </Link>
-          ))}
+            ))}
           {games.length > 6 &&
             games.slice(6, 10).map((game, index) => (
-              <Link key={game.name + index} href={`/g/${game.slug}`}>
+              <Link
+                key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
+                href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+              >
                 <div
                   className="w-[96px] h-[54px] rounded-xl border-1 overflow-hidden"
                   style={{

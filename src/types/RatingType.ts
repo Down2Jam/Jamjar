@@ -1,4 +1,5 @@
 import { GameType } from "./GameType";
+import { PageVersion } from "./GameType";
 import { RatingCategoryType } from "./RatingCategoryType";
 import { UserType } from "./UserType";
 
@@ -9,5 +10,7 @@ export interface RatingType {
   user: UserType;
   game: GameType;
   userId: number;
-  gameId: number;
+  gameId?: number;
+  gamePageId?: number;
+  pageVersion?: PageVersion;
 }

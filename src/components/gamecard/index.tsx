@@ -10,6 +10,7 @@ import Link from "next/link";
 type GameCardGame = {
   slug: string;
   name: string;
+  pageVersion?: "JAM" | "POST_JAM";
   short?: string | null;
   thumbnail?: string | null;
   itchEmbedUrl?: string | null;
@@ -42,24 +43,41 @@ export function GameCard({
       ...(game.downloadLinks ?? []).map((type) => type.platform),
     ]),
   ].sort((a, b) => (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99));
+  const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
+  const versionLabel =
+    game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
 
   return (
-    <Link href={`/g/${game.slug}`}>
+    <Link href={href}>
       <Card padding={0} className="overflow-hidden relative">
         {rated && (
           <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
             <p className="opacity-50">RATED</p>
           </div>
         )}
-        <div
-          className="absolute top-0 left-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
-          style={{
-            color: colors["text"],
-            backgroundColor: colors[jamColor] + "aa",
-            borderColor: colors[jamColor],
-          }}
-        >
-          {jamName}
+        <div className="absolute top-0 left-0 z-10 m-2 flex flex-col items-start gap-1">
+          <div
+            className="rounded p-2 pt-1 pb-1 text-xs shadow-md backdrop-blur-md"
+            style={{
+              color: colors["text"],
+              backgroundColor: colors[jamColor] + "aa",
+              borderColor: colors[jamColor],
+            }}
+          >
+            {jamName}
+          </div>
+          {versionLabel && (
+            <div
+              className="rounded p-2 pt-1 pb-1 text-xs shadow-md backdrop-blur-md"
+              style={{
+                color: colors["text"],
+                backgroundColor: colors["mantle"] + "dd",
+                borderColor: colors["base"],
+              }}
+            >
+              {versionLabel}
+            </div>
+          )}
         </div>
         <div
           className="absolute top-0 right-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"

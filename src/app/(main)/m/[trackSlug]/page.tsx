@@ -1,15 +1,23 @@
 import type { Metadata } from "next";
 import ClientTrackPage from "./ClientTrackPage";
 import { BASE_URL } from "@/requests/config";
+import { PageVersion } from "@/types/GameType";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string }>;
+  searchParams: Promise<{ pageVersion?: PageVersion }>;
 }): Promise<Metadata> {
   const { trackSlug } = await params;
+  const { pageVersion } = await searchParams;
+  const paramsString =
+    pageVersion
+      ? `?pageVersion=${encodeURIComponent(pageVersion)}`
+      : "";
 
-  const res = await fetch(`${BASE_URL}/tracks/${trackSlug}`, {
+  const res = await fetch(`${BASE_URL}/tracks/${trackSlug}${paramsString}`, {
     next: { revalidate: 300 },
   });
 
@@ -37,7 +45,7 @@ export async function generateMetadata({
     title: track?.name || trackSlug,
     description,
     alternates: {
-      canonical: `/m/${track?.slug || trackSlug}`,
+      canonical: `/m/${track?.slug || trackSlug}${paramsString}`,
     },
     icons: {
       icon: [
@@ -50,7 +58,7 @@ export async function generateMetadata({
     openGraph: {
       title: track?.name || trackSlug,
       description,
-      url: `https://d2jam.com/m/${track?.slug || trackSlug}`,
+      url: `https://d2jam.com/m/${track?.slug || trackSlug}${paramsString}`,
       type: "music.song",
       images: [
         {
@@ -72,8 +80,10 @@ export async function generateMetadata({
 
 export default function TrackPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string }>;
+  searchParams: Promise<{ pageVersion?: PageVersion }>;
 }) {
-  return <ClientTrackPage params={params} />;
+  return <ClientTrackPage params={params} searchParams={searchParams} />;
 }

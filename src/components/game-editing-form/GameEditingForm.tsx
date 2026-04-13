@@ -27,6 +27,7 @@ import { DownloadLinkType, PlatformType } from "@/types/DownloadLinkType";
 import { FlagType } from "@/types/FlagType";
 import { GameTagType } from "@/types/GameTagType";
 import { GameEmbedAspectRatio, GameType } from "@/types/GameType";
+import { PageVersion } from "@/types/GameType";
 import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
@@ -265,8 +266,10 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
 
 export default function GameEditingForm({
   game = null,
+  pageVersion = "JAM",
 }: {
   game?: GameType | null;
+  pageVersion?: PageVersion;
 }) {
   const isMounted = useHasMounted();
   const [ratingCategories, setRatingCategories] = useState<
@@ -386,8 +389,21 @@ export default function GameEditingForm({
     (activeJamResponse.jam.id === gameJamId || !game);
 
   const isRatingPhase = activeJamResponse?.phase === "Rating";
+  const isPostJamLockedPhase =
+    activeJamResponse?.phase === "Post-Jam Refinement" ||
+    activeJamResponse?.phase === "Post-Jam Rating";
+  const canManagePublication =
+    activeJamResponse?.jam &&
+    (activeJamResponse?.jam.id == gameJamId || !game) &&
+    (pageVersion === "POST_JAM"
+      ? activeJamResponse?.phase === "Post-Jam Refinement" ||
+        activeJamResponse?.phase === "Post-Jam Rating"
+      : activeJamResponse?.phase == "Jamming" ||
+        activeJamResponse?.phase == "Submission" ||
+        (activeJamResponse?.phase == "Rating" && category == "EXTRA"));
 
-  const canSwapCategory = inCurrentJamContext && !isRatingPhase;
+  const canSwapCategory =
+    inCurrentJamContext && !isRatingPhase && !isPostJamLockedPhase;
 
   useEffect(() => {
     setEditGame(!!game);
@@ -1005,6 +1021,7 @@ export default function GameEditingForm({
                   estAnyPercent || null,
                   estHundredPercent || null,
                   cleanedPrefix || null,
+                  pageVersion,
                 )
               : postGame(
                   title,
@@ -1037,6 +1054,7 @@ export default function GameEditingForm({
                   estAnyPercent || null,
                   estHundredPercent || null,
                   cleanedPrefix || null,
+                  pageVersion,
                 );
 
             const response = await request;
@@ -1071,13 +1089,17 @@ export default function GameEditingForm({
                 <Icon name="gamepad2" color="text" />
                 <Text size="xl" color="text" weight="semibold">
                   {prevSlug
-                    ? "CreateGame.Edit.Title"
+                    ? pageVersion === "POST_JAM"
+                      ? "Edit Post-Jam Page"
+                      : "CreateGame.Edit.Title"
                     : "CreateGame.Create.Title"}
                 </Text>
               </Hstack>
               <Text size="sm" color="textFaded">
                 {prevSlug
-                  ? "CreateGame.Edit.Description"
+                  ? pageVersion === "POST_JAM"
+                    ? "Edit the post-jam version of your game page."
+                    : "CreateGame.Edit.Description"
                   : "CreateGame.Create.Description"}
               </Text>
             </Vstack>
@@ -2344,7 +2366,11 @@ export default function GameEditingForm({
                                       <Text className="font-semibold">
                                         Embed still loading?
                                       </Text>
-                                      <Text style={{ color: "rgba(255,255,255,0.72)" }}>
+                                      <Text
+                                        style={{
+                                          color: "rgba(255,255,255,0.72)",
+                                        }}
+                                      >
                                         Retry the preview or open it on itch if
                                         the first boot hangs.
                                       </Text>
@@ -3003,8 +3029,7 @@ export default function GameEditingForm({
                                                       derivatives: true,
                                                       shareAlike: false,
                                                     }),
-                                                    allowBackgroundUseAttribution:
-                                                      true,
+                                                    allowBackgroundUseAttribution: true,
                                                   };
                                                 }),
                                               );
@@ -4366,12 +4391,7 @@ export default function GameEditingForm({
               </Button>
             )}
             {(!game || !game.published) &&
-              activeJamResponse?.jam &&
-              (activeJamResponse?.jam.id == gameJamId || !game) &&
-              (activeJamResponse?.phase == "Jamming" ||
-                activeJamResponse?.phase == "Submission" ||
-                (activeJamResponse?.phase == "Rating" &&
-                  category == "EXTRA")) &&
+              canManagePublication &&
               (waitingPost ? (
                 <Spinner />
               ) : (
@@ -4386,12 +4406,8 @@ export default function GameEditingForm({
               ))}
             {game &&
               game.published &&
-              activeJamResponse?.jam &&
-              activeJamResponse?.jam.id == gameJamId &&
-              (activeJamResponse?.phase == "Jamming" ||
-                activeJamResponse?.phase == "Submission" ||
-                (activeJamResponse?.phase == "Rating" &&
-                  category == "EXTRA")) &&
+              canManagePublication &&
+              !isPostJamLockedPhase &&
               (waitingPost ? (
                 <Spinner />
               ) : (

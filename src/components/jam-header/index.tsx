@@ -384,26 +384,36 @@ export default function JamHeader() {
                 </div>
               </Link>
             </div>
-          ) : getPhaseObj(activeJamResponse.phase) &&
-            getPhaseObj(activeJamResponse.phase).href ? (
-            <Link
-              href={getPhaseObj(activeJamResponse.phase).href || "/"}
-              className="hover:underline"
+          ) : activeJamResponse.phase == "Post-Jam Rating" ? (
+            <div
+              className="grid grid-cols-1"
               style={{
-                color: colors["blue"],
+                backgroundColor: colors["blueDarkDark"],
               }}
             >
-              <div
-                className="p-4 text-center rounded-b-2x flex justify-center"
+              <Link
+                href="/games"
+                className="hover:underline"
                 style={{
-                  backgroundColor: colors["blueDarkDark"],
+                  color: colors["blue"],
                 }}
               >
-                <Text weight="semibold">
-                  {getPhaseObj(activeJamResponse.phase).text}
-                </Text>
-              </div>
-            </Link>
+                <div className="p-4 text-center flex justify-center">
+                  <Text weight="semibold">Go rate Updated Games!</Text>
+                </div>
+              </Link>
+              {/* <Link
+                href="/music"
+                className="hover:underline"
+                style={{
+                  color: colors["blue"],
+                }}
+              >
+                <div className="p-4 text-center flex justify-center">
+                  <Text weight="semibold">Go rate Post-Jam Music!</Text>
+                </div>
+              </Link> */}
+            </div>
           ) : (
             <div
               className="p-4 text-center rounded-b-2x flex justify-center"

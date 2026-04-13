@@ -36,7 +36,9 @@ import {
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import CreateComment from "@/components/create-comment";
 import CommentCard from "@/components/posts/CommentCard";
+import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import TrackWaveformPlayer from "@/components/tracks/TrackWaveformPlayer";
 import {
   AlertTriangle,
@@ -46,6 +48,7 @@ import {
   CircleHelp,
   Star,
 } from "lucide-react";
+import { PageVersion } from "@/types/GameType";
 
 function ordinalSuffixOf(i: number) {
   const j = i % 10;
@@ -125,11 +128,18 @@ function getResultsIcon(
 
 export default function ClientTrackPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string }>;
+  searchParams: Promise<{ pageVersion?: PageVersion }>;
 }) {
+  const router = useRouter();
   const { colors } = useTheme();
   const [trackSlug, setTrackSlug] = useState<string>("");
+  const [pageVersion, setPageVersion] = useState<PageVersion>("JAM");
+  const [requestedPageVersion, setRequestedPageVersion] = useState<
+    PageVersion | undefined
+  >(undefined);
   const [track, setTrack] = useState<TrackType | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
   const [overallCategory, setOverallCategory] =
@@ -150,6 +160,16 @@ export default function ClientTrackPage({
   }, [params]);
 
   useEffect(() => {
+    searchParams.then(({ pageVersion }) => {
+      if (pageVersion === "POST_JAM" || pageVersion === "JAM") {
+        setRequestedPageVersion(pageVersion);
+      } else {
+        setRequestedPageVersion(undefined);
+      }
+    });
+  }, [searchParams]);
+
+  useEffect(() => {
     if (!trackSlug) return;
     let cancelled = false;
 
@@ -158,7 +178,7 @@ export default function ClientTrackPage({
         setIsLoading(true);
         const [trackResponse, userResponse, categoriesResponse] =
           await Promise.all([
-            getTrack(trackSlug),
+            getTrack(trackSlug, requestedPageVersion),
             getSelf().catch(() => null),
             getTrackRatingCategories(),
           ]);
@@ -166,7 +186,11 @@ export default function ClientTrackPage({
         if (cancelled) return;
 
         if (trackResponse.ok) {
-          setTrack(await trackResponse.json());
+          const payload = await trackResponse.json();
+          setTrack(payload);
+          setPageVersion(
+            payload?.pageVersion === "POST_JAM" ? "POST_JAM" : "JAM",
+          );
         } else {
           setTrack(null);
         }
@@ -196,7 +220,7 @@ export default function ClientTrackPage({
     return () => {
       cancelled = true;
     };
-  }, [trackSlug]);
+  }, [requestedPageVersion, trackSlug]);
 
   useEffect(() => {
     if (!overallCategory) return;
@@ -262,20 +286,32 @@ export default function ClientTrackPage({
     activeJamResponse?.jam?.id != null &&
     track.game?.jamId != null &&
     activeJamResponse.jam.id === track.game.jamId;
-  const isRatingOpenPhase =
+  const isJamRatingOpenPhase =
     activeJamResponse?.phase === "Rating" ||
     activeJamResponse?.phase === "Submission";
+  const isPostJamRatingOpenPhase =
+    activeJamResponse?.phase === "Post-Jam Rating";
+  const isRatingOpenPhase =
+    track.pageVersion === "POST_JAM"
+      ? isPostJamRatingOpenPhase
+      : isJamRatingOpenPhase;
   const shouldShowCurrentJamResults =
     activeJamResponse?.phase === "Post-Jam Refinement" ||
     activeJamResponse?.phase === "Post-Jam Rating";
+  const shouldShowCurrentVersionResults =
+    track.pageVersion === "JAM" ? shouldShowCurrentJamResults : false;
   const canShowResults =
     Boolean(activeJamResponse) &&
-    (!isCurrentJamTrack || shouldShowCurrentJamResults);
-  const canRateDuringJam =
+    (!isCurrentJamTrack || shouldShowCurrentVersionResults);
+  const canRateCurrentVersion =
     Boolean(user) &&
     !isTeamMember &&
     isCurrentJamTrack &&
-    isRatingOpenPhase;
+    isRatingOpenPhase &&
+    Boolean(overallCategory);
+  const hasVersionToggle =
+    track.availablePageVersions?.includes("JAM") &&
+    track.availablePageVersions?.includes("POST_JAM");
   const raterHasPublishedGame = Boolean(
     user?.teams?.some((team) => team.game && team.game.published),
   );
@@ -303,6 +339,14 @@ export default function ClientTrackPage({
         colors,
       )
     : null;
+  const handlePageVersionChange = (nextVersion: PageVersion) => {
+    setRequestedPageVersion(nextVersion);
+    setPageVersion(nextVersion);
+
+    const params = new URLSearchParams(window.location.search);
+    params.set("pageVersion", nextVersion);
+    router.replace(`/m/${trackSlug}?${params.toString()}`);
+  };
 
   return (
     <div className="p-4">
@@ -323,7 +367,9 @@ export default function ClientTrackPage({
         />
         <div className="relative p-6">
           <Vstack align="start" className="gap-4">
-            <Link href={`/g/${track.game.slug}`}>
+            <Link
+              href={`/g/${track.game.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+            >
               <Text size="xs" color="textFaded">
                 {track.game.name}
               </Text>
@@ -398,14 +444,25 @@ export default function ClientTrackPage({
           <Vstack align="start" className="gap-4">
             <Card className="w-full">
               <Vstack align="start" className="gap-3">
-                {isTeamMember && (
+                {(isTeamMember || hasVersionToggle) && (
                   <>
                     <Text size="xs" color="textFaded">
                       ACTIONS
                     </Text>
-                    <Button icon="squarepen" href={`/m/${track.slug}/edit`}>
-                      Edit Track
-                    </Button>
+                    {isTeamMember && (
+                      <Button
+                        icon="squarepen"
+                        href={`/m/${track.slug}/edit${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+                      >
+                        Edit Track
+                      </Button>
+                    )}
+                    {hasVersionToggle && (
+                      <PageVersionToggle
+                        value={pageVersion}
+                        onChange={handlePageVersionChange}
+                      />
+                    )}
                   </>
                 )}
                 <Text size="xs" color="textFaded">
@@ -506,7 +563,7 @@ export default function ClientTrackPage({
                       </div>
                     ) : (
                       overallCategory &&
-                      canRateDuringJam && (
+                      canRateCurrentVersion && (
                         <TrackStarRow
                           categoryId={overallCategory.id}
                           name="Overall"
@@ -533,6 +590,7 @@ export default function ClientTrackPage({
                                 track.id,
                                 overallCategory.id,
                                 value,
+                                track.pageVersion,
                               );
                               if (!response.ok) {
                                 const payload = await response
@@ -593,7 +651,7 @@ export default function ClientTrackPage({
                       !isTeamMember &&
                       isCurrentJamTrack &&
                       !isRatingOpenPhase &&
-                      !shouldShowCurrentJamResults && (
+                      !canShowResults && (
                         <Text size="xs" color="textFaded">
                           It is not the rating period.
                         </Text>
@@ -601,7 +659,7 @@ export default function ClientTrackPage({
                     {user &&
                       !isTeamMember &&
                       isCurrentJamTrack &&
-                      canRateDuringJam && (
+                      canRateCurrentVersion && (
                         <Text size="xs" color="textFaded">
                           Ratings are automatically saved.
                         </Text>
@@ -609,7 +667,7 @@ export default function ClientTrackPage({
                     {user &&
                       !isTeamMember &&
                       isCurrentJamTrack &&
-                      canRateDuringJam &&
+                      canRateCurrentVersion &&
                       !raterHasPublishedGame && (
                         <Text size="xs" color="textFaded">
                           Your ratings will not count towards the rankings as
@@ -634,7 +692,11 @@ export default function ClientTrackPage({
                       onClick={async () => {
                         try {
                           setIsDownloading(true);
-                          await downloadTrackBySlug(track.slug, track.name);
+                          await downloadTrackBySlug(
+                            track.slug,
+                            track.name,
+                            track.pageVersion,
+                          );
                         } catch (error) {
                           console.error(error);
                           addToast({ title: "Failed to download track" });

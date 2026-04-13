@@ -7,14 +7,20 @@ import { Card, Hstack, Icon, Spinner, Text, Vstack } from "bioloom-ui";
 import { use, useEffect, useState } from "react";
 import { TrackType } from "@/types/TrackType";
 import { UserType } from "@/types/UserType";
+import { PageVersion } from "@/types/GameType";
 
 export default function ClientTrackEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string }>;
+  searchParams: Promise<{ pageVersion?: PageVersion }>;
 }) {
   const resolvedParams = use(params);
+  const resolvedSearchParams = use(searchParams);
   const trackSlug = resolvedParams.trackSlug;
+  const pageVersion =
+    resolvedSearchParams.pageVersion === "POST_JAM" ? "POST_JAM" : "JAM";
   const [loading, setLoading] = useState(true);
   const [track, setTrack] = useState<TrackType | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
@@ -25,7 +31,7 @@ export default function ClientTrackEditPage({
     const load = async () => {
       try {
         const [trackResponse, userResponse] = await Promise.all([
-          getTrack(trackSlug),
+          getTrack(trackSlug, pageVersion),
           getSelf().catch(() => null),
         ]);
 
@@ -54,7 +60,7 @@ export default function ClientTrackEditPage({
     return () => {
       cancelled = true;
     };
-  }, [trackSlug]);
+  }, [pageVersion, trackSlug]);
 
   if (loading) {
     return (

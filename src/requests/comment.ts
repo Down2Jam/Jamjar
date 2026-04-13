@@ -6,6 +6,7 @@ export async function postComment(
   postId: number | null,
   commentId: number | null = null,
   gameId: number | null = null,
+  gamePageId: number | null = null,
   trackId: number | null = null
 ) {
   return fetch(`${BASE_URL}/comment`, {
@@ -14,6 +15,7 @@ export async function postComment(
       postId,
       commentId,
       gameId,
+      gamePageId,
       trackId,
       username: getCookie("user"),
     }),

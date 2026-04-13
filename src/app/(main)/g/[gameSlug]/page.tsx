@@ -1,6 +1,7 @@
 import ClientGamePage from "./ClientGamePage";
 import { Metadata } from "next";
 import { getGame } from "@/requests/game";
+import { GameType } from "@/types/GameType";
 
 export async function generateMetadata({
   params,
@@ -17,7 +18,12 @@ export async function generateMetadata({
     };
   }
 
-  const { name, short, thumbnail, slug } = await res.json();
+  const game = (await res.json()) as GameType;
+  const preferredPage = game.postJamPage ?? game.jamPage ?? null;
+  const name = preferredPage?.name ?? game.name ?? "Game";
+  const short = preferredPage?.short ?? game.short ?? "A game submitted to Down2Jam";
+  const thumbnail = preferredPage?.thumbnail ?? game.thumbnail ?? null;
+  const slug = game.slug;
   const fallbackIcon = "/images/D2J_Icon.png";
   const iconUrl = thumbnail || fallbackIcon;
 

@@ -11,6 +11,7 @@ import type { TagType } from "@/types/TagType";
 import type { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import type { TrackType } from "@/types/TrackType";
 import type { SiteThemeType } from "@/types/SiteThemeType";
+import type { ListingPageVersion } from "@/types/GameType";
 import { unwrapArray } from "./helpers";
 
 export function useTags() {
@@ -49,11 +50,16 @@ export function useAdminImages(enabled = true) {
   });
 }
 
-export function useTracks(sort = "random", jamId?: string, enabled = true) {
+export function useTracks(
+  sort = "random",
+  jamId?: string,
+  pageVersion?: ListingPageVersion,
+  enabled = true,
+) {
   return useQuery<TrackType[]>({
-    queryKey: [...queryKeys.track.list(), sort, jamId ?? "all"],
+    queryKey: queryKeys.track.list(sort, jamId ?? "all", pageVersion),
     queryFn: async () => {
-      const res = await getTracks(sort, jamId);
+      const res = await getTracks(sort, jamId, pageVersion);
       const json = await res.json();
       return unwrapArray<TrackType>(json);
     },

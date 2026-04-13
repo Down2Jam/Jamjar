@@ -1,20 +1,20 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
+import { ListingPageVersion, PageVersion } from "@/types/GameType";
 
-export async function getTrack(trackSlug: string) {
-  return fetch(`${BASE_URL}/tracks/${trackSlug}`, {
-    headers: { authorization: `Bearer ${getCookie("token")}` },
-    credentials: "include",
-  });
-}
-
-export async function getTracks(sort: string, jamId?: string) {
-  const params = new URLSearchParams({ sort });
-  if (jamId && jamId !== "all") {
-    params.set("jamId", jamId);
+export async function getTrack(trackSlug: string, pageVersion?: PageVersion) {
+  const params = new URLSearchParams();
+  if (pageVersion) {
+    params.set("pageVersion", pageVersion);
   }
 
-  return fetch(`${BASE_URL}/tracks?${params.toString()}`);
+  return fetch(
+    `${BASE_URL}/tracks/${trackSlug}${params.size ? `?${params.toString()}` : ""}`,
+    {
+      headers: { authorization: `Bearer ${getCookie("token")}` },
+      credentials: "include",
+    },
+  );
 }
 
 export async function updateTrack(
@@ -35,18 +35,63 @@ export async function updateTrack(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
   },
+  pageVersion?: PageVersion,
 ) {
-  const response = await fetch(`${BASE_URL}/tracks/${trackSlug}`, {
-    method: "PUT",
+  const params = new URLSearchParams();
+  if (pageVersion && pageVersion !== "JAM") {
+    params.set("pageVersion", pageVersion);
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/tracks/${trackSlug}${params.size ? `?${params.toString()}` : ""}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        authorization: `Bearer ${getCookie("token")}`,
+      },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return response;
+}
+
+export async function getTracks(
+  sort: string,
+  jamId?: string,
+  pageVersion?: ListingPageVersion,
+) {
+  const params = new URLSearchParams({ sort });
+  if (jamId && jamId !== "all") {
+    params.set("jamId", jamId);
+  }
+  if (pageVersion && pageVersion !== "JAM") {
+    params.set("pageVersion", pageVersion);
+  }
+
+  return fetch(`${BASE_URL}/tracks?${params.toString()}`);
+}
+
+export async function postTrackTimestampComment(
+  trackId: number,
+  content: string,
+  timestamp: number,
+) {
+  return fetch(`${BASE_URL}/track-timestamp-comments`, {
+    method: "POST",
     headers: {
       "Content-Type": "application/json",
       authorization: `Bearer ${getCookie("token")}`,
     },
     credentials: "include",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      trackId,
+      content,
+      timestamp,
+    }),
   });
-
-  return response;
 }
 
 export async function getTrackTags() {
@@ -106,22 +151,3 @@ export async function getTrackRatingCategories() {
   });
 }
 
-export async function postTrackTimestampComment(
-  trackId: number,
-  content: string,
-  timestamp: number,
-) {
-  return fetch(`${BASE_URL}/track-timestamp-comments`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      authorization: `Bearer ${getCookie("token")}`,
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      trackId,
-      content,
-      timestamp,
-    }),
-  });
-}

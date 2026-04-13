@@ -9,10 +9,12 @@ import { Spinner } from "bioloom-ui";
 // CreateComment.tsx
 export default function CreateComment({
   gameId,
+  gamePageId,
   trackId,
   size = "sm",
 }: {
   gameId?: number | null;
+  gamePageId?: number | null;
   trackId?: number | null;
   size?: "xs" | "sm";
 }) {
@@ -56,6 +58,7 @@ export default function CreateComment({
               null,
               null,
               gameId ?? null,
+              gamePageId ?? null,
               trackId ?? null
             );
 

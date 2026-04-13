@@ -3,7 +3,11 @@ import { BASE_URL } from "./config";
 import { PlatformType } from "@/types/DownloadLinkType";
 import { AchievementType } from "@/types/AchievementType";
 import { LeaderboardType } from "@/types/LeaderboardType";
-import { GameEmbedAspectRatio } from "@/types/GameType";
+import {
+  GameEmbedAspectRatio,
+  ListingPageVersion,
+  PageVersion,
+} from "@/types/GameType";
 
 export async function getCurrentGame() {
   return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
@@ -39,6 +43,16 @@ export async function getGame(gameSlug: string, recap: boolean = false) {
     credentials: "include",
     },
   );
+}
+
+export async function createPostJamVersion(gameSlug: string) {
+  return fetch(`${BASE_URL}/games/${gameSlug}/post-jam`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
 }
 
 export async function postGame(
@@ -91,6 +105,7 @@ export async function postGame(
   estAnyPercent: string | null,
   estHundredPercent: string | null,
   emotePrefix: string | null,
+  pageVersion: PageVersion = "JAM",
 ) {
   const response = await fetch(`${BASE_URL}/game`, {
     body: JSON.stringify({
@@ -122,6 +137,7 @@ export async function postGame(
       estAnyPercent,
       estHundredPercent,
       emotePrefix,
+      pageVersion,
     }),
     method: "POST",
     headers: {
@@ -184,6 +200,7 @@ export async function updateGame(
   estAnyPercent: string | null,
   estHundredPercent: string | null,
   emotePrefix: string | null,
+  pageVersion: PageVersion = "JAM",
 ) {
   const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -214,6 +231,7 @@ export async function updateGame(
       estAnyPercent,
       estHundredPercent,
       emotePrefix,
+      pageVersion,
     }),
     method: "PUT",
     headers: {
@@ -226,10 +244,17 @@ export async function updateGame(
   return response;
 }
 
-export async function getGames(sort: string, jamId?: string) {
+export async function getGames(
+  sort: string,
+  jamId?: string,
+  pageVersion?: ListingPageVersion,
+) {
   const params = new URLSearchParams({ sort });
   if (jamId !== undefined) {
     params.set("jamId", jamId);
+  }
+  if (pageVersion && pageVersion !== "JAM") {
+    params.set("pageVersion", pageVersion);
   }
 
   return fetch(`${BASE_URL}/games?${params.toString()}`);

@@ -15,8 +15,8 @@ export const queryKeys = {
   game: {
     all: ["game"] as const,
     detail: (slug: string) => [...queryKeys.game.all, "detail", slug] as const,
-    list: (sort: string, jamId?: string) =>
-      [...queryKeys.game.all, "list", sort, jamId] as const,
+    list: (sort: string, jamId?: string, pageVersion?: string) =>
+      [...queryKeys.game.all, "list", sort, jamId, pageVersion] as const,
     current: () => [...queryKeys.game.all, "current"] as const,
     ratingCategories: (always?: boolean) =>
       [...queryKeys.game.all, "ratingCategories", always] as const,
@@ -106,7 +106,8 @@ export const queryKeys = {
   },
   track: {
     all: ["track"] as const,
-    list: () => [...queryKeys.track.all, "list"] as const,
+    list: (sort?: string, jamId?: string, pageVersion?: string) =>
+      [...queryKeys.track.all, "list", sort, jamId, pageVersion] as const,
   },
   admin: {
     all: ["admin"] as const,

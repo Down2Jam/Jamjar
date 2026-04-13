@@ -1466,7 +1466,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const recommendedGamesForJam = useMemo(
     () =>
       (user?.recommendedGames ?? []).filter(
-        (game) => game.jam?.id === selectedJamId,
+        (game) =>
+          game.jam?.id === selectedJamId &&
+          (game.pageVersion ?? "JAM") === "JAM",
       ),
     [selectedJamId, user?.recommendedGames],
   );
@@ -1487,13 +1489,17 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const ownerGameFavoriteCount =
     ownerGame && selectedJamId
       ? ((user?.favoriteGameCounts ?? []).find(
-          (entry) => entry.gameId === ownerGame.id,
+          (entry) =>
+            entry.gameId === ownerGame.id &&
+            (entry.pageVersion ?? "JAM") === "JAM",
         )?.count ?? 0)
       : 0;
   const ownerGameFavoriteUsers =
     ownerGame && selectedJamId
       ? ((user?.favoriteGameCounts ?? []).find(
-          (entry) => entry.gameId === ownerGame.id,
+          (entry) =>
+            entry.gameId === ownerGame.id &&
+            (entry.pageVersion ?? "JAM") === "JAM",
         )?.users ?? [])
       : [];
 

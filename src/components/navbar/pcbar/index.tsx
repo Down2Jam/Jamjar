@@ -168,7 +168,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         />
         {(jamPhase == "Upcoming Jam" ||
           jamPhase == "Post-Jam Refinement" ||
-          jamPhase == "Post-Jam Rating") &&
+          (jamPhase == "Post-Jam Rating" && !currentJamGame)) &&
           isLgUp && (
             <NavbarButton
               icon="trophy"
@@ -215,7 +215,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           isLgUp &&
           (jamPhase == "Jamming" ||
             jamPhase == "Submission" ||
-            jamPhase == "Rating") && (
+            jamPhase == "Rating" ||
+            (jamPhase == "Post-Jam Rating" && Boolean(currentJamGame))) && (
             <NavbarButton
               icon="gamepad2"
               name={

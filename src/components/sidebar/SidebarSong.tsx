@@ -27,6 +27,7 @@ interface SidebarSongProps {
   thumbnail: string;
   song: string;
   game: TrackGame;
+  pageVersion?: "JAM" | "POST_JAM";
   license?: string | null;
   allowDownload?: boolean;
   allowBackgroundUse?: boolean;
@@ -45,6 +46,7 @@ export default function SidebarSong({
   thumbnail,
   song,
   game,
+  pageVersion,
   artist,
   license,
   allowDownload,
@@ -81,14 +83,22 @@ export default function SidebarSong({
             />
             <Vstack className="z-10" align="start" gap={0}>
               <Link
-                href={slug ? `/m/${slug}` : `/g/${game.slug}`}
+                href={
+                  slug
+                    ? `/m/${slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
+                    : `/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
+                }
                 underline={false}
               >
                 <Text>{name}</Text>
               </Link>
-              <Link href={`/g/${game.slug}`} underline={false}>
+              <Link
+                href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
+                underline={false}
+              >
                 <Text size="xs" color="textFaded">
                   {game.name}
+                  {pageVersion === "POST_JAM" ? " · Post-Jam" : pageVersion === "JAM" ? " · Jam" : ""}
                 </Text>
               </Link>
               <Link href={`/u/${artist.slug}`} underline={false}>
@@ -124,7 +134,7 @@ export default function SidebarSong({
 
                   try {
                     setIsDownloading(true);
-                    await downloadTrackBySlug(slug, name);
+                    await downloadTrackBySlug(slug, name, pageVersion);
                   } catch (error) {
                     console.error(error);
                     addToast({ title: "Failed to download track" });

@@ -13,6 +13,7 @@ import {
 import { queryKeys } from "./queryKeys";
 import { unwrapArray, unwrapItem } from "./helpers";
 import type { GameType } from "@/types/GameType";
+import type { ListingPageVersion } from "@/types/GameType";
 import type { RatingCategoryType } from "@/types/RatingCategoryType";
 import type { FlagType } from "@/types/FlagType";
 import type { GameTagType } from "@/types/GameTagType";
@@ -42,11 +43,16 @@ export function useGame(slug: string, enabled = true) {
   });
 }
 
-export function useGames(sort: string, jamId?: string, enabled = true) {
+export function useGames(
+  sort: string,
+  jamId?: string,
+  pageVersion?: ListingPageVersion,
+  enabled = true,
+) {
   return useQuery<GameType[]>({
-    queryKey: queryKeys.game.list(sort, jamId),
+    queryKey: queryKeys.game.list(sort, jamId, pageVersion),
     queryFn: async () => {
-      const res = await getGames(sort, jamId);
+      const res = await getGames(sort, jamId, pageVersion);
       const json = await res.json();
       return unwrapArray<GameType>(json);
     },

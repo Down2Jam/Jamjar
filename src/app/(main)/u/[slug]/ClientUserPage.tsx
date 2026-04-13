@@ -679,7 +679,10 @@ export default function ClientUserPage({
   const recGames = useMemo(
     () =>
       (user?.recommendedGames ?? []).filter(
-        (game) => activeJamId != null && game.jam?.id === activeJamId,
+        (game) =>
+          activeJamId != null &&
+          game.jam?.id === activeJamId &&
+          (game.pageVersion ?? "JAM") === "JAM",
       ),
     [activeJamId, user?.recommendedGames],
   );
@@ -694,7 +697,10 @@ export default function ClientUserPage({
   const recGameCandidates = useMemo(
     () =>
       (user?.recommendedGameCandidates ?? []).filter(
-        (game) => activeJamId != null && game.jam?.id === activeJamId,
+        (game) =>
+          activeJamId != null &&
+          game.jam?.id === activeJamId &&
+          (game.pageVersion ?? "JAM") === "JAM",
       ),
     [activeJamId, user?.recommendedGameCandidates],
   );

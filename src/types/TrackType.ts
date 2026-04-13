@@ -3,9 +3,13 @@ import { CommentType } from "./CommentType";
 import { UserType } from "./UserType";
 import { TrackTagType } from "./TrackTagType";
 import { TrackFlagType } from "./TrackFlagType";
+import { PageVersion } from "./GameType";
 
 export interface TrackType {
   id: number;
+  pageVersion?: PageVersion;
+  availablePageVersions?: PageVersion[];
+  sourceTrackId?: number | null;
   slug: string;
   name: string;
   url: string;

@@ -815,7 +815,10 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           </Hstack>
 
           <Hstack className="w-full justify-between">
-            <Button href={`/m/${track.slug}`} variant="ghost">
+            <Button
+              href={`/m/${track.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+              variant="ghost"
+            >
               Cancel
             </Button>
             <Button
@@ -832,32 +835,36 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 }
                 try {
                   setSaving(true);
-                  const response = await updateTrack(track.slug, {
-                    name: name.trim(),
-                    commentary,
-                    bpm: bpm.trim() ? Number(bpm) : null,
-                    musicalKey: musicalKey.trim() || null,
-                    softwareUsed: softwareUsed
-                      .split(",")
-                      .map((value) => value.trim())
-                      .filter(Boolean),
-                    allowDownload,
-                    allowBackgroundUse,
-                    allowBackgroundUseAttribution,
-                    license: licenseFlagsToLabel(licenseFlags),
-                    tagIds: selectedTagIds,
-                    flagIds: selectedFlagIds,
-                    links: links
-                      .map((link) => ({
-                        label: link.label.trim(),
-                        url: link.url.trim(),
-                      }))
-                      .filter((link) => link.label && link.url),
-                    credits: credits.map((credit) => ({
-                      role: credit.role,
-                      userId: credit.userId,
-                    })),
-                  });
+                  const response = await updateTrack(
+                    track.slug,
+                    {
+                      name: name.trim(),
+                      commentary,
+                      bpm: bpm.trim() ? Number(bpm) : null,
+                      musicalKey: musicalKey.trim() || null,
+                      softwareUsed: softwareUsed
+                        .split(",")
+                        .map((value) => value.trim())
+                        .filter(Boolean),
+                      allowDownload,
+                      allowBackgroundUse,
+                      allowBackgroundUseAttribution,
+                      license: licenseFlagsToLabel(licenseFlags),
+                      tagIds: selectedTagIds,
+                      flagIds: selectedFlagIds,
+                      links: links
+                        .map((link) => ({
+                          label: link.label.trim(),
+                          url: link.url.trim(),
+                        }))
+                        .filter((link) => link.label && link.url),
+                      credits: credits.map((credit) => ({
+                        role: credit.role,
+                        userId: credit.userId,
+                      })),
+                    },
+                    track.pageVersion,
+                  );
                   const payload = await response.json().catch(() => null);
                   if (!response.ok) {
                     addToast({
@@ -865,7 +872,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                     });
                     return;
                   }
-                  router.push(`/m/${track.slug}`);
+                  router.push(
+                    `/m/${track.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`,
+                  );
                 } finally {
                   setSaving(false);
                 }

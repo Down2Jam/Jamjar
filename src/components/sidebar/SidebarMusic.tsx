@@ -6,26 +6,38 @@ import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
 import { useCurrentJam, useTracks } from "@/hooks/queries";
+import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 
 export default function SidebarMusic() {
   const hasMounted = useHasMounted();
   const { data: activeJam } = useCurrentJam();
 
-  const { jamId, sort } = useMemo(() => {
+  const { jamId, sort, pageVersion } = useMemo(() => {
     const phase = activeJam?.phase ?? "";
     const isActiveJamBehavior =
       phase === "Jamming" || phase === "Submission" || phase === "Rating";
+    const isPostJamBehavior = phase === "Post-Jam Refinement" || phase === "Post-Jam Rating";
+    const currentJamId = activeJam?.jam?.id?.toString() ?? null;
+    const selectedJamId =
+      activeJam?.jam?.id && (isActiveJamBehavior || isPostJamBehavior)
+        ? activeJam.jam.id.toString()
+        : "all";
 
     return {
       jamId:
-        activeJam?.jam?.id && isActiveJamBehavior
+        activeJam?.jam?.id && (isActiveJamBehavior || isPostJamBehavior)
           ? activeJam.jam.id.toString()
           : undefined,
       sort: isActiveJamBehavior ? "random" : "score",
+      pageVersion: getDefaultListingPageVersion(
+        selectedJamId,
+        currentJamId,
+        phase,
+      ),
     };
   }, [activeJam]);
 
-  const { data: music } = useTracks(sort, jamId);
+  const { data: music } = useTracks(sort, jamId, pageVersion);
 
   const featured = useMemo(
     () => [...(music ?? [])].slice(0, 5),
@@ -50,6 +62,7 @@ export default function SidebarMusic() {
                 artist={track.composer}
                 thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
                 game={track.game}
+                pageVersion={track.pageVersion}
                 song={track.url}
                 license={track.license}
                 allowDownload={track.allowDownload}

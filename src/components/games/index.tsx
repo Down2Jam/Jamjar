@@ -1,6 +1,6 @@
 "use client";
 
-import { GameType } from "@/types/GameType";
+import { GameType, ListingPageVersion } from "@/types/GameType";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -20,6 +20,10 @@ import {
   useGames as useGamesQuery,
 } from "@/hooks/queries";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
+import {
+  getDefaultListingPageVersion,
+  listingPageVersionOptions,
+} from "@/helpers/listingPageVersion";
 
 type JamOption = {
   id: string;
@@ -229,19 +233,59 @@ function isActiveJamBehavior(
   );
 }
 
+function isCurrentJamPostJamBehavior(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+): boolean {
+  return (
+    !!currentJamId &&
+    selectedJamId === currentJamId &&
+    (currentPhase === "Post-Jam Refinement" ||
+      currentPhase === "Post-Jam Rating")
+  );
+}
+
 function getDefaultGameSort(
   selectedJamId: string,
   currentJamId: string | null | undefined,
   currentPhase: string | null | undefined,
+  pageVersion: ListingPageVersion = "ALL",
 ): GameSort {
-  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
-  const isActiveJamBehavior =
-    isCurrentJam &&
-    (currentPhase === "Jamming" ||
-      currentPhase === "Submission" ||
-      currentPhase === "Rating");
+  const activeJamBehavior = isActiveJamBehavior(
+    selectedJamId,
+    currentJamId,
+    currentPhase,
+  );
+  const currentJamPostJamBehavior = isCurrentJamPostJamBehavior(
+    selectedJamId,
+    currentJamId,
+    currentPhase,
+  );
+  const prefersRecommendedInPostJam =
+    currentJamPostJamBehavior &&
+    (pageVersion === "ALL" ||
+      (currentPhase === "Post-Jam Rating" && pageVersion === "POST_JAM"));
 
-  return isActiveJamBehavior ? "recommended" : "score";
+  return activeJamBehavior || prefersRecommendedInPostJam
+    ? "recommended"
+    : "score";
+}
+
+function canUseScoreSort(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+  pageVersion: ListingPageVersion,
+): boolean {
+  return !(
+    !!currentJamId &&
+    selectedJamId === currentJamId &&
+    ((currentPhase === "Post-Jam Rating" && pageVersion === "POST_JAM") ||
+      ((currentPhase === "Post-Jam Refinement" ||
+        currentPhase === "Post-Jam Rating") &&
+        pageVersion === "ALL"))
+  );
 }
 
 export default function Games() {
@@ -271,6 +315,19 @@ export default function Games() {
     return p ?? "all";
   }, []);
   const [jamId, setJamId] = useState<string>(initialJamParam);
+  const initialPageVersionParam = useMemo(() => {
+    if (typeof window === "undefined") return "ALL" as ListingPageVersion;
+    const value = new URLSearchParams(window.location.search).get("pageVersion");
+    return value === "JAM" || value === "POST_JAM" || value === "ALL"
+      ? (value as ListingPageVersion)
+      : ("ALL" as ListingPageVersion);
+  }, []);
+  const hasPageVersionParam = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    return new URLSearchParams(window.location.search).has("pageVersion");
+  }, []);
+  const [pageVersion, setPageVersion] =
+    useState<ListingPageVersion>(initialPageVersionParam);
   const hasMoreParam = useMemo(() => {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).has("more");
@@ -370,6 +427,12 @@ export default function Games() {
 
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
   const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
+  const canUseScore = canUseScoreSort(
+    jamId,
+    currentJamId,
+    currentJamData?.phase,
+    pageVersion,
+  );
 
   // Build jam options from query data
   const jamOptions = useMemo<JamOption[]>(() => {
@@ -416,13 +479,18 @@ export default function Games() {
   useEffect(() => {
     if (!currentJamData && !allJams) return; // still loading
 
-    const isRatingPhase =
+    const isCurrentJamDefaultPhase =
       currentJamData?.phase === "Rating" ||
       currentJamData?.phase === "Submission" ||
-      currentJamData?.phase === "Jamming";
+      currentJamData?.phase === "Jamming" ||
+      currentJamData?.phase === "Post-Jam Refinement" ||
+      currentJamData?.phase === "Post-Jam Rating";
 
     let ratingDefault: string | null = null;
-    if (isRatingPhase && (initialJamParam === "all" || !initialJamParam)) {
+    if (
+      isCurrentJamDefaultPhase &&
+      (initialJamParam === "all" || !initialJamParam)
+    ) {
       ratingDefault = currentJamId ?? null;
     }
 
@@ -447,6 +515,7 @@ export default function Games() {
   const { data: games, isLoading: gamesLoading } = useGamesQuery(
     sort,
     jamId !== "all" ? jamId : undefined,
+    pageVersion,
     !jamDetecting
   );
 
@@ -552,16 +621,25 @@ export default function Games() {
 
     if (jamDetecting) return;
 
-    if (!canUseRestrictedSorts && isRestricted) {
+    if ((!canUseRestrictedSorts && isRestricted) || (sort === "score" && !canUseScore)) {
       const nextSort = getDefaultGameSort(
         jamId,
         currentJamId,
         currentJamData?.phase,
+        pageVersion,
       );
       setSort(nextSort);
       updateQueryParam("sort", nextSort);
     }
-  }, [sort, jamId, currentJamId, currentJamData?.phase, updateQueryParam, jamDetecting]);
+  }, [
+    sort,
+    jamId,
+    currentJamId,
+    currentJamData?.phase,
+    updateQueryParam,
+    jamDetecting,
+    canUseScore,
+  ]);
 
   useEffect(() => {
     if (jamDetecting) return;
@@ -571,6 +649,7 @@ export default function Games() {
       jamId,
       currentJamId,
       currentJamData?.phase,
+      pageVersion,
     );
 
     if (sort !== nextSort) {
@@ -581,8 +660,24 @@ export default function Games() {
     currentJamId,
     jamDetecting,
     jamId,
+    pageVersion,
     searchParams,
     sort,
+  ]);
+
+  useEffect(() => {
+    if (jamDetecting) return;
+    if (hasPageVersionParam) return;
+
+    setPageVersion(
+      getDefaultListingPageVersion(jamId, currentJamId, currentJamData?.phase),
+    );
+  }, [
+    currentJamData?.phase,
+    currentJamId,
+    hasPageVersionParam,
+    jamDetecting,
+    jamId,
   ]);
 
   useEffect(() => {
@@ -870,7 +965,7 @@ export default function Games() {
             onSelect={(key) => {
               const next = key as GameSort;
 
-              if (isRestricted(next) && !canUseRestrictedSorts) return;
+              if ((isRestricted(next) && !canUseRestrictedSorts) || (next === "score" && !canUseScore)) return;
 
               setSort(next);
               updateQueryParam("sort", key as string);
@@ -880,7 +975,8 @@ export default function Games() {
               .filter(
                 (sort) =>
                   !(
-                    isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts
+                    (isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts) ||
+                    (sort[0] === "score" && !canUseScore)
                   ),
               )
               .map(([key, sort]) => (
@@ -895,6 +991,26 @@ export default function Games() {
               ))}
           </Dropdown>
 
+          <Dropdown
+            selectedValue={pageVersion}
+            onSelect={(key) => {
+              const next = key as ListingPageVersion;
+              setPageVersion(next);
+              updateQueryParam("pageVersion", next === "ALL" ? "ALL" : next);
+            }}
+          >
+            {listingPageVersionOptions.map((option) => (
+              <Dropdown.Item
+                key={option.value}
+                value={option.value}
+                icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
+                description={option.description}
+              >
+                {option.label}
+              </Dropdown.Item>
+            ))}
+          </Dropdown>
+
           {/* Jam dropdown */}
             <Dropdown
               selectedValue={jamId}
@@ -905,10 +1021,41 @@ export default function Games() {
                   val,
                   currentJamId,
                   currentJamData?.phase,
+                  hasPageVersionParam
+                    ? pageVersion
+                    : getDefaultListingPageVersion(
+                        val,
+                        currentJamId,
+                        currentJamData?.phase,
+                      ),
                 );
-                if (!isRestricted(sort) || nextSort === "score") {
+                const effectiveNextPageVersion = hasPageVersionParam
+                  ? pageVersion
+                  : getDefaultListingPageVersion(
+                      val,
+                      currentJamId,
+                      currentJamData?.phase,
+                    );
+                if (
+                  (!isRestricted(sort) && !(sort === "score" && !canUseScore)) ||
+                  (nextSort === "score" &&
+                    canUseScoreSort(
+                      val,
+                      currentJamId,
+                      currentJamData?.phase,
+                      effectiveNextPageVersion,
+                    ))
+                ) {
                   setSort(nextSort);
                   updateQueryParam("sort", nextSort);
+                }
+                if (!hasPageVersionParam) {
+                  const nextPageVersion = getDefaultListingPageVersion(
+                    val,
+                    currentJamId,
+                    currentJamData?.phase,
+                  );
+                  setPageVersion(nextPageVersion);
                 }
                 updateQueryParam("jam", val);
               }}
@@ -1087,7 +1234,7 @@ export default function Games() {
         {displayedGames && displayedGames.length > 0 ? (
           displayedGames.map((game: GameType) => (
             <GameCard
-              key={game.id}
+              key={`${game.id}-${game.pageVersion ?? "JAM"}`}
               game={game}
               rated={
                 showRatedOverlay &&
