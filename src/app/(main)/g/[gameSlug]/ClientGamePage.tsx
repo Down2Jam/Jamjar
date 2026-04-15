@@ -1604,22 +1604,56 @@ export default function ClientGamePage({
                                         }),
                                       },
                                     );
-                                    if (res.ok && selectedVersion === "JAM") {
-                                      achievement.users = hasIt
+                                    if (res.ok) {
+                                      const nextUsers = hasIt
                                         ? achievement.users.filter(
                                             (u) => u.id !== user.id,
                                           )
                                         : [...achievement.users, user];
-                                      setGame((prev) =>
-                                        prev
-                                          ? {
-                                              ...prev,
-                                              achievements: [
-                                                ...prev.achievements,
-                                              ],
-                                            }
-                                          : prev,
-                                      );
+
+                                      setGame((prev) => {
+                                        if (!prev) return prev;
+
+                                        const targetPageKey =
+                                          selectedVersion === "POST_JAM"
+                                            ? "postJamPage"
+                                            : "jamPage";
+                                        const targetPage = prev[targetPageKey];
+
+                                        if (!targetPage) return prev;
+
+                                        const updatedPage = {
+                                          ...targetPage,
+                                          achievements: (
+                                            targetPage.achievements ?? []
+                                          ).map((entry) =>
+                                            entry.id === achievement.id
+                                              ? {
+                                                  ...entry,
+                                                  users: nextUsers,
+                                                }
+                                              : entry,
+                                          ),
+                                        };
+
+                                        return {
+                                          ...prev,
+                                          [targetPageKey]: updatedPage,
+                                          achievements:
+                                            selectedVersion === "JAM"
+                                              ? updatedPage.achievements
+                                              : prev.achievements,
+                                        };
+                                      });
+                                    } else {
+                                      const payload = await res
+                                        .json()
+                                        .catch(() => null);
+                                      addToast({
+                                        title:
+                                          payload?.message ??
+                                          "Failed to update achievement",
+                                      });
                                     }
                                   }}
                                   disabled={
