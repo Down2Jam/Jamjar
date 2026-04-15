@@ -92,12 +92,16 @@ export default function SearchBar() {
   }, [search]);
 
   useEffect(() => {
-    if (!debouncedSearch) return;
+    if (!debouncedSearch.trim()) {
+      setResults({ games: [], users: [], posts: [], tracks: [] });
+      setLoadingResults(false);
+      return;
+    }
 
     async function fetchData() {
       setLoadingResults(true);
 
-      fetch(`${BASE_URL}/search?query=${debouncedSearch}`)
+      fetch(`${BASE_URL}/search?query=${encodeURIComponent(debouncedSearch.trim())}`)
         .then((res) => res.json())
         .then((json) => {
           setResults(json.data);

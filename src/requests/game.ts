@@ -30,10 +30,17 @@ export async function getGameTags() {
   return fetch(`${BASE_URL}/gametags`);
 }
 
-export async function getGame(gameSlug: string, recap: boolean = false) {
+export async function getGame(
+  gameSlug: string,
+  recap: boolean = false,
+  pageVersion?: PageVersion,
+) {
   const params = new URLSearchParams();
   if (recap) {
     params.set("recap", "1");
+  }
+  if (pageVersion) {
+    params.set("pageVersion", pageVersion);
   }
 
   return fetch(

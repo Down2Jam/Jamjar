@@ -32,6 +32,7 @@ import { useJams, useSelf, useUser } from "@/hooks/queries";
 import { getGame, getResults } from "@/requests/game";
 import { getTrack, getTrackResults } from "@/requests/track";
 import { getRecapVisibility, updateRecapVisibility } from "@/requests/recap";
+import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import type { AchievementType } from "@/types/AchievementType";
 import { GameCard } from "@/components/gamecard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
@@ -298,6 +299,10 @@ function getPercentileLabel(percentile: number) {
   if (percentile <= 25) return "Top 25%";
   if (percentile <= 50) return "Top 50%";
   return null;
+}
+
+function safeCompareNames(a?: string | null, b?: string | null) {
+  return String(a ?? "").localeCompare(String(b ?? ""));
 }
 
 function buildPlacementPoolKey(group: string | null | undefined, key: string) {
@@ -1089,14 +1094,23 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       try {
         const ownerGame = getUserGameForJam(user, jamId);
 
-        const gameDetail = ownerGame
-          ? ((await (await getGame(ownerGame.slug, true)).json()) as GameType)
+        const rawGameDetail = ownerGame
+          ? ((await (
+              await getGame(ownerGame.slug, true, "JAM")
+            ).json()) as GameType)
           : null;
+        const jamPage = rawGameDetail
+          ? getSelectedGamePage(rawGameDetail, "JAM")
+          : null;
+        const gameDetail =
+          rawGameDetail && jamPage
+            ? materializeGamePage(rawGameDetail, jamPage)
+            : rawGameDetail;
 
         const trackDetails = gameDetail?.tracks?.length
           ? await Promise.all(
               gameDetail.tracks.map(async (track) => {
-                const response = await getTrack(track.slug);
+                const response = await getTrack(track.slug, "JAM");
                 return (await response.json()) as TrackType;
               }),
             )
@@ -1271,7 +1285,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
           const aBest = a.placements[0]?.placement ?? 99;
           const bBest = b.placements[0]?.placement ?? 99;
           if (aBest !== bBest) return aBest - bBest;
-          return a.game.name.localeCompare(b.game.name);
+          return safeCompareNames(a.game?.name, b.game?.name);
         }),
     [recapData.gameResults, t],
   );
@@ -1315,7 +1329,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
           const aBest = a.placements[0]?.placement ?? 99;
           const bBest = b.placements[0]?.placement ?? 99;
           if (aBest !== bBest) return aBest - bBest;
-          return a.track.name.localeCompare(b.track.name);
+          return safeCompareNames(a.track?.name, b.track?.name);
         }),
     [recapData.trackResults, t],
   );
