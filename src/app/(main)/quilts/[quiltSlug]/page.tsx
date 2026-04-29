@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "@/compat/next-navigation";
-import { Minus, Pencil, Plus, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Check, Minus, Pencil, Plus, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
 import {
   addToast,
   Button,
@@ -15,6 +15,7 @@ import {
 import { hasCookie } from "@/helpers/cookie";
 import { useSelf } from "@/hooks/queries";
 import {
+  acceptQuiltSubmission,
   getQuilt,
   removeQuiltSubmission,
   submitQuiltPixels,
@@ -78,7 +79,8 @@ type CanvasPreview =
   | { type: "history"; id: number }
   | { type: "pending"; id: number }
   | { type: "rejected"; id: number }
-  | { type: "removed"; id: number };
+  | { type: "removed"; id: number }
+  | { type: "deleted"; id: number };
 
 function keyFor(x: number, y: number) {
   return `${x}:${y}`;
@@ -205,6 +207,10 @@ export default function QuiltDetailPage() {
   const isModerator = Boolean(user?.admin || user?.mod);
   const isEditing = draft.size > 0 || editingSubmissionId !== null;
   const activePreview: CanvasPreview = isEditing ? { type: "current" } : preview;
+  const onionSkinSubmission =
+    isEditing && preview.type === "pending" && preview.id !== editingSubmissionId
+      ? quilt?.pending.find((submission) => submission.id === preview.id) ?? null
+      : null;
 
   const loadQuilt = useCallback(async () => {
     if (!quiltSlug) return;
@@ -242,8 +248,11 @@ export default function QuiltDetailPage() {
       }
     }
     const previewPixels =
-      activePreview.type === "pending"
-        ? (quilt.pending.find((submission) => submission.id === activePreview.id)?.pixels ?? [])
+      activePreview.type === "pending" || activePreview.type === "deleted"
+        ? (activePreview.type === "pending"
+            ? quilt.pending.find((submission) => submission.id === activePreview.id)
+            : quilt.deleted.find((submission) => submission.id === activePreview.id)
+          )?.pixels ?? []
         : [];
     const draftPixels = Array.from(draft.entries()).map(([key, value]) => {
       const [x, y] = key.split(":").map(Number);
@@ -378,6 +387,23 @@ export default function QuiltDetailPage() {
         ctx.fillRect(x, y, 1, 1);
       }
     }
+    if (onionSkinSubmission) {
+      ctx.save();
+      ctx.globalAlpha = 0.42;
+      for (const pixel of onionSkinSubmission.pixels) {
+        if (pixel.x < 0 || pixel.y < 0 || pixel.x >= quilt.width || pixel.y >= quilt.height) {
+          continue;
+        }
+        if (pixel.color) {
+          ctx.fillStyle = pixel.color;
+          ctx.fillRect(pixel.x, pixel.y, 1, 1);
+        } else {
+          ctx.fillStyle = "#ff7872";
+          ctx.fillRect(pixel.x, pixel.y, 1, 1);
+        }
+      }
+      ctx.restore();
+    }
     if (selection) {
       ctx.strokeStyle = "#8df5ff";
       ctx.lineWidth = 1;
@@ -388,7 +414,7 @@ export default function QuiltDetailPage() {
         Math.max(0, selection.height - 0.1),
       );
     }
-  }, [moveOffset, quilt, selection, viewCanvas]);
+  }, [moveOffset, onionSkinSubmission, quilt, selection, viewCanvas]);
 
   function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
     const cell = getPointerCell(event);
@@ -515,6 +541,11 @@ export default function QuiltDetailPage() {
     if (response.ok) setQuilt(await readItem<QuiltDetail>(response));
   }
 
+  async function acceptSubmission(id: number) {
+    const response = await acceptQuiltSubmission(id);
+    if (response.ok) setQuilt(await readItem<QuiltDetail>(response));
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-[50vh] items-center justify-center gap-3">
@@ -536,7 +567,7 @@ export default function QuiltDetailPage() {
 
   return (
     <main className="mx-auto w-full max-w-[1600px] px-4 pb-10">
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_440px]">
         <Vstack align="stretch" className="min-w-0 gap-4">
           <Hstack justify="between" className="flex-wrap gap-3">
             <Vstack align="start" gap={0}>
@@ -547,8 +578,10 @@ export default function QuiltDetailPage() {
                 {quilt.width} x {quilt.height} pixels · Ends {formatTime(quilt.endsAt)}
                 {activePreview.type === "history" && " · Viewing history"}
                 {activePreview.type === "pending" && " · Previewing pending change"}
+                {onionSkinSubmission && " · Onion-skinning pending change"}
                 {activePreview.type === "rejected" && " · Previewing rejected change"}
                 {activePreview.type === "removed" && " · Previewing removed change"}
+                {activePreview.type === "deleted" && " · Previewing deleted change"}
               </Text>
             </Vstack>
             <Hstack>
@@ -559,6 +592,15 @@ export default function QuiltDetailPage() {
                   onClick={() => setPreview({ type: "current" })}
                 >
                   Current canvas
+                </Button>
+              )}
+              {onionSkinSubmission && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setPreview({ type: "current" })}
+                >
+                  Clear onion skin
                 </Button>
               )}
               <Button size="sm" icon="rotateccw" onClick={loadQuilt}>
@@ -620,7 +662,7 @@ export default function QuiltDetailPage() {
                   Zoom
                 </Text>
                 <button
-                  className="inline-flex h-8 w-8 items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
                   title="Zoom out"
                   onClick={() => setZoom((value) => Math.max(2, value - 2))}
                 >
@@ -636,7 +678,7 @@ export default function QuiltDetailPage() {
                   onChange={(event) => setZoomLevel(Number(event.target.value))}
                 />
                 <button
-                  className="inline-flex h-8 w-8 items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
                   title="Zoom in"
                   onClick={() => setZoom((value) => clamp(value + 2, 2, 32))}
                 >
@@ -657,7 +699,7 @@ export default function QuiltDetailPage() {
                 {PALETTE.map((paletteColor) => (
                   <button
                     key={paletteColor}
-                    className={`h-8 rounded border transition-transform hover:scale-110 ${
+                    className={`h-8 cursor-pointer rounded border transition-transform hover:scale-110 ${
                       color === paletteColor ? "border-white" : "border-white/20"
                     }`}
                     style={{ backgroundColor: paletteColor }}
@@ -725,11 +767,10 @@ export default function QuiltDetailPage() {
           />
           <PendingPanel
             submissions={quilt.pending}
-            selectedId={activePreview.type === "pending" ? activePreview.id : null}
+            selectedId={preview.type === "pending" ? preview.id : null}
             currentUserId={user?.id}
-            previewDisabled={isEditing}
+            previewDisabled={false}
             onSelect={(id) => {
-              if (isEditing) return;
               setPreview((current) =>
                 current.type === "pending" && current.id === id
                   ? { type: "current" }
@@ -739,8 +780,25 @@ export default function QuiltDetailPage() {
             onEdit={startEditingSubmission}
             onVote={vote}
             isModerator={isModerator}
+            onAccept={acceptSubmission}
             onRemove={removeSubmission}
           />
+          {quilt.deleted.length > 0 && (
+            <DeletedPanel
+              submissions={quilt.deleted}
+              selectedId={activePreview.type === "deleted" ? activePreview.id : null}
+              previewDisabled={isEditing}
+              onSelect={(id) => {
+                if (isEditing) return;
+                setPreview((current) =>
+                  current.type === "deleted" && current.id === id
+                    ? { type: "current" }
+                    : { type: "deleted", id },
+                );
+              }}
+              onEdit={startEditingSubmission}
+            />
+          )}
           <HistoryPanel
             title="Rejected"
             submissions={quilt.rejected}
@@ -820,8 +878,8 @@ function HistoryPanel({
                 }`}
                 onClick={() => onSelect?.(submission.id)}
               >
-                <Hstack justify="between" className="gap-3">
-                  <Vstack align="start" gap={0}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <Vstack align="start" gap={0} className="min-w-0 flex-1">
                     <Text color="text" weight="semibold">
                       {submission.author.name}
                     </Text>
@@ -830,17 +888,18 @@ function HistoryPanel({
                     </Text>
                   </Vstack>
                   {isModerator && submission.status === "ACCEPTED" && (
-                    <Button
-                      size="sm"
-                      icon="trash"
-                      variant="ghost"
+                    <button
+                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                      title="Remove"
                       onClick={(event) => {
                         event.stopPropagation();
                         onRemove?.(submission.id);
                       }}
-                    />
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   )}
-                </Hstack>
+                </div>
               </button>
             ))
         )}
@@ -858,6 +917,7 @@ function PendingPanel({
   onSelect,
   onEdit,
   onVote,
+  onAccept,
   onRemove,
 }: {
   submissions: QuiltSubmission[];
@@ -868,6 +928,7 @@ function PendingPanel({
   onSelect: (id: number) => void;
   onEdit: (submission: QuiltSubmission) => void;
   onVote: (id: number, value: 1 | -1) => void;
+  onAccept: (id: number) => void;
   onRemove: (id: number) => void;
 }) {
   return (
@@ -896,8 +957,8 @@ function PendingPanel({
                 }`}
                 onClick={() => onSelect(submission.id)}
               >
-                <Hstack justify="between" className="gap-3">
-                  <Vstack align="start" gap={0}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <Vstack align="start" gap={0} className="min-w-0 flex-1">
                     <Text color="text" weight="semibold">
                       {submission.author.name}
                     </Text>
@@ -905,10 +966,10 @@ function PendingPanel({
                       Resolves {formatTime(submission.resolvesAt)}
                     </Text>
                   </Vstack>
-                  <Hstack className="gap-1">
+                  <Hstack className="shrink-0 flex-wrap justify-end gap-1">
                     {currentUserId === submission.author.id && (
                       <button
-                        className="inline-flex h-8 w-8 items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
                         title="Edit"
                         onClick={(event) => {
                           event.stopPropagation();
@@ -919,7 +980,7 @@ function PendingPanel({
                       </button>
                     )}
                     <button
-                      className={`inline-flex h-8 w-8 items-center justify-center rounded transition-colors hover:bg-white/10 ${
+                      className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded transition-colors hover:bg-white/10 ${
                         submission.viewerVote === 1
                           ? "text-cyan-300"
                           : "text-zinc-300 hover:text-white"
@@ -936,7 +997,7 @@ function PendingPanel({
                       {submission.score}
                     </span>
                     <button
-                      className={`inline-flex h-8 w-8 items-center justify-center rounded transition-colors hover:bg-white/10 ${
+                      className={`inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded transition-colors hover:bg-white/10 ${
                         submission.viewerVote === -1
                           ? "text-red-300"
                           : "text-zinc-300 hover:text-white"
@@ -950,21 +1011,107 @@ function PendingPanel({
                       <ThumbsDown size={16} />
                     </button>
                     {isModerator && (
-                      <Button
-                        size="sm"
-                        icon="trash"
-                        variant="ghost"
+                      <>
+                        <button
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                          title="Accept now"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onAccept(submission.id);
+                          }}
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                          title="Remove"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onRemove(submission.id);
+                          }}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                    {!isModerator && currentUserId === submission.author.id && (
+                      <button
+                        className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                        title="Delete"
                         onClick={(event) => {
                           event.stopPropagation();
                           onRemove(submission.id);
                         }}
-                      />
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     )}
                   </Hstack>
-                </Hstack>
+                </div>
               </button>
             ))
         )}
+      </Vstack>
+    </Card>
+  );
+}
+
+function DeletedPanel({
+  submissions,
+  selectedId,
+  previewDisabled,
+  onSelect,
+  onEdit,
+}: {
+  submissions: QuiltSubmission[];
+  selectedId?: number | null;
+  previewDisabled?: boolean;
+  onSelect: (id: number) => void;
+  onEdit: (submission: QuiltSubmission) => void;
+}) {
+  return (
+    <Card>
+      <Vstack align="stretch" className="gap-3">
+        <Text size="lg" weight="semibold" color="text">
+          Deleted
+        </Text>
+        {submissions
+          .slice()
+          .reverse()
+          .map((submission) => (
+            <button
+              key={submission.id}
+              className={`rounded border p-3 text-left transition-colors ${
+                selectedId === submission.id
+                  ? "border-cyan-300/70 bg-cyan-300/10"
+                  : previewDisabled
+                    ? "cursor-default border-white/10 bg-white/[0.03]"
+                    : "cursor-pointer border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+              }`}
+              onClick={() => onSelect(submission.id)}
+            >
+              <Hstack justify="between" className="gap-3">
+                <Vstack align="start" gap={0}>
+                  <Text color="text" weight="semibold">
+                    {submission.pixels.length} pixels
+                  </Text>
+                  <Text color="textFaded" size="xs">
+                    Deleted {submission.removedAt ? formatTime(submission.removedAt) : formatTime(submission.createdAt)}
+                  </Text>
+                </Vstack>
+                <button
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
+                  title="Edit"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEdit(submission);
+                  }}
+                >
+                  <Pencil size={16} />
+                </button>
+              </Hstack>
+            </button>
+          ))}
       </Vstack>
     </Card>
   );

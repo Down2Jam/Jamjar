@@ -10,7 +10,7 @@ export type QuiltPixel = {
 export type QuiltSubmission = {
   id: number;
   pixels: QuiltPixel[];
-  status: "PENDING" | "ACCEPTED" | "REJECTED" | "REMOVED";
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "REMOVED" | "USER_DELETED";
   score: number;
   viewerVote: number;
   resolvesAt: string;
@@ -45,6 +45,7 @@ export type QuiltDetail = QuiltSummary & {
   pending: QuiltSubmission[];
   rejected: QuiltSubmission[];
   removed: QuiltSubmission[];
+  deleted: QuiltSubmission[];
 };
 
 function authHeaders(contentType = false) {
@@ -98,6 +99,14 @@ export async function updateQuiltSubmission(
 export async function removeQuiltSubmission(submissionId: number) {
   return fetch(`${BASE_URL}/quilts/submissions/${submissionId}`, {
     method: "DELETE",
+    headers: authHeaders(),
+    credentials: "include",
+  });
+}
+
+export async function acceptQuiltSubmission(submissionId: number) {
+  return fetch(`${BASE_URL}/quilts/submissions/${submissionId}/accept`, {
+    method: "POST",
     headers: authHeaders(),
     credentials: "include",
   });
