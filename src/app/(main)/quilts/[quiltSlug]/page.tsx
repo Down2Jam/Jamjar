@@ -2,7 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "@/compat/next-navigation";
-import { Check, Minus, Pencil, Plus, ThumbsDown, ThumbsUp, Trash2 } from "lucide-react";
+import {
+  Check,
+  Minus,
+  Pencil,
+  Plus,
+  Redo2,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
+  Undo2,
+} from "lucide-react";
 import {
   addToast,
   Button,
@@ -63,8 +73,9 @@ const PALETTE = [
   "#f30f0c",
   "#ff7872",
 ];
+const PANEL_PAGE_SIZE = 5;
 
-type Tool = "brush" | "eraser" | "bucket" | "transform";
+type Tool = "brush" | "eraser" | "bucket" | "transform" | "picker";
 type Rect = { x: number; y: number; width: number; height: number };
 type DragMode =
   | { type: "draw" }
@@ -73,6 +84,11 @@ type DragMode =
       type: "move";
       start: { x: number; y: number };
       source: Array<{ x: number; y: number; color: string | null }>;
+    }
+  | {
+      type: "pan";
+      start: { x: number; y: number };
+      scroll: { x: number; y: number };
     };
 type CanvasPreview =
   | { type: "current" }
@@ -84,6 +100,21 @@ type CanvasPreview =
 
 function keyFor(x: number, y: number) {
   return `${x}:${y}`;
+}
+
+function cloneDraft(draft: Map<string, string | null>) {
+  return new Map(draft);
+}
+
+function draftsEqual(
+  a: Map<string, string | null>,
+  b: Map<string, string | null>,
+) {
+  if (a.size !== b.size) return false;
+  for (const [key, value] of a) {
+    if (!b.has(key) || b.get(key) !== value) return false;
+  }
+  return true;
 }
 
 function formatTime(value: string) {
@@ -200,8 +231,12 @@ export default function QuiltDetailPage() {
   const [selection, setSelection] = useState<Rect | null>(null);
   const [moveOffset, setMoveOffset] = useState({ x: 0, y: 0 });
   const [drag, setDrag] = useState<DragMode | null>(null);
+  const [historyVersion, setHistoryVersion] = useState(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const undoStackRef = useRef<Array<Map<string, string | null>>>([]);
+  const redoStackRef = useRef<Array<Map<string, string | null>>>([]);
+  const editStartDraftRef = useRef<Map<string, string | null> | null>(null);
   const hasToken = hasCookie("token");
   const { data: user } = useSelf(hasToken);
   const isModerator = Boolean(user?.admin || user?.mod);
@@ -211,6 +246,70 @@ export default function QuiltDetailPage() {
     isEditing && preview.type === "pending" && preview.id !== editingSubmissionId
       ? quilt?.pending.find((submission) => submission.id === preview.id) ?? null
       : null;
+  const canUndo = historyVersion >= 0 && undoStackRef.current.length > 0;
+  const canRedo = historyVersion >= 0 && redoStackRef.current.length > 0;
+
+  const markHistoryChanged = useCallback(() => {
+    setHistoryVersion((value) => value + 1);
+  }, []);
+
+  const clearDraftHistory = useCallback(() => {
+    undoStackRef.current = [];
+    redoStackRef.current = [];
+    editStartDraftRef.current = null;
+    markHistoryChanged();
+  }, [markHistoryChanged]);
+
+  const pushDraftHistory = useCallback(
+    (previous: Map<string, string | null>, next: Map<string, string | null>) => {
+      if (draftsEqual(previous, next)) return;
+      undoStackRef.current.push(cloneDraft(previous));
+      if (undoStackRef.current.length > 80) {
+        undoStackRef.current.shift();
+      }
+      redoStackRef.current = [];
+      markHistoryChanged();
+    },
+    [markHistoryChanged],
+  );
+
+  const beginDraftAction = useCallback((current: Map<string, string | null>) => {
+    editStartDraftRef.current = cloneDraft(current);
+  }, []);
+
+  const finishDraftAction = useCallback(
+    (next: Map<string, string | null>) => {
+      const previous = editStartDraftRef.current;
+      editStartDraftRef.current = null;
+      if (!previous) return;
+      pushDraftHistory(previous, next);
+    },
+    [pushDraftHistory],
+  );
+
+  const undoDraft = useCallback(() => {
+    setDraft((current) => {
+      const previous = undoStackRef.current.pop();
+      if (!previous) return current;
+      redoStackRef.current.push(cloneDraft(current));
+      markHistoryChanged();
+      return cloneDraft(previous);
+    });
+    setSelection(null);
+    setMoveOffset({ x: 0, y: 0 });
+  }, [markHistoryChanged]);
+
+  const redoDraft = useCallback(() => {
+    setDraft((current) => {
+      const next = redoStackRef.current.pop();
+      if (!next) return current;
+      undoStackRef.current.push(cloneDraft(current));
+      markHistoryChanged();
+      return cloneDraft(next);
+    });
+    setSelection(null);
+    setMoveOffset({ x: 0, y: 0 });
+  }, [markHistoryChanged]);
 
   const loadQuilt = useCallback(async () => {
     if (!quiltSlug) return;
@@ -288,6 +387,27 @@ export default function QuiltDetailPage() {
     [brushSize, quilt],
   );
 
+  const eraseDraftPixel = useCallback(
+    (x: number, y: number) => {
+      if (!quilt) return;
+      setDraft((current) => {
+        const next = new Map(current);
+        const radius = Math.max(1, brushSize);
+        for (let oy = 0; oy < radius; oy++) {
+          for (let ox = 0; ox < radius; ox++) {
+            const px = x + ox;
+            const py = y + oy;
+            if (px >= 0 && py >= 0 && px < quilt.width && py < quilt.height) {
+              next.delete(keyFor(px, py));
+            }
+          }
+        }
+        return next;
+      });
+    },
+    [brushSize, quilt],
+  );
+
   const bucketFill = useCallback(
     (x: number, y: number, nextColor: string | null) => {
       if (!quilt) return;
@@ -320,9 +440,13 @@ export default function QuiltDetailPage() {
           }
         }
       }
-      setDraft((current) => new Map([...current, ...changes]));
+      setDraft((current) => {
+        const next = new Map([...current, ...changes]);
+        pushDraftHistory(current, next);
+        return next;
+      });
     },
-    [quilt, viewCanvas],
+    [pushDraftHistory, quilt, viewCanvas],
   );
 
   const getPointerCell = useCallback(
@@ -372,6 +496,33 @@ export default function QuiltDetailPage() {
   );
 
   useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      if (
+        target?.tagName === "INPUT" ||
+        target?.tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      ) {
+        return;
+      }
+      const isUndo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z";
+      const isRedo =
+        (event.ctrlKey || event.metaKey) &&
+        (event.key.toLowerCase() === "y" ||
+          (event.shiftKey && event.key.toLowerCase() === "z"));
+      if (isRedo) {
+        event.preventDefault();
+        redoDraft();
+      } else if (isUndo) {
+        event.preventDefault();
+        undoDraft();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [redoDraft, undoDraft]);
+
+  useEffect(() => {
     if (!quilt || !canvasRef.current) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -417,14 +568,33 @@ export default function QuiltDetailPage() {
   }, [moveOffset, onionSkinSubmission, quilt, selection, viewCanvas]);
 
   function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (event.button === 2 && viewportRef.current) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setDrag({
+        type: "pan",
+        start: { x: event.clientX, y: event.clientY },
+        scroll: {
+          x: viewportRef.current.scrollLeft,
+          y: viewportRef.current.scrollTop,
+        },
+      });
+      return;
+    }
     const cell = getPointerCell(event);
     if (!cell || !quilt) return;
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (tool === "picker") {
+      setColor(viewCanvas[cell.y * quilt.width + cell.x] ?? "#ffffff");
+      setTool("brush");
+      return;
+    }
     if (tool === "bucket") {
       bucketFill(cell.x, cell.y, color);
       return;
     }
     if (tool === "transform") {
+      beginDraftAction(draft);
       if (contains(selection, cell)) {
         const source: Array<{ x: number; y: number; color: string | null }> = [];
         for (let y = selection!.y; y < selection!.y + selection!.height; y++) {
@@ -440,15 +610,24 @@ export default function QuiltDetailPage() {
       setDrag({ type: "select", start: cell });
       return;
     }
-    drawPixel(cell.x, cell.y, tool === "eraser" ? null : color);
+    beginDraftAction(draft);
+    if (tool === "eraser") eraseDraftPixel(cell.x, cell.y);
+    else drawPixel(cell.x, cell.y, color);
     setDrag({ type: "draw" });
   }
 
   function handlePointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (drag?.type === "pan" && viewportRef.current) {
+      event.preventDefault();
+      viewportRef.current.scrollLeft = drag.scroll.x - (event.clientX - drag.start.x);
+      viewportRef.current.scrollTop = drag.scroll.y - (event.clientY - drag.start.y);
+      return;
+    }
     const cell = getPointerCell(event);
     if (!cell || !drag || !quilt) return;
     if (drag.type === "draw") {
-      drawPixel(cell.x, cell.y, tool === "eraser" ? null : color);
+      if (tool === "eraser") eraseDraftPixel(cell.x, cell.y);
+      else drawPixel(cell.x, cell.y, color);
       return;
     }
     if (drag.type === "select") {
@@ -487,6 +666,14 @@ export default function QuiltDetailPage() {
       });
       setMoveOffset({ x: 0, y: 0 });
     }
+    if (drag?.type === "draw" || drag?.type === "move") {
+      setDraft((current) => {
+        finishDraftAction(current);
+        return current;
+      });
+    } else if (drag?.type === "select") {
+      editStartDraftRef.current = null;
+    }
     setDrag(null);
   }
 
@@ -506,6 +693,7 @@ export default function QuiltDetailPage() {
       setEditingSubmissionId(null);
       setSelection(null);
       setPreview({ type: "current" });
+      clearDraftHistory();
       addToast({
         title: editingSubmissionId
           ? "Quilt change updated"
@@ -528,6 +716,7 @@ export default function QuiltDetailPage() {
     setEditingSubmissionId(submission.id);
     setPreview({ type: "pending", id: submission.id });
     setSelection(null);
+    clearDraftHistory();
     addToast({ title: "Loaded pending change for editing" });
   }
 
@@ -628,21 +817,44 @@ export default function QuiltDetailPage() {
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}
                   onPointerCancel={handlePointerUp}
+                  onContextMenu={(event) => event.preventDefault()}
                 />
               </div>
 
               <Hstack className="flex-wrap gap-2">
-                {(["brush", "bucket", "eraser", "transform"] as Tool[]).map((item) => (
+                {[
+                  { key: "brush" as Tool, label: "Brush" },
+                  { key: "bucket" as Tool, label: "Bucket" },
+                  { key: "eraser" as Tool, label: "Eraser" },
+                  { key: "picker" as Tool, label: "Picker" },
+                  { key: "transform" as Tool, label: "Transform" },
+                ].map((item) => (
                   <Button
-                    key={item}
+                    key={item.key}
                     size="sm"
-                    color={tool === item ? "blue" : "default"}
-                    variant={tool === item ? undefined : "ghost"}
-                    onClick={() => setTool(item)}
+                    color={tool === item.key ? "blue" : "default"}
+                    variant={tool === item.key ? undefined : "ghost"}
+                    onClick={() => setTool(item.key)}
                   >
-                    {item[0].toUpperCase() + item.slice(1)}
+                    {item.label}
                   </Button>
                 ))}
+                <button
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-zinc-300"
+                  title="Undo (Ctrl+Z)"
+                  disabled={!canUndo}
+                  onClick={undoDraft}
+                >
+                  <Undo2 size={16} />
+                </button>
+                <button
+                  className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-zinc-300"
+                  title="Redo (Ctrl+Y)"
+                  disabled={!canRedo}
+                  onClick={redoDraft}
+                >
+                  <Redo2 size={16} />
+                </button>
                 <label className="ml-auto flex items-center gap-2 text-sm text-zinc-400">
                   Brush
                   <input
@@ -725,6 +937,7 @@ export default function QuiltDetailPage() {
                     onClick={() => {
                       setDraft(new Map());
                       setEditingSubmissionId(null);
+                      clearDraftHistory();
                     }}
                   >
                     Clear draft
@@ -852,6 +1065,14 @@ function HistoryPanel({
   onSelect?: (id: number) => void;
   onRemove?: (id: number) => void;
 }) {
+  const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
+  const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
+  const hasMore = visibleCount < submissions.length;
+
+  useEffect(() => {
+    setVisibleCount(PANEL_PAGE_SIZE);
+  }, [submissions.length]);
+
   return (
     <Card>
       <Vstack align="stretch" className="gap-3">
@@ -863,10 +1084,8 @@ function HistoryPanel({
             Nothing here yet.
           </Text>
         ) : (
-          submissions
-            .slice()
-            .reverse()
-            .map((submission) => (
+          <>
+            {visibleSubmissions.map((submission) => (
               <button
                 key={submission.id}
                 className={`rounded border p-3 text-left transition-colors ${
@@ -901,7 +1120,17 @@ function HistoryPanel({
                   )}
                 </div>
               </button>
-            ))
+            ))}
+            {hasMore && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
+              >
+                Load more
+              </Button>
+            )}
+          </>
         )}
       </Vstack>
     </Card>
@@ -931,6 +1160,14 @@ function PendingPanel({
   onAccept: (id: number) => void;
   onRemove: (id: number) => void;
 }) {
+  const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
+  const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
+  const hasMore = visibleCount < submissions.length;
+
+  useEffect(() => {
+    setVisibleCount(PANEL_PAGE_SIZE);
+  }, [submissions.length]);
+
   return (
     <Card>
       <Vstack align="stretch" className="gap-3">
@@ -942,10 +1179,8 @@ function PendingPanel({
             No pending changes.
           </Text>
         ) : (
-          submissions
-            .slice()
-            .reverse()
-            .map((submission) => (
+          <>
+            {visibleSubmissions.map((submission) => (
               <button
                 key={submission.id}
                 className={`rounded border p-3 text-left transition-colors ${
@@ -1049,7 +1284,17 @@ function PendingPanel({
                   </Hstack>
                 </div>
               </button>
-            ))
+            ))}
+            {hasMore && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
+              >
+                Load more
+              </Button>
+            )}
+          </>
         )}
       </Vstack>
     </Card>
@@ -1069,16 +1314,21 @@ function DeletedPanel({
   onSelect: (id: number) => void;
   onEdit: (submission: QuiltSubmission) => void;
 }) {
+  const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
+  const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
+  const hasMore = visibleCount < submissions.length;
+
+  useEffect(() => {
+    setVisibleCount(PANEL_PAGE_SIZE);
+  }, [submissions.length]);
+
   return (
     <Card>
       <Vstack align="stretch" className="gap-3">
         <Text size="lg" weight="semibold" color="text">
           Deleted
         </Text>
-        {submissions
-          .slice()
-          .reverse()
-          .map((submission) => (
+        {visibleSubmissions.map((submission) => (
             <button
               key={submission.id}
               className={`rounded border p-3 text-left transition-colors ${
@@ -1112,6 +1362,15 @@ function DeletedPanel({
               </Hstack>
             </button>
           ))}
+        {hasMore && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
+          >
+            Load more
+          </Button>
+        )}
       </Vstack>
     </Card>
   );
