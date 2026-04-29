@@ -29,7 +29,7 @@ import { useSelf, useCurrentGame } from "@/hooks/queries";
 import { useState } from "react";
 import { isPostJamPhase } from "@/helpers/jamDisplay";
 import { API_DOCS_URL } from "@/requests/config";
-import { AudioLines } from "lucide-react";
+import { AudioLines, Paintbrush } from "lucide-react";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -142,6 +142,15 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 hotkey={["G", "S"]}
                 isIconOnly
                 color="lime"
+              />
+              <NavbarButton
+                iconNode={<Paintbrush size={16} />}
+                href="/quilts"
+                name="Navbar.Quilts.Title"
+                description="Navbar.Quilts.Description"
+                hotkey={["G", "Q"]}
+                isIconOnly
+                color="yellow"
               />
               <NavbarButton
                 icon="bookcopy"

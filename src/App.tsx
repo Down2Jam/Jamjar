@@ -43,6 +43,8 @@ const MusicPage = lazy(() => import("@/app/(main)/music/page"));
 const PostPage = lazy(() => import("@/app/(main)/p/[slug]/page"));
 const PressKitPage = lazy(() => import("@/app/(main)/press-kit/page"));
 const PressKitNewPage = lazy(() => import("@/app/(main)/press-kit/new/page"));
+const QuiltDetailPage = lazy(() => import("@/app/(main)/quilts/[quiltSlug]/page"));
+const QuiltsPage = lazy(() => import("@/app/(main)/quilts/page"));
 const RadioPage = lazy(() => import("@/app/(main)/radio/page"));
 const RecapPage = lazy(() => import("@/app/(main)/recap/page"));
 const ReportsPage = lazy(() => import("@/app/(main)/reports/page"));
@@ -155,6 +157,11 @@ const indexedRouteMetadata = [
     pattern: /^\/screenshots\/?$/,
     title: "Screenshots",
     description: "Browse screenshots from Down2Jam games.",
+  },
+  {
+    pattern: /^\/quilts(?:\/[^/]+)?\/?$/,
+    title: "Quilts",
+    description: "Make collaborative pixel art quilts with the Down2Jam community.",
   },
   {
     pattern: /^\/events\/?$/,
@@ -312,6 +319,8 @@ export default function App() {
           <Route path="press-kit" element={<PressKitPage />} />
           <Route path="press-kit/new" element={<PressKitNewPage />} />
           <Route path="press-kit/:slug" element={<PressKitDetailRoute />} />
+          <Route path="quilts" element={<QuiltsPage />} />
+          <Route path="quilts/:quiltSlug" element={<QuiltDetailPage />} />
           <Route path="radio" element={<RadioPage />} />
           <Route path="radio/:station" element={<RadioStationRoute />} />
           <Route path="recap" element={<RecapPage />} />
