@@ -115,6 +115,7 @@ type RadioState = {
 
 const RADIO_EMOTE_COUNTS_KEY = "d2j-radio-emote-counts";
 const RADIO_VOLUME_KEY = "d2j-radio-volume";
+const DEFAULT_RADIO_VOLUME = 0.5;
 const EMOTE_PICKER_CLOSE_MS = 160;
 const EMOTE_PICKER_HOVER_CLOSE_MS = 900;
 
@@ -124,6 +125,9 @@ const formatTime = (seconds: number) => {
   const secs = total % 60;
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
+
+const toAudioVolume = (sliderVolume: number) =>
+  Math.min(Math.max(sliderVolume, 0), 1) ** 2;
 
 const getTrackThumbnail = (track?: RadioTrack | null) =>
   track?.gamePage.thumbnail || "/images/D2J_Icon.png";
@@ -314,9 +318,13 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   const { emojis, emojiMap, loading: emojisLoading } = useEmojis();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [volume, setVolumeState] = useState(() => {
-    if (typeof window === "undefined") return 0.5;
-    const stored = Number(window.localStorage.getItem(RADIO_VOLUME_KEY));
-    return Number.isFinite(stored) ? Math.min(Math.max(stored, 0), 1) : 0.5;
+    if (typeof window === "undefined") return DEFAULT_RADIO_VOLUME;
+    const raw = window.localStorage.getItem(RADIO_VOLUME_KEY);
+    if (raw === null) return DEFAULT_RADIO_VOLUME;
+    const stored = Number(raw);
+    return Number.isFinite(stored)
+      ? Math.min(Math.max(stored, 0), 1)
+      : DEFAULT_RADIO_VOLUME;
   });
   const [state, setState] = useState<RadioState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -347,7 +355,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     const normalized = Math.min(Math.max(nextVolume, 0), 1);
     setVolumeState(normalized);
     if (audioRef.current) {
-      audioRef.current.volume = normalized;
+      audioRef.current.volume = toAudioVolume(normalized);
     }
     try {
       window.localStorage.setItem(RADIO_VOLUME_KEY, String(normalized));
@@ -360,7 +368,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     const audio = new Audio();
     audio.preload = "auto";
     audio.crossOrigin = "anonymous";
-    audio.volume = volume;
+    audio.volume = toAudioVolume(volume);
     audioRef.current = audio;
 
     return () => {
@@ -450,7 +458,10 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       duration: 2300 + Math.round(Math.random() * 900),
     };
 
-    setFloatingEmotes((currentEmotes) => [...currentEmotes, next].slice(-9));
+    setFloatingEmotes((currentEmotes) => [
+      ...currentEmotes.filter((item) => item.key !== key),
+      next,
+    ].slice(-9));
     window.setTimeout(() => {
       setFloatingEmotes((currentEmotes) =>
         currentEmotes.filter((item) => item.key !== key),
@@ -758,7 +769,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
         audio.load();
       }
 
-      audio.volume = volume;
+      audio.volume = toAudioVolume(volume);
 
       const seekToLivePosition = () => {
         try {
@@ -901,6 +912,23 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       if (!response.ok) {
         addToast({ title: "Failed to send emote" });
         return;
+      }
+      const sentEmote = (await response.json().catch(() => null)) as
+        | RadioEmote
+        | null;
+      if (sentEmote) {
+        pushFloatingEmote(sentEmote);
+        setState((currentState) =>
+          currentState
+            ? {
+                ...currentState,
+                recentEmotes: [sentEmote, ...currentState.recentEmotes].slice(
+                  0,
+                  16,
+                ),
+              }
+            : currentState,
+        );
       }
       const remainingCloseMs = Math.max(
         0,
