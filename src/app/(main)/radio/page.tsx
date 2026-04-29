@@ -10,7 +10,6 @@ import {
 import { readItem } from "@/requests/helpers";
 import { useTheme } from "@/providers/useSiteTheme";
 import { useEmojis } from "@/providers/useEmojis";
-import { useMusic } from "bioloom-miniplayer";
 import {
   addToast,
   Button,
@@ -115,6 +114,7 @@ type RadioState = {
 };
 
 const RADIO_EMOTE_COUNTS_KEY = "d2j-radio-emote-counts";
+const RADIO_VOLUME_KEY = "d2j-radio-volume";
 const EMOTE_PICKER_CLOSE_MS = 160;
 const EMOTE_PICKER_HOVER_CLOSE_MS = 900;
 
@@ -133,17 +133,6 @@ const getTrackBackground = (track?: RadioTrack | null) =>
   track?.gamePage.banner ||
   track?.gamePage.thumbnail ||
   "/images/D2J_Icon_watermark.png";
-
-const getTrackGame = (track: RadioTrack) => ({
-  name: track.gamePage.name,
-  slug: track.gamePage.game.slug,
-  thumbnail: getTrackThumbnail(track),
-});
-
-const getTrackArtist = (track: RadioTrack) => ({
-  name: track.composer?.name ?? "Unknown composer",
-  slug: track.composer?.slug ?? "",
-});
 
 function RadioLandingChoice({
   station,
@@ -323,7 +312,12 @@ export default function RadioLandingPage() {
 export function RadioStationPage({ station }: { station: RadioStation }) {
   const { colors } = useTheme();
   const { emojis, emojiMap, loading: emojisLoading } = useEmojis();
-  const { playItem, seek, shown, setShown, volume, setVolume } = useMusic();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [volume, setVolumeState] = useState(() => {
+    if (typeof window === "undefined") return 0.5;
+    const stored = Number(window.localStorage.getItem(RADIO_VOLUME_KEY));
+    return Number.isFinite(stored) ? Math.min(Math.max(stored, 0), 1) : 0.5;
+  });
   const [state, setState] = useState<RadioState | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLoadingSpinner, setShowLoadingSpinner] = useState(false);
@@ -348,6 +342,33 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   const emotePickerOpenedByClick = useRef(false);
   const lastSyncedTrackId = useRef<number | null>(null);
   const autoAttemptedTrackId = useRef<number | null>(null);
+
+  const setVolume = useCallback((nextVolume: number) => {
+    const normalized = Math.min(Math.max(nextVolume, 0), 1);
+    setVolumeState(normalized);
+    if (audioRef.current) {
+      audioRef.current.volume = normalized;
+    }
+    try {
+      window.localStorage.setItem(RADIO_VOLUME_KEY, String(normalized));
+    } catch {
+      // Ignore private browsing/storage failures.
+    }
+  }, []);
+
+  useEffect(() => {
+    const audio = new Audio();
+    audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
+    audio.volume = volume;
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+  }, []);
 
   const clearEmotePickerCloseTimer = useCallback(() => {
     if (emotePickerCloseTimer.current === null) return;
@@ -723,27 +744,47 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
 
   const playCurrentTrack = useCallback(
     async (options?: { keepStartOverlay?: boolean }) => {
-      if (!state?.current) return;
+      if (!state?.current || !audioRef.current) return;
+      const audio = audioRef.current;
       const track = state.current.track;
-      await playItem({
-        slug: track.slug,
-        name: track.name,
-        artist: getTrackArtist(track),
-        thumbnail: getTrackThumbnail(track),
-        game: getTrackGame(track),
-        song: track.url,
-      });
-      seek(timing.elapsedSeconds);
+      const elapsedSeconds = Math.min(
+        Math.max(0, timing.elapsedSeconds),
+        Math.max(0, state.current.durationSeconds - 0.25),
+      );
+      const targetUrl = new URL(track.url, window.location.href).toString();
+
+      if (audio.src !== targetUrl) {
+        audio.src = targetUrl;
+        audio.load();
+      }
+
+      audio.volume = volume;
+
+      const seekToLivePosition = () => {
+        try {
+          audio.currentTime = elapsedSeconds;
+        } catch {
+          // Some browsers only allow seeking after metadata is available.
+        }
+      };
+
+      if (audio.readyState > 0) {
+        seekToLivePosition();
+      } else {
+        audio.addEventListener("loadedmetadata", seekToLivePosition, {
+          once: true,
+        });
+      }
+
+      await audio.play();
+      seekToLivePosition();
       lastSyncedTrackId.current = track.id;
       setIsListening(true);
       if (!options?.keepStartOverlay) {
         setAutoPlaybackBlocked(false);
       }
-      if (!shown) {
-        setShown(true);
-      }
     },
-    [playItem, seek, setShown, shown, state, timing.elapsedSeconds],
+    [state, timing.elapsedSeconds, volume],
   );
 
   const startListening = useCallback(async () => {
