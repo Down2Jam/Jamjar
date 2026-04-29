@@ -13,6 +13,7 @@ import type { TrackType } from "@/types/TrackType";
 import type { SiteThemeType } from "@/types/SiteThemeType";
 import type { ListingPageVersion } from "@/types/GameType";
 import { unwrapArray } from "./helpers";
+import { search } from "@/requests/search";
 
 export function useTags() {
   return useQuery<TagType[]>({
@@ -84,9 +85,7 @@ export function useSearch(query: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.search.results(query),
     queryFn: async () => {
-      const res = await fetch(
-        `${BASE_URL}/search?q=${encodeURIComponent(query)}`
-      );
+      const res = await search(query);
       const json = await res.json();
       return json?.data ?? json ?? null;
     },

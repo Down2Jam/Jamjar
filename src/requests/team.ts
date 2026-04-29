@@ -3,12 +3,18 @@ import { BASE_URL } from "./config";
 import { UserType } from "@/types/UserType";
 import { TeamInviteType } from "@/types/TeamInviteType";
 
-export async function getTeams() {
-  return fetch(`${BASE_URL}/teams`);
+export async function getTeams(cursor?: string | null, limit = 50) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (cursor) params.set("cursor", cursor);
+  return fetch(`${BASE_URL}/teams?${params.toString()}`);
 }
 
-export async function getTeamsUser() {
-  return fetch(`${BASE_URL}/teams?targetUserSlug=${getCookie("user")}`);
+export async function getTeamsUser(cursor?: string | null, limit = 50) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  const userSlug = getCookie("user");
+  if (userSlug) params.set("targetUserSlug", userSlug);
+  if (cursor) params.set("cursor", cursor);
+  return fetch(`${BASE_URL}/teams?${params.toString()}`);
 }
 
 export async function getTeamRoles() {
@@ -32,10 +38,7 @@ export async function applyToTeam(teamId: number, body: string) {
 }
 
 export async function deleteTeam(teamId: number) {
-  return fetch(`${BASE_URL}/team`, {
-    body: JSON.stringify({
-      targetTeamId: teamId,
-    }),
+  return fetch(`${BASE_URL}/teams/${teamId}`, {
     method: "DELETE",
     credentials: "include",
     headers: {
@@ -110,7 +113,7 @@ export async function inviteToTeam(
 }
 
 export async function createTeam() {
-  return fetch(`${BASE_URL}/team`, {
+  return fetch(`${BASE_URL}/teams`, {
     body: JSON.stringify({
       userSlug: getCookie("user"),
     }),
@@ -135,7 +138,7 @@ export async function updateTeam(
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
-  return fetch(`${BASE_URL}/team`, {
+  return fetch(`${BASE_URL}/teams/${teamId}`, {
     body: JSON.stringify({
       targetTeamId: teamId,
       applicationsOpen: applicationsOpen,

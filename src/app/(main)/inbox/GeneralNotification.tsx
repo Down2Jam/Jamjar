@@ -7,7 +7,7 @@ import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { NotificationType as AppNotification } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 
 type Props = {
   notification: AppNotification;

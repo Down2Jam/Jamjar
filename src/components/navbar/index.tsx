@@ -1,14 +1,10 @@
-"use server";
-
-import { cookies } from "next/headers";
 import ClientNavbar from "./ClientNavbar";
 import { loadLanguages } from "@/lib/loadLanguages";
+import { getCookie } from "@/helpers/cookie";
 const languages = loadLanguages();
 
-export default async function Navbar() {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("user");
-
+export default function Navbar() {
+  const token = getCookie("user");
   const isLoggedIn = !!token;
 
   return <ClientNavbar isLoggedIn={isLoggedIn} languages={languages} />;

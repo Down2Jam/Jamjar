@@ -9,7 +9,7 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { login } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -62,12 +62,14 @@ export default function UserPage() {
             return;
           }
 
-          const { user } = await response.json();
-          const token = response.headers.get("Authorization");
+          const json = await response.json();
+          const session = json?.data ?? json;
+          const user = session?.user;
+          const token = response.headers.get("Authorization") ?? session?.token;
 
-          if (!token) {
+          if (!token || !user?.slug) {
             addToast({
-              title: "Failed to retrieve access token",
+              title: "Failed to retrieve login session",
             });
             setPassword("");
             return;

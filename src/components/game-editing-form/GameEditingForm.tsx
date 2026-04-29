@@ -32,7 +32,7 @@ import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "bioloom-ui";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 import { Play } from "lucide-react";
 import {
   ReactNode,
@@ -62,15 +62,16 @@ import {
   TRACK_CREDIT_ROLE_OPTIONS,
   TRACK_TAG_CATEGORY_HELPERS,
 } from "@/components/tracks/editingShared";
-import { redirect, useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { redirect, useRouter } from "@/compat/next-navigation";
+import { useTranslations } from "@/compat/next-intl";
 import { getSelf, searchUsers } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { TrackType } from "@/types/TrackType";
 import { TrackFlagType } from "@/types/TrackFlagType";
 import { TrackTagType } from "@/types/TrackTagType";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useTheme } from "@/providers/useSiteTheme";
+import { useEmojis } from "@/providers/useEmojis";
+import { readArray, readItem, unwrapItem } from "@/requests/helpers";
 import { debounce } from "lodash";
 import { createTeam } from "@/helpers/team";
 import { Tab, Tabs } from "bioloom-ui";
@@ -520,9 +521,9 @@ export default function GameEditingForm({
       const teamResponse = await getTeamsUser();
 
       if (teamResponse.status == 200) {
-        const data = await teamResponse.json();
-        const filteredTeams = data.data.filter((team: TeamType) => !team.game);
-        const matchingSlugTeam = data.data.filter(
+        const data = await readArray<TeamType>(teamResponse);
+        const filteredTeams = data.filter((team: TeamType) => !team.game);
+        const matchingSlugTeam = data.filter(
           (team: TeamType) => game && team.game?.slug === game.slug,
         );
 
@@ -589,7 +590,7 @@ export default function GameEditingForm({
   const refreshTeams = useCallback(async () => {
     const teamResponse = await getTeamsUser();
     if (teamResponse.ok) {
-      const { data } = await teamResponse.json();
+      const data = await readArray<TeamType>(teamResponse);
       const filtered = data.filter((t: TeamType) => !t.game);
       updateTeams(filtered);
       setCurrentTeam((i) => Math.min(i, Math.max(filtered.length - 1, 0)));
@@ -600,28 +601,24 @@ export default function GameEditingForm({
     const load = async () => {
       try {
         const ratingResponse = await getRatingCategories();
-        const ratingCategories = await ratingResponse.json();
-        setRatingCategories(ratingCategories.data);
+        setRatingCategories(await readArray(ratingResponse));
 
         const flagsResponse = await getFlags();
-        const flagsData = await flagsResponse.json();
+        const flagsData = await readArray<FlagType>(flagsResponse);
         setAllFlags(
-          flagsData.data.sort((a: FlagType, b: FlagType) =>
+          flagsData.sort((a: FlagType, b: FlagType) =>
             a.name.localeCompare(b.name),
           ),
         );
 
         const tagsResponse = await getGameTags();
-        const tagsData = await tagsResponse.json();
-        setAllTags(tagsData.data);
+        setAllTags(await readArray(tagsResponse));
 
         const trackTagsResponse = await getTrackTags();
-        const trackTagsData = await trackTagsResponse.json();
-        setAllTrackTags(trackTagsData.data ?? []);
+        setAllTrackTags(await readArray<TrackTagType>(trackTagsResponse));
 
         const trackFlagsResponse = await getTrackFlags();
-        const trackFlagsData = await trackFlagsResponse.json();
-        setAllTrackFlags(trackFlagsData.data ?? []);
+        setAllTrackFlags(await readArray<TrackFlagType>(trackFlagsResponse));
 
         // always get *fresh* teams before deciding to create one
         await refreshTeams();
@@ -634,7 +631,7 @@ export default function GameEditingForm({
         teamCheckDoneRef.current = true;
 
         const response = await getSelf();
-        const localuser = (await response.json()) as UserType;
+        const localuser = await readItem<UserType>(response);
 
         if (!localuser) return;
 
@@ -772,7 +769,7 @@ export default function GameEditingForm({
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
         addToast({ title: data.message ?? "Uploaded" });
-        return data.data as string;
+        return unwrapItem<string>(data);
       }
       addToast({ title: data?.message ?? `Failed to upload ${endpoint}` });
       return null;

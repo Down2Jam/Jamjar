@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://d2jam.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://d2jam.com/home</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://d2jam.com/about</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/games</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
+  <url><loc>https://d2jam.com/music</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://d2jam.com/results</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://d2jam.com/radio</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/screenshots</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://d2jam.com/events</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://d2jam.com/collections</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/team-finder</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://d2jam.com/theme-suggestions</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/theme-elimination</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/theme-voting</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/docs</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/press-kit</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/donate</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://d2jam.com/why</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/socials</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://d2jam.com/gamedle</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/recap</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+</urlset>

@@ -19,7 +19,7 @@ import {
   Vstack,
   ImageInput,
 } from "bioloom-ui";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useEmojis } from "@/providers/useEmojis";
 import { createEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "@/requests/config";

@@ -36,15 +36,15 @@ import CodeBlock from "@tiptap/extension-code-block";
 import Link from "@tiptap/extension-link";
 import ImageResize from "tiptap-extension-resize-image";
 import { getCookie } from "@/helpers/cookie";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import ThemedProse from "../themed-prose";
 import { addToast } from "bioloom-ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import Mentions from "../mentions/Mentions";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useEmojis } from "@/providers/useEmojis";
 import { createEmojiShortcodeExtension } from "../emoji/EmojiShortcodes";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { EmojiType } from "@/providers/EmojiProvider";
+import type { EmojiType } from "@/providers/useEmojis";
 import { BASE_URL } from "@/requests/config";
 import {
   editorContentToMarkdown,

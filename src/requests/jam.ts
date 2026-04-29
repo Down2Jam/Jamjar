@@ -1,14 +1,20 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
+let currentJamRequest: Promise<Response> | null = null;
+
 export async function getJams() {
   return fetch(`${BASE_URL}/jams`);
 }
 
 export async function getCurrentJam() {
-  return fetch(`${BASE_URL}/jam`, {
-    next: { revalidate: 300 },
-  });
+  if (!currentJamRequest) {
+    currentJamRequest = fetch(`${BASE_URL}/jam`).finally(() => {
+      currentJamRequest = null;
+    });
+  }
+
+  return currentJamRequest.then((response) => response.clone());
 }
 
 export async function joinJam(jamId: number) {
@@ -28,8 +34,8 @@ export async function joinJam(jamId: number) {
   return response;
 }
 
-export async function hasJoinedCurrentJam() {
-  return fetch(`${BASE_URL}/jam/participation`, {
+export async function hasJoinedJam(jamSlug: string) {
+  return fetch(`${BASE_URL}/jams/${encodeURIComponent(jamSlug)}/participation`, {
     credentials: "include",
     headers: {
       Authorization: `Bearer ${getCookie("token")}`,

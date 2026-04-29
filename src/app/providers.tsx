@@ -2,24 +2,26 @@
 
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
-import { SiteThemeProvider, useTheme } from "@/providers/SiteThemeProvider";
+import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { EmojiProvider } from "@/providers/EmojiProvider";
 import { BASE_URL } from "@/requests/config";
-import { MusicProvider, useMusic } from "bioloom-miniplayer";
+import { MusicProvider } from "bioloom-miniplayer";
 import { ThemeProvider, ToastProvider } from "bioloom-ui";
 import { merge } from "lodash";
-import { AbstractIntlMessages, NextIntlClientProvider } from "next-intl";
-import { useEffect, useState } from "react";
+import { AbstractIntlMessages, NextIntlClientProvider } from "@/compat/next-intl";
+import { useEffect, useMemo, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
 import { QueryClient, QueryClientProvider, HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
-import { useTracks } from "@/hooks/queries";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60 * 1000,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: false,
     },
   },
 });
@@ -49,12 +51,11 @@ export default function Providers({
 
     const loadPreviewMessages = async () => {
       try {
-        const fallbackMessages = (await import(`@/messages/en.json`)).default;
         const previewMessages = (
           await import(`@/messages/${previewLocale}.json`)
         ).default;
 
-        const merged = merge({}, fallbackMessages, previewMessages);
+        const merged = merge({}, messages, previewMessages);
         setActiveMessages(merged);
       setActiveLocale(previewLocale);
       } catch (e) {
@@ -76,7 +77,6 @@ export default function Providers({
               <NextIntlClientProvider locale={activeLocale} messages={activeMessages}>
                 <EmojiProvider>
                   <MusicProvider>
-                    <MusicTrackLoader />
                     <ToastProvider
                       placement={isMobile ? "top-center" : "bottom-right"}
                     />
@@ -94,29 +94,19 @@ export default function Providers({
 
 function BioloomThemeBridge({ children }: { children: React.ReactNode }) {
   const { siteTheme } = useTheme();
+  const theme = useMemo(
+    () => ({
+      name: siteTheme.name,
+      type: siteTheme.type,
+      colors: siteTheme.colors,
+    }),
+    [siteTheme.name, siteTheme.type, siteTheme.colors],
+  );
 
   return (
-    <ThemeProvider
-      theme={{
-        name: siteTheme.name,
-        type: siteTheme.type,
-        colors: siteTheme.colors,
-      }}
-    >
+    <ThemeProvider theme={theme}>
       {children}
     </ThemeProvider>
   );
 }
 
-function MusicTrackLoader() {
-  const { setTracks } = useMusic();
-  const { data: tracks } = useTracks();
-
-  useEffect(() => {
-    if (tracks) {
-      setTracks(tracks);
-    }
-  }, [tracks, setTracks]);
-
-  return null;
-}

@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { addToast } from "bioloom-ui";
-import { BASE_URL } from "@/requests/config";
 import {
   getGame,
   getGameTags,
   getGames,
+  getRandomGame,
   getRatingCategories,
 } from "@/requests/game";
+import { readItem } from "@/requests/helpers";
 import { GameType } from "@/types/GameType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TagType } from "@/types/TagType";
@@ -27,7 +28,7 @@ import {
 import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Link } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 
 const MAX_LIVES = 10;
 
@@ -424,11 +425,9 @@ export default function GamedlePage() {
     const loadRandomGame = async () => {
       setGameLoading(true);
       try {
-        const randomRes = await fetch(`${BASE_URL}/game`, {
-          cache: "no-store",
-        });
-        const randomPayload = await randomRes.json();
-        const slug = randomPayload?.data?.slug;
+        const randomRes = await getRandomGame();
+        const randomGame = await readItem<GameType>(randomRes);
+        const slug = randomGame?.slug;
         if (!slug) {
           throw new Error("No random game returned.");
         }
@@ -463,9 +462,9 @@ export default function GamedlePage() {
     setGameLoading(true);
 
     try {
-      const randomRes = await fetch(`${BASE_URL}/game`, { cache: "no-store" });
-      const randomPayload = await randomRes.json();
-      const slug = randomPayload?.data?.slug;
+      const randomRes = await getRandomGame();
+      const randomGame = await readItem<GameType>(randomRes);
+      const slug = randomGame?.slug;
       if (!slug) {
         throw new Error("No random game returned.");
       }

@@ -1,37 +1,29 @@
 {
   "Splash": {
-    "Title": "Down2Jam"
+    "Title": "ダウン2ジャム"
   },
   "Navbar": {
     "Donate": {
-      "Title": "Donate",
-      "Description": "Open the donation page"
+      "Title": "寄付",
+      "Description": "寄付するとサポートページを見る"
     },
     "TeamFinder": {
-      "Title": "Team Finder"
+      "Title": "チームを探す"
     },
     "Profile": {
-      "Title": "Profile"
+      "Title": "プロフィール"
     },
     "Settings": {
-      "Title": "Settings"
+      "Title": "設定"
     },
     "Logout": {
-      "Title": "Logout",
-      "Description": "Log out of your account"
+      "Title": "ログアウト",
+      "Description": "アカウントからログアウトする"
     },
     "Inbox": {
-      "Title": "Inbox",
-      "Description": "View your notifications"
+      "Title": "受信トレイ",
+      "Description": "通知を見る"
     },
-    "Docs": {
-      "Title": "Docs",
-      "Description": "Browse site documentation and guides"
-    },
-    "PressKit": {
-      "Title": "Press Kit",
-      "Description": "Browse public press materials and references"
-    },
-    "Search": "Search"
+    "Search": "探す"
   }
 }

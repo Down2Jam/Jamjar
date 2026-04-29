@@ -15,8 +15,13 @@ export const queryKeys = {
   game: {
     all: ["game"] as const,
     detail: (slug: string) => [...queryKeys.game.all, "detail", slug] as const,
-    list: (sort: string, jamId?: string, pageVersion?: string) =>
-      [...queryKeys.game.all, "list", sort, jamId, pageVersion] as const,
+    list: (
+      sort: string,
+      jamId?: string,
+      pageVersion?: string,
+      limit?: number | null,
+    ) =>
+      [...queryKeys.game.all, "list", sort, jamId, pageVersion, limit ?? null] as const,
     current: () => [...queryKeys.game.all, "current"] as const,
     ratingCategories: (always?: boolean) =>
       [...queryKeys.game.all, "ratingCategories", always] as const,
@@ -44,7 +49,8 @@ export const queryKeys = {
       time: string,
       sticky: boolean,
       tagRules?: Record<number, number>,
-      userSlug?: string
+      userSlug?: string,
+      following?: boolean
     ) =>
       [
         ...queryKeys.post.all,
@@ -54,6 +60,7 @@ export const queryKeys = {
         sticky,
         tagRules,
         userSlug,
+        following,
       ] as const,
     detail: (slug: string, userSlug?: string) =>
       [...queryKeys.post.all, "detail", slug, userSlug] as const,

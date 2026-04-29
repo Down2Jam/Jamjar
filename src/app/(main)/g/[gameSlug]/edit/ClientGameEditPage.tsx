@@ -9,6 +9,7 @@ import { useCurrentJam } from "@/hooks/queries";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import { addToast } from "bioloom-ui";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
+import { readItem } from "@/requests/helpers";
 
 export default function ClientGameEditPage({
   params,
@@ -30,7 +31,8 @@ export default function ClientGameEditPage({
         const gameResponse = await getGame(gameSlug);
 
         if (gameResponse.ok) {
-          const payload = await gameResponse.json();
+          const payload = await readItem<GameType>(gameResponse);
+          if (!payload) return;
           setGame(payload);
           setSelectedVersion(payload?.postJamPage ? "POST_JAM" : "JAM");
         }

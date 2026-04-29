@@ -1,8 +1,8 @@
 "use client";
 
 import { getCookie } from "@/helpers/cookie";
-import { redirect } from "next/navigation";
-import { useState } from "react";
+import { redirect } from "@/compat/next-navigation";
+import { useEffect, useState } from "react";
 import { postLike } from "@/requests/like";
 import { Button } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
@@ -22,6 +22,11 @@ export default function LikeButton({
   // const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
+
+  useEffect(() => {
+    setUpdatedLikes(likes);
+    setUpdatedLiked(liked);
+  }, [likes, liked, parentId]);
 
   // useEffect(() => {
   //   const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");

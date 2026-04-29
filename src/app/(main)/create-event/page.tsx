@@ -17,7 +17,7 @@ import {
   Palette,
   Trophy,
 } from "lucide-react";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import { useEffect, useState } from "react";
 import Timers from "@/components/timers";
 import { UserType } from "@/types/UserType";
@@ -27,6 +27,7 @@ import SidebarStreams from "@/components/sidebar/SidebarStreams";
 import { postEvent } from "@/requests/event";
 import { EventIcon } from "@/types/EventIcon";
 import { Button, Spinner } from "bioloom-ui";
+import { readItem } from "@/requests/helpers";
 
 const icons = {
   palette: {
@@ -86,7 +87,11 @@ export default function CreatePostPage() {
       try {
         const response = await getSelf();
 
-        const localuser = await response.json();
+        const localuser = await readItem<UserType>(response);
+        if (!localuser) {
+          setLoading(false);
+          return;
+        }
         setUser(localuser);
         setLoading(false);
       } catch (error) {

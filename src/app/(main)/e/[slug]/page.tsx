@@ -4,7 +4,7 @@ import { Button } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { useEvent } from "@/hooks/queries";
 import { BadgePlus, TimerIcon } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams } from "@/compat/next-navigation";
 
 export default function EventPage() {
   const { slug } = useParams();

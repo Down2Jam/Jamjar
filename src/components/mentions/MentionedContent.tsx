@@ -2,6 +2,7 @@
 
 import {
   createElement,
+  useCallback,
   type CSSProperties,
   type ReactNode,
   useEffect,
@@ -9,7 +10,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { BASE_URL } from "@/requests/config";
 import useEmojiContent from "@/hooks/useEmojiContent";
 import { cleanMentionsHtml } from "./Mentions";
@@ -46,16 +47,42 @@ type GameMentionData = {
 const getCurrentHostname = () =>
   typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "d2jam.com";
 
-const getMentionApiBaseUrl = (domain?: string) => {
+const LOCAL_MENTION_DOMAINS = new Set([
+  "d2jam.com",
+  "www.d2jam.com",
+  "localhost",
+  "127.0.0.1",
+]);
+
+const isLocalMentionDomain = (domain?: string) => {
   const normalizedDomain = (domain || getCurrentHostname()).toLowerCase();
-  if (normalizedDomain === getCurrentHostname()) {
+  return (
+    normalizedDomain === getCurrentHostname() ||
+    LOCAL_MENTION_DOMAINS.has(normalizedDomain)
+  );
+};
+
+const getMentionApiBaseUrl = (domain?: string) => {
+  if (isLocalMentionDomain(domain)) {
     return BASE_URL;
   }
-  return `https://${normalizedDomain}/api/v1`;
+  return `https://${domain?.toLowerCase()}/api/v1`;
 };
 
 const isCrossDomainMention = (domain?: string) =>
-  Boolean(domain && domain.toLowerCase() !== getCurrentHostname());
+  Boolean(domain && !isLocalMentionDomain(domain));
+
+const unwrapApiPayload = (payload: any) => payload?.data ?? payload;
+
+const getDisplayGamePage = (game: any) => {
+  const pages = Array.isArray(game?.pages) ? game.pages : [];
+  return (
+    pages.find((page: any) => page?.version === "POST_JAM") ??
+    pages.find((page: any) => page?.version === "JAM") ??
+    pages[0] ??
+    null
+  );
+};
 
 const userCache = new Map<string, UserMentionData>();
 const gameCache = new Map<string, GameMentionData>();
@@ -284,14 +311,13 @@ const fetchUser = async (slug: string, domain?: string) => {
     return null;
   }
   const response = await fetch(
-    `${getMentionApiBaseUrl(domain)}/user?targetUserSlug=${encodeURIComponent(slug)}`,
+    `${getMentionApiBaseUrl(domain)}/users/${encodeURIComponent(slug)}`,
     {
       credentials: "include",
     }
   );
   if (!response.ok) return null;
-  const data = await response.json();
-  return data?.data ?? null;
+  return unwrapApiPayload(await response.json()) ?? null;
 };
 
 const fetchGame = async (slug: string, domain?: string) => {
@@ -305,7 +331,7 @@ const fetchGame = async (slug: string, domain?: string) => {
     }
   );
   if (!response.ok) return null;
-  return await response.json();
+  return unwrapApiPayload(await response.json()) ?? null;
 };
 
 const loadMentionData = async (
@@ -337,22 +363,25 @@ const loadMentionData = async (
               profilePicture: data.profilePicture ?? null,
               short: data.short ?? null,
             } as UserMentionData)
-          : ({
-              slug,
-              name: data.name ?? slug,
-              thumbnail: data.thumbnail ?? null,
-              short: data.short ?? null,
-              tags: data.tags ?? null,
-              flags: data.flags ?? null,
-              category: data.category ?? null,
-              author: data.team?.owner
-                ? {
-                    slug: data.team.owner.slug,
-                    name: data.team.owner.name ?? null,
-                    profilePicture: data.team.owner.profilePicture ?? null,
-                  }
-                : null,
-            } as GameMentionData);
+          : (() => {
+              const page = getDisplayGamePage(data);
+              return {
+                slug,
+                name: page?.name ?? data.name ?? slug,
+                thumbnail: page?.thumbnail ?? data.thumbnail ?? null,
+                short: page?.short ?? data.short ?? null,
+                tags: data.tags ?? page?.tags ?? null,
+                flags: data.flags ?? page?.flags ?? null,
+                category: data.category ?? null,
+                author: data.team?.owner
+                  ? {
+                      slug: data.team.owner.slug,
+                      name: data.team.owner.name ?? null,
+                      profilePicture: data.team.owner.profilePicture ?? null,
+                    }
+                  : null,
+              } as GameMentionData;
+            })();
 
       if (type === "user") {
         userCache.set(cacheKey, mapped as UserMentionData);
@@ -386,6 +415,27 @@ const chipStyle = (colors: Record<string, string>): CSSProperties => ({
   transform: "translateY(1px)",
 });
 
+const hasResolvedMentionData = (
+  type: "user" | "game",
+  data: UserMentionData | GameMentionData,
+) => {
+  if (type === "user") {
+    const userData = data as UserMentionData;
+    return Boolean(userData.name || userData.profilePicture || userData.short);
+  }
+
+  const gameData = data as GameMentionData;
+  return Boolean(
+    gameData.name ||
+      gameData.thumbnail ||
+      gameData.short ||
+      gameData.category ||
+      gameData.author ||
+      (gameData.tags?.length ?? 0) > 0 ||
+      (gameData.flags?.length ?? 0) > 0,
+  );
+};
+
 function MentionChip({
   type,
   slug,
@@ -400,6 +450,8 @@ function MentionChip({
   colors: Record<string, string>;
 }) {
   const anchorRef = useRef<HTMLAnchorElement | null>(null);
+  const hoveredRef = useRef(false);
+  const latestCacheKeyRef = useRef("");
   const hostname = (() => {
     if (domain) return domain;
     if (href) {
@@ -413,6 +465,7 @@ function MentionChip({
     return typeof window !== "undefined" ? window.location.hostname : "d2jam.com";
   })();
   const cacheKey = `${type}:${slug}@${hostname.toLowerCase()}`;
+  latestCacheKeyRef.current = cacheKey;
   const [data, setData] = useState<UserMentionData | GameMentionData>(() => {
     const cached =
       type === "user" ? userCache.get(cacheKey) : gameCache.get(cacheKey);
@@ -420,15 +473,39 @@ function MentionChip({
   });
 
   useEffect(() => {
-    let cancelled = false;
+    const cached =
+      type === "user" ? userCache.get(cacheKey) : gameCache.get(cacheKey);
+    setData(cached ?? ({ slug } as UserMentionData | GameMentionData));
+  }, [cacheKey, slug, type]);
 
-    loadMentionData(type, slug, hostname).then((nextData) => {
-      if (cancelled || !nextData) return;
-      setData(nextData);
-    });
+  const loadAndShowMention = useCallback(async () => {
+    const expectedCacheKey = cacheKey;
+    const nextData = await loadMentionData(type, slug, hostname);
+    if (!nextData || expectedCacheKey !== latestCacheKeyRef.current) {
+      return null;
+    }
 
+    setData(nextData);
+
+    const anchor = anchorRef.current;
+    if (hoveredRef.current && anchor) {
+      showPopoverForAnchor(anchor, type, nextData, colors);
+    }
+
+    return nextData;
+  }, [cacheKey, colors, hostname, slug, type]);
+
+  useEffect(() => {
+    void loadAndShowMention();
+  }, [loadAndShowMention]);
+
+  useEffect(() => {
+    if (!hoveredRef.current || !anchorRef.current) return;
+    showPopoverForAnchor(anchorRef.current, type, data, colors);
+  }, [colors, data, type]);
+
+  useEffect(() => {
     return () => {
-      cancelled = true;
       const anchor = anchorRef.current;
       if (anchor) {
         hidePopoverForAnchor(anchor);
@@ -455,10 +532,13 @@ function MentionChip({
       data-mention-domain={domain}
       style={chipStyle(colors)}
       onMouseEnter={() => {
+        hoveredRef.current = true;
         if (!anchorRef.current) return;
         showPopoverForAnchor(anchorRef.current, type, data, colors);
+        if (!hasResolvedMentionData(type, data)) void loadAndShowMention();
       }}
       onMouseLeave={() => {
+        hoveredRef.current = false;
         if (!anchorRef.current) return;
         hidePopoverForAnchor(anchorRef.current);
       }}
@@ -516,6 +596,15 @@ const htmlAttributeToReactProp = (
   return [name, value];
 };
 
+const isTwitchEmbedSrc = (src: string) => {
+  try {
+    const host = new URL(src).hostname.toLowerCase();
+    return host === "player.twitch.tv" || host === "clips.twitch.tv";
+  } catch {
+    return false;
+  }
+};
+
 const domNodeToReact = (
   node: Node,
   key: string,
@@ -561,6 +650,18 @@ const domNodeToReact = (
     const [propName, propValue] = mapped;
     props[propName] = propValue;
   });
+
+  if (tag === "iframe") {
+    const src = element.getAttribute("src") ?? "";
+    if (isTwitchEmbedSrc(src)) {
+      props.src = src;
+      props.loading = props.loading ?? "lazy";
+      props.title = props.title ?? "Twitch embed";
+      return createElement("iframe", props);
+    }
+
+    props.loading = props.loading ?? "lazy";
+  }
 
   const children = Array.from(element.childNodes)
     .map((child, index) => domNodeToReact(child, `${key}.${index}`, colors))

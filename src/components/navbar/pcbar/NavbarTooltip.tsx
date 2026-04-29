@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
 import { Icon, IconName, Kbd, Tooltip } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { useTranslations } from "next-intl";
+import { useTheme } from "@/providers/useSiteTheme";
+import { useTranslations } from "@/compat/next-intl";
 
 interface NavbarButtonProps {
   icon?: IconName;
+  iconNode?: ReactNode;
   name?: string;
   description?: string;
   hotkey?: string[];
@@ -13,6 +14,7 @@ interface NavbarButtonProps {
 
 export default function NavbarTooltip({
   icon,
+  iconNode,
   name,
   description,
   hotkey,
@@ -34,6 +36,7 @@ export default function NavbarTooltip({
         >
           <div className="flex items-center gap-2 ">
             {icon && <Icon name={icon} size={16} />}
+            {iconNode}
             {name && <p>{t(name)}</p>}
             {hotkey && (
               <Kbd

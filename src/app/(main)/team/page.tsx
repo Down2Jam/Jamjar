@@ -11,7 +11,7 @@ import {
   ModalHeader,
   useDisclosure,
 } from "bioloom-ui";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 import { getSelf, searchUsers } from "@/requests/user";
@@ -36,8 +36,9 @@ import { Icon } from "bioloom-ui";
 import { Textarea } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Switch } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Avatar } from "bioloom-ui";
+import { readArray, readItem } from "@/requests/helpers";
 import { Chip } from "bioloom-ui";
 
 export default function EditTeamPage() {
@@ -78,8 +79,8 @@ export default function EditTeamPage() {
         const currentJam = activeJamResponse?.jam;
 
         if (response.status == 200) {
-          const data = await response.json();
-          setUser(data);
+          const data = await readItem<UserType>(response);
+          setUser(data ?? undefined);
         } else {
           setUser(undefined);
         }
@@ -87,8 +88,8 @@ export default function EditTeamPage() {
         const teamResponse = await getTeamsUser();
 
         if (teamResponse.status == 200) {
-          const data = await teamResponse.json();
-          const filteredData = data.data.filter(
+          const data = await readArray<TeamType>(teamResponse);
+          const filteredData = data.filter(
             (team: TeamType) => team.jamId == currentJam?.id
           );
           setTeams(filteredData);
@@ -112,8 +113,7 @@ export default function EditTeamPage() {
         const rolesResponse = await getTeamRoles();
 
         if (rolesResponse.status == 200) {
-          const data = await rolesResponse.json();
-          setRoles(data.data);
+          setRoles(await readArray<RoleType>(rolesResponse));
         } else {
           setRoles([]);
         }
@@ -145,7 +145,7 @@ export default function EditTeamPage() {
     if (query.length < 3) return;
     const response = await searchUsers(query);
     if (response.ok) {
-      const data = await response.json();
+      const data = await readArray<UserType>(response);
       setSearchResults(data);
     }
   };

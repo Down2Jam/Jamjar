@@ -1,6 +1,6 @@
 "use client";
 import Timer from "./Timer";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import useHasMounted from "@/hooks/useHasMounted";
 import { useCurrentJam } from "@/hooks/queries";
 

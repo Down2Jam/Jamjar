@@ -1,5 +1,6 @@
 import { JamPhase, JamType } from "@/types/JamType";
 import * as jamRequests from "@/requests/jam";
+import { unwrapArray, unwrapItem } from "@/requests/helpers";
 
 export interface ActiveJamResponse {
   phase: JamPhase;
@@ -9,17 +10,22 @@ export interface ActiveJamResponse {
 
 export async function getJams(): Promise<JamType[]> {
   const response = await jamRequests.getJams();
-  return response.json();
+  return unwrapArray<JamType>(await response.json());
 }
 
 export async function getCurrentJam(): Promise<ActiveJamResponse | null> {
   try {
     const response = await jamRequests.getCurrentJam();
-    const data = (await response.json()).data;
+    const json = await response.json();
+    const data = json?.data ?? json;
+
+    if (!data) {
+      return null;
+    }
 
     return {
-      phase: data.phase,
-      jam: data.jam,
+      phase: data.phase ?? "No Active Jams",
+      jam: data.jam ?? null,
       nextJam: data.nextJam ?? null,
     };
   } catch (error) {
@@ -42,9 +48,14 @@ export async function joinJam(jamId: number) {
 
 export async function hasJoinedCurrentJam(): Promise<boolean> {
   try {
-    const response = await jamRequests.hasJoinedCurrentJam();
+    const activeJam = await getCurrentJam();
+    const jamSlug = (activeJam?.jam as (JamType & { slug?: string }) | null)
+      ?.slug;
+    if (!jamSlug) return false;
 
-    return (await response.json()).data;
+    const response = await jamRequests.hasJoinedJam(jamSlug);
+
+    return Boolean(unwrapItem<boolean>(await response.json()));
   } catch (error) {
     console.error("Error checking jam participation:", error);
     return false;

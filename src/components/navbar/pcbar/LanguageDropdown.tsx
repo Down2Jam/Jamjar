@@ -13,7 +13,7 @@ import ProgressCircle from "./ProgressCircle";
 import { useRef, useState } from "react";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
 import rawCoverage from "../../../messages/coverage.json";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Button, Dropdown, Popover } from "bioloom-ui";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 

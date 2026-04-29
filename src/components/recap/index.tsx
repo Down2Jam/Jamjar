@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import Image from "@/compat/next-image";
+import { usePathname, useRouter, useSearchParams } from "@/compat/next-navigation";
+import { useTranslations } from "@/compat/next-intl";
 import {
   addToast,
   Avatar,
@@ -27,12 +27,14 @@ import {
   RadarChart,
   ResponsiveContainer,
 } from "recharts";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { useJams, useSelf, useUser } from "@/hooks/queries";
 import { getGame, getResults } from "@/requests/game";
 import { getTrack, getTrackResults } from "@/requests/track";
 import { getRecapVisibility, updateRecapVisibility } from "@/requests/recap";
+import { unwrapItem } from "@/requests/helpers";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
+import { getJamUrlValue } from "@/helpers/jamUrl";
 import type { AchievementType } from "@/types/AchievementType";
 import { GameCard } from "@/components/gamecard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
@@ -471,12 +473,27 @@ function pickDefaultJamId(jamParam: string | null, jams: JamType[], user: any) {
     return parsed;
   }
 
+  if (jamParam) {
+    const jamBySlug = jams.find((jam) => jam.slug === jamParam);
+    if (jamBySlug) return jamBySlug.id;
+  }
+
   const latestUserJamId = (user?.teams ?? [])
+    .filter((team: any) => team.game?.published && team.game?.jamId)
+    .map((team: any) => team.game.jamId)
+    .filter((value: unknown): value is number => Number.isInteger(value))
+    .sort((a: number, b: number) => b - a)[0];
+
+  const latestParticipatedJamId = (user?.teams ?? [])
     .map((team: any) => team.game?.jamId ?? team.jamId)
     .filter((value: unknown): value is number => Number.isInteger(value))
     .sort((a: number, b: number) => b - a)[0];
 
-  return latestUserJamId ?? jams[0]?.id ?? null;
+  return latestUserJamId ?? latestParticipatedJamId ?? jams[0]?.id ?? null;
+}
+
+function getTrackRatingJamId(rating: any) {
+  return rating.track?.game?.jamId ?? rating.track?.gamePage?.game?.jamId;
 }
 
 function StatCard({
@@ -1095,9 +1112,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         const ownerGame = getUserGameForJam(user, jamId);
 
         const rawGameDetail = ownerGame
-          ? ((await (
-              await getGame(ownerGame.slug, true, "JAM")
-            ).json()) as GameType)
+          ? unwrapItem<GameType>(
+              await (await getGame(ownerGame.slug, true, "JAM")).json(),
+            )
           : null;
         const jamPage = rawGameDetail
           ? getSelectedGamePage(rawGameDetail, "JAM")
@@ -1111,7 +1128,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
           ? await Promise.all(
               gameDetail.tracks.map(async (track) => {
                 const response = await getTrack(track.slug, "JAM");
-                return (await response.json()) as TrackType;
+                return unwrapItem<TrackType>(await response.json());
               }),
             )
           : [];
@@ -1164,7 +1181,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
         setRecapData({
           gameDetail,
-          trackDetails,
+          trackDetails: trackDetails.filter(
+            (track): track is TrackType => Boolean(track),
+          ),
           gameResults,
           trackResults,
         });
@@ -1567,10 +1586,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     ).size;
     const tracksRated = new Set(
       (user?.trackRatings ?? [])
-        .filter((rating: any) => rating.track?.game?.jamId === selectedJamId)
+        .filter((rating: any) => getTrackRatingJamId(rating) === selectedJamId)
         .map((rating: any) => rating.trackId),
     ).size;
-
     return {
       commentsOnGame: gamesCommentedOn,
       commentsOnMusic: tracksCommentedOn,
@@ -1611,11 +1629,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   );
 
   const handleJamChange = (jamValue: string) => {
-    const nextJamId = Number(jamValue);
+    const matchingJam = jams.find(
+      (jam) => getJamUrlValue(jam) === jamValue || String(jam.id) === jamValue,
+    );
+    const nextJamId = matchingJam?.id ?? Number(jamValue);
     if (!Number.isInteger(nextJamId)) return;
     setSelectedJamId(nextJamId);
     const params = new URLSearchParams(searchParams.toString());
-    params.set("jam", String(nextJamId));
+    params.set("jam", getJamUrlValue(matchingJam) || String(nextJamId));
     router.replace(`${pathname}?${params.toString()}`);
   };
 
@@ -1707,14 +1728,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   }
                 >
                   {jams.map((jam) => (
-                    <Dropdown.Item key={jam.id} value={String(jam.id)}>
+                    <Dropdown.Item key={jam.id} value={getJamUrlValue(jam)}>
                       {jam.name}
                     </Dropdown.Item>
                   ))}
                 </Dropdown>
                 <Button
                   size="sm"
-                  href={`/results?jam=${selectedJamId}`}
+                  href={`/results?jam=${getJamUrlValue(selectedJam) || selectedJamId}`}
                   icon="trophy"
                 >
                   View Full Results
@@ -2216,7 +2237,10 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                 </>
               ) : null}
               <Hstack wrap>
-                <Button href={`/results?jam=${selectedJamId}`} icon="trophy">
+                <Button
+                  href={`/results?jam=${getJamUrlValue(selectedJam) || selectedJamId}`}
+                  icon="trophy"
+                >
                   View Full Results
                 </Button>
               </Hstack>

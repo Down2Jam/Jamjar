@@ -21,13 +21,15 @@ import { JamType } from "@/types/JamType";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import LanguageDropdown from "./LanguageDropdown";
 import SiteThemeDropdown from "./SiteThemeDropdown";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
 import { useSelf, useCurrentGame } from "@/hooks/queries";
 import { useState } from "react";
 import { isPostJamPhase } from "@/helpers/jamDisplay";
+import { API_DOCS_URL } from "@/requests/config";
+import { AudioLines } from "lucide-react";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -103,7 +105,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 description="Navbar.Lucky.Description"
                 hotkey={["G", "L"]}
                 isIconOnly
-                color="lime"
+                color="blue"
               />
               {/* <NavbarButton
                 icon={<Rss size={16} />}
@@ -121,7 +123,25 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 description="Navbar.Music.Description"
                 hotkey={["G", "M"]}
                 isIconOnly
-                color="yellow"
+                color="blue"
+              />
+              <NavbarButton
+                iconNode={<AudioLines size={16} />}
+                href="/radio"
+                name="Navbar.Radio.Title"
+                description="Navbar.Radio.Description"
+                hotkey={["G", "B"]}
+                isIconOnly
+                color="green"
+              />
+              <NavbarButton
+                icon="images"
+                href="/screenshots"
+                name="Navbar.Screenshots.Title"
+                description="Navbar.Screenshots.Description"
+                hotkey={["G", "S"]}
+                isIconOnly
+                color="lime"
               />
               <NavbarButton
                 icon="bookcopy"
@@ -130,7 +150,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 description="Navbar.Docs.Description"
                 hotkey={["G", "O"]}
                 isIconOnly
-                color="orange"
+                color="yellow"
               />
               <NavbarButton
                 icon="newspaper"
@@ -138,6 +158,16 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 name="Navbar.PressKit.Title"
                 description="Navbar.PressKit.Description"
                 hotkey={["G", "P"]}
+                isIconOnly
+                color="orange"
+              />
+              <NavbarButton
+                icon="code"
+                href={API_DOCS_URL}
+                target="_blank"
+                name="Navbar.ApiDocs.Title"
+                description="Navbar.ApiDocs.Description"
+                hotkey={["G", "K"]}
                 isIconOnly
                 color="red"
               />

@@ -3,10 +3,10 @@
 import { Button } from "bioloom-ui";
 import { Input } from "bioloom-ui";
 import { Link } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { signup } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -84,7 +84,17 @@ export default function UserPage() {
             return;
           }
 
-          const { token, user } = await response.json();
+          const json = await response.json();
+          const session = json?.data ?? json;
+          const token = response.headers.get("Authorization") ?? session?.token;
+          const user = session?.user;
+
+          if (!token || !user?.slug) {
+            showError("Failed to retrieve login session");
+            setPassword2("");
+            return;
+          }
+
           Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/" });
           Cookies.set("user", user.slug, {
             expires: SESSION_DURATION_DAYS,

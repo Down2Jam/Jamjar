@@ -1,7 +1,7 @@
 "use client";
 
 import { Text } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { TimerIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 

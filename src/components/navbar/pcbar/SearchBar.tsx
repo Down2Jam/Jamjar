@@ -1,6 +1,5 @@
 "use client";
 
-import { BASE_URL } from "@/requests/config";
 import {
   Card,
   CardBody,
@@ -11,19 +10,20 @@ import {
   useDisclosure,
 } from "bioloom-ui";
 import { MessageCircle, Search } from "lucide-react";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useEffect, useRef, useState } from "react";
 import { useShortcut } from "react-keybind";
 import SearchResultUser from "./SearchResultUser";
 import { UserType } from "@/types/UserType";
-import { useTranslations } from "next-intl";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "@/compat/next-intl";
+import { useTheme } from "@/providers/useSiteTheme";
+import { usePathname } from "@/compat/next-navigation";
 import { Button, Kbd, NavbarItem, Spinner, Vstack } from "bioloom-ui";
 import SearchResultGame from "./SearchResultGame";
 import { GameType } from "@/types/GameType";
 import SearchResultTrack from "./SearchResultTrack";
 import { TrackType } from "@/types/TrackType";
+import { search as searchRequest } from "@/requests/search";
 
 export default function SearchBar() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -101,7 +101,7 @@ export default function SearchBar() {
     async function fetchData() {
       setLoadingResults(true);
 
-      fetch(`${BASE_URL}/search?query=${encodeURIComponent(debouncedSearch.trim())}`)
+      searchRequest(debouncedSearch.trim())
         .then((res) => res.json())
         .then((json) => {
           setResults(json.data);

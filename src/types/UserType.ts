@@ -24,6 +24,7 @@ export interface UserType {
   createdAt: Date;
   mod: boolean;
   admin: boolean;
+  followingCount?: number;
   twitch: string;
   pronouns?: string | null;
   links?: string[];

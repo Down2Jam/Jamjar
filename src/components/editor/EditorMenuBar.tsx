@@ -23,7 +23,7 @@ import EditorMenuButton from "./EditorMenuButton";
 import { getCookie } from "@/helpers/cookie";
 import { Hstack } from "bioloom-ui";
 import { addToast, Button } from "bioloom-ui";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useEmojis } from "@/providers/useEmojis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Popover, Text, Input } from "bioloom-ui";
 

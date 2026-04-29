@@ -1,12 +1,15 @@
 import { Button, IconName, NavbarItem } from "bioloom-ui";
+import { ReactNode } from "react";
 import Hotkey from "../../hotkey";
 import NavbarTooltip from "./NavbarTooltip";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { useTranslations } from "next-intl";
+import { useTheme } from "@/providers/useSiteTheme";
+import { useTranslations } from "@/compat/next-intl";
 
 interface NavbarButtonProps {
   icon?: IconName;
+  iconNode?: ReactNode;
   href?: string;
+  target?: "_self" | "_blank" | "_parent" | "_top";
   name: string;
   isIconOnly?: boolean;
   description: string;
@@ -18,7 +21,9 @@ interface NavbarButtonProps {
 
 export default function NavbarButton({
   icon,
+  iconNode,
   href,
+  target,
   name,
   isIconOnly,
   description,
@@ -36,6 +41,7 @@ export default function NavbarButton({
     <NavbarItem className={isIconOnly ? "p-1" : ""}>
       <NavbarTooltip
         icon={icon}
+        iconNode={iconNode}
         name={name}
         description={description}
         hotkey={hotkey}
@@ -47,7 +53,9 @@ export default function NavbarButton({
               color: siteTheme.colors[color],
             }}
             href={href}
-            icon={icon}
+            target={target}
+            icon={iconNode ? undefined : icon}
+            leftSlot={iconNode}
             size="sm"
             variant="ghost"
             onClick={onPress}

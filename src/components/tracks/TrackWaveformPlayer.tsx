@@ -17,8 +17,8 @@ import {
   Vstack,
 } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
-import { useEmojis } from "@/providers/EmojiProvider";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useEmojis } from "@/providers/useEmojis";
+import { useTheme } from "@/providers/useSiteTheme";
 
 type TimestampComment = {
   id: number;

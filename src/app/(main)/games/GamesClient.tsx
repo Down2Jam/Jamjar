@@ -1,6 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import dynamic from "@/compat/next-dynamic";
 
 const Games = dynamic(() => import("@/components/games"), {
   ssr: false,

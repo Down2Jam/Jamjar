@@ -1,5 +1,5 @@
 import ClientGamePage from "./ClientGamePage";
-import { Metadata } from "next";
+import { Metadata } from "@/compat/next";
 import { getGame } from "@/requests/game";
 import { GameType } from "@/types/GameType";
 

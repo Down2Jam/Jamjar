@@ -11,10 +11,10 @@ import {
   type TrackGame,
   useMusic,
 } from "bioloom-miniplayer";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 import { Link } from "bioloom-ui";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Star } from "lucide-react";
 import { useState } from "react";

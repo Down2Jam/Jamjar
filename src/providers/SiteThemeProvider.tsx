@@ -7,23 +7,10 @@
 "use client";
 
 import { SiteThemeType } from "@/types/SiteThemeType";
-import { createContext, useContext, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 import { useSiteThemes } from "@/hooks/queries";
-
-type ColorsMap = SiteThemeType["colors"];
-
-interface SiteThemeContextType {
-  siteTheme: SiteThemeType;
-  colors: ColorsMap;
-  allSiteThemes: SiteThemeType[];
-  setSiteTheme: (name: string) => void;
-  setPreviewedSiteTheme: (name: string | null) => void;
-}
-
-const SiteThemeContext = createContext<SiteThemeContextType | undefined>(
-  undefined
-);
+import { SiteThemeContext } from "./SiteThemeContext";
 
 export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
   const [siteTheme, setSiteThemeBacking] = useState<SiteThemeType>({
@@ -52,27 +39,52 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [allSiteThemes]);
 
-  function setSiteTheme(name: string) {
-    const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
-    if (match) {
-      Cookies.set("theme", match.name, { expires: 36500 });
-      setSiteThemeBacking(match);
-    }
-  }
+  const setSiteTheme = useCallback(
+    (name: string) => {
+      const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
+      if (match) {
+        Cookies.set("theme", match.name, { expires: 36500 });
+        setSiteThemeBacking(match);
+      }
+    },
+    [allSiteThemes],
+  );
 
-  function setPreviewedSiteTheme(name: string | null) {
-    if (name == null) {
-      setPreviewedSiteThemeBacking(null);
-      return;
-    }
+  const setPreviewedSiteTheme = useCallback(
+    (name: string | null) => {
+      if (name == null) {
+        setPreviewedSiteThemeBacking(null);
+        return;
+      }
 
-    const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
-    if (match) {
-      setPreviewedSiteThemeBacking(match);
-    }
-  }
+      const match = allSiteThemes.find((t: SiteThemeType) => t.name === name);
+      if (match) {
+        setPreviewedSiteThemeBacking(match);
+      }
+    },
+    [allSiteThemes],
+  );
 
   const effectiveTheme = previewedSiteTheme ?? siteTheme;
+  const visibleSiteThemes = useMemo(
+    () => allSiteThemes.filter((theme: SiteThemeType) => !theme.hidden),
+    [allSiteThemes],
+  );
+  const value = useMemo(
+    () => ({
+      siteTheme: effectiveTheme,
+      colors: effectiveTheme.colors,
+      allSiteThemes: visibleSiteThemes,
+      setSiteTheme,
+      setPreviewedSiteTheme,
+    }),
+    [
+      effectiveTheme,
+      visibleSiteThemes,
+      setSiteTheme,
+      setPreviewedSiteTheme,
+    ],
+  );
 
   useEffect(() => {
     if (isThemeReady) return;
@@ -87,21 +99,9 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SiteThemeContext.Provider
-      value={{
-        siteTheme: effectiveTheme,
-        colors: effectiveTheme.colors,
-        allSiteThemes: allSiteThemes.filter((theme: SiteThemeType) => !theme.hidden),
-        setSiteTheme,
-        setPreviewedSiteTheme,
-      }}
+      value={value}
     >
       {children}
     </SiteThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(SiteThemeContext);
-  if (!context) throw new Error("useTheme must be used within ThemeProvider");
-  return context;
 }

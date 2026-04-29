@@ -2,8 +2,8 @@
 
 import { hasCookie } from "@/helpers/cookie";
 import { addToast, Form } from "bioloom-ui";
-import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
+import { redirect } from "@/compat/next-navigation";
+import dynamic from "@/compat/next-dynamic";
 import { ReactNode, useEffect, useState } from "react";
 import type { MultiValue, StylesConfig } from "react-select";
 import { UserType } from "@/types/UserType";
@@ -18,6 +18,7 @@ import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Switch } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
+import { readArray, readItem } from "@/requests/helpers";
 
 const theme = "dark";
 const Editor = dynamic(() => import("@/components/editor"), {
@@ -48,19 +49,27 @@ export default function CreatePostPage() {
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
 
+  const combinedTagIds = () => [
+    ...((selectedTags ?? [])
+      .map((tag) => options?.find((option) => option.value == tag.value)?.id)
+      .filter((id): id is number => typeof id === "number")),
+    ...(fixedOptions?.map((tag) => tag.id).filter((id): id is number => typeof id === "number") ?? []),
+  ];
+
   useEffect(() => {
     setMounted(true);
 
     const load = async () => {
       try {
         const [response, tagResponse] = await Promise.all([getSelf(), getTags()]);
-        const localuser = await response.json();
+        const localuser = await readItem<UserType>(response);
+        if (!localuser) return;
         setUser(localuser);
 
         if (tagResponse.ok) {
           const newoptions: TagOption[] = [];
 
-          for (const tag of (await tagResponse.json()).data) {
+          for (const tag of await readArray<any>(tagResponse)) {
             if (tag.modOnly && !localuser.mod) {
               continue;
             }
@@ -196,25 +205,11 @@ export default function CreatePostPage() {
 
               setWaitingPost(true);
 
-              const tags = [];
-
-              if (selectedTags) {
-                for (const tag of selectedTags) {
-                  tags.push(
-                    options?.filter((option) => option.value == tag.value)[0].id
-                  );
-                }
-              }
-
-              const combinedTags = [
-                ...tags,
-                ...(fixedOptions ? fixedOptions.map((tag) => tag.id) : []),
-              ];
               const response = await postPost(
                 title,
                 content,
                 sticky,
-                combinedTags
+                combinedTagIds()
               );
 
               if (response.status == 401) {
@@ -304,9 +299,11 @@ export default function CreatePostPage() {
               {waitingPost ? (
                 <Spinner />
               ) : (
-                <Button color="blue" type="submit" icon="plus">
-                  Create
-                </Button>
+                <>
+                  <Button color="blue" type="submit" icon="plus">
+                    Create
+                  </Button>
+                </>
               )}
             </div>
           </Form>

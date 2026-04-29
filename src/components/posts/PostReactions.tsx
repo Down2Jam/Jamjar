@@ -3,9 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { addToast, Button, Input, Popover, Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import { togglePostReaction } from "@/requests/post";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useEmojis } from "@/providers/useEmojis";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 
 const MAX_UNIQUE_REACTIONS = 20;

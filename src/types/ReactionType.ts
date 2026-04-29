@@ -32,6 +32,7 @@ export interface ReactionType {
     name: string;
     profilePicture?: string | null;
   } | null;
+  globalUseCount?: number;
 }
 
 export interface ReactionSummaryType {

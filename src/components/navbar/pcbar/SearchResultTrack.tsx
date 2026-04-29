@@ -6,7 +6,7 @@ import { Icon } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { TrackType } from "@/types/TrackType";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 
 export default function SearchResultTrack({
   track,

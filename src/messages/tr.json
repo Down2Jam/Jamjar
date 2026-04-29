@@ -114,14 +114,6 @@
       "Title": "Müzik",
       "Description": "Web sitesine gönderilen tüm müzikler"
     },
-    "Docs": {
-      "Title": "Dokümanlar",
-      "Description": "Site dokümanlarını ve rehberlerini görüntüle"
-    },
-    "PressKit": {
-      "Title": "Basın Kiti",
-      "Description": "Halka açık basın materyallerini görüntüle"
-    },
     "Login": {
       "Title": "Giriş Yap",
       "Description": "Web sayfasına giriş yap"

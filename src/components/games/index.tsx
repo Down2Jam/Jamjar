@@ -3,7 +3,7 @@
 import { GameType, ListingPageVersion } from "@/types/GameType";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameSort } from "@/types/GameSort";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "@/compat/next-navigation";
 import { IconName } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { GameCard } from "../gamecard";
@@ -17,16 +17,19 @@ import {
   useSelf,
   useCurrentJam,
   useJams,
-  useGames as useGamesQuery,
+  useGamesInfinite,
 } from "@/hooks/queries";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 import {
   getDefaultListingPageVersion,
   listingPageVersionOptions,
 } from "@/helpers/listingPageVersion";
+import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
+import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
 
 type JamOption = {
   id: string;
+  slug?: string | null;
   name: string;
   icon?: IconName;
   description?: string;
@@ -419,17 +422,25 @@ export default function Games() {
   const { data: allJams } = useJams();
 
   const currentJamId = currentJamData?.jam?.id?.toString();
+  const currentJamValue = getJamUrlValue(currentJamData?.jam);
+  const currentJamHasContentListing =
+    currentJamData?.jam &&
+    shouldShowJamInContentListings(
+      currentJamData.jam,
+      currentJamData.phase,
+      currentJamData.jam.id,
+    );
   const showRatedOverlay = isActiveJamBehavior(
     jamId,
-    currentJamId,
+    currentJamValue,
     currentJamData?.phase,
   );
 
   const isRestricted = (s: GameSort) => restrictedSorts.has(s);
-  const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
+  const canUseRestrictedSorts = !!currentJamValue && jamId === currentJamValue;
   const canUseScore = canUseScoreSort(
     jamId,
-    currentJamId,
+    currentJamValue,
     currentJamData?.phase,
     pageVersion,
   );
@@ -443,11 +454,16 @@ export default function Games() {
       },
     ];
 
-    if (currentJamData?.jam) {
+    if (
+      currentJamData?.jam &&
+      currentJamHasContentListing
+    ) {
       const cjId = currentJamData.jam.id?.toString();
-      if (cjId) {
+      const cjValue = getJamUrlValue(currentJamData.jam);
+      if (cjId && cjValue) {
         options.push({
-          id: cjId,
+          id: cjValue,
+          slug: currentJamData.jam.slug,
           name: currentJamData.jam.name || "Current Jam",
           icon: currentJamData.jam.icon,
           description: `${formatJamWindow(
@@ -459,11 +475,19 @@ export default function Games() {
     }
 
     if (Array.isArray(allJams)) {
-      allJams.forEach((j: { id?: number; name?: string; icon?: IconName; startTime?: string; jammingHours?: number }) => {
+      allJams.forEach((j: { id?: number; slug?: string | null; name?: string; icon?: IconName; startTime?: string; jammingHours?: number; games?: unknown[] }) => {
         const id = String(j?.id ?? "");
-        if (id && j?.name && !options.find((o) => o.id === id)) {
+        const value = getJamUrlValue(j as Parameters<typeof getJamUrlValue>[0]);
+        if (
+          id &&
+          value &&
+          j?.name &&
+          shouldShowJamInContentListings(j, currentJamData?.phase, currentJamId) &&
+          !options.find((o) => o.id === value || o.id === id || o.slug === j.slug)
+        ) {
           options.push({
-            id,
+            id: value,
+            slug: j.slug,
             name: j.name,
             icon: j.icon,
             description: formatJamWindow(j?.startTime, j?.jammingHours),
@@ -473,7 +497,7 @@ export default function Games() {
     }
 
     return options;
-  }, [currentJamData, allJams]);
+  }, [currentJamData, allJams, currentJamHasContentListing, currentJamId]);
 
   // Handle jam detection and default selection
   useEffect(() => {
@@ -488,10 +512,11 @@ export default function Games() {
 
     let ratingDefault: string | null = null;
     if (
+      currentJamHasContentListing &&
       isCurrentJamDefaultPhase &&
       (initialJamParam === "all" || !initialJamParam)
     ) {
-      ratingDefault = currentJamId ?? null;
+      ratingDefault = currentJamValue || null;
     }
 
     if (
@@ -509,17 +534,51 @@ export default function Games() {
     }
 
     setJamDetecting(false);
-  }, [currentJamData, allJams, router, initialJamParam, currentJamId]);
+  }, [currentJamData, allJams, router, initialJamParam, currentJamId, currentJamValue]);
+
+  useEffect(() => {
+    if (jamDetecting || jamOptions.length === 0) return;
+
+    const resolved = resolveJamUrlValue(initialJamParam, jamOptions);
+    if (resolved === "all" || resolved === initialJamParam) return;
+
+    setJamId(resolved);
+    const params = new URLSearchParams(window.location.search);
+    params.set("jam", resolved);
+    navigateToSearchIfChanged(router, params, "replace");
+  }, [initialJamParam, jamDetecting, jamOptions, router]);
 
   // Fetch games via TanStack Query
-  const { data: games, isLoading: gamesLoading } = useGamesQuery(
+  const {
+    data: gamesPages,
+    isLoading: gamesLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useGamesInfinite(
     sort,
     jamId !== "all" ? jamId : undefined,
     pageVersion,
-    !jamDetecting
+    !jamDetecting,
+    24,
   );
+  const games = useMemo(() => {
+    const seen = new Set<string>();
+    const loadedGames: GameType[] = [];
 
-  const hasData = Array.isArray(games);
+    gamesPages?.pages.forEach((page) => {
+      page.games.forEach((game) => {
+        const key = `${game.id}:${game.pageVersion ?? "JAM"}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        loadedGames.push(game);
+      });
+    });
+
+    return loadedGames;
+  }, [gamesPages]);
+
+  const hasData = Boolean(gamesPages);
   const isLoading = gamesLoading;
 
   const sorts: Record<
@@ -616,15 +675,24 @@ export default function Games() {
   );
 
   useEffect(() => {
+    if (jamDetecting || jamId === "all") return;
+    if (jamOptions.some((option) => option.id === jamId)) return;
+
+    const resolved = resolveJamUrlValue(jamId, jamOptions);
+    setJamId(resolved);
+    updateQueryParam("jam", resolved);
+  }, [jamDetecting, jamId, jamOptions, updateQueryParam]);
+
+  useEffect(() => {
     const isRestricted = restrictedSorts.has(sort);
-    const canUseRestrictedSorts = !!currentJamId && jamId === currentJamId;
+    const canUseRestrictedSorts = !!currentJamValue && jamId === currentJamValue;
 
     if (jamDetecting) return;
 
     if ((!canUseRestrictedSorts && isRestricted) || (sort === "score" && !canUseScore)) {
       const nextSort = getDefaultGameSort(
         jamId,
-        currentJamId,
+        currentJamValue,
         currentJamData?.phase,
         pageVersion,
       );
@@ -639,6 +707,7 @@ export default function Games() {
     updateQueryParam,
     jamDetecting,
     canUseScore,
+    currentJamValue,
   ]);
 
   useEffect(() => {
@@ -647,7 +716,7 @@ export default function Games() {
 
     const nextSort = getDefaultGameSort(
       jamId,
-      currentJamId,
+      currentJamValue,
       currentJamData?.phase,
       pageVersion,
     );
@@ -657,7 +726,7 @@ export default function Games() {
     }
   }, [
     currentJamData?.phase,
-    currentJamId,
+    currentJamValue,
     jamDetecting,
     jamId,
     pageVersion,
@@ -670,11 +739,11 @@ export default function Games() {
     if (hasPageVersionParam) return;
 
     setPageVersion(
-      getDefaultListingPageVersion(jamId, currentJamId, currentJamData?.phase),
+      getDefaultListingPageVersion(jamId, currentJamValue, currentJamData?.phase),
     );
   }, [
     currentJamData?.phase,
-    currentJamId,
+    currentJamValue,
     hasPageVersionParam,
     jamDetecting,
     jamId,
@@ -685,11 +754,11 @@ export default function Games() {
     if (hasMoreParam) return;
 
     setSelectedMoreFilters(
-      getDefaultGameMoreFilters(jamId, currentJamId, currentJamData?.phase),
+      getDefaultGameMoreFilters(jamId, currentJamValue, currentJamData?.phase),
     );
   }, [
     currentJamData?.phase,
-    currentJamId,
+    currentJamValue,
     hasMoreParam,
     jamDetecting,
     jamId,
@@ -939,7 +1008,7 @@ export default function Games() {
     user,
   ]);
 
-  if (!hasData && (showBusy || jamDetecting)) {
+  if (!hasData && (isLoading || showBusy || jamDetecting)) {
     return (
       <Vstack className="p-4">
         <Card className="max-w-96">
@@ -1019,13 +1088,13 @@ export default function Games() {
                 setJamId(val);
                 const nextSort = getDefaultGameSort(
                   val,
-                  currentJamId,
+                  currentJamValue,
                   currentJamData?.phase,
                   hasPageVersionParam
                     ? pageVersion
                     : getDefaultListingPageVersion(
                         val,
-                        currentJamId,
+                        currentJamValue,
                         currentJamData?.phase,
                       ),
                 );
@@ -1033,7 +1102,7 @@ export default function Games() {
                   ? pageVersion
                   : getDefaultListingPageVersion(
                       val,
-                      currentJamId,
+                      currentJamValue,
                       currentJamData?.phase,
                     );
                 if (
@@ -1041,7 +1110,7 @@ export default function Games() {
                   (nextSort === "score" &&
                     canUseScoreSort(
                       val,
-                      currentJamId,
+                      currentJamValue,
                       currentJamData?.phase,
                       effectiveNextPageVersion,
                     ))
@@ -1052,7 +1121,7 @@ export default function Games() {
                 if (!hasPageVersionParam) {
                   const nextPageVersion = getDefaultListingPageVersion(
                     val,
-                    currentJamId,
+                    currentJamValue,
                     currentJamData?.phase,
                   );
                   setPageVersion(nextPageVersion);
@@ -1246,6 +1315,17 @@ export default function Games() {
           <p>No games were found. :(</p>
         )}
       </section>
+      {hasNextPage && (
+        <div className="flex justify-center py-6">
+          <Button
+            icon="chevrondown"
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? "Loading..." : "Load More Games"}
+          </Button>
+        </div>
+      )}
     </>
   );
 }

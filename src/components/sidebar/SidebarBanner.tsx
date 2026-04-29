@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import Banner from "../banner";
 import { Text } from "bioloom-ui";
 

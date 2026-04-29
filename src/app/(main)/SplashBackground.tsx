@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 
 export default function HomeBackground() {
   const prefersReducedMotion = usePrefersReducedMotion();

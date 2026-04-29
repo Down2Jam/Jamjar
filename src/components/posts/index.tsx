@@ -9,12 +9,12 @@ import { PostStyle } from "@/types/PostStyle";
 import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useRouter, useSearchParams } from "@/compat/next-navigation";
+import Link from "@/compat/next-link";
 import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
 import CommentCard from "./CommentCard";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Button } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
@@ -24,13 +24,13 @@ import { IconName } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Drawer } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
-import { Spinner } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 import { useSelf, useTags, usePosts } from "@/hooks/queries";
+import { PostListSkeleton } from "@/components/skeletons";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -70,6 +70,9 @@ export default function Posts() {
   );
   const [oldIsOpen, setOldIsOpen] = useState<boolean | null>(null);
   const [tagRules, setTagRules] = useState<{ [key: number]: number }>();
+  const [followingOnly, setFollowingOnly] = useState(
+    searchParams.get("following") === "true"
+  );
   const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -79,19 +82,20 @@ export default function Posts() {
   // TanStack Query hooks
   const { data: user } = useSelf();
   const { data: rawTags } = useTags();
-  const { data: posts, isLoading: postsLoading } = usePosts(
-    sort,
-    time,
-    false,
-    tagRules,
-    user?.slug
-  );
+  const {
+    data: posts,
+    isLoading: postsLoading,
+    hasNextPage: hasMorePosts,
+    fetchNextPage: fetchMorePosts,
+    isFetchingNextPage: isFetchingMorePosts,
+  } = usePosts(sort, time, false, tagRules, user?.slug, followingOnly);
   const { data: stickyPosts, isLoading: stickyLoading } = usePosts(
     sort,
     time,
     true,
     tagRules,
-    user?.slug
+    user?.slug,
+    followingOnly
   );
 
   const loading = postsLoading || stickyLoading;
@@ -258,11 +262,7 @@ export default function Posts() {
 
   return (
     <div>
-      {loading ? (
-        <div className="flex justify-center p-6">
-          <Spinner />
-        </div>
-      ) : (
+      {!loading &&
         stickyPosts &&
         stickyPosts.length > 0 && (
           <Vstack align="stretch" className="p-4">
@@ -270,8 +270,7 @@ export default function Posts() {
               <StickyPostCard key={post.id} post={post} />
             ))}
           </Vstack>
-        )
-      )}
+        )}
 
       <div className="flex justify-between p-4 pb-0">
         <div className="flex gap-2">
@@ -397,6 +396,19 @@ export default function Posts() {
               )}
             </div>
           </Dropdown>
+          {user && (user.followingCount ?? 0) > 0 && (
+            <Button
+              icon={followingOnly ? "check" : "users"}
+              color={followingOnly ? "blue" : "default"}
+              onClick={() => {
+                const next = !followingOnly;
+                setFollowingOnly(next);
+                updateQueryParam("following", next ? "true" : "");
+              }}
+            >
+              Following
+            </Button>
+          )}
         </div>
         <div>
           <Dropdown
@@ -432,9 +444,7 @@ export default function Posts() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center p-6">
-          <Spinner />
-        </div>
+        <PostListSkeleton />
       ) : (
         <Vstack align="stretch" className="p-4">
           {posts && posts.length > 0 ? (
@@ -460,19 +470,13 @@ export default function Posts() {
             </p>
           )}
           <div>
-            {posts && (
+            {posts && hasMorePosts && (
               <Button
                 name=""
-                onClick={() => {
-                  addToast({
-                    title: "Post pagination coming soon",
-                    color: "warning",
-                    variant: "bordered",
-                    timeout: 3000,
-                  });
-                }}
+                onClick={() => fetchMorePosts()}
+                disabled={isFetchingMorePosts}
               >
-                Load More Posts
+                {isFetchingMorePosts ? "Loading..." : "Load More Posts"}
               </Button>
             )}
           </div>

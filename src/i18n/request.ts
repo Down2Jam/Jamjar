@@ -1,6 +1,6 @@
 import { merge } from "lodash";
-import { getRequestConfig } from "next-intl/server";
-import { cookies } from "next/headers";
+import { getRequestConfig } from "@/compat/next-intl-server";
+import { cookies } from "@/compat/next-headers";
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();

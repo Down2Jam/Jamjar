@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { redirect } from "next/navigation";
-import { useEffect } from "react";
+import { useTranslations } from "@/compat/next-intl";
+import { redirect } from "@/compat/next-navigation";
+import { useEffect, useMemo } from "react";
 import { useShortcut } from "react-keybind";
 
 export default function Hotkey({
@@ -22,6 +22,9 @@ export default function Hotkey({
   const registerShortcut = shortcuts?.registerShortcut;
   const unregisterShortcut = shortcuts?.unregisterShortcut;
   const t = useTranslations();
+  const hotkeyValue = useMemo(() => hotkey.join("+"), [hotkey]);
+  const translatedTitle = t(title);
+  const translatedDescription = t(description);
 
   useEffect(() => {
     if (hotkey && registerShortcut && unregisterShortcut) {
@@ -37,23 +40,22 @@ export default function Hotkey({
             redirect(href);
           }
         },
-        [hotkey.join("+")],
-        t(title),
-        t(description)
+        [hotkeyValue],
+        translatedTitle,
+        translatedDescription
       );
       return () => {
-        unregisterShortcut([hotkey.join("+")]);
+        unregisterShortcut([hotkeyValue]);
       };
     }
   }, [
-    hotkey,
+    hotkeyValue,
     href,
     registerShortcut,
     unregisterShortcut,
     onPress,
-    title,
-    description,
-    t,
+    translatedTitle,
+    translatedDescription,
   ]);
 
   return <></>;

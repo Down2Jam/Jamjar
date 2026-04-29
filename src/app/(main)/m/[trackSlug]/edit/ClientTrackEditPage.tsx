@@ -8,6 +8,7 @@ import { use, useEffect, useState } from "react";
 import { TrackType } from "@/types/TrackType";
 import { UserType } from "@/types/UserType";
 import { PageVersion } from "@/types/GameType";
+import { readItem } from "@/requests/helpers";
 
 export default function ClientTrackEditPage({
   params,
@@ -38,13 +39,13 @@ export default function ClientTrackEditPage({
         if (cancelled) return;
 
         if (trackResponse.ok) {
-          setTrack(await trackResponse.json());
+          setTrack(await readItem<TrackType>(trackResponse));
         } else {
           setTrack(null);
         }
 
         if (userResponse?.ok) {
-          setUser(await userResponse.json());
+          setUser(await readItem<UserType>(userResponse));
         } else {
           setUser(null);
         }

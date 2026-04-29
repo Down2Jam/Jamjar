@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useTheme } from "./theme";
 import { ExternalLink, Loader2 } from "lucide-react";
 import Icon from "./Icon";

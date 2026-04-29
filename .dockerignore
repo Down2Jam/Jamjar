@@ -1,3 +1,14 @@
+.git
+.github
+.devcontainer
+.vscode
 .next
+dist
 node_modules
+npm-debug.log*
+.env
+.env.*
+!.env.example
+tsconfig.tsbuildinfo
+coverage
 

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from "@/compat/next";
 import type { ReactNode } from "react";
 import AdminGate from "@/components/admin/AdminGate";
 

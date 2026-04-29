@@ -6,7 +6,7 @@ import { Icon } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { GameType } from "@/types/GameType";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 
 export default function SearchResultGame({
   game,

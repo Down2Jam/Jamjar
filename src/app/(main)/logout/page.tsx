@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import { useEffect } from "react";
 import { logout as logoutUser } from "@/requests/auth";
 import { addToast } from "bioloom-ui";

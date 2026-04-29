@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
 import { JamPhase } from "@/types/JamType";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Text } from "bioloom-ui";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useCurrentJam } from "@/hooks/queries";
+import { Skeleton } from "@/components/skeletons";
 
 export default function JamHeader() {
-  const { data: activeJamResponse } = useCurrentJam();
+  const { data: activeJamResponse, isLoading } = useCurrentJam();
   const displayJam = activeJamResponse?.jam ?? null;
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -274,6 +275,32 @@ export default function JamHeader() {
         return "th";
     }
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="relative z-10 ml-4 mr-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] shadow-2xl">
+          <div className="flex">
+            <div className="flex items-center gap-2 bg-white/10 p-4 px-6">
+              <Skeleton className="h-6 w-6 rounded" />
+              <Skeleton className="h-5 w-56" />
+            </div>
+            <div className="p-4 px-6">
+              <Skeleton className="h-5 w-64" />
+            </div>
+          </div>
+          <div className="bg-black/20 p-4">
+            <Skeleton className="mx-auto h-5 w-72" />
+          </div>
+        </div>
+        <div className="relative ml-4 mr-4 mt-3 flex gap-2 overflow-hidden pb-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} className="h-[60px] min-w-36 grow rounded-md" />
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>

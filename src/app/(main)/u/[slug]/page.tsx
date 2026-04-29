@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import { Metadata } from "@/compat/next";
 import ClientUserPage from "./ClientUserPage";
 import { getUser } from "@/requests/user";
 

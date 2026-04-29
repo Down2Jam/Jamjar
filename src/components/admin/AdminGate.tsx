@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { hasCookie } from "@/helpers/cookie";
 import { getSelf } from "@/requests/user";
+import { readItem } from "@/requests/helpers";
 import type { UserType } from "@/types/UserType";
 import { Button, Card, Hstack, Icon, Spinner, Text, Vstack } from "bioloom-ui";
 
@@ -33,7 +34,7 @@ export default function AdminGate({
           return;
         }
 
-        const data = (await response.json()) as UserType;
+        const data = await readItem<UserType>(response);
         if (!active) return;
         setUser(data);
         setStatus(data?.admin ? "ready" : "unauthorized");

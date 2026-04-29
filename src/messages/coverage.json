@@ -1,15 +1,15 @@
 {
   "en": 100,
-  "fr": 1,
-  "it": 100,
+  "fr": 0,
+  "it": 35,
   "de": 0,
   "es": 0,
-  "tr": 100,
-  "tl": 36,
-  "ru": 100,
-  "ja": 2,
-  "pt-br": 90,
+  "tr": 35,
+  "tl": 13,
+  "ru": 35,
+  "ja": 1,
+  "pt-br": 32,
   "tok": 0,
-  "mis-edikan": 3,
-  "mis-meow": 100
+  "mis-edikan": 1,
+  "mis-meow": 35
 }

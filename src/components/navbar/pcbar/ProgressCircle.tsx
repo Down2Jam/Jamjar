@@ -1,5 +1,5 @@
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { useTranslations } from "next-intl";
+import { useTheme } from "@/providers/useSiteTheme";
+import { useTranslations } from "@/compat/next-intl";
 import { useId, useEffect, useState } from "react";
 
 type RoundedProgressRingProps = {

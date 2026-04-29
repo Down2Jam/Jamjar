@@ -2,13 +2,34 @@
 
 import { useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
-import NextImage from "next/image";
+import NextImage from "@/compat/next-image";
 import { Eye, Play } from "lucide-react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
+import { SidebarCardSkeleton } from "@/components/skeletons";
+
+function isMatureStreamer(streamer: FeaturedStreamerType) {
+  const title = streamer.streamTitle.toLowerCase();
+  if (/(^|[\s[\]()[\]{}|:;,.!?#/+_-])(?:18\+|18plus|adult|nsfw)(?=$|[\s[\]()[\]{}|:;,.!?#/+_-])/i.test(title)) {
+    return true;
+  }
+
+  return (streamer.streamTags ?? []).some((tag) => {
+    const normalized = tag.toLowerCase().replace(/[\s_-]+/g, "");
+    return [
+      "18+",
+      "18plus",
+      "adult",
+      "mature",
+      "matureaudience",
+      "nsfw",
+      "sexualthemes",
+    ].includes(normalized);
+  });
+}
 
 export default function SidebarStreams() {
   const { data: rawStreamers = [] as FeaturedStreamerType[], isLoading } =
@@ -17,7 +38,9 @@ export default function SidebarStreams() {
   const { colors, siteTheme } = useTheme();
   const blacklistedStreamers = new Set(["morninchai", "lana_lux"]);
   const streamers = rawStreamers.filter(
-    (streamer) => !blacklistedStreamers.has(streamer.userName.toLowerCase()),
+    (streamer) =>
+      !blacklistedStreamers.has(streamer.userName.toLowerCase()) &&
+      !isMatureStreamer(streamer),
   );
   const totalStreamers = streamers.length;
   const safeCurrentIndex = totalStreamers === 0 ? 0 : currentIndex % totalStreamers;
@@ -52,7 +75,7 @@ export default function SidebarStreams() {
   };
 
   if (isLoading) {
-    return <div>Loading featured streamers...</div>;
+    return <SidebarCardSkeleton media lines={2} className="h-[320px]" />;
   }
 
   if (totalStreamers === 0) {

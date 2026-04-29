@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useCurrentJam, useJams } from "@/hooks/queries";
 import type { JamType } from "@/types/JamType";
+import { getJamUrlValue } from "@/helpers/jamUrl";
 import {
   Button,
   Card,
@@ -160,7 +161,7 @@ export default function AdminJams() {
                       <TableCell>
                         <Button
                           size="sm"
-                          href={`/admin/results?jam=${jam.id}`}
+                          href={`/admin/results?jam=${getJamUrlValue(jam) || jam.id}`}
                           icon="trophy"
                         >
                           Results

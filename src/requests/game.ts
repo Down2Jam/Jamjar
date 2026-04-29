@@ -8,16 +8,33 @@ import {
   ListingPageVersion,
   PageVersion,
 } from "@/types/GameType";
+import { isNumericJamValue } from "@/helpers/jamUrl";
+
+const inflightGetRequests = new Map<string, Promise<Response>>();
+
+function dedupedGet(url: string, init?: RequestInit) {
+  const key = JSON.stringify([url, init?.headers ?? null, init?.credentials ?? null]);
+  const existing = inflightGetRequests.get(key);
+  if (existing) {
+    return existing.then((response) => response.clone());
+  }
+
+  const request = fetch(url, init).finally(() => {
+    inflightGetRequests.delete(key);
+  });
+  inflightGetRequests.set(key, request);
+  return request.then((response) => response.clone());
+}
 
 export async function getCurrentGame() {
-  return fetch(`${BASE_URL}/self/current-game?username=${getCookie("user")}`, {
+  return fetch(`${BASE_URL}/self/current-game`, {
     headers: { authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
   });
 }
 
 export async function getRatingCategories(always: boolean = false) {
-  return fetch(
+  return dedupedGet(
     `${BASE_URL}/rating-categories?always=${always ? "true" : "false"}`,
   );
 }
@@ -114,7 +131,7 @@ export async function postGame(
   emotePrefix: string | null,
   pageVersion: PageVersion = "JAM",
 ) {
-  const response = await fetch(`${BASE_URL}/game`, {
+  const response = await fetch(`${BASE_URL}/games`, {
     body: JSON.stringify({
       name: title,
       slug: gameSlug,
@@ -251,20 +268,77 @@ export async function updateGame(
   return response;
 }
 
+function setJamListingParam(params: URLSearchParams, jam?: string) {
+  if (!jam || jam === "all") return;
+
+  if (isNumericJamValue(jam)) {
+    params.set("jamId", jam);
+    return;
+  }
+
+  params.set("jamSlug", jam);
+}
+
 export async function getGames(
   sort: string,
-  jamId?: string,
+  jam?: string,
   pageVersion?: ListingPageVersion,
 ) {
   const params = new URLSearchParams({ sort });
-  if (jamId !== undefined) {
-    params.set("jamId", jamId);
-  }
+  setJamListingParam(params, jam);
   if (pageVersion && pageVersion !== "JAM") {
     params.set("pageVersion", pageVersion);
   }
 
   return fetch(`${BASE_URL}/games?${params.toString()}`);
+}
+
+export async function getGamesPage({
+  sort = "newest",
+  jamId,
+  jam,
+  pageVersion,
+  cursor,
+  limit = 50,
+}: {
+  sort?: string;
+  jamId?: string;
+  jam?: string;
+  pageVersion?: ListingPageVersion;
+  cursor?: string | null;
+  limit?: number;
+}) {
+  const params = new URLSearchParams({ sort, limit: String(limit) });
+  setJamListingParam(params, jam ?? jamId);
+  if (pageVersion && pageVersion !== "JAM") params.set("pageVersion", pageVersion);
+  if (cursor) params.set("cursor", cursor);
+
+  return fetch(`${BASE_URL}/games?${params.toString()}`);
+}
+
+export async function getRandomGame() {
+  return fetch(`${BASE_URL}/games/random`, {
+    headers: { authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
+}
+
+export async function getGameDevlogPosts(
+  gameSlug: string,
+  relationType?: "devlog" | "release" | "postmortem" | "announcement" | "other",
+  limit?: number,
+) {
+  const params = new URLSearchParams();
+  if (relationType) params.set("relationType", relationType);
+  if (limit) params.set("limit", String(limit));
+
+  return fetch(
+    `${BASE_URL}/games/${encodeURIComponent(gameSlug)}/devlog${params.size ? `?${params.toString()}` : ""}`,
+    {
+      headers: { authorization: `Bearer ${getCookie("token")}` },
+      credentials: "include",
+    },
+  );
 }
 
 export async function getResults(
@@ -283,7 +357,11 @@ export async function getResults(
   });
 
   if (jam && jam !== "all") {
-    params.set("jamId", jam);
+    if (isNumericJamValue(jam)) {
+      params.set("jamId", jam);
+    } else {
+      params.set("jamSlug", jam);
+    }
   }
 
   if (preview) {

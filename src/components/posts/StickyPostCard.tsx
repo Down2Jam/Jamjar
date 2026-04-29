@@ -2,10 +2,10 @@
 
 import { Avatar } from "bioloom-ui";
 import { formatDistance } from "date-fns";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { PostType } from "@/types/PostType";
 import { Megaphone, NotebookText } from "lucide-react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Card } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 

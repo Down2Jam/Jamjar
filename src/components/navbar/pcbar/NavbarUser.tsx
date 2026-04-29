@@ -2,12 +2,12 @@
 
 import { Avatar, NavbarItem } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import Hotkey from "../../hotkey";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { Dropdown } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 
 interface NavbarUserProps {
   user?: UserType;

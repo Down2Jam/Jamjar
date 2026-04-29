@@ -1,12 +1,14 @@
-import { BASE_URL } from "@/requests/config";
-import { redirect } from "next/navigation";
+import { getRandomGame } from "@/requests/game";
+import { readItem } from "@/requests/helpers";
+import { redirect } from "@/compat/next-navigation";
 
 export default async function LuckyPage() {
-  const res = await fetch(`${BASE_URL}/game`);
-  const { data } = await res.json();
+  const res = await getRandomGame();
+  const data = await readItem<{ slug: string }>(res);
 
   if (!data) {
     redirect("/games");
+    return null;
   }
 
   redirect(`/g/${data.slug}`);

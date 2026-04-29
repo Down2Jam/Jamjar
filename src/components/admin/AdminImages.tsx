@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useAdminImages } from "@/hooks/queries";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 import {

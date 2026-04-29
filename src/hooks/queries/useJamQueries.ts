@@ -1,11 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getCurrentJam, type ActiveJamResponse } from "@/helpers/jam";
+import {
+  getCurrentJam,
+  hasJoinedCurrentJam,
+  type ActiveJamResponse,
+} from "@/helpers/jam";
 import * as jamRequests from "@/requests/jam";
 import { queryKeys } from "./queryKeys";
 import type { JamType } from "@/types/JamType";
-import { unwrapArray, unwrapItem } from "./helpers";
+import { unwrapArray } from "./helpers";
 
 export function useCurrentJam() {
   return useQuery<ActiveJamResponse | null>({
@@ -29,11 +33,7 @@ export function useJams() {
 export function useHasJoinedCurrentJam(enabled = true) {
   return useQuery<boolean>({
     queryKey: queryKeys.jam.participation(),
-    queryFn: async () => {
-      const res = await jamRequests.hasJoinedCurrentJam();
-      const data = await res.json();
-      return (unwrapItem<boolean>(data) ?? false);
-    },
+    queryFn: hasJoinedCurrentJam,
     enabled,
   });
 }

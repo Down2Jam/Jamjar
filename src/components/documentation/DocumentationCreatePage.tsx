@@ -5,7 +5,7 @@ import { createDocumentationDocument } from "@/requests/documentation";
 import { useSelf } from "@/hooks/queries";
 import type { DocumentationSection } from "@/types/DocumentationDocumentType";
 import { addToast, Button, Card, Hstack, Icon, Spinner, Text, Vstack } from "bioloom-ui";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Editor from "@/components/editor";
 import { Input } from "bioloom-ui";

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Avatar, Badge } from "bioloom-ui";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { EventFilter } from "@/types/EventFilter";
 import { EventType } from "@/types/EventType";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import Timer from "../timers/Timer";
 import { getIcon } from "@/helpers/icon";
 import { Dropdown } from "bioloom-ui";

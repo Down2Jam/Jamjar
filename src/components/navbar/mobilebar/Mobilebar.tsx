@@ -1,10 +1,10 @@
 "use client";
 
 import { addToast } from "bioloom-ui";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { Button, Navbar, NavbarItem } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Dropdown } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { hasCookie } from "@/helpers/cookie";

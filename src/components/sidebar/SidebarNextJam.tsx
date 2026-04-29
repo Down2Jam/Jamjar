@@ -3,15 +3,17 @@
 import { getNextJamForHome } from "@/helpers/jamDisplay";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { joinJam } from "@/helpers/jam";
-import { useCurrentJam, useSelf } from "@/hooks/queries";
-import { BASE_URL } from "@/requests/config";
+import { useCurrentJam, useRatingCategories, useSelf } from "@/hooks/queries";
 import { addToast, Button, Card, Hstack, Icon, Text, Vstack } from "bioloom-ui";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import Timer from "../timers/Timer";
+import { SidebarCardSkeleton } from "@/components/skeletons";
 
 export default function SidebarNextJam() {
-  const { data: activeJamResponse } = useCurrentJam();
-  const { data: user } = useSelf(hasCookie("token"));
+  const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
+  const { data: ratingCategories = [], isLoading: categoriesLoading } =
+    useRatingCategories(true);
+  const { data: user, isLoading: userLoading } = useSelf(hasCookie("token"));
   const [joinedOverride, setJoinedOverride] = useState<boolean | null>(null);
   const nextJam = getNextJamForHome(activeJamResponse);
 
@@ -22,22 +24,9 @@ export default function SidebarNextJam() {
     user && nextJam && user.teams?.some((team) => team.jamId === nextJam.id),
   );
 
-  const [ratings, setRatings] = useState<number | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadRatings() {
-      if (!nextJam) {
-        if (!cancelled) setRatings(null);
-        return;
-      }
-
-      const ratingResponse = await fetch(`${BASE_URL}/rating-categories?always=true`);
-      const ratingJson = await ratingResponse.json();
-      const ratingCategories = ratingJson.data ?? [];
-
-      const totalRatings = Math.round(
+  const ratings = useMemo(() => {
+    if (!nextJam) return null;
+    return Math.round(
         nextJam.games.reduce(
           (prev, cur) =>
             cur.ratings.length / (cur.ratingCategories.length + ratingCategories.length) +
@@ -49,18 +38,11 @@ export default function SidebarNextJam() {
           0,
         ),
       );
+  }, [nextJam, ratingCategories.length]);
 
-      if (!cancelled) {
-        setRatings(totalRatings);
-      }
-    }
-
-    void loadRatings();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [nextJam]);
+  if (jamLoading || categoriesLoading || (hasCookie("token") && userLoading)) {
+    return <SidebarCardSkeleton lines={4} />;
+  }
 
   if (!nextJam) {
     return null;

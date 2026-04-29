@@ -1,17 +1,28 @@
-import { getCurrentJam } from "@/helpers/jam";
+"use client";
+
 import { GameType } from "@/types/GameType";
-import { getRatingCategories } from "@/requests/game";
 import { Card } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import Timers from "../timers";
 import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
+import { useCurrentJam, useRatingCategories } from "@/hooks/queries";
+import { SidebarCardSkeleton } from "@/components/skeletons";
 
-export default async function SidebarStats() {
-  const jamResponse = await getCurrentJam();
-  const currentJam = jamResponse?.jam;
-  const ratingResponse = await getRatingCategories(true);
-  const ratingCategories = (await ratingResponse.json()).data;
+export default function SidebarStats() {
+  const { data: jamResponse, isLoading: jamLoading } = useCurrentJam();
+  const { data: ratingCategories = [], isLoading: categoriesLoading } =
+    useRatingCategories(true);
+
+  if (jamLoading || categoriesLoading) {
+    return <SidebarCardSkeleton lines={3} />;
+  }
+
+  if (!jamResponse || jamResponse.phase === "Upcoming Jam") {
+    return null;
+  }
+
+  const currentJam = jamResponse.jam;
   const ratings = Math.round(
     currentJam?.games.reduce(
       (prev: number, cur: GameType) =>

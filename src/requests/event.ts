@@ -6,7 +6,7 @@ export async function getEvents(filter: string) {
 }
 
 export async function getEvent(eventSlug: string) {
-  return fetch(`${BASE_URL}/event?targetEventSlug=${eventSlug}`);
+  return fetch(`${BASE_URL}/events/${encodeURIComponent(eventSlug)}`);
 }
 
 export async function postEvent(
@@ -17,7 +17,7 @@ export async function postEvent(
   link: string,
   icon: string,
 ) {
-  const response = await fetch(`${BASE_URL}/event`, {
+  const response = await fetch(`${BASE_URL}/events`, {
     body: JSON.stringify({
       title,
       content,

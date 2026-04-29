@@ -1,6 +1,6 @@
 "use client";
 
-import NextLink from "next/link";
+import NextLink from "@/compat/next-link";
 import { ExternalLink } from "lucide-react";
 import { useTheme } from "./theme";
 import { ReactNode, useState, type CSSProperties } from "react";

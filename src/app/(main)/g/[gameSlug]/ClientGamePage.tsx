@@ -18,7 +18,7 @@ import { GameEmbedAspectRatio, GameType, PageVersion } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
 import { getSelf } from "@/requests/user";
-import Image from "next/image";
+import Image from "@/compat/next-image";
 import {
   AlertTriangle,
   Award,
@@ -49,14 +49,14 @@ import {
   Legend,
 } from "recharts";
 import CreateComment from "@/components/create-comment";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Chip } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
 import { Button } from "bioloom-ui";
 import { Link } from "bioloom-ui";
-import { useTranslations } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { useTranslations } from "@/compat/next-intl";
+import { useSearchParams } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import SidebarSong from "@/components/sidebar/SidebarSong";
@@ -67,6 +67,7 @@ import { Icon, IconName } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
+import { readArray, readItem } from "@/requests/helpers";
 import { Card } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { getTrackRatingCategories } from "@/requests/track";
@@ -77,6 +78,7 @@ import {
 } from "@/helpers/trackRatingSync";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
+import { usePageMetadata } from "@/hooks/usePageMetadata";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -100,17 +102,38 @@ const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
 function getPlatformIcon(platform: string): IconName | undefined {
   switch (platform) {
     case "Linux":
-      return "silinux";
+      return "terminal";
     case "Mobile":
       return "smartphone";
     case "Windows":
-      return "grid2x2";
+      return "monitor";
     case "MacOS":
       return "custommacos";
+    case "SourceCode":
+      return "code2";
     case "Web":
-      return "sihtml5";
+      return "globe";
     default:
-      return undefined;
+      return "morehorizontal";
+  }
+}
+
+function getPlatformAccent(platform: string, colors: Record<string, string>) {
+  switch (platform) {
+    case "Web":
+      return colors["blue"];
+    case "Windows":
+      return colors["cyan"];
+    case "MacOS":
+      return colors["purple"];
+    case "Linux":
+      return colors["yellow"];
+    case "Mobile":
+      return colors["green"];
+    case "SourceCode":
+      return colors["red"];
+    default:
+      return colors["textFaded"];
   }
 }
 
@@ -332,9 +355,9 @@ export default function ClientGamePage({
     useState<TrackRatingCategoryType | null>(null);
   const effectiveHideRatings = useEffectiveHideRatings(user);
   const { data: activeJamResponse } = useCurrentJam();
-  const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
+  const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
   const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
   const requestedPageVersion = searchParams.get("pageVersion");
 
@@ -348,7 +371,33 @@ export default function ClientGamePage({
       game && selectedPage ? materializeGamePage(game, selectedPage) : game,
     [game, selectedPage],
   );
+  usePageMetadata({
+    title: displayGame?.name ?? game?.name ?? gameSlug,
+    description:
+      displayGame?.short || game?.short || "A game submitted to Down2Jam",
+    image:
+      displayGame?.thumbnail ||
+      displayGame?.banner ||
+      game?.thumbnail ||
+      game?.banner ||
+      "/images/D2J_Icon.png",
+    icon:
+      displayGame?.thumbnail ||
+      game?.thumbnail ||
+      displayGame?.banner ||
+      game?.banner ||
+      "/images/D2J_Icon.svg",
+    canonical: `/g/${game?.slug ?? gameSlug}`,
+  });
   const displayComments = selectedPage?.comments ?? game?.comments ?? [];
+  const sortedDownloadLinks = useMemo(
+    () =>
+      [...(displayGame?.downloadLinks ?? [])].sort(
+        (a, b) =>
+          (platformOrder[a.platform] ?? 99) - (platformOrder[b.platform] ?? 99),
+      ),
+    [displayGame?.downloadLinks],
+  );
   const currentScores =
     selectedVersion === "POST_JAM"
       ? (game?.postJamScores ?? {})
@@ -367,6 +416,25 @@ export default function ClientGamePage({
     activeJamResponse?.phase == "Post-Jam Refinement" ||
     activeJamResponse?.phase == "Post-Jam Rating";
   const shouldShowResults = !isCurrentJamGame || shouldShowCurrentJamResults;
+  const currentRatingCategoryCount =
+    (displayGame?.ratingCategories.length ?? 0) + ratingCategories.length;
+  const currentRatingsReceived =
+    currentRatingCategoryCount > 0
+      ? Math.round(
+          (game?.ratings ?? []).filter(
+            (rating) => (rating.pageVersion ?? "JAM") === selectedVersion,
+          ).length / currentRatingCategoryCount,
+        )
+      : 0;
+  const currentScoreKeys = Object.keys(currentScores || {});
+  const showScoreResults = Boolean(
+    activeJamResponse &&
+      shouldShowResults &&
+      currentRatingsReceived > 0 &&
+      currentScoreKeys.length > 0,
+  );
+  const showRatingSection =
+    showScoreResults || isRatingOpenPhase || (isCurrentJamGame && !shouldShowResults);
 
   const engagedUserIds = useMemo(() => {
     const ids = new Set<number>();
@@ -453,7 +521,7 @@ export default function ClientGamePage({
       let gameData;
       let initialVersion: PageVersion = "JAM";
       if (gameResponse.ok) {
-        gameData = await gameResponse.json();
+        gameData = await readItem<GameType>(gameResponse);
 
         setGame(gameData);
         initialVersion =
@@ -466,14 +534,15 @@ export default function ClientGamePage({
       }
 
       const ratingResponse = await getRatingCategories(true);
-      const ratingCategories = await ratingResponse.json();
-      setRatingCategories(ratingCategories.data);
+      setRatingCategories(await readArray(ratingResponse));
 
       const trackRatingResponse = await getTrackRatingCategories();
       if (trackRatingResponse.ok) {
-        const payload = await trackRatingResponse.json();
+        const payload = await readArray<TrackRatingCategoryType>(
+          trackRatingResponse,
+        );
         const overall =
-          payload?.data?.find(
+          payload.find(
             (category: TrackRatingCategoryType) => category.name === "Overall",
           ) ?? null;
         setTrackOverallCategory(overall);
@@ -485,7 +554,8 @@ export default function ClientGamePage({
           const userResponse = await getSelf();
 
           if (userResponse.ok) {
-            const userData = await userResponse.json();
+            const userData = await readItem<UserType>(userResponse);
+            if (!userData) return;
             setUser(userData);
 
             if (gameData) {
@@ -545,10 +615,6 @@ export default function ClientGamePage({
   }, [game, selectedPage?.id, selectedVersion, user]);
 
   useEffect(() => {
-    setIsItchEmbedActive(false);
-  }, [gameSlug]);
-
-  useEffect(() => {
     setCurrentMediaIndex(0);
   }, [gameSlug]);
 
@@ -605,6 +671,10 @@ export default function ClientGamePage({
   const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
     displayGame?.itchEmbedAspectRatio,
   );
+
+  useEffect(() => {
+    setIsItchEmbedActive(false);
+  }, [itchEmbedUrl]);
 
   const trailerId = extractYouTubeId(displayGame?.trailerUrl);
   const screenshots = (displayGame?.screenshots ?? []).filter(Boolean);
@@ -879,42 +949,64 @@ export default function ClientGamePage({
                   <button
                     type="button"
                     onClick={() => setIsItchEmbedActive(true)}
-                    className="absolute inset-0 flex cursor-pointer items-center justify-center transition-opacity hover:opacity-95"
+                    className="absolute inset-0 flex cursor-pointer items-center justify-center"
                     style={{
                       background:
-                        "linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.38) 100%)",
+                        colors["mantle"] ??
+                        colors["base"] ??
+                        "rgba(0, 0, 0, 0.72)",
+                      color: colors["text"],
                     }}
-                    aria-label={`Play ${displayGame.name}`}
+                    aria-label={`Load ${displayGame.name} playable embed`}
                   >
-                    <div
-                      className="flex flex-col items-center gap-3"
-                      style={{ color: colors["text"] }}
+                    <span
+                      className="flex items-center gap-3 rounded-lg px-5 py-3 text-base font-semibold transition-transform hover:scale-105"
+                      style={{
+                        backgroundColor: colors["surface0"],
+                        border: `1px solid ${colors["crust"]}`,
+                      }}
                     >
-                      <div
-                        className="flex items-center justify-center rounded-full"
-                        style={{
-                          width: "4.5rem",
-                          height: "4.5rem",
-                          backgroundColor: colors["mantle"],
-                          border: `1px solid ${colors["surface0"]}`,
-                          boxShadow: `0 16px 32px ${colors["crust"]}66`,
-                        }}
-                      >
-                        <Play
-                          size={28}
-                          fill="currentColor"
-                          style={{ marginLeft: "0.2rem" }}
-                        />
-                      </div>
-                      <Text
-                        className="font-semibold"
-                        style={{ color: colors["text"] }}
-                      >
-                        Click to play
-                      </Text>
-                    </div>
+                      <Play size={20} fill="currentColor" />
+                      Play game
+                    </span>
                   </button>
                 )}
+              </div>
+            )}
+            {!itchEmbedUrl && sortedDownloadLinks.length > 0 && (
+              <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
+                {sortedDownloadLinks.map((downloadLink) => {
+                  const icon = getPlatformIcon(downloadLink.platform);
+
+                  return (
+                    <a
+                      key={downloadLink.id}
+                      href={downloadLink.url}
+                      className="group flex min-h-28 flex-col items-center justify-center gap-3 rounded-xl px-5 py-5 text-center font-semibold transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
+                      style={{
+                        backgroundColor: colors["surface0"],
+                        border: `1px solid ${colors["crust"]}`,
+                        boxShadow: `0 12px 28px ${colors["base"]}66`,
+                        color: colors["text"],
+                      }}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <span
+                        className="flex h-10 w-10 items-center justify-center rounded-full"
+                        style={{
+                          backgroundColor: colors["surface1"],
+                          color: colors["text"],
+                        }}
+                      >
+                        <Icon name={icon} size={22} />
+                      </span>
+                      <span className="text-base leading-tight">
+                        {downloadLink.platform}
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
             )}
             <ThemedProse>
@@ -923,15 +1015,7 @@ export default function ClientGamePage({
               />
             </ThemedProse>
             <Hstack>
-              {[
-                ...new Set(
-                  displayGame.downloadLinks.sort(
-                    (a, b) =>
-                      (platformOrder[a.platform] ?? 99) -
-                      (platformOrder[b.platform] ?? 99),
-                  ),
-                ),
-              ].map((downloadLink) => (
+              {sortedDownloadLinks.map((downloadLink) => (
                 <Button
                   icon={getPlatformIcon(downloadLink.platform)}
                   key={downloadLink.id}
@@ -1265,6 +1349,7 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
+            {showRatingSection && (
             <Card>
               <Vstack align="start">
                 <p
@@ -1275,11 +1360,9 @@ export default function ClientGamePage({
                 >
                   RATINGS
                 </p>
-                {activeJamResponse &&
-                  shouldShowResults &&
-                  selectedVersion !== "POST_JAM" && (
+                {showScoreResults && (
                     <>
-                      {Object.keys(currentScores || {})
+                      {currentScoreKeys
                         .sort((a, b) =>
                           compareGameScoreEntries(
                             currentScores[a],
@@ -1351,7 +1434,7 @@ export default function ClientGamePage({
                             cx="50%"
                             cy="50%"
                             outerRadius="80%"
-                            data={Object.keys(currentScores || {}).map(
+                            data={currentScoreKeys.map(
                               (score) => ({
                                 subject: t(score),
                                 A: currentScores[score].averageScore / 2,
@@ -1484,6 +1567,7 @@ export default function ClientGamePage({
                 </div>
               </Vstack>
             </Card>
+            )}
             {displayGame.achievements &&
               displayGame.achievements.length > 0 && (
                 <Card className="order-30">
@@ -1656,9 +1740,7 @@ export default function ClientGamePage({
                                       });
                                     }
                                   }}
-                                  disabled={
-                                    !isLoggedIn || selectedVersion !== "JAM"
-                                  }
+                                  disabled={!isLoggedIn}
                                   className={`rounded-xl p-1 ${
                                     isLoggedIn
                                       ? "cursor-pointer"
@@ -1953,7 +2035,6 @@ export default function ClientGamePage({
                           <div className="mt-2">
                             <Button
                               icon="plus"
-                              disabled={selectedVersion !== "JAM"}
                               onClick={() => {
                                 setSelectedLeaderboard(leaderboard);
                                 setIsOpen2(true);
@@ -2093,7 +2174,8 @@ export default function ClientGamePage({
                           ratingCategories.length),
                     )}
                   </Chip>
-                  {displayGame.category !== "EXTRA" && (
+                  {displayGame.category !== "EXTRA" &&
+                    selectedVersion !== "POST_JAM" && (
                     <Hstack>
                       <Chip>
                         Ranked Ratings Received:{" "}
@@ -2182,7 +2264,8 @@ export default function ClientGamePage({
                           ),
                         0,
                       ),
-                    ) < 5 && (
+                    ) < 5 &&
+                      selectedVersion !== "POST_JAM" && (
                       <Tooltip
                         content="This game needs 5 ratings given in order to be ranked after the rating period"
                         position="top"

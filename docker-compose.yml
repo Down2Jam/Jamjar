@@ -1,9 +1,12 @@
-version: "3.8"
 services:
-  nextjs-app:
+  jamjar:
     build:
       context: .
+      dockerfile: Dockerfile
+      target: production
     user: "node"
+    init: true
+    restart: unless-stopped
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,nodev,size=64m
@@ -15,3 +18,12 @@ services:
       - "127.0.0.1:3004:3000"
     environment:
       NODE_ENV: production
+      VITE_PUBLIC_MODE: PROD
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-https://d2jam.com}
+      API_BASE_URL: ${API_BASE_URL:-https://d2jam.com/api/v1}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1:3000 >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

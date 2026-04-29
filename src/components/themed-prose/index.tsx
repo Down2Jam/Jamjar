@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 
 export default function ThemedProse({
   children,

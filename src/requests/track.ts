@@ -1,6 +1,7 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { ListingPageVersion, PageVersion } from "@/types/GameType";
+import { isNumericJamValue } from "@/helpers/jamUrl";
 
 export async function getTrack(trackSlug: string, pageVersion?: PageVersion) {
   const params = new URLSearchParams();
@@ -60,12 +61,16 @@ export async function updateTrack(
 
 export async function getTracks(
   sort: string,
-  jamId?: string,
+  jam?: string,
   pageVersion?: ListingPageVersion,
 ) {
   const params = new URLSearchParams({ sort });
-  if (jamId && jamId !== "all") {
-    params.set("jamId", jamId);
+  if (jam && jam !== "all") {
+    if (isNumericJamValue(jam)) {
+      params.set("jamId", jam);
+    } else {
+      params.set("jamSlug", jam);
+    }
   }
   if (pageVersion && pageVersion !== "JAM") {
     params.set("pageVersion", pageVersion);
@@ -109,7 +114,7 @@ export async function getTrackFlags() {
 }
 
 export async function getTrackResults(
-  jamId: string,
+  jam: string,
   preview: boolean = false,
   category?: "REGULAR" | "ODA",
   sortOrRecap: "OVERALL" | "SCORE" | boolean = "OVERALL",
@@ -123,8 +128,16 @@ export async function getTrackResults(
   const params = new URLSearchParams({
     contentType: "MUSIC",
     sort,
-    jam: jamId,
+    jam,
   });
+
+  if (jam && jam !== "all") {
+    if (isNumericJamValue(jam)) {
+      params.set("jamId", jam);
+    } else {
+      params.set("jamSlug", jam);
+    }
+  }
 
   if (category) {
     params.set("category", category);

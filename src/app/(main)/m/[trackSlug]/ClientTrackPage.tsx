@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { useCurrentJam } from "@/hooks/queries";
 import {
   getTrack,
@@ -29,6 +29,7 @@ import ThemedProse from "@/components/themed-prose";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
+import { readArray, readItem } from "@/requests/helpers";
 import {
   emitTrackRatingSync,
   subscribeToTrackRatingSync,
@@ -37,8 +38,8 @@ import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import CreateComment from "@/components/create-comment";
 import CommentCard from "@/components/posts/CommentCard";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/compat/next-link";
+import { useRouter } from "@/compat/next-navigation";
 import TrackWaveformPlayer from "@/components/tracks/TrackWaveformPlayer";
 import {
   AlertTriangle,
@@ -49,6 +50,7 @@ import {
   Star,
 } from "lucide-react";
 import { PageVersion } from "@/types/GameType";
+import { usePageMetadata } from "@/hooks/usePageMetadata";
 
 function ordinalSuffixOf(i: number) {
   const j = i % 10;
@@ -154,6 +156,24 @@ export default function ClientTrackPage({
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const { data: activeJamResponse } = useCurrentJam();
   const effectiveHideRatings = useEffectiveHideRatings(user);
+  const composerName = track?.composer?.name || track?.composer?.slug;
+  const metadataDescription =
+    track?.commentary?.trim() ||
+    (composerName && track?.game?.name
+      ? `${track.name} by ${composerName} for ${track.game.name}`
+      : "Music track on Down2Jam");
+  const metadataImage =
+    track?.game?.banner || track?.game?.thumbnail || "/images/D2J_Icon.png";
+  usePageMetadata({
+    title: (track?.name ?? trackSlug) || "Track",
+    description: metadataDescription,
+    image: metadataImage,
+    icon: track?.game?.thumbnail || metadataImage,
+    canonical: `/m/${track?.slug || trackSlug}${
+      track?.pageVersion === "POST_JAM" ? "?pageVersion=POST_JAM" : ""
+    }`,
+    type: "music.song",
+  });
 
   useEffect(() => {
     params.then(({ trackSlug }) => setTrackSlug(trackSlug));
@@ -186,7 +206,7 @@ export default function ClientTrackPage({
         if (cancelled) return;
 
         if (trackResponse.ok) {
-          const payload = await trackResponse.json();
+          const payload = await readItem<TrackType>(trackResponse);
           setTrack(payload);
           setPageVersion(
             payload?.pageVersion === "POST_JAM" ? "POST_JAM" : "JAM",
@@ -196,15 +216,17 @@ export default function ClientTrackPage({
         }
 
         if (userResponse?.ok) {
-          setUser(await userResponse.json());
+          setUser(await readItem<UserType>(userResponse));
         } else {
           setUser(null);
         }
 
         if (categoriesResponse.ok) {
-          const payload = await categoriesResponse.json();
+          const payload = await readArray<TrackRatingCategoryType>(
+            categoriesResponse,
+          );
           const overall =
-            payload?.data?.find(
+            payload.find(
               (category: TrackRatingCategoryType) =>
                 category.name === "Overall",
             ) ?? null;
@@ -756,33 +778,13 @@ export default function ClientTrackPage({
                 </Text>
                 <Vstack align="start" className="gap-3">
                   <Chip>Ratings Received: {track.ratings?.length ?? 0}</Chip>
-                  {track.game.category !== "EXTRA" && (
-                    <Hstack>
-                      <Chip>
-                        Ranked Ratings Received:{" "}
-                        {overallScore?.rankedRatingCount ?? 0}
-                      </Chip>
-                      {(overallScore?.rankedRatingCount ?? 0) < 5 && (
-                        <Tooltip
-                          content="This track needs 5 ranked ratings received in order to place in music results."
-                          position="top"
-                        >
-                          <AlertTriangle
-                            size={16}
-                            style={{
-                              color: colors["red"],
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </Hstack>
-                  )}
                   <Hstack>
                     <Chip>
                       Ratings Given:{" "}
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
                     {track.game.category !== "EXTRA" &&
+                      track.pageVersion !== "POST_JAM" &&
                       Math.round(overallScore?.ratingsGivenCount ?? 0) < 5 && (
                       <Tooltip
                         content="This track's team needs 5 songs rated in order for it to place in music results."

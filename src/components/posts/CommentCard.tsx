@@ -1,6 +1,6 @@
 import { CommentType } from "@/types/CommentType";
 import { MoreVertical, Reply } from "lucide-react";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useEffect, useState } from "react";
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
@@ -12,7 +12,7 @@ import {
 } from "@/requests/comment";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import ThemedProse from "../themed-prose";
 import { Avatar } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";

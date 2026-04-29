@@ -5,12 +5,12 @@ import { postTrackRating } from "@/requests/rating";
 import { Button, Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import { getJams } from "@/requests/jam";
 import { useCurrentJam } from "@/hooks/queries";
 import { IconName } from "bioloom-ui";
@@ -34,9 +34,13 @@ import {
   getDefaultListingPageVersion,
   listingPageVersionOptions,
 } from "@/helpers/listingPageVersion";
+import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
+import { readArray, readItem } from "@/requests/helpers";
+import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
 
 type JamOption = {
   id: string;
+  slug?: string | null;
   name: string;
   icon?: IconName;
   description?: string;
@@ -200,6 +204,7 @@ export default function MusicPage() {
   const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
   const [currentJamId, setCurrentJamId] = useState<string | null>(null);
+  const [currentJamValue, setCurrentJamValue] = useState<string | null>(null);
   const [activeJamPhase, setActiveJamPhase] = useState<string | null>(null);
 
   const hasAppliedDefault = useRef(false);
@@ -348,6 +353,15 @@ export default function MusicPage() {
   );
 
   useEffect(() => {
+    if (jamDetecting || jamId === "all") return;
+    if (jamOptions.some((option) => option.id === jamId)) return;
+
+    const resolved = resolveJamUrlValue(jamId, jamOptions);
+    setJamId(resolved);
+    updateQueryParam("jam", resolved);
+  }, [jamDetecting, jamId, jamOptions, updateQueryParam]);
+
+  useEffect(() => {
     let cancelled = false;
 
     (async () => {
@@ -355,35 +369,46 @@ export default function MusicPage() {
       const options: JamOption[] = [{ id: "all", name: "All Jams" }];
 
       let ratingDefault: string | null = null;
+      const res = currentJamData;
+      const detectedJamId = res?.jam?.id?.toString();
+      const detectedJamValue = getJamUrlValue(res?.jam);
+      const currentJamHasContentListing = shouldShowJamInContentListings(
+        res?.jam,
+        res?.phase,
+        detectedJamId,
+      );
       {
-        const res = currentJamData;
         const isCurrentJamDefaultPhase =
           res?.phase === "Rating" ||
           res?.phase === "Submission" ||
           res?.phase === "Jamming" ||
           res?.phase === "Post-Jam Refinement" ||
           res?.phase === "Post-Jam Rating";
-        const detectedJamId = res?.jam?.id?.toString();
         const currentJamName = res?.jam?.name || "Current Jam";
 
         if (detectedJamId) {
           setCurrentJamId(detectedJamId);
-          options.push({
-            id: detectedJamId,
-            name: currentJamName,
-            icon: res?.jam?.icon,
-            description: formatJamWindow(
-              res?.jam?.startTime,
-              res?.jam?.jammingHours,
-            ),
-          });
+          setCurrentJamValue(detectedJamValue || detectedJamId);
+          if (currentJamHasContentListing) {
+            options.push({
+              id: detectedJamValue || detectedJamId,
+              slug: res?.jam?.slug,
+              name: currentJamName,
+              icon: res?.jam?.icon,
+              description: formatJamWindow(
+                res?.jam?.startTime,
+                res?.jam?.jammingHours,
+              ),
+            });
+          }
         }
 
         if (
+          currentJamHasContentListing &&
           isCurrentJamDefaultPhase &&
           (initialJamParam === "all" || !initialJamParam)
         ) {
-          ratingDefault = detectedJamId ?? null;
+          ratingDefault = detectedJamValue || detectedJamId || null;
         }
 
         setActiveJamPhase(res?.phase ?? null);
@@ -396,9 +421,17 @@ export default function MusicPage() {
           if (Array.isArray(js)) {
             js.forEach((j) => {
               const id = String(j?.id ?? "");
-              if (id && j?.name && !options.find((o) => o.id === id)) {
+              const value = getJamUrlValue(j);
+              if (
+                id &&
+                value &&
+                j?.name &&
+                shouldShowJamInContentListings(j, res?.phase, detectedJamId) &&
+                !options.find((o) => o.id === value || o.id === id || o.slug === j.slug)
+              ) {
                 options.push({
-                  id,
+                  id: value,
+                  slug: j.slug,
                   name: j.name,
                   icon: j.icon,
                   description: formatJamWindow(j.startTime, j.jammingHours),
@@ -434,14 +467,26 @@ export default function MusicPage() {
     };
   }, [router, initialJamParam, currentJamData]);
 
-  const canUseRestrictedSorts = Boolean(currentJamId) && jamId === currentJamId;
+  useEffect(() => {
+    if (jamDetecting || jamOptions.length === 0) return;
+
+    const resolved = resolveJamUrlValue(initialJamParam, jamOptions);
+    if (resolved === "all" || resolved === initialJamParam) return;
+
+    setJamId(resolved);
+    const params = new URLSearchParams(window.location.search);
+    params.set("jam", resolved);
+    navigateToSearchIfChanged(router, params, "replace");
+  }, [initialJamParam, jamDetecting, jamOptions, router]);
+
+  const canUseRestrictedSorts = Boolean(currentJamValue) && jamId === currentJamValue;
   const isRestricted = useCallback(
     (value: GameSort) => restrictedSorts.has(value),
     [restrictedSorts],
   );
   const canUseScore = useMemo(
-    () => canUseScoreSort(jamId, currentJamId, activeJamPhase, pageVersion),
-    [activeJamPhase, currentJamId, jamId, pageVersion],
+    () => canUseScoreSort(jamId, currentJamValue, activeJamPhase, pageVersion),
+    [activeJamPhase, currentJamValue, jamId, pageVersion],
   );
 
   const sorts: Record<
@@ -493,7 +538,7 @@ export default function MusicPage() {
     if ((!canUseRestrictedSorts && isRestricted(sort)) || (sort === "score" && !canUseScore)) {
       const nextSort = getDefaultMusicSort(
         jamId,
-        currentJamId,
+        currentJamValue,
         activeJamPhase,
         pageVersion,
       );
@@ -503,7 +548,7 @@ export default function MusicPage() {
   }, [
     activeJamPhase,
     canUseRestrictedSorts,
-    currentJamId,
+    currentJamValue,
     isRestricted,
     jamId,
     jamDetecting,
@@ -520,34 +565,34 @@ export default function MusicPage() {
 
     const nextSort = getDefaultMusicSort(
       jamId,
-      currentJamId,
+      currentJamValue,
       activeJamPhase,
       pageVersion,
     );
     if (sort !== nextSort) {
       setSort(nextSort);
     }
-  }, [activeJamPhase, currentJamId, jamDetecting, jamId, pageVersion, sort]);
+  }, [activeJamPhase, currentJamValue, jamDetecting, jamId, pageVersion, sort]);
 
   useEffect(() => {
     if (jamDetecting) return;
     if (hasMoreParam) return;
 
     setSelectedMoreFilters(
-      getDefaultMusicMoreFilters(jamId, currentJamId, activeJamPhase),
+      getDefaultMusicMoreFilters(jamId, currentJamValue, activeJamPhase),
     );
-  }, [activeJamPhase, currentJamId, hasMoreParam, jamDetecting, jamId]);
+  }, [activeJamPhase, currentJamValue, hasMoreParam, jamDetecting, jamId]);
 
   useEffect(() => {
     if (jamDetecting) return;
     if (hasPageVersionParam) return;
 
     setPageVersion(
-      getDefaultListingPageVersion(jamId, currentJamId, activeJamPhase),
+      getDefaultListingPageVersion(jamId, currentJamValue, activeJamPhase),
     );
   }, [
     activeJamPhase,
-    currentJamId,
+    currentJamValue,
     hasPageVersionParam,
     jamDetecting,
     jamId,
@@ -561,22 +606,25 @@ export default function MusicPage() {
         getTrackRatingCategories().catch(() => null),
         getSelf().catch(() => null),
       ]);
-      const payload = await tagResponse.json().catch(() => null);
+      const payload = tagResponse.ok
+        ? await readArray<TrackTagType>(tagResponse)
+        : [];
       if (cancelled) return;
-      setAllTrackTags(Array.isArray(payload?.data) ? payload.data : []);
+      setAllTrackTags(payload);
 
       if (categoryResponse?.ok) {
-        const categoryPayload = await categoryResponse.json().catch(() => null);
+        const categoryPayload =
+          await readArray<TrackRatingCategoryType>(categoryResponse);
         if (cancelled) return;
         const overall =
-          categoryPayload?.data?.find(
+          categoryPayload.find(
             (category: TrackRatingCategoryType) => category.name === "Overall",
           ) ?? null;
         setTrackOverallCategory(overall);
       }
 
       if (userResponse?.ok) {
-        const userPayload = await userResponse.json().catch(() => null);
+        const userPayload = await readItem<UserType>(userResponse);
         if (cancelled) return;
         setUser(userPayload);
         const ratings = (userPayload?.trackRatings ?? []).reduce(
@@ -864,18 +912,18 @@ export default function MusicPage() {
             setJamId(val);
             if (!hasPageVersionParam) {
               setPageVersion(
-                getDefaultListingPageVersion(val, currentJamId, activeJamPhase),
+                getDefaultListingPageVersion(val, currentJamValue, activeJamPhase),
               );
             }
             const nextSort = getDefaultMusicSort(
               val,
-              currentJamId,
+              currentJamValue,
               activeJamPhase,
               hasPageVersionParam
                 ? pageVersion
                 : getDefaultListingPageVersion(
                     val,
-                    currentJamId,
+                    currentJamValue,
                     activeJamPhase,
                   ),
             );
@@ -883,7 +931,7 @@ export default function MusicPage() {
               ? pageVersion
               : getDefaultListingPageVersion(
                   val,
-                  currentJamId,
+                  currentJamValue,
                   activeJamPhase,
                 );
             if (
@@ -891,7 +939,7 @@ export default function MusicPage() {
               (nextSort === "score" &&
                 canUseScoreSort(
                   val,
-                  currentJamId,
+                  currentJamValue,
                   activeJamPhase,
                   effectiveNextPageVersion,
                 ))

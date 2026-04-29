@@ -6,7 +6,7 @@ import type { ActiveJamResponse } from "@/helpers/jam";
 import { getEvents } from "@/requests/event";
 import type { EventType } from "@/types/EventType";
 import type { JamType } from "@/types/JamType";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Button, Card, Hstack, Spinner, Text, Vstack } from "bioloom-ui";
 
 const dateTimeFormat = new Intl.DateTimeFormat(undefined, {

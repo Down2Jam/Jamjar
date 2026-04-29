@@ -21,8 +21,8 @@ import {
   Text,
   Vstack,
 } from "bioloom-ui";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "@/compat/next-link";
+import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { useEffect, useMemo, useState } from "react";
 import Editor from "@/components/editor";
 import ThemedProse from "@/components/themed-prose";

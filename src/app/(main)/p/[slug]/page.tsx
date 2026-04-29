@@ -5,10 +5,10 @@ import { hasCookie } from "@/helpers/cookie";
 import { PostType } from "@/types/PostType";
 import { TagType } from "@/types/TagType";
 import { UserType } from "@/types/UserType";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { addToast } from "bioloom-ui";
 import { MoreVertical } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "@/compat/next-navigation";
 import { useEffect, useState } from "react";
 import Editor from "@/components/editor";
 import CommentCard from "@/components/posts/CommentCard";
@@ -32,10 +32,12 @@ import { Spinner } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import PostReactions from "@/components/posts/PostReactions";
 import ContentStatusMeta from "@/components/posts/ContentStatusMeta";
+import { readItem } from "@/requests/helpers";
+import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -60,9 +62,9 @@ export default function PostPage() {
         // Fetch the user
         const userResponse = await getSelf();
         const userData = userResponse.ok
-          ? await userResponse.json()
+          ? await readItem<UserType>(userResponse)
           : undefined;
-        setUser(userData);
+        setUser(userData ?? undefined);
 
         const postResponse = await getPost(`${slug}`, userData?.slug);
         if (!postResponse.ok) {
@@ -70,7 +72,12 @@ export default function PostPage() {
           setLoading(false);
           return;
         }
-        const postData = await postResponse.json();
+        const postData = await readItem<PostType>(postResponse);
+        if (!postData) {
+          setPost(undefined);
+          setLoading(false);
+          return;
+        }
         setPost(postData);
         setDraftTitle(postData.title);
         setDraftContent(postData.content);
@@ -95,6 +102,24 @@ export default function PostPage() {
   const canSeeModerated = Boolean(user?.mod || user?.admin);
   const isAuthor = user?.slug === post?.author.slug;
   const isModerated = Boolean(post?.deletedAt || post?.removedAt);
+  usePageMetadata({
+    title: post
+      ? isModerated
+        ? post.removedAt
+          ? "[Removed Post]"
+          : "[Deleted Post]"
+        : post.title
+      : slug
+        ? String(slug)
+        : "Post",
+    description:
+      post && !isModerated
+        ? stripHtmlForMetadata(post.content)
+        : "A post on Down2Jam",
+    image: post?.author?.profilePicture || "/images/D2J_Icon.png",
+    icon: post?.author?.profilePicture || "/images/D2J_Icon.svg",
+    canonical: `/p/${post?.slug ?? slug}`,
+  });
 
   if (!loading && !post) {
     return (
@@ -164,7 +189,7 @@ export default function PostPage() {
                         <Button
                           color="blue"
                           onClick={async () => {
-                            const response = await updatePost(post.id, {
+                            const response = await updatePost(post.slug, {
                               title: draftTitle,
                               content: draftContent,
                             });
@@ -296,7 +321,7 @@ export default function PostPage() {
                           icon="trash"
                           description="PostCard.Delete.Description"
                           onClick={async () => {
-                            const response = await deletePost(post.id);
+                            const response = await deletePost(post.slug);
 
                             if (response.ok) {
                               addToast({
@@ -330,7 +355,7 @@ export default function PostPage() {
                             icon="x"
                             description="PostCard.Remove.Description"
                             onClick={async () => {
-                              const response = await removePost(post.id);
+                              const response = await removePost(post.slug);
 
                               if (response.ok) {
                                 addToast({
@@ -361,7 +386,7 @@ export default function PostPage() {
                               description="PostCard.Unsticky.Description"
                               onClick={async () => {
                                 const response = await stickPost(
-                                  post.id,
+                                  post.slug,
                                   false
                                 );
 
@@ -385,7 +410,7 @@ export default function PostPage() {
                               icon="star"
                               description="PostCard.Sticky.Description"
                               onClick={async () => {
-                                const response = await stickPost(post.id, true);
+                                const response = await stickPost(post.slug, true);
 
                                 if (response.ok) {
                                   addToast({

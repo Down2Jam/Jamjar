@@ -1,4 +1,4 @@
-name: Test and Build Project
+name: frontend-quality
 
 on:
   pull_request:
@@ -8,49 +8,38 @@ on:
     branches:
       - main
 
+concurrency:
+  group: frontend-quality-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  checks:
     runs-on: ubuntu-latest
-    container:
-      image: node:20
+    env:
+      VITE_PUBLIC_MODE: PROD
+      NEXT_PUBLIC_MODE: PROD
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Run ESLint
-        run: npm run lint
 
       - name: Run TypeScript check
         run: npx tsc --noEmit
 
-  build:
-    runs-on: ubuntu-latest
-    needs: test
-    container:
-      image: node:20
-    env:
-      NEXT_PUBLIC_MODE: PROD
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
       - name: Build project
         run: npm run build
+
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+
+      - name: Build production image
+        run: docker build --target production --build-arg NODE_VERSION=24.14.0 -t jamjar:ci .

@@ -2,7 +2,7 @@
 
 import { ChevronDown, PaintBucket } from "lucide-react";
 import { useRef, useState } from "react";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Button, Dropdown, Popover } from "bioloom-ui"; // <-- your custom Dropdown
 
 function waveText(label: string, shouldAnimate: boolean) {

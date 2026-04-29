@@ -1,9 +1,9 @@
 "use client";
 
 import { addToast, Avatar } from "bioloom-ui";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { PostType } from "@/types/PostType";
-import { MoreVertical } from "lucide-react";
+import { Heart, MessageCircle, MoreVertical } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
@@ -14,11 +14,11 @@ import { assignAdmin, assignMod } from "@/requests/mod";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import ThemedProse from "../themed-prose";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Dropdown } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import ContentStatusMeta from "./ContentStatusMeta";
@@ -295,7 +295,7 @@ export default function PostCard({
                       icon="trash"
                       description="PostCard.Delete.Description"
                       onClick={async () => {
-                        const response = await deletePost(currentPostData.id);
+                        const response = await deletePost(currentPostData.slug);
 
                         if (response.ok) {
                           addToast({
@@ -325,7 +325,7 @@ export default function PostCard({
                         icon="x"
                         description="PostCard.Remove.Description"
                         onClick={async () => {
-                          const response = await removePost(currentPostData.id);
+                          const response = await removePost(currentPostData.slug);
 
                           if (response.ok) {
                             addToast({
@@ -351,7 +351,7 @@ export default function PostCard({
                           icon="staroff"
                           description="PostCard.Unsticky.Description"
                           onClick={async () => {
-                            const response = await stickPost(currentPostData.id, false);
+                            const response = await stickPost(currentPostData.slug, false);
 
                             if (response.ok) {
                               addToast({
@@ -373,7 +373,7 @@ export default function PostCard({
                           icon="star"
                           description="PostCard.Sticky.Description"
                           onClick={async () => {
-                            const response = await stickPost(currentPostData.id, true);
+                            const response = await stickPost(currentPostData.slug, true);
 
                             if (response.ok) {
                               addToast({
@@ -521,92 +521,122 @@ export default function PostCard({
           </div>
         ))}
       {style == "Compact" && (
-        <div>
-          <Link
-            href={`/p/${currentPostData.slug}`}
-            onClick={(e) => {
-              if (window.innerWidth > 500) {
-                if (onOpen) {
-                  e.preventDefault();
-                }
-                if (setCurrentPost && index !== undefined) {
-                  setCurrentPost(index);
-                }
-                if (onOpen) {
-                  onOpen(true);
-                }
-              }
-            }}
-          >
-            <p className="text-2xl">{titleText}</p>
-          </Link>
-
-          <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-            <Text size="xs" color="textFaded">
-              PostCard.By
-            </Text>
+        <div className="flex w-full items-start justify-between gap-4">
+          <div className="min-w-0">
             <Link
-              href={`/u/${currentPostData.author.slug}`}
-              className="flex items-center gap-2"
+              href={`/p/${currentPostData.slug}`}
+              onClick={(e) => {
+                if (window.innerWidth > 500) {
+                  if (onOpen) {
+                    e.preventDefault();
+                  }
+                  if (setCurrentPost && index !== undefined) {
+                    setCurrentPost(index);
+                  }
+                  if (onOpen) {
+                    onOpen(true);
+                  }
+                }
+              }}
             >
-              <Avatar
-                size={24}
-                src={currentPostData.author.profilePicture}
-                style={{ backgroundColor: "transparent" }}
-              />
-              <p>{currentPostData.author.name}</p>
+              <p className="truncate text-2xl">{titleText}</p>
             </Link>
-            <ContentStatusMeta
-              createdAt={currentPostData.createdAt}
-              editedAt={currentPostData.editedAt}
-              deletedAt={currentPostData.deletedAt}
-              removedAt={currentPostData.removedAt}
-            />
+
+            <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+              <Text size="xs" color="textFaded">
+                PostCard.By
+              </Text>
+              <Link
+                href={`/u/${currentPostData.author.slug}`}
+                className="flex items-center gap-2"
+              >
+                <Avatar
+                  size={24}
+                  src={currentPostData.author.profilePicture}
+                  style={{ backgroundColor: "transparent" }}
+                />
+                <p>{currentPostData.author.name}</p>
+              </Link>
+              <ContentStatusMeta
+                createdAt={currentPostData.createdAt}
+                editedAt={currentPostData.editedAt}
+                deletedAt={currentPostData.deletedAt}
+                removedAt={currentPostData.removedAt}
+              />
+            </div>
+          </div>
+          <div
+            className="flex shrink-0 items-center gap-3 pt-1 text-xs"
+            style={{ color: colors["textFaded"] }}
+          >
+            <span className="inline-flex items-center gap-1">
+              <Heart size={14} />
+              {currentPostData.likes.length}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MessageCircle size={14} />
+              {currentPostData.comments.length}
+            </span>
           </div>
         </div>
       )}
       {style == "Ultra" && (
-        <div className="flex items-center gap-4">
-          <Link
-            href={`/p/${currentPostData.slug}`}
-            onClick={(e) => {
-              if (window.innerWidth > 500) {
-                if (onOpen) {
-                  e.preventDefault();
-                }
-                if (setCurrentPost && index !== undefined) {
-                  setCurrentPost(index);
-                }
-                if (onOpen) {
-                  onOpen(true);
-                }
-              }
-            }}
-          >
-            <p>{titleText}</p>
-          </Link>
-
-          <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-            <Text size="xs" color="textFaded">
-              PostCard.By
-            </Text>
+        <div className="flex w-full items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-4">
             <Link
-              href={`/u/${currentPostData.author.slug}`}
-              className="flex items-center gap-2"
+              href={`/p/${currentPostData.slug}`}
+              onClick={(e) => {
+                if (window.innerWidth > 500) {
+                  if (onOpen) {
+                    e.preventDefault();
+                  }
+                  if (setCurrentPost && index !== undefined) {
+                    setCurrentPost(index);
+                  }
+                  if (onOpen) {
+                    onOpen(true);
+                  }
+                }
+              }}
             >
-              <Avatar
-                size={24}
-                src={currentPostData.author.profilePicture}
-                style={{ backgroundColor: "transparent" }}
-              />
-              <p>{currentPostData.author.name}</p>
+              <p className="truncate">{titleText}</p>
             </Link>
-            <ContentStatusMeta
-              createdAt={currentPostData.createdAt}
-              editedAt={currentPostData.editedAt}
-              deletedAt={currentPostData.deletedAt}
-              removedAt={currentPostData.removedAt}
-            />
+
+            <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
+              <Text size="xs" color="textFaded">
+                PostCard.By
+              </Text>
+              <Link
+                href={`/u/${currentPostData.author.slug}`}
+                className="flex items-center gap-2"
+              >
+                <Avatar
+                  size={24}
+                  src={currentPostData.author.profilePicture}
+                  style={{ backgroundColor: "transparent" }}
+                />
+                <p>{currentPostData.author.name}</p>
+              </Link>
+              <ContentStatusMeta
+                createdAt={currentPostData.createdAt}
+                editedAt={currentPostData.editedAt}
+                deletedAt={currentPostData.deletedAt}
+                removedAt={currentPostData.removedAt}
+              />
+            </div>
+          </div>
+          <div
+            className="flex shrink-0 items-center gap-3 text-xs"
+            style={{ color: colors["textFaded"] }}
+          >
+            <span className="inline-flex items-center gap-1">
+              <Heart size={13} />
+              {currentPostData.likes.length}
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <MessageCircle size={13} />
+              {currentPostData.comments.length}
+            </span>
           </div>
         </div>
       )}

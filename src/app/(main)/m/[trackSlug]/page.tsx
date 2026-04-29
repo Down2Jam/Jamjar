@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from "@/compat/next";
 import ClientTrackPage from "./ClientTrackPage";
 import { BASE_URL } from "@/requests/config";
 import { PageVersion } from "@/types/GameType";
@@ -17,9 +17,7 @@ export async function generateMetadata({
       ? `?pageVersion=${encodeURIComponent(pageVersion)}`
       : "";
 
-  const res = await fetch(`${BASE_URL}/tracks/${trackSlug}${paramsString}`, {
-    next: { revalidate: 300 },
-  });
+  const res = await fetch(`${BASE_URL}/tracks/${trackSlug}${paramsString}`);
 
   if (!res.ok) {
     return {

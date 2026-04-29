@@ -7,15 +7,15 @@ import { Link } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getJams } from "@/helpers/jam";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { getResults } from "@/requests/game";
 import { getTrackResults } from "@/requests/track";
 import { GameResultType } from "@/types/GameResultType";
 import { TrackResultType } from "@/types/TrackResultType";
 import { useMusic } from "bioloom-miniplayer";
 import { Award, Circle, CircleSmall } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "@/compat/next-intl";
+import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   PolarAngleAxis,
@@ -26,9 +26,13 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
+import { readArray } from "@/requests/helpers";
+import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
+import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
 
 type JamOption = {
   id: string;
+  slug?: string | null;
   name: string;
   icon?: string;
   description?: string;
@@ -221,8 +225,16 @@ export default function Results({ preview = false }: { preview?: boolean }) {
 
         if (Array.isArray(jams)) {
           jams.forEach((jam) => {
+            if (!shouldShowJamInContentListings(jam)) {
+              return;
+            }
+
+            const value = getJamUrlValue(jam);
+            if (!value) return;
+
             options.push({
-              id: String(jam.id),
+              id: value,
+              slug: jam.slug,
               name: jam.name,
               icon: jam.icon,
               description: `${formatJamWindow(
@@ -239,21 +251,22 @@ export default function Results({ preview = false }: { preview?: boolean }) {
 
       setJamOptions(options);
 
-      const hasInitial =
-        initialJamParam &&
-        options.some((option) => option.id === initialJamParam);
+      const resolvedInitial = resolveJamUrlValue(initialJamParam, options);
       if (initialJamParam === "all") {
         setJamId("all");
         return;
       }
-      if (hasInitial && initialJamParam) {
-        setJamId(initialJamParam);
+      if (initialJamParam && resolvedInitial !== "all") {
+        setJamId(resolvedInitial);
+        if (resolvedInitial !== initialJamParam) {
+          updateQueryParam("jam", resolvedInitial);
+        }
         return;
       }
       if (options.length > 0) {
-        const latestJamId = options[0].id;
-        setJamId(latestJamId);
-        updateQueryParam("jam", latestJamId);
+        const latestJam = options[0].id;
+        setJamId(latestJam);
+        updateQueryParam("jam", latestJam);
       }
     };
 
@@ -272,8 +285,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
         );
 
         if (gameResponse.ok) {
-          const gameData = (await gameResponse.json()).data;
-          setGames(gameData);
+          setGames(await readArray<GameResultType>(gameResponse));
         }
         setTracks([]);
         return;
@@ -286,8 +298,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
           "OVERALL"
         );
       if (trackResponse.ok) {
-        const trackData = (await trackResponse.json()).data;
-        setTracks(trackData);
+        setTracks(await readArray<TrackResultType>(trackResponse));
       }
       setGames([]);
     };

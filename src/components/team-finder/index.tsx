@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TeamType } from "@/types/TeamType";
 import { getTeams } from "@/requests/team";
 import { applyToTeam, createTeam } from "@/helpers/team";
-import { redirect } from "next/navigation";
+import { redirect } from "@/compat/next-navigation";
 import { getSelf } from "@/requests/user";
 import { UserType } from "@/types/UserType";
 import { useCurrentJam } from "@/hooks/queries";
@@ -19,6 +19,54 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Modal } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
+import { readItem } from "@/requests/helpers";
+
+type TeamsPageResponse = {
+  items?: TeamType[];
+  data?: TeamType[] | { items?: TeamType[]; pageInfo?: { hasMore?: boolean; nextCursor?: string | null } };
+  meta?: { pageInfo?: { hasMore?: boolean; nextCursor?: string | null } };
+  pageInfo?: { hasMore?: boolean; nextCursor?: string | null };
+};
+
+function readTeamsPage(json: TeamsPageResponse | TeamType[]) {
+  if (Array.isArray(json)) {
+    return { items: json, nextCursor: null };
+  }
+  if (Array.isArray(json.data)) {
+    const pageInfo = json.meta?.pageInfo ?? json.pageInfo;
+    return {
+      items: json.data,
+      nextCursor: pageInfo?.hasMore ? pageInfo.nextCursor ?? null : null,
+    };
+  }
+  if (json.data && !Array.isArray(json.data)) {
+    const pageInfo = json.data.pageInfo ?? json.meta?.pageInfo ?? json.pageInfo;
+    return {
+      items: json.data.items ?? [],
+      nextCursor: pageInfo?.hasMore ? pageInfo.nextCursor ?? null : null,
+    };
+  }
+  const pageInfo = json.meta?.pageInfo ?? json.pageInfo;
+  return {
+    items: json.items ?? [],
+    nextCursor: pageInfo?.hasMore ? pageInfo.nextCursor ?? null : null,
+  };
+}
+
+async function loadAllTeams() {
+  const teams: TeamType[] = [];
+  let cursor: string | null = null;
+
+  do {
+    const response = await getTeams(cursor, 50);
+    const json = (await response.json()) as TeamsPageResponse | TeamType[];
+    const page = readTeamsPage(json);
+    teams.push(...page.items);
+    cursor = page.nextCursor;
+  } while (cursor);
+
+  return teams;
+}
 
 export default function TeamFinder() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -35,14 +83,16 @@ export default function TeamFinder() {
   const { data: currentJamData } = useCurrentJam();
   const jam = getNextJamForHome(currentJamData);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const targetJamId = useMemo(() => jam?.id ?? null, [jam?.id]);
 
   useEffect(() => {
     async function fetchData() {
       try {
         const self = await getSelf();
-        const data = await self.json();
+        const data = await readItem<UserType>(self);
+        if (!data) return;
 
-        if (data.primaryRoles.length > 0) setFilter("Primary Role");
+        if ((data.primaryRoles ?? []).length > 0) setFilter("Primary Role");
         setUser(data);
       } catch (error) {
         console.error(error);
@@ -54,11 +104,10 @@ export default function TeamFinder() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!user) return;
+      if (!user || !currentJamData) return;
 
       try {
-        const teamResponse = await getTeams();
-        let teams = (await teamResponse.json()).data;
+        let teams = await loadAllTeams();
         if (teamType == "Open to Applications") {
           teams = teams.filter((team: TeamType) => team.applicationsOpen);
         }
@@ -105,7 +154,11 @@ export default function TeamFinder() {
 
         teams = [...teams, ...noRoleTeams];
 
-        setTeams(teams.filter((team: TeamType) => team.jamId == jam?.id));
+        setTeams(
+          targetJamId == null
+            ? teams
+            : teams.filter((team: TeamType) => team.jamId == targetJamId),
+        );
       } catch (error) {
         console.error(error);
       } finally {
@@ -115,7 +168,7 @@ export default function TeamFinder() {
     }
 
     fetchData();
-  }, [teamType, filter, user, sortSet, jam]);
+  }, [teamType, filter, user, sortSet, currentJamData, targetJamId]);
 
   if (isLoading) {
     return (

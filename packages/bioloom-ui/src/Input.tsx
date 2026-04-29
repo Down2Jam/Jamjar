@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import { useTheme } from "./theme";
 import { InputProps, InputSize, InputVariant } from "./Input.types";
 

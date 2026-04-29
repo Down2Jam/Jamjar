@@ -3,7 +3,7 @@ import { Card } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { Metadata } from "next";
+import { Metadata } from "@/compat/next";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {

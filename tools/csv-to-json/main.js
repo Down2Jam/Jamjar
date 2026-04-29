@@ -17,9 +17,28 @@ await mkdir(outputDir, { recursive: true });
 // Read and parse the CSV
 const csv = await readFile(csvFilePath, "utf8");
 const { data } = Papa.parse(csv, { header: true });
+const fields = Object.keys(data[0] ?? {});
+
+// Papa can stop seeing appended rows when an older multiline cell is malformed.
+// AppStrings rows are generated as single-line CSV rows, so recover them here.
+const existingKeys = new Set(data.map((row) => row.key).filter(Boolean));
+for (const line of csv.split(/\r?\n/)) {
+  if (!line.startsWith("AppStrings.")) continue;
+  const parsed = Papa.parse(line, { header: false }).data?.[0];
+  if (!Array.isArray(parsed) || !parsed[0] || existingKeys.has(parsed[0])) {
+    continue;
+  }
+
+  const row = {};
+  fields.forEach((field, index) => {
+    row[field] = parsed[index] ?? "";
+  });
+  data.push(row);
+  existingKeys.add(row.key);
+}
 
 // Extract languages
-const languages = Object.keys(data[0]).filter((col) => col !== "key");
+const languages = fields.filter((col) => col !== "key");
 
 // Helper to build nested JSON from dot-separated keys
 function buildNested(flatEntries) {

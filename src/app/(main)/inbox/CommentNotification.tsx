@@ -7,7 +7,7 @@ import { Icon, IconName } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { NotificationType } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useState } from "react";
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";

@@ -4,13 +4,14 @@ import { Avatar, Badge } from "bioloom-ui";
 import { useEvents } from "@/hooks/queries";
 import { EventType } from "@/types/EventType";
 import Timer from "../timers/Timer";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { getIcon } from "@/helpers/icon";
 import { Text } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Hstack } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
+import { SidebarCardSkeleton } from "@/components/skeletons";
 
 export default function SidebarEvents() {
   const { data: currentEvents, isLoading: isLoadingCurrent } =
@@ -25,7 +26,7 @@ export default function SidebarEvents() {
     [currentEvents, upcomingEvents]
   );
 
-  if (isLoading) return <></>;
+  if (isLoading) return <SidebarCardSkeleton lines={2} className="mt-10" />;
 
   if (
     events.filter((event) => new Date(event.endTime) > new Date()).length == 0

@@ -1,18 +1,19 @@
 "use client";
 
 import { GameType } from "@/types/GameType";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import Image from "next/image";
+import { useTheme } from "@/providers/useSiteTheme";
+import Image from "@/compat/next-image";
 import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { useCurrentJam, useGames } from "@/hooks/queries";
 import { useMemo } from "react";
 import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
+import { Skeleton } from "@/components/skeletons";
 
 export default function SidebarGames() {
   const { colors } = useTheme();
-  const { data: activeJam } = useCurrentJam();
+  const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
   const { jamId, sort, pageVersion } = useMemo(() => {
     const phase = activeJam?.phase ?? "";
@@ -37,14 +38,35 @@ export default function SidebarGames() {
     };
   }, [activeJam]);
 
-  const { data: gamesData, isLoading } = useGames(sort, jamId, pageVersion);
+  const { data: gamesData, isLoading } = useGames(
+    sort,
+    jamId,
+    pageVersion,
+    true,
+    10,
+  );
 
   const games: GameType[] = useMemo(
     () => (Array.isArray(gamesData) ? gamesData : []),
     [gamesData]
   );
 
-  if (isLoading) return <></>;
+  if (jamLoading || isLoading) {
+    return (
+      <div className="mt-20 flex flex-col items-center gap-2">
+        <Skeleton className="h-8 w-44" />
+        <div className="flex w-[496px] flex-wrap justify-center gap-2">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <Skeleton key={index} className="h-[72px] w-[128px] rounded-xl" />
+          ))}
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={`small-${index}`} className="h-[54px] w-[96px] rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="h-9 w-32" />
+      </div>
+    );
+  }
   if (games.length === 0) return <></>;
 
   return (

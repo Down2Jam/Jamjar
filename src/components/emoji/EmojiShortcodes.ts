@@ -4,7 +4,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, EditorState } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 import type { MutableRefObject } from "react";
-import type { EmojiType } from "@/providers/EmojiProvider";
+import type { EmojiType } from "@/providers/useEmojis";
 
 const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
 

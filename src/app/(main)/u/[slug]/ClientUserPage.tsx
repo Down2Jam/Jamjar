@@ -28,20 +28,23 @@ import {
   Vstack,
   useDisclosure,
 } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
-import { getSelf, getUser, updateUser } from "@/requests/user";
+import { useTheme } from "@/providers/useSiteTheme";
+import { followUser, getSelf, getUser, updateUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
+import { TrackType } from "@/types/TrackType";
 import { UserType } from "@/types/UserType";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { computeEffectiveRecommendationItems } from "@/helpers/recommendations";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import Image from "next/image";
-import dynamic from "next/dynamic";
+import { readArray, readItem, unwrapArray, unwrapItem } from "@/requests/helpers";
+import Image from "@/compat/next-image";
+import dynamic from "@/compat/next-dynamic";
 import { use, useEffect, useMemo, useState } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
 import { BASE_URL } from "@/requests/config";
+import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
 
 type RarityTier =
   | "Abyssal"
@@ -171,6 +174,26 @@ function sortForRank(
     if (isLowerBetter(type)) return a.data - b.data;
     return b.data - a.data;
   });
+}
+
+function getProfileTrackVersionKey(track: TrackType) {
+  return `${track.gameId ?? track.game?.id ?? "unknown"}:${
+    track.sourceTrackId ?? track.slug ?? track.id
+  }`;
+}
+
+function preferPostJamProfileTracks(tracks: TrackType[]) {
+  const tracksByKey = new Map<string, TrackType>();
+
+  for (const track of tracks) {
+    const key = getProfileTrackVersionKey(track);
+    const existing = tracksByKey.get(key);
+    if (!existing || track.pageVersion === "POST_JAM") {
+      tracksByKey.set(key, track);
+    }
+  }
+
+  return Array.from(tracksByKey.values());
 }
 
 function computePlacement(target: LeaderboardScore): number | null {
@@ -305,6 +328,8 @@ export default function ClientUserPage({
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [defaultPfps, setDefaultPfps] = useState<string[]>([]);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followBusy, setFollowBusy] = useState(false);
   const [activeJamResponse, setActiveJamResponse] =
     useState<ActiveJamResponse | null>(null);
   const {
@@ -388,11 +413,20 @@ export default function ClientUserPage({
     Default: { border: colors["base"] + "99", text: colors["textFaded"] },
   };
   const isOwner = !!self && !!user && self.id === user.id;
+  usePageMetadata({
+    title: user?.name ?? slug,
+    description:
+      user?.short ||
+      stripHtmlForMetadata(user?.bio) ||
+      "A user in Down2Jam",
+    image: user?.profilePicture || user?.bannerPicture || "/images/D2J_Icon.png",
+    icon: user?.profilePicture || "/images/D2J_Icon.svg",
+    canonical: `/u/${user?.slug ?? slug}`,
+  });
 
   const refreshUser = async () => {
     const response = await getUser(`${slug}`);
-    const json = await response.json();
-    setUser(json.data);
+    setUser((await readItem<UserType>(response)) ?? undefined);
   };
 
   const normalizeImage = (value?: string | null) => {
@@ -430,7 +464,7 @@ export default function ClientUserPage({
     }
 
     const data = await response.json();
-    return data.data as string;
+    return unwrapItem<string>(data) ?? "";
   };
 
   useEffect(() => {
@@ -442,7 +476,7 @@ export default function ClientUserPage({
       ]);
 
       if (selfRes.ok) {
-        setSelf(await selfRes.json());
+        setSelf((await readItem<UserType>(selfRes)) ?? undefined);
       }
       setActiveJamResponse(jamRes);
     };
@@ -452,6 +486,18 @@ export default function ClientUserPage({
 
   useEffect(() => {
     if (!user) return;
+    const userWithFollowState = user as UserType & {
+      viewerFollowing?: boolean;
+      isFollowing?: boolean;
+      following?: boolean;
+    };
+    setFollowing(
+      Boolean(
+        userWithFollowState.viewerFollowing ??
+          userWithFollowState.isFollowing ??
+          userWithFollowState.following,
+      ),
+    );
     setProfilePicture(normalizeImage(user.profilePicture));
     setBannerPicture(normalizeImage(user.bannerPicture));
     setProfileBackground(normalizeImage(user.profileBackground));
@@ -573,7 +619,7 @@ export default function ClientUserPage({
     if (!isOwner) return;
     fetch(`${BASE_URL}/pfps`)
       .then((res) => res.json())
-      .then((data) => setDefaultPfps(data.data))
+      .then((data) => setDefaultPfps(unwrapArray<string>(data)))
       .catch((err) => console.error("Failed to load pfps", err));
   }, [isOwner]);
 
@@ -585,8 +631,7 @@ export default function ClientUserPage({
         setRoles([]);
         return;
       }
-      const data = await response.json();
-      setRoles(data.data ?? []);
+      setRoles(await readArray<RoleType>(response));
     };
 
     loadRoles();
@@ -744,8 +789,13 @@ export default function ClientUserPage({
       ),
     [canSeeModeratedContent, user?.comments],
   );
+  const visibleProfileTracks = useMemo(
+    () => preferPostJamProfileTracks(user?.tracks ?? []),
+    [user?.tracks],
+  );
   const postsCount = visiblePosts.length;
   const commentsCount = visibleComments.length;
+  const musicCount = visibleProfileTracks.length;
   const ratedGamesCount = recGameCandidates.length;
   const ratedTracksCount = recTrackCandidates.length;
   const hasActiveJam = activeJamId != null;
@@ -1093,6 +1143,27 @@ export default function ClientUserPage({
                 </Hstack>
               </Vstack>
               <Hstack className="ml-auto flex-wrap items-center justify-end gap-2">
+                {self && !isOwner && (
+                  <Button
+                    size="sm"
+                    color={following ? "default" : "blue"}
+                    icon={following ? "users" : "userplus"}
+                    disabled={followBusy}
+                    onClick={async () => {
+                      setFollowBusy(true);
+                      const nextFollowing = !following;
+                      const response = await followUser(user.slug, nextFollowing);
+                      setFollowBusy(false);
+                      if (response.ok) {
+                        setFollowing(nextFollowing);
+                      } else {
+                        addToast({ title: "Could not update follow" });
+                      }
+                    }}
+                  >
+                    {following ? "Following" : "Follow"}
+                  </Button>
+                )}
                 {[
                   {
                     key: "recommendations" as ProfileSection,
@@ -1107,7 +1178,7 @@ export default function ClientUserPage({
                   {
                     key: "music" as ProfileSection,
                     label: "Music",
-                    count: user.tracks.length,
+                    count: musicCount,
                   },
                   {
                     key: "posts" as ProfileSection,
@@ -1388,7 +1459,7 @@ export default function ClientUserPage({
             )}
             {profileSection === "music" && (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {user.tracks
+                {[...visibleProfileTracks]
                   .sort((a, b) => b.id - a.id)
                   .map((track) => (
                     <SidebarSong
@@ -1403,6 +1474,7 @@ export default function ClientUserPage({
                       }}
                       song={track.url}
                       license={track.license}
+                      pageVersion={track.pageVersion}
                       allowDownload={track.allowDownload}
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={

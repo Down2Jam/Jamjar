@@ -18,7 +18,7 @@ import {
 } from "@/components/tracks/editingShared";
 import { searchUsers } from "@/requests/user";
 import { getTrackFlags, getTrackTags, updateTrack } from "@/requests/track";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { TrackFlagType } from "@/types/TrackFlagType";
 import { TrackTagType } from "@/types/TrackTagType";
 import { TrackType } from "@/types/TrackType";
@@ -36,7 +36,7 @@ import {
   Dropdown,
 } from "bioloom-ui";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/compat/next-navigation";
 import Select, { StylesConfig } from "react-select";
 
 type CreditDraft = {

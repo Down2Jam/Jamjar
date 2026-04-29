@@ -2,25 +2,28 @@ import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
 export async function getSelf() {
-  const userCookie = getCookie("user");
   const tokenCookie = getCookie("token");
   //if (!userCookie || !tokenCookie) return Promise.reject("Cookie not found.");
 
-  return fetch(`${BASE_URL}/self?username=${userCookie}`, {
+  return fetch(`${BASE_URL}/self`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
   });
 }
 
 export async function getUser(userSlug: string) {
-  return fetch(`${BASE_URL}/user?targetUserSlug=${userSlug}`);
+  const tokenCookie = getCookie("token");
+  return fetch(`${BASE_URL}/users/${encodeURIComponent(userSlug)}`, {
+    headers: tokenCookie ? { authorization: `Bearer ${tokenCookie}` } : undefined,
+    credentials: "include",
+  });
 }
 
 export async function searchUsers(query: string) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
-  return fetch(`${BASE_URL}/user/search?q=${query}`, {
+  return fetch(`${BASE_URL}/users/search?q=${encodeURIComponent(query)}`, {
     headers: { authorization: `Bearer ${tokenCookie}` },
     credentials: "include",
   });
@@ -74,7 +77,7 @@ export async function updateUser(
     autoHideRatingsWhileStreaming,
   };
 
-  const response = await fetch(`${BASE_URL}/user`, {
+  const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(userSlug)}`, {
     body: JSON.stringify(payload),
     method: "PUT",
     headers: {
@@ -85,4 +88,19 @@ export async function updateUser(
   });
 
   return response;
+}
+
+export async function followUser(userSlug: string, follow: boolean) {
+  const tokenCookie = getCookie("token");
+  if (!tokenCookie) return Promise.reject("Token cookie not found.");
+
+  return fetch(`${BASE_URL}/users/${encodeURIComponent(userSlug)}/follow`, {
+    body: JSON.stringify({ follow }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${tokenCookie}`,
+    },
+    credentials: "include",
+  });
 }

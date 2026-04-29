@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /create-event
+Disallow: /create-game
+Disallow: /create-post
+Disallow: /docs/new
+Disallow: /forgot-password
+Disallow: /inbox
+Disallow: /login
+Disallow: /logout
+Disallow: /reports
+Disallow: /settings
+Disallow: /signup
+Disallow: /team
+Disallow: /*/edit
+
+Sitemap: https://d2jam.com/sitemap.xml

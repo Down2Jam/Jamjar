@@ -1,7 +1,7 @@
 "use client";
 
 import { forwardRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations } from "@/compat/next-intl";
 import { useTheme } from "./theme";
 import { TextProps, TextSize, TextWeight } from "./Text.types";
 

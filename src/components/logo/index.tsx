@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { RefObject } from "react";
 
 export default function Logo({

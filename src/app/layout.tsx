@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import type { Metadata } from "@/compat/next";
+import { Inter } from "@/compat/next-font-google";
 import "./globals.css";
 import Providers from "./providers";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "@/compat/next-intl-server";
 import { LanguagePreviewProvider } from "@/providers/LanguagePreviewProvider";
 import { QueryClient, dehydrate } from "@tanstack/react-query";
 import { getCurrentJam } from "@/helpers/jam";

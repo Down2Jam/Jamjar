@@ -18,7 +18,7 @@ import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Switch } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 

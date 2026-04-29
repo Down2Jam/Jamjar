@@ -2,7 +2,7 @@
 
 import { Hstack, Text } from "bioloom-ui";
 import { PageVersion } from "@/types/GameType";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 
 export default function PageVersionToggle({
   value,

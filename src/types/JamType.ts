@@ -4,6 +4,7 @@ import { UserType } from "./UserType";
 
 export interface JamType {
   id: number;
+  slug?: string;
   name: string;
   suggestionHours: number;
   slaughterHours: number;

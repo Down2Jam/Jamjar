@@ -4,7 +4,7 @@ import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
 import { addToast, Avatar, Form, ImageCropData, ImageInput } from "bioloom-ui";
-import { redirect, usePathname } from "next/navigation";
+import { redirect, usePathname } from "@/compat/next-navigation";
 import { useEffect, useRef, useState } from "react";
 import { getSelf, updateUser } from "@/requests/user";
 import { getTeamRoles } from "@/requests/team";
@@ -18,10 +18,11 @@ import { Card } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { Switch } from "bioloom-ui";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Textarea } from "bioloom-ui";
-import { useEmojis } from "@/providers/EmojiProvider";
+import { useEmojis } from "@/providers/useEmojis";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
+import { readArray, readItem, unwrapArray } from "@/requests/helpers";
 
 const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const MIN_EMOTE_PREFIX_LENGTH = 4;
@@ -129,7 +130,11 @@ export default function UserPage() {
         const response = await getSelf();
 
         if (response.status == 200) {
-          const data = await response.json();
+          const data = await readItem<UserType>(response);
+          if (!data) {
+            setUser(undefined);
+            return;
+          }
           setUser(data);
 
           setProfilePicture(data.profilePicture || null);
@@ -143,13 +148,17 @@ export default function UserPage() {
             Boolean(data.autoHideRatingsWhileStreaming),
           );
           setEmotePrefixInput(data.emotePrefix ?? "");
+          const loadedPrimaryRoles = Array.isArray(data.primaryRoles)
+            ? data.primaryRoles
+            : [];
+          const loadedSecondaryRoles = Array.isArray(data.secondaryRoles)
+            ? data.secondaryRoles
+            : [];
           setPrimaryRoles(
-            new Set(data.primaryRoles.map((role: RoleType) => role.slug)) ??
-              new Set(),
+            new Set(loadedPrimaryRoles.map((role: RoleType) => role.slug)),
           );
           setSecondaryRoles(
-            new Set(data.secondaryRoles.map((role: RoleType) => role.slug)) ??
-              new Set(),
+            new Set(loadedSecondaryRoles.map((role: RoleType) => role.slug)),
           );
         } else {
           setUser(undefined);
@@ -158,8 +167,7 @@ export default function UserPage() {
         const rolesResponse = await getTeamRoles();
 
         if (rolesResponse.status == 200) {
-          const data = await rolesResponse.json();
-          setRoles(data.data);
+          setRoles(await readArray<RoleType>(rolesResponse));
         } else {
           setRoles([]);
         }
@@ -201,6 +209,12 @@ export default function UserPage() {
       emoji.scopeType === "USER" &&
       (emoji.scopeUserId === user.id || emoji.ownerUser?.id === user.id),
   );
+  const userPrimaryRoles = Array.isArray(user.primaryRoles)
+    ? user.primaryRoles
+    : [];
+  const userSecondaryRoles = Array.isArray(user.secondaryRoles)
+    ? user.secondaryRoles
+    : [];
 
   const cleanedPrefixInput = emotePrefixInput
     .trim()
@@ -235,10 +249,10 @@ export default function UserPage() {
       Boolean(user.autoHideRatingsWhileStreaming),
     );
     setPrimaryRoles(
-      new Set(user.primaryRoles.map((role) => role.slug)) ?? new Set(),
+      new Set(userPrimaryRoles.map((role) => role.slug)),
     );
     setSecondaryRoles(
-      new Set(user.secondaryRoles.map((role) => role.slug)) ?? new Set(),
+      new Set(userSecondaryRoles.map((role) => role.slug)),
     );
     setEmotePrefixInput(user.emotePrefix ?? "");
   };
@@ -255,11 +269,11 @@ export default function UserPage() {
     cleanedPrefixInput !== (user.emotePrefix ?? "") ||
     !setsEqual(
       primaryRoles,
-      new Set(user.primaryRoles.map((role) => role.slug) ?? []),
+      new Set(userPrimaryRoles.map((role) => role.slug)),
     ) ||
     !setsEqual(
       secondaryRoles,
-      new Set(user.secondaryRoles.map((role) => role.slug) ?? []),
+      new Set(userSecondaryRoles.map((role) => role.slug)),
     );
 
   const scheduleEmoteArtistFetch = (value: string) => {
@@ -280,19 +294,14 @@ export default function UserPage() {
             process.env.NEXT_PUBLIC_MODE === "PROD"
               ? "https://d2jam.com/api/v1"
               : "http://localhost:3005/api/v1"
-          }/user/search?q=${encodeURIComponent(query)}`,
+          }/users/search?q=${encodeURIComponent(query)}`,
           {
             headers: { authorization: `Bearer ${getCookie("token")}` },
             credentials: "include",
           },
         );
         if (!response.ok) return;
-        const data = await response.json();
-        const matches = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-            ? data.data
-            : [];
+        const matches = unwrapArray<any>(await response.json());
         const cleaned = matches.map((u: any) => ({
           slug: u.slug,
           name: u.name ?? u.slug,
@@ -325,19 +334,14 @@ export default function UserPage() {
             process.env.NEXT_PUBLIC_MODE === "PROD"
               ? "https://d2jam.com/api/v1"
               : "http://localhost:3005/api/v1"
-          }/user/search?q=${encodeURIComponent(query)}`,
+          }/users/search?q=${encodeURIComponent(query)}`,
           {
             headers: { authorization: `Bearer ${getCookie("token")}` },
             credentials: "include",
           },
         );
         if (!response.ok) return;
-        const data = await response.json();
-        const matches = Array.isArray(data)
-          ? data
-          : Array.isArray(data?.data)
-            ? data.data
-            : [];
+        const matches = unwrapArray<any>(await response.json());
         const cleaned = matches.map((u: any) => ({
           slug: u.slug,
           name: u.name ?? u.slug,
@@ -437,7 +441,8 @@ export default function UserPage() {
 
           if (response.ok) {
             addToast({ title: "Changed settings" });
-            setUser((await response.json()).data);
+            const updatedUser = await readItem<UserType>(response);
+            if (updatedUser) setUser(updatedUser);
             setWaitingSave(false);
           } else {
             addToast({ title: "Failed to update settings" });

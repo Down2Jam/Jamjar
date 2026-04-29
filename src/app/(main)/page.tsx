@@ -4,8 +4,8 @@
  * @author Ategon
  * @created 2025-8-13
  */
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "@/compat/next-headers";
+import { redirect } from "@/compat/next-navigation";
 import SplashBackground from "./SplashBackground";
 import { Hstack, Stack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";

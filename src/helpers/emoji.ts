@@ -1,4 +1,4 @@
-import type { EmojiType } from "@/providers/EmojiProvider";
+import type { EmojiType } from "@/providers/useEmojis";
 
 const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
 

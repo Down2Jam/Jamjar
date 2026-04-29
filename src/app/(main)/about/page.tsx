@@ -3,7 +3,7 @@
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
-import { useTheme } from "@/providers/SiteThemeProvider";
+import { useTheme } from "@/providers/useSiteTheme";
 import { Accordion, AccordionItem } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Card } from "bioloom-ui";

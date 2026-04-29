@@ -5,8 +5,12 @@ export async function signup(
   password: string,
   email: string
 ) {
-  return fetch(`${BASE_URL}/user`, {
-    body: JSON.stringify({ username, password, email }),
+  return fetch(`${BASE_URL}/users`, {
+    body: JSON.stringify({
+      username,
+      password,
+      email: email.trim() ? email.trim() : null,
+    }),
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",

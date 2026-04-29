@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -13,6 +14,10 @@ import CommentNotification from "./CommentNotification";
 import { useSelf } from "@/hooks/queries";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
+import {
+  markAllNotificationsRead,
+  updateNotification,
+} from "@/requests/notification";
 
 export default function InboxPage() {
   const { data: user } = useSelf();
@@ -22,6 +27,10 @@ export default function InboxPage() {
 
   const removeNotificationFromState = async (id: number) => {
     // Invalidate user query to refetch notifications
+    await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+  };
+
+  const refreshNotifications = async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
   };
 
@@ -38,12 +47,31 @@ export default function InboxPage() {
           <Text size="sm" color="textFaded">
             Alerts of things happening on the site
           </Text>
+          <Hstack>
+            <Button
+              size="sm"
+              icon="check"
+              onClick={async () => {
+                const response = await markAllNotificationsRead();
+                if (response.ok) await refreshNotifications();
+              }}
+            >
+              Mark all read
+            </Button>
+            <Button size="sm" icon="rotateccw" onClick={refreshNotifications}>
+              Refresh
+            </Button>
+          </Hstack>
         </Vstack>
       </Card>
 
       <Vstack align="stretch">
         {notifications.map((notification) => {
           const handleMarkRead = async (id: number) => {
+            const res = await updateNotification(id, { read: true });
+            if (res.ok) await removeNotificationFromState(id);
+          };
+          const handleArchive = async (id: number) => {
             const res = await deleteNotification(id);
             if (res.ok) await removeNotificationFromState(id);
           };
@@ -57,7 +85,7 @@ export default function InboxPage() {
                   onAccept={async (inviteId, notificationId) => {
                     try {
                       const ok = await handleInvite(inviteId, true);
-                      if (ok) await handleMarkRead(notificationId);
+                      if (ok) await handleArchive(notificationId);
                     } catch (e) {
                       console.error(e);
                     }
@@ -65,7 +93,7 @@ export default function InboxPage() {
                   onReject={async (inviteId, notificationId) => {
                     try {
                       const ok = await handleInvite(inviteId, false);
-                      if (ok) await handleMarkRead(notificationId);
+                      if (ok) await handleArchive(notificationId);
                     } catch (e) {
                       console.error(e);
                     }
@@ -81,7 +109,7 @@ export default function InboxPage() {
                   onAccept={async (applicationId, notificationId) => {
                     try {
                       const ok = await handleApplication(applicationId, true);
-                      if (ok) await handleMarkRead(notificationId);
+                      if (ok) await handleArchive(notificationId);
                     } catch (e) {
                       console.error(e);
                     }
@@ -89,7 +117,7 @@ export default function InboxPage() {
                   onReject={async (applicationId, notificationId) => {
                     try {
                       const ok = await handleApplication(applicationId, false);
-                      if (ok) await handleMarkRead(notificationId);
+                      if (ok) await handleArchive(notificationId);
                     } catch (e) {
                       console.error(e);
                     }
