@@ -77,7 +77,8 @@ type CanvasPreview =
   | { type: "current" }
   | { type: "history"; id: number }
   | { type: "pending"; id: number }
-  | { type: "rejected"; id: number };
+  | { type: "rejected"; id: number }
+  | { type: "removed"; id: number };
 
 function keyFor(x: number, y: number) {
   return `${x}:${y}`;
@@ -154,6 +155,34 @@ function composeFromHistory(
   return composePixelSubmissions(width, height, historySlice);
 }
 
+function wasSubmissionVisibleAt(
+  submission: QuiltSubmission,
+  timestamp: number,
+) {
+  return (
+    new Date(submission.createdAt).getTime() <= timestamp &&
+    (!submission.removedAt || new Date(submission.removedAt).getTime() > timestamp)
+  );
+}
+
+function getSubmissionStackAtOriginalTime(
+  quilt: QuiltDetail,
+  submission: QuiltSubmission,
+) {
+  const timestamp = new Date(submission.createdAt).getTime();
+  const visibleBase = [...quilt.history, ...quilt.removed]
+    .filter((candidate) => candidate.id !== submission.id)
+    .filter((candidate) => wasSubmissionVisibleAt(candidate, timestamp))
+    .sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
+  return [
+    ...visibleBase,
+    { pixels: submission.pixels },
+  ];
+}
+
 export default function QuiltDetailPage() {
   const params = useParams<{ quiltSlug: string }>();
   const quiltSlug = params.quiltSlug;
@@ -174,6 +203,11 @@ export default function QuiltDetailPage() {
   const hasToken = hasCookie("token");
   const { data: user } = useSelf(hasToken);
   const isModerator = Boolean(user?.admin || user?.mod);
+  const isEditing = draft.size > 0 || editingSubmissionId !== null;
+  const activePreview: CanvasPreview = isEditing ? { type: "current" } : preview;
+  const ownPendingSubmission = user
+    ? quilt?.pending.find((submission) => submission.author.id === user.id) ?? null
+    : null;
 
   const loadQuilt = useCallback(async () => {
     if (!quiltSlug) return;
@@ -194,11 +228,25 @@ export default function QuiltDetailPage() {
 
   const viewCanvas = useMemo(() => {
     if (!quilt) return [];
+    if (activePreview.type === "rejected" || activePreview.type === "removed") {
+      const submission =
+        activePreview.type === "rejected"
+          ? quilt.rejected.find((item) => item.id === activePreview.id)
+          : quilt.removed.find((item) => item.id === activePreview.id);
+      if (submission) {
+        const draftPixels = Array.from(draft.entries()).map(([key, value]) => {
+          const [x, y] = key.split(":").map(Number);
+          return { x, y, color: value };
+        });
+        return composePixelSubmissions(quilt.width, quilt.height, [
+          ...getSubmissionStackAtOriginalTime(quilt, submission),
+          { pixels: draftPixels },
+        ]);
+      }
+    }
     const previewPixels =
-      preview.type === "pending"
-        ? (quilt.pending.find((submission) => submission.id === preview.id)?.pixels ?? [])
-        : preview.type === "rejected"
-          ? (quilt.rejected.find((submission) => submission.id === preview.id)?.pixels ?? [])
+      activePreview.type === "pending"
+        ? (quilt.pending.find((submission) => submission.id === activePreview.id)?.pixels ?? [])
         : [];
     const draftPixels = Array.from(draft.entries()).map(([key, value]) => {
       const [x, y] = key.split(":").map(Number);
@@ -208,10 +256,10 @@ export default function QuiltDetailPage() {
       quilt.width,
       quilt.height,
       quilt.history,
-      preview.type === "history" ? preview.id : null,
+      activePreview.type === "history" ? activePreview.id : null,
       [...previewPixels, ...draftPixels],
     );
-  }, [draft, preview, quilt]);
+  }, [activePreview, draft, quilt]);
 
   const drawPixel = useCallback(
     (x: number, y: number, nextColor: string | null) => {
@@ -500,13 +548,14 @@ export default function QuiltDetailPage() {
               </Text>
               <Text color="textFaded">
                 {quilt.width} x {quilt.height} pixels · Ends {formatTime(quilt.endsAt)}
-                {preview.type === "history" && " · Viewing history"}
-                {preview.type === "pending" && " · Previewing pending change"}
-                {preview.type === "rejected" && " · Previewing rejected change"}
+                {activePreview.type === "history" && " · Viewing history"}
+                {activePreview.type === "pending" && " · Previewing pending change"}
+                {activePreview.type === "rejected" && " · Previewing rejected change"}
+                {activePreview.type === "removed" && " · Previewing removed change"}
               </Text>
             </Vstack>
             <Hstack>
-              {preview.type !== "current" && (
+              {activePreview.type !== "current" && (
                 <Button
                   size="sm"
                   variant="ghost"
@@ -626,8 +675,11 @@ export default function QuiltDetailPage() {
 
               <Hstack justify="between" className="flex-wrap gap-2">
                 <Text color="textFaded">
-                  {draft.size} pending pixel changes
-                  {editingSubmissionId ? " · editing existing submission" : ""}
+                  {editingSubmissionId
+                    ? `${draft.size} pending pixel changes · editing existing submission`
+                    : ownPendingSubmission
+                      ? "You already have a pending change. Edit it to submit updates."
+                      : `${draft.size} pending pixel changes`}
                 </Text>
                 <Hstack>
                   <Button
@@ -644,7 +696,12 @@ export default function QuiltDetailPage() {
                     size="sm"
                     icon="send"
                     color="blue"
-                    disabled={!user || draft.size === 0 || quilt.isEnded}
+                    disabled={
+                      !user ||
+                      draft.size === 0 ||
+                      quilt.isEnded ||
+                      (ownPendingSubmission !== null && editingSubmissionId === null)
+                    }
                     onClick={submitDraft}
                   >
                     {editingSubmissionId ? "Save edit" : "Submit changes"}
@@ -659,45 +716,64 @@ export default function QuiltDetailPage() {
           <HistoryPanel
             title="History"
             submissions={quilt.history}
-            selectedId={preview.type === "history" ? preview.id : null}
-            onSelect={(id) =>
+            selectedId={activePreview.type === "history" ? activePreview.id : null}
+            previewDisabled={isEditing}
+            onSelect={(id) => {
+              if (isEditing) return;
               setPreview((current) =>
                 current.type === "history" && current.id === id
                   ? { type: "current" }
                   : { type: "history", id },
-              )
-            }
+              );
+            }}
             isModerator={isModerator}
             onRemove={removeSubmission}
           />
           <PendingPanel
             submissions={quilt.pending}
-            selectedId={preview.type === "pending" ? preview.id : null}
+            selectedId={activePreview.type === "pending" ? activePreview.id : null}
             currentUserId={user?.id}
-            onSelect={(id) =>
+            previewDisabled={isEditing}
+            onSelect={(id) => {
+              if (isEditing) return;
               setPreview((current) =>
                 current.type === "pending" && current.id === id
                   ? { type: "current" }
                   : { type: "pending", id },
-              )
-            }
+              );
+            }}
             onEdit={startEditingSubmission}
             onVote={vote}
           />
           <HistoryPanel
             title="Rejected"
             submissions={quilt.rejected}
-            selectedId={preview.type === "rejected" ? preview.id : null}
-            onSelect={(id) =>
+            selectedId={activePreview.type === "rejected" ? activePreview.id : null}
+            previewDisabled={isEditing}
+            onSelect={(id) => {
+              if (isEditing) return;
               setPreview((current) =>
                 current.type === "rejected" && current.id === id
                   ? { type: "current" }
                   : { type: "rejected", id },
-              )
-            }
+              );
+            }}
           />
           {quilt.removed.length > 0 && (
-            <HistoryPanel title="Removed" submissions={quilt.removed} />
+            <HistoryPanel
+              title="Removed"
+              submissions={quilt.removed}
+              selectedId={activePreview.type === "removed" ? activePreview.id : null}
+              previewDisabled={isEditing}
+              onSelect={(id) => {
+                if (isEditing) return;
+                setPreview((current) =>
+                  current.type === "removed" && current.id === id
+                    ? { type: "current" }
+                    : { type: "removed", id },
+                );
+              }}
+            />
           )}
         </Vstack>
       </div>
@@ -709,6 +785,7 @@ function HistoryPanel({
   title,
   submissions,
   selectedId,
+  previewDisabled,
   isModerator,
   onSelect,
   onRemove,
@@ -716,6 +793,7 @@ function HistoryPanel({
   title: string;
   submissions: QuiltSubmission[];
   selectedId?: number | null;
+  previewDisabled?: boolean;
   isModerator?: boolean;
   onSelect?: (id: number) => void;
   onRemove?: (id: number) => void;
@@ -737,10 +815,12 @@ function HistoryPanel({
             .map((submission) => (
               <button
                 key={submission.id}
-                className={`cursor-pointer rounded border p-3 text-left transition-colors ${
+                className={`rounded border p-3 text-left transition-colors ${
                   selectedId === submission.id
                     ? "border-cyan-300/70 bg-cyan-300/10"
-                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                    : previewDisabled
+                      ? "cursor-default border-white/10 bg-white/[0.03]"
+                      : "cursor-pointer border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
                 }`}
                 onClick={() => onSelect?.(submission.id)}
               >
@@ -777,6 +857,7 @@ function PendingPanel({
   submissions,
   selectedId,
   currentUserId,
+  previewDisabled,
   onSelect,
   onEdit,
   onVote,
@@ -784,6 +865,7 @@ function PendingPanel({
   submissions: QuiltSubmission[];
   selectedId?: number | null;
   currentUserId?: number;
+  previewDisabled?: boolean;
   onSelect: (id: number) => void;
   onEdit: (submission: QuiltSubmission) => void;
   onVote: (id: number, value: 1 | -1) => void;
@@ -805,10 +887,12 @@ function PendingPanel({
             .map((submission) => (
               <button
                 key={submission.id}
-                className={`cursor-pointer rounded border p-3 text-left transition-colors ${
+                className={`rounded border p-3 text-left transition-colors ${
                   selectedId === submission.id
                     ? "border-cyan-300/70 bg-cyan-300/10"
-                    : "border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
+                    : previewDisabled
+                      ? "cursor-default border-white/10 bg-white/[0.03]"
+                      : "cursor-pointer border-white/10 bg-white/[0.03] hover:bg-white/[0.06]"
                 }`}
                 onClick={() => onSelect(submission.id)}
               >
