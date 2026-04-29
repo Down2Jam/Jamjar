@@ -205,9 +205,6 @@ export default function QuiltDetailPage() {
   const isModerator = Boolean(user?.admin || user?.mod);
   const isEditing = draft.size > 0 || editingSubmissionId !== null;
   const activePreview: CanvasPreview = isEditing ? { type: "current" } : preview;
-  const ownPendingSubmission = user
-    ? quilt?.pending.find((submission) => submission.author.id === user.id) ?? null
-    : null;
 
   const loadQuilt = useCallback(async () => {
     if (!quiltSlug) return;
@@ -677,9 +674,7 @@ export default function QuiltDetailPage() {
                 <Text color="textFaded">
                   {editingSubmissionId
                     ? `${draft.size} pending pixel changes · editing existing submission`
-                    : ownPendingSubmission
-                      ? "You already have a pending change. Edit it to submit updates."
-                      : `${draft.size} pending pixel changes`}
+                    : `${draft.size} pending pixel changes`}
                 </Text>
                 <Hstack>
                   <Button
@@ -699,8 +694,7 @@ export default function QuiltDetailPage() {
                     disabled={
                       !user ||
                       draft.size === 0 ||
-                      quilt.isEnded ||
-                      (ownPendingSubmission !== null && editingSubmissionId === null)
+                      quilt.isEnded
                     }
                     onClick={submitDraft}
                   >
@@ -744,6 +738,8 @@ export default function QuiltDetailPage() {
             }}
             onEdit={startEditingSubmission}
             onVote={vote}
+            isModerator={isModerator}
+            onRemove={removeSubmission}
           />
           <HistoryPanel
             title="Rejected"
@@ -858,17 +854,21 @@ function PendingPanel({
   selectedId,
   currentUserId,
   previewDisabled,
+  isModerator,
   onSelect,
   onEdit,
   onVote,
+  onRemove,
 }: {
   submissions: QuiltSubmission[];
   selectedId?: number | null;
   currentUserId?: number;
   previewDisabled?: boolean;
+  isModerator?: boolean;
   onSelect: (id: number) => void;
   onEdit: (submission: QuiltSubmission) => void;
   onVote: (id: number, value: 1 | -1) => void;
+  onRemove: (id: number) => void;
 }) {
   return (
     <Card>
@@ -949,6 +949,17 @@ function PendingPanel({
                     >
                       <ThumbsDown size={16} />
                     </button>
+                    {isModerator && (
+                      <Button
+                        size="sm"
+                        icon="trash"
+                        variant="ghost"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onRemove(submission.id);
+                        }}
+                      />
+                    )}
                   </Hstack>
                 </Hstack>
               </button>
