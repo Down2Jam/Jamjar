@@ -3,6 +3,7 @@
 import {
   getRadioEventsUrl,
   getRadioState,
+  reportRadioTrackDuration,
   type RadioStation,
   sendRadioEmote,
   voteRadioTrack,
@@ -317,14 +318,23 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   const { colors } = useTheme();
   const { emojis, emojiMap, loading: emojisLoading } = useEmojis();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const volumeRef = useRef(DEFAULT_RADIO_VOLUME);
   const [volume, setVolumeState] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_RADIO_VOLUME;
+    if (typeof window === "undefined") {
+      volumeRef.current = DEFAULT_RADIO_VOLUME;
+      return DEFAULT_RADIO_VOLUME;
+    }
     const raw = window.localStorage.getItem(RADIO_VOLUME_KEY);
-    if (raw === null) return DEFAULT_RADIO_VOLUME;
+    if (raw === null) {
+      volumeRef.current = DEFAULT_RADIO_VOLUME;
+      return DEFAULT_RADIO_VOLUME;
+    }
     const stored = Number(raw);
-    return Number.isFinite(stored)
+    const initialVolume = Number.isFinite(stored)
       ? Math.min(Math.max(stored, 0), 1)
       : DEFAULT_RADIO_VOLUME;
+    volumeRef.current = initialVolume;
+    return initialVolume;
   });
   const [state, setState] = useState<RadioState | null>(null);
   const [loading, setLoading] = useState(true);
@@ -350,9 +360,11 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   const emotePickerOpenedByClick = useRef(false);
   const lastSyncedTrackId = useRef<number | null>(null);
   const autoAttemptedTrackId = useRef<number | null>(null);
+  const reportedDurationKey = useRef<string | null>(null);
 
   const setVolume = useCallback((nextVolume: number) => {
     const normalized = Math.min(Math.max(nextVolume, 0), 1);
+    volumeRef.current = normalized;
     setVolumeState(normalized);
     if (audioRef.current) {
       audioRef.current.volume = toAudioVolume(normalized);
@@ -364,19 +376,26 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     }
   }, []);
 
-  useEffect(() => {
+  const ensureRadioAudio = useCallback(() => {
+    if (audioRef.current) return audioRef.current;
     const audio = new Audio();
     audio.preload = "auto";
     audio.crossOrigin = "anonymous";
-    audio.volume = toAudioVolume(volume);
+    audio.volume = toAudioVolume(volumeRef.current);
     audioRef.current = audio;
+    return audio;
+  }, []);
 
+  useEffect(() => {
+    const audio = ensureRadioAudio();
     return () => {
       audio.pause();
       audio.src = "";
-      audioRef.current = null;
+      if (audioRef.current === audio) {
+        audioRef.current = null;
+      }
     };
-  }, []);
+  }, [ensureRadioAudio]);
 
   const clearEmotePickerCloseTimer = useCallback(() => {
     if (emotePickerCloseTimer.current === null) return;
@@ -478,6 +497,21 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     setState(nextState);
     setLocalVoteTrackId(nextState?.voting.userVoteTrackId ?? null);
   }, [station]);
+
+  useEffect(() => {
+    const audio = ensureRadioAudio();
+    const handleEnded = () => {
+      lastSyncedTrackId.current = null;
+      void loadState().catch((error) => {
+        console.warn("Failed to refresh radio after track ended", error);
+      });
+    };
+
+    audio.addEventListener("ended", handleEnded);
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, [ensureRadioAudio, loadState]);
 
   useEffect(() => {
     let cancelled = false;
@@ -755,8 +789,8 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
 
   const playCurrentTrack = useCallback(
     async (options?: { keepStartOverlay?: boolean }) => {
-      if (!state?.current || !audioRef.current) return;
-      const audio = audioRef.current;
+      if (!state?.current) return false;
+      const audio = ensureRadioAudio();
       const track = state.current.track;
       const elapsedSeconds = Math.min(
         Math.max(0, timing.elapsedSeconds),
@@ -778,29 +812,55 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
           // Some browsers only allow seeking after metadata is available.
         }
       };
+      const reportDuration = () => {
+        const durationSeconds = audio.duration;
+        if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) return;
+        const key = `${station}:${track.id}:${Math.round(durationSeconds)}`;
+        if (reportedDurationKey.current === key) return;
+        reportedDurationKey.current = key;
+        void reportRadioTrackDuration(track.id, durationSeconds, station)
+          .then(async (response) => {
+            if (!response.ok) return;
+            const nextState = await readItem<RadioState>(response);
+            setState(nextState);
+            setLocalVoteTrackId(nextState?.voting.userVoteTrackId ?? null);
+          })
+          .catch((error) => {
+            console.warn("Failed to report radio track duration", error);
+          });
+      };
 
       if (audio.readyState > 0) {
         seekToLivePosition();
+        reportDuration();
       } else {
-        audio.addEventListener("loadedmetadata", seekToLivePosition, {
-          once: true,
-        });
+        audio.addEventListener(
+          "loadedmetadata",
+          () => {
+            seekToLivePosition();
+            reportDuration();
+          },
+          { once: true },
+        );
       }
 
       await audio.play();
       seekToLivePosition();
+      reportDuration();
       lastSyncedTrackId.current = track.id;
       setIsListening(true);
       if (!options?.keepStartOverlay) {
         setAutoPlaybackBlocked(false);
       }
+      return true;
     },
-    [state, timing.elapsedSeconds, volume],
+    [ensureRadioAudio, station, state, timing.elapsedSeconds, volume],
   );
 
   const startListening = useCallback(async () => {
     try {
-      await playCurrentTrack({ keepStartOverlay: true });
+      const started = await playCurrentTrack({ keepStartOverlay: true });
+      if (!started) return;
       setStartOverlayFading(true);
       window.setTimeout(() => {
         setAutoPlaybackBlocked(false);
@@ -817,11 +877,17 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     if (!state?.current) return;
     if (autoAttemptedTrackId.current === state.current.track.id) return;
 
-    autoAttemptedTrackId.current = state.current.track.id;
-    void playCurrentTrack().catch((error) => {
-      console.warn("Radio autoplay was blocked", error);
-      setAutoPlaybackBlocked(true);
-    });
+    void playCurrentTrack()
+      .then((started) => {
+        if (started) {
+          autoAttemptedTrackId.current = state.current?.track.id ?? null;
+        }
+      })
+      .catch((error) => {
+        autoAttemptedTrackId.current = state.current?.track.id ?? null;
+        console.warn("Radio autoplay was blocked", error);
+        setAutoPlaybackBlocked(true);
+      });
   }, [playCurrentTrack, state?.current]);
 
   useEffect(() => {

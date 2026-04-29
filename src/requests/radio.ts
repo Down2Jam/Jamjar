@@ -39,6 +39,21 @@ export async function sendRadioEmote(
   });
 }
 
+export async function reportRadioTrackDuration(
+  trackId: number,
+  durationSeconds: number,
+  station: RadioStation = "all",
+) {
+  return fetch(`${BASE_URL}/radio/duration`, {
+    body: JSON.stringify({ trackId, durationSeconds, station }),
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+}
+
 export function getRadioEventsUrl(station: RadioStation = "all") {
   const query = new URLSearchParams({ station });
   return `${BASE_URL}/radio/events?${query.toString()}`;
