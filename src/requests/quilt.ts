@@ -9,7 +9,14 @@ export type QuiltPixel = {
 
 export type QuiltSubmission = {
   id: number;
+  kind: "PIXELS" | "RESIZE";
   pixels: QuiltPixel[];
+  canvasWidth: number | null;
+  canvasHeight: number | null;
+  resizeFromWidth: number | null;
+  resizeFromHeight: number | null;
+  resizeOffsetX: number | null;
+  resizeOffsetY: number | null;
   status: "PENDING" | "ACCEPTED" | "REJECTED" | "REMOVED" | "USER_DELETED";
   score: number;
   viewerVote: number;
@@ -70,6 +77,18 @@ export async function submitQuiltPixels(slug: string, pixels: QuiltPixel[]) {
   return fetch(`${BASE_URL}/quilts/${slug}/submissions`, {
     method: "POST",
     body: JSON.stringify({ pixels }),
+    headers: authHeaders(true),
+    credentials: "include",
+  });
+}
+
+export async function resizeQuiltCanvas(
+  slug: string,
+  input: { width: number; height: number; offsetX: number; offsetY: number },
+) {
+  return fetch(`${BASE_URL}/quilts/${slug}/resize`, {
+    method: "POST",
+    body: JSON.stringify(input),
     headers: authHeaders(true),
     credentials: "include",
   });

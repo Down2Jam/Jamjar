@@ -28,6 +28,7 @@ import {
   acceptQuiltSubmission,
   getQuilt,
   removeQuiltSubmission,
+  resizeQuiltCanvas,
   submitQuiltPixels,
   updateQuiltSubmission,
   voteQuiltSubmission,
@@ -154,20 +155,64 @@ function contains(rect: Rect | null, point: { x: number; y: number }) {
 function composePixelSubmissions(
   width: number,
   height: number,
-  submissions: Array<{ pixels: QuiltPixel[] }>,
+  submissions: Array<Partial<QuiltSubmission> & { pixels: QuiltPixel[] }>,
 ) {
-  const stacks = Array.from({ length: width * height }, () => [] as string[]);
+  let activeWidth = width;
+  let activeHeight = height;
+  let stacks = Array.from({ length: activeWidth * activeHeight }, () => [] as string[]);
   for (const submission of submissions) {
+    if (submission.kind === "RESIZE") {
+      const nextWidth = submission.canvasWidth ?? activeWidth;
+      const nextHeight = submission.canvasHeight ?? activeHeight;
+      const offsetX = submission.resizeOffsetX ?? 0;
+      const offsetY = submission.resizeOffsetY ?? 0;
+      const nextStacks = Array.from({ length: nextWidth * nextHeight }, () => [] as string[]);
+      for (let y = 0; y < activeHeight; y++) {
+        for (let x = 0; x < activeWidth; x++) {
+          const nx = x + offsetX;
+          const ny = y + offsetY;
+          if (nx >= 0 && ny >= 0 && nx < nextWidth && ny < nextHeight) {
+            nextStacks[ny * nextWidth + nx] = [...stacks[y * activeWidth + x]];
+          }
+        }
+      }
+      activeWidth = nextWidth;
+      activeHeight = nextHeight;
+      stacks = nextStacks;
+      continue;
+    }
     for (const pixel of submission.pixels) {
-      if (pixel.x < 0 || pixel.y < 0 || pixel.x >= width || pixel.y >= height) {
+      if (pixel.x < 0 || pixel.y < 0 || pixel.x >= activeWidth || pixel.y >= activeHeight) {
         continue;
       }
-      const index = pixel.y * width + pixel.x;
+      const index = pixel.y * activeWidth + pixel.x;
       if (pixel.color === null) stacks[index].pop();
       else stacks[index].push(pixel.color);
     }
   }
-  return stacks.map((stack) => stack.at(-1) ?? null);
+  return {
+    width: activeWidth,
+    height: activeHeight,
+    canvas: stacks.map((stack) => stack.at(-1) ?? null),
+  };
+}
+
+function getCompositionStart(
+  fallbackWidth: number,
+  fallbackHeight: number,
+  submissions: QuiltSubmission[],
+) {
+  const firstResize = submissions.find((submission) => submission.kind === "RESIZE");
+  if (firstResize?.resizeFromWidth && firstResize.resizeFromHeight) {
+    return { width: firstResize.resizeFromWidth, height: firstResize.resizeFromHeight };
+  }
+  const firstSized = submissions.find(
+    (submission) => submission.canvasWidth && submission.canvasHeight,
+  );
+  return {
+    width: firstSized?.canvasWidth ?? fallbackWidth,
+    height: firstSized?.canvasHeight ?? fallbackHeight,
+  };
 }
 
 function composeFromHistory(
@@ -177,15 +222,34 @@ function composeFromHistory(
   throughId?: number | null,
   extraPixels: QuiltPixel[] = [],
 ) {
-  const historySlice: Array<{ pixels: QuiltPixel[] }> = [];
+  const historySlice: QuiltSubmission[] = [];
   for (const submission of history) {
     historySlice.push(submission);
     if (throughId && submission.id === throughId) break;
   }
+  const start = getCompositionStart(width, height, historySlice);
   if (extraPixels.length) {
-    historySlice.push({ pixels: extraPixels });
+    historySlice.push({
+      id: -1,
+      kind: "PIXELS",
+      pixels: extraPixels,
+      canvasWidth: null,
+      canvasHeight: null,
+      resizeFromWidth: null,
+      resizeFromHeight: null,
+      resizeOffsetX: null,
+      resizeOffsetY: null,
+      status: "PENDING",
+      score: 0,
+      viewerVote: 0,
+      resolvesAt: "",
+      resolvedAt: null,
+      removedAt: null,
+      createdAt: "",
+      author: { id: 0, slug: "", name: "" },
+    });
   }
-  return composePixelSubmissions(width, height, historySlice);
+  return composePixelSubmissions(start.width, start.height, historySlice);
 }
 
 function wasSubmissionVisibleAt(
@@ -212,7 +276,7 @@ function getSubmissionStackAtOriginalTime(
     );
   return [
     ...visibleBase,
-    { pixels: submission.pixels },
+    submission,
   ];
 }
 
@@ -232,6 +296,7 @@ export default function QuiltDetailPage() {
   const [moveOffset, setMoveOffset] = useState({ x: 0, y: 0 });
   const [drag, setDrag] = useState<DragMode | null>(null);
   const [historyVersion, setHistoryVersion] = useState(0);
+  const [resizeDialogOpen, setResizeDialogOpen] = useState(false);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const undoStackRef = useRef<Array<Map<string, string | null>>>([]);
@@ -328,8 +393,8 @@ export default function QuiltDetailPage() {
     loadQuilt();
   }, [loadQuilt]);
 
-  const viewCanvas = useMemo(() => {
-    if (!quilt) return [];
+  const viewState = useMemo(() => {
+    if (!quilt) return { width: 0, height: 0, canvas: [] as Array<string | null> };
     if (activePreview.type === "rejected" || activePreview.type === "removed") {
       const submission =
         activePreview.type === "rejected"
@@ -340,7 +405,9 @@ export default function QuiltDetailPage() {
           const [x, y] = key.split(":").map(Number);
           return { x, y, color: value };
         });
-        return composePixelSubmissions(quilt.width, quilt.height, [
+        const stack = getSubmissionStackAtOriginalTime(quilt, submission);
+        const start = getCompositionStart(quilt.width, quilt.height, stack);
+        return composePixelSubmissions(start.width, start.height, [
           ...getSubmissionStackAtOriginalTime(quilt, submission),
           { pixels: draftPixels },
         ]);
@@ -365,6 +432,9 @@ export default function QuiltDetailPage() {
       [...previewPixels, ...draftPixels],
     );
   }, [activePreview, draft, quilt]);
+  const viewCanvas = viewState.canvas;
+  const canvasWidth = viewState.width || quilt?.width || 0;
+  const canvasHeight = viewState.height || quilt?.height || 0;
 
   const drawPixel = useCallback(
     (x: number, y: number, nextColor: string | null) => {
@@ -527,14 +597,14 @@ export default function QuiltDetailPage() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    canvas.width = quilt.width;
-    canvas.height = quilt.height;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, quilt.width, quilt.height);
-    for (let y = 0; y < quilt.height; y++) {
-      for (let x = 0; x < quilt.width; x++) {
-        ctx.fillStyle = viewCanvas[y * quilt.width + x] ?? "#ffffff";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    for (let y = 0; y < canvasHeight; y++) {
+      for (let x = 0; x < canvasWidth; x++) {
+        ctx.fillStyle = viewCanvas[y * canvasWidth + x] ?? "#ffffff";
         ctx.fillRect(x, y, 1, 1);
       }
     }
@@ -542,7 +612,7 @@ export default function QuiltDetailPage() {
       ctx.save();
       ctx.globalAlpha = 0.42;
       for (const pixel of onionSkinSubmission.pixels) {
-        if (pixel.x < 0 || pixel.y < 0 || pixel.x >= quilt.width || pixel.y >= quilt.height) {
+        if (pixel.x < 0 || pixel.y < 0 || pixel.x >= canvasWidth || pixel.y >= canvasHeight) {
           continue;
         }
         if (pixel.color) {
@@ -565,7 +635,7 @@ export default function QuiltDetailPage() {
         Math.max(0, selection.height - 0.1),
       );
     }
-  }, [moveOffset, onionSkinSubmission, quilt, selection, viewCanvas]);
+  }, [canvasHeight, canvasWidth, moveOffset, onionSkinSubmission, quilt, selection, viewCanvas]);
 
   function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
     if (event.button === 2 && viewportRef.current) {
@@ -735,6 +805,25 @@ export default function QuiltDetailPage() {
     if (response.ok) setQuilt(await readItem<QuiltDetail>(response));
   }
 
+  async function submitResize(input: {
+    width: number;
+    height: number;
+    offsetX: number;
+    offsetY: number;
+  }) {
+    if (!quilt) return;
+    const response = await resizeQuiltCanvas(quilt.slug, input);
+    if (response.ok) {
+      setQuilt(await readItem<QuiltDetail>(response));
+      setResizeDialogOpen(false);
+      setPreview({ type: "current" });
+      setSelection(null);
+      addToast({ title: "Quilt canvas resized" });
+    } else {
+      addToast({ title: "Could not resize quilt canvas", color: "danger" });
+    }
+  }
+
   if (loading) {
     return (
       <main className="flex min-h-[50vh] items-center justify-center gap-3">
@@ -792,6 +881,15 @@ export default function QuiltDetailPage() {
                   Clear onion skin
                 </Button>
               )}
+              {isModerator && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setResizeDialogOpen(true)}
+                >
+                  Resize canvas
+                </Button>
+              )}
               <Button size="sm" icon="rotateccw" onClick={loadQuilt}>
                 Refresh
               </Button>
@@ -809,8 +907,8 @@ export default function QuiltDetailPage() {
                   ref={canvasRef}
                   className="mx-auto block cursor-crosshair border border-white/15 bg-white [image-rendering:pixelated]"
                   style={{
-                    width: quilt.width * zoom,
-                    height: quilt.height * zoom,
+                    width: canvasWidth * zoom,
+                    height: canvasHeight * zoom,
                     maxWidth: "none",
                   }}
                   onPointerDown={handlePointerDown}
@@ -1044,7 +1142,181 @@ export default function QuiltDetailPage() {
           )}
         </Vstack>
       </div>
+      {resizeDialogOpen && (
+        <ResizeCanvasDialog
+          quilt={quilt}
+          onClose={() => setResizeDialogOpen(false)}
+          onSubmit={submitResize}
+        />
+      )}
     </main>
+  );
+}
+
+function ResizeCanvasDialog({
+  quilt,
+  onClose,
+  onSubmit,
+}: {
+  quilt: QuiltDetail;
+  onClose: () => void;
+  onSubmit: (input: {
+    width: number;
+    height: number;
+    offsetX: number;
+    offsetY: number;
+  }) => void;
+}) {
+  const [width, setWidth] = useState(quilt.width);
+  const [height, setHeight] = useState(quilt.height);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const [dragStart, setDragStart] = useState<{
+    x: number;
+    y: number;
+    offsetX: number;
+    offsetY: number;
+  } | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const previewScale = Math.max(1, Math.floor(420 / Math.max(width, height)));
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    canvas.width = width;
+    canvas.height = height;
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.12)";
+    for (let y = 0; y < height; y += 2) {
+      for (let x = (y / 2) % 2; x < width; x += 2) {
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    for (let y = 0; y < quilt.height; y++) {
+      for (let x = 0; x < quilt.width; x++) {
+        const nx = x + offsetX;
+        const ny = y + offsetY;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        ctx.fillStyle = quilt.canvas[y * quilt.width + x] ?? "#ffffff";
+        ctx.fillRect(nx, ny, 1, 1);
+      }
+    }
+    ctx.strokeStyle = "#8df5ff";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(offsetX + 0.05, offsetY + 0.05, quilt.width - 0.1, quilt.height - 0.1);
+  }, [height, offsetX, offsetY, quilt, width]);
+
+  function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setDragStart({
+      x: event.clientX,
+      y: event.clientY,
+      offsetX,
+      offsetY,
+    });
+  }
+
+  function handlePointerMove(event: React.PointerEvent<HTMLCanvasElement>) {
+    if (!dragStart || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const dx = Math.round(((event.clientX - dragStart.x) / rect.width) * width);
+    const dy = Math.round(((event.clientY - dragStart.y) / rect.height) * height);
+    setOffsetX(clamp(dragStart.offsetX + dx, -quilt.width, width));
+    setOffsetY(clamp(dragStart.offsetY + dy, -quilt.height, height));
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <Card className="w-full max-w-3xl">
+        <Vstack align="stretch" className="gap-4">
+          <Vstack align="start" gap={0}>
+            <Text size="xl" weight="bold" color="text">
+              Resize canvas
+            </Text>
+            <Text color="textFaded" size="sm">
+              Drag the preview to align the current canvas inside the new size.
+            </Text>
+          </Vstack>
+
+          <div className="grid gap-4 md:grid-cols-[1fr_280px]">
+            <div className="overflow-auto rounded border border-white/10 bg-black/30 p-3">
+              <canvas
+                ref={canvasRef}
+                className="mx-auto block cursor-grab border border-white/15 bg-white active:cursor-grabbing [image-rendering:pixelated]"
+                style={{
+                  width: width * previewScale,
+                  height: height * previewScale,
+                  maxWidth: "none",
+                }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={() => setDragStart(null)}
+                onPointerCancel={() => setDragStart(null)}
+              />
+            </div>
+            <Vstack align="stretch" className="gap-3">
+              <label className="grid gap-1 text-sm text-zinc-300">
+                Width
+                <input
+                  className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
+                  type="number"
+                  min={8}
+                  max={512}
+                  value={width}
+                  onChange={(event) => setWidth(clamp(Number(event.target.value), 8, 512))}
+                />
+              </label>
+              <label className="grid gap-1 text-sm text-zinc-300">
+                Height
+                <input
+                  className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
+                  type="number"
+                  min={8}
+                  max={512}
+                  value={height}
+                  onChange={(event) => setHeight(clamp(Number(event.target.value), 8, 512))}
+                />
+              </label>
+              <label className="grid gap-1 text-sm text-zinc-300">
+                X offset
+                <input
+                  className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
+                  type="number"
+                  value={offsetX}
+                  onChange={(event) => setOffsetX(Number(event.target.value))}
+                />
+              </label>
+              <label className="grid gap-1 text-sm text-zinc-300">
+                Y offset
+                <input
+                  className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
+                  type="number"
+                  value={offsetY}
+                  onChange={(event) => setOffsetY(Number(event.target.value))}
+                />
+              </label>
+            </Vstack>
+          </div>
+
+          <Hstack justify="end" className="gap-2">
+            <Button size="sm" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              color="blue"
+              onClick={() => onSubmit({ width, height, offsetX, offsetY })}
+            >
+              Save resize
+            </Button>
+          </Hstack>
+        </Vstack>
+      </Card>
+    </div>
   );
 }
 
@@ -1100,13 +1372,17 @@ function HistoryPanel({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <Vstack align="start" gap={0} className="min-w-0 flex-1">
                     <Text color="text" weight="semibold">
-                      {submission.author.name}
+                      {submission.kind === "RESIZE"
+                        ? `Resize to ${submission.canvasWidth} x ${submission.canvasHeight}`
+                        : submission.author.name}
                     </Text>
                     <Text color="textFaded" size="xs">
-                      {submission.pixels.length} pixels · {formatTime(submission.createdAt)}
+                      {submission.kind === "RESIZE"
+                        ? `${submission.resizeFromWidth} x ${submission.resizeFromHeight} moved by ${submission.resizeOffsetX ?? 0}, ${submission.resizeOffsetY ?? 0} - ${formatTime(submission.createdAt)}`
+                        : `${submission.pixels.length} pixels - ${formatTime(submission.createdAt)}`}
                     </Text>
                   </Vstack>
-                  {isModerator && submission.status === "ACCEPTED" && (
+                  {isModerator && submission.status === "ACCEPTED" && submission.kind !== "RESIZE" && (
                     <button
                       className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
                       title="Remove"
