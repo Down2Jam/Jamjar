@@ -18,6 +18,8 @@ export default function GeneralNotification({
   notification,
   onMarkRead,
 }: Props) {
+  const viewLink = getNotificationLink(notification);
+
   return (
     <Card className="min-w-96">
       <Vstack align="start">
@@ -35,8 +37,13 @@ export default function GeneralNotification({
         )}
 
         <Hstack className="py-2">
-          {notification.link && (
-            <Link href={notification.link}>
+          {viewLink && (
+            <Link
+              href={viewLink}
+              onClick={() => {
+                void onMarkRead(notification.id);
+              }}
+            >
               <Button color="default" icon="arrowright">
                 View
               </Button>
@@ -68,4 +75,21 @@ export default function GeneralNotification({
       </Vstack>
     </Card>
   );
+}
+
+function getNotificationLink(notification: AppNotification) {
+  if (notification.type === "FOLLOW") {
+    const userSlug =
+      typeof notification.data?.userSlug === "string"
+        ? notification.data.userSlug
+        : null;
+    if (userSlug) return `/u/${userSlug}`;
+  }
+
+  if (!notification.link) return null;
+  const legacyUserMatch = notification.link.match(/^\/users\/([^/?#]+)(.*)$/);
+  if (legacyUserMatch) {
+    return `/u/${legacyUserMatch[1]}${legacyUserMatch[2] ?? ""}`;
+  }
+  return notification.link;
 }
