@@ -65,6 +65,50 @@ function stripHtml(value) {
   return text.length > 180 ? `${text.slice(0, 177).trim()}...` : text;
 }
 
+function firstImageFromHtml(value) {
+  const match = String(value ?? "").match(
+    /<img\b[^>]*\bsrc=(?:"([^"]+)"|'([^']+)'|([^\s>]+))/i,
+  );
+  return match?.[1] || match?.[2] || match?.[3] || null;
+}
+
+function collectionItemImage(item) {
+  return (
+    item?.thumbnailUrl ||
+    item?.track?.thumbnail ||
+    item?.track?.game?.thumbnail ||
+    item?.game?.thumbnail ||
+    null
+  );
+}
+
+function uniqueCollectionImages(collection) {
+  const seen = new Set();
+  const images = [];
+  const items = [
+    ...(Array.isArray(collection?.items) ? collection.items : []),
+    ...(Array.isArray(collection?.previewItems) ? collection.previewItems : []),
+  ];
+  for (const item of items) {
+    const image = collectionItemImage(item);
+    if (!image || seen.has(image)) continue;
+    seen.add(image);
+    images.push(image);
+    if (images.length >= 4) break;
+  }
+  return images;
+}
+
+function collectionImage(collection) {
+  return uniqueCollectionImages(collection)[0] || defaultMeta.image;
+}
+
+function collectionSummary(collection) {
+  if (!collection) return "A curated Down2Jam collection.";
+  const owner = collection.owner?.name ?? collection.owner?.slug;
+  return owner ? `${collection.title} by ${owner}` : collection.title;
+}
+
 function absoluteUrl(value) {
   if (!value) return "";
   try {
@@ -156,6 +200,35 @@ async function metadataForPath(url) {
     };
   }
 
+  const collectionMatch = pathname.match(/^\/c\/([^/]+)$/);
+  if (collectionMatch) {
+    const collection = await fetchJson(
+      `/collections/${encodeURIComponent(collectionMatch[1])}`,
+    );
+    const description =
+      stripHtml(collection?.description) || collectionSummary(collection);
+    const images = uniqueCollectionImages(collection);
+    const image =
+      collection && images.length > 1
+        ? `/og/collections/${encodeURIComponent(collection.slug ?? collectionMatch[1])}.svg`
+        : images[0] || defaultMeta.image;
+    return {
+      title: collection?.title ?? collectionMatch[1],
+      description,
+      image,
+      icon: image,
+      imageWidth: 1200,
+      imageHeight: 630,
+      canonical: `/c/${collection?.slug ?? collectionMatch[1]}`,
+      type: "website",
+      robots:
+        collection?.visibility === "private" ||
+        collection?.visibility === "unlisted"
+          ? "noindex,nofollow"
+          : defaultMeta.robots,
+    };
+  }
+
   const userMatch = pathname.match(/^\/u\/([^/]+)$/);
   if (userMatch) {
     const user = await fetchJson(`/users/${encodeURIComponent(userMatch[1])}`);
@@ -185,7 +258,10 @@ async function metadataForPath(url) {
         post && !isModerated
           ? stripHtml(post.content)
           : "A post on Down2Jam",
-      image: post?.author?.profilePicture || defaultMeta.image,
+      image:
+        (!isModerated && firstImageFromHtml(post?.content)) ||
+        post?.author?.profilePicture ||
+        defaultMeta.image,
       icon: post?.author?.profilePicture || defaultMeta.icon,
       canonical: `/p/${post?.slug ?? postMatch[1]}`,
       type: "article",
@@ -207,6 +283,12 @@ function renderMetaTags(input) {
   const icon = absoluteUrl(meta.icon || meta.image || defaultMeta.icon);
   const canonical = absoluteUrl(meta.canonical || "/");
   const iconType = icon.endsWith(".svg") ? "image/svg+xml" : "image/png";
+  const imageDimensions =
+    meta.imageWidth && meta.imageHeight
+      ? `
+    <meta property="og:image:width" content="${escapeHtml(meta.imageWidth)}" />
+    <meta property="og:image:height" content="${escapeHtml(meta.imageHeight)}" />`
+      : "";
 
   return `
     <title>${escapeHtml(title)}</title>
@@ -222,7 +304,7 @@ function renderMetaTags(input) {
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:type" content="${escapeHtml(meta.type)}" />
     <meta property="og:url" content="${escapeHtml(canonical)}" />
-    <meta property="og:image" content="${escapeHtml(image)}" />
+    <meta property="og:image" content="${escapeHtml(image)}" />${imageDimensions}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Down2Jam" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
@@ -252,6 +334,75 @@ async function serveIndex(res, url) {
     "cache-control": "public, max-age=30, stale-while-revalidate=120",
   });
   res.end(body);
+}
+
+function collectionPreviewTiles(images) {
+  if (images.length <= 1) {
+    return [{ image: images[0] || defaultMeta.image, x: 0, y: 0, width: 1200, height: 630 }];
+  }
+  if (images.length === 2) {
+    return [
+      { image: images[0], x: 0, y: 0, width: 600, height: 630 },
+      { image: images[1], x: 600, y: 0, width: 600, height: 630 },
+    ];
+  }
+  if (images.length === 3) {
+    return [
+      { image: images[0], x: 0, y: 0, width: 600, height: 630 },
+      { image: images[1], x: 600, y: 0, width: 600, height: 315 },
+      { image: images[2], x: 600, y: 315, width: 600, height: 315 },
+    ];
+  }
+  return [
+    { image: images[0], x: 0, y: 0, width: 600, height: 315 },
+    { image: images[1], x: 600, y: 0, width: 600, height: 315 },
+    { image: images[2], x: 0, y: 315, width: 600, height: 315 },
+    { image: images[3], x: 600, y: 315, width: 600, height: 315 },
+  ];
+}
+
+async function serveCollectionPreviewImage(res, collectionId) {
+  const collection = await fetchJson(
+    `/collections/${encodeURIComponent(collectionId)}`,
+  );
+  const images = uniqueCollectionImages(collection);
+  const tiles = collectionPreviewTiles(images);
+  const title = collection?.title ?? "Down2Jam collection";
+  const imageMarkup = tiles
+    .map(
+      (tile, index) => `
+        <clipPath id="tile-${index}">
+          <rect x="${tile.x}" y="${tile.y}" width="${tile.width}" height="${tile.height}" />
+        </clipPath>
+        <image
+          href="${escapeHtml(absoluteUrl(tile.image))}"
+          x="${tile.x}"
+          y="${tile.y}"
+          width="${tile.width}"
+          height="${tile.height}"
+          preserveAspectRatio="xMidYMid slice"
+          clip-path="url(#tile-${index})"
+        />`,
+    )
+    .join("");
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="${escapeHtml(title)}">
+  <rect width="1200" height="630" fill="#111111" />
+  ${imageMarkup}
+  <rect width="1200" height="630" fill="url(#edge)" />
+  <defs>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.12" />
+      <stop offset="1" stop-color="#000000" stop-opacity="0.28" />
+    </linearGradient>
+  </defs>
+</svg>`;
+
+  res.writeHead(collection ? 200 : 404, {
+    "content-type": "image/svg+xml; charset=utf-8",
+    "cache-control": "public, max-age=300, stale-while-revalidate=600",
+  });
+  res.end(svg);
 }
 
 function serveFile(res, filePath) {
@@ -337,6 +488,18 @@ createServer(async (req, res) => {
       res.end();
       return;
     }
+
+    const collectionPreviewMatch = url.pathname.match(
+      /^\/og\/collections\/([^/]+)\.svg$/,
+    );
+    if (collectionPreviewMatch) {
+      await serveCollectionPreviewImage(
+        res,
+        decodeURIComponent(collectionPreviewMatch[1]),
+      );
+      return;
+    }
+
     const decodedPath = decodeURIComponent(url.pathname);
     const normalizedPath = path.normalize(decodedPath).replace(/^(\.\.[/\\])+/, "");
     const filePath = path.join(distDir, normalizedPath);
