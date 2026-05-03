@@ -37,6 +37,7 @@ import MentionedContent from "@/components/mentions/MentionedContent";
 import { computeEffectiveRecommendationItems } from "@/helpers/recommendations";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
 import { readArray, readItem, unwrapArray, unwrapItem } from "@/requests/helpers";
+import NextLink from "@/compat/next-link";
 import Image from "@/compat/next-image";
 import dynamic from "@/compat/next-dynamic";
 import { use, useEffect, useMemo, useState } from "react";
@@ -45,6 +46,11 @@ import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
 import { BASE_URL } from "@/requests/config";
 import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
+import { listCollections } from "@/requests/collection";
+import {
+  CollectionArtwork,
+  type CollectionArtworkSummary,
+} from "@/components/collections/CollectionArtwork";
 
 type RarityTier =
   | "Abyssal"
@@ -58,12 +64,21 @@ type ProfileSection =
   | "bio"
   | "games"
   | "music"
+  | "collections"
   | "posts"
   | "comments"
   | "recommendations"
   | "achievements"
   | "scores"
   | "emotes";
+
+type ProfileCollection = CollectionArtworkSummary;
+
+function collectionVisibilityLabel(visibility?: string) {
+  if (visibility === "private") return "Private";
+  if (visibility === "unlisted") return "Unlisted";
+  return null;
+}
 
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -320,6 +335,8 @@ export default function ClientUserPage({
       game?: { name: string; slug: string; thumbnail?: string | null };
     }>;
   }>({ games: [], posts: [], tracks: [] });
+  const [collections, setCollections] = useState<ProfileCollection[]>([]);
+  const [collectionsLoading, setCollectionsLoading] = useState(false);
   const [recType, setRecType] = useState<"games" | "posts" | "tracks">("games");
   const [recSelected, setRecSelected] = useState<number[]>([]);
   const [recHidden, setRecHidden] = useState<number[]>([]);
@@ -446,9 +463,7 @@ export default function ClientUserPage({
     }
 
     const response = await fetch(
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/image"
-        : "http://localhost:3005/api/v1/image",
+      `${BASE_URL}/image`,
       {
         method: "POST",
         body: formData,
@@ -519,17 +534,43 @@ export default function ClientUserPage({
   }, [user]);
 
   useEffect(() => {
+    if (!user?.slug) {
+      setCollections([]);
+      return;
+    }
+    const profileSlug = user.slug;
+    let active = true;
+    async function loadProfileCollections() {
+      setCollectionsLoading(true);
+      try {
+        const response = await listCollections({
+          userSlug: profileSlug,
+          limit: 50,
+        });
+        if (!active) return;
+        if (response.ok) {
+          setCollections(await readArray<ProfileCollection>(response));
+        } else {
+          setCollections([]);
+        }
+      } finally {
+        if (active) setCollectionsLoading(false);
+      }
+    }
+    loadProfileCollections();
+    return () => {
+      active = false;
+    };
+  }, [user?.slug]);
+
+  useEffect(() => {
     if (!isRecOpen || !recSearch.trim()) return;
     const controller = new AbortController();
     const fetchResults = async () => {
       setRecLoading(true);
       try {
         const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_MODE === "PROD"
-              ? "https://d2jam.com/api/v1"
-              : "http://localhost:3005/api/v1"
-          }/search?query=${encodeURIComponent(recSearch.trim())}`,
+          `${BASE_URL}/search?query=${encodeURIComponent(recSearch.trim())}`,
           { signal: controller.signal },
         );
         if (!response.ok) {
@@ -796,6 +837,7 @@ export default function ClientUserPage({
   const postsCount = visiblePosts.length;
   const commentsCount = visibleComments.length;
   const musicCount = visibleProfileTracks.length;
+  const collectionsCount = collections.length;
   const ratedGamesCount = recGameCandidates.length;
   const ratedTracksCount = recTrackCandidates.length;
   const hasActiveJam = activeJamId != null;
@@ -1181,6 +1223,11 @@ export default function ClientUserPage({
                     count: musicCount,
                   },
                   {
+                    key: "collections" as ProfileSection,
+                    label: "Collections",
+                    count: collectionsCount,
+                  },
+                  {
                     key: "posts" as ProfileSection,
                     label: "Posts",
                     count: postsCount,
@@ -1482,6 +1529,75 @@ export default function ClientUserPage({
                       }
                     />
                   ))}
+              </section>
+            )}
+            {profileSection === "collections" && (
+              <section className="grid gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {collectionsLoading && collections.length === 0 ? (
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="aspect-square animate-pulse rounded-md bg-white/5" />
+                  ))
+                ) : collections.length === 0 ? (
+                  <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6 sm:col-span-2 lg:col-span-3 xl:col-span-4">
+                    <Text size="sm" color="textFaded">
+                      No collections yet.
+                    </Text>
+                  </div>
+                ) : (
+                  collections.map((collection) => {
+                    const itemTypes = collection.itemTypes ?? {};
+                    const collectionMusicCount =
+                      (itemTypes.track ?? 0) + (itemTypes.youtube_track ?? 0);
+                    const relevantCount =
+                      collection.collectionType === "game"
+                        ? itemTypes.game ?? 0
+                        : collection.collectionType === "music"
+                          ? collectionMusicCount
+                          : collection.collectionType === "post"
+                            ? itemTypes.post ?? 0
+                            : collectionMusicCount;
+                    const relevantLabel =
+                      collection.collectionType === "game"
+                        ? `${relevantCount} games`
+                        : collection.collectionType === "music"
+                          ? `${relevantCount} songs`
+                          : collection.collectionType === "post"
+                            ? `${relevantCount} posts`
+                            : `${relevantCount} songs`;
+                    const privateLabel = isOwner
+                      ? collectionVisibilityLabel(collection.visibility)
+                      : null;
+                    return (
+                      <NextLink
+                        key={collection.id}
+                        className="group block"
+                        href={`/c/${collection.slug}`}
+                      >
+                        <CollectionArtwork collection={collection} />
+                        <Vstack align="start" gap={0} className="mt-2 min-w-0">
+                          <div className="flex w-full min-w-0 items-center gap-2">
+                            <Text
+                              size="md"
+                              weight="semibold"
+                              color="text"
+                              className="min-w-0 flex-1 truncate transition-colors group-hover:text-blue-300"
+                            >
+                              {collection.title}
+                            </Text>
+                            {privateLabel && (
+                              <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white/70">
+                                {privateLabel}
+                              </span>
+                            )}
+                          </div>
+                          <Text size="sm" color="textFaded" className="w-full truncate">
+                            {relevantLabel}
+                          </Text>
+                        </Vstack>
+                      </NextLink>
+                    );
+                  })
+                )}
               </section>
             )}
             {profileSection === "posts" && (

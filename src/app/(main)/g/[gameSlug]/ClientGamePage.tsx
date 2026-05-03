@@ -646,10 +646,7 @@ export default function ClientGamePage({
     const formData = new FormData();
     formData.append("upload", file);
 
-    const endpoint =
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/image"
-        : "http://localhost:3005/api/v1/image";
+    const endpoint = `${BASE_URL}/image`;
 
     const res = await fetch(endpoint, {
       method: "POST",

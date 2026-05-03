@@ -23,6 +23,7 @@ import { Textarea } from "bioloom-ui";
 import { useEmojis } from "@/providers/useEmojis";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 import { readArray, readItem, unwrapArray } from "@/requests/helpers";
+import { BASE_URL } from "@/requests/config";
 
 const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const MIN_EMOTE_PREFIX_LENGTH = 4;
@@ -107,11 +108,7 @@ export default function UserPage() {
   );
 
   useEffect(() => {
-    fetch(
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/pfps"
-        : "http://localhost:3005/api/v1/pfps",
-    )
+    fetch(`${BASE_URL}/pfps`)
       .then((res) => res.json())
       .then((data) => setDefaultPfps(data.data))
       .catch((err) => console.error("Failed to load pfps", err));
@@ -290,11 +287,7 @@ export default function UserPage() {
     emoteArtistTimerRef.current = setTimeout(async () => {
       try {
         const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_MODE === "PROD"
-              ? "https://d2jam.com/api/v1"
-              : "http://localhost:3005/api/v1"
-          }/users/search?q=${encodeURIComponent(query)}`,
+          `${BASE_URL}/users/search?q=${encodeURIComponent(query)}`,
           {
             headers: { authorization: `Bearer ${getCookie("token")}` },
             credentials: "include",
@@ -330,11 +323,7 @@ export default function UserPage() {
     editEmoteArtistTimerRef.current = setTimeout(async () => {
       try {
         const response = await fetch(
-          `${
-            process.env.NEXT_PUBLIC_MODE === "PROD"
-              ? "https://d2jam.com/api/v1"
-              : "http://localhost:3005/api/v1"
-          }/users/search?q=${encodeURIComponent(query)}`,
+          `${BASE_URL}/users/search?q=${encodeURIComponent(query)}`,
           {
             headers: { authorization: `Bearer ${getCookie("token")}` },
             credentials: "include",
@@ -367,9 +356,7 @@ export default function UserPage() {
     }
 
     const response = await fetch(
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/image"
-        : "http://localhost:3005/api/v1/image",
+      `${BASE_URL}/image`,
       {
         method: "POST",
         body: formData,

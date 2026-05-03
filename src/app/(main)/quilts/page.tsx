@@ -15,6 +15,26 @@ function formatTime(value: string) {
   }).format(new Date(value));
 }
 
+function QuiltPreview({ quilt }: { quilt: QuiltSummary }) {
+  const cells = quilt.canvas ?? [];
+  return (
+    <div
+      className="grid aspect-video w-full overflow-hidden rounded-md bg-white/5"
+      style={{
+        gridTemplateColumns: `repeat(${quilt.width}, minmax(0, 1fr))`,
+      }}
+      aria-hidden="true"
+    >
+      {Array.from({ length: quilt.width * quilt.height }).map((_, index) => (
+        <span
+          key={index}
+          style={{ backgroundColor: cells[index] ?? "transparent" }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function QuiltsPage() {
   const [quilts, setQuilts] = useState<QuiltSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +87,7 @@ export default function QuiltsPage() {
               <Link key={quilt.id} href={`/quilts/${quilt.slug}`}>
                 <Card className="h-full transition-transform hover:-translate-y-0.5">
                   <Vstack align="start" className="h-full">
+                    <QuiltPreview quilt={quilt} />
                     <Text size="xl" weight="semibold" color="text">
                       {quilt.name}
                     </Text>

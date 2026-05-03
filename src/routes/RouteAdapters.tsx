@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import type { PageVersion } from "@/types/GameType";
-import CollectionPage from "@/app/(main)/collections/[collectionId]/page";
+import CollectionPage from "@/app/(main)/c/[collectionId]/page";
 import DocumentationSectionPage from "@/components/documentation/DocumentationSectionPage";
 import ClientGamePage from "@/app/(main)/g/[gameSlug]/ClientGamePage";
 import ClientGameEditPage from "@/app/(main)/g/[gameSlug]/edit/ClientGameEditPage";

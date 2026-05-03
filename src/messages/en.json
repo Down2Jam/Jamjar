@@ -118,6 +118,10 @@
       "Title": "Radio",
       "Description": "Listen to the Down2Jam music radio"
     },
+    "Collections": {
+      "Title": "Collections",
+      "Description": "Browse saved game and music collections"
+    },
     "Screenshots": {
       "Title": "Screenshots",
       "Description": "Browse random game screenshots"

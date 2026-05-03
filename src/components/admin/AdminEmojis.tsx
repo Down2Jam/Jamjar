@@ -77,10 +77,7 @@ export default function AdminEmojis() {
       formData.append("cropHeight", String(crop.height));
     }
 
-    const url =
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/image"
-        : "http://localhost:3005/api/v1/image";
+    const url = `${BASE_URL}/image`;
 
     setUploading(true);
     try {

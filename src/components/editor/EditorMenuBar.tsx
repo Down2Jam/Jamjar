@@ -26,6 +26,7 @@ import { addToast, Button } from "bioloom-ui";
 import { useEmojis } from "@/providers/useEmojis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Popover, Text, Input } from "bioloom-ui";
+import { BASE_URL } from "@/requests/config";
 
 type EditorMenuProps = {
   editor: Editor | null;
@@ -103,9 +104,7 @@ export default function EditorMenuBar({
     formData.append("upload", file);
 
     fetch(
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? "https://d2jam.com/api/v1/image"
-        : "http://localhost:3005/api/v1/image",
+      `${BASE_URL}/image`,
       {
         method: "POST",
         body: formData,

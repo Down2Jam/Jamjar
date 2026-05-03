@@ -292,7 +292,7 @@ export default function App() {
           />
           <Route path="admin/themes/voting" element={<AdminThemeVotingPage />} />
           <Route path="collections" element={<CollectionsPage />} />
-          <Route path="collections/:collectionId" element={<CollectionRoute />} />
+          <Route path="c/:collectionId" element={<CollectionRoute />} />
           <Route path="create-event" element={<CreateEventPage />} />
           <Route path="create-game" element={<CreateGamePage />} />
           <Route path="create-post" element={<CreatePostPage />} />

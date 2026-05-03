@@ -10,6 +10,7 @@ import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
+import { BASE_URL } from "@/requests/config";
 import { useCurrentJam } from "@/hooks/queries";
 import { sanitize } from "@/helpers/sanitize";
 import useHasMounted from "@/hooks/useHasMounted";
@@ -755,10 +756,7 @@ export default function GameEditingForm({
       formData.append("cropWidth", String(crop.width));
       formData.append("cropHeight", String(crop.height));
     }
-    const url =
-      process.env.NEXT_PUBLIC_MODE === "PROD"
-        ? `https://d2jam.com/api/v1/${endpoint}`
-        : `http://localhost:3005/api/v1/${endpoint}`;
+    const url = `${BASE_URL}/${endpoint}`;
     try {
       const response = await fetch(url, {
         method: "POST",

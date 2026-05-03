@@ -12,7 +12,7 @@ const publicOrigin = (process.env.PUBLIC_ORIGIN ?? "https://d2jam.com").replace(
   /\/$/,
   "",
 );
-const apiBase = (process.env.API_BASE_URL ?? "http://localhost:3005/api/v1").replace(
+const apiBase = (process.env.API_BASE_URL ?? "https://d2jam.com/api/v1").replace(
   /\/$/,
   "",
 );

@@ -15,13 +15,19 @@ function authHeaders() {
 }
 
 export type CollectionVisibility = "PRIVATE" | "UNLISTED" | "PUBLIC";
-export type CollectionItemType = "game" | "post" | "track";
+export type CollectionType = "game" | "music" | "post";
+export type CollectionItemType = "game" | "post" | "track" | "youtube_track";
+export type CollectionPlatformLink = {
+  platform: "d2jam" | "youtube" | "youtubeMusic";
+  url: string;
+};
 
 export async function listCollections(params?: {
   userSlug?: string;
   mine?: boolean;
   q?: string;
-  itemType?: CollectionItemType;
+  itemType?: CollectionItemType | "music";
+  collectionType?: CollectionType;
   sort?: "updated" | "popular" | "largest";
   cursor?: string;
   limit?: number;
@@ -31,6 +37,7 @@ export async function listCollections(params?: {
   if (params?.mine !== undefined) query.set("mine", String(params.mine));
   if (params?.q) query.set("q", params.q);
   if (params?.itemType) query.set("itemType", params.itemType);
+  if (params?.collectionType) query.set("collectionType", params.collectionType);
   if (params?.sort) query.set("sort", params.sort);
   if (params?.cursor) query.set("cursor", params.cursor);
   if (params?.limit) query.set("limit", String(params.limit));
@@ -43,7 +50,9 @@ export async function listCollections(params?: {
 
 export async function createCollection(payload: {
   title: string;
+  slug?: string;
   description?: string;
+  collectionType?: CollectionType;
   visibility?: Lowercase<CollectionVisibility>;
   playbackMode?: "manual" | "shuffle" | "repeat";
 }) {
@@ -66,6 +75,14 @@ export async function importCollection(payload: Record<string, unknown>) {
 
 export async function getCollection(collectionId: string | number) {
   return fetch(`${BASE_URL}/collections/${encodeURIComponent(String(collectionId))}`, {
+    headers: authHeaders(),
+    credentials: "include",
+  });
+}
+
+export async function getCollectionMusicMetadata(url: string) {
+  const query = new URLSearchParams({ url });
+  return fetch(`${BASE_URL}/collections/metadata?${query.toString()}`, {
     headers: authHeaders(),
     credentials: "include",
   });
@@ -102,9 +119,13 @@ export async function addCollectionItem(
   collectionId: string | number,
   payload: {
     itemType: CollectionItemType;
-    itemId: number;
+    itemId?: number;
+    title?: string;
+    url?: string;
+    thumbnailUrl?: string;
+    platformLinks?: CollectionPlatformLink[];
     note?: string;
-    order?: number;
+    position?: number;
   },
 ) {
   return fetch(`${BASE_URL}/collections/${encodeURIComponent(String(collectionId))}/items`, {
@@ -124,6 +145,22 @@ export async function removeCollectionItem(
     {
       method: "DELETE",
       headers: authHeaders(),
+      credentials: "include",
+    },
+  );
+}
+
+export async function updateCollectionItem(
+  collectionId: string | number,
+  itemId: string | number,
+  payload: { note?: string | null },
+) {
+  return fetch(
+    `${BASE_URL}/collections/${encodeURIComponent(String(collectionId))}/items/${encodeURIComponent(String(itemId))}`,
+    {
+      body: JSON.stringify(payload),
+      method: "PUT",
+      headers: jsonHeaders(),
       credentials: "include",
     },
   );

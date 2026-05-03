@@ -43,6 +43,7 @@ export type QuiltSummary = {
   createdAt: string;
   submissionCount: number;
   acceptedCount: number;
+  canvas?: Array<string | null>;
 };
 
 export type QuiltDetail = QuiltSummary & {

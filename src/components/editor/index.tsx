@@ -708,9 +708,7 @@ export default function Editor({
           formData.append("upload", file);
 
           const res = await fetch(
-            process.env.NEXT_PUBLIC_MODE === "PROD"
-              ? "https://d2jam.com/api/v1/image"
-              : "http://localhost:3005/api/v1/image",
+            `${BASE_URL}/image`,
             {
               method: "POST",
               body: formData,
@@ -822,9 +820,7 @@ export default function Editor({
           formData.append("upload", event.dataTransfer.files[0]);
 
           fetch(
-            process.env.NEXT_PUBLIC_MODE === "PROD"
-              ? "https://d2jam.com/api/v1/image"
-              : "http://localhost:3005/api/v1/image",
+            `${BASE_URL}/image`,
             {
               method: "POST",
               body: formData,
