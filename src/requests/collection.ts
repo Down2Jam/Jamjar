@@ -153,7 +153,7 @@ export async function removeCollectionItem(
 export async function updateCollectionItem(
   collectionId: string | number,
   itemId: string | number,
-  payload: { note?: string | null },
+  payload: { title?: string | null; note?: string | null; position?: number },
 ) {
   return fetch(
     `${BASE_URL}/collections/${encodeURIComponent(String(collectionId))}/items/${encodeURIComponent(String(itemId))}`,

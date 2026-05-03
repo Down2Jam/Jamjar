@@ -43,7 +43,7 @@ import {
   addToast,
   useDisclosure,
 } from "bioloom-ui";
-import { use, useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 type LinkedGame = {
   id: number;
@@ -79,6 +79,7 @@ type CollectionItem = {
   thumbnailUrl?: string | null;
   platformLinks?: CollectionPlatformLink[] | null;
   note?: string | null;
+  position?: number | null;
   game?: LinkedGame | null;
   track?: LinkedTrack | null;
   post?: LinkedPost | null;
@@ -165,6 +166,16 @@ function itemTitle(item: CollectionItem) {
   return item.title || item.track?.name || item.game?.name || item.post?.title || "Untitled item";
 }
 
+function originalItemTitle(item: CollectionItem) {
+  const linkedTitle = item.track?.name || item.game?.name || item.post?.title;
+  if (linkedTitle) return linkedTitle;
+  return item.title || "Untitled item";
+}
+
+function itemCustomTitle(item: CollectionItem) {
+  return item.title ?? "";
+}
+
 function collectionMetadataImage(collection?: CollectionDetails | null) {
   const itemWithImage = collection?.items?.find((item) =>
     Boolean(
@@ -203,6 +214,23 @@ function itemDescription(item: CollectionItem) {
   return item.note?.trim() || null;
 }
 
+function isRenderableCollectionItem(item: CollectionItem) {
+  if (item.itemType === "track" || item.itemType === "youtube_track") return true;
+  if (item.itemType === "game") return Boolean(item.game);
+  if (item.itemType === "post") return Boolean(item.post);
+  return false;
+}
+
+function reorderItems(items: CollectionItem[], fromId: number, toId: number) {
+  const fromIndex = items.findIndex((item) => item.id === fromId);
+  const toIndex = items.findIndex((item) => item.id === toId);
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return items;
+  const next = [...items];
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+  return next.map((item, position) => ({ ...item, position }));
+}
+
 function MusicDiscItem({
   item,
   canEdit = false,
@@ -231,6 +259,7 @@ function MusicDiscItem({
         rel={isExternal ? "noreferrer" : undefined}
         className="group block"
         aria-label={`Open ${itemTitle(item)}`}
+        draggable={false}
       >
         <div className="relative aspect-square w-full max-w-56 overflow-hidden rounded-full bg-white/5 shadow-lg shadow-black/25 transition-transform group-hover:-translate-y-0.5">
           <img
@@ -245,6 +274,7 @@ function MusicDiscItem({
             }}
             loading="lazy"
             decoding="async"
+            draggable={false}
           />
         </div>
       </a>
@@ -260,7 +290,7 @@ function MusicDiscItem({
                 variant="ghost"
                 icon="pencil"
                 className="opacity-70 transition-opacity hover:opacity-100"
-                aria-label={`Edit description for ${itemTitle(item)}`}
+                aria-label={`Edit ${itemTitle(item)}`}
                 onClick={() => onEdit?.(item)}
               />
               <Button
@@ -371,9 +401,10 @@ function CollectionItemRow({
             className="h-12 w-20 rounded-md object-cover"
             loading="lazy"
             decoding="async"
+            draggable={false}
           />
           <Vstack align="start" gap={0} className="min-w-0">
-            <Text weight="semibold">{item.game.name}</Text>
+            <Text weight="semibold">{itemTitle(item)}</Text>
             {item.game.short && (
               <Text size="sm" color="textFaded" className="line-clamp-1">
                 {item.game.short}
@@ -393,14 +424,14 @@ function CollectionItemRow({
                 size="sm"
                 variant="ghost"
                 icon="pencil"
-                aria-label={`Edit description for ${item.game.name}`}
+                aria-label={`Edit ${itemTitle(item)}`}
                 onClick={() => onEdit?.(item)}
               />
               <Button
                 size="sm"
                 variant="ghost"
                 icon="trash"
-                aria-label={`Remove ${item.game.name} from collection`}
+                aria-label={`Remove ${itemTitle(item)} from collection`}
                 onClick={() => onDelete?.(item)}
               />
             </>
@@ -417,7 +448,7 @@ function CollectionItemRow({
     return (
       <div className="flex items-center justify-between gap-3 border-b border-white/10 py-3 last:border-b-0">
         <Vstack align="start" gap={0}>
-          <Text weight="semibold">{item.post.title ?? "Post"}</Text>
+          <Text weight="semibold">{itemTitle(item)}</Text>
           <Text size="sm" color="textFaded">
             {item.post.author?.name ?? "Unknown"}
           </Text>
@@ -434,14 +465,14 @@ function CollectionItemRow({
                 size="sm"
                 variant="ghost"
                 icon="pencil"
-                aria-label={`Edit description for ${item.post.title ?? "post"}`}
+                aria-label={`Edit ${itemTitle(item)}`}
                 onClick={() => onEdit?.(item)}
               />
               <Button
                 size="sm"
                 variant="ghost"
                 icon="trash"
-                aria-label={`Remove ${item.post.title ?? "post"} from collection`}
+                aria-label={`Remove ${itemTitle(item)} from collection`}
                 onClick={() => onDelete?.(item)}
               />
             </>
@@ -490,10 +521,16 @@ export default function CollectionPage({
   const [editPlaybackMode, setEditPlaybackMode] = useState<"manual" | "shuffle" | "repeat">("manual");
   const [editLoading, setEditLoading] = useState(false);
   const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
+  const [editingItemTitle, setEditingItemTitle] = useState("");
   const [editingItemNote, setEditingItemNote] = useState("");
   const [itemEditLoading, setItemEditLoading] = useState(false);
   const [deletingItem, setDeletingItem] = useState<CollectionItem | null>(null);
   const [itemDeleteLoading, setItemDeleteLoading] = useState(false);
+  const [draggingItemId, setDraggingItemId] = useState<number | null>(null);
+  const [dragOverItemId, setDragOverItemId] = useState<number | null>(null);
+  const [reorderLoading, setReorderLoading] = useState(false);
+  const pendingOrderRef = useRef<CollectionItem[] | null>(null);
+  const reorderSaveRunningRef = useRef(false);
   const { data: user } = useSelf(hasCookie("token"));
   const { isOpen: isAddOpen, onOpen: openAdd, onOpenChange: onAddOpenChange } = useDisclosure();
   const {
@@ -515,6 +552,7 @@ export default function CollectionPage({
 
   const openItemDescriptionEditor = (item: CollectionItem) => {
     setEditingItem(item);
+    setEditingItemTitle(itemCustomTitle(item));
     setEditingItemNote(item.note ?? "");
     openItemEdit();
   };
@@ -561,6 +599,51 @@ export default function CollectionPage({
     } finally {
       setItemDeleteLoading(false);
     }
+  };
+
+  const flushPendingItemOrder = async (collectionIdToSave: number) => {
+    if (reorderSaveRunningRef.current) return;
+    reorderSaveRunningRef.current = true;
+    setReorderLoading(true);
+    try {
+      while (pendingOrderRef.current) {
+        const itemsToSave = pendingOrderRef.current;
+        pendingOrderRef.current = null;
+        try {
+          await Promise.all(
+            itemsToSave.map((item, position) =>
+              updateCollectionItem(collectionIdToSave, item.id, { position }),
+            ),
+          );
+        } catch {
+          addToast({ title: "Could not save collection order" });
+        }
+      }
+    } finally {
+      reorderSaveRunningRef.current = false;
+      setReorderLoading(false);
+      if (pendingOrderRef.current) flushPendingItemOrder(collectionIdToSave);
+    }
+  };
+
+  const persistItemOrder = (nextItems: CollectionItem[]) => {
+    if (!collection) return;
+    pendingOrderRef.current = nextItems;
+    setCollection({ ...collection, items: nextItems });
+    flushPendingItemOrder(collection.id);
+  };
+
+  const dropItemOnItem = (targetItem: CollectionItem) => {
+    if (!collection || !draggingItemId || draggingItemId === targetItem.id) {
+      setDraggingItemId(null);
+      setDragOverItemId(null);
+      return;
+    }
+    const nextItems = reorderItems(collection.items ?? [], draggingItemId, targetItem.id);
+    setDraggingItemId(null);
+    setDragOverItemId(null);
+    if (nextItems === collection.items) return;
+    persistItemOrder(nextItems);
   };
 
   useEffect(() => {
@@ -724,6 +807,55 @@ export default function CollectionPage({
   const musicItems = (collection.items ?? []).filter(
     (item) => item.itemType === "track" || item.itemType === "youtube_track",
   );
+  const renderableItems = (collection.items ?? []).filter(isRenderableCollectionItem);
+  const draggableItemProps = (item: CollectionItem, layout: "music" | "row") => ({
+    draggable: isOwner,
+    "aria-grabbed": draggingItemId === item.id,
+    onDragStart: (event: DragEvent<HTMLDivElement>) => {
+      if (!isOwner) return;
+      setDraggingItemId(item.id);
+      setDragOverItemId(null);
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(item.id));
+    },
+    onDragOver: (event: DragEvent<HTMLDivElement>) => {
+      if (!isOwner || draggingItemId === item.id) return;
+      event.preventDefault();
+      setDragOverItemId(item.id);
+      event.dataTransfer.dropEffect = "move";
+    },
+    onDragEnter: () => {
+      if (!isOwner || draggingItemId === item.id) return;
+      setDragOverItemId(item.id);
+    },
+    onDragLeave: (event: DragEvent<HTMLDivElement>) => {
+      const nextTarget = event.relatedTarget;
+      if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+      if (dragOverItemId === item.id) setDragOverItemId(null);
+    },
+    onDrop: (event: DragEvent<HTMLDivElement>) => {
+      if (!isOwner) return;
+      event.preventDefault();
+      dropItemOnItem(item);
+    },
+    onDragEnd: () => {
+      setDraggingItemId(null);
+      setDragOverItemId(null);
+    },
+    className: `relative rounded-lg py-2 transition-all duration-150 ${
+      layout === "music" ? "w-full px-3" : "w-full px-2"
+    } ${
+      isOwner ? "cursor-grab active:cursor-grabbing" : ""
+    } ${
+      draggingItemId === item.id
+        ? "scale-[0.98] opacity-45 ring-2 ring-white/20"
+        : "opacity-100"
+    } ${
+      dragOverItemId === item.id
+        ? "bg-white/[0.06] ring-2 ring-sky-400/80 before:absolute before:inset-y-1 before:inset-x-2 before:rounded-md before:border before:border-dashed before:border-sky-300/80 before:content-['']"
+        : ""
+    }`,
+  });
 
   return (
     <>
@@ -766,9 +898,17 @@ export default function CollectionPage({
 
         <section>
           <Hstack justify="between" className="mb-2 w-full">
-            <Text size="lg" weight="semibold" color="text">
-              Items
-            </Text>
+            <Vstack align="start" gap={0}>
+              <Text size="lg" weight="semibold" color="text">
+                Items
+              </Text>
+              {isOwner && (
+                <Text size="sm" color="textFaded">
+                  {reorderLoading ? "Saving order..." : "Drag entries to reorder."}
+                </Text>
+              )}
+            </Vstack>
+            {reorderLoading && <Spinner />}
           </Hstack>
           {(collection.items ?? []).length === 0 ? (
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
@@ -777,25 +917,27 @@ export default function CollectionPage({
           ) : collectionType === "music" ? (
             <div className="grid gap-x-7 gap-y-9 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {musicItems.map((item) => (
-                <MusicDiscItem
-                  key={item.id}
-                  item={item}
-                  canEdit={isOwner}
-                  onEdit={openItemDescriptionEditor}
-                  onDelete={openItemDeleteConfirm}
-                />
+                <div key={item.id} {...draggableItemProps(item, "music")}>
+                  <MusicDiscItem
+                    item={item}
+                    canEdit={isOwner}
+                    onEdit={openItemDescriptionEditor}
+                    onDelete={openItemDeleteConfirm}
+                  />
+                </div>
               ))}
             </div>
           ) : (
             <div className="rounded-lg border border-white/10 bg-white/[0.03] px-4">
-              {collection.items?.map((item) => (
-                <CollectionItemRow
-                  key={item.id}
-                  item={item}
-                  canEdit={isOwner}
-                  onEdit={openItemDescriptionEditor}
-                  onDelete={openItemDeleteConfirm}
-                />
+              {renderableItems.map((item) => (
+                <div key={item.id} {...draggableItemProps(item, "row")}>
+                  <CollectionItemRow
+                    item={item}
+                    canEdit={isOwner}
+                    onEdit={openItemDescriptionEditor}
+                    onDelete={openItemDeleteConfirm}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -1255,30 +1397,32 @@ export default function CollectionPage({
                 setItemEditLoading(true);
                 try {
                   const response = await updateCollectionItem(collection.id, editingItem.id, {
+                    title: editingItemTitle.trim() || null,
                     note: editingItemNote.trim() || null,
                   });
                   if (response.ok) {
                     setCollection(await readItem<CollectionDetails>(response));
                     setEditingItem(null);
+                    setEditingItemTitle("");
                     setEditingItemNote("");
-                    addToast({ title: "Entry description updated" });
+                    addToast({ title: "Entry updated" });
                     onClose();
                   } else {
-                    addToast({ title: "Could not update entry description" });
+                    addToast({ title: "Could not update entry" });
                   }
                 } finally {
                   setItemEditLoading(false);
                 }
               }}
             >
-              <ModalHeader>Edit Entry Description</ModalHeader>
+              <ModalHeader>Edit Entry</ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={3}>
-                  {editingItem && (
-                    <Text size="sm" color="textFaded">
-                      {itemTitle(editingItem)}
-                    </Text>
-                  )}
+                  <Input
+                    value={editingItemTitle}
+                    onValueChange={setEditingItemTitle}
+                    placeholder="Entry title"
+                  />
                   <Textarea
                     value={editingItemNote}
                     onValueChange={setEditingItemNote}
@@ -1291,6 +1435,7 @@ export default function CollectionPage({
                   variant="ghost"
                   onClick={() => {
                     setEditingItem(null);
+                    setEditingItemTitle("");
                     setEditingItemNote("");
                     onClose();
                   }}
