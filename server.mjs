@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { createReadStream, existsSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.join(__dirname, "dist");
@@ -210,7 +211,7 @@ async function metadataForPath(url) {
     const images = uniqueCollectionImages(collection);
     const image =
       collection && images.length > 1
-        ? `/og/collections/${encodeURIComponent(collection.slug ?? collectionMatch[1])}.svg`
+        ? `/og/collections/${encodeURIComponent(collection.slug ?? collectionMatch[1])}.png`
         : images[0] || defaultMeta.image;
     return {
       title: collection?.title ?? collectionMatch[1],
@@ -219,6 +220,7 @@ async function metadataForPath(url) {
       icon: image,
       imageWidth: 1200,
       imageHeight: 630,
+      imageType: "image/png",
       canonical: `/c/${collection?.slug ?? collectionMatch[1]}`,
       type: "website",
       robots:
@@ -289,6 +291,10 @@ function renderMetaTags(input) {
     <meta property="og:image:width" content="${escapeHtml(meta.imageWidth)}" />
     <meta property="og:image:height" content="${escapeHtml(meta.imageHeight)}" />`
       : "";
+  const imageType = meta.imageType
+    ? `
+    <meta property="og:image:type" content="${escapeHtml(meta.imageType)}" />`
+    : "";
 
   return `
     <title>${escapeHtml(title)}</title>
@@ -304,7 +310,7 @@ function renderMetaTags(input) {
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:type" content="${escapeHtml(meta.type)}" />
     <meta property="og:url" content="${escapeHtml(canonical)}" />
-    <meta property="og:image" content="${escapeHtml(image)}" />${imageDimensions}
+    <meta property="og:image" content="${escapeHtml(image)}" />${imageDimensions}${imageType}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Down2Jam" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
@@ -361,48 +367,63 @@ function collectionPreviewTiles(images) {
   ];
 }
 
+async function fetchImageBuffer(image) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 4000);
+  try {
+    const response = await fetch(absoluteUrl(image), {
+      signal: controller.signal,
+      headers: { accept: "image/avif,image/webp,image/png,image/jpeg,image/*" },
+    });
+    if (!response.ok) return null;
+    return Buffer.from(await response.arrayBuffer());
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function serveCollectionPreviewImage(res, collectionId) {
   const collection = await fetchJson(
     `/collections/${encodeURIComponent(collectionId)}`,
   );
   const images = uniqueCollectionImages(collection);
   const tiles = collectionPreviewTiles(images);
-  const title = collection?.title ?? "Down2Jam collection";
-  const imageMarkup = tiles
-    .map(
-      (tile, index) => `
-        <clipPath id="tile-${index}">
-          <rect x="${tile.x}" y="${tile.y}" width="${tile.width}" height="${tile.height}" />
-        </clipPath>
-        <image
-          href="${escapeHtml(absoluteUrl(tile.image))}"
-          x="${tile.x}"
-          y="${tile.y}"
-          width="${tile.width}"
-          height="${tile.height}"
-          preserveAspectRatio="xMidYMid slice"
-          clip-path="url(#tile-${index})"
-        />`,
-    )
-    .join("");
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="${escapeHtml(title)}">
-  <rect width="1200" height="630" fill="#111111" />
-  ${imageMarkup}
-  <rect width="1200" height="630" fill="url(#edge)" />
-  <defs>
-    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#000000" stop-opacity="0.12" />
-      <stop offset="1" stop-color="#000000" stop-opacity="0.28" />
-    </linearGradient>
-  </defs>
-</svg>`;
+  const composites = [];
+  for (const tile of tiles) {
+    const input = await fetchImageBuffer(tile.image);
+    if (!input) continue;
+    try {
+      composites.push({
+        input: await sharp(input)
+          .resize(tile.width, tile.height, { fit: "cover", position: "center" })
+          .png()
+          .toBuffer(),
+        left: tile.x,
+        top: tile.y,
+      });
+    } catch {
+      // Skip images sharp cannot decode.
+    }
+  }
+  const png = await sharp({
+    create: {
+      width: 1200,
+      height: 630,
+      channels: 4,
+      background: "#111111",
+    },
+  })
+    .composite(composites)
+    .png()
+    .toBuffer();
 
   res.writeHead(collection ? 200 : 404, {
-    "content-type": "image/svg+xml; charset=utf-8",
+    "content-type": "image/png",
     "cache-control": "public, max-age=300, stale-while-revalidate=600",
   });
-  res.end(svg);
+  res.end(png);
 }
 
 function serveFile(res, filePath) {
@@ -490,7 +511,7 @@ createServer(async (req, res) => {
     }
 
     const collectionPreviewMatch = url.pathname.match(
-      /^\/og\/collections\/([^/]+)\.svg$/,
+      /^\/og\/collections\/([^/]+)\.png$/,
     );
     if (collectionPreviewMatch) {
       await serveCollectionPreviewImage(
