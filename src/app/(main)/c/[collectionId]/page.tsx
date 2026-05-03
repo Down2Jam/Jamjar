@@ -6,6 +6,7 @@ import {
   getCollection,
   getCollectionMusicMetadata,
   listCollectionComments,
+  removeCollectionItem,
   updateCollection,
   updateCollectionItem,
   type CollectionType,
@@ -206,10 +207,12 @@ function MusicDiscItem({
   item,
   canEdit = false,
   onEdit,
+  onDelete,
 }: {
   item: CollectionItem;
   canEdit?: boolean;
   onEdit?: (item: CollectionItem) => void;
+  onDelete?: (item: CollectionItem) => void;
 }) {
   const link = primaryMusicLink(item);
   const platform = musicLinks(item)[0]?.platform ?? inferPlatform(link);
@@ -251,14 +254,24 @@ function MusicDiscItem({
             {itemTitle(item)}
           </Text>
           {canEdit && (
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="pencil"
-              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
-              aria-label={`Edit description for ${itemTitle(item)}`}
-              onClick={() => onEdit?.(item)}
-            />
+            <Hstack className="shrink-0 gap-0">
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="pencil"
+                className="opacity-70 transition-opacity hover:opacity-100"
+                aria-label={`Edit description for ${itemTitle(item)}`}
+                onClick={() => onEdit?.(item)}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="trash"
+                className="opacity-70 transition-opacity hover:opacity-100"
+                aria-label={`Remove ${itemTitle(item)} from collection`}
+                onClick={() => onDelete?.(item)}
+              />
+            </Hstack>
           )}
         </Hstack>
         {meta && (
@@ -330,13 +343,22 @@ function CollectionItemRow({
   item,
   canEdit = false,
   onEdit,
+  onDelete,
 }: {
   item: CollectionItem;
   canEdit?: boolean;
   onEdit?: (item: CollectionItem) => void;
+  onDelete?: (item: CollectionItem) => void;
 }) {
   if (item.itemType === "track" || item.itemType === "youtube_track") {
-    return <MusicDiscItem item={item} canEdit={canEdit} onEdit={onEdit} />;
+    return (
+      <MusicDiscItem
+        item={item}
+        canEdit={canEdit}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
+    );
   }
 
   if (item.itemType === "game" && item.game) {
@@ -366,13 +388,22 @@ function CollectionItemRow({
         </Hstack>
         <Hstack>
           {canEdit && (
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="pencil"
-              aria-label={`Edit description for ${item.game.name}`}
-              onClick={() => onEdit?.(item)}
-            />
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="pencil"
+                aria-label={`Edit description for ${item.game.name}`}
+                onClick={() => onEdit?.(item)}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="trash"
+                aria-label={`Remove ${item.game.name} from collection`}
+                onClick={() => onDelete?.(item)}
+              />
+            </>
           )}
           <Button size="sm" href={`/g/${item.game.slug}`}>
             Open
@@ -398,13 +429,22 @@ function CollectionItemRow({
         </Vstack>
         <Hstack>
           {canEdit && (
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="pencil"
-              aria-label={`Edit description for ${item.post.title ?? "post"}`}
-              onClick={() => onEdit?.(item)}
-            />
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="pencil"
+                aria-label={`Edit description for ${item.post.title ?? "post"}`}
+                onClick={() => onEdit?.(item)}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                icon="trash"
+                aria-label={`Remove ${item.post.title ?? "post"} from collection`}
+                onClick={() => onDelete?.(item)}
+              />
+            </>
           )}
           {item.post.slug && (
             <Button size="sm" href={`/p/${item.post.slug}`}>
@@ -416,13 +456,7 @@ function CollectionItemRow({
     );
   }
 
-  return (
-    <div className="border-b border-white/10 py-3 last:border-b-0">
-      <Text color="textFaded">
-        {item.itemType} #{item.itemId}
-      </Text>
-    </div>
-  );
+  return null;
 }
 
 export default function CollectionPage({
@@ -458,6 +492,8 @@ export default function CollectionPage({
   const [editingItem, setEditingItem] = useState<CollectionItem | null>(null);
   const [editingItemNote, setEditingItemNote] = useState("");
   const [itemEditLoading, setItemEditLoading] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<CollectionItem | null>(null);
+  const [itemDeleteLoading, setItemDeleteLoading] = useState(false);
   const { data: user } = useSelf(hasCookie("token"));
   const { isOpen: isAddOpen, onOpen: openAdd, onOpenChange: onAddOpenChange } = useDisclosure();
   const {
@@ -470,12 +506,22 @@ export default function CollectionPage({
     onOpen: openItemEdit,
     onOpenChange: onItemEditOpenChange,
   } = useDisclosure();
+  const {
+    isOpen: isItemDeleteOpen,
+    onOpen: openItemDelete,
+    onOpenChange: onItemDeleteOpenChange,
+  } = useDisclosure();
   const isLoggedIn = Boolean(user);
 
   const openItemDescriptionEditor = (item: CollectionItem) => {
     setEditingItem(item);
     setEditingItemNote(item.note ?? "");
     openItemEdit();
+  };
+
+  const openItemDeleteConfirm = (item: CollectionItem) => {
+    setDeletingItem(item);
+    openItemDelete();
   };
 
   const load = async () => {
@@ -496,6 +542,24 @@ export default function CollectionPage({
             ? data.items
             : [],
       );
+    }
+  };
+
+  const deleteItem = async (onClose: () => void) => {
+    if (!collection || !deletingItem) return;
+    setItemDeleteLoading(true);
+    try {
+      const response = await removeCollectionItem(collection.id, deletingItem.id);
+      if (response.ok) {
+        setDeletingItem(null);
+        addToast({ title: "Entry removed" });
+        onClose();
+        await load();
+      } else {
+        addToast({ title: "Could not remove entry" });
+      }
+    } finally {
+      setItemDeleteLoading(false);
     }
   };
 
@@ -718,6 +782,7 @@ export default function CollectionPage({
                   item={item}
                   canEdit={isOwner}
                   onEdit={openItemDescriptionEditor}
+                  onDelete={openItemDeleteConfirm}
                 />
               ))}
             </div>
@@ -729,6 +794,7 @@ export default function CollectionPage({
                   item={item}
                   canEdit={isOwner}
                   onEdit={openItemDescriptionEditor}
+                  onDelete={openItemDeleteConfirm}
                 />
               ))}
             </div>
@@ -1236,6 +1302,45 @@ export default function CollectionPage({
                 </Button>
               </ModalFooter>
             </form>
+          )}
+        </ModalContent>
+      </Modal>
+
+      <Modal isOpen={isItemDeleteOpen} onOpenChange={onItemDeleteOpenChange} backdrop="opaque">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader>Remove Entry</ModalHeader>
+              <ModalBody>
+                <Vstack align="stretch" gap={2}>
+                  <Text color="text">
+                    Remove {deletingItem ? itemTitle(deletingItem) : "this entry"} from this collection?
+                  </Text>
+                  <Text size="sm" color="textFaded">
+                    This only removes the entry from the collection. It does not delete the original content.
+                  </Text>
+                </Vstack>
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setDeletingItem(null);
+                    onClose();
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  icon="trash"
+                  color="red"
+                  disabled={itemDeleteLoading}
+                  onClick={() => deleteItem(onClose)}
+                >
+                  Remove
+                </Button>
+              </ModalFooter>
+            </>
           )}
         </ModalContent>
       </Modal>
