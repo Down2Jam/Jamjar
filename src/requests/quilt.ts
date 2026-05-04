@@ -39,6 +39,7 @@ export type QuiltSummary = {
   description?: string | null;
   width: number;
   height: number;
+  reviewWindowMinutes?: number;
   endsAt: string;
   createdAt: string;
   submissionCount: number;
@@ -65,6 +66,23 @@ function authHeaders(contentType = false) {
 
 export async function listQuilts() {
   return fetch(`${BASE_URL}/quilts`);
+}
+
+export async function createQuilt(input: {
+  name: string;
+  slug: string;
+  description?: string | null;
+  width: number;
+  height: number;
+  reviewWindowMinutes?: number;
+  endsAt: string;
+}) {
+  return fetch(`${BASE_URL}/quilts`, {
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: authHeaders(true),
+    credentials: "include",
+  });
 }
 
 export async function getQuilt(slug: string) {

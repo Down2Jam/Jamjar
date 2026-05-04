@@ -119,6 +119,16 @@ function absoluteUrl(value) {
   }
 }
 
+function fetchableImageUrl(value) {
+  if (!value) return "";
+  try {
+    const base = String(value).startsWith("/api/") ? apiOrigin : publicOrigin;
+    return new URL(value, base).toString();
+  } catch {
+    return String(value);
+  }
+}
+
 function unwrapItem(payload) {
   if (!payload || typeof payload !== "object") return payload;
   if ("data" in payload) return payload.data;
@@ -371,7 +381,7 @@ async function fetchImageBuffer(image) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4000);
   try {
-    const response = await fetch(absoluteUrl(image), {
+    const response = await fetch(fetchableImageUrl(image), {
       signal: controller.signal,
       headers: { accept: "image/avif,image/webp,image/png,image/jpeg,image/*" },
     });

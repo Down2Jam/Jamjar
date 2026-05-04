@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "@/providers/useSiteTheme";
+import { resolveMediaUrl } from "@/helpers/mediaUrl";
 import type { CollectionType } from "@/requests/collection";
 import { FileText, Gamepad2, Music } from "lucide-react";
 
@@ -120,12 +121,12 @@ function themeArtworkColors(colors: ThemeColors) {
 }
 
 function itemImage(item: NonNullable<CollectionArtworkSummary["previewItems"]>[number]) {
-  return (
+  return resolveMediaUrl(
     item.thumbnailUrl ||
     item.track?.thumbnail ||
     item.track?.game?.thumbnail ||
     item.game?.thumbnail ||
-    null
+    null,
   );
 }
 

@@ -76,13 +76,14 @@ const PALETTE = [
 ];
 const PANEL_PAGE_SIZE = 5;
 
-type Tool = "brush" | "eraser" | "bucket" | "transform" | "picker";
+type Tool = "brush" | "eraser" | "bucket" | "layerTransform" | "transform" | "picker";
 type Rect = { x: number; y: number; width: number; height: number };
 type DragMode =
   | { type: "draw" }
   | { type: "select"; start: { x: number; y: number } }
   | {
       type: "move";
+      mode: "draft" | "canvas";
       start: { x: number; y: number };
       source: Array<{ x: number; y: number; color: string | null }>;
     }
@@ -286,7 +287,7 @@ export default function QuiltDetailPage() {
   const [quilt, setQuilt] = useState<QuiltDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [tool, setTool] = useState<Tool>("brush");
-  const [color, setColor] = useState(PALETTE[0]);
+  const [color, setColor] = useState("#000000");
   const [brushSize, setBrushSize] = useState(1);
   const [zoom, setZoom] = useState(10);
   const [draft, setDraft] = useState<Map<string, string | null>>(() => new Map());
@@ -637,6 +638,12 @@ export default function QuiltDetailPage() {
     }
   }, [canvasHeight, canvasWidth, moveOffset, onionSkinSubmission, quilt, selection, viewCanvas]);
 
+  function pickCanvasColor(cell: { x: number; y: number }) {
+    if (!quilt) return;
+    setColor(viewCanvas[cell.y * quilt.width + cell.x] ?? "#ffffff");
+    setTool("brush");
+  }
+
   function handlePointerDown(event: React.PointerEvent<HTMLCanvasElement>) {
     if (event.button === 2 && viewportRef.current) {
       event.preventDefault();
@@ -654,25 +661,43 @@ export default function QuiltDetailPage() {
     const cell = getPointerCell(event);
     if (!cell || !quilt) return;
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (event.button === 1) {
+      event.preventDefault();
+      pickCanvasColor(cell);
+      return;
+    }
     if (tool === "picker") {
-      setColor(viewCanvas[cell.y * quilt.width + cell.x] ?? "#ffffff");
-      setTool("brush");
+      pickCanvasColor(cell);
       return;
     }
     if (tool === "bucket") {
       bucketFill(cell.x, cell.y, color);
       return;
     }
-    if (tool === "transform") {
+    if (tool === "layerTransform" || tool === "transform") {
       beginDraftAction(draft);
       if (contains(selection, cell)) {
         const source: Array<{ x: number; y: number; color: string | null }> = [];
-        for (let y = selection!.y; y < selection!.y + selection!.height; y++) {
-          for (let x = selection!.x; x < selection!.x + selection!.width; x++) {
-            source.push({ x, y, color: viewCanvas[y * quilt.width + x] ?? null });
+        if (tool === "layerTransform") {
+          for (const [key, value] of draft) {
+            const [x, y] = key.split(":").map(Number);
+            if (contains(selection, { x, y })) {
+              source.push({ x, y, color: value });
+            }
+          }
+        } else {
+          for (let y = selection!.y; y < selection!.y + selection!.height; y++) {
+            for (let x = selection!.x; x < selection!.x + selection!.width; x++) {
+              source.push({ x, y, color: viewCanvas[y * quilt.width + x] ?? null });
+            }
           }
         }
-        setDrag({ type: "move", start: cell, source });
+        setDrag({
+          type: "move",
+          mode: tool === "layerTransform" ? "draft" : "canvas",
+          start: cell,
+          source,
+        });
         return;
       }
       setSelection({ x: cell.x, y: cell.y, width: 1, height: 1 });
@@ -716,14 +741,27 @@ export default function QuiltDetailPage() {
       const offset = moveOffset;
       setDraft((current) => {
         const next = new Map(current);
-        for (const pixel of drag.source) {
-          next.set(keyFor(pixel.x, pixel.y), null);
-        }
-        for (const pixel of drag.source) {
-          const nx = pixel.x + offset.x;
-          const ny = pixel.y + offset.y;
-          if (pixel.color && nx >= 0 && ny >= 0 && nx < quilt.width && ny < quilt.height) {
-            next.set(keyFor(nx, ny), pixel.color);
+        if (drag.mode === "draft") {
+          for (const pixel of drag.source) {
+            next.delete(keyFor(pixel.x, pixel.y));
+          }
+          for (const pixel of drag.source) {
+            const nx = pixel.x + offset.x;
+            const ny = pixel.y + offset.y;
+            if (nx >= 0 && ny >= 0 && nx < quilt.width && ny < quilt.height) {
+              next.set(keyFor(nx, ny), pixel.color);
+            }
+          }
+        } else {
+          for (const pixel of drag.source) {
+            next.set(keyFor(pixel.x, pixel.y), null);
+          }
+          for (const pixel of drag.source) {
+            const nx = pixel.x + offset.x;
+            const ny = pixel.y + offset.y;
+            if (pixel.color && nx >= 0 && ny >= 0 && nx < quilt.width && ny < quilt.height) {
+              next.set(keyFor(nx, ny), pixel.color);
+            }
           }
         }
         return next;
@@ -915,6 +953,7 @@ export default function QuiltDetailPage() {
                   onPointerMove={handlePointerMove}
                   onPointerUp={handlePointerUp}
                   onPointerCancel={handlePointerUp}
+                  onAuxClick={(event) => event.preventDefault()}
                   onContextMenu={(event) => event.preventDefault()}
                 />
               </div>
@@ -925,7 +964,8 @@ export default function QuiltDetailPage() {
                   { key: "bucket" as Tool, label: "Bucket" },
                   { key: "eraser" as Tool, label: "Eraser" },
                   { key: "picker" as Tool, label: "Picker" },
-                  { key: "transform" as Tool, label: "Transform" },
+                  { key: "layerTransform" as Tool, label: "Transform layer" },
+                  { key: "transform" as Tool, label: "Transform all" },
                 ].map((item) => (
                   <Button
                     key={item.key}
@@ -1010,7 +1050,9 @@ export default function QuiltDetailPage() {
                   <button
                     key={paletteColor}
                     className={`h-8 cursor-pointer rounded border transition-transform hover:scale-110 ${
-                      color === paletteColor ? "border-white" : "border-white/20"
+                      color === paletteColor
+                        ? "border-cyan-300 ring-2 ring-cyan-300 ring-offset-2 ring-offset-zinc-950"
+                        : "border-white/20"
                     }`}
                     style={{ backgroundColor: paletteColor }}
                     title={paletteColor}

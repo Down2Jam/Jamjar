@@ -15,6 +15,7 @@ import {
   type CollectionVisibility,
 } from "@/requests/collection";
 import { hasCookie } from "@/helpers/cookie";
+import { resolveMediaUrl } from "@/helpers/mediaUrl";
 import { useSelf } from "@/hooks/queries";
 import { readItem } from "@/requests/helpers";
 import { search } from "@/requests/search";
@@ -153,12 +154,12 @@ function compactPlatformLinks(links: CollectionPlatformLink[]) {
 }
 
 function itemThumbnail(item: CollectionItem) {
-  return (
+  return resolveMediaUrl(
     item.thumbnailUrl ||
     item.track?.thumbnail ||
     item.track?.game?.thumbnail ||
     item.game?.thumbnail ||
-    "/images/D2J_Icon.png"
+    "/images/D2J_Icon.png",
   );
 }
 
