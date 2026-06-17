@@ -9,7 +9,7 @@ import { postTrackRating } from "@/requests/rating";
 import { getTrackRatingCategories } from "@/requests/track";
 import { useQueryClient } from "@tanstack/react-query";
 import { addToast, Button, Hstack, Icon, Popover, Text, Vstack } from "bioloom-ui";
-import Link from "next/link";
+import Link from "@/compat/next-link";
 import { Star } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "bioloom-ui";

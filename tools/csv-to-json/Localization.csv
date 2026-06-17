@@ -59,6 +59,20 @@ Navbar.Inbox.Description,View your notifications,,Visualizza le tue notifiche,,,
 Navbar.Search,Search,,Cerca,,,Ara,Search,Поиск,探す,Pesquisar,,,Meow
 Navbar.Music.Title,Music,,Musica,,,Müzik,Musika,Музыка,,Música,,,Meow
 Navbar.Music.Description,All submitted music to the website,,Tutta la musica caricata sul sito,,,Web sitesine gönderilen tüm müzikler,Lahat nang musika na sinalin sa website,Вся музыка добавленная на сайт,,Todas músicas enviadas para o site,,,Meow meow meow meow meow meow
+Navbar.Radio.Title,Radio,,,,,,,,,,,,
+Navbar.Radio.Description,Listen to the Down2Jam music radio,,,,,,,,,,,,
+Navbar.Collections.Title,Collections,,,,,,,,,,,,
+Navbar.Collections.Description,Browse saved game and music collections,,,,,,,,,,,,
+Navbar.Screenshots.Title,Screenshots,,,,,,,,,,,,
+Navbar.Screenshots.Description,Browse random game screenshots,,,,,,,,,,,,
+Navbar.Quilts.Title,Quilts,,,,,,,,,,,,
+Navbar.Quilts.Description,Make collaborative pixel art together,,,,,,,,,,,,
+Navbar.Docs.Title,Docs,,,,,,,,,,,,
+Navbar.Docs.Description,Read the site documentation,,,,,,,,,,,,
+Navbar.PressKit.Title,Press Kit,,,,,,,,,,,,
+Navbar.PressKit.Description,View press kit materials,,,,,,,,,,,,
+Navbar.ApiDocs.Title,API Docs,,,,,,,,,,,,
+Navbar.ApiDocs.Description,Open the Jamcore API documentation,,,,,,,,,,,,
 Navbar.Login.Title,Login,,Accedi,,,Giriş Yap,,Войти,,Entrar,,,Meow
 Navbar.Login.Description,Log into the website,,Accedi al sito,,,Web sayfasına giriş yap,,Войдите на сайт,,Entrar no site,,,Meow meow meow meow
 Navbar.ThemeSuggestions.Title,Theme Suggestions,,Suggerimenti Tema,,,Tema Önerileri,,Предложение Темы,,Sugestões de Temas,,,Meow meow
@@ -558,7 +572,9 @@ Phases.Rating.Title,Rating Period,,Periodo di Valutazione,,,Oyun Oylaması,,Ре
 Phases.Rating.Description,Playing and giving feedback to other people's games,,Giocare e dare feedback ai giochi degli altri,,,Diğer katılımcıların oyunlarını oynayıp onlara yorum atma süreci,,Играйте и оставляйте фидбек под играми других людей,,Jogando e opinando sobre os jogos dos outros,,,Meow meow meow meow meow meow meow'meow meow
 Phases.Results.Title,Results,,Risultati,,,Sonuçlar,,Результаты,,Resultados,,,Meow
 Phases.Results.Description,Viewing the results of the jam and how you were rated,,Visualizzare i risultati della jam e come si è stati valutati,,,Diğer oyunların sonuçlarını ve senin oyununun derecesini gör,,Посмотрите результаты с джема и свой рейтинг,,Vendo os resultados do jam e como você foi avaliado,,,Meow meow meow meow meow meow meow meow meow meow meow
-Phases.PostRating.Title,Post Jam Rating Period,,Periodo di Valutazione Post-Jam,,,Jam Sonrası Oylama Süreci,,Пост Джемовый Рейтинговый Период,,Período de Avaliação Pós Jam,,,Meow meow meow meow
+Phases.PostRefinement.Title,Post Jam Refinement,,,,,,,,,,,,
+Phases.PostRefinement.Description,Updating and improving games after the jam,,,,,,,,,,,,
+Phases.PostRating.Title,Post Jam Rating,,Periodo di Valutazione Post-Jam,,,Jam Sonrası Oylama Süreci,,Пост Джемовый Рейтинговый Период,,Período de Avaliação Pós Jam,,,Meow meow meow meow
 Phases.PostRating.Description,Playing and giving feedback to other people's post jam improvements,,Giocare e dare feedback ai miglioramenti post-jam fatti dagli altri,,,Diğer katılımcıların post jam versiyonlarını oynayıp yorum atma süreci,,Играйте и оставляйте фидбек под играми других людей после их улучшения в пост джеме,,Jogando e opinando sobre as melhoras pós jam dos outros,,,Meow meow meow meow meow meow meow'meow meow meow meow
 Phases.PostResults.Title,Post Jam Results,,Risultati Post-Jam,,,Post Jam Sonuçları,,Пост Джем Результаты,,Resultados do Pós Jam,,,Meow meow meow
 Phases.PostResults.Description,Viewing the results of the post jam and how you were rated compared to the jam,,Visualizzare i risultati post-jam e come si è stati valutati rispetto alla jam,,,Post Jam sonuçlarını görüntüle ve normal jam'le karşılaştırma,,Посмотрите результаты с пост джема и ваш рейтинг в сравнении с джемом,,Vendo os resultados do pós jam e como você foi avaliado comparado à versão jam,,,Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow
@@ -773,7 +789,6 @@ AppStrings.BackgroundUseInStreamsVideosAllowed,Background use in streams/videos 
 AppStrings.Bandcamp,Bandcamp,,,,,,,,,,,,
 AppStrings.BrowseGames,Browse Games,,,,,,,,,,,,
 AppStrings.BrowseLogosScreenshotsAndOtherVisualMaterialsFor,"Browse logos, screenshots, and other visual materials for promotional use.",,,,,,,,,,,,
-AppStrings.Buddy,Buddy,,,,,,,,,,,,
 AppStrings.BuildTheScheduleAndKeepStreamsInSync,Build the schedule and keep streams in sync.,,,,,,,,,,,,
 AppStrings.BuildTypes,Build Types,,,,,,,,,,,,
 AppStrings.CMinor,C minor,,,,,,,,,,,,

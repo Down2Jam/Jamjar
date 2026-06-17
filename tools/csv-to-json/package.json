@@ -1,6 +1,6 @@
 {
   "type": "module",
   "dependencies": {
-    "fs": "^0.0.1-security"
+    "papaparse": "^5.5.3"
   }
 }

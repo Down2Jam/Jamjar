@@ -19,13 +19,27 @@ const csv = await readFile(csvFilePath, "utf8");
 const { data } = Papa.parse(csv, { header: true });
 const fields = Object.keys(data[0] ?? {});
 
-// Papa can stop seeing appended rows when an older multiline cell is malformed.
-// AppStrings rows are generated as single-line CSV rows, so recover them here.
-const existingKeys = new Set(data.map((row) => row.key).filter(Boolean));
-for (const line of csv.split(/\r?\n/)) {
-  if (!line.startsWith("AppStrings.")) continue;
+// Papa can stop seeing rows when an older multiline cell is malformed.
+// Recover single-line dotted translation keys that were skipped.
+const rowsByKey = new Map(data.map((row) => [row.key, row]).filter(([key]) => key));
+const lines = csv.split(/\r?\n/);
+const dottedKeyPattern = /^[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+$/;
+const knownKeys = new Set(rowsByKey.keys());
+
+for (const line of lines) {
   const parsed = Papa.parse(line, { header: false }).data?.[0];
-  if (!Array.isArray(parsed) || !parsed[0] || existingKeys.has(parsed[0])) {
+  const key = parsed?.[0] ?? "";
+  if (dottedKeyPattern.test(key)) {
+    knownKeys.add(key);
+  }
+}
+
+for (const line of lines) {
+  const parsed = Papa.parse(line, { header: false }).data?.[0];
+  if (
+    !Array.isArray(parsed) ||
+    !dottedKeyPattern.test(parsed[0] ?? "")
+  ) {
     continue;
   }
 
@@ -33,9 +47,23 @@ for (const line of csv.split(/\r?\n/)) {
   fields.forEach((field, index) => {
     row[field] = parsed[index] ?? "";
   });
-  data.push(row);
-  existingKeys.add(row.key);
+  const existingRow = rowsByKey.get(row.key);
+  const swallowedNextKey = Object.values(existingRow ?? {}).some(
+    (value) => {
+      if (typeof value !== "string") return false;
+      if (/\n[A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+,/.test(value)) {
+        return true;
+      }
+      return Array.from(
+        value.matchAll(/\n([A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9]+)+)/g),
+      ).some((match) => knownKeys.has(match[1]));
+    },
+  );
+  if (!existingRow || swallowedNextKey) {
+    rowsByKey.set(row.key, row);
+  }
 }
+const rows = Array.from(rowsByKey.values());
 
 // Extract languages
 const languages = fields.filter((col) => col !== "key");
@@ -55,7 +83,7 @@ function buildNested(flatEntries) {
 }
 
 // Calculate total English keys
-const englishKeyCount = data.filter((row) => row.key && row.en?.trim()).length;
+const englishKeyCount = rows.filter((row) => row.key && row.en?.trim()).length;
 
 // Coverage info
 const coverage = {};
@@ -64,7 +92,7 @@ for (const lang of languages) {
   const flat = {};
   let translatedCount = 0;
 
-  for (const row of data) {
+  for (const row of rows) {
     if (!row.key) continue;
 
     const value = row[lang]?.trim();

@@ -1,8 +1,9 @@
 import { lazy, Suspense, type ComponentType } from "react";
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Outlet, Route, Routes } from "react-router";
 import { useLocation } from "react-router";
 import MainLayout from "@/routes/MainLayout";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
+import AdminGate from "@/components/admin/AdminGate";
 
 const SplashRoute = lazy(() => import("@/routes/SplashRoute"));
 const AboutPage = lazy(() => import("@/app/(main)/about/page"));
@@ -115,6 +116,14 @@ const UserRoute = lazyRoute(() => import("@/routes/RouteAdapters"), "UserRoute")
 
 function RouteFallback() {
   return <div className="min-h-32" />;
+}
+
+function AdminRouteLayout() {
+  return (
+    <AdminGate>
+      <Outlet />
+    </AdminGate>
+  );
 }
 
 const indexedRouteMetadata = [
@@ -276,21 +285,23 @@ export default function App() {
         <Route element={<MainLayout />}>
           <Route index element={<SplashRoute />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="admin" element={<AdminPage />} />
-          <Route path="admin/emojis" element={<AdminEmojisPage />} />
-          <Route path="admin/events" element={<AdminEventsPage />} />
-          <Route path="admin/images" element={<AdminImagesPage />} />
-          <Route path="admin/jams" element={<AdminJamsPage />} />
-          <Route path="admin/results" element={<AdminResultsPage />} />
-          <Route
-            path="admin/themes/elimination"
-            element={<AdminThemeEliminationPage />}
-          />
-          <Route
-            path="admin/themes/suggestions"
-            element={<AdminThemeSuggestionsPage />}
-          />
-          <Route path="admin/themes/voting" element={<AdminThemeVotingPage />} />
+          <Route path="admin" element={<AdminRouteLayout />}>
+            <Route index element={<AdminPage />} />
+            <Route path="emojis" element={<AdminEmojisPage />} />
+            <Route path="events" element={<AdminEventsPage />} />
+            <Route path="images" element={<AdminImagesPage />} />
+            <Route path="jams" element={<AdminJamsPage />} />
+            <Route path="results" element={<AdminResultsPage />} />
+            <Route
+              path="themes/elimination"
+              element={<AdminThemeEliminationPage />}
+            />
+            <Route
+              path="themes/suggestions"
+              element={<AdminThemeSuggestionsPage />}
+            />
+            <Route path="themes/voting" element={<AdminThemeVotingPage />} />
+          </Route>
           <Route path="collections" element={<CollectionsPage />} />
           <Route path="c/:collectionId" element={<CollectionRoute />} />
           <Route path="create-event" element={<CreateEventPage />} />

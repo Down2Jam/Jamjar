@@ -14,7 +14,6 @@ RUN --mount=type=cache,target=/root/.npm \
 FROM deps AS builder
 COPY . .
 ENV VITE_PUBLIC_MODE=PROD
-ENV NEXT_PUBLIC_MODE=PROD
 RUN npm run build
 
 FROM base AS production

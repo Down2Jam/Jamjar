@@ -14,7 +14,7 @@ The dev server runs on `http://localhost:3000`.
 Create a `.env` file if you need to choose which API to use:
 
 ```env
-NEXT_PUBLIC_MODE=DEV
+VITE_PUBLIC_MODE=DEV
 ```
 
 `DEV` uses a local Jamcore API on `http://localhost:3005`.

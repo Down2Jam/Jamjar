@@ -33,32 +33,17 @@
       "bioloom-miniplayer/*": [
         "./packages/bioloom-miniplayer/src/*"
       ],
-      "next": [
-        "./src/compat/next.ts"
-      ],
       "next/dynamic": [
         "./src/compat/next-dynamic.tsx"
       ],
-      "next/font/google": [
-        "./src/compat/next-font-google.ts"
-      ],
-      "next/headers": [
-        "./src/compat/next-headers.ts"
-      ],
       "next/image": [
         "./src/compat/next-image.tsx"
-      ],
-      "next/link": [
-        "./src/compat/next-link.tsx"
       ],
       "next/navigation": [
         "./src/compat/next-navigation.ts"
       ],
       "next-intl": [
         "./src/compat/next-intl.tsx"
-      ],
-      "next-intl/server": [
-        "./src/compat/next-intl-server.ts"
       ]
     }
   },

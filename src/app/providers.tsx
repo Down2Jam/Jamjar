@@ -14,6 +14,11 @@ import { useEffect, useMemo, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
 import { QueryClient, QueryClientProvider, HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
 
+const previewMessageLoaders = import.meta.glob<AbstractIntlMessages>(
+  ["../messages/*.json", "!../messages/en.json", "!../messages/coverage.json"],
+  { import: "default" },
+);
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -51,13 +56,15 @@ export default function Providers({
 
     const loadPreviewMessages = async () => {
       try {
-        const previewMessages = (
-          await import(`@/messages/${previewLocale}.json`)
-        ).default;
+        const loadPreviewMessages =
+          previewMessageLoaders[`../messages/${previewLocale}.json`];
+        if (!loadPreviewMessages) {
+          throw new Error(`No preview messages found for ${previewLocale}`);
+        }
 
-        const merged = merge({}, messages, previewMessages);
+        const merged = merge({}, messages, await loadPreviewMessages());
         setActiveMessages(merged);
-      setActiveLocale(previewLocale);
+        setActiveLocale(previewLocale);
       } catch (e) {
         console.error("Error loading preview messages:", e);
         setActiveMessages(messages); // fallback to server-provided merged messages

@@ -8,9 +8,10 @@
             "type": "node",
             "request": "launch",
             "name": "Run dev",
-            "runtimeExecutable": "next",
+            "runtimeExecutable": "npm",
             "cwd": "${workspaceFolder}",
             "args": [
+                "run",
                 "dev"
             ]
         }
