@@ -11,6 +11,22 @@ interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   rounded?: boolean;
 }
 
+const canRenderImageSrc = (src?: string) => {
+  if (!src?.trim()) return false;
+
+  try {
+    const url = new URL(src, "http://localhost");
+    return (
+      url.protocol === "http:" ||
+      url.protocol === "https:" ||
+      url.protocol === "blob:" ||
+      (url.protocol === "data:" && src.startsWith("data:image/"))
+    );
+  } catch {
+    return false;
+  }
+};
+
 export function Avatar({
   src,
   alt = "Avatar",
@@ -24,18 +40,11 @@ export function Avatar({
   const { colors } = useTheme();
   const [isError, setIsError] = React.useState(false);
 
-  // check if src is a valid URL
-  const isValidUrl = React.useMemo(() => {
-    if (!src) return false;
-    try {
-      new URL(src);
-      return true;
-    } catch {
-      return false;
-    }
+  React.useEffect(() => {
+    setIsError(false);
   }, [src]);
 
-  const showImage = src && isValidUrl && !isError;
+  const showImage = src && canRenderImageSrc(src) && !isError;
   const resolvedStyle: React.CSSProperties = {
     ...(styleProp ?? {}),
     width: size,
