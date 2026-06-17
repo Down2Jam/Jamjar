@@ -82,6 +82,10 @@ export default function PostCard({
     currentPostData.deletedAt || currentPostData.removedAt
   );
   const isAuthor = user?.slug === currentPostData.author.slug;
+  const postTags = currentPostData.tags ?? [];
+  const postLikes = currentPostData.likes ?? [];
+  const postComments = currentPostData.comments ?? [];
+  const postReactions = currentPostData.reactions ?? [];
   const titleText = isModerated
     ? currentPostData.removedAt
       ? "[Removed Post]"
@@ -224,9 +228,9 @@ export default function PostCard({
             <div className="p-2" />
 
             {!isModerated &&
-            currentPostData.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
+            postTags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
               <div className="flex gap-1">
-                {currentPostData.tags
+                {postTags
                   .filter((tag) => tag.name != "D2Jam")
                   .map((tag: TagType) => (
                     <Chip
@@ -241,18 +245,18 @@ export default function PostCard({
               <></>
             )}
 
-            {!isModerated && currentPostData.tags.length > 0 && <div className="p-2" />}
+            {!isModerated && postTags.length > 0 && <div className="p-2" />}
 
             {!isModerated && (
             <div className="relative z-20 flex gap-3">
               <LikeButton
-                likes={currentPostData.likes.length}
-                liked={currentPostData.hasLiked}
+                likes={postLikes.length}
+                liked={Boolean(currentPostData.hasLiked)}
                 parentId={currentPostData.id}
               />
               <Link href={`/p/${currentPostData.slug}#create-comment`}>
                 <Button size="sm" icon="messagecircle">
-                  {currentPostData.comments.length}
+                  {postComments.length}
                 </Button>
               </Link>
               <div className="relative z-30">
@@ -514,7 +518,7 @@ export default function PostCard({
               </div>
               <PostReactions
                 postId={currentPostData.id}
-                reactions={currentPostData.reactions}
+                reactions={postReactions}
                 onOverlayChange={setReactionsOpen}
               />
             </div>)}
@@ -571,11 +575,11 @@ export default function PostCard({
           >
             <span className="inline-flex items-center gap-1">
               <Heart size={14} />
-              {currentPostData.likes.length}
+              {postLikes.length}
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={14} />
-              {currentPostData.comments.length}
+              {postComments.length}
             </span>
           </div>
         </div>
@@ -631,11 +635,11 @@ export default function PostCard({
           >
             <span className="inline-flex items-center gap-1">
               <Heart size={13} />
-              {currentPostData.likes.length}
+              {postLikes.length}
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={13} />
-              {currentPostData.comments.length}
+              {postComments.length}
             </span>
           </div>
         </div>
