@@ -6,6 +6,7 @@ import { Button, Hstack, Spinner, Text, Vstack } from "bioloom-ui";
 import { getGamesPage } from "@/requests/game";
 import { unwrapArray } from "@/requests/helpers";
 import type { GameType } from "@/types/GameType";
+import { useTheme } from "@/providers/useSiteTheme";
 
 type ScreenshotTile = {
   id: string;
@@ -90,6 +91,7 @@ const GAME_PAGE_LIMIT = 50;
 const MAX_SCREENSHOTS_PER_GAME = 4;
 
 export default function ScreenshotsPage() {
+  const { colors } = useTheme();
   const [category, setCategory] =
     useState<(typeof categoryOptions)[number]["id"]>("ALL");
   const [seed, setSeed] = useState(() => Date.now());
@@ -162,6 +164,28 @@ export default function ScreenshotsPage() {
   return (
     <main className="w-full px-3 pb-8">
       <Vstack align="stretch" className="gap-4">
+        <header className="py-2 text-center">
+          <p
+            className="text-3xl font-semibold"
+            style={{
+              color: colors["text"],
+              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Screenshots
+          </p>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: colors["text"],
+              opacity: 0.82,
+              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Screenshots from games uploaded to the site
+          </p>
+        </header>
+
         <Hstack justify="between" className="flex-wrap gap-3">
           <Hstack className="gap-2 overflow-x-auto pb-1">
             {categoryOptions.map((option) => (

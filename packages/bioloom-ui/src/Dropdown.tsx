@@ -22,6 +22,7 @@ import { ExternalLink } from "lucide-react";
 import Text from "./Text";
 import { Hstack } from "./Stack";
 import { Button } from "./Button";
+import { ButtonSize } from "./Button.types";
 
 const isExternalHref = (href: string) =>
   href.startsWith("http://") || href.startsWith("https://");
@@ -109,6 +110,10 @@ interface DropdownProps {
 
   placeholder?: string;
   showChevron?: boolean;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: IconName;
+  triggerStyle?: React.CSSProperties;
 }
 
 function Dropdown({
@@ -132,6 +137,10 @@ function Dropdown({
   selectedValue,
   placeholder = "Select",
   showChevron = true,
+  triggerSize = "md",
+  triggerClassName = "",
+  triggerIcon,
+  triggerStyle,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -216,11 +225,16 @@ function Dropdown({
       : placeholder
     : resolvedSelectedDisplay?.label ?? placeholder;
 
-  const computedIcon = multiple ? undefined : resolvedSelectedDisplay?.icon;
+  const computedIcon = multiple
+    ? triggerIcon
+    : resolvedSelectedDisplay?.icon ?? triggerIcon;
 
   const renderDefaultTrigger = () => (
     <Button
       icon={computedIcon}
+      size={triggerSize}
+      className={triggerClassName}
+      style={triggerStyle}
       disabled={disabled}
       rightSlot={
         showChevron && (
@@ -270,6 +284,7 @@ function Dropdown({
           position={position}
           anchorToScreen={false}
           className={className}
+          showArrow
         >
           <div role="menu" aria-orientation="vertical">
             {children}

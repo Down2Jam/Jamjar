@@ -1336,19 +1336,19 @@ export default function GameEditingForm({
                                   setDownloadLinks(newLinks);
                                 }}
                               >
-                                <Dropdown.Item value="Web" icon="globe">
+                                <Dropdown.Item value="Web" icon="sihtml5">
                                   Web
                                 </Dropdown.Item>
                                 <Dropdown.Item value="SourceCode" icon="code2">
                                   Source Code
                                 </Dropdown.Item>
-                                <Dropdown.Item value="Windows" icon="monitor">
+                                <Dropdown.Item value="Windows" icon="customwindows">
                                   Windows
                                 </Dropdown.Item>
-                                <Dropdown.Item value="MacOS" icon="apple">
+                                <Dropdown.Item value="MacOS" icon="custommacos">
                                   MacOS
                                 </Dropdown.Item>
-                                <Dropdown.Item value="Linux" icon="terminal">
+                                <Dropdown.Item value="Linux" icon="customlinux">
                                   Linux
                                 </Dropdown.Item>
                                 <Dropdown.Item value="iOS" icon="smartphone">

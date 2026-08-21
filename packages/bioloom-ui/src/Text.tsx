@@ -111,6 +111,7 @@ const Text = forwardRef<HTMLParagraphElement, TextProps>(function Text(
       ref={ref}
       style={{
         whiteSpace: "pre-line",
+        color: resolvedColor,
         fontSize,
         lineHeight,
         textAlign: align,

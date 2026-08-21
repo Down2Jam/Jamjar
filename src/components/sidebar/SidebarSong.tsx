@@ -4,8 +4,8 @@ import { Card } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
+import { Avatar } from "bioloom-ui";
 import {
   type TrackComposer,
   type TrackGame,
@@ -37,6 +37,7 @@ interface SidebarSongProps {
   ratingDisabled?: boolean;
   showRating?: boolean;
   hideRatings?: boolean;
+  wide?: boolean;
 }
 
 export default function SidebarSong({
@@ -57,8 +58,9 @@ export default function SidebarSong({
   ratingDisabled = false,
   showRating = typeof trackId === "number" || Boolean(onRate),
   hideRatings = false,
+  wide = false,
 }: SidebarSongProps) {
-  const { playItem } = useMusic();
+  const { current, isPlaying, playItem, toggle } = useMusic();
   const { colors } = useTheme();
   const [hoverValue, setHoverValue] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -68,20 +70,39 @@ export default function SidebarSong({
       ? "(Stream safe, credit)"
       : "(Stream safe)"
     : null;
+  const isCurrent = Boolean(
+    (slug && current?.slug === slug) || current?.song === song,
+  );
+  const togglePlayback = () => {
+    if (isCurrent) {
+      toggle();
+      return;
+    }
+
+    void playItem({ slug, name, artist, thumbnail, game, song });
+  };
 
   return (
-    <Card>
+    <Card padding={wide ? 0 : 1}>
       <Vstack align="stretch" gap={2}>
-        <Hstack justify="between">
-          <Hstack>
+        <Hstack
+          justify="between"
+          gap={wide ? 4 : 2}
+          className={wide ? "min-h-24 min-w-0 p-3 sm:p-4" : ""}
+        >
+          <Hstack gap={wide ? 3 : 2} className="min-w-0 flex-1">
             <Image
               src={thumbnail}
-              width={90}
-              height={50}
-              className="z-0 min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
+              width={wide ? 112 : 90}
+              height={wide ? 64 : 50}
+              className={
+                wide
+                  ? "z-0 h-16 w-28 shrink-0 rounded-md object-cover"
+                  : "z-0 min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
+              }
               alt="Song Thumbnail"
             />
-            <Vstack className="z-10" align="start" gap={0}>
+            <Vstack className="z-10 min-w-0" align="start" gap={wide ? 1 : 0}>
               <Link
                 href={
                   slug
@@ -89,46 +110,86 @@ export default function SidebarSong({
                     : `/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
                 }
                 underline={false}
+                style={{ textDecoration: "none" }}
               >
-                <Text>{name}</Text>
+                <Text
+                  size={wide ? "lg" : undefined}
+                  weight={wide ? "semibold" : undefined}
+                  className="max-w-full truncate"
+                >
+                  {name}
+                </Text>
               </Link>
               <Link
                 href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
                 underline={false}
+                style={{ textDecoration: "none" }}
               >
                 <Text size="xs" color="textFaded">
                   {game.name}
                   {pageVersion === "POST_JAM" ? " · Post-Jam" : pageVersion === "JAM" ? " · Jam" : ""}
                 </Text>
               </Link>
-              <Link href={`/u/${artist.slug}`} underline={false}>
-                <Text size="sm" color="textFaded">
-                  {artist.name || artist.slug}
-                </Text>
-              </Link>
+              <Hstack gap={1} className="min-w-0">
+                {wide && (
+                  <Avatar
+                    size={16}
+                    src={artist.profilePicture || "/images/D2J_Icon.png"}
+                  />
+                )}
+                <Link
+                  href={`/u/${artist.slug}`}
+                  underline={false}
+                  style={{ textDecoration: "none" }}
+                >
+                  <Text
+                    size="sm"
+                    color="textFaded"
+                    className="max-w-full truncate"
+                  >
+                    {artist.name || artist.slug}
+                  </Text>
+                </Link>
+              </Hstack>
               {license && (
-                <Text size="xs" color="textFaded">
-                  License: {license}
-                  {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
-                </Text>
+                wide ? (
+                  <span
+                    className="max-w-full truncate rounded px-2 py-0.5 text-xs"
+                    style={{
+                      backgroundColor: colors["base"],
+                      color: colors["textFaded"],
+                    }}
+                    title={`${license}${backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}`}
+                  >
+                    {license}
+                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
+                  </span>
+                ) : (
+                  <Text size="xs" color="textFaded">
+                    License: {license}
+                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
+                  </Text>
+                )
               )}
             </Vstack>
           </Hstack>
 
-          <Vstack>
-            <Button
-              onClick={() =>
-                playItem({ slug, name, artist, thumbnail, game, song })
-              }
-            >
-              <Icon name="play" />
-            </Button>
+          <div
+            className={
+              wide
+                ? "flex shrink-0 items-center gap-2"
+                : "flex shrink-0 flex-col items-center gap-2"
+            }
+          >
             {allowDownload && (
               <Button
-                size="xs"
-                variant="ghost"
+                size={wide ? "sm" : "xs"}
+                color="default"
+                variant={wide ? undefined : "ghost"}
+                className={wide ? "!h-9 !w-14 !rounded-md !p-0" : ""}
                 loading={isDownloading}
                 icon="download"
+                aria-label="Download track"
                 onClick={async () => {
                   if (!slug) return;
 
@@ -143,10 +204,18 @@ export default function SidebarSong({
                   }
                 }}
               >
-                Download
+                {wide ? undefined : "Download"}
               </Button>
             )}
-          </Vstack>
+            <Button
+              size={wide ? "sm" : undefined}
+              color="default"
+              className={wide ? "!h-9 !w-14 !rounded-md !p-0" : ""}
+              icon={isCurrent && isPlaying ? "pause" : "play"}
+              aria-label={isCurrent && isPlaying ? "Pause track" : "Play track"}
+              onClick={togglePlayback}
+            />
+          </div>
         </Hstack>
 
         {showRating && (

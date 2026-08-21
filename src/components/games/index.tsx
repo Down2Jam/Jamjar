@@ -6,12 +6,14 @@ import { GameSort } from "@/types/GameSort";
 import { useSearchParams, useRouter } from "@/compat/next-navigation";
 import { IconName } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
+import { Icon } from "bioloom-ui";
 import { GameCard } from "../gamecard";
 import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
+import { useTranslations } from "@/compat/next-intl";
 import { PlatformType } from "@/types/DownloadLinkType";
 import {
   useSelf,
@@ -72,6 +74,18 @@ const DEFAULT_MORE_FILTERS = new Set<MoreFilterId>([
   "moveRatedGamesToEnd",
 ]);
 const EMPTY_MORE_FILTERS_PARAM = "none";
+const gamesHeaderTextShadow = {
+  textShadow:
+    "0 1px 2px rgba(0, 0, 0, 0.85), 0 6px 14px rgba(0, 0, 0, 0.55), 0 18px 36px rgba(0, 0, 0, 0.35)",
+};
+const gamesHeaderIconShadow = {
+  filter:
+    "drop-shadow(0 2px 3px rgba(0, 0, 0, 0.85)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55)) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35))",
+};
+const gamesDropdownShadow = {
+  boxShadow:
+    "0 18px 34px rgba(0, 0, 0, 0.46), 0 7px 14px rgba(0, 0, 0, 0.34), 0 2px 4px rgba(0, 0, 0, 0.35)",
+};
 
 const INPUT_METHOD_OPTIONS: Record<
   InputMethodFilter,
@@ -91,10 +105,10 @@ const BUILD_TYPE_OPTIONS: Record<
   BuildTypeFilter,
   { name: string; icon: IconName }
 > = {
-  Windows: { name: "Windows", icon: "monitor" },
+  Windows: { name: "Windows", icon: "customwindows" },
   MacOS: { name: "macOS", icon: "custommacos" },
-  Linux: { name: "Linux", icon: "terminal" },
-  Web: { name: "Web", icon: "globe" },
+  Linux: { name: "Linux", icon: "customlinux" },
+  Web: { name: "Web", icon: "sihtml5" },
   Mobile: { name: "Mobile", icon: "smartphone" },
   Other: { name: "Other", icon: "morehorizontal" },
   SourceCode: { name: "Source Code", icon: "code2" },
@@ -168,6 +182,15 @@ function getGameBuildTypes(game: GameType): Set<BuildTypeFilter> {
   });
 
   return buildTypes;
+}
+
+function getGameCreatorName(game: GameType): string | null {
+  if (game.team?.name) return game.team.name;
+  if (!game.team?.owner?.name) return null;
+
+  return game.team.users?.length === 1
+    ? game.team.owner.name
+    : `${game.team.owner.name}'s team`;
 }
 
 function formatJamWindow(
@@ -294,6 +317,7 @@ function canUseScoreSort(
 export default function Games() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const t = useTranslations();
 
   const sortParam = (searchParams.get("sort") as GameSort) || "score";
   const [sort, setSort] = useState<GameSort>(
@@ -320,7 +344,9 @@ export default function Games() {
   const [jamId, setJamId] = useState<string>(initialJamParam);
   const initialPageVersionParam = useMemo(() => {
     if (typeof window === "undefined") return "ALL" as ListingPageVersion;
-    const value = new URLSearchParams(window.location.search).get("pageVersion");
+    const value = new URLSearchParams(window.location.search).get(
+      "pageVersion",
+    );
     return value === "JAM" || value === "POST_JAM" || value === "ALL"
       ? (value as ListingPageVersion)
       : ("ALL" as ListingPageVersion);
@@ -329,8 +355,9 @@ export default function Games() {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).has("pageVersion");
   }, []);
-  const [pageVersion, setPageVersion] =
-    useState<ListingPageVersion>(initialPageVersionParam);
+  const [pageVersion, setPageVersion] = useState<ListingPageVersion>(
+    initialPageVersionParam,
+  );
   const hasMoreParam = useMemo(() => {
     if (typeof window === "undefined") return false;
     return new URLSearchParams(window.location.search).has("more");
@@ -406,6 +433,23 @@ export default function Games() {
   const [selectedMoreFilters, setSelectedMoreFilters] = useState<Set<string>>(
     initialMoreFiltersParam,
   );
+  const hasInitialAdvancedSearchParams = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return [
+      "pageVersion",
+      "jam",
+      "type",
+      "tags",
+      "inputMethods",
+      "buildTypes",
+      "excludeFlags",
+      "more",
+    ].some((key) => params.has(key));
+  }, []);
+  const [advancedSearchOpen, setAdvancedSearchOpen] = useState(
+    hasInitialAdvancedSearchParams,
+  );
 
   const typeOptions: TypeOption[] = [
     { id: "all", name: "All Categories", icon: "layers" },
@@ -451,13 +495,11 @@ export default function Games() {
       {
         id: "all",
         name: "All Jams",
+        icon: "calendar",
       },
     ];
 
-    if (
-      currentJamData?.jam &&
-      currentJamHasContentListing
-    ) {
+    if (currentJamData?.jam && currentJamHasContentListing) {
       const cjId = currentJamData.jam.id?.toString();
       const cjValue = getJamUrlValue(currentJamData.jam);
       if (cjId && cjValue) {
@@ -468,32 +510,50 @@ export default function Games() {
           icon: currentJamData.jam.icon,
           description: `${formatJamWindow(
             currentJamData.jam.startTime,
-            currentJamData.jam.jammingHours
+            currentJamData.jam.jammingHours,
           )}`,
         });
       }
     }
 
     if (Array.isArray(allJams)) {
-      allJams.forEach((j: { id?: number; slug?: string | null; name?: string; icon?: IconName; startTime?: string; jammingHours?: number; games?: unknown[] }) => {
-        const id = String(j?.id ?? "");
-        const value = getJamUrlValue(j as Parameters<typeof getJamUrlValue>[0]);
-        if (
-          id &&
-          value &&
-          j?.name &&
-          shouldShowJamInContentListings(j, currentJamData?.phase, currentJamId) &&
-          !options.find((o) => o.id === value || o.id === id || o.slug === j.slug)
-        ) {
-          options.push({
-            id: value,
-            slug: j.slug,
-            name: j.name,
-            icon: j.icon,
-            description: formatJamWindow(j?.startTime, j?.jammingHours),
-          });
-        }
-      });
+      allJams.forEach(
+        (j: {
+          id?: number;
+          slug?: string | null;
+          name?: string;
+          icon?: IconName;
+          startTime?: string;
+          jammingHours?: number;
+          games?: unknown[];
+        }) => {
+          const id = String(j?.id ?? "");
+          const value = getJamUrlValue(
+            j as Parameters<typeof getJamUrlValue>[0],
+          );
+          if (
+            id &&
+            value &&
+            j?.name &&
+            shouldShowJamInContentListings(
+              j,
+              currentJamData?.phase,
+              currentJamId,
+            ) &&
+            !options.find(
+              (o) => o.id === value || o.id === id || o.slug === j.slug,
+            )
+          ) {
+            options.push({
+              id: value,
+              slug: j.slug,
+              name: j.name,
+              icon: j.icon,
+              description: formatJamWindow(j?.startTime, j?.jammingHours),
+            });
+          }
+        },
+      );
     }
 
     return options;
@@ -534,7 +594,14 @@ export default function Games() {
     }
 
     setJamDetecting(false);
-  }, [currentJamData, allJams, router, initialJamParam, currentJamId, currentJamValue]);
+  }, [
+    currentJamData,
+    allJams,
+    router,
+    initialJamParam,
+    currentJamId,
+    currentJamValue,
+  ]);
 
   useEffect(() => {
     if (jamDetecting || jamOptions.length === 0) return;
@@ -624,6 +691,8 @@ export default function Games() {
       description: "Sorts by ratings given minus ratings gotten",
     },
   };
+  const getSortName = (name: string) =>
+    /^\w+(?:\.\w+)+$/.test(name) ? t(name) : name;
 
   useEffect(() => {
     let t: number | undefined;
@@ -685,11 +754,15 @@ export default function Games() {
 
   useEffect(() => {
     const isRestricted = restrictedSorts.has(sort);
-    const canUseRestrictedSorts = !!currentJamValue && jamId === currentJamValue;
+    const canUseRestrictedSorts =
+      !!currentJamValue && jamId === currentJamValue;
 
     if (jamDetecting) return;
 
-    if ((!canUseRestrictedSorts && isRestricted) || (sort === "score" && !canUseScore)) {
+    if (
+      (!canUseRestrictedSorts && isRestricted) ||
+      (sort === "score" && !canUseScore)
+    ) {
       const nextSort = getDefaultGameSort(
         jamId,
         currentJamValue,
@@ -739,7 +812,11 @@ export default function Games() {
     if (hasPageVersionParam) return;
 
     setPageVersion(
-      getDefaultListingPageVersion(jamId, currentJamValue, currentJamData?.phase),
+      getDefaultListingPageVersion(
+        jamId,
+        currentJamValue,
+        currentJamData?.phase,
+      ),
     );
   }, [
     currentJamData?.phase,
@@ -1008,9 +1085,86 @@ export default function Games() {
     user,
   ]);
 
+  const sortDropdown = (
+    <Dropdown
+      selectedValue={sort}
+      trigger={
+        <Button
+          size="lg"
+          className="m-1 rounded-sm"
+          style={gamesDropdownShadow}
+          icon={sorts[sort].icon}
+          rightSlot={<Icon name="chevrondown" size={16} className="ml-2" />}
+        >
+          {`Sorted by ${getSortName(sorts[sort].name)}`}
+        </Button>
+      }
+      onSelect={(key) => {
+        const next = key as GameSort;
+
+        if (
+          (isRestricted(next) && !canUseRestrictedSorts) ||
+          (next === "score" && !canUseScore)
+        )
+          return;
+
+        setSort(next);
+        updateQueryParam("sort", key as string);
+      }}
+    >
+      {Object.entries(sorts)
+        .filter(
+          (sort) =>
+            !(
+              (isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts) ||
+              (sort[0] === "score" && !canUseScore)
+            ),
+        )
+        .map(([key, sort]) => (
+          <Dropdown.Item
+            key={key}
+            value={key}
+            icon={sort.icon}
+            description={sort.description}
+          >
+            {sort.name}
+          </Dropdown.Item>
+        ))}
+    </Dropdown>
+  );
+
   if (!hasData && (isLoading || showBusy || jamDetecting)) {
     return (
-      <Vstack className="p-4">
+      <Vstack align="stretch" className="p-4 gap-1">
+        <Hstack justify="between" align="end" className="w-full gap-4">
+          <Vstack align="start" gap={1} className="min-w-0">
+            <Hstack className="gap-3">
+              <Icon
+                name="gamepad2"
+                color="text"
+                size={40}
+                style={gamesHeaderIconShadow}
+              />
+              <Text
+                size="4xl"
+                color="text"
+                weight="semibold"
+                style={gamesHeaderTextShadow}
+              >
+                Games.Title
+              </Text>
+            </Hstack>
+            <Text
+              size="md"
+              color="text"
+              align="left"
+              style={gamesHeaderTextShadow}
+            >
+              Games.Description
+            </Text>
+          </Vstack>
+          <div className="shrink-0">{sortDropdown}</div>
+        </Hstack>
         <Card className="max-w-96">
           <Vstack>
             <Hstack>
@@ -1026,281 +1180,343 @@ export default function Games() {
 
   return (
     <>
-      <Vstack className="p-4 gap-3">
-        <Hstack className="gap-3 flex-wrap">
-          {/* Sort dropdown */}
-          <Dropdown
-            selectedValue={sort}
-            onSelect={(key) => {
-              const next = key as GameSort;
-
-              if ((isRestricted(next) && !canUseRestrictedSorts) || (next === "score" && !canUseScore)) return;
-
-              setSort(next);
-              updateQueryParam("sort", key as string);
-            }}
-          >
-            {Object.entries(sorts)
-              .filter(
-                (sort) =>
-                  !(
-                    (isRestricted(sort[0] as GameSort) && !canUseRestrictedSorts) ||
-                    (sort[0] === "score" && !canUseScore)
-                  ),
-              )
-              .map(([key, sort]) => (
-                <Dropdown.Item
-                  key={key}
-                  value={key}
-                  icon={sort.icon}
-                  description={sort.description}
-                >
-                  {sort.name}
-                </Dropdown.Item>
-              ))}
-          </Dropdown>
-
-          <Dropdown
-            selectedValue={pageVersion}
-            onSelect={(key) => {
-              const next = key as ListingPageVersion;
-              setPageVersion(next);
-              updateQueryParam("pageVersion", next === "ALL" ? "ALL" : next);
-            }}
-          >
-            {listingPageVersionOptions.map((option) => (
-              <Dropdown.Item
-                key={option.value}
-                value={option.value}
-                icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
-                description={option.description}
+      <Vstack align="stretch" className="p-4 gap-2">
+        <Hstack justify="between" align="end" className="w-full gap-4 m-2">
+          <Vstack align="start" gap={1} className="min-w-0">
+            <Hstack className="gap-3">
+              <Icon
+                name="gamepad2"
+                color="text"
+                size={40}
+                style={gamesHeaderIconShadow}
+              />
+              <Text
+                size="4xl"
+                color="text"
+                weight="semibold"
+                style={gamesHeaderTextShadow}
               >
-                {option.label}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
+                Games.Title
+              </Text>
+              <Text size="xl" color="text" style={gamesHeaderTextShadow}>
+                ({games.length} results)
+              </Text>
+            </Hstack>
+            <Text
+              size="md"
+              color="text"
+              align="left"
+              style={gamesHeaderTextShadow}
+            >
+              Games.Description
+            </Text>
+            <button
+              type="button"
+              className="mx-1 mt-3 inline-flex items-center gap-2 cursor-pointer border-0 bg-transparent p-0"
+              style={gamesHeaderTextShadow}
+              onClick={() => setAdvancedSearchOpen((open) => !open)}
+            >
+              <Icon name="settings2" color="text" size={16} />
+              <Text size="sm" color="text" weight="semibold">
+                Advanced Search
+              </Text>
+              <Icon
+                name="chevrondown"
+                color="text"
+                size={16}
+                className={`transform transition-transform duration-200 ${
+                  advancedSearchOpen ? "rotate-180" : "rotate-0"
+                }`}
+              />
+            </button>
+          </Vstack>
+          <div className="shrink-0">{sortDropdown}</div>
+        </Hstack>
 
-          {/* Jam dropdown */}
-            <Dropdown
-              selectedValue={jamId}
-              onSelect={(key) => {
-                const val = key as string;
-                setJamId(val);
-                const nextSort = getDefaultGameSort(
-                  val,
-                  currentJamValue,
-                  currentJamData?.phase,
-                  hasPageVersionParam
+        <Vstack align="stretch" className="mx-2 mt-0 mb-1 gap-2">
+          {advancedSearchOpen && (
+            <Hstack align="start" className="gap-5 flex-wrap">
+              <Dropdown
+                triggerSize="lg"
+                triggerClassName="m-1 rounded-sm"
+                triggerStyle={gamesDropdownShadow}
+                selectedValue={pageVersion}
+                onSelect={(key) => {
+                  const next = key as ListingPageVersion;
+                  setPageVersion(next);
+                  updateQueryParam(
+                    "pageVersion",
+                    next === "ALL" ? "ALL" : next,
+                  );
+                }}
+              >
+                {listingPageVersionOptions.map((option) => (
+                  <Dropdown.Item
+                    key={option.value}
+                    value={option.value}
+                    icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
+                    description={option.description}
+                  >
+                    {option.label}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+
+              <Dropdown
+                triggerSize="lg"
+                triggerClassName="m-1 rounded-sm"
+                triggerStyle={gamesDropdownShadow}
+                selectedValue={jamId}
+                onSelect={(key) => {
+                  const val = key as string;
+                  setJamId(val);
+                  const nextSort = getDefaultGameSort(
+                    val,
+                    currentJamValue,
+                    currentJamData?.phase,
+                    hasPageVersionParam
+                      ? pageVersion
+                      : getDefaultListingPageVersion(
+                          val,
+                          currentJamValue,
+                          currentJamData?.phase,
+                        ),
+                  );
+                  const effectiveNextPageVersion = hasPageVersionParam
                     ? pageVersion
                     : getDefaultListingPageVersion(
                         val,
                         currentJamValue,
                         currentJamData?.phase,
-                      ),
-                );
-                const effectiveNextPageVersion = hasPageVersionParam
-                  ? pageVersion
-                  : getDefaultListingPageVersion(
+                      );
+                  if (
+                    (!isRestricted(sort) &&
+                      !(sort === "score" && !canUseScore)) ||
+                    (nextSort === "score" &&
+                      canUseScoreSort(
+                        val,
+                        currentJamValue,
+                        currentJamData?.phase,
+                        effectiveNextPageVersion,
+                      ))
+                  ) {
+                    setSort(nextSort);
+                    updateQueryParam("sort", nextSort);
+                  }
+                  if (!hasPageVersionParam) {
+                    const nextPageVersion = getDefaultListingPageVersion(
                       val,
                       currentJamValue,
                       currentJamData?.phase,
                     );
-                if (
-                  (!isRestricted(sort) && !(sort === "score" && !canUseScore)) ||
-                  (nextSort === "score" &&
-                    canUseScoreSort(
-                      val,
-                      currentJamValue,
-                      currentJamData?.phase,
-                      effectiveNextPageVersion,
-                    ))
-                ) {
-                  setSort(nextSort);
-                  updateQueryParam("sort", nextSort);
-                }
-                if (!hasPageVersionParam) {
-                  const nextPageVersion = getDefaultListingPageVersion(
-                    val,
-                    currentJamValue,
-                    currentJamData?.phase,
+                    setPageVersion(nextPageVersion);
+                  }
+                  updateQueryParam("jam", val);
+                }}
+              >
+                {jamOptions.map((j) => (
+                  <Dropdown.Item
+                    key={j.id}
+                    value={j.id}
+                    icon={j.icon || "gamepad2"}
+                    description={
+                      j.description ??
+                      (j.id === "all"
+                        ? "Browse entries from every jam"
+                        : undefined)
+                    }
+                  >
+                    {j.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+
+              <Dropdown
+                triggerSize="lg"
+                triggerClassName="m-1 rounded-sm"
+                triggerStyle={gamesDropdownShadow}
+                selectedValue={typeFilter}
+                onSelect={(key) => {
+                  const val = key as TypeOption["id"];
+                  setTypeFilter(val);
+                  updateQueryParam("type", val);
+                }}
+              >
+                {typeOptions.map((t) => (
+                  <Dropdown.Item
+                    key={t.id}
+                    value={t.id}
+                    icon={t.icon || "gamepad2"}
+                    description={
+                      t.id === "all"
+                        ? "Show all game categories"
+                        : `Only ${t.name} entries`
+                    }
+                  >
+                    {t.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+
+              {tagOptions.length > 0 && (
+                <Dropdown
+                  triggerSize="lg"
+                  triggerClassName="m-1 rounded-sm"
+                  triggerStyle={gamesDropdownShadow}
+                  triggerIcon="tags"
+                  multiple
+                  selectedValues={selectedTags}
+                  onSelectionChange={(values) => {
+                    const next = new Set(
+                      Array.from(values, (value) => String(value)),
+                    );
+                    setSelectedTags(next);
+                    updateMultiQueryParam("tags", next);
+                  }}
+                  placeholder="Tags"
+                >
+                  {tagOptions.map((tag) => (
+                    <Dropdown.Item
+                      key={tag.id}
+                      value={tag.id}
+                      icon={tag.icon}
+                      description={tag.description}
+                    >
+                      {tag.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              )}
+
+              {inputMethodOptions.length > 0 && (
+                <Dropdown
+                  triggerSize="lg"
+                  triggerClassName="m-1 rounded-sm"
+                  triggerStyle={gamesDropdownShadow}
+                  triggerIcon="keyboard"
+                  multiple
+                  selectedValues={selectedInputMethods}
+                  onSelectionChange={(values) => {
+                    const next = new Set(
+                      Array.from(values, (value) => String(value)),
+                    );
+                    setSelectedInputMethods(next);
+                    updateMultiQueryParam("inputMethods", next);
+                  }}
+                  placeholder="Input Methods"
+                >
+                  {inputMethodOptions.map((method) => (
+                    <Dropdown.Item
+                      key={method.id}
+                      value={method.id}
+                      icon={method.icon}
+                      description={method.description}
+                    >
+                      {method.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              )}
+
+              {buildTypeOptions.length > 0 && (
+                <Dropdown
+                  triggerSize="lg"
+                  triggerClassName="m-1 rounded-sm"
+                  triggerStyle={gamesDropdownShadow}
+                  triggerIcon="download"
+                  multiple
+                  selectedValues={selectedBuildTypes}
+                  onSelectionChange={(values) => {
+                    const next = new Set(
+                      Array.from(values, (value) => String(value)),
+                    );
+                    setSelectedBuildTypes(next);
+                    updateMultiQueryParam("buildTypes", next);
+                  }}
+                  placeholder="Build Types"
+                >
+                  {buildTypeOptions.map((buildType) => (
+                    <Dropdown.Item
+                      key={buildType.id}
+                      value={buildType.id}
+                      icon={buildType.icon}
+                      description={buildType.description}
+                    >
+                      {buildType.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              )}
+
+              {flagOptions.length > 0 && (
+                <Dropdown
+                  triggerSize="lg"
+                  triggerClassName="m-1 rounded-sm"
+                  triggerStyle={gamesDropdownShadow}
+                  triggerIcon="shieldalert"
+                  multiple
+                  selectedValues={excludedFlags}
+                  onSelectionChange={(values) => {
+                    const next = new Set(
+                      Array.from(values, (value) => String(value)),
+                    );
+                    setExcludedFlags(next);
+                    updateMultiQueryParam("excludeFlags", next);
+                  }}
+                  placeholder="Exclude Flags"
+                >
+                  {flagOptions.map((flag) => (
+                    <Dropdown.Item
+                      key={flag.id}
+                      value={flag.id}
+                      icon={flag.icon}
+                      description={flag.description}
+                    >
+                      {flag.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              )}
+
+              <Dropdown
+                multiple
+                selectedValues={selectedMoreFilters}
+                onSelectionChange={(values) => {
+                  const next = new Set(
+                    Array.from(values, (value) => String(value)),
                   );
-                  setPageVersion(nextPageVersion);
-                }
-                updateQueryParam("jam", val);
-              }}
-            >
-            {jamOptions.map((j) => (
-              <Dropdown.Item
-                key={j.id}
-                value={j.id}
-                icon={j.icon || "gamepad2"}
-                description={
-                  j.description ??
-                  (j.id === "all" ? "Browse entries from every jam" : undefined)
-                }
-              >
-                {j.name}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
-
-          {/* Type dropdown */}
-          <Dropdown
-            selectedValue={typeFilter}
-            onSelect={(key) => {
-              const val = key as TypeOption["id"];
-              setTypeFilter(val);
-              updateQueryParam("type", val);
-            }}
-          >
-            {typeOptions.map((t) => (
-              <Dropdown.Item
-                key={t.id}
-                value={t.id}
-                icon={t.icon || "gamepad2"}
-                description={
-                  t.id === "all"
-                    ? "Show all game categories"
-                    : `Only ${t.name} entries`
+                  setSelectedMoreFilters(next);
+                  updateMoreQueryParam(next);
+                }}
+                trigger={
+                  <Button
+                    size="lg"
+                    className="m-1 rounded-sm"
+                    style={gamesDropdownShadow}
+                    icon="morehorizontal"
+                  >
+                    More
+                  </Button>
                 }
               >
-                {t.name}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
-
-          {tagOptions.length > 0 && (
-            <Dropdown
-              multiple
-              selectedValues={selectedTags}
-              onSelectionChange={(values) => {
-                const next = new Set(
-                  Array.from(values, (value) => String(value)),
-                );
-                setSelectedTags(next);
-                updateMultiQueryParam("tags", next);
-              }}
-              placeholder="Tags"
-            >
-              {tagOptions.map((tag) => (
-                <Dropdown.Item
-                  key={tag.id}
-                  value={tag.id}
-                  icon={tag.icon}
-                  description={tag.description}
-                >
-                  {tag.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
+                {moreOptions.map((option) => (
+                  <Dropdown.Item
+                    key={option.id}
+                    value={option.id}
+                    icon={option.icon}
+                    description={option.description}
+                  >
+                    {option.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+            </Hstack>
           )}
-
-          {inputMethodOptions.length > 0 && (
-            <Dropdown
-              multiple
-              selectedValues={selectedInputMethods}
-              onSelectionChange={(values) => {
-                const next = new Set(
-                  Array.from(values, (value) => String(value)),
-                );
-                setSelectedInputMethods(next);
-                updateMultiQueryParam("inputMethods", next);
-              }}
-              placeholder="Input Methods"
-            >
-              {inputMethodOptions.map((method) => (
-                <Dropdown.Item
-                  key={method.id}
-                  value={method.id}
-                  icon={method.icon}
-                  description={method.description}
-                >
-                  {method.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
-          )}
-
-          {buildTypeOptions.length > 0 && (
-            <Dropdown
-              multiple
-              selectedValues={selectedBuildTypes}
-              onSelectionChange={(values) => {
-                const next = new Set(
-                  Array.from(values, (value) => String(value)),
-                );
-                setSelectedBuildTypes(next);
-                updateMultiQueryParam("buildTypes", next);
-              }}
-              placeholder="Build Types"
-            >
-              {buildTypeOptions.map((buildType) => (
-                <Dropdown.Item
-                  key={buildType.id}
-                  value={buildType.id}
-                  icon={buildType.icon}
-                  description={buildType.description}
-                >
-                  {buildType.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
-          )}
-
-          {flagOptions.length > 0 && (
-            <Dropdown
-              multiple
-              selectedValues={excludedFlags}
-              onSelectionChange={(values) => {
-                const next = new Set(
-                  Array.from(values, (value) => String(value)),
-                );
-                setExcludedFlags(next);
-                updateMultiQueryParam("excludeFlags", next);
-              }}
-              placeholder="Exclude Flags"
-            >
-              {flagOptions.map((flag) => (
-                <Dropdown.Item
-                  key={flag.id}
-                  value={flag.id}
-                  icon={flag.icon}
-                  description={flag.description}
-                >
-                  {flag.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
-          )}
-
-          <Dropdown
-            multiple
-            selectedValues={selectedMoreFilters}
-            onSelectionChange={(values) => {
-              const next = new Set(
-                Array.from(values, (value) => String(value)),
-              );
-              setSelectedMoreFilters(next);
-              updateMoreQueryParam(next);
-            }}
-            trigger={<Button icon="morehorizontal">More</Button>}
-          >
-            {moreOptions.map((option) => (
-              <Dropdown.Item
-                key={option.id}
-                value={option.id}
-                icon={option.icon}
-                description={option.description}
-              >
-                {option.name}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
-        </Hstack>
+        </Vstack>
       </Vstack>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {displayedGames && displayedGames.length > 0 ? (
+        {displayedGames.length > 0 ? (
           displayedGames.map((game: GameType) => (
             <GameCard
               key={`${game.id}-${game.pageVersion ?? "JAM"}`}

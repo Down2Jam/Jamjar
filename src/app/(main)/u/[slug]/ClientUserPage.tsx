@@ -36,11 +36,16 @@ import { UserType } from "@/types/UserType";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { computeEffectiveRecommendationItems } from "@/helpers/recommendations";
 import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
-import { readArray, readItem, unwrapArray, unwrapItem } from "@/requests/helpers";
+import {
+  readArray,
+  readItem,
+  unwrapArray,
+  unwrapItem,
+} from "@/requests/helpers";
 import NextLink from "@/compat/next-link";
 import Image from "@/compat/next-image";
 import dynamic from "@/compat/next-dynamic";
-import { use, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, use, useEffect, useMemo, useState } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
@@ -238,7 +243,10 @@ function ordinal(n: number) {
 function formatScoreValue(s: LeaderboardScore) {
   const { type, decimalPlaces } = s.leaderboard;
   if (type === "SCORE" || type === "GOLF") {
-    return (s.data / 10 ** decimalPlaces).toString();
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: decimalPlaces,
+      maximumFractionDigits: decimalPlaces,
+    }).format(s.data / 10 ** decimalPlaces);
   }
   const total = s.data;
   const h = Math.floor(total / 3_600_000);
@@ -433,10 +441,9 @@ export default function ClientUserPage({
   usePageMetadata({
     title: user?.name ?? slug,
     description:
-      user?.short ||
-      stripHtmlForMetadata(user?.bio) ||
-      "A user in Down2Jam",
-    image: user?.profilePicture || user?.bannerPicture || "/images/D2J_Icon.png",
+      user?.short || stripHtmlForMetadata(user?.bio) || "A user in Down2Jam",
+    image:
+      user?.profilePicture || user?.bannerPicture || "/images/D2J_Icon.png",
     icon: user?.profilePicture || "/images/D2J_Icon.svg",
     canonical: `/u/${user?.slug ?? slug}`,
   });
@@ -462,17 +469,14 @@ export default function ClientUserPage({
       formData.append("cropHeight", String(crop.height));
     }
 
-    const response = await fetch(
-      `${BASE_URL}/image`,
-      {
-        method: "POST",
-        body: formData,
-        headers: {
-          authorization: `Bearer ${getCookie("token")}`,
-        },
-        credentials: "include",
+    const response = await fetch(`${BASE_URL}/image`, {
+      method: "POST",
+      body: formData,
+      headers: {
+        authorization: `Bearer ${getCookie("token")}`,
       },
-    );
+      credentials: "include",
+    });
 
     if (!response.ok) {
       throw new Error("Failed to upload image");
@@ -509,8 +513,8 @@ export default function ClientUserPage({
     setFollowing(
       Boolean(
         userWithFollowState.viewerFollowing ??
-          userWithFollowState.isFollowing ??
-          userWithFollowState.following,
+        userWithFollowState.isFollowing ??
+        userWithFollowState.following,
       ),
     );
     setProfilePicture(normalizeImage(user.profilePicture));
@@ -803,7 +807,7 @@ export default function ClientUserPage({
     return (
       user.teams?.reduce<GameType[]>((prev, cur) => {
         if (cur.game && cur.game.published) {
-          prev.push(cur.game);
+          prev.push({ ...cur.game, team: cur });
         }
         return prev;
       }, []) ?? []
@@ -934,6 +938,14 @@ export default function ClientUserPage({
     }
   }, [hasRecommendationsTab, profileSection]);
 
+  const profileSurfaceStyle = {
+    backgroundColor: hexToRgba(colors["mantle"], 0.96),
+    borderColor: hexToRgba(colors["text"], 0.06),
+    borderRadius: 10,
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
+  };
+
   if (!user) {
     return <></>;
   }
@@ -941,7 +953,12 @@ export default function ClientUserPage({
   return (
     <>
       <Vstack align="stretch" gap={4}>
-        <Card padding={0} className="relative">
+        <Card
+          padding={0}
+          shadow="none"
+          className="relative overflow-hidden"
+          style={profileSurfaceStyle}
+        >
           <div
             className={`relative w-full aspect-11/1 ${
               isOwner ? "cursor-pointer group" : ""
@@ -1018,7 +1035,7 @@ export default function ClientUserPage({
                 className="rounded-full bg-transparent"
                 size={96}
                 style={
-                  isOwner && avatarSrc
+                  avatarSrc
                     ? { boxShadow: `0 0 0 2px ${colors["blue"]}` }
                     : undefined
                 }
@@ -1194,7 +1211,10 @@ export default function ClientUserPage({
                     onClick={async () => {
                       setFollowBusy(true);
                       const nextFollowing = !following;
-                      const response = await followUser(user.slug, nextFollowing);
+                      const response = await followUser(
+                        user.slug,
+                        nextFollowing,
+                      );
                       setFollowBusy(false);
                       if (response.ok) {
                         setFollowing(nextFollowing);
@@ -1210,53 +1230,63 @@ export default function ClientUserPage({
                   {
                     key: "recommendations" as ProfileSection,
                     label: "Recommended",
+                    icon: "star" as const,
                     count: recommendationsCount,
                   },
                   {
                     key: "games" as ProfileSection,
                     label: "Games",
+                    icon: "gamepad2" as const,
                     count: publishedGames.length,
                   },
                   {
                     key: "music" as ProfileSection,
                     label: "Music",
+                    icon: "music" as const,
                     count: musicCount,
                   },
                   {
                     key: "collections" as ProfileSection,
                     label: "Collections",
+                    icon: "layers" as const,
                     count: collectionsCount,
                   },
                   {
                     key: "posts" as ProfileSection,
                     label: "Posts",
+                    icon: "newspaper" as const,
                     count: postsCount,
                   },
                   {
                     key: "comments" as ProfileSection,
                     label: "Comments",
+                    icon: "messagecircle" as const,
                     count: commentsCount,
                   },
                   {
                     key: "achievements" as ProfileSection,
                     label: "Achievements",
+                    icon: "trophy" as const,
                     count: achievementsCount,
                   },
                   {
                     key: "scores" as ProfileSection,
                     label: "Scores",
+                    icon: "linechart" as const,
                     count: scoresCount,
                   },
                   {
                     key: "emotes" as ProfileSection,
                     label: "Emotes",
+                    icon: "smileplus" as const,
                     count: user.userEmotes?.length,
                   },
                 ]
                   .filter(
                     (section) =>
-                      section.key !== "recommendations" ||
-                      hasRecommendationsTab,
+                      (section.count ?? 0) > 0 &&
+                      (section.key !== "recommendations" ||
+                        hasRecommendationsTab),
                   )
                   .map((section) => (
                     <Button
@@ -1272,10 +1302,13 @@ export default function ClientUserPage({
                         )
                       }
                     >
-                      {section.label}
-                      <span className="ml-1 text-xs opacity-70">
-                        {section.count}
-                      </span>
+                      <Hstack gap={1} className="items-center">
+                        <Icon name={section.icon} size={14} />
+                        <span>{section.label}</span>
+                        <span className="text-xs opacity-70">
+                          {section.count}
+                        </span>
+                      </Hstack>
                     </Button>
                   ))}
               </Hstack>
@@ -1284,9 +1317,13 @@ export default function ClientUserPage({
         </Card>
 
         {profileSection === "bio" ? (
-          <Hstack align="stretch">
+          <Hstack align="start">
             {(user.links?.length || isOwner) && (
-              <Card>
+              <Card
+                shadow="none"
+                className="min-w-48"
+                style={profileSurfaceStyle}
+              >
                 <div
                   role={isOwner ? "button" : undefined}
                   tabIndex={isOwner ? 0 : -1}
@@ -1317,34 +1354,54 @@ export default function ClientUserPage({
                     isOwner ? "group cursor-pointer" : "cursor-default"
                   }`}
                 >
-                  <Vstack className="items-center gap-2" align="start">
-                    {user.links?.length ? (
-                      user.links.map((link, index) => {
-                        const label = user.linkLabels?.[index]?.trim();
-                        let host = "";
-                        try {
-                          host = new URL(link).hostname.replace(/^www\./, "");
-                        } catch {
-                          host = link.replace(/^https?:\/\//, "").split("/")[0];
-                        }
-                        const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(
-                          host,
-                        )}`;
-                        return (
-                          <Chip
-                            key={`${link}-${index}`}
-                            href={link}
-                            avatarSrc={faviconUrl}
-                          >
-                            {label || host}
-                          </Chip>
-                        );
-                      })
-                    ) : (
-                      <Text color="textFaded" size="sm">
-                        Click to add links
-                      </Text>
-                    )}
+                  <Vstack className="w-full" align="stretch" gap={5}>
+                    <Hstack className="items-center gap-2">
+                      <Icon name="link" color="text" size={16} />
+                      <Text weight="semibold">Links</Text>
+                    </Hstack>
+                    <Vstack className="w-full gap-2" align="stretch">
+                      {user.links?.length ? (
+                        user.links.map((link, index) => {
+                          const label = user.linkLabels?.[index]?.trim();
+                          let host = "";
+                          try {
+                            host = new URL(link).hostname.replace(/^www\./, "");
+                          } catch {
+                            host = link
+                              .replace(/^https?:\/\//, "")
+                              .split("/")[0];
+                          }
+                          const faviconUrl = `https://www.google.com/s2/favicons?sz=32&domain=${encodeURIComponent(
+                            host,
+                          )}`;
+                          return (
+                            <Chip
+                              key={`${link}-${index}`}
+                              href={link}
+                              avatarSrc={faviconUrl}
+                              avatarSize={18}
+                              avatarRounded={false}
+                              avatarClassName="!border-0"
+                              className="w-full justify-start !border-0 !px-3 !py-1.5 !text-sm hover:!bg-[var(--profile-link-hover)] focus-visible:!bg-[var(--profile-link-hover)]"
+                              style={
+                                {
+                                  "--profile-link-hover": hexToRgba(
+                                    colors["blue"],
+                                    0.14,
+                                  ),
+                                } as CSSProperties
+                              }
+                            >
+                              {label || host}
+                            </Chip>
+                          );
+                        })
+                      ) : (
+                        <Text color="textFaded" size="sm">
+                          Click to add links
+                        </Text>
+                      )}
+                    </Vstack>
                   </Vstack>
                   {isOwner && (
                     <div
@@ -1356,48 +1413,53 @@ export default function ClientUserPage({
               </Card>
             )}
             {((user.bio && user.bio != "<p></p>") || isOwner) && (
-              <Card>
-                <div
-                  role={isOwner ? "button" : undefined}
-                  tabIndex={isOwner ? 0 : -1}
-                  onClick={(event) => {
-                    if (!isOwner) return;
-                    const target = event.target as HTMLElement;
-                    if (target.closest("a")) return;
-                    setBioDraft(user.bio ?? "");
-                    openBio();
-                  }}
-                  onKeyDown={(event) => {
-                    if (!isOwner) return;
-                    if (event.key !== "Enter" && event.key !== " ") return;
-                    setBioDraft(user.bio ?? "");
-                    openBio();
-                  }}
-                  className={`relative w-full rounded-lg p-2 text-left ${
-                    isOwner ? "group cursor-pointer" : "cursor-default"
-                  }`}
-                >
-                  <Vstack align="start" className="gap-2 w-full">
-                    <Text weight="semibold">Bio</Text>
-                    <ThemedProse>
-                      <MentionedContent
-                        html={
-                          user.bio && user.bio != "<p></p>"
-                            ? user.bio
-                            : "Click to add a bio"
-                        }
-                        className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+              <div className="min-w-0 flex-1">
+                <Card shadow="none" style={profileSurfaceStyle}>
+                  <div
+                    role={isOwner ? "button" : undefined}
+                    tabIndex={isOwner ? 0 : -1}
+                    onClick={(event) => {
+                      if (!isOwner) return;
+                      const target = event.target as HTMLElement;
+                      if (target.closest("a")) return;
+                      setBioDraft(user.bio ?? "");
+                      openBio();
+                    }}
+                    onKeyDown={(event) => {
+                      if (!isOwner) return;
+                      if (event.key !== "Enter" && event.key !== " ") return;
+                      setBioDraft(user.bio ?? "");
+                      openBio();
+                    }}
+                    className={`relative w-full rounded-lg p-2 text-left ${
+                      isOwner ? "group cursor-pointer" : "cursor-default"
+                    }`}
+                  >
+                    <Vstack align="start" className="gap-2 w-full">
+                      <Hstack className="items-center gap-2">
+                        <Icon name="info" color="text" size={16} />
+                        <Text weight="semibold">Bio</Text>
+                      </Hstack>
+                      <ThemedProse>
+                        <MentionedContent
+                          html={
+                            user.bio && user.bio != "<p></p>"
+                              ? user.bio
+                              : "Click to add a bio"
+                          }
+                          className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                        />
+                      </ThemedProse>
+                    </Vstack>
+                    {isOwner && (
+                      <div
+                        className="absolute inset-0 rounded-lg border border-dashed opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{ borderColor: colors["grayDark"] }}
                       />
-                    </ThemedProse>
-                  </Vstack>
-                  {isOwner && (
-                    <div
-                      className="absolute inset-0 rounded-lg border border-dashed opacity-0 group-hover:opacity-100 transition-opacity"
-                      style={{ borderColor: colors["grayDark"] }}
-                    />
-                  )}
-                </div>
-              </Card>
+                    )}
+                  </div>
+                </Card>
+              </div>
             )}
           </Hstack>
         ) : (
@@ -1410,9 +1472,9 @@ export default function ClientUserPage({
                       <Text size="lg" weight="semibold" color="text">
                         Recommended Games
                       </Text>
-                    {isOwner && canShowRecommendedGames && (
-                      <Button
-                        size="sm"
+                      {isOwner && canShowRecommendedGames && (
+                        <Button
+                          size="sm"
                           icon="pencil"
                           onClick={() => openRecommendations("games")}
                         >
@@ -1476,24 +1538,40 @@ export default function ClientUserPage({
               </>
             )}
             {profileSection === "emotes" && (
-              <Hstack wrap>
+              <section className="grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] gap-3">
                 {emotes.map((emote) => (
-                  <Card key={emote.id}>
-                    <Vstack align="center" gap={2}>
+                  <Card
+                    key={emote.id}
+                    padding={0.75}
+                    shadow="none"
+                    className="h-32 min-w-0"
+                    style={profileSurfaceStyle}
+                  >
+                    <Vstack
+                      align="center"
+                      justify="center"
+                      gap={2}
+                      className="h-full min-w-0"
+                    >
                       <img
                         src={emote.image}
                         alt={emote.slug}
-                        className="h-12 w-12 rounded-md object-cover"
+                        className="h-16 w-16 max-w-full object-contain"
                         loading="lazy"
                         decoding="async"
                       />
-                      <Text size="xs" color="textFaded">
+                      <Text
+                        size="xs"
+                        color="textFaded"
+                        className="block w-full truncate text-center"
+                        title={emote.slug}
+                      >
                         {emote.slug}
                       </Text>
                     </Vstack>
                   </Card>
                 ))}
-              </Hstack>
+              </section>
             )}
             {profileSection === "games" && (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1535,7 +1613,10 @@ export default function ClientUserPage({
               <section className="grid gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {collectionsLoading && collections.length === 0 ? (
                   Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="aspect-square animate-pulse rounded-md bg-white/5" />
+                    <div
+                      key={index}
+                      className="aspect-square animate-pulse rounded-md bg-white/5"
+                    />
                   ))
                 ) : collections.length === 0 ? (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6 sm:col-span-2 lg:col-span-3 xl:col-span-4">
@@ -1550,11 +1631,11 @@ export default function ClientUserPage({
                       (itemTypes.track ?? 0) + (itemTypes.youtube_track ?? 0);
                     const relevantCount =
                       collection.collectionType === "game"
-                        ? itemTypes.game ?? 0
+                        ? (itemTypes.game ?? 0)
                         : collection.collectionType === "music"
                           ? collectionMusicCount
                           : collection.collectionType === "post"
-                            ? itemTypes.post ?? 0
+                            ? (itemTypes.post ?? 0)
                             : collectionMusicCount;
                     const relevantLabel =
                       collection.collectionType === "game"
@@ -1590,7 +1671,11 @@ export default function ClientUserPage({
                               </span>
                             )}
                           </div>
-                          <Text size="sm" color="textFaded" className="w-full truncate">
+                          <Text
+                            size="sm"
+                            color="textFaded"
+                            className="w-full truncate"
+                          >
                             {relevantLabel}
                           </Text>
                         </Vstack>
@@ -1664,7 +1749,7 @@ export default function ClientUserPage({
                       No scores yet.
                     </Text>
                   ) : (
-                    <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+                    <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                       {bestScores
                         .sort((a, b) => b.id - a.id)
                         .map((score) => {
@@ -1674,30 +1759,67 @@ export default function ClientUserPage({
                             <Card
                               key={score.id}
                               href={`/g/${score.leaderboard.game.slug}`}
+                              shadow="none"
                             >
-                              <Hstack className="items-center gap-3">
-                                <Image
-                                  src={
-                                    score.leaderboard.game.thumbnail ??
-                                    "/images/D2J_Icon.png"
-                                  }
-                                  alt="Game thumbnail"
-                                  width={27}
-                                  height={15}
-                                  className="rounded-lg"
-                                />
-                                <Text>{score.leaderboard.game.name}</Text>
-                                <Text color="textFaded">
-                                  {score.leaderboard.name || "Leaderboard"}
-                                </Text>
+                              <Hstack
+                                justify="between"
+                                gap={4}
+                                className="min-w-0"
+                              >
+                                <Hstack gap={3} className="min-w-0">
+                                  <Image
+                                    src={
+                                      score.leaderboard.game.thumbnail ??
+                                      "/images/D2J_Icon.png"
+                                    }
+                                    alt=""
+                                    width={48}
+                                    height={27}
+                                    className="shrink-0 rounded-md object-cover"
+                                  />
+                                  <Vstack
+                                    align="start"
+                                    gap={0}
+                                    className="min-w-0"
+                                  >
+                                    <Text
+                                      weight="semibold"
+                                      className="max-w-full truncate"
+                                    >
+                                      {score.leaderboard.game.name}
+                                    </Text>
+                                    <Text
+                                      size="sm"
+                                      color="textFaded"
+                                      className="max-w-full truncate"
+                                    >
+                                      {score.leaderboard.name || "Leaderboard"}
+                                    </Text>
+                                  </Vstack>
+                                </Hstack>
 
-                                <Text color="blue">
-                                  {formatScoreValue(score)}
-                                </Text>
-
-                                <Text style={{ color }}>
-                                  {placement ? ordinal(placement) : "Unranked"}
-                                </Text>
+                                <Vstack
+                                  align="end"
+                                  gap={0}
+                                  className="shrink-0"
+                                >
+                                  <Text
+                                    color="blue"
+                                    weight="semibold"
+                                    className="tabular-nums"
+                                  >
+                                    {formatScoreValue(score)}
+                                  </Text>
+                                  <Text
+                                    size="xs"
+                                    className="tabular-nums"
+                                    style={{ color }}
+                                  >
+                                    {placement
+                                      ? ordinal(placement)
+                                      : "Unranked"}
+                                  </Text>
+                                </Vstack>
                               </Hstack>
                             </Card>
                           );

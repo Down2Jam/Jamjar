@@ -40,6 +40,7 @@ interface PopoverProps {
   positionerStyle?: React.CSSProperties;
   transformOrigin?: string;
   disableHoverScale?: boolean;
+  showArrow?: boolean;
 }
 
 export default function Popover({
@@ -64,6 +65,7 @@ export default function Popover({
   positionerStyle: positionerStyleProp,
   transformOrigin,
   disableHoverScale = false,
+  showArrow = false,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
@@ -121,6 +123,63 @@ export default function Popover({
   }, [closeButtonPosition]);
   const hoverScale =
     hovered && showCloseButton && !disableHoverScale ? 1.015 : 1;
+
+  const getArrowStyle = (p: Position): React.CSSProperties => {
+    const arrowSize = 10;
+    const base: React.CSSProperties = {
+      position: "absolute",
+      width: arrowSize,
+      height: arrowSize,
+      backgroundColor: glass ? "rgba(8, 12, 20, 0.55)" : colors["mantle"],
+      borderColor: glass ? "rgba(255, 255, 255, 0.15)" : colors["base"],
+      borderStyle: "solid",
+      zIndex: 0,
+      pointerEvents: "none",
+    };
+
+    switch (p) {
+      case "top-left":
+      case "top-right":
+      case "top":
+        return {
+          ...base,
+          bottom: -6,
+          left: p === "top-right" ? undefined : p === "top-left" ? 16 : "50%",
+          right: p === "top-right" ? 16 : undefined,
+          transform: p === "top" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
+          borderWidth: "0 1px 1px 0",
+        };
+      case "bottom-left":
+      case "bottom-right":
+      case "bottom":
+        return {
+          ...base,
+          top: -6,
+          left: p === "bottom-right" ? undefined : p === "bottom-left" ? 16 : "50%",
+          right: p === "bottom-right" ? 16 : undefined,
+          transform: p === "bottom" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
+          borderWidth: "1px 0 0 1px",
+        };
+      case "left":
+        return {
+          ...base,
+          right: -6,
+          top: "50%",
+          transform: "translateY(-50%) rotate(45deg)",
+          borderWidth: "1px 1px 0 0",
+        };
+      case "right":
+        return {
+          ...base,
+          left: -6,
+          top: "50%",
+          transform: "translateY(-50%) rotate(45deg)",
+          borderWidth: "0 0 1px 1px",
+        };
+      default:
+        return base;
+    }
+  };
 
   // ----- Positioner (no animation, no transforms from Framer)
   const computedPositionerStyle: React.CSSProperties = useMemo(() => {
@@ -294,8 +353,9 @@ export default function Popover({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
           >
+            {showArrow && <div aria-hidden="true" style={getArrowStyle(position)} />}
             {/* wrapper to ensure absolutely-positioned children don't collapse the parent */}
-            <div style={{ position: "relative" }}>{children}</div>
+            <div style={{ position: "relative", zIndex: 1 }}>{children}</div>
             {showCloseButton && (
               <button
                 onClick={() => {

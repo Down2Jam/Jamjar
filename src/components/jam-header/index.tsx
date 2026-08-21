@@ -260,6 +260,10 @@ export default function JamHeader() {
   );
   const effectiveNextEventIndex =
     nextEventIndex === -1 ? sortedEvents.length : nextEventIndex;
+  const activeEventIndex =
+    effectiveNextEventIndex > 0
+      ? Math.min(effectiveNextEventIndex - 1, sortedEvents.length - 1)
+      : -1;
 
   // Helper function to get ordinal suffix
   const getOrdinalSuffix = (day: number): string => {
@@ -301,6 +305,10 @@ export default function JamHeader() {
       </>
     );
   }
+
+  const currentPhase = activeJamResponse?.phase
+    ? getPhaseObj(activeJamResponse.phase)
+    : null;
 
   return (
     <>
@@ -443,62 +451,88 @@ export default function JamHeader() {
             </div>
           ) : (
             <div
-              className="p-4 text-center rounded-b-2x flex justify-center"
+              className="text-center rounded-b-2x"
               style={{
                 backgroundColor: colors["blueDarkDark"],
               }}
             >
-              <Text weight="semibold">
-                {getPhaseObj(activeJamResponse.phase).text}
-              </Text>
+              {currentPhase?.href ? (
+                <Link
+                  href={currentPhase.href}
+                  className="flex justify-center p-4 hover:underline"
+                >
+                  <Text weight="semibold">{currentPhase.text}</Text>
+                </Link>
+              ) : (
+                <div className="flex justify-center p-4">
+                  <Text weight="semibold">{currentPhase?.text ?? ""}</Text>
+                </div>
+              )}
             </div>
           ))}
       </div>
 
-      <div className="flex overflow-x-scroll snap-x pb-2 gap-2 relative ml-4 mr-4 mt-3">
-        {sortedEvents.map((event, index) => (
-          <div
-            key={event.name}
-            className={`grow snap-start rounded-md p-2 text-center min-w-36 flex flex-col items-center`}
-            style={{
-              color: siteTheme.colors["text"],
-              ...getStyleForDateDisplay(
-                index,
-                effectiveNextEventIndex,
-                currentDate,
-                event.date,
-              ),
-            }}
-          >
-            <Text
-              size="xs"
-              color={
-                index === effectiveNextEventIndex - 1 &&
-                event.date &&
-                event.date < currentDate
-                  ? "textLight"
-                  : "text"
-              }
-            >
-              {event.name}
-            </Text>
-            <Text
-              weight="bold"
-              color={
-                index === effectiveNextEventIndex - 1 &&
-                event.date &&
-                event.date < currentDate
-                  ? "textLight"
-                  : "text"
-              }
-            >
-              {event.date
-                ?.toLocaleString("en-US", { month: "short" })
-                .toUpperCase()}{" "}
-              {event.date?.getDate()}
-            </Text>
-          </div>
-        ))}
+      <div
+        className="relative ml-4 mr-4 mt-3 overflow-x-auto pb-2"
+        aria-label="Jam timeline"
+      >
+        <ol className="flex min-w-max snap-x gap-2">
+          {sortedEvents.map((event, index) => {
+            const isActive = index === activeEventIndex;
+
+            return (
+              <li
+                key={event.name}
+                className="relative min-w-36 grow snap-start"
+                aria-current={isActive ? "step" : undefined}
+              >
+                {index < sortedEvents.length - 1 && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute left-full top-1/2 h-0.5 w-2 -translate-y-1/2"
+                    style={{
+                      backgroundColor:
+                        index < activeEventIndex
+                          ? colors["blueDark"]
+                          : index === activeEventIndex
+                            ? colors["pinkDark"]
+                            : colors["violetDark"],
+                    }}
+                  />
+                )}
+
+                <div
+                  className="relative z-10 flex min-h-[60px] flex-col items-center justify-center rounded-md p-2 text-center"
+                  style={{
+                    color: siteTheme.colors["text"],
+                    ...getStyleForDateDisplay(
+                      index,
+                      effectiveNextEventIndex,
+                      currentDate,
+                      event.date,
+                    ),
+                  }}
+                >
+                  <Text
+                    size="xs"
+                    color={isActive ? "textLight" : "text"}
+                  >
+                    {event.name}
+                  </Text>
+                  <Text
+                    weight="bold"
+                    color={isActive ? "textLight" : "text"}
+                  >
+                    {event.date
+                      ?.toLocaleString("en-US", { month: "short" })
+                      .toUpperCase()}{" "}
+                    {event.date?.getDate()}
+                  </Text>
+                </div>
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </>
   );

@@ -169,7 +169,9 @@ const ICON_NAMES: IconName[] = [
   "sitwitch",
   "siyoutube",
   "silinux",
+  "customlinux",
   "sihtml5",
+  "customwindows",
   "custommacos",
 ];
 

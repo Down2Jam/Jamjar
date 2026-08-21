@@ -1,11 +1,13 @@
 import { Card } from "bioloom-ui";
+import { Icon, IconName } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
-import { SiHtml5, SiLinux } from "@icons-pack/react-simple-icons";
-import { Grid2X2, Smartphone } from "lucide-react";
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
+import { createPortal } from "react-dom";
+import { motion } from "framer-motion";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type GameCardGame = {
   slug: string;
@@ -14,10 +16,247 @@ type GameCardGame = {
   short?: string | null;
   thumbnail?: string | null;
   itchEmbedUrl?: string | null;
+  screenshots?: string[];
+  inputMethods?: string[];
+  tags?: Array<{ id?: number; name: string }>;
+  flags?: Array<{ id?: number; name: string }>;
   category?: "ODA" | "REGULAR" | "EXTRA";
   downloadLinks?: Array<{ platform: string }>;
   jam?: { name?: string | null; color?: string | null };
+  creatorName?: string | null;
+  ownerName?: string | null;
+  teamName?: string | null;
+  owner?: { name?: string | null } | null;
+  creator?: { name?: string | null } | null;
+  team?: {
+    name?: string | null;
+    owner?: { name?: string | null };
+    users?: Array<unknown>;
+  } | null;
 };
+
+type PreviewPosition = {
+  left: number;
+  top: number;
+  arrowTop: number;
+  side: "left" | "right";
+};
+
+const previewWidth = 372;
+const previewGap = 10;
+const viewportPadding = 12;
+
+function getPreviewPosition(
+  anchor: HTMLElement,
+  previewHeight = 410,
+): PreviewPosition {
+  const rect = anchor.getBoundingClientRect();
+  const spaceToRight = window.innerWidth - rect.right;
+  const spaceToLeft = rect.left;
+  const showOnRight =
+    spaceToRight >= previewWidth + previewGap || spaceToRight >= spaceToLeft;
+  const desiredLeft = showOnRight
+    ? rect.right + previewGap
+    : rect.left - previewWidth - previewGap;
+  const top = Math.max(
+    viewportPadding,
+    Math.min(
+      rect.top + (rect.height - previewHeight) / 2,
+      window.innerHeight - previewHeight - viewportPadding,
+    ),
+  );
+
+  return {
+    left: Math.max(
+      viewportPadding,
+      Math.min(desiredLeft, window.innerWidth - previewWidth - viewportPadding),
+    ),
+    top,
+    arrowTop: Math.max(
+      18,
+      Math.min(rect.top + rect.height / 2 - top, previewHeight - 18),
+    ),
+    side: showOnRight ? "right" : "left",
+  };
+}
+
+function GamePreview({
+  game,
+  creatorName,
+  buildPlatforms,
+  position,
+  previewRef,
+}: {
+  game: GameCardGame;
+  creatorName: string | null;
+  buildPlatforms: string[];
+  position: PreviewPosition;
+  previewRef: React.RefObject<HTMLDivElement | null>;
+}) {
+  const { colors } = useTheme();
+  const screenshots = (game.screenshots ?? []).filter(Boolean).slice(0, 3);
+  const tags = (game.tags ?? []).slice(0, 3);
+  const flags = game.flags ?? [];
+
+  return createPortal(
+    <motion.div
+      ref={previewRef}
+      aria-hidden="true"
+      className="fixed z-[90] w-[372px] pointer-events-none"
+      initial={{
+        opacity: 0,
+        x: position.side === "right" ? -10 : 10,
+        scale: 0.98,
+      }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        left: position.left,
+        top: position.top,
+        color: colors.text,
+        transformOrigin:
+          position.side === "right"
+            ? `left ${position.arrowTop}px`
+            : `right ${position.arrowTop}px`,
+        filter: "drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55))",
+      }}
+    >
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 15 24"
+        className="absolute z-20 h-6 w-[15px] overflow-visible"
+        style={{
+          top: position.arrowTop,
+          left: position.side === "right" ? -14 : undefined,
+          right: position.side === "left" ? -14 : undefined,
+          transform: "translateY(-50%)",
+        }}
+      >
+        <path
+          d={
+            position.side === "right"
+              ? "M 0 12 L 15 0 L 15 24 Z"
+              : "M 15 12 L 0 0 L 0 24 Z"
+          }
+          fill={colors.mantle}
+        />
+        <path
+          d={
+            position.side === "right"
+              ? "M 15 0 L 0 12 L 15 24"
+              : "M 0 0 L 15 12 L 0 24"
+          }
+          fill="none"
+          stroke={colors.base}
+          strokeWidth="1"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      <div
+        className="relative z-10 max-h-[calc(100vh-24px)] overflow-hidden rounded-lg border shadow-2xl"
+        style={{ backgroundColor: colors.mantle, borderColor: colors.base }}
+      >
+        {screenshots.length > 0 && (
+          <div
+            className={`grid h-[190px] gap-1 bg-black/20 ${
+              screenshots.length > 1 ? "grid-cols-[2fr_1fr]" : "grid-cols-1"
+            }`}
+          >
+            <Image
+              src={screenshots[0]}
+              alt=""
+              width={248}
+              height={190}
+              className="h-[190px] w-full object-cover"
+            />
+            {screenshots.length > 1 && (
+              <div className="grid min-w-0 grid-rows-2 gap-1">
+                {screenshots.slice(1).map((screenshot, index) => (
+                  <Image
+                    key={screenshot}
+                    src={screenshot}
+                    alt=""
+                    width={120}
+                    height={93}
+                    className={`h-full min-h-0 w-full object-cover ${
+                      screenshots.length === 2 && index === 0 ? "row-span-2" : ""
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate text-lg font-semibold leading-tight">{game.name}</p>
+            {creatorName && (
+              <p className="mt-1 truncate text-xs" style={{ color: colors.textFaded }}>
+                By {creatorName}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-2 pt-1" style={{ color: colors.textFaded }}>
+            {buildPlatforms.map((platform) => {
+              const icon = platformIcons[platform];
+              return icon ? <Icon key={platform} name={icon} size={15} /> : null;
+            })}
+          </div>
+        </div>
+
+        <p
+          className="mt-3 line-clamp-3 text-sm leading-relaxed"
+          style={{ color: colors.textFaded }}
+        >
+          {game.short || "No description provided."}
+        </p>
+
+        {(tags.length > 0 || (game.inputMethods?.length ?? 0) > 0) && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <span
+                key={tag.id ?? tag.name}
+                className="rounded px-2 py-1 text-[11px]"
+                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+              >
+                {tag.name}
+              </span>
+            ))}
+            {(game.inputMethods ?? []).slice(0, Math.max(0, 3 - tags.length)).map((input) => (
+              <span
+                key={input}
+                className="rounded px-2 py-1 text-[11px]"
+                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+              >
+                {input}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {flags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {flags.map((flag) => (
+              <span
+                key={flag.id ?? flag.name}
+                className="rounded px-2 py-1 text-[11px]"
+                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+              >
+                {flag.name}
+              </span>
+            ))}
+          </div>
+        )}
+        </div>
+      </div>
+    </motion.div>,
+    document.body,
+  );
+}
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -27,6 +266,31 @@ const platformOrder: Record<string, number> = {
   Mobile: 5,
 };
 
+const platformIcons: Record<string, IconName> = {
+  Windows: "customwindows",
+  MacOS: "custommacos",
+  Linux: "customlinux",
+  Web: "sihtml5",
+  Mobile: "smartphone",
+  SourceCode: "code2",
+};
+
+function getCreatorName(game: GameCardGame) {
+  if (game.teamName) return game.teamName;
+  if (game.creatorName) return game.creatorName;
+  if (game.ownerName) return game.ownerName;
+  if (game.creator?.name) return game.creator.name;
+  if (game.owner?.name) return game.owner.name;
+
+  const team = game.team;
+  if (!team) return null;
+
+  if (team.name) return team.name;
+  if (!team.owner?.name) return null;
+
+  return team.users?.length === 1 ? team.owner.name : `${team.owner.name}'s team`;
+}
+
 export function GameCard({
   game,
   rated = false,
@@ -35,6 +299,16 @@ export function GameCard({
   rated?: boolean;
 }) {
   const { colors } = useTheme();
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewPosition, setPreviewPosition] = useState<PreviewPosition>({
+    left: viewportPadding,
+    top: viewportPadding,
+    arrowTop: 18,
+    side: "right",
+  });
   const jamColor = game.jam?.color || "green";
   const jamName = game.jam?.name || "Game Jam";
   const buildPlatforms = [
@@ -46,10 +320,64 @@ export function GameCard({
   const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
   const versionLabel =
     game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
+  const creatorName = getCreatorName(game);
+
+  const updatePreviewPosition = useCallback((previewHeight?: number) => {
+    if (!anchorRef.current) return;
+    setPreviewPosition(getPreviewPosition(anchorRef.current, previewHeight));
+  }, []);
+
+  const openPreview = useCallback((immediate = false) => {
+    if (!immediate && !window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      return;
+    }
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      updatePreviewPosition();
+      setShowPreview(true);
+    }, immediate ? 0 : 320);
+  }, [updatePreviewPosition]);
+
+  const closePreview = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setShowPreview(false);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!showPreview || !previewRef.current) return;
+    updatePreviewPosition(previewRef.current.getBoundingClientRect().height);
+  }, [showPreview, updatePreviewPosition]);
+
+  useEffect(() => {
+    if (!showPreview) return;
+    const reposition = () => updatePreviewPosition(previewRef.current?.offsetHeight);
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [showPreview, updatePreviewPosition]);
+
+  useEffect(() => () => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+  }, []);
 
   return (
-    <Link href={href}>
-      <Card padding={0} className="overflow-hidden relative">
+    <div
+      ref={anchorRef}
+      className="relative"
+      onMouseEnter={() => openPreview()}
+      onMouseLeave={closePreview}
+      onFocus={() => openPreview(true)}
+      onBlur={closePreview}
+    >
+      <Link href={href}>
+      <Card
+        padding={0}
+        shadow="none"
+        className="overflow-hidden relative"
+      >
         {rated && (
           <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
             <p className="opacity-50">RATED</p>
@@ -142,46 +470,38 @@ export function GameCard({
             <Text
               size="sm"
               color="textFaded"
+              className="line-clamp-1"
               style={{
                 borderColor: colors["base"],
               }}
             >
               {game.short || "General.NoDescription"}
             </Text>
+
+            {creatorName && (
+              <Text size="xs" color="textFaded" className="line-clamp-1">
+                By {creatorName}
+              </Text>
+            )}
           </Vstack>
           <Hstack>
             {buildPlatforms.map((platform) => {
-              switch (platform) {
-                case "Linux":
-                  return <SiLinux key="linux" />;
-                case "Mobile":
-                  return <Smartphone strokeWidth={1} key="phone" />;
-                case "Windows":
-                  return <Grid2X2 strokeWidth={1} key="windows" />;
-                case "MacOS":
-                  return (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      x="0px"
-                      y="0px"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 50 50"
-                      fill="currentColor"
-                      key="mac"
-                    >
-                      <path d="M 33.375 0 C 30.539063 0.191406 27.503906 1.878906 25.625 4.15625 C 23.980469 6.160156 22.601563 9.101563 23.125 12.15625 C 22.65625 12.011719 22.230469 11.996094 21.71875 11.8125 C 20.324219 11.316406 18.730469 10.78125 16.75 10.78125 C 12.816406 10.78125 8.789063 13.121094 6.25 17.03125 C 2.554688 22.710938 3.296875 32.707031 8.90625 41.25 C 9.894531 42.75 11.046875 44.386719 12.46875 45.6875 C 13.890625 46.988281 15.609375 47.980469 17.625 48 C 19.347656 48.019531 20.546875 47.445313 21.625 46.96875 C 22.703125 46.492188 23.707031 46.070313 25.59375 46.0625 C 25.605469 46.0625 25.613281 46.0625 25.625 46.0625 C 27.503906 46.046875 28.476563 46.460938 29.53125 46.9375 C 30.585938 47.414063 31.773438 48.015625 33.5 48 C 35.554688 47.984375 37.300781 46.859375 38.75 45.46875 C 40.199219 44.078125 41.390625 42.371094 42.375 40.875 C 43.785156 38.726563 44.351563 37.554688 45.4375 35.15625 C 45.550781 34.90625 45.554688 34.617188 45.445313 34.363281 C 45.339844 34.109375 45.132813 33.910156 44.875 33.8125 C 41.320313 32.46875 39.292969 29.324219 39 26 C 38.707031 22.675781 40.113281 19.253906 43.65625 17.3125 C 43.917969 17.171875 44.101563 16.925781 44.164063 16.636719 C 44.222656 16.347656 44.152344 16.042969 43.96875 15.8125 C 41.425781 12.652344 37.847656 10.78125 34.34375 10.78125 C 32.109375 10.78125 30.46875 11.308594 29.125 11.8125 C 28.902344 11.898438 28.738281 11.890625 28.53125 11.96875 C 29.894531 11.25 31.097656 10.253906 32 9.09375 C 33.640625 6.988281 34.90625 3.992188 34.4375 0.84375 C 34.359375 0.328125 33.894531 -0.0390625 33.375 0 Z M 32.3125 2.375 C 32.246094 4.394531 31.554688 6.371094 30.40625 7.84375 C 29.203125 9.390625 27.179688 10.460938 25.21875 10.78125 C 25.253906 8.839844 26.019531 6.828125 27.1875 5.40625 C 28.414063 3.921875 30.445313 2.851563 32.3125 2.375 Z M 16.75 12.78125 C 18.363281 12.78125 19.65625 13.199219 21.03125 13.6875 C 22.40625 14.175781 23.855469 14.75 25.5625 14.75 C 27.230469 14.75 28.550781 14.171875 29.84375 13.6875 C 31.136719 13.203125 32.425781 12.78125 34.34375 12.78125 C 36.847656 12.78125 39.554688 14.082031 41.6875 16.34375 C 38.273438 18.753906 36.675781 22.511719 37 26.15625 C 37.324219 29.839844 39.542969 33.335938 43.1875 35.15625 C 42.398438 36.875 41.878906 38.011719 40.71875 39.78125 C 39.761719 41.238281 38.625 42.832031 37.375 44.03125 C 36.125 45.230469 34.800781 45.988281 33.46875 46 C 32.183594 46.011719 31.453125 45.628906 30.34375 45.125 C 29.234375 44.621094 27.800781 44.042969 25.59375 44.0625 C 23.390625 44.074219 21.9375 44.628906 20.8125 45.125 C 19.6875 45.621094 18.949219 46.011719 17.65625 46 C 16.289063 45.988281 15.019531 45.324219 13.8125 44.21875 C 12.605469 43.113281 11.515625 41.605469 10.5625 40.15625 C 5.3125 32.15625 4.890625 22.757813 7.90625 18.125 C 10.117188 14.722656 13.628906 12.78125 16.75 12.78125 Z"></path>
-                    </svg>
-                  );
-                case "Web":
-                  return <SiHtml5 key="web" />;
-                default:
-                  return null;
-              }
+              const icon = platformIcons[platform];
+              return icon ? <Icon key={platform} name={icon} size={16} /> : null;
             })}
           </Hstack>
         </Hstack>
-      </Card>
-    </Link>
+        </Card>
+      </Link>
+      {showPreview && (
+        <GamePreview
+          game={game}
+          creatorName={creatorName}
+          buildPlatforms={buildPlatforms}
+          position={previewPosition}
+          previewRef={previewRef}
+        />
+      )}
+    </div>
   );
 }

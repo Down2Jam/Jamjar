@@ -28,6 +28,7 @@ type Shared = {
   avatarFallback?: string;
   avatarSize?: number; // default 16
   avatarRounded?: boolean; // default true
+  avatarClassName?: string;
   className?: string;
   style?: React.CSSProperties;
   children?: React.ReactNode;
@@ -57,6 +58,7 @@ export function Chip(props: ChipProps) {
     avatarFallback,
     avatarSize = 16,
     avatarRounded = true,
+    avatarClassName = "",
     children,
     style: styleProp,
     ...rest
@@ -146,7 +148,7 @@ export function Chip(props: ChipProps) {
           fallback={avatarFallback}
           size={avatarSize}
           rounded={avatarRounded}
-          className="shrink-0"
+          className={`shrink-0 ${avatarClassName}`}
         />
       )}
       {icon && <Icon name={icon} size={iconSize} />}

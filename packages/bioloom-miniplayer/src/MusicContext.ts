@@ -3,6 +3,7 @@ import { createContext } from "react";
 export type TrackComposer = {
   name?: string;
   slug?: string;
+  profilePicture?: string | null;
 };
 
 export type TrackGame = {

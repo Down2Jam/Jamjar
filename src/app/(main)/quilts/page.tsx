@@ -23,6 +23,7 @@ import { createQuilt, listQuilts, type QuiltSummary } from "@/requests/quilt";
 import { readArray } from "@/requests/helpers";
 import { hasCookie } from "@/helpers/cookie";
 import { useSelf } from "@/hooks/queries";
+import { useTheme } from "@/providers/useSiteTheme";
 
 function formatTime(value: string) {
   return new Intl.DateTimeFormat(undefined, {
@@ -69,6 +70,7 @@ function defaultEndsAt() {
 }
 
 export default function QuiltsPage() {
+  const { colors } = useTheme();
   const [quilts, setQuilts] = useState<QuiltSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
@@ -104,16 +106,27 @@ export default function QuiltsPage() {
     <>
       <main className="mx-auto w-full max-w-6xl px-4 pb-10">
         <Vstack align="stretch" className="gap-5">
-          <Hstack justify="between" className="flex-wrap gap-3">
-            <Vstack align="start" gap={0}>
-              <Text size="3xl" weight="bold" color="text">
-                Quilts
-              </Text>
-              <Text color="textFaded">
-                Collaborative pixel art canvases built from community submissions.
-              </Text>
-            </Vstack>
-            <Hstack wrap>
+          <header className="relative py-2 text-center">
+            <p
+              className="text-3xl font-semibold"
+              style={{
+                color: colors["text"],
+                textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+              }}
+            >
+              Quilts
+            </p>
+            <p
+              className="mt-1 text-sm"
+              style={{
+                color: colors["text"],
+                opacity: 0.82,
+                textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+              }}
+            >
+              Collaborative pixel art canvases built from community submissions.
+            </p>
+            <Hstack className="mt-3 justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0" wrap>
               {isModerator && (
                 <Button size="sm" icon="plus" color="blue" onClick={onOpen}>
                   Create quilt
@@ -123,7 +136,7 @@ export default function QuiltsPage() {
                 Refresh
               </Button>
             </Hstack>
-          </Hstack>
+          </header>
 
           {loading ? (
             <Hstack className="justify-center py-16">

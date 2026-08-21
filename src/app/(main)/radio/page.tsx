@@ -477,10 +477,9 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       duration: 2300 + Math.round(Math.random() * 900),
     };
 
-    setFloatingEmotes((currentEmotes) => [
-      ...currentEmotes.filter((item) => item.key !== key),
-      next,
-    ].slice(-9));
+    setFloatingEmotes((currentEmotes) =>
+      [...currentEmotes.filter((item) => item.key !== key), next].slice(-9),
+    );
     window.setTimeout(() => {
       setFloatingEmotes((currentEmotes) =>
         currentEmotes.filter((item) => item.key !== key),
@@ -979,9 +978,9 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
         addToast({ title: "Failed to send emote" });
         return;
       }
-      const sentEmote = (await response.json().catch(() => null)) as
-        | RadioEmote
-        | null;
+      const sentEmote = (await response
+        .json()
+        .catch(() => null)) as RadioEmote | null;
       if (sentEmote) {
         pushFloatingEmote(sentEmote);
         setState((currentState) =>
@@ -1023,7 +1022,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden bg-black">
         <div className="absolute inset-0 bg-[url('/images/sitebg.png')] bg-cover bg-center opacity-20" />
         <div className="absolute inset-0 bg-black/75" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/40" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/40" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">
           <Vstack align="start" className="gap-3 text-white">
             <Text size="5xl">Radio</Text>

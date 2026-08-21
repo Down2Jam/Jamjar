@@ -352,6 +352,22 @@ export default function MusicPage() {
     [router],
   );
 
+  const clearContentFilters = useCallback(() => {
+    setSelectedGenres(new Set());
+    setSelectedMoods(new Set());
+    setSelectedUseCases(new Set());
+    setSelectedLicenses(new Set());
+    setSelectedLooping("all");
+    setSelectedMoreFilters(new Set());
+
+    const params = new URLSearchParams(window.location.search);
+    ["genres", "moods", "useCases", "licenses", "looping"].forEach(
+      (key) => params.delete(key),
+    );
+    params.set("more", EMPTY_MORE_FILTERS_PARAM);
+    navigateToSearchIfChanged(router, params);
+  }, [router]);
+
   useEffect(() => {
     if (jamDetecting || jamId === "all") return;
     if (jamOptions.some((option) => option.id === jamId)) return;
@@ -846,15 +862,43 @@ export default function MusicPage() {
     user,
   ]);
 
+  const activeFilterCount =
+    selectedGenres.size +
+    selectedMoods.size +
+    selectedUseCases.size +
+    selectedLicenses.size +
+    selectedMoreFilters.size +
+    (selectedLooping === "all" ? 0 : 1);
+
   return (
-    <Vstack className="gap-3">
-      <p className="text-center text-2xl" style={{ color: colors["text"] }}>
-        Music
-      </p>
-      <Text color="textFaded">All the music uploaded to the site</Text>
+    <Vstack align="stretch" className="mx-auto w-full max-w-7xl gap-4">
+      <header className="py-2 text-center">
+        <p
+          className="text-3xl font-semibold"
+          style={{
+            color: colors["text"],
+            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+          }}
+        >
+          Music
+        </p>
+        <p
+          className="mt-1 text-sm"
+          style={{
+            color: colors["text"],
+            opacity: 0.82,
+            textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+          }}
+        >
+          All the music uploaded to the site
+        </p>
+      </header>
 
       {/* Controls */}
-      <Hstack className="gap-3 flex-wrap">
+      <Hstack
+        justify="center"
+        className="relative z-30 w-full gap-2 flex-wrap"
+      >
         <Dropdown
           selectedValue={sort}
           onSelect={(key) => {
@@ -1114,10 +1158,35 @@ export default function MusicPage() {
             Move Rated Music To End
           </Dropdown.Item>
         </Dropdown>
+          {activeFilterCount > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              icon="x"
+              onClick={clearContentFilters}
+            >
+              Clear {activeFilterCount}
+            </Button>
+          )}
       </Hstack>
 
       {/* List */}
-      <Vstack align="stretch" className="w-[488px]">
+      <div className="relative z-0 flex items-center justify-center px-1 text-center">
+        <Text
+          size="sm"
+          color="text"
+          weight="semibold"
+          style={{ textShadow: "0 1px 4px rgba(0, 0, 0, 0.9)" }}
+        >
+          {displayedMusic.length}{" "}
+          {displayedMusic.length === 1 ? "track" : "tracks"}
+        </Text>
+      </div>
+      <Vstack
+        align="stretch"
+        gap={2}
+        className="relative z-0 w-full max-w-4xl self-center"
+      >
         {displayedMusic.map((track, index) => (
           (() => {
             const ratingTrackId = track.sourceTrackId ?? track.id;
@@ -1149,6 +1218,7 @@ export default function MusicPage() {
                 allowDownload={track.allowDownload}
                 allowBackgroundUse={track.allowBackgroundUse}
                 allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
+                wide
                 showRating={canRateTrack}
                 hideRatings={effectiveHideRatings}
                 ratingValue={

@@ -102,17 +102,17 @@ const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
 function getPlatformIcon(platform: string): IconName | undefined {
   switch (platform) {
     case "Linux":
-      return "terminal";
+      return "customlinux";
     case "Mobile":
       return "smartphone";
     case "Windows":
-      return "monitor";
+      return "customwindows";
     case "MacOS":
       return "custommacos";
     case "SourceCode":
       return "code2";
     case "Web":
-      return "globe";
+      return "sihtml5";
     default:
       return "morehorizontal";
   }
@@ -874,7 +874,7 @@ export default function ClientGamePage({
         className="border-2 relative rounded-xl overflow-visible"
       >
         <div
-          className="h-60 relative"
+          className="relative h-60 overflow-hidden rounded-t-[10px]"
           style={{
             backgroundColor: colors["base"],
           }}
@@ -889,7 +889,7 @@ export default function ClientGamePage({
           )}
         </div>
         <div
-          className="flex -mt-2 backdrop-blur-md border-t-1"
+          className="flex -mt-1 backdrop-blur-md border-t-1"
           style={{
             borderColor: colors["crust"],
           }}
@@ -983,7 +983,6 @@ export default function ClientGamePage({
                       style={{
                         backgroundColor: colors["surface0"],
                         border: `1px solid ${colors["crust"]}`,
-                        boxShadow: `0 12px 28px ${colors["base"]}66`,
                         color: colors["text"],
                       }}
                       target="_blank"

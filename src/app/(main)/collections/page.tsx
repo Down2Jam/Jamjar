@@ -28,6 +28,7 @@ import {
   useDisclosure,
 } from "bioloom-ui";
 import NextLink from "@/compat/next-link";
+import { useTheme } from "@/providers/useSiteTheme";
 import { LibraryBig } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -59,6 +60,7 @@ function visibilityLabel(visibility?: string) {
 }
 
 export default function CollectionsPage() {
+  const { colors } = useTheme();
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [query, setQuery] = useState("");
@@ -113,21 +115,32 @@ export default function CollectionsPage() {
   return (
     <>
       <Vstack align="stretch" gap={5}>
-        <Hstack justify="between" className="w-full flex-wrap gap-3">
-          <Vstack align="start" gap={0}>
-            <Text size="2xl" weight="semibold" color="text">
-              Collections
-            </Text>
-            <Text size="sm" color="textFaded">
-              Curated games, posts, D2Jam music, and external music links.
-            </Text>
-          </Vstack>
-          <Hstack wrap>
+        <header className="relative py-2 text-center">
+          <p
+            className="text-3xl font-semibold"
+            style={{
+              color: colors["text"],
+              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Collections
+          </p>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: colors["text"],
+              opacity: 0.82,
+              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Curated games, posts, D2Jam music, and external music links.
+          </p>
+          <div className="mt-3 flex justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0">
             <Button icon="plus" color="blue" onClick={onOpen}>
               New Collection
             </Button>
-          </Hstack>
-        </Hstack>
+          </div>
+        </header>
 
         <Hstack className="w-full flex-wrap gap-3" justify="between">
           <Hstack wrap>

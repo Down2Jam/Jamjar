@@ -19,8 +19,8 @@ export default function AboutPage() {
   const { colors } = useTheme();
 
   return (
-    <Vstack>
-      <div className="p-8">
+    <Vstack align="stretch" className="w-full">
+      <div className="flex justify-center p-8">
         <AboutLogo />
       </div>
       <Stack direction="flex-col lg:flex-row" align="stretch">

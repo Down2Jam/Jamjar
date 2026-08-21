@@ -28,14 +28,14 @@ export function Card({
   paddingY,
   glass = false,
   radius = "md",
-  shadow = "md",
+  shadow = "none",
   ...props
 }: CardProps) {
   const { colors } = useTheme();
   const radiusValueMap: Record<NonNullable<CardProps["radius"]>, string> = {
     none: "0",
     sm: "0.25rem",
-    md: "0.75rem",
+    md: "0.625rem",
     lg: "1rem",
     xl: "1.25rem",
     full: "9999px",
@@ -55,9 +55,11 @@ export function Card({
     .join(" ");
 
   const mergedStyle: React.CSSProperties = {
-    backgroundColor: colors["mantle"],
-    borderColor: colors["base"],
+    backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 96%, transparent)`,
+    borderColor: `color-mix(in srgb, ${colors["text"]} 6%, transparent)`,
     color: colors["text"],
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
     padding: `${padding}rem`,
     paddingLeft: `${paddingX ?? padding}rem`,
     paddingRight: `${paddingX ?? padding}rem`,
