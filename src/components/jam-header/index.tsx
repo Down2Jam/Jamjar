@@ -505,6 +505,7 @@ export default function JamHeader() {
                   className="relative z-10 flex min-h-[60px] flex-col items-center justify-center rounded-md p-2 text-center"
                   style={{
                     color: siteTheme.colors["text"],
+                    backgroundColor: colors["mantle"] + "e6",
                     ...getStyleForDateDisplay(
                       index,
                       effectiveNextEventIndex,
