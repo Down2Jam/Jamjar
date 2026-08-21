@@ -182,8 +182,14 @@ export default function ThemeSuggestions() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit suggestion.");
+        const errorData: {
+          error?: string | { message?: string };
+        } = await response.json();
+        const errorMessage =
+          typeof errorData.error === "string"
+            ? errorData.error
+            : errorData.error?.message;
+        throw new Error(errorMessage || "Failed to submit suggestion.");
       }
 
       addToast({ title: "Suggestion added successfully!" });

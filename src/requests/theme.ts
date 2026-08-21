@@ -39,7 +39,7 @@ export async function postThemeSuggestion(
     credentials: "include",
     body: JSON.stringify({
       suggestionText: suggestion,
-      description: description,
+      ...(description !== null ? { description } : {}),
     }),
   });
 }
