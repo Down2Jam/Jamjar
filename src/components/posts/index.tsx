@@ -272,8 +272,8 @@ export default function Posts() {
           </Vstack>
         )}
 
-      <div className="flex justify-between p-4 pb-0">
-        <div className="flex gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-0">
+        <div className="flex flex-wrap gap-2">
           <Dropdown
             selectedValue={sort}
             onSelect={(key) => {
@@ -446,7 +446,7 @@ export default function Posts() {
       {loading ? (
         <PostListSkeleton />
       ) : (
-        <Vstack align="stretch" className="p-4">
+        <Vstack align="stretch" gap={3} className="p-4">
           {posts && posts.length > 0 ? (
             posts.map((post: PostType, index: number) => (
               <PostCard

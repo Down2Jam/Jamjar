@@ -8,6 +8,7 @@ import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { useCurrentJam, useRatingCategories } from "@/hooks/queries";
 import { SidebarCardSkeleton } from "@/components/skeletons";
+import { isPreJamPhase } from "@/helpers/jamDisplay";
 
 export default function SidebarStats() {
   const { data: jamResponse, isLoading: jamLoading } = useCurrentJam();
@@ -18,7 +19,7 @@ export default function SidebarStats() {
     return <SidebarCardSkeleton lines={3} />;
   }
 
-  if (!jamResponse || jamResponse.phase === "Upcoming Jam") {
+  if (!jamResponse || isPreJamPhase(jamResponse.phase)) {
     return null;
   }
 

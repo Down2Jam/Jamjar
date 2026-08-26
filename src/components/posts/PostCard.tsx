@@ -98,7 +98,8 @@ export default function PostCard({
 
   return (
     <Card
-      className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
+      className={`relative overflow-visible hover:shadow-md ${actionsLayerOpen ? "z-50" : "z-0"}`}
+      padding={style === "Cozy" ? 1.25 : 1}
       style={{
         display: hidden ? "none" : "flex",
       }}
@@ -123,18 +124,15 @@ export default function PostCard({
                   }
                 }}
               >
-                <p>{titleText}</p>
+                <p className="font-medium leading-tight">{titleText}</p>
               </Link>
 
               <div
-                className="flex items-center gap-3 text-xs pt-1"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs pt-1"
                 style={{
                   color: colors["textFaded"],
                 }}
               >
-                <Text size="xs" color="textFaded">
-                  PostCard.By
-                </Text>
                 <Link
                   href={`/u/${currentPostData.author.slug}`}
                   className="flex items-center gap-2"
@@ -146,6 +144,9 @@ export default function PostCard({
                   />
                   <p>{currentPostData.author.name}</p>
                 </Link>
+                <span aria-hidden="true" className="opacity-50">
+                  ·
+                </span>
                 <ContentStatusMeta
                   createdAt={currentPostData.createdAt}
                   editedAt={currentPostData.editedAt}
@@ -154,7 +155,12 @@ export default function PostCard({
                 />
               </div>
             </div>
-            <Button icon="plus" onClick={() => setMinimized(false)}></Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="plus"
+              onClick={() => setMinimized(false)}
+            />
           </div>
         ) : (
           <div className="w-full">
@@ -175,20 +181,24 @@ export default function PostCard({
                   }
                 }}
               >
-                <p className="text-2xl">{titleText}</p>
+                <p className="text-[1.375rem] font-semibold leading-tight">
+                  {titleText}
+                </p>
               </Link>
-              <Button icon="minus" onClick={() => setMinimized(true)}></Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                icon="minus"
+                onClick={() => setMinimized(true)}
+              />
             </div>
 
             <div
-              className="flex items-center gap-3 text-xs pt-1"
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs pt-2"
               style={{
                 color: colors["textFaded"],
               }}
             >
-              <Text size="xs" color="textFaded">
-                PostCard.By
-              </Text>
               <Link
                 href={`/u/${currentPostData.author.slug}`}
                 className="flex items-center gap-2"
@@ -200,6 +210,9 @@ export default function PostCard({
                 />
                 <p>{currentPostData.author.name}</p>
               </Link>
+              <span aria-hidden="true" className="opacity-50">
+                ·
+              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}
@@ -208,7 +221,7 @@ export default function PostCard({
               />
             </div>
 
-            <div className="p-2" />
+            <div className="h-3" />
 
             {isModerated ? (
               <Text color="textFaded" size="sm">
@@ -217,19 +230,19 @@ export default function PostCard({
                   : "This post was deleted."}
               </Text>
             ) : (
-              <ThemedProse>
+              <ThemedProse className="[&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
                 <MentionedContent
                   html={currentPostData.content}
-                  className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                  className="!duration-250 !ease-linear !transition-all max-w-[72ch] break-words leading-relaxed"
                 />
               </ThemedProse>
             )}
 
-            <div className="p-2" />
+            <div className="h-3" />
 
             {!isModerated &&
             postTags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {postTags
                   .filter((tag) => tag.name != "D2Jam")
                   .map((tag: TagType) => (
@@ -245,17 +258,17 @@ export default function PostCard({
               <></>
             )}
 
-            {!isModerated && postTags.length > 0 && <div className="p-2" />}
+            {!isModerated && postTags.length > 0 && <div className="h-3" />}
 
             {!isModerated && (
-            <div className="relative z-20 flex gap-3">
+            <div className="relative z-20 mt-1 flex flex-wrap items-center gap-1">
               <LikeButton
                 likes={postLikes.length}
                 liked={Boolean(currentPostData.hasLiked)}
                 parentId={currentPostData.id}
               />
               <Link href={`/p/${currentPostData.slug}#create-comment`}>
-                <Button size="sm" icon="messagecircle">
+                <Button variant="ghost" size="sm" icon="messagecircle">
                   {postComments.length}
                 </Button>
               </Link>
@@ -263,7 +276,7 @@ export default function PostCard({
                 <Dropdown
                   onOpenChange={setDropdownOpen}
                   trigger={
-                    <Button size="sm">
+                    <Button variant="ghost" size="sm">
                       <MoreVertical size={16} />
                     </Button>
                   }
@@ -543,13 +556,12 @@ export default function PostCard({
                 }
               }}
             >
-              <p className="truncate text-2xl">{titleText}</p>
+              <p className="truncate text-lg font-medium leading-tight">
+                {titleText}
+              </p>
             </Link>
 
-            <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-              <Text size="xs" color="textFaded">
-                PostCard.By
-              </Text>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-default-500 pt-1.5">
               <Link
                 href={`/u/${currentPostData.author.slug}`}
                 className="flex items-center gap-2"
@@ -561,6 +573,9 @@ export default function PostCard({
                 />
                 <p>{currentPostData.author.name}</p>
               </Link>
+              <span aria-hidden="true" className="opacity-50">
+                ·
+              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}
@@ -603,13 +618,10 @@ export default function PostCard({
                 }
               }}
             >
-              <p className="truncate">{titleText}</p>
+              <p className="truncate font-medium leading-tight">{titleText}</p>
             </Link>
 
-            <div className="flex items-center gap-3 text-xs text-default-500 pt-1">
-              <Text size="xs" color="textFaded">
-                PostCard.By
-              </Text>
+            <div className="flex items-center gap-2 text-xs text-default-500 pt-1">
               <Link
                 href={`/u/${currentPostData.author.slug}`}
                 className="flex items-center gap-2"
@@ -621,6 +633,9 @@ export default function PostCard({
                 />
                 <p>{currentPostData.author.name}</p>
               </Link>
+              <span aria-hidden="true" className="opacity-50">
+                ·
+              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}

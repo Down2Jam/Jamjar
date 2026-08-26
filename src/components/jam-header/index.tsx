@@ -283,7 +283,7 @@ export default function JamHeader() {
   if (isLoading) {
     return (
       <>
-        <div className="relative z-10 ml-4 mr-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.035] shadow-2xl">
+        <div className="relative z-10 ml-4 mr-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-2xl">
           <div className="flex">
             <div className="flex items-center gap-2 bg-white/10 p-4 px-6">
               <Skeleton className="h-6 w-6 rounded" />
@@ -317,7 +317,7 @@ export default function JamHeader() {
           backgroundColor: siteTheme.colors["blueDark"],
           color: siteTheme.colors["textLight"],
         }}
-        className="z-10 relative ml-4 mr-4 flex flex-col rounded-2xl overflow-hidden transition-color duration-250 shadow-2xl"
+        className="z-10 relative ml-4 mr-4 flex flex-col rounded-xl overflow-hidden transition-color duration-250 shadow-2xl"
       >
         {/* Jam Header */}
         <a href="/about" className="relative">
@@ -451,7 +451,7 @@ export default function JamHeader() {
             </div>
           ) : (
             <div
-              className="text-center rounded-b-2x"
+              className="text-center rounded-b-xl"
               style={{
                 backgroundColor: colors["blueDarkDark"],
               }}
@@ -479,6 +479,15 @@ export default function JamHeader() {
         <ol className="flex min-w-max snap-x gap-2">
           {sortedEvents.map((event, index) => {
             const isActive = index === activeEventIndex;
+            const nextEvent = sortedEvents[index + 1];
+            const nextEventStyle = nextEvent
+              ? getStyleForDateDisplay(
+                  index + 1,
+                  effectiveNextEventIndex,
+                  currentDate,
+                  nextEvent.date,
+                )
+              : undefined;
 
             return (
               <li
@@ -492,11 +501,9 @@ export default function JamHeader() {
                     className="absolute left-full top-1/2 h-0.5 w-2 -translate-y-1/2"
                     style={{
                       backgroundColor:
-                        index < activeEventIndex
-                          ? colors["blueDark"]
-                          : index === activeEventIndex
-                            ? colors["pinkDark"]
-                            : colors["violetDark"],
+                        nextEventStyle?.borderColor ??
+                        nextEventStyle?.backgroundColor ??
+                        colors["violetDark"],
                     }}
                   />
                 )}

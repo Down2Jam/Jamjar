@@ -25,18 +25,20 @@ export default function ContentStatusMeta({
     if (!at) return null;
     const date = new Date(at);
     return (
-      <Tooltip
-        content={`${label} ${formatDistance(date, now, { addSuffix: true })}`}
-      >
-        <span className="inline-flex">
-          <Icon name={icon as any} size={14} />
-        </span>
-      </Tooltip>
+      <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center self-center leading-none">
+        <Tooltip
+          content={`${label} ${formatDistance(date, now, { addSuffix: true })}`}
+        >
+          <span className="flex h-4 w-4 items-center justify-center leading-none">
+            <Icon name={icon as any} size={14} />
+          </span>
+        </Tooltip>
+      </span>
     );
   };
 
   return (
-    <Hstack className="gap-1">
+    <Hstack className="gap-1 leading-none">
       <Text size="xs" color="textFaded">
         {formatDistance(createdDate, now, {
           addSuffix: true,

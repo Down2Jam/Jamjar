@@ -137,12 +137,12 @@ export default function PostPage() {
         </div>
       ) : (
         <>
-          <Card>
+          <Card padding={1.25} className="hover:shadow-md">
             <div>
               {post && (
                 <div>
                   <Link href={`/p/${post.slug}`}>
-                    <p className="text-2xl">
+                    <p className="text-[1.375rem] font-semibold leading-tight">
                       {isModerated
                         ? post.removedAt
                           ? "[Removed Post]"
@@ -151,10 +151,7 @@ export default function PostPage() {
                     </p>
                   </Link>
 
-                  <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
-                    <Text size="xs" color="textFaded">
-                      PostCard.By
-                    </Text>
+                  <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-xs text-default-500">
                     <Link
                       href={`/u/${post.author.slug}`}
                       className="flex items-center gap-2"
@@ -165,6 +162,9 @@ export default function PostPage() {
                       />
                       <p>{post.author.name}</p>
                     </Link>
+                    <span aria-hidden="true" className="opacity-50">
+                      ·
+                    </span>
                     <ContentStatusMeta
                       createdAt={post.createdAt}
                       editedAt={post.editedAt}
@@ -240,19 +240,19 @@ export default function PostPage() {
                         : "This post was deleted."}
                     </Text>
                   ) : (
-                    <ThemedProse>
+                    <ThemedProse className="[&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
                       <MentionedContent
                         html={post.content}
-                        className="!duration-250 !ease-linear !transition-all max-w-full break-words"
+                        className="!duration-250 !ease-linear !transition-all max-w-[72ch] break-words leading-relaxed"
                       />
                     </ThemedProse>
                   )}
 
-                  <div className="p-2" />
+                  <div className="h-3" />
 
                   {!isModerated &&
                   post.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
-                    <div className="flex gap-1">
+                    <div className="flex flex-wrap gap-1">
                       {post.tags
                         .filter((tag) => tag.name != "D2Jam")
                         .map((tag: TagType) => (
@@ -265,22 +265,22 @@ export default function PostPage() {
                     <></>
                   )}
 
-                  {!isModerated && post.tags.length > 0 && <div className="p-2" />}
+                  {!isModerated && post.tags.length > 0 && <div className="h-3" />}
 
-                  {!isModerated && <div className="flex gap-3">
+                  {!isModerated && <div className="flex flex-wrap items-center gap-1">
                     <LikeButton
                       likes={post.likes.length}
                       liked={post.hasLiked}
                       parentId={post.id}
                     />
                     <Link href={`/p/${post.slug}#create-comment`}>
-                      <Button size="sm" icon="messagecircle">
+                      <Button variant="ghost" size="sm" icon="messagecircle">
                         {post.comments.length}
                       </Button>
                     </Link>
                     <Dropdown
                       trigger={
-                        <Button size="sm">
+                        <Button variant="ghost" size="sm">
                           <MoreVertical size={16} />
                         </Button>
                       }

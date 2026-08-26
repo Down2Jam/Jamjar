@@ -28,7 +28,7 @@ export function Card({
   paddingY,
   glass = false,
   radius = "md",
-  shadow = "none",
+  shadow = "sm",
   ...props
 }: CardProps) {
   const { colors } = useTheme();
@@ -50,16 +50,17 @@ export function Card({
     xl: "shadow-xl",
   };
   const shadowClass = shadowClassMap[shadow];
-  const baseClasses = ["border transition-colors duration-500", shadowClass]
+  const baseClasses = [
+    "border transition-[background-color,border-color,box-shadow] duration-300",
+    shadowClass,
+  ]
     .filter(Boolean)
     .join(" ");
 
   const mergedStyle: React.CSSProperties = {
-    backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 96%, transparent)`,
-    borderColor: `color-mix(in srgb, ${colors["text"]} 6%, transparent)`,
+    backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 98%, transparent)`,
+    borderColor: `color-mix(in srgb, ${colors["text"]} 10%, transparent)`,
     color: colors["text"],
-    backdropFilter: "blur(10px)",
-    WebkitBackdropFilter: "blur(10px)",
     padding: `${padding}rem`,
     paddingLeft: `${paddingX ?? padding}rem`,
     paddingRight: `${paddingX ?? padding}rem`,

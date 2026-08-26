@@ -7,7 +7,6 @@ import { PostType } from "@/types/PostType";
 import { Megaphone, NotebookText } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Card } from "bioloom-ui";
-import { Text } from "bioloom-ui";
 
 export default function StickyPostCard({ post }: { post: PostType }) {
   const { colors } = useTheme();
@@ -15,7 +14,7 @@ export default function StickyPostCard({ post }: { post: PostType }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <div
             className="flex gap-4 items-center transition-all duration-250 ease-linear"
             style={{
@@ -28,19 +27,16 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               <Megaphone />
             )}
             <Link href={`/p/${post.slug}`}>
-              <p>{post.title}</p>
+              <p className="font-medium leading-tight">{post.title}</p>
             </Link>
           </div>
 
           <div
-            className="flex items-center gap-3 text-xs pt-1"
+            className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
             style={{
               color: colors["textFaded"],
             }}
           >
-            <Text size="xs" color="textFaded">
-              PostCard.By
-            </Text>
             <Link
               href={`/u/${post.author.slug}`}
               className="flex items-center gap-2"
@@ -52,6 +48,9 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               />
               <p>{post.author.name}</p>
             </Link>
+            <span aria-hidden="true" className="opacity-50">
+              ·
+            </span>
             <p>
               {formatDistance(new Date(post.createdAt), new Date(), {
                 addSuffix: true,

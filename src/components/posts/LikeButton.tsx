@@ -45,6 +45,7 @@ export default function LikeButton({
   return (
     <Button
       size="sm"
+      variant={updatedLiked ? "standard" : "ghost"}
       color={updatedLiked ? "blue" : "default"}
       icon="heart"
       onClick={async () => {
