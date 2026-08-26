@@ -12,6 +12,7 @@ type ChipColor =
   | "default"
   | "blue"
   | "green"
+  | "orange"
   | "pink"
   | "red"
   | "yellow"
@@ -92,6 +93,13 @@ export function Chip(props: ChipProps) {
       backgroundColor: colors["greenDarkDark"] + "88",
       borderColor: colors["green"],
       color: colors["green"],
+    };
+  } else if (color === "orange") {
+    style = {
+      ...style,
+      backgroundColor: `color-mix(in srgb, ${colors["orange"]} 22%, transparent)`,
+      borderColor: colors["orange"],
+      color: colors["orange"],
     };
   } else if (color === "pink") {
     style = {

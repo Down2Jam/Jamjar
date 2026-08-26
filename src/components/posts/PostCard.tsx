@@ -7,7 +7,14 @@ import { Heart, MessageCircle, MoreVertical } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import {
+  CSSProperties,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { TagType } from "@/types/TagType";
 import { deletePost, removePost, stickPost } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
@@ -83,6 +90,7 @@ export default function PostCard({
   );
   const isAuthor = user?.slug === currentPostData.author.slug;
   const postTags = currentPostData.tags ?? [];
+  const visiblePostTags = postTags.filter((tag) => tag.name !== "D2Jam");
   const postLikes = currentPostData.likes ?? [];
   const postComments = currentPostData.comments ?? [];
   const postReactions = currentPostData.reactions ?? [];
@@ -98,11 +106,23 @@ export default function PostCard({
 
   return (
     <Card
-      className={`relative overflow-visible hover:shadow-md ${actionsLayerOpen ? "z-50" : "z-0"}`}
+      className={`post-card-shell relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
       padding={style === "Cozy" ? 1.25 : 1}
       style={{
         display: hidden ? "none" : "flex",
-      }}
+        "--post-card-border": `color-mix(in srgb, ${colors["text"]} 5%, transparent)`,
+        "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+        "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
+        "--post-action-hover": colors["base"],
+        "--reaction-red": colors["red"],
+        "--reaction-orange": colors["orange"],
+        "--reaction-yellow": colors["yellow"],
+        "--reaction-green": colors["green"],
+        "--reaction-blue": colors["blue"],
+        "--reaction-purple": colors["purple"],
+        "--reaction-pink": colors["pink"],
+        "--reaction-gray": colors["gray"],
+      } as CSSProperties}
     >
       {style == "Cozy" &&
         (minimized ? (
@@ -186,6 +206,7 @@ export default function PostCard({
                 </p>
               </Link>
               <Button
+                className="post-action-button post-card-corner-button"
                 variant="ghost"
                 size="sm"
                 icon="minus"
@@ -238,45 +259,53 @@ export default function PostCard({
               </ThemedProse>
             )}
 
-            <div className="h-3" />
-
-            {!isModerated &&
-            postTags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {postTags
-                  .filter((tag) => tag.name != "D2Jam")
-                  .map((tag: TagType) => (
-                    <Chip
-                      key={tag.id}
-                      // avatarSrc={tag.icon ? tag.icon : undefined}
-                    >
-                      {tag.name}
-                    </Chip>
-                  ))}
+            {!isModerated && visiblePostTags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {visiblePostTags.map((tag: TagType) => (
+                  <Chip
+                    key={tag.id}
+                    className="post-tag-chip"
+                    // avatarSrc={tag.icon ? tag.icon : undefined}
+                  >
+                    {tag.name}
+                  </Chip>
+                ))}
               </div>
-            ) : (
-              <></>
             )}
 
-            {!isModerated && postTags.length > 0 && <div className="h-3" />}
-
             {!isModerated && (
-            <div className="relative z-20 mt-1 flex flex-wrap items-center gap-1">
+              <div
+                className="relative z-20 mt-2 flex flex-wrap items-center gap-1"
+              >
               <LikeButton
                 likes={postLikes.length}
                 liked={Boolean(currentPostData.hasLiked)}
                 parentId={currentPostData.id}
               />
               <Link href={`/p/${currentPostData.slug}#create-comment`}>
-                <Button variant="ghost" size="sm" icon="messagecircle">
+                <Button
+                  className="post-action-button min-w-12"
+                  variant="ghost"
+                  size="sm"
+                  icon="messagecircle"
+                >
                   {postComments.length}
                 </Button>
               </Link>
-              <div className="relative z-30">
+              <PostReactions
+                postId={currentPostData.id}
+                reactions={postReactions}
+                onOverlayChange={setReactionsOpen}
+              />
+              <div className="relative z-30 ml-auto">
                 <Dropdown
                   onOpenChange={setDropdownOpen}
                   trigger={
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      className="post-action-button post-card-corner-button"
+                      variant="ghost"
+                      size="sm"
+                    >
                       <MoreVertical size={16} />
                     </Button>
                   }
@@ -529,11 +558,6 @@ export default function PostCard({
                   )}
                 </Dropdown>
               </div>
-              <PostReactions
-                postId={currentPostData.id}
-                reactions={postReactions}
-                onOverlayChange={setReactionsOpen}
-              />
             </div>)}
           </div>
         ))}

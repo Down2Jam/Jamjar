@@ -97,6 +97,17 @@ export function Button(props: ButtonProps) {
       borderColor: "transparent",
       backgroundColor: "transparent",
     };
+  } else if (color === "orange") {
+    variantStyles.standard = {
+      color: colors["orange"],
+      borderColor: colors["orange"],
+      backgroundColor: `color-mix(in srgb, ${colors["orange"]} 22%, transparent)`,
+    };
+    variantStyles.ghost = {
+      color: colors["orange"],
+      borderColor: "transparent",
+      backgroundColor: "transparent",
+    };
   } else if (color === "pink") {
     variantStyles.standard = {
       color: colors["pink"],
@@ -193,6 +204,11 @@ export function Button(props: ButtonProps) {
     hoverStyles.standard = {
       backgroundColor: colors["greenDark"],
       color: colors["greenLight"],
+    };
+  } else if (color === "orange") {
+    hoverStyles.standard = {
+      backgroundColor: `color-mix(in srgb, ${colors["orange"]} 32%, transparent)`,
+      color: colors["orange"],
     };
   } else if (color === "pink") {
     hoverStyles.standard = {

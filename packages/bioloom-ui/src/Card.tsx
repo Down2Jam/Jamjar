@@ -59,7 +59,7 @@ export function Card({
 
   const mergedStyle: React.CSSProperties = {
     backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 98%, transparent)`,
-    borderColor: `color-mix(in srgb, ${colors["text"]} 10%, transparent)`,
+    borderColor: `color-mix(in srgb, ${colors["text"]} 5%, transparent)`,
     color: colors["text"],
     padding: `${padding}rem`,
     paddingLeft: `${paddingX ?? padding}rem`,

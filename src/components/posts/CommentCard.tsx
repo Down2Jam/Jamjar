@@ -1,7 +1,7 @@
 import { CommentType } from "@/types/CommentType";
 import { MoreVertical, Reply } from "lucide-react";
 import Link from "@/compat/next-link";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
 import LikeButton from "./LikeButton";
@@ -57,7 +57,20 @@ export default function CommentCard({
 
   return (
     <div id={`comment-${currentComment.id}`}>
-      <Card>
+      <Card
+        style={{
+          "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
+          "--post-action-hover": colors["base"],
+          "--reaction-red": colors["red"],
+          "--reaction-orange": colors["orange"],
+          "--reaction-yellow": colors["yellow"],
+          "--reaction-green": colors["green"],
+          "--reaction-blue": colors["blue"],
+          "--reaction-purple": colors["purple"],
+          "--reaction-pink": colors["pink"],
+          "--reaction-gray": colors["gray"],
+        } as CSSProperties}
+      >
       <div>
         <div
           className="flex items-center gap-3 text-xs pt-1"
@@ -133,7 +146,7 @@ export default function CommentCard({
           </ThemedProse>
         )}
 
-        {!isModerated && <div className="flex gap-3 mb-4">
+        {!isModerated && <div className="mb-4 mt-2 flex flex-wrap items-center gap-1">
           <LikeButton
             likes={currentComment.likes.length}
             liked={currentComment.hasLiked}
@@ -142,26 +155,33 @@ export default function CommentCard({
           />
 
           <Button
+            className="post-action-button min-w-12"
             size="sm"
+            variant="ghost"
+            leftSlot={<Reply size={16} />}
+            aria-label={creatingReply ? "Cancel reply" : "Reply"}
             onClick={() => {
               setCreatingReply(!creatingReply);
             }}
-          >
-            <Reply size={16} />
-          </Button>
+          />
           <CommentReactions
             commentId={currentComment.id}
             reactions={currentComment.reactions}
             onOverlayChange={setReactionsOpen}
           />
           {(isAuthor || user?.mod || user?.admin) && (
-            <Dropdown
-              trigger={
-                <Button size="sm">
-                  <MoreVertical size={16} />
-                </Button>
-              }
-            >
+            <div className="relative z-30 ml-auto">
+              <Dropdown
+                trigger={
+                  <Button
+                    className="post-action-button post-card-corner-button"
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <MoreVertical size={16} />
+                  </Button>
+                }
+              >
               {isAuthor ? (
                 <Dropdown.Item
                   icon="squarepen"
@@ -206,7 +226,8 @@ export default function CommentCard({
                   Remove
                 </Dropdown.Item>
               ) : null}
-            </Dropdown>
+              </Dropdown>
+            </div>
           )}
         </div>}
 

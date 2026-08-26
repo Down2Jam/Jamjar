@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { postLike } from "@/requests/like";
 import { Button } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
+import { Heart } from "lucide-react";
 
 export default function LikeButton({
   likes,
@@ -18,8 +19,7 @@ export default function LikeButton({
   parentId: number;
   isComment?: boolean;
 }) {
-  // const [reduceMotion, setReduceMotion] = useState<boolean>(false);
-  // const [likeEffect, setLikeEffect] = useState<boolean>(false);
+  const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
 
@@ -44,10 +44,25 @@ export default function LikeButton({
 
   return (
     <Button
+      className="post-action-button min-w-12"
       size="sm"
       variant={updatedLiked ? "standard" : "ghost"}
-      color={updatedLiked ? "blue" : "default"}
-      icon="heart"
+      color={updatedLiked ? "red" : "default"}
+      data-reaction-color={updatedLiked ? "red" : undefined}
+      leftSlot={
+        <span
+          className={
+            likeEffect ? "post-like-heart--pulse inline-flex" : "inline-flex"
+          }
+          onAnimationEnd={() => setLikeEffect(false)}
+        >
+          <Heart
+            size={16}
+            fill={updatedLiked ? "currentColor" : "none"}
+            aria-hidden="true"
+          />
+        </span>
+      }
       onClick={async () => {
         if (!getCookie("token")) {
           redirect("/login");
@@ -56,11 +71,10 @@ export default function LikeButton({
         const response = await postLike(parentId, isComment);
 
         if (!updatedLiked) {
-          //setLikeEffect(true);
-          //setTimeout(() => setLikeEffect(false), 1000);
+          setLikeEffect(true);
           setUpdatedLikes(updatedLikes + 1);
         } else {
-          //setLikeEffect(false);
+          setLikeEffect(false);
           setUpdatedLikes(updatedLikes - 1);
         }
 
@@ -83,22 +97,3 @@ export default function LikeButton({
     </Button>
   );
 }
-
-/*
-<div className="flex gap-2 items-center" style={{ position: "relative" }}>
-        <Heart
-          size={16}
-          className={
-            likeEffect && !reduceMotion
-              ? "animate-ping absolute top-0 left-0"
-              : "absolute top-0 left-0"
-          }
-          style={{
-            position: "absolute",
-            top: "0",
-            left: "0",
-            zIndex: "10",
-          }}
-        />
-      </div>
-*/

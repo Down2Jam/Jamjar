@@ -152,24 +152,17 @@ export default function SidebarSong({
                 </Link>
               </Hstack>
               {license && (
-                wide ? (
-                  <span
-                    className="max-w-full truncate rounded px-2 py-0.5 text-xs"
-                    style={{
-                      backgroundColor: colors["base"],
-                      color: colors["textFaded"],
-                    }}
-                    title={`${license}${backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}`}
-                  >
-                    {license}
-                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
-                  </span>
-                ) : (
-                  <Text size="xs" color="textFaded">
-                    License: {license}
-                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
-                  </Text>
-                )
+                <span
+                  className="max-w-full truncate rounded px-2 py-0.5 text-xs"
+                  style={{
+                    backgroundColor: colors["base"],
+                    color: colors["textFaded"],
+                  }}
+                  title={`${license}${backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}`}
+                >
+                  {license}
+                  {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
+                </span>
               )}
             </Vstack>
           </Hstack>
@@ -181,12 +174,19 @@ export default function SidebarSong({
                 : "flex shrink-0 flex-col items-center gap-2"
             }
           >
+            <Button
+              size="sm"
+              color="default"
+              className="!h-9 !w-14 !rounded-md !p-0"
+              icon={isCurrent && isPlaying ? "pause" : "play"}
+              aria-label={isCurrent && isPlaying ? "Pause track" : "Play track"}
+              onClick={togglePlayback}
+            />
             {allowDownload && (
               <Button
-                size={wide ? "sm" : "xs"}
+                size="sm"
                 color="default"
-                variant={wide ? undefined : "ghost"}
-                className={wide ? "!h-9 !w-14 !rounded-md !p-0" : ""}
+                className="!h-9 !w-14 !rounded-md !p-0"
                 loading={isDownloading}
                 icon="download"
                 aria-label="Download track"
@@ -203,18 +203,8 @@ export default function SidebarSong({
                     setIsDownloading(false);
                   }
                 }}
-              >
-                {wide ? undefined : "Download"}
-              </Button>
+              />
             )}
-            <Button
-              size={wide ? "sm" : undefined}
-              color="default"
-              className={wide ? "!h-9 !w-14 !rounded-md !p-0" : ""}
-              icon={isCurrent && isPlaying ? "pause" : "play"}
-              aria-label={isCurrent && isPlaying ? "Pause track" : "Play track"}
-              onClick={togglePlayback}
-            />
           </div>
         </Hstack>
 

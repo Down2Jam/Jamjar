@@ -7,6 +7,8 @@ import { redirect } from "@/compat/next-navigation";
 import { togglePostReaction } from "@/requests/post";
 import { useEmojis } from "@/providers/useEmojis";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
+import { useReactionColors } from "./useReactionColors";
+import { useTheme } from "@/providers/useSiteTheme";
 
 const MAX_UNIQUE_REACTIONS = 20;
 
@@ -24,19 +26,23 @@ export default function PostReactions({
   onOverlayChange,
 }: PostReactionsProps) {
   const { emojis } = useEmojis();
+  const { colors } = useTheme();
   const [current, setCurrent] = useState<ReactionSummaryType[]>(
     reactions ?? [],
   );
   const [pickerOpen, setPickerOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [reactionEffectId, setReactionEffectId] = useState<number | null>(null);
   const [hoveredReactionId, setHoveredReactionId] = useState<number | null>(
     null,
   );
+  const reactionColors = useReactionColors(current);
   const pickerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setCurrent(reactions ?? []);
+    setReactionEffectId(null);
   }, [postId, reactions]);
 
   useEffect(() => {
@@ -98,6 +104,10 @@ export default function PostReactions({
       return;
     }
 
+    const wasReacted = current.some(
+      (entry) => entry.reaction.id === emoji.id && entry.reacted,
+    );
+
     setUpdating(emoji.slug);
     try {
       const response = await togglePostReaction(postId, emoji.id);
@@ -123,6 +133,7 @@ export default function PostReactions({
       }
       const data = await response.json();
       setCurrent(Array.isArray(data?.data) ? data.data : []);
+      setReactionEffectId(wasReacted ? null : emoji.id);
     } catch (error) {
       console.error("Failed to update reaction", error);
       addToast({ title: "Failed to update reaction" });
@@ -137,7 +148,7 @@ export default function PostReactions({
 
   return (
     <div
-      className={`relative z-30 flex flex-wrap items-center gap-2 ${
+      className={`relative z-30 flex flex-wrap items-center gap-1 ${
         className ?? ""
       }`}
     >
@@ -149,28 +160,58 @@ export default function PostReactions({
           onMouseLeave={() => setHoveredReactionId(null)}
         >
           <Button
+            className="post-action-button post-reaction-button min-w-12"
             size="sm"
             variant={entry.reacted ? "standard" : "ghost"}
-            color={entry.reacted ? "blue" : "default"}
+            color={
+              entry.reacted
+                ? reactionColors[entry.reaction.id] ?? "default"
+                : "default"
+            }
+            data-reaction-color={
+              entry.reacted ? reactionColors[entry.reaction.id] : undefined
+            }
             leftSlot={
-              <img
-                src={entry.reaction.image}
-                alt={`:${entry.reaction.slug}:`}
-                className="h-4 w-4"
-                loading="lazy"
-                decoding="async"
-              />
+              <span
+                className={
+                  reactionEffectId === entry.reaction.id
+                    ? "post-reaction-icon--pulse inline-flex"
+                    : "inline-flex"
+                }
+                onAnimationEnd={() => {
+                  if (reactionEffectId === entry.reaction.id) {
+                    setReactionEffectId(null);
+                  }
+                }}
+              >
+                <img
+                  src={entry.reaction.image}
+                  alt={`:${entry.reaction.slug}:`}
+                  className="h-4 w-4"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </span>
             }
             onClick={() => handleToggle(entry.reaction)}
             disabled={updating === entry.reaction.slug}
           >
-            {entry.count}
+            <span
+              style={
+                entry.reacted && reactionColors[entry.reaction.id]
+                  ? { color: colors[reactionColors[entry.reaction.id]] }
+                  : undefined
+              }
+            >
+              {entry.count}
+            </span>
           </Button>
           <Popover
             shown={hoveredReactionId === entry.reaction.id}
             anchorToScreen={false}
             position="top"
             padding={10}
+            showArrow
           >
             <div className="flex min-w-[200px] flex-col gap-2">
               <div className="text-xs uppercase tracking-wide opacity-70">
@@ -206,6 +247,7 @@ export default function PostReactions({
       {canAddNewReaction && availableEmojis.length > 0 && (
         <div ref={pickerRef} className="relative z-30">
           <Button
+            className="post-action-button min-w-12"
             size="sm"
             variant="ghost"
             icon="smileplus"
@@ -216,6 +258,7 @@ export default function PostReactions({
             anchorToScreen={false}
             position="bottom-left"
             padding={8}
+            showArrow
           >
             <div className="flex w-64 flex-col gap-2">
               <Input

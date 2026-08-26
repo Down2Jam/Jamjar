@@ -13,6 +13,7 @@ type Shared = {
     | "default"
     | "blue"
     | "green"
+    | "orange"
     | "pink"
     | "red"
     | "yellow"

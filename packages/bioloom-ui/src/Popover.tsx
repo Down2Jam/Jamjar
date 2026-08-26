@@ -155,8 +155,8 @@ export default function Popover({
         return {
           ...base,
           top: -6,
-          left: p === "bottom-right" ? undefined : p === "bottom-left" ? 16 : "50%",
-          right: p === "bottom-right" ? 16 : undefined,
+          left: p === "bottom-right" ? 16 : p === "bottom-left" ? undefined : "50%",
+          right: p === "bottom-left" ? 16 : undefined,
           transform: p === "bottom" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
           borderWidth: "1px 0 0 1px",
         };

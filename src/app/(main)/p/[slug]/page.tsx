@@ -9,7 +9,7 @@ import Link from "@/compat/next-link";
 import { addToast } from "bioloom-ui";
 import { MoreVertical } from "lucide-react";
 import { useParams, useRouter, useSearchParams } from "@/compat/next-navigation";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import Editor from "@/components/editor";
 import CommentCard from "@/components/posts/CommentCard";
 import { getSelf } from "@/requests/user";
@@ -38,6 +38,7 @@ import PostReactions from "@/components/posts/PostReactions";
 import ContentStatusMeta from "@/components/posts/ContentStatusMeta";
 import { readItem } from "@/requests/helpers";
 import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
+import { useTheme } from "@/providers/useSiteTheme";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -53,6 +54,7 @@ export default function PostPage() {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const t = useTranslations();
+  const { colors } = useTheme();
 
   useEffect(() => {
     const loadUserAndPosts = async () => {
@@ -102,6 +104,7 @@ export default function PostPage() {
   const canSeeModerated = Boolean(user?.mod || user?.admin);
   const isAuthor = user?.slug === post?.author.slug;
   const isModerated = Boolean(post?.deletedAt || post?.removedAt);
+  const visiblePostTags = post?.tags.filter((tag) => tag.name !== "D2Jam") ?? [];
   usePageMetadata({
     title: post
       ? isModerated
@@ -137,7 +140,22 @@ export default function PostPage() {
         </div>
       ) : (
         <>
-          <Card padding={1.25} className="hover:shadow-md">
+          <Card
+            padding={1.25}
+            className="hover:shadow-md"
+            style={{
+              "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
+              "--post-action-hover": colors["base"],
+              "--reaction-red": colors["red"],
+              "--reaction-orange": colors["orange"],
+              "--reaction-yellow": colors["yellow"],
+              "--reaction-green": colors["green"],
+              "--reaction-blue": colors["blue"],
+              "--reaction-purple": colors["purple"],
+              "--reaction-pink": colors["pink"],
+              "--reaction-gray": colors["gray"],
+            } as CSSProperties}
+          >
             <div>
               {post && (
                 <div>
@@ -248,39 +266,41 @@ export default function PostPage() {
                     </ThemedProse>
                   )}
 
-                  <div className="h-3" />
-
-                  {!isModerated &&
-                  post.tags.filter((tag) => tag.name != "D2Jam").length > 0 ? (
-                    <div className="flex flex-wrap gap-1">
-                      {post.tags
-                        .filter((tag) => tag.name != "D2Jam")
-                        .map((tag: TagType) => (
-                          <Chip key={tag.id}>
-                            <Hstack>{tag.name}</Hstack>
+                  {!isModerated && visiblePostTags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {visiblePostTags.map((tag: TagType) => (
+                          <Chip key={tag.id} className="post-tag-chip">
+                            {tag.name}
                           </Chip>
                         ))}
                     </div>
-                  ) : (
-                    <></>
                   )}
 
-                  {!isModerated && post.tags.length > 0 && <div className="h-3" />}
-
-                  {!isModerated && <div className="flex flex-wrap items-center gap-1">
+                  {!isModerated && <div className="mt-2 flex flex-wrap items-center gap-1">
                     <LikeButton
                       likes={post.likes.length}
                       liked={post.hasLiked}
                       parentId={post.id}
                     />
                     <Link href={`/p/${post.slug}#create-comment`}>
-                      <Button variant="ghost" size="sm" icon="messagecircle">
+                      <Button
+                        className="post-action-button min-w-12"
+                        variant="ghost"
+                        size="sm"
+                        icon="messagecircle"
+                      >
                         {post.comments.length}
                       </Button>
                     </Link>
+                    <PostReactions postId={post.id} reactions={post.reactions} />
+                    <div className="relative z-30 ml-auto">
                     <Dropdown
                       trigger={
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          className="post-action-button post-card-corner-button"
+                          variant="ghost"
+                          size="sm"
+                        >
                           <MoreVertical size={16} />
                         </Button>
                       }
@@ -548,7 +568,7 @@ export default function PostPage() {
                         <></>
                       )}
                     </Dropdown>
-                    <PostReactions postId={post.id} reactions={post.reactions} />
+                    </div>
                   </div>}
                 </div>
               )}

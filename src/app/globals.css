@@ -64,3 +64,118 @@ html:not([data-theme-ready="true"]) *::after {
   margin: 0 !important;
   max-width: none !important;
 }
+
+/* A stronger shadow separates posts without surrounding them with a pale border. */
+.post-card-shell {
+  border-color: var(--post-card-border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 14px 30px -14px var(--post-card-shadow),
+    0 4px 10px -6px var(--post-card-shadow) !important;
+}
+
+/* Post actions echo the existing controls, with a flatter borderless finish. */
+.post-action-button {
+  height: 2rem !important;
+  border: 0 !important;
+  border-radius: 0.25rem !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease !important;
+}
+
+.post-action-button:hover {
+  background-color: var(--post-action-hover) !important;
+}
+
+.post-card-corner-button {
+  width: 2rem !important;
+  min-width: 2rem !important;
+  height: 2rem !important;
+  padding: 0 !important;
+}
+
+.post-reaction-button > * {
+  position: relative;
+  top: -1px;
+}
+
+.post-tag-chip {
+  padding: 0.25rem 0.625rem !important;
+}
+
+.post-action-button[data-reaction-color="red"] {
+  --post-selected-accent: var(--reaction-red);
+}
+
+.post-action-button[data-reaction-color="orange"] {
+  --post-selected-accent: var(--reaction-orange);
+}
+
+.post-action-button[data-reaction-color="yellow"] {
+  --post-selected-accent: var(--reaction-yellow);
+}
+
+.post-action-button[data-reaction-color="green"] {
+  --post-selected-accent: var(--reaction-green);
+}
+
+.post-action-button[data-reaction-color="blue"] {
+  --post-selected-accent: var(--reaction-blue);
+}
+
+.post-action-button[data-reaction-color="purple"] {
+  --post-selected-accent: var(--reaction-purple);
+}
+
+.post-action-button[data-reaction-color="pink"] {
+  --post-selected-accent: var(--reaction-pink);
+}
+
+.post-action-button[data-reaction-color="gray"] {
+  --post-selected-accent: var(--reaction-gray);
+}
+
+.post-action-button[data-reaction-color] {
+  color: var(--post-selected-accent) !important;
+  background-color: transparent !important;
+}
+
+.post-action-button[data-reaction-color]:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--post-selected-accent) 24%,
+    var(--post-action-surface)
+  ) !important;
+}
+
+@keyframes post-like-heart-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  38% {
+    transform: scale(1.4);
+  }
+  62% {
+    transform: scale(0.88);
+  }
+  82% {
+    transform: scale(1.12);
+  }
+}
+
+.post-like-heart--pulse,
+.post-reaction-icon--pulse {
+  animation: post-like-heart-pulse 420ms ease-out;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-like-heart--pulse,
+  .post-reaction-icon--pulse {
+    animation: none;
+  }
+}
