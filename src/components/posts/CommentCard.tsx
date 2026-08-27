@@ -1,7 +1,13 @@
 import { CommentType } from "@/types/CommentType";
 import { MoreVertical, Reply } from "lucide-react";
 import Link from "@/compat/next-link";
-import { CSSProperties, useEffect, useState } from "react";
+import {
+  CSSProperties,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
 import LikeButton from "./LikeButton";
@@ -27,9 +33,11 @@ import CommentReactions from "./CommentReactions";
 export default function CommentCard({
   comment,
   user,
+  onOverlayChange,
 }: {
   comment: CommentType;
   user?: UserType | null;
+  onOverlayChange?: (open: boolean) => void;
 }) {
   const [currentComment, setCurrentComment] = useState<CommentType>(comment);
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
@@ -38,7 +46,11 @@ export default function CommentCard({
   const [editing, setEditing] = useState(false);
   const [draftContent, setDraftContent] = useState(comment.content);
   const [reactionsOpen, setReactionsOpen] = useState(false);
+  const [descendantOverlayOpen, setDescendantOverlayOpen] = useState(false);
+  const [actionsLayerOpen, setActionsLayerOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { colors } = useTheme();
+  const overlayOpen = reactionsOpen || descendantOverlayOpen;
   const canSeeModerated = Boolean(user?.mod || user?.admin);
   const isModerated = Boolean(
     currentComment.deletedAt || currentComment.removedAt
@@ -51,12 +63,47 @@ export default function CommentCard({
     setDraftContent(comment.content);
   }, [comment]);
 
+  useEffect(() => {
+    onOverlayChange?.(overlayOpen);
+  }, [onOverlayChange, overlayOpen]);
+
+  useEffect(() => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    if (overlayOpen) {
+      setActionsLayerOpen(true);
+      return;
+    }
+
+    closeTimerRef.current = setTimeout(() => {
+      setActionsLayerOpen(false);
+      closeTimerRef.current = null;
+    }, 220);
+
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+    };
+  }, [overlayOpen]);
+
+  const handleDescendantOverlayChange = useCallback((open: boolean) => {
+    setDescendantOverlayOpen(open);
+  }, []);
+
   if (isModerated && !canSeeModerated) {
     return null;
   }
 
   return (
-    <div id={`comment-${currentComment.id}`}>
+    <div
+      id={`comment-${currentComment.id}`}
+      className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
+    >
       <Card
         style={{
           "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
@@ -295,7 +342,12 @@ export default function CommentCard({
           (childComments[0].author ? (
             <div className="flex flex-col gap-3">
               {childComments.map((comment) => (
-                <CommentCard key={comment.id} comment={comment} user={user} />
+                <CommentCard
+                  key={comment.id}
+                  comment={comment}
+                  user={user}
+                  onOverlayChange={handleDescendantOverlayChange}
+                />
               ))}
             </div>
           ) : (
