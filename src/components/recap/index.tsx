@@ -866,10 +866,14 @@ function HighlightTrackCard({
       <Vstack align="start" gap={4}>
         <Hstack className="items-start gap-3 w-full">
           <Image
-            src={track.game?.thumbnail || "/images/D2J_Icon.png"}
-            width={90}
-            height={50}
-            className="min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
+            src={
+              track.game?.soundtrackThumbnail ||
+              track.game?.thumbnail ||
+              "/images/D2J_Icon.png"
+            }
+            width={64}
+            height={64}
+            className="h-16 w-16 shrink-0 rounded object-cover"
             alt="Song Thumbnail"
           />
           <Vstack align="start" gap={0}>
@@ -896,7 +900,10 @@ function HighlightTrackCard({
                   name: "Unknown",
                   slug: "",
                 },
-                thumbnail: track.game?.thumbnail ?? "/images/D2J_Icon.png",
+                thumbnail:
+                  track.game?.soundtrackThumbnail ||
+                  track.game?.thumbnail ||
+                  "/images/D2J_Icon.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
               })
@@ -954,10 +961,14 @@ function TrackScoreCard({
       <Vstack align="start" gap={4} className="w-full">
         <Hstack className="items-start gap-3 w-full">
           <Image
-            src={track.game?.thumbnail || "/images/D2J_Icon.png"}
-            width={90}
-            height={50}
-            className="min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
+            src={
+              track.game?.soundtrackThumbnail ||
+              track.game?.thumbnail ||
+              "/images/D2J_Icon.png"
+            }
+            width={64}
+            height={64}
+            className="h-16 w-16 shrink-0 rounded object-cover"
             alt="Song Thumbnail"
           />
           <Vstack align="start" gap={0} className="min-w-0">
@@ -995,7 +1006,10 @@ function TrackScoreCard({
                   name: "Unknown",
                   slug: "",
                 },
-                thumbnail: track.game?.thumbnail ?? "/images/D2J_Icon.png",
+                thumbnail:
+                  track.game?.soundtrackThumbnail ||
+                  track.game?.thumbnail ||
+                  "/images/D2J_Icon.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
               })
@@ -1980,7 +1994,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                     slug={track.slug}
                     name={track.name}
                     artist={track.composer ?? { name: "Unknown", slug: "" }}
-                    thumbnail={track.game?.thumbnail || "/images/D2J_Icon.png"}
+                    thumbnail={
+                      track.game?.soundtrackThumbnail ||
+                      track.game?.thumbnail ||
+                      "/images/D2J_Icon.png"
+                    }
                     game={
                       track.game
                         ? {

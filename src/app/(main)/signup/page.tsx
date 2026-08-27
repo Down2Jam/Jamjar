@@ -6,7 +6,6 @@ import { Link } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { signup } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
-import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -18,8 +17,6 @@ export default function UserPage() {
   const [password2, setPassword2] = useState("");
   const [email, setEmail] = useState("");
   const { siteTheme } = useTheme();
-  const router = useRouter();
-
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
       <Form
@@ -106,8 +103,7 @@ export default function UserPage() {
             title: "Successfully signed up",
           });
 
-          router.replace("/");
-          router.refresh();
+          window.location.replace("/");
         }}
       >
         <Input

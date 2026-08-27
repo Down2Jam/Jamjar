@@ -25,11 +25,12 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
-import { useSelf, useCurrentGame } from "@/hooks/queries";
+import { useSelf, useCurrentGame, useMessageCounts } from "@/hooks/queries";
 import { useState } from "react";
 import { isPostJamPhase } from "@/helpers/jamDisplay";
 import { API_DOCS_URL } from "@/requests/config";
 import { AudioLines, LibraryBig, Paintbrush } from "lucide-react";
+import { useUnreadNews } from "@/components/news/useUnreadNews";
 
 type PCbarProps = {
   isLoggedIn: boolean;
@@ -42,9 +43,11 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
 
   const hasToken = hasCookie("token");
   const { data: user } = useSelf(hasToken);
+  const { data: messageCounts } = useMessageCounts(Boolean(user));
   const { data: currentGameData } = useCurrentGame(hasToken);
   const { siteTheme } = useTheme();
   const [isInJam, setIsInJam] = useState<boolean | undefined>(undefined);
+  const hasUnreadNews = useUnreadNews();
 
   const joinableJam = isPostJamPhase(jamPhase) && nextJam ? nextJam : jam;
   const currentJamTeams = jam
@@ -135,6 +138,15 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 color="green"
               />
               <NavbarButton
+                icon="gamepad2"
+                href="/gamedle"
+                name="Navbar.Gamedle.Title"
+                description="Navbar.Gamedle.Description"
+                hotkey={["G", "D"]}
+                isIconOnly
+                color="green"
+              />
+              <NavbarButton
                 iconNode={<LibraryBig size={16} />}
                 href="/collections"
                 name="Navbar.Collections.Title"
@@ -188,6 +200,16 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 hotkey={["G", "K"]}
                 isIconOnly
                 color="red"
+              />
+              <NavbarButton
+                icon="megaphone"
+                href="/news"
+                name="Navbar.News.Title"
+                description="Navbar.News.Description"
+                hotkey={["G", "W"]}
+                isIconOnly
+                color="red"
+                indicator={hasUnreadNews}
               />
             </div>
           </>
@@ -411,14 +433,14 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" />
             {user &&
-              (user.receivedNotifications.length ? (
+              ((user.receivedNotifications.length + (messageCounts?.total ?? 0)) ? (
                 <Badge
                   position="bottom-right"
-                  content={user.receivedNotifications.length}
+                  content={user.receivedNotifications.length + (messageCounts?.total ?? 0)}
                 >
                   <NavbarButton
                     icon="bell"
-                    href="/inbox"
+                    href="/inbox/messages"
                     name="Navbar.Inbox.Title"
                     description="Navbar.Inbox.Description"
                     hotkey={["G", "I"]}
@@ -429,7 +451,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               ) : (
                 <NavbarButton
                   icon="bell"
-                  href="/inbox"
+                  href="/inbox/messages"
                   name="Navbar.Inbox.Title"
                   description="Navbar.Inbox.Description"
                   hotkey={["G", "I"]}

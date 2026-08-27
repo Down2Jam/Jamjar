@@ -11,6 +11,7 @@ export type TrackGame = {
   jamId?: number;
   name?: string;
   thumbnail?: string;
+  soundtrackThumbnail?: string | null;
   slug?: string;
   team?: {
     users?: Array<{

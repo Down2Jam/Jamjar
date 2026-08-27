@@ -21,7 +21,7 @@ export function getApiDocsUrl() {
 }
 
 export async function createReport(payload: {
-  targetType: "user" | "post" | "comment" | "game" | "collection_comment";
+  targetType: "user" | "post" | "comment" | "game" | "collection_comment" | "direct_message";
   targetId: number | string;
   reason: string;
   details?: string;

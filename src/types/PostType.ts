@@ -20,3 +20,27 @@ export interface PostType {
   hasLiked: boolean;
   reactions?: ReactionSummaryType[];
 }
+
+export interface GameReleaseFeedItemType {
+  kind: "game_release";
+  id: string;
+  createdAt: Date;
+  creators: Array<
+    Pick<UserType, "id" | "slug" | "name" | "profilePicture">
+  >;
+  game: {
+    id: number;
+    slug: string;
+    name: string;
+    short?: string | null;
+    thumbnail?: string | null;
+  };
+}
+
+export type ForumFeedItemType = PostType | GameReleaseFeedItemType;
+
+export function isGameReleaseFeedItem(
+  item: ForumFeedItemType
+): item is GameReleaseFeedItemType {
+  return "kind" in item && item.kind === "game_release";
+}

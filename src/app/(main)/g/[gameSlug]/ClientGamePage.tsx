@@ -2093,7 +2093,9 @@ export default function ClientGamePage({
                       name={track.name}
                       artist={track.composer}
                       thumbnail={
-                        displayGame.thumbnail ?? "/images/D2J_Icon.png"
+                        displayGame.soundtrackThumbnail ||
+                        displayGame.thumbnail ||
+                        "/images/D2J_Icon.png"
                       }
                       game={track.game}
                       song={track.url}

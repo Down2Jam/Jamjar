@@ -5,10 +5,10 @@ import { getPosts, getPost } from "@/requests/post";
 import { PostTime } from "@/types/PostTimes";
 import { queryKeys } from "./queryKeys";
 import { unwrapItem } from "./helpers";
-import type { PostType } from "@/types/PostType";
+import type { ForumFeedItemType, PostType } from "@/types/PostType";
 
 type PostsPage = {
-  items: PostType[];
+  items: ForumFeedItemType[];
   pageInfo: {
     hasMore: boolean;
     nextCursor: string | null;
@@ -16,10 +16,10 @@ type PostsPage = {
 };
 
 type PostsPageResponse =
-  | PostType[]
+  | ForumFeedItemType[]
   | {
-      items?: PostType[];
-      data?: PostType[] | { items?: PostType[]; pageInfo?: PostsPage["pageInfo"] };
+      items?: ForumFeedItemType[];
+      data?: ForumFeedItemType[] | { items?: ForumFeedItemType[]; pageInfo?: PostsPage["pageInfo"] };
       meta?: { pageInfo?: PostsPage["pageInfo"] };
       pageInfo?: PostsPage["pageInfo"];
     };
@@ -65,7 +65,7 @@ export function usePosts(
   following = false,
   enabled = true
 ) {
-  return useInfiniteQuery<PostsPage, Error, PostType[], ReturnType<typeof queryKeys.post.list>, string | null>({
+  return useInfiniteQuery<PostsPage, Error, ForumFeedItemType[], ReturnType<typeof queryKeys.post.list>, string | null>({
     queryKey: queryKeys.post.list(sort, time, sticky, tagRules, userSlug, following),
     queryFn: async ({ pageParam }) => {
       const res = await getPosts(

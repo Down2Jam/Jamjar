@@ -84,6 +84,7 @@ export async function postGame(
   gameSlug: string,
   description: string,
   thumbnail: string | null,
+  soundtrackThumbnail: string | null,
   banner: string | null,
   downloadLinks: {
     url: string;
@@ -137,6 +138,7 @@ export async function postGame(
       slug: gameSlug,
       description,
       thumbnail,
+      soundtrackThumbnail,
       banner,
       downloadLinks,
       userSlug,
@@ -180,6 +182,7 @@ export async function updateGame(
   gameSlug: string,
   description: string,
   thumbnail: string | null,
+  soundtrackThumbnail: string | null,
   banner: string | null,
   downloadLinks: {
     url: string;
@@ -232,6 +235,7 @@ export async function updateGame(
       slug: gameSlug,
       description,
       thumbnail,
+      soundtrackThumbnail,
       banner,
       downloadLinks,
       userSlug,

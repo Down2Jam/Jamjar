@@ -29,17 +29,21 @@ export default function SearchResultTrack({
           offset={4}
         >
           <Image
-            src={track.game.thumbnail ?? "/images/D2J_Icon.png"}
-            alt="Game thumbnail"
-            width={45}
-            height={25}
+            src={
+              track.game.soundtrackThumbnail ||
+              track.game.thumbnail ||
+              "/images/D2J_Icon.png"
+            }
+            alt="Album thumbnail"
+            width={40}
+            height={40}
             className="rounded-lg"
           />
         </Badge>{" "}
         <Vstack gap={0} align="start">
           <Text color="text">{track.name}</Text>
           <Text color="textFaded" size="sm">
-            {track.game.name} - {track.composer.name}
+            {track.game.name} · {track.composer.name}
           </Text>
         </Vstack>
       </Hstack>

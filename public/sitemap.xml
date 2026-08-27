@@ -7,6 +7,7 @@
   <url><loc>https://d2jam.com/music</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://d2jam.com/results</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://d2jam.com/radio</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://d2jam.com/rss</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://d2jam.com/screenshots</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://d2jam.com/events</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://d2jam.com/collections</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
@@ -15,6 +16,7 @@
   <url><loc>https://d2jam.com/theme-elimination</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://d2jam.com/theme-voting</loc><changefreq>daily</changefreq><priority>0.6</priority></url>
   <url><loc>https://d2jam.com/docs</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/news</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
   <url><loc>https://d2jam.com/press-kit</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://d2jam.com/donate</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://d2jam.com/why</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>

@@ -49,7 +49,8 @@ export async function updateUser(
   recommendedHiddenGameIds?: number[],
   recommendedHiddenTrackIds?: number[],
   hideRatings?: boolean,
-  autoHideRatingsWhileStreaming?: boolean
+  autoHideRatingsWhileStreaming?: boolean,
+  messageRequestPolicy?: "EVERYONE" | "FOLLOWING" | "NOBODY",
 ) {
   const tokenCookie = getCookie("token");
   if (!tokenCookie) return Promise.reject("Token cookie not found.");
@@ -75,6 +76,7 @@ export async function updateUser(
     recommendedHiddenTrackIds,
     hideRatings,
     autoHideRatingsWhileStreaming,
+    messageRequestPolicy,
   };
 
   const response = await fetch(`${BASE_URL}/users/${encodeURIComponent(userSlug)}`, {

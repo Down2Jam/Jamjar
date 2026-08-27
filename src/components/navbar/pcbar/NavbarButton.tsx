@@ -1,4 +1,4 @@
-import { Button, IconName, NavbarItem } from "bioloom-ui";
+import { Badge, Button, IconName, NavbarItem } from "bioloom-ui";
 import { ReactNode } from "react";
 import Hotkey from "../../hotkey";
 import NavbarTooltip from "./NavbarTooltip";
@@ -17,6 +17,7 @@ interface NavbarButtonProps {
   color?: "blue" | "yellow" | "green" | "lime" | "orange" | "red";
   onPress?: () => void;
   className?: string;
+  indicator?: boolean;
 }
 
 export default function NavbarButton({
@@ -31,6 +32,7 @@ export default function NavbarButton({
   onPress,
   color = "blue",
   className,
+  indicator = false,
 }: NavbarButtonProps) {
   const { siteTheme } = useTheme();
   const t = useTranslations();
@@ -47,21 +49,28 @@ export default function NavbarButton({
         hotkey={hotkey}
       >
         <>
-          <Button
-            className={className}
-            style={{
-              color: siteTheme.colors[color],
-            }}
-            href={href}
-            target={target}
-            icon={iconNode ? undefined : icon}
-            leftSlot={iconNode}
-            size="sm"
-            variant="ghost"
-            onClick={onPress}
+          <Badge
+            content={indicator ? "" : undefined}
+            size={8}
+            color="red"
+            offset={5}
           >
-            {label}
-          </Button>
+            <Button
+              className={className}
+              style={{
+                color: siteTheme.colors[color],
+              }}
+              href={href}
+              target={target}
+              icon={iconNode ? undefined : icon}
+              leftSlot={iconNode}
+              size="sm"
+              variant="ghost"
+              onClick={onPress}
+            >
+              {label}
+            </Button>
+          </Badge>
           {hotkey && (
             <Hotkey
               href={href}

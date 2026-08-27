@@ -14,6 +14,10 @@ export type PageMetadata = {
   canonical?: string | null;
   type?: string;
   robots?: string | null;
+  publishedTime?: Date | string | null;
+  modifiedTime?: Date | string | null;
+  author?: string | null;
+  feed?: string | null;
 };
 
 function absoluteUrl(value?: string | null) {
@@ -53,7 +57,23 @@ function setPropertyMeta(property: string, content: string) {
   element.content = content;
 }
 
-function setLink(rel: string, href: string, type?: string) {
+function setOptionalPropertyMeta(
+  property: string,
+  content?: Date | string | null,
+) {
+  const selector = `meta[property="${property}"]`;
+  if (!content) {
+    document.head.querySelector(selector)?.remove();
+    return;
+  }
+
+  setPropertyMeta(
+    property,
+    content instanceof Date ? content.toISOString() : String(content),
+  );
+}
+
+function setLink(rel: string, href: string, type?: string, title?: string) {
   document.head
     .querySelectorAll<HTMLLinkElement>(`link[rel="${rel}"]`)
     .forEach((link) => link.remove());
@@ -62,6 +82,7 @@ function setLink(rel: string, href: string, type?: string) {
   link.rel = rel;
   link.href = href;
   if (type) link.type = type;
+  if (title) link.title = title;
   link.dataset.managedMetadata = "true";
   document.head.appendChild(link);
 }
@@ -90,6 +111,9 @@ export function applyPageMetadata(metadata: PageMetadata = {}) {
   setPropertyMeta("og:type", type);
   setPropertyMeta("og:url", canonical);
   setPropertyMeta("og:image", image);
+  setOptionalPropertyMeta("article:published_time", metadata.publishedTime);
+  setOptionalPropertyMeta("article:modified_time", metadata.modifiedTime);
+  setOptionalPropertyMeta("article:author", metadata.author);
   setNamedMeta("twitter:card", "summary_large_image");
   setNamedMeta("twitter:site", "@Down2Jam");
   setNamedMeta("twitter:title", pageTitle);
@@ -98,6 +122,16 @@ export function applyPageMetadata(metadata: PageMetadata = {}) {
   setLink("canonical", canonical);
   setLink("icon", icon, icon.endsWith(".svg") ? "image/svg+xml" : "image/png");
   setLink("apple-touch-icon", absoluteUrl(metadata.image || DEFAULT_IMAGE));
+  if (metadata.feed) {
+    setLink(
+      "alternate",
+      absoluteUrl(metadata.feed),
+      "application/rss+xml",
+      "Down2Jam News",
+    );
+  } else {
+    document.head.querySelector('link[rel="alternate"][type="application/rss+xml"]')?.remove();
+  }
 }
 
 export function usePageMetadata(metadata: PageMetadata = {}) {
@@ -111,6 +145,10 @@ export function usePageMetadata(metadata: PageMetadata = {}) {
     metadata.canonical,
     metadata.type,
     metadata.robots,
+    metadata.publishedTime,
+    metadata.modifiedTime,
+    metadata.author,
+    metadata.feed,
   ]);
 }
 

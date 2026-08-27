@@ -95,12 +95,14 @@ const ENGINE_NAME_TOKENS = new Set(
   ].map((name) => name.toLowerCase())
 );
 
-function normalizeToken(value: string) {
-  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+function normalizeToken(value?: string | null) {
+  return (value ?? "").toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function uniqueList(values: string[]) {
-  return Array.from(new Set(values.filter(Boolean)));
+function uniqueList(values: Array<string | null | undefined>) {
+  return Array.from(
+    new Set(values.filter((value): value is string => Boolean(value)))
+  );
 }
 
 function compareLists(guess: string[], answer: string[]): CompareStatus {
@@ -129,8 +131,14 @@ function compareLists(guess: string[], answer: string[]): CompareStatus {
   return "miss";
 }
 
-function compareText(guess: string, answer: string): CompareStatus {
-  if (guess.trim().toLowerCase() === answer.trim().toLowerCase()) {
+function compareText(
+  guess?: string | null,
+  answer?: string | null
+): CompareStatus {
+  const normalizedGuess = (guess ?? "").trim().toLowerCase();
+  const normalizedAnswer = (answer ?? "").trim().toLowerCase();
+
+  if (normalizedGuess === normalizedAnswer) {
     return "match";
   }
   return "miss";
@@ -190,12 +198,14 @@ function getOverallRating(
   game: GameType,
   ratingCategories: RatingCategoryType[]
 ) {
+  const gameRatingCategories =
+    game.jamPage?.ratingCategories ?? game.ratingCategories ?? [];
   const allCategories = uniqueList([
-    ...game.ratingCategories.map((category) => category.id.toString()),
+    ...gameRatingCategories.map((category) => category.id.toString()),
     ...ratingCategories.map((category) => category.id.toString()),
   ]);
 
-  const overallCategory = [...game.ratingCategories, ...ratingCategories].find(
+  const overallCategory = [...gameRatingCategories, ...ratingCategories].find(
     (category) => /overall/i.test(category.name)
   );
 
@@ -207,9 +217,17 @@ function getOverallRating(
     return null;
   }
 
-  const values = game.ratings
-    .filter((rating) => rating.category?.id === overallCategory.id)
-    .map((rating) => rating.value);
+  const jamPageId = game.jamPage?.id;
+  const values = (game.ratings ?? [])
+    .filter(
+      (rating) =>
+        rating.category?.id === overallCategory.id &&
+        (jamPageId == null ||
+          rating.gamePageId == null ||
+          rating.gamePageId === jamPageId)
+    )
+    .map((rating) => Number(rating.value))
+    .filter((value) => Number.isFinite(value));
 
   if (values.length === 0) {
     return null;
@@ -224,13 +242,16 @@ function buildDisplayData(
   tagCategoryById: Map<number, string>,
   ratingCategories: RatingCategoryType[]
 ): GameDisplayData {
+  const gamePage = game.jamPage ?? game.postJamPage;
   const platforms = uniqueList(
-    game.downloadLinks.map((link) => link.platform).sort()
+    (gamePage?.downloadLinks ?? game.downloadLinks ?? [])
+      .map((link) => link.platform)
+      .sort()
   );
 
   const engineTags: string[] = [];
   const regularTags: string[] = [];
-  for (const tag of game.tags) {
+  for (const tag of gamePage?.tags ?? game.tags ?? []) {
     const categoryName = tagCategoryById.get(tag.id);
     if (isEngineTag(tag.name, categoryName)) {
       engineTags.push(tag.name);
@@ -240,11 +261,13 @@ function buildDisplayData(
   }
 
   return {
-    name: game.name,
+    name: gamePage?.name?.trim() || game.name?.trim() || "No Data",
     platforms,
     tags: uniqueList(regularTags).sort(),
-    flags: uniqueList(game.flags.map((flag) => flag.name)).sort(),
-    category: game.category,
+    flags: uniqueList(
+      (gamePage?.flags ?? game.flags ?? []).map((flag) => flag.name)
+    ).sort(),
+    category: game.category?.trim() || "No Data",
     releaseYear: getReleaseYear(game),
     engine: uniqueList(engineTags).sort(),
     developers: uniqueList(
@@ -433,7 +456,10 @@ export default function GamedlePage() {
         }
 
         const gameRes = await getGame(slug);
-        const gamePayload = await gameRes.json();
+        const gamePayload = await readItem<GameType>(gameRes);
+        if (!gameRes.ok || !gamePayload) {
+          throw new Error("Game details were not returned.");
+        }
 
         if (!cancelled) {
           setAnswer(gamePayload);
@@ -469,7 +495,10 @@ export default function GamedlePage() {
         throw new Error("No random game returned.");
       }
       const gameRes = await getGame(slug);
-      const gamePayload = await gameRes.json();
+      const gamePayload = await readItem<GameType>(gameRes);
+      if (!gameRes.ok || !gamePayload) {
+        throw new Error("Game details were not returned.");
+      }
       setAnswer(gamePayload);
     } catch (error) {
       addToast({ title: "Failed to start a new round." });
@@ -502,7 +531,10 @@ export default function GamedlePage() {
 
     try {
       const gameRes = await getGame(match.slug);
-      const gamePayload = await gameRes.json();
+      const gamePayload = await readItem<GameType>(gameRes);
+      if (!gameRes.ok || !gamePayload) {
+        throw new Error("Game details were not returned.");
+      }
       setGuesses((prev) => [...prev, gamePayload]);
       setGuessInput("");
     } catch (error) {

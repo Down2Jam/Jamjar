@@ -168,7 +168,10 @@ export default function ClientTrackPage({
     title: (track?.name ?? trackSlug) || "Track",
     description: metadataDescription,
     image: metadataImage,
-    icon: track?.game?.thumbnail || metadataImage,
+    icon:
+      track?.game?.soundtrackThumbnail ||
+      track?.game?.thumbnail ||
+      metadataImage,
     canonical: `/m/${track?.slug || trackSlug}${
       track?.pageVersion === "POST_JAM" ? "?pageVersion=POST_JAM" : ""
     }`,
@@ -413,7 +416,11 @@ export default function ClientTrackPage({
                 name={track.name}
                 artist={primaryArtist}
                 game={track.game}
-                thumbnail={track.game.thumbnail ?? "/images/D2J_Icon.png"}
+                thumbnail={
+                  track.game.soundtrackThumbnail ||
+                  track.game.thumbnail ||
+                  "/images/D2J_Icon.png"
+                }
                 url={track.url}
                 comments={track.timestampComments ?? []}
                 canComment={Boolean(user)}

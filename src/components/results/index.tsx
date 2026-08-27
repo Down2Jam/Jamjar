@@ -574,10 +574,14 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                     <Hstack gap={12}>
                       <img
                         alt={`${track.name} art`}
-                        className="z-0 h-[108px] w-[192px] object-cover"
+                        className="z-0 h-[108px] w-[108px] object-cover"
                         height={108}
-                        width={192}
-                        src={track.game.thumbnail ?? "/images/D2J_Icon.png"}
+                        width={108}
+                        src={
+                          track.game.soundtrackThumbnail ||
+                          track.game.thumbnail ||
+                          "/images/D2J_Icon.png"
+                        }
                       />
                       <div className="flex flex-col">
                         <Hstack className="items-start gap-3">
@@ -597,7 +601,8 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                                 name: track.name,
                                 artist: track.composer,
                                 thumbnail:
-                                  track.game.thumbnail ??
+                                  track.game.soundtrackThumbnail ||
+                                  track.game.thumbnail ||
                                   "/images/D2J_Icon.png",
                                 game: track.game,
                                 song: track.url,

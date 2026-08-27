@@ -66,6 +66,43 @@ function stripHtml(value) {
   return text.length > 180 ? `${text.slice(0, 177).trim()}...` : text;
 }
 
+function newsExcerpt(value, maxLength = 280) {
+  const content = String(value ?? "")
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+    .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
+  const firstParagraph = content.match(/<p\b[^>]*>([\s\S]*?)<\/p>/i)?.[1];
+  const text = String(firstParagraph ?? content)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (text.length <= maxLength) return text;
+  const shortened = text.slice(0, maxLength - 1);
+  const lastSpace = shortened.lastIndexOf(" ");
+  return `${shortened.slice(0, lastSpace > maxLength * 0.7 ? lastSpace : undefined).trim()}…`;
+}
+
+function normalizeTagName(value) {
+  return String(value ?? "").toLowerCase().replace(/[\s_-]+/g, "");
+}
+
+function isNewsPost(post) {
+  return (post?.tags ?? []).some((tag) =>
+    ["siteannouncement", "sitechangelog"].includes(normalizeTagName(tag?.name)),
+  );
+}
+
+function newsCategory(post) {
+  return (post?.tags ?? []).some(
+    (tag) => normalizeTagName(tag?.name) === "siteannouncement",
+  )
+    ? "Announcement"
+    : "Changelog";
+}
+
 function firstImageFromHtml(value) {
   const match = String(value ?? "").match(
     /<img\b[^>]*\bsrc=(?:"([^"]+)"|'([^']+)'|([^\s>]+))/i,
@@ -150,6 +187,27 @@ async function fetchJson(pathname) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function unwrapList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.items)) return payload.items;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.data?.items)) return payload.data.items;
+  return [];
+}
+
+async function fetchNewsPosts(limit = 50) {
+  const tags = unwrapList(await fetchJson("/tags"));
+  const newsTags = tags.filter((tag) =>
+    ["siteannouncement", "sitechangelog"].includes(normalizeTagName(tag?.name)),
+  );
+  if (newsTags.length === 0) return [];
+  const tagFilter = newsTags.map((tag) => `${tag.id},1`).join("_");
+  const response = await fetchJson(
+    `/posts?sort=newest&time=all&limit=${limit}&tags=${encodeURIComponent(tagFilter)}`,
+  );
+  return unwrapList(response).filter(isNewsPost);
 }
 
 function selectedGamePage(game) {
@@ -280,6 +338,37 @@ async function metadataForPath(url) {
     };
   }
 
+  const newsMatch = pathname.match(/^\/news\/([^/]+)$/);
+  if (newsMatch && newsMatch[1] !== "rss.xml") {
+    const post = await fetchJson(`/posts/${encodeURIComponent(newsMatch[1])}`);
+    if (!post || !isNewsPost(post)) return null;
+    return {
+      title: post.title ?? newsMatch[1],
+      description: newsExcerpt(post.content),
+      image: `/og/news/${encodeURIComponent(post.slug ?? newsMatch[1])}.png`,
+      icon: post.author?.profilePicture || defaultMeta.icon,
+      imageWidth: 1200,
+      imageHeight: 630,
+      imageType: "image/png",
+      canonical: `/news/${post.slug ?? newsMatch[1]}`,
+      type: "article",
+      publishedTime: post.createdAt,
+      modifiedTime: post.editedAt,
+      author: post.author?.name,
+      feed: "/news/rss.xml",
+    };
+  }
+
+  if (pathname === "/news") {
+    return {
+      title: "News",
+      description: "Official Down2Jam news, announcements, and site updates.",
+      canonical: "/news",
+      type: "website",
+      feed: "/news/rss.xml",
+    };
+  }
+
   return null;
 }
 
@@ -305,6 +394,22 @@ function renderMetaTags(input) {
     ? `
     <meta property="og:image:type" content="${escapeHtml(meta.imageType)}" />`
     : "";
+  const articleMetadata = [
+    meta.publishedTime
+      ? `<meta property="article:published_time" content="${escapeHtml(meta.publishedTime)}" />`
+      : "",
+    meta.modifiedTime
+      ? `<meta property="article:modified_time" content="${escapeHtml(meta.modifiedTime)}" />`
+      : "",
+    meta.author
+      ? `<meta property="article:author" content="${escapeHtml(meta.author)}" />`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n    ");
+  const feedLink = meta.feed
+    ? `<link rel="alternate" type="application/rss+xml" title="Down2Jam News" href="${escapeHtml(absoluteUrl(meta.feed))}" />`
+    : "";
 
   return `
     <title>${escapeHtml(title)}</title>
@@ -315,12 +420,14 @@ function renderMetaTags(input) {
     <link rel="canonical" href="${escapeHtml(canonical)}" />
     <link rel="icon" type="${escapeHtml(iconType)}" href="${escapeHtml(icon)}" />
     <link rel="apple-touch-icon" href="${escapeHtml(image)}" />
+    ${feedLink}
     <meta property="og:site_name" content="Down2Jam" />
     <meta property="og:title" content="${escapeHtml(pageTitle)}" />
     <meta property="og:description" content="${escapeHtml(description)}" />
     <meta property="og:type" content="${escapeHtml(meta.type)}" />
     <meta property="og:url" content="${escapeHtml(canonical)}" />
     <meta property="og:image" content="${escapeHtml(image)}" />${imageDimensions}${imageType}
+    ${articleMetadata}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Down2Jam" />
     <meta name="twitter:title" content="${escapeHtml(pageTitle)}" />
@@ -436,6 +543,106 @@ async function serveCollectionPreviewImage(res, collectionId) {
   res.end(png);
 }
 
+function wrapPreviewTitle(value, maxCharacters = 28, maxLines = 3) {
+  const words = String(value ?? "News").split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = "";
+  for (const word of words) {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length <= maxCharacters || !current) {
+      current = next;
+      continue;
+    }
+    lines.push(current);
+    current = word;
+    if (lines.length === maxLines - 1) break;
+  }
+  if (current && lines.length < maxLines) lines.push(current);
+  const consumed = lines.join(" ").length;
+  if (consumed < String(value ?? "").length) {
+    lines[lines.length - 1] = `${lines[lines.length - 1].replace(/[.,;:!?-]+$/, "")}…`;
+  }
+  return lines;
+}
+
+async function serveNewsPreviewImage(res, slug) {
+  const post = await fetchJson(`/posts/${encodeURIComponent(slug)}`);
+  if (!post || !isNewsPost(post)) {
+    res.writeHead(404);
+    res.end();
+    return;
+  }
+  const titleLines = wrapPreviewTitle(post.title);
+  const category = newsCategory(post);
+  const date = new Intl.DateTimeFormat("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(post.createdAt));
+  const titleSvg = titleLines
+    .map(
+      (line, index) =>
+        `<text x="92" y="${238 + index * 82}" font-family="Arial, sans-serif" font-size="68" font-weight="700" fill="#f4f4f5">${escapeHtml(line)}</text>`,
+    )
+    .join("");
+  const svg = Buffer.from(`
+    <svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1200" height="630" fill="#121212" />
+      <rect x="0" y="0" width="18" height="630" fill="#e95833" />
+      <text x="92" y="92" font-family="Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="5" fill="#e95833">DOWN2JAM NEWS</text>
+      <text x="92" y="151" font-family="Arial, sans-serif" font-size="28" fill="#a1a1aa">${escapeHtml(category)}  ·  ${escapeHtml(date)}</text>
+      ${titleSvg}
+      <line x1="92" y1="548" x2="1108" y2="548" stroke="#2f2f2f" stroke-width="2" />
+      <text x="92" y="590" font-family="Arial, sans-serif" font-size="24" fill="#a1a1aa">d2jam.com/news/${escapeHtml(post.slug ?? slug)}</text>
+    </svg>
+  `);
+  const png = await sharp(svg).png().toBuffer();
+  res.writeHead(200, {
+    "content-type": "image/png",
+    "cache-control": "public, max-age=300, stale-while-revalidate=600",
+  });
+  res.end(png);
+}
+
+async function serveNewsRss(res) {
+  const posts = await fetchNewsPosts(50);
+  const items = posts
+    .map((post) => {
+      const link = absoluteUrl(`/news/${post.slug}`);
+      const content = String(post.content ?? "").replaceAll("]]>", "]]]]><![CDATA[>");
+      return `
+    <item>
+      <title>${escapeHtml(post.title)}</title>
+      <link>${escapeHtml(link)}</link>
+      <guid isPermaLink="true">${escapeHtml(link)}</guid>
+      <pubDate>${new Date(post.createdAt).toUTCString()}</pubDate>
+      <category>${escapeHtml(newsCategory(post))}</category>
+      <description>${escapeHtml(newsExcerpt(post.content))}</description>
+      <content:encoded><![CDATA[${content}]]></content:encoded>
+    </item>`;
+    })
+    .join("");
+  const latest = posts[0]?.createdAt
+    ? new Date(posts[0].createdAt).toUTCString()
+    : new Date().toUTCString();
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Down2Jam News</title>
+    <link>${escapeHtml(absoluteUrl("/news"))}</link>
+    <description>Official Down2Jam news, announcements, and site updates.</description>
+    <language>en</language>
+    <lastBuildDate>${latest}</lastBuildDate>${items}
+  </channel>
+</rss>`;
+  res.writeHead(200, {
+    "content-type": "application/rss+xml; charset=utf-8",
+    "cache-control": "public, max-age=300, stale-while-revalidate=600",
+  });
+  res.end(xml);
+}
+
 function serveFile(res, filePath) {
   const ext = path.extname(filePath).toLowerCase();
   const contentType = mimeTypes.get(ext) ?? "application/octet-stream";
@@ -528,6 +735,17 @@ createServer(async (req, res) => {
         res,
         decodeURIComponent(collectionPreviewMatch[1]),
       );
+      return;
+    }
+
+    if (url.pathname === "/news/rss.xml") {
+      await serveNewsRss(res);
+      return;
+    }
+
+    const newsPreviewMatch = url.pathname.match(/^\/og\/news\/([^/]+)\.png$/);
+    if (newsPreviewMatch) {
+      await serveNewsPreviewImage(res, decodeURIComponent(newsPreviewMatch[1]));
       return;
     }
 

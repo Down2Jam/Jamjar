@@ -101,14 +101,14 @@ export default function SidebarSong({
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             <Image
               src={thumbnail}
-              width={wide ? 96 : squareThumbnail ? 80 : 90}
+              width={wide ? 96 : squareThumbnail ? 80 : 50}
               height={wide ? 96 : squareThumbnail ? 80 : 50}
               className={
                 wide
                   ? "z-0 h-24 w-24 shrink-0 rounded-md object-cover"
                   : squareThumbnail
                     ? "z-0 h-20 w-20 shrink-0 rounded-md object-cover"
-                  : "z-0 min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
+                  : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
               }
               alt="Song Thumbnail"
             />

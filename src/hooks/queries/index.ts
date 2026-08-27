@@ -10,3 +10,4 @@ export * from "./useThemeQueries";
 export * from "./useTeamQueries";
 export * from "./useEmojiQueries";
 export * from "./useMiscQueries";
+export * from "./useMessageQueries";

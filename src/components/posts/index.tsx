@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import PostCard from "./PostCard";
-import { PostType } from "@/types/PostType";
+import {
+  ForumFeedItemType,
+  isGameReleaseFeedItem,
+  PostType,
+} from "@/types/PostType";
 import { addToast, Avatar } from "bioloom-ui";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
@@ -32,6 +36,7 @@ import { navigateToSearchIfChanged } from "@/helpers/navigation";
 import { useSelf, useTags, usePosts } from "@/hooks/queries";
 import { PostListSkeleton } from "@/components/skeletons";
 import TagLabel from "@/components/tags/TagLabel";
+import GameReleaseCard from "./GameReleaseCard";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -62,6 +67,7 @@ export default function Posts() {
       (searchParams.get("time") as PostTime)) ||
       "all"
   );
+  const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
   const [style, setStyle] = useState<PostStyle>(
     (["Cozy", "Compact", "Ultra"].includes(
       searchParams.get("style") as PostStyle
@@ -100,6 +106,13 @@ export default function Posts() {
   );
 
   const loading = postsLoading || stickyLoading;
+  const forumPosts = useMemo(
+    () =>
+      (posts ?? []).filter(
+        (item): item is PostType => !isGameReleaseFeedItem(item)
+      ),
+    [posts]
+  );
 
   // Transform raw tags into categorized object
   const tags = useMemo(() => {
@@ -149,14 +162,14 @@ export default function Posts() {
 
     setOldIsOpen(open);
 
-    if (posts) {
+    if (forumPosts.length > 0) {
       if (open) {
-        window.history.pushState(null, "", `/p/${posts[currentPost].slug}`);
+        window.history.pushState(null, "", `/p/${forumPosts[currentPost].slug}`);
       } else {
         window.history.back();
       }
     }
-  }, [open, currentPost, posts, oldIsOpen]);
+  }, [open, currentPost, forumPosts, oldIsOpen]);
 
   useEffect(() => {
     if (style === "Cozy" && open) {
@@ -260,6 +273,29 @@ export default function Posts() {
       description: "PostTime.All.Description",
     },
   };
+  const primaryTimes: PostTime[] = [
+    "hour",
+    "six_hours",
+    "twelve_hours",
+    "day",
+    "week",
+    "year",
+    "all",
+  ];
+  const otherTimes: PostTime[] = [
+    "three_hours",
+    "month",
+    "three_months",
+    "six_months",
+    "nine_months",
+  ];
+
+  const selectTime = (key: unknown) => {
+    const nextTime = key as PostTime;
+    setTime(nextTime);
+    updateQueryParam("time", nextTime);
+    setTimeDropdownOpen(false);
+  };
 
   return (
     <div>
@@ -267,9 +303,13 @@ export default function Posts() {
         stickyPosts &&
         stickyPosts.length > 0 && (
           <Vstack align="stretch" className="p-4">
-            {stickyPosts.map((post: PostType) => (
-              <StickyPostCard key={post.id} post={post} />
-            ))}
+            {stickyPosts
+              .filter(
+                (item): item is PostType => !isGameReleaseFeedItem(item)
+              )
+              .map((post) => (
+                <StickyPostCard key={post.id} post={post} />
+              ))}
           </Vstack>
         )}
 
@@ -294,22 +334,48 @@ export default function Posts() {
             ))}
           </Dropdown>
           <Dropdown
+            isOpen={timeDropdownOpen}
+            onOpenChange={setTimeDropdownOpen}
             selectedValue={time}
-            onSelect={(key) => {
-              setTime(key as PostTime);
-              updateQueryParam("time", key as string);
-            }}
+            onSelect={selectTime}
           >
-            {Object.entries(times).map(([key, sort]) => (
+            {primaryTimes.map((key) => (
               <Dropdown.Item
                 key={key}
                 value={key}
-                icon={sort.icon}
-                description={sort.description}
+                icon={times[key].icon}
+                description={times[key].description}
               >
-                {sort.name}
+                {times[key].name}
               </Dropdown.Item>
             ))}
+            <Dropdown
+              position="right"
+              backdrop={false}
+              selectedValue={time}
+              onSelect={selectTime}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  icon="morehorizontal"
+                  className="w-full !justify-start"
+                >
+                  Other
+                </Button>
+              }
+            >
+              {otherTimes.map((key) => (
+                <Dropdown.Item
+                  key={key}
+                  value={key}
+                  icon={times[key].icon}
+                  description={times[key].description}
+                >
+                  {times[key].name}
+                </Dropdown.Item>
+              ))}
+            </Dropdown>
           </Dropdown>
           <Dropdown
             trigger={
@@ -449,17 +515,21 @@ export default function Posts() {
       ) : (
         <Vstack align="stretch" gap={3} className="p-4">
           {posts && posts.length > 0 ? (
-            posts.map((post: PostType, index: number) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                style={style}
-                user={user}
-                index={index}
-                setCurrentPost={style === "Cozy" ? undefined : setCurrentPost}
-                onOpen={style === "Cozy" ? undefined : setOpen}
-              />
-            ))
+            posts.map((item: ForumFeedItemType) =>
+              isGameReleaseFeedItem(item) ? (
+                <GameReleaseCard key={item.id} release={item} style={style} />
+              ) : (
+                <PostCard
+                  key={`post-${item.id}`}
+                  post={item}
+                  style={style}
+                  user={user}
+                  index={forumPosts.findIndex((post) => post.id === item.id)}
+                  setCurrentPost={style === "Cozy" ? undefined : setCurrentPost}
+                  onOpen={style === "Cozy" ? undefined : setOpen}
+                />
+              )
+            )
           ) : (
             <p
               className="text-center transition-color duration-250 ease-linear"
@@ -483,7 +553,7 @@ export default function Posts() {
           </div>
         </Vstack>
       )}
-      {posts && posts[currentPost] && (
+      {forumPosts[currentPost] && (
         <Drawer
           isOpen={open}
           onClose={() => setOpen(false)}
@@ -498,7 +568,7 @@ export default function Posts() {
                   icon="link"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      `${window.location.protocol}//${window.location.hostname}/p/${posts[currentPost].slug}`
+                      `${window.location.protocol}//${window.location.hostname}/p/${forumPosts[currentPost].slug}`
                     );
                     addToast({
                       title: t("PostCard.Copy.Success"),
@@ -510,7 +580,7 @@ export default function Posts() {
                 <Button
                   icon="arrowupright"
                   size="sm"
-                  href={`/p/${posts[currentPost].slug}`}
+                  href={`/p/${forumPosts[currentPost].slug}`}
                 >
                   Post Page
                 </Button>
@@ -527,7 +597,7 @@ export default function Posts() {
                 </Tooltip>
                 <Tooltip content="Next">
                   <Button
-                    disabled={currentPost >= posts.length - 1}
+                    disabled={currentPost >= forumPosts.length - 1}
                     onClick={() => {
                       setCurrentPost(currentPost + 1);
                     }}
@@ -541,27 +611,27 @@ export default function Posts() {
         >
           <div className="flex flex-col gap-2 py-4">
             <Card>
-              <Link href={`/p/${posts[currentPost].slug}`}>
-                <p className="text-2xl">{posts[currentPost].title}</p>
+              <Link href={`/p/${forumPosts[currentPost].slug}`}>
+                <p className="text-2xl">{forumPosts[currentPost].title}</p>
               </Link>
               <div className="flex items-center gap-3 text-xs text-default-500 pt-1 mb-4">
                 <Text size="xs" color="textFaded">
                   PostCard.By
                 </Text>
                 <Link
-                  href={`/u/${posts[currentPost].author.slug}`}
+                  href={`/u/${forumPosts[currentPost].author.slug}`}
                   className="flex items-center gap-2"
                 >
                   <Avatar
                     size={24}
-                    src={posts[currentPost].author.profilePicture}
+                    src={forumPosts[currentPost].author.profilePicture}
                     style={{ backgroundColor: "transparent" }}
                   />
-                  <p>{posts[currentPost].author.name}</p>
+                  <p>{forumPosts[currentPost].author.name}</p>
                 </Link>
                 <p>
                   {formatDistance(
-                    new Date(posts[currentPost].createdAt),
+                    new Date(forumPosts[currentPost].createdAt),
                     new Date(),
                     {
                       addSuffix: true,
@@ -572,31 +642,31 @@ export default function Posts() {
 
               <ThemedProse>
                 <MentionedContent
-                  html={posts[currentPost].content}
+                  html={forumPosts[currentPost].content}
                   className="!duration-250 !ease-linear !transition-all max-w-full break-words"
                 />
               </ThemedProse>
 
               <div className="flex gap-3 mt-4">
                 <LikeButton
-                  likes={posts[currentPost].likes.length}
-                  liked={posts[currentPost].hasLiked}
-                  parentId={posts[currentPost].id}
+                  likes={forumPosts[currentPost].likes.length}
+                  liked={forumPosts[currentPost].hasLiked}
+                  parentId={forumPosts[currentPost].id}
                 />
-                <Link href={`/p/${posts[currentPost].slug}#create-comment`}>
+                <Link href={`/p/${forumPosts[currentPost].slug}#create-comment`}>
                   <Button size="sm" icon="messagecircle">
-                    {posts[currentPost].comments.length}
+                    {forumPosts[currentPost].comments.length}
                   </Button>
                 </Link>
                 <PostReactions
-                  postId={posts[currentPost].id}
-                  reactions={posts[currentPost].reactions}
+                  postId={forumPosts[currentPost].id}
+                  reactions={forumPosts[currentPost].reactions}
                 />
               </div>
             </Card>
 
             <div className="flex flex-col gap-3 mt-4">
-              {posts[currentPost]?.comments.map((comment: PostType["comments"][number]) => (
+              {forumPosts[currentPost]?.comments.map((comment: PostType["comments"][number]) => (
                 <div key={comment.id}>
                   <CommentCard comment={comment} user={user} />
                 </div>

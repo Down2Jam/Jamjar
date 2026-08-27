@@ -72,6 +72,9 @@ export default function UserPage() {
   const [hideRatings, setHideRatings] = useState(false);
   const [autoHideRatingsWhileStreaming, setAutoHideRatingsWhileStreaming] =
     useState(false);
+  const [messageRequestPolicy, setMessageRequestPolicy] = useState<
+    "EVERYONE" | "FOLLOWING" | "NOBODY"
+  >("EVERYONE");
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [roles, setRoles] = useState<RoleType[]>([]);
@@ -144,6 +147,7 @@ export default function UserPage() {
           setAutoHideRatingsWhileStreaming(
             Boolean(data.autoHideRatingsWhileStreaming),
           );
+          setMessageRequestPolicy(data.messageRequestPolicy ?? "EVERYONE");
           setEmotePrefixInput(data.emotePrefix ?? "");
           const loadedPrimaryRoles = Array.isArray(data.primaryRoles)
             ? data.primaryRoles
@@ -245,6 +249,7 @@ export default function UserPage() {
     setAutoHideRatingsWhileStreaming(
       Boolean(user.autoHideRatingsWhileStreaming),
     );
+    setMessageRequestPolicy(user.messageRequestPolicy ?? "EVERYONE");
     setPrimaryRoles(
       new Set(userPrimaryRoles.map((role) => role.slug)),
     );
@@ -263,6 +268,7 @@ export default function UserPage() {
     hideRatings !== Boolean(user.hideRatings) ||
     autoHideRatingsWhileStreaming !==
       Boolean(user.autoHideRatingsWhileStreaming) ||
+    messageRequestPolicy !== (user.messageRequestPolicy ?? "EVERYONE") ||
     cleanedPrefixInput !== (user.emotePrefix ?? "") ||
     !setsEqual(
       primaryRoles,
@@ -424,6 +430,7 @@ export default function UserPage() {
             undefined,
             hideRatings,
             autoHideRatingsWhileStreaming,
+            messageRequestPolicy,
           );
 
           if (response.ok) {
@@ -550,6 +557,27 @@ export default function UserPage() {
             </Vstack>
           </Card>
         </Stack>
+
+        <Card>
+          <Vstack align="start" className="gap-3">
+            <div>
+              <Text color="text">Direct message requests</Text>
+              <Text color="textFaded" size="xs">
+                Choose who can send you the opening message of a new conversation.
+              </Text>
+            </div>
+            <select
+              value={messageRequestPolicy}
+              onChange={(event) => setMessageRequestPolicy(event.target.value as typeof messageRequestPolicy)}
+              className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm"
+              style={{ color: colors.text, backgroundColor: colors.mantle }}
+            >
+              <option value="EVERYONE">Everyone</option>
+              <option value="FOLLOWING">People I follow</option>
+              <option value="NOBODY">Nobody</option>
+            </select>
+          </Vstack>
+        </Card>
 
         <Card>
           <Vstack align="start">

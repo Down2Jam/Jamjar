@@ -289,6 +289,9 @@ export default function GameEditingForm({
   const [gameSlug, setGameSlug] = useState("");
   const [prevSlug, setPrevGameSlug] = useState("");
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [soundtrackThumbnailUrl, setSoundtrackThumbnailUrl] = useState<
+    string | null
+  >(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
   const [downloadLinks, setDownloadLinks] = useState<DownloadLinkType[]>([]);
@@ -417,6 +420,7 @@ export default function GameEditingForm({
     setThemeJustification(game?.themeJustification || "");
     setEditorKey((prev) => prev + 1);
     setThumbnailUrl(game?.thumbnail || null);
+    setSoundtrackThumbnailUrl(game?.soundtrackThumbnail || null);
     setBannerUrl(game?.banner || null);
     setDownloadLinks(game?.downloadLinks || []);
     setAchievements(game?.achievements || []);
@@ -991,6 +995,7 @@ export default function GameEditingForm({
                   gameSlug,
                   sanitizedHtml,
                   thumbnailUrl,
+                  soundtrackThumbnailUrl,
                   bannerUrl,
                   links,
                   userSlug,
@@ -1023,6 +1028,7 @@ export default function GameEditingForm({
                   gameSlug,
                   sanitizedHtml,
                   thumbnailUrl,
+                  soundtrackThumbnailUrl,
                   bannerUrl,
                   links,
                   userSlug,
@@ -2446,6 +2452,25 @@ export default function GameEditingForm({
                     subtitle="CreateGame.Soundtrack.Description"
                   >
                     <Vstack align="start">
+                      <div>
+                        <Text color="text">Album Thumbnail</Text>
+                        <Text color="textFaded" size="xs">
+                          Square artwork shown with this game&apos;s music.
+                        </Text>
+                      </div>
+                      <ImageInput
+                        value={soundtrackThumbnailUrl}
+                        width={240}
+                        height={240}
+                        placeholder="Upload album thumbnail"
+                        onSelect={async (file, crop) => {
+                          const url = await uploadTo("image", file, crop);
+                          if (url) {
+                            setSoundtrackThumbnailUrl(url);
+                          }
+                        }}
+                      />
+
                       {/* List songs */}
                       {songs.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">

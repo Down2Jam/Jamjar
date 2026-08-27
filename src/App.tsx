@@ -41,6 +41,8 @@ const InboxPage = lazy(() => import("@/app/(main)/inbox/page"));
 const LoginPage = lazy(() => import("@/app/(main)/login/page"));
 const LogoutPage = lazy(() => import("@/app/(main)/logout/page"));
 const MusicPage = lazy(() => import("@/app/(main)/music/page"));
+const NewsPage = lazy(() => import("@/app/(main)/news/page"));
+const NewsArticlePage = lazy(() => import("@/app/(main)/news/[slug]/page"));
 const PostPage = lazy(() => import("@/app/(main)/p/[slug]/page"));
 const PressKitPage = lazy(() => import("@/app/(main)/press-kit/page"));
 const PressKitNewPage = lazy(() => import("@/app/(main)/press-kit/new/page"));
@@ -163,6 +165,11 @@ const indexedRouteMetadata = [
     description: "Listen to Down2Jam music radio.",
   },
   {
+    pattern: /^\/rss\/?$/,
+    title: "RSS Feeds",
+    description: "Subscribe to Down2Jam updates with RSS.",
+  },
+  {
     pattern: /^\/screenshots\/?$/,
     title: "Screenshots",
     description: "Browse screenshots from Down2Jam games.",
@@ -206,6 +213,11 @@ const indexedRouteMetadata = [
     pattern: /^\/docs(?:\/[^/]+)?\/?$/,
     title: "Documentation",
     description: "Read Down2Jam site documentation and guides.",
+  },
+  {
+    pattern: /^\/news(?:\/[^/]+)?\/?$/,
+    title: "News",
+    description: "Official Down2Jam news, announcements, and site updates.",
   },
   {
     pattern: /^\/press-kit(?:\/[^/]+)?\/?$/,
@@ -319,13 +331,15 @@ export default function App() {
           <Route path="gamedle" element={<GamedlePage />} />
           <Route path="games" element={<GamesPage />} />
           <Route path="home" element={<HomePage />} />
-          <Route path="inbox" element={<InboxPage />} />
+          <Route path="inbox/*" element={<InboxPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="logout" element={<LogoutPage />} />
           <Route path="lucky" element={<LuckyRoute />} />
           <Route path="m/:trackSlug" element={<TrackRoute />} />
           <Route path="m/:trackSlug/edit" element={<TrackEditRoute />} />
           <Route path="music" element={<MusicPage />} />
+          <Route path="news" element={<NewsPage />} />
+          <Route path="news/:slug" element={<NewsArticlePage />} />
           <Route path="p/:slug" element={<PostPage />} />
           <Route path="press-kit" element={<PressKitPage />} />
           <Route path="press-kit/new" element={<PressKitNewPage />} />

@@ -21,6 +21,7 @@ export interface UserType {
   emotePrefix?: string | null;
   hideRatings?: boolean;
   autoHideRatingsWhileStreaming?: boolean;
+  messageRequestPolicy?: "EVERYONE" | "FOLLOWING" | "NOBODY";
   createdAt: Date;
   mod: boolean;
   admin: boolean;
@@ -83,6 +84,7 @@ export interface UserType {
       name: string;
       slug: string;
       thumbnail?: string | null;
+      soundtrackThumbnail?: string | null;
       jamId?: number;
     };
   }>;
@@ -100,6 +102,7 @@ export interface UserType {
       name: string;
       slug: string;
       thumbnail?: string | null;
+      soundtrackThumbnail?: string | null;
       jamId?: number;
     };
   }>;

@@ -48,6 +48,7 @@ type RadioTrack = {
   gamePage: {
     name: string;
     thumbnail?: string | null;
+    soundtrackThumbnail?: string | null;
     banner?: string | null;
     screenshots?: string[];
     game: {
@@ -131,7 +132,9 @@ const toAudioVolume = (sliderVolume: number) =>
   Math.min(Math.max(sliderVolume, 0), 1) ** 2;
 
 const getTrackThumbnail = (track?: RadioTrack | null) =>
-  track?.gamePage.thumbnail || "/images/D2J_Icon.png";
+  track?.gamePage.soundtrackThumbnail ||
+  track?.gamePage.thumbnail ||
+  "/images/D2J_Icon.png";
 
 const getTrackBackground = (track?: RadioTrack | null) =>
   track?.gamePage.screenshots?.[0] ||

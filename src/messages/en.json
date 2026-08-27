@@ -118,6 +118,10 @@
       "Title": "Radio",
       "Description": "Listen to the Down2Jam music radio"
     },
+    "Gamedle": {
+      "Title": "Gamedle",
+      "Description": "Guess a Down2Jam game"
+    },
     "Collections": {
       "Title": "Collections",
       "Description": "Browse saved game and music collections"
@@ -133,6 +137,10 @@
     "Docs": {
       "Title": "Docs",
       "Description": "Read the site documentation"
+    },
+    "News": {
+      "Title": "News",
+      "Description": "Read Down2Jam announcements and site updates"
     },
     "PressKit": {
       "Title": "Press Kit",

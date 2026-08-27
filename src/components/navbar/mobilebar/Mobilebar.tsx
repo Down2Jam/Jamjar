@@ -8,7 +8,9 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { Dropdown } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
 import { hasCookie } from "@/helpers/cookie";
-import { useSelf } from "@/hooks/queries";
+import { useMessageCounts, useSelf } from "@/hooks/queries";
+import { Badge } from "bioloom-ui";
+import { useUnreadNews } from "@/components/news/useUnreadNews";
 
 type MobilebarProps = {
   isLoggedIn: boolean;
@@ -21,6 +23,8 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
 
   const hasToken = hasCookie("token");
   const { data: user } = useSelf(hasToken);
+  const { data: messageCounts } = useMessageCounts(Boolean(user));
+  const hasUnreadNews = useUnreadNews();
 
   return (
     <Navbar
@@ -75,6 +79,22 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           </Dropdown.Item>
         )}
         <Dropdown.Item
+          key="news"
+          icon="megaphone"
+          onClick={() => redirect("/news")}
+        >
+          <span className="inline-flex items-center gap-2">
+            News
+            {hasUnreadNews && (
+              <span
+                aria-label="New articles"
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: colors["red"] }}
+              />
+            )}
+          </span>
+        </Dropdown.Item>
+        <Dropdown.Item
           key="bug"
           className="text-[#333] dark:text-white"
           icon="bug"
@@ -101,7 +121,13 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         {!isLoggedIn ? (
           <Button href="/signup" icon="login" variant="ghost" />
         ) : (
-          <Button href="/inbox" icon="bell" variant="ghost" />
+          (user && (user.receivedNotifications.length + (messageCounts?.total ?? 0)) > 0 ? (
+            <Badge position="top-right" content={user.receivedNotifications.length + (messageCounts?.total ?? 0)}>
+              <Button href="/inbox/messages" icon="bell" variant="ghost" />
+            </Badge>
+          ) : (
+            <Button href="/inbox/messages" icon="bell" variant="ghost" />
+          ))
         )}
       </NavbarItem>
     </Navbar>

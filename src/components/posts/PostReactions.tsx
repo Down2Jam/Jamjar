@@ -17,6 +17,7 @@ type PostReactionsProps = {
   reactions?: ReactionSummaryType[];
   className?: string;
   onOverlayChange?: (open: boolean) => void;
+  pickerPosition?: "top-left" | "bottom-left";
 };
 
 export default function PostReactions({
@@ -24,6 +25,7 @@ export default function PostReactions({
   reactions,
   className,
   onOverlayChange,
+  pickerPosition = "bottom-left",
 }: PostReactionsProps) {
   const { emojis } = useEmojis();
   const { colors } = useTheme();
@@ -256,7 +258,7 @@ export default function PostReactions({
           <Popover
             shown={pickerOpen}
             anchorToScreen={false}
-            position="bottom-left"
+            position={pickerPosition}
             padding={8}
             showArrow
           >

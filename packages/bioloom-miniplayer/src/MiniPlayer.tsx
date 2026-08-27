@@ -8,13 +8,20 @@ import { emitTrackRatingSync, subscribeToTrackRatingSync, upsertTrackRatingRecor
 import { postTrackRating } from "@/requests/rating";
 import { getTrackRatingCategories } from "@/requests/track";
 import { useQueryClient } from "@tanstack/react-query";
-import { addToast, Button, Hstack, Icon, Popover, Text, Vstack } from "bioloom-ui";
+import { addToast, Button, Icon, Popover, Text } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { Star } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "bioloom-ui";
 import { readStorage, storageKey, writeStorage } from "./MusicProvider";
 import { useMusic } from "./useMusic";
+
+function formatPlaybackTime(value: number) {
+  if (!Number.isFinite(value) || value < 0) return "0:00";
+  const minutes = Math.floor(value / 60);
+  const seconds = Math.floor(value % 60);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
 
 export default function MiniPlayer() {
   const {
@@ -282,6 +289,29 @@ export default function MiniPlayer() {
   const ratingDisabled =
     savingRating || !viewerId || !ratingCategoryId || !canRateDuringJam;
   const displayRating = hoverRating || selectedRating;
+  const libraryTrack = tracks.find(
+    (track) =>
+      (current.id != null && track.id === current.id) ||
+      (current.slug && track.slug === current.slug) ||
+      track.url === current.song,
+  );
+  const displayGame = {
+    ...current.game,
+    name: current.game.name || libraryTrack?.game.name,
+    slug: current.game.slug || libraryTrack?.game.slug,
+    thumbnail: current.game.thumbnail || libraryTrack?.game.thumbnail,
+    soundtrackThumbnail:
+      current.game.soundtrackThumbnail ||
+      libraryTrack?.game.soundtrackThumbnail,
+  };
+  const artworkSrc =
+    current.thumbnail ||
+    displayGame.soundtrackThumbnail ||
+    displayGame.thumbnail ||
+    "/images/D2J_Icon.png";
+  const gameName = displayGame.name?.trim() ?? "";
+  const artistName =
+    current.artist.name?.trim() || current.artist.slug?.trim() || "";
 
   const clampPosition = (left: number, top: number) => {
     if (!dragRef.current) return { left, top };
@@ -369,7 +399,7 @@ export default function MiniPlayer() {
       startsShown={true}
       shown={shown}
       onShownChange={setShown}
-      padding={12}
+      padding={minimized ? 12 : 0}
       transformOrigin={transformOrigin}
       positionerStyle={
         position
@@ -394,28 +424,59 @@ export default function MiniPlayer() {
           userSelect: dragging ? "none" : "auto",
         }}
       >
-        <Hstack>
-          <Vstack align="stretch">
-            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: minimized
+              ? "28px minmax(0, 1fr) auto auto"
+              : "144px minmax(0, 1fr) auto auto",
+            gridTemplateRows: minimized ? "auto" : "40px 46px",
+            columnGap: minimized ? 10 : 20,
+            rowGap: minimized ? 0 : 6,
+            alignItems: "center",
+            alignContent: "center",
+            width: minimized ? "max-content" : 720,
+            height: minimized ? "auto" : 132,
+            maxWidth: "calc(100vw - 64px)",
+            paddingRight: minimized ? 0 : 24,
+            boxSizing: "border-box",
+          }}
+        >
+          <div style={{ display: "contents" }}>
+            <div style={{ display: "contents" }}>
               <img
-                src={current.thumbnail}
-                width={minimized ? 28 : 56}
-                height={minimized ? 28 : 56}
+                src={artworkSrc}
+                width={minimized ? 28 : 144}
+                height={minimized ? 28 : 144}
+                onError={(event) => {
+                  if (!event.currentTarget.src.endsWith("/images/D2J_Icon.png")) {
+                    event.currentTarget.src = "/images/D2J_Icon.png";
+                  }
+                }}
                 style={{
-                  width: minimized ? 28 : 56,
-                  height: minimized ? 28 : 56,
+                  width: minimized ? 28 : 144,
+                  height: minimized ? 28 : 144,
                   aspectRatio: "1 / 1",
                   borderRadius: 8,
                   flexShrink: 0,
                   objectFit: "cover",
+                  gridColumn: "1",
+                  gridRow: minimized ? "1" : "1 / 3",
                 }}
                 alt=""
               />
-              <div style={{ minWidth: 0 }}>
+              <div
+                style={{
+                  minWidth: 0,
+                  maxWidth: minimized ? 220 : "none",
+                  alignSelf: "center",
+                }}
+              >
                 <div
                   style={{
-                    fontSize: minimized ? 12 : 14,
-                    fontWeight: 600,
+                    fontSize: minimized ? 12 : 20,
+                    fontWeight: 700,
+                    lineHeight: minimized ? 1.2 : 1.25,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -431,41 +492,52 @@ export default function MiniPlayer() {
                   style={{
                     fontSize: minimized ? 10 : 12,
                     color: colors["textFaded"],
+                    marginTop: minimized ? 0 : 4,
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {current.game.slug ? (
-                    <Link href={`/g/${current.game.slug}`}>
-                      {current.game.name ?? ""}
+                  {gameName && displayGame.slug ? (
+                    <Link href={`/g/${displayGame.slug}`}>
+                      {gameName}
                     </Link>
-                  ) : (
-                    (current.game.name ?? "")
-                  )}{" "}
-                  -{" "}
-                  {current.artist.slug ? (
+                  ) : gameName ? (
+                    gameName
+                  ) : null}
+                  {gameName && artistName ? " · " : null}
+                  {artistName && current.artist.slug ? (
                     <Link href={`/u/${current.artist.slug}`}>
-                      {current.artist.name || current.artist.slug || ""}
+                      {artistName}
                     </Link>
                   ) : (
-                    current.artist.name || current.artist.slug || ""
+                    artistName
                   )}
                 </div>
               </div>
 
-              <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "center",
+                  alignSelf: "center",
+                }}
+              >
                 <Button
                   onClick={prev}
                   disabled={!canPrev}
-                  size={minimized ? "xs" : "md"}
-                >
-                  <Icon
-                    name="skipback"
-                    color={canPrev ? "text" : "textFaded"}
-                    size={minimized ? 16 : 24}
-                  />
-                </Button>
+                  size="md"
+                  style={minimized ? undefined : { width: 48, height: 36 }}
+                  leftSlot={
+                    <Icon
+                      name="skipback"
+                      color={canPrev ? "text" : "textFaded"}
+                      size={minimized ? 18 : 20}
+                    />
+                  }
+                  aria-label="Previous track"
+                />
                 <Button
                   onClick={() => {
                     toggle();
@@ -473,22 +545,48 @@ export default function MiniPlayer() {
                       setShown(true);
                     }
                   }}
-                  size={minimized ? "xs" : "md"}
-                >
-                  <Icon
-                    name={isPlaying ? "pause" : "play"}
-                    size={minimized ? 16 : 24}
-                  />
-                </Button>
-                <Button onClick={next} size={minimized ? "xs" : "md"}>
-                  <Icon name="skipforward" size={minimized ? 16 : 24} />
-                </Button>
+                  size="md"
+                  style={minimized ? undefined : { width: 48, height: 36 }}
+                  leftSlot={
+                    <Icon
+                      name={isPlaying ? "pause" : "play"}
+                      size={minimized ? 18 : 20}
+                    />
+                  }
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                />
+                <Button
+                  onClick={next}
+                  size="md"
+                  style={minimized ? undefined : { width: 48, height: 36 }}
+                  leftSlot={
+                    <Icon name="skipforward" size={minimized ? 18 : 20} />
+                  }
+                  aria-label="Next track"
+                />
               </div>
             </div>
 
             {!minimized && (
-              <Hstack>
-                <Vstack className="w-full" align="stretch">
+              <div
+                style={{
+                  gridColumn: "2 / 5",
+                  gridRow: "2",
+                  minWidth: 0,
+                  alignSelf: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <Text color="textFaded" size="xs">
+                    {formatPlaybackTime(progress.time)}
+                  </Text>
                   <input
                     type="range"
                     min={0}
@@ -498,7 +596,6 @@ export default function MiniPlayer() {
                     onChange={(e) => seek(parseFloat(e.target.value))}
                     style={{
                       width: "100%",
-                      marginTop: 8,
                       WebkitAppearance: "none",
                       height: "4px",
                       borderRadius: "4px",
@@ -510,18 +607,21 @@ export default function MiniPlayer() {
                       outline: "none",
                     }}
                   />
+                  <Text color="textFaded" size="xs">
+                    {formatPlaybackTime(progress.duration)}
+                  </Text>
+                </div>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      marginTop: 6,
-                    }}
-                  >
-                    <Text color="text" size="xs">
-                      Volume
-                    </Text>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+                    alignItems: "center",
+                    gap: 12,
+                    marginTop: 10,
+                  }}
+                >
+                    <Icon name="volume1" color="text" size={18} />
                     <input
                       type="range"
                       min={0}
@@ -532,7 +632,6 @@ export default function MiniPlayer() {
                       aria-label="Volume"
                       style={{
                         width: "100%",
-                        marginTop: 8,
                         WebkitAppearance: "none",
                         height: "4px",
                         borderRadius: "4px",
@@ -544,7 +643,8 @@ export default function MiniPlayer() {
                         outline: "none",
                       }}
                     />
-                  </div>
+                    <Icon name="volume2" color="text" size={18} />
+                </div>
 
                   {showRating && (
                     <RatingVisibilityGate
@@ -792,35 +892,55 @@ export default function MiniPlayer() {
                       </div>
                     </RatingVisibilityGate>
                   )}
-                </Vstack>
-              </Hstack>
+              </div>
             )}
-          </Vstack>
-          <Vstack>
+          </div>
+          <div
+            style={{
+              gridColumn: "4",
+              gridRow: "1",
+              display: "flex",
+              alignItems: "center",
+              alignSelf: "center",
+              gap: 8,
+              paddingLeft: minimized ? 0 : 12,
+              borderLeft: minimized ? 0 : `1px solid ${colors["base"]}`,
+            }}
+          >
+            {!minimized && (
+              <Button
+                onClick={toggleRepeatState}
+                size="md"
+                style={{ width: 48, height: 36 }}
+                leftSlot={
+                  <Icon
+                    name={
+                      repeatState === "autoplay"
+                        ? "infinity"
+                        : repeatState === "repeat"
+                          ? "repeat"
+                          : "refreshcwoff"
+                    }
+                    size={20}
+                  />
+                }
+                aria-label="Change repeat mode"
+              />
+            )}
             <Button
               onClick={() => setMinimized(!minimized)}
-              size={minimized ? "xs" : "md"}
-            >
-              <Icon
-                name={minimized ? "maximize2" : "minimize2"}
-                size={minimized ? 16 : 24}
-              />
-            </Button>
-            {!minimized && (
-              <Button onClick={toggleRepeatState}>
+              size="md"
+              style={minimized ? undefined : { width: 48, height: 36 }}
+              leftSlot={
                 <Icon
-                  name={
-                    repeatState === "autoplay"
-                      ? "infinity"
-                      : repeatState === "repeat"
-                        ? "repeat"
-                        : "refreshcwoff"
-                  }
+                  name={minimized ? "maximize2" : "minimize2"}
+                  size={minimized ? 18 : 20}
                 />
-              </Button>
-            )}
-          </Vstack>
-        </Hstack>
+              }
+              aria-label={minimized ? "Expand player" : "Collapse player"}
+            />
+          </div>
+        </div>
       </div>
     </Popover>
   );

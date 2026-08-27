@@ -63,6 +63,7 @@ export default function TrackWaveformPlayer({
     name?: string;
     slug?: string;
     thumbnail?: string;
+    soundtrackThumbnail?: string | null;
   };
   thumbnail?: string | null;
   url: string;
@@ -248,7 +249,8 @@ export default function TrackWaveformPlayer({
       slug,
       name,
       artist,
-      thumbnail: thumbnail || game.thumbnail || "",
+      thumbnail:
+        thumbnail || game.soundtrackThumbnail || game.thumbnail || "",
       game,
       song: url,
     }).then(() => {
@@ -475,7 +477,8 @@ export default function TrackWaveformPlayer({
               slug,
               name,
               artist,
-              thumbnail: thumbnail || game.thumbnail || "",
+              thumbnail:
+                thumbnail || game.soundtrackThumbnail || game.thumbnail || "",
               game,
               song: url,
             });

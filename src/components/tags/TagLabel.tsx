@@ -196,11 +196,17 @@ function TagIcon({ tag }: { tag: string }) {
   );
 }
 
-export default function TagLabel({ name }: { name: string }) {
+export default function TagLabel({
+  name,
+  label,
+}: {
+  name: string;
+  label?: string;
+}) {
   return (
     <span className="inline-flex items-center gap-1">
       <TagIcon tag={name} />
-      <span>{name}</span>
+      <span>{label ?? name}</span>
     </span>
   );
 }

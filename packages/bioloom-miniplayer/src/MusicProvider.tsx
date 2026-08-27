@@ -272,7 +272,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         url: t.song,
         name: t.name,
         composer: t.artist,
-        game: t.game,
+        game: {
+          ...t.game,
+          soundtrackThumbnail:
+            t.thumbnail || t.game.soundtrackThumbnail || null,
+        },
       });
       setBackStack((bs) =>
         currentIndex == null || bs[bs.length - 1] === currentIndex
@@ -341,7 +345,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
           song: value.current?.url || "",
           name: value.current?.name || "",
           artist: value.current?.composer || {},
-          thumbnail: value.current?.game.thumbnail || "",
+          thumbnail:
+            value.current?.game.soundtrackThumbnail ||
+            value.current?.game.thumbnail ||
+            "",
           game: value.current?.game || {},
         },
       }}

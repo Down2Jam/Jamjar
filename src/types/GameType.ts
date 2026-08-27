@@ -35,6 +35,7 @@ export interface GameType {
   short: string;
   description?: string;
   thumbnail?: string;
+  soundtrackThumbnail?: string | null;
   banner?: string;
   emotePrefix?: string | null;
   screenshots?: string[];
@@ -97,6 +98,7 @@ export interface GamePageType {
   short: string;
   description?: string;
   thumbnail?: string | null;
+  soundtrackThumbnail?: string | null;
   banner?: string | null;
   ratingCategories: RatingCategoryType[];
   majRatingCategories: RatingCategoryType[];

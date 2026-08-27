@@ -340,7 +340,12 @@ export default function ClientUserPage({
       name: string;
       url: string;
       composer?: { name: string };
-      game?: { name: string; slug: string; thumbnail?: string | null };
+      game?: {
+        name: string;
+        slug: string;
+        thumbnail?: string | null;
+        soundtrackThumbnail?: string | null;
+      };
     }>;
   }>({ games: [], posts: [], tracks: [] });
   const [collections, setCollections] = useState<ProfileCollection[]>([]);
@@ -1205,6 +1210,16 @@ export default function ClientUserPage({
                 {self && !isOwner && (
                   <Button
                     size="sm"
+                    color="green"
+                    icon="messagecircle"
+                    href={`/inbox/messages?to=${encodeURIComponent(user.slug)}`}
+                  >
+                    Message
+                  </Button>
+                )}
+                {self && !isOwner && (
+                  <Button
+                    size="sm"
                     color={following ? "default" : "blue"}
                     icon={following ? "users" : "userplus"}
                     disabled={followBusy}
@@ -1514,7 +1529,9 @@ export default function ClientUserPage({
                           artist={track.composer ?? { name: "Unknown" }}
                           squareThumbnail
                           thumbnail={
-                            track.game?.thumbnail || "/images/D2J_Icon.png"
+                            track.game?.soundtrackThumbnail ||
+                            track.game?.thumbnail ||
+                            "/images/D2J_Icon.png"
                           }
                           game={
                             track.game
@@ -1594,7 +1611,11 @@ export default function ClientUserPage({
                       name={track.name}
                       artist={track.composer}
                       squareThumbnail
-                      thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
+                      thumbnail={
+                        track.game.soundtrackThumbnail ||
+                        track.game.thumbnail ||
+                        "/images/D2J_Icon.png"
+                      }
                       game={{
                         ...track.game,
                         thumbnail: track.game.thumbnail ?? undefined,

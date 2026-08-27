@@ -124,6 +124,12 @@ export const queryKeys = {
     all: ["notification"] as const,
     list: () => [...queryKeys.notification.all, "list"] as const,
   },
+  message: {
+    all: ["message"] as const,
+    conversations: (box: string) => ["message", "conversations", box] as const,
+    thread: (id: number) => ["message", "thread", id] as const,
+    counts: () => ["message", "counts"] as const,
+  },
   search: {
     all: ["search"] as const,
     results: (query: string) =>

@@ -9,7 +9,6 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { login } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
-import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
@@ -18,8 +17,6 @@ const SESSION_DURATION_DAYS = 14;
 export default function UserPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter();
-
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
       <Form
@@ -86,8 +83,7 @@ export default function UserPage() {
             title: "Successfully logged in",
           });
 
-          router.replace("/");
-          router.refresh();
+          window.location.replace("/");
         }}
       >
         <Card>
