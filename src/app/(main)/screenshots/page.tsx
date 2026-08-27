@@ -91,7 +91,9 @@ const GAME_PAGE_LIMIT = 50;
 const MAX_SCREENSHOTS_PER_GAME = 4;
 
 export default function ScreenshotsPage() {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
   const [category, setCategory] =
     useState<(typeof categoryOptions)[number]["id"]>("ALL");
   const [seed, setSeed] = useState(() => Date.now());
@@ -168,7 +170,7 @@ export default function ScreenshotsPage() {
           <p
             className="text-3xl font-semibold"
             style={{
-              color: colors["text"],
+              color: headerColor,
               textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
@@ -177,7 +179,7 @@ export default function ScreenshotsPage() {
           <p
             className="mt-1 text-sm"
             style={{
-              color: colors["text"],
+              color: headerColor,
               opacity: 0.82,
               textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}

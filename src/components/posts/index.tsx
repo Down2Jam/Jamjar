@@ -31,6 +31,7 @@ import PostReactions from "./PostReactions";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 import { useSelf, useTags, usePosts } from "@/hooks/queries";
 import { PostListSkeleton } from "@/components/skeletons";
+import TagLabel from "@/components/tags/TagLabel";
 
 export default function Posts() {
   const searchParams = useSearchParams();
@@ -360,7 +361,7 @@ export default function Posts() {
                                 }
                               }
                             }}
-                            className={`transition-all transform duration-500 ease-in-out cursor-pointer ${
+                            className={`post-tag-chip transition-all transform duration-500 ease-in-out cursor-pointer ${
                               !reduceMotion ? "hover:scale-110" : ""
                             }`}
                             style={{
@@ -385,7 +386,7 @@ export default function Posts() {
                                 : undefined
                             }
                           >
-                            {tag.name}
+                            <TagLabel name={tag.name} />
                           </Chip>
                         ))}
                       </div>

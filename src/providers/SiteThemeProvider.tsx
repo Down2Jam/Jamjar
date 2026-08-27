@@ -67,7 +67,21 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
 
   const effectiveTheme = previewedSiteTheme ?? siteTheme;
   const visibleSiteThemes = useMemo(
-    () => allSiteThemes.filter((theme: SiteThemeType) => !theme.hidden),
+    () => {
+      const pinnedThemes = ["obsidian", "latte"];
+
+      return allSiteThemes
+        .filter((theme: SiteThemeType) => !theme.hidden)
+        .sort((a, b) => {
+          const aPriority = pinnedThemes.indexOf(a.name.toLowerCase());
+          const bPriority = pinnedThemes.indexOf(b.name.toLowerCase());
+
+          if (aPriority === -1 && bPriority === -1) return 0;
+          if (aPriority === -1) return 1;
+          if (bPriority === -1) return -1;
+          return aPriority - bPriority;
+        });
+    },
     [allSiteThemes],
   );
   const value = useMemo(

@@ -28,6 +28,8 @@ import {
 } from "@/helpers/listingPageVersion";
 import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
 import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
+import { useTheme } from "@/providers/useSiteTheme";
+import TagLabel from "@/components/tags/TagLabel";
 
 type JamOption = {
   id: string;
@@ -315,6 +317,8 @@ function canUseScoreSort(
 }
 
 export default function Games() {
+  const { siteTheme } = useTheme();
+  const headerColor = siteTheme.type === "Light" ? "textLight" : "text";
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations();
@@ -852,7 +856,6 @@ export default function Games() {
           seen.set(id, {
             id,
             name: tag.name,
-            icon: tag.icon as IconName,
             description: tag.description,
           });
         }
@@ -1141,13 +1144,13 @@ export default function Games() {
             <Hstack className="gap-3">
               <Icon
                 name="gamepad2"
-                color="text"
+                color={headerColor}
                 size={40}
                 style={gamesHeaderIconShadow}
               />
               <Text
                 size="4xl"
-                color="text"
+                color={headerColor}
                 weight="semibold"
                 style={gamesHeaderTextShadow}
               >
@@ -1156,7 +1159,7 @@ export default function Games() {
             </Hstack>
             <Text
               size="md"
-              color="text"
+              color={headerColor}
               align="left"
               style={gamesHeaderTextShadow}
             >
@@ -1186,25 +1189,25 @@ export default function Games() {
             <Hstack className="gap-3">
               <Icon
                 name="gamepad2"
-                color="text"
+                color={headerColor}
                 size={40}
                 style={gamesHeaderIconShadow}
               />
               <Text
                 size="4xl"
-                color="text"
+                color={headerColor}
                 weight="semibold"
                 style={gamesHeaderTextShadow}
               >
                 Games.Title
               </Text>
-              <Text size="xl" color="text" style={gamesHeaderTextShadow}>
+              <Text size="xl" color={headerColor} style={gamesHeaderTextShadow}>
                 ({games.length} results)
               </Text>
             </Hstack>
             <Text
               size="md"
-              color="text"
+              color={headerColor}
               align="left"
               style={gamesHeaderTextShadow}
             >
@@ -1216,13 +1219,13 @@ export default function Games() {
               style={gamesHeaderTextShadow}
               onClick={() => setAdvancedSearchOpen((open) => !open)}
             >
-              <Icon name="settings2" color="text" size={16} />
-              <Text size="sm" color="text" weight="semibold">
+              <Icon name="settings2" color={headerColor} size={16} />
+              <Text size="sm" color={headerColor} weight="semibold">
                 Advanced Search
               </Text>
               <Icon
                 name="chevrondown"
-                color="text"
+                color={headerColor}
                 size={16}
                 className={`transform transition-transform duration-200 ${
                   advancedSearchOpen ? "rotate-180" : "rotate-0"
@@ -1379,10 +1382,9 @@ export default function Games() {
                     <Dropdown.Item
                       key={tag.id}
                       value={tag.id}
-                      icon={tag.icon}
                       description={tag.description}
                     >
-                      {tag.name}
+                      <TagLabel name={tag.name} />
                     </Dropdown.Item>
                   ))}
                 </Dropdown>

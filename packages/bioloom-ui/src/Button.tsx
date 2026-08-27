@@ -38,7 +38,8 @@ export function Button(props: ButtonProps) {
     ...rest
   } = props;
 
-  const { colors } = useTheme();
+  const { colors, type: themeType } = useTheme();
+  const isLightTheme = themeType === "Light";
   const [hovered, setHovered] = React.useState(false);
 
   const isIconOnly =
@@ -165,6 +166,24 @@ export function Button(props: ButtonProps) {
     };
   }
 
+  if (isLightTheme && color !== "default") {
+    const accent = colors[color];
+    const accentForeground =
+      colors[`${color}DarkDark`] ||
+      `color-mix(in srgb, ${accent} 65%, black)`;
+
+    variantStyles.standard = {
+      color: accentForeground,
+      borderColor: accent,
+      backgroundColor: colors["mantle"],
+    };
+    variantStyles.ghost = {
+      color: accentForeground,
+      borderColor: "transparent",
+      backgroundColor: "transparent",
+    };
+  }
+
   if (disabled && color === "default") {
     variantStyles.standard = {
       borderColor: colors["mantle"],
@@ -234,6 +253,22 @@ export function Button(props: ButtonProps) {
     hoverStyles.standard = {
       backgroundColor: colors["grayDark"],
       color: colors["grayLight"],
+    };
+  }
+
+  if (isLightTheme && color !== "default") {
+    const accent = colors[color];
+    const accentForeground =
+      colors[`${color}DarkDark`] ||
+      `color-mix(in srgb, ${accent} 65%, black)`;
+
+    hoverStyles.standard = {
+      color: accentForeground,
+      backgroundColor: `color-mix(in srgb, ${accent} 14%, ${colors["mantle"]})`,
+    };
+    hoverStyles.ghost = {
+      color: accentForeground,
+      backgroundColor: `color-mix(in srgb, ${accent} 14%, transparent)`,
     };
   }
 

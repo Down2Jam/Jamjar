@@ -8,8 +8,10 @@ import { useMemo } from "react";
 import { useCurrentJam, useTracks } from "@/hooks/queries";
 import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 import { Skeleton } from "@/components/skeletons";
+import { useTheme } from "@/providers/useSiteTheme";
 
 export default function SidebarMusic() {
+  const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
@@ -84,7 +86,13 @@ export default function SidebarMusic() {
     <>
       {featured.length > 0 && (
         <div className="flex flex-col gap-2 items-center mt-20">
-          <Text size="2xl" color="text">
+          <Text
+            size="2xl"
+            color={siteTheme.type === "Light" ? "textLight" : "text"}
+            style={{
+              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
             SidebarMusic.Title
           </Text>
           <div className="flex flex-col w-[488px] gap-2">
@@ -104,6 +112,7 @@ export default function SidebarMusic() {
                 allowBackgroundUseAttribution={
                   track.allowBackgroundUseAttribution
                 }
+                squareThumbnail
               />
             ))}
           </div>

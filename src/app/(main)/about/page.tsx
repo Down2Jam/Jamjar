@@ -459,6 +459,27 @@ export default function AboutPage() {
           </Accordion>
         </Vstack>
       </Card>
+      <Text color="textFaded" size="xs" className="pb-4 text-center">
+        Tag icons by Delapouite, Lorc, Skoll, and sbed from{" "}
+        <a
+          href="https://game-icons.net"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          Game-icons.net
+        </a>
+        , licensed under{" "}
+        <a
+          href="https://creativecommons.org/licenses/by/3.0/"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          CC BY 3.0
+        </a>
+        .
+      </Text>
     </Vstack>
   );
 }

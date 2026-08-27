@@ -3,13 +3,15 @@ import { TagCategoryType } from "./TagCategoryType";
 export interface TagType {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   createdAt: Date;
   updatedAt: Date;
-  autoRegex: string;
+  autoRegex: string | null;
   modOnly: boolean;
-  priority: boolean;
+  priority: "LOW" | "MEDIUM" | "HIGH";
   alwaysAdded: boolean;
-  icon: string;
+  icon: string | null;
+  gameTag: boolean;
+  postTag: boolean;
   category: TagCategoryType;
 }

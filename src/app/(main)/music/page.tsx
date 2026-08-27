@@ -177,7 +177,10 @@ function getDefaultMusicMoreFilters(
 }
 
 export default function MusicPage() {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerTextColor = siteTheme.type === "Light" ? "textLight" : "text";
   const router = useRouter();
   const { data: currentJamData } = useCurrentJam();
   const restrictedSorts = useMemo(
@@ -876,7 +879,7 @@ export default function MusicPage() {
         <p
           className="text-3xl font-semibold"
           style={{
-            color: colors["text"],
+            color: headerColor,
             textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
@@ -885,7 +888,7 @@ export default function MusicPage() {
         <p
           className="mt-1 text-sm"
           style={{
-            color: colors["text"],
+            color: headerColor,
             opacity: 0.82,
             textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
@@ -1174,7 +1177,7 @@ export default function MusicPage() {
       <div className="relative z-0 flex items-center justify-center px-1 text-center">
         <Text
           size="sm"
-          color="text"
+          color={headerTextColor}
           weight="semibold"
           style={{ textShadow: "0 1px 4px rgba(0, 0, 0, 0.9)" }}
         >

@@ -1512,6 +1512,7 @@ export default function ClientUserPage({
                           slug={track.slug}
                           name={track.name}
                           artist={track.composer ?? { name: "Unknown" }}
+                          squareThumbnail
                           thumbnail={
                             track.game?.thumbnail || "/images/D2J_Icon.png"
                           }
@@ -1592,6 +1593,7 @@ export default function ClientUserPage({
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
+                      squareThumbnail
                       thumbnail={track.game.thumbnail || "/images/D2J_Icon.png"}
                       game={{
                         ...track.game,

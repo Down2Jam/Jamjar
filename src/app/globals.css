@@ -74,6 +74,12 @@ html:not([data-theme-ready="true"]) *::after {
     0 4px 10px -6px var(--post-card-shadow) !important;
 }
 
+.post-card-shadow {
+  box-shadow:
+    0 14px 30px -14px var(--post-card-shadow),
+    0 4px 10px -6px var(--post-card-shadow) !important;
+}
+
 /* Post actions echo the existing controls, with a flatter borderless finish. */
 .post-action-button {
   height: 2rem !important;

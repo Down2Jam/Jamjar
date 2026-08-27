@@ -28,7 +28,7 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               color: colors["blue"],
             }}
           >
-            {post.tags.filter((tag) => tag.name === "Changelog").length > 0 ? (
+            {post.tags.some((tag) => tag.name === "SiteChangelog") ? (
               <NotebookText />
             ) : (
               <Megaphone />

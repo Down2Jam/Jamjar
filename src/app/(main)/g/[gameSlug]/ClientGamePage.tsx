@@ -1088,7 +1088,9 @@ export default function ClientGamePage({
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {displayGame.tags.map((tag) => (
-                        <Chip key={tag.id}>{tag.name}</Chip>
+                        <Chip key={tag.id} className="post-tag-chip">
+                          {tag.name}
+                        </Chip>
                       ))}
                     </div>
                   </>

@@ -17,7 +17,7 @@ import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Star } from "lucide-react";
-import { useState } from "react";
+import { CSSProperties, useState } from "react";
 
 interface SidebarSongProps {
   slug?: string;
@@ -38,6 +38,7 @@ interface SidebarSongProps {
   showRating?: boolean;
   hideRatings?: boolean;
   wide?: boolean;
+  squareThumbnail?: boolean;
 }
 
 export default function SidebarSong({
@@ -59,6 +60,7 @@ export default function SidebarSong({
   showRating = typeof trackId === "number" || Boolean(onRate),
   hideRatings = false,
   wide = false,
+  squareThumbnail = false,
 }: SidebarSongProps) {
   const { current, isPlaying, playItem, toggle } = useMusic();
   const { colors } = useTheme();
@@ -83,21 +85,29 @@ export default function SidebarSong({
   };
 
   return (
-    <Card padding={wide ? 0 : 1}>
+    <Card
+      className="post-card-shadow"
+      padding={wide ? 0 : 1}
+      style={{
+        "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+      } as CSSProperties}
+    >
       <Vstack align="stretch" gap={2}>
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
           className={wide ? "min-h-24 min-w-0 p-3 sm:p-4" : ""}
         >
-          <Hstack gap={wide ? 3 : 2} className="min-w-0 flex-1">
+          <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             <Image
               src={thumbnail}
-              width={wide ? 112 : 90}
-              height={wide ? 64 : 50}
+              width={wide ? 96 : squareThumbnail ? 80 : 90}
+              height={wide ? 96 : squareThumbnail ? 80 : 50}
               className={
                 wide
-                  ? "z-0 h-16 w-28 shrink-0 rounded-md object-cover"
+                  ? "z-0 h-24 w-24 shrink-0 rounded-md object-cover"
+                  : squareThumbnail
+                    ? "z-0 h-20 w-20 shrink-0 rounded-md object-cover"
                   : "z-0 min-w-[90px] min-h-[50px] max-w-[90px] max-h-[50px] object-cover rounded"
               }
               alt="Song Thumbnail"
@@ -131,7 +141,7 @@ export default function SidebarSong({
                 </Text>
               </Link>
               <Hstack gap={1} className="min-w-0">
-                {wide && (
+                {(wide || squareThumbnail) && (
                   <Avatar
                     size={16}
                     src={artist.profilePicture || "/images/D2J_Icon.png"}

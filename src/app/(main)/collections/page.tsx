@@ -60,7 +60,9 @@ function visibilityLabel(visibility?: string) {
 }
 
 export default function CollectionsPage() {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [query, setQuery] = useState("");
@@ -119,7 +121,7 @@ export default function CollectionsPage() {
           <p
             className="text-3xl font-semibold"
             style={{
-              color: colors["text"],
+              color: headerColor,
               textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
@@ -128,7 +130,7 @@ export default function CollectionsPage() {
           <p
             className="mt-1 text-sm"
             style={{
-              color: colors["text"],
+              color: headerColor,
               opacity: 0.82,
               textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}

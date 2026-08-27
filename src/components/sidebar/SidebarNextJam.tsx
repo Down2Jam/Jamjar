@@ -5,11 +5,13 @@ import { getCookie, hasCookie } from "@/helpers/cookie";
 import { joinJam } from "@/helpers/jam";
 import { useCurrentJam, useRatingCategories, useSelf } from "@/hooks/queries";
 import { addToast, Button, Card, Hstack, Icon, Text, Vstack } from "bioloom-ui";
-import { useMemo, useState } from "react";
+import { CSSProperties, useMemo, useState } from "react";
 import Timer from "../timers/Timer";
 import { SidebarCardSkeleton } from "@/components/skeletons";
+import { useTheme } from "@/providers/useSiteTheme";
 
 export default function SidebarNextJam() {
+  const { colors } = useTheme();
   const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
   const { data: ratingCategories = [], isLoading: categoriesLoading } =
     useRatingCategories(true);
@@ -55,7 +57,12 @@ export default function SidebarNextJam() {
     .reduce((acc, game) => acc + (game.tracks?.length ?? 0), 0);
 
   return (
-    <Card>
+    <Card
+      className="post-card-shadow"
+      style={{
+        "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+      } as CSSProperties}
+    >
       <Vstack>
         <Hstack>
           <Icon name="calendarplus" color="textFaded" />

@@ -369,6 +369,7 @@ export default function MiniPlayer() {
       startsShown={true}
       shown={shown}
       onShownChange={setShown}
+      padding={12}
       transformOrigin={transformOrigin}
       positionerStyle={
         position
@@ -400,7 +401,14 @@ export default function MiniPlayer() {
                 src={current.thumbnail}
                 width={minimized ? 28 : 56}
                 height={minimized ? 28 : 56}
-                style={{ borderRadius: 8, objectFit: "cover" }}
+                style={{
+                  width: minimized ? 28 : 56,
+                  height: minimized ? 28 : 56,
+                  aspectRatio: "1 / 1",
+                  borderRadius: 8,
+                  flexShrink: 0,
+                  objectFit: "cover",
+                }}
                 alt=""
               />
               <div style={{ minWidth: 0 }}>

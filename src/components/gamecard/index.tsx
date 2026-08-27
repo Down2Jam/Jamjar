@@ -8,8 +8,9 @@ import Link from "@/compat/next-link";
 import { createPortal } from "react-dom";
 import { motion } from "framer-motion";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 
-type GameCardGame = {
+export type GameCardGame = {
   slug: string;
   name: string;
   pageVersion?: "JAM" | "POST_JAM";
@@ -220,7 +221,7 @@ function GamePreview({
             {tags.map((tag) => (
               <span
                 key={tag.id ?? tag.name}
-                className="rounded px-2 py-1 text-[11px]"
+                className="post-tag-chip rounded text-[11px]"
                 style={{ backgroundColor: colors.base, color: colors.textFaded }}
               >
                 {tag.name}
@@ -229,7 +230,7 @@ function GamePreview({
             {(game.inputMethods ?? []).slice(0, Math.max(0, 3 - tags.length)).map((input) => (
               <span
                 key={input}
-                className="rounded px-2 py-1 text-[11px]"
+                className="post-tag-chip rounded text-[11px]"
                 style={{ backgroundColor: colors.base, color: colors.textFaded }}
               >
                 {input}
@@ -243,7 +244,7 @@ function GamePreview({
             {flags.map((flag) => (
               <span
                 key={flag.id ?? flag.name}
-                className="rounded px-2 py-1 text-[11px]"
+                className="post-tag-chip rounded text-[11px]"
                 style={{ backgroundColor: colors.base, color: colors.textFaded }}
               >
                 {flag.name}
@@ -291,14 +292,22 @@ function getCreatorName(game: GameCardGame) {
   return team.users?.length === 1 ? team.owner.name : `${team.owner.name}'s team`;
 }
 
-export function GameCard({
+function getBuildPlatforms(game: GameCardGame) {
+  return [
+    ...new Set([
+      ...(game.itchEmbedUrl ? (["Web"] as const) : []),
+      ...(game.downloadLinks ?? []).map((type) => type.platform),
+    ]),
+  ].sort((a, b) => (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99));
+}
+
+export function GameHoverPreview({
   game,
-  rated = false,
+  children,
 }: {
   game: GameCardGame;
-  rated?: boolean;
+  children: ReactNode;
 }) {
-  const { colors } = useTheme();
   const anchorRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -309,18 +318,8 @@ export function GameCard({
     arrowTop: 18,
     side: "right",
   });
-  const jamColor = game.jam?.color || "green";
-  const jamName = game.jam?.name || "Game Jam";
-  const buildPlatforms = [
-    ...new Set([
-      ...(game.itchEmbedUrl ? (["Web"] as const) : []),
-      ...(game.downloadLinks ?? []).map((type) => type.platform),
-    ]),
-  ].sort((a, b) => (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99));
-  const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
-  const versionLabel =
-    game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
   const creatorName = getCreatorName(game);
+  const buildPlatforms = getBuildPlatforms(game);
 
   const updatePreviewPosition = useCallback((previewHeight?: number) => {
     if (!anchorRef.current) return;
@@ -372,6 +371,38 @@ export function GameCard({
       onFocus={() => openPreview(true)}
       onBlur={closePreview}
     >
+      {children}
+      {showPreview && (
+        <GamePreview
+          game={game}
+          creatorName={creatorName}
+          buildPlatforms={buildPlatforms}
+          position={previewPosition}
+          previewRef={previewRef}
+        />
+      )}
+    </div>
+  );
+}
+
+export function GameCard({
+  game,
+  rated = false,
+}: {
+  game: GameCardGame;
+  rated?: boolean;
+}) {
+  const { colors } = useTheme();
+  const jamColor = game.jam?.color || "green";
+  const jamName = game.jam?.name || "Game Jam";
+  const buildPlatforms = getBuildPlatforms(game);
+  const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
+  const versionLabel =
+    game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
+  const creatorName = getCreatorName(game);
+
+  return (
+    <GameHoverPreview game={game}>
       <Link href={href}>
       <Card
         padding={0}
@@ -493,15 +524,6 @@ export function GameCard({
         </Hstack>
         </Card>
       </Link>
-      {showPreview && (
-        <GamePreview
-          game={game}
-          creatorName={creatorName}
-          buildPlatforms={buildPlatforms}
-          position={previewPosition}
-          previewRef={previewRef}
-        />
-      )}
-    </div>
+    </GameHoverPreview>
   );
 }

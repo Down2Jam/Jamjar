@@ -7,12 +7,13 @@ import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { useCurrentJam, useGames } from "@/hooks/queries";
-import { useMemo } from "react";
+import { CSSProperties, useMemo } from "react";
 import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 import { Skeleton } from "@/components/skeletons";
+import { GameHoverPreview } from "@/components/gamecard";
 
 export default function SidebarGames() {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
   const { jamId, sort, pageVersion } = useMemo(() => {
@@ -57,10 +58,10 @@ export default function SidebarGames() {
         <Skeleton className="h-8 w-44" />
         <div className="flex w-[496px] flex-wrap justify-center gap-2">
           {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-[72px] w-[128px] rounded-xl" />
+            <Skeleton key={index} className="h-[77px] w-[136px] rounded-xl" />
           ))}
           {Array.from({ length: 4 }).map((_, index) => (
-            <Skeleton key={`small-${index}`} className="h-[54px] w-[96px] rounded-xl" />
+            <Skeleton key={`small-${index}`} className="h-[59px] w-[104px] rounded-xl" />
           ))}
         </div>
         <Skeleton className="h-9 w-32" />
@@ -72,54 +73,70 @@ export default function SidebarGames() {
   return (
     <>
       <div className="flex flex-col gap-2 items-center mt-20">
-        <Text size="2xl" color="text">
+        <Text
+          size="2xl"
+          color={siteTheme.type === "Light" ? "textLight" : "text"}
+          style={{
+            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+          }}
+        >
           SidebarGames.Title
         </Text>
         <div className="flex flex-wrap w-[496px] gap-2 justify-center">
           {games.slice(0, 6).map((game, index) => (
-            <Link
+            <GameHoverPreview
               key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
-              href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+              game={game}
             >
-              <div
-                className="w-[128px] h-[72px] rounded-xl border-1 overflow-hidden"
-                style={{
-                  backgroundColor: colors["mantle"],
-                  borderColor: colors["base"],
-                }}
-              >
-                <Image
-                  alt={`${game.name}'s thumbnail`}
-                  className="z-0 w-full h-full object-cover"
-                  height={72}
-                  width={128}
-                  src={game.thumbnail ?? "/images/D2J_Icon.png"}
-                />
-              </div>
-            </Link>
-            ))}
-          {games.length > 6 &&
-            games.slice(6, 10).map((game, index) => (
               <Link
-                key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
                 href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
               >
                 <div
-                  className="w-[96px] h-[54px] rounded-xl border-1 overflow-hidden"
+                className="post-card-shadow h-[77px] w-[136px] overflow-hidden rounded-xl border-1"
                   style={{
                     backgroundColor: colors["mantle"],
                     borderColor: colors["base"],
-                  }}
+                    "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+                  } as CSSProperties}
                 >
                   <Image
                     alt={`${game.name}'s thumbnail`}
                     className="z-0 w-full h-full object-cover"
-                    height={54}
-                    width={96}
+                    height={77}
+                    width={136}
                     src={game.thumbnail ?? "/images/D2J_Icon.png"}
                   />
                 </div>
               </Link>
+            </GameHoverPreview>
+            ))}
+          {games.length > 6 &&
+            games.slice(6, 10).map((game, index) => (
+              <GameHoverPreview
+                key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
+                game={game}
+              >
+                <Link
+                  href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+                >
+                  <div
+                    className="post-card-shadow h-[59px] w-[104px] overflow-hidden rounded-xl border-1"
+                    style={{
+                      backgroundColor: colors["mantle"],
+                      borderColor: colors["base"],
+                      "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+                    } as CSSProperties}
+                  >
+                    <Image
+                      alt={`${game.name}'s thumbnail`}
+                      className="z-0 w-full h-full object-cover"
+                      height={59}
+                      width={104}
+                      src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                    />
+                  </div>
+                </Link>
+              </GameHoverPreview>
             ))}
         </div>
         <div className="flex justify-center gap-2">

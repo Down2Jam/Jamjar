@@ -10,6 +10,7 @@ import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
 import { SidebarCardSkeleton } from "@/components/skeletons";
+import TagLabel from "@/components/tags/TagLabel";
 
 function isMatureStreamer(streamer: FeaturedStreamerType) {
   const title = streamer.streamTitle.toLowerCase();
@@ -268,7 +269,7 @@ export default function SidebarStreams() {
                   </div>
                 </Chip>
               </Tooltip>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {currentStreamer.streamTags
                   .filter((tag) =>
                     [
@@ -292,7 +293,9 @@ export default function SidebarStreams() {
                   )
                   .slice(0, 3)
                   .map((tag) => (
-                    <Chip key={tag}>{tag}</Chip>
+                    <Chip key={tag} className="post-tag-chip">
+                      <TagLabel name={tag} />
+                    </Chip>
                   ))}
               </div>
             </div>

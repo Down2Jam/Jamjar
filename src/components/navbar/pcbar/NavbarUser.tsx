@@ -7,7 +7,6 @@ import Hotkey from "../../hotkey";
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { Dropdown } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { useTheme } from "@/providers/useSiteTheme";
 
 interface NavbarUserProps {
   user?: UserType;
@@ -15,7 +14,6 @@ interface NavbarUserProps {
 
 export default function NavbarUser({ user }: NavbarUserProps) {
   const { isLgDown } = useBreakpoint();
-  const { colors } = useTheme();
 
   return (
     <NavbarItem className="flex items-center">
@@ -50,12 +48,7 @@ export default function NavbarUser({ user }: NavbarUserProps) {
             <Avatar
               size={32}
               src={user.profilePicture}
-              className="transition-all duration-300 cursor-pointer outline-2"
-              style={{
-                outlineColor: colors["base"],
-                outlineStyle: "solid",
-                outlineWidth: 2,
-              }}
+              className="cursor-pointer !border-0 transition-all duration-300"
             />
           ) : (
             <Button

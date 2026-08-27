@@ -381,6 +381,7 @@ const iconMap = {
 export type IconName = keyof typeof iconMap;
 type Color =
   | "text"
+  | "textLight"
   | "textFaded"
   | "red"
   | "orange"

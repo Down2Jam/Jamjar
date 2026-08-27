@@ -4,7 +4,7 @@ import { hasCookie } from "@/helpers/cookie";
 import { addToast, Form } from "bioloom-ui";
 import { redirect } from "@/compat/next-navigation";
 import dynamic from "@/compat/next-dynamic";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import type { MultiValue, StylesConfig } from "react-select";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -18,7 +18,10 @@ import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Switch } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
+import { Chip } from "bioloom-ui";
 import { readArray, readItem } from "@/requests/helpers";
+import { TagType } from "@/types/TagType";
+import TagLabel from "@/components/tags/TagLabel";
 
 const theme = "dark";
 const Editor = dynamic(() => import("@/components/editor"), {
@@ -46,6 +49,7 @@ export default function CreatePostPage() {
   const [mounted, setMounted] = useState<boolean>(false);
   const [options, setOptions] = useState<TagOption[]>();
   const [fixedOptions, setFixedOptions] = useState<TagOption[]>();
+  const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
 
@@ -55,6 +59,49 @@ export default function CreatePostPage() {
       .filter((id): id is number => typeof id === "number")),
     ...(fixedOptions?.map((tag) => tag.id).filter((id): id is number => typeof id === "number") ?? []),
   ];
+
+  const suggestedTags = useMemo(() => {
+    const draft = `${title}\n${content}`.trim();
+    if (!draft) return [];
+
+    const selectedNames = new Set(
+      (selectedTags ?? []).map((tag) => tag.value),
+    );
+    const priorityOrder = { HIGH: 3, MEDIUM: 2, LOW: 1 };
+
+    return availableTags
+      .filter((tag) => {
+        if (
+          !tag.postTag ||
+          tag.alwaysAdded ||
+          selectedNames.has(tag.name) ||
+          !tag.autoRegex
+        ) {
+          return false;
+        }
+
+        try {
+          return new RegExp(tag.autoRegex, "i").test(draft);
+        } catch {
+          return false;
+        }
+      })
+      .sort(
+        (a, b) =>
+          priorityOrder[b.priority] - priorityOrder[a.priority] ||
+          a.name.localeCompare(b.name),
+      )
+      .slice(0, 8);
+  }, [availableTags, content, selectedTags, title]);
+
+  const addSuggestedTag = (tag: TagType) => {
+    if ((selectedTags?.length ?? 0) >= 5) return;
+
+    const option = options?.find((candidate) => candidate.value === tag.name);
+    if (!option) return;
+
+    setSelectedTags([...(selectedTags ?? []), option]);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -69,7 +116,26 @@ export default function CreatePostPage() {
         if (tagResponse.ok) {
           const newoptions: TagOption[] = [];
 
-          for (const tag of await readArray<any>(tagResponse)) {
+          const tags = await readArray<TagType>(tagResponse);
+          const selectableTags = tags
+            .filter((tag) => tag.postTag !== false)
+            .sort((a, b) => {
+              const aIsGeneral = a.category.name === "General";
+              const bIsGeneral = b.category.name === "General";
+
+              if (aIsGeneral !== bIsGeneral) return aIsGeneral ? -1 : 1;
+
+              return (
+                b.category.priority - a.category.priority ||
+                a.category.name.localeCompare(b.category.name) ||
+                a.name.localeCompare(b.name)
+              );
+            });
+          setAvailableTags(
+            selectableTags.filter((tag) => !tag.modOnly || localuser.mod),
+          );
+
+          for (const tag of selectableTags) {
             if (tag.modOnly && !localuser.mod) {
               continue;
             }
@@ -78,10 +144,8 @@ export default function CreatePostPage() {
               id: tag.id,
               label: (
                 <div className="flex gap-2 items-center">
-                  <p>
-                    {tag.name}
-                    {tag.modOnly ? " (Mod Only)" : ""}
-                  </p>
+                  <TagLabel name={tag.name} />
+                  {tag.modOnly ? <span>(Mod Only)</span> : null}
                 </div>
               ),
               isFixed: tag.alwaysAdded,
@@ -279,6 +343,35 @@ export default function CreatePostPage() {
                   selectedTags != null && selectedTags.length >= 5
                 }
               />
+            )}
+
+            {suggestedTags.length > 0 && (
+              <div className="flex flex-col gap-2" aria-live="polite">
+                <Text color="textFaded" size="xs">
+                  Suggested from your title and content
+                </Text>
+                <div className="flex flex-wrap gap-2">
+                  {suggestedTags.map((tag) => (
+                    <Chip
+                      key={tag.id}
+                      icon="plus"
+                      className="post-tag-chip cursor-pointer hover:scale-105 hover:brightness-125"
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Add ${tag.name} tag`}
+                      onClick={() => addSuggestedTag(tag)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          addSuggestedTag(tag);
+                        }
+                      }}
+                    >
+                      <TagLabel name={tag.name} />
+                    </Chip>
+                  ))}
+                </div>
+              </div>
             )}
 
             {user && user.mod && (

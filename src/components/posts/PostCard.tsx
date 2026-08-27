@@ -29,6 +29,7 @@ import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import ContentStatusMeta from "./ContentStatusMeta";
+import TagLabel from "@/components/tags/TagLabel";
 
 export default function PostCard({
   post,
@@ -267,7 +268,7 @@ export default function PostCard({
                     className="post-tag-chip"
                     // avatarSrc={tag.icon ? tag.icon : undefined}
                   >
-                    {tag.name}
+                    <TagLabel name={tag.name} />
                   </Chip>
                 ))}
               </div>

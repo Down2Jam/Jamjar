@@ -36,6 +36,7 @@ import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import PostReactions from "@/components/posts/PostReactions";
 import ContentStatusMeta from "@/components/posts/ContentStatusMeta";
+import TagLabel from "@/components/tags/TagLabel";
 import { readItem } from "@/requests/helpers";
 import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -270,7 +271,7 @@ export default function PostPage() {
                     <div className="mt-2 flex flex-wrap gap-1">
                       {visiblePostTags.map((tag: TagType) => (
                           <Chip key={tag.id} className="post-tag-chip">
-                            {tag.name}
+                            <TagLabel name={tag.name} />
                           </Chip>
                         ))}
                     </div>

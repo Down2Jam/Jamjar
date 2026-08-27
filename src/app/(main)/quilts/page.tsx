@@ -70,7 +70,9 @@ function defaultEndsAt() {
 }
 
 export default function QuiltsPage() {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
   const [quilts, setQuilts] = useState<QuiltSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
@@ -110,7 +112,7 @@ export default function QuiltsPage() {
             <p
               className="text-3xl font-semibold"
               style={{
-                color: colors["text"],
+                color: headerColor,
                 textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
               }}
             >
@@ -119,7 +121,7 @@ export default function QuiltsPage() {
             <p
               className="mt-1 text-sm"
               style={{
-                color: colors["text"],
+                color: headerColor,
                 opacity: 0.82,
                 textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
               }}
