@@ -53,7 +53,7 @@ function isElementWithChildren(
 function findSelectedDisplay(
   nodes: ReactNode,
   selectedValue: unknown
-): { label?: string; icon?: IconName } | null {
+): { label?: ReactNode; icon?: IconName } | null {
   for (const child of Children.toArray(nodes)) {
     if (isDropdownItemElement(child)) {
       if (child.props.value === selectedValue) {
@@ -77,7 +77,7 @@ interface DropdownContextValue {
 
   // let items tell the dropdown what to display in the default trigger
   setSelectedDisplay: (
-    display: { label?: string; icon?: IconName } | null
+    display: { label?: ReactNode; icon?: IconName } | null
   ) => void;
 }
 
@@ -150,7 +150,7 @@ function Dropdown({
   >(new Set());
 
   const [selectedDisplay, setSelectedDisplay] = useState<{
-    label?: string;
+    label?: ReactNode;
     icon?: IconName;
   } | null>(null);
 
@@ -297,7 +297,7 @@ function Dropdown({
 
 export interface ItemProps<T = unknown> {
   value?: T;
-  children: string;
+  children: ReactNode;
   description?: string;
   icon?: IconName;
   disabled?: boolean;

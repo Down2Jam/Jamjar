@@ -2587,7 +2587,13 @@ export default function GameEditingForm({
                                               </Text>
                                               {isMounted &&
                                                 (isSingleCategory ? (
-                                                  <Select
+                                                  <Select<
+                                                    {
+                                                      value: string;
+                                                      id: number;
+                                                      label: ReactNode;
+                                                    }
+                                                  >
                                                     styles={styles}
                                                     menuPortalTarget={
                                                       document.body
@@ -2646,7 +2652,14 @@ export default function GameEditingForm({
                                                     )}
                                                   />
                                                 ) : (
-                                                  <Select
+                                                  <Select<
+                                                    {
+                                                      value: string;
+                                                      id: number;
+                                                      label: ReactNode;
+                                                    },
+                                                    true
+                                                  >
                                                     styles={styles}
                                                     menuPortalTarget={
                                                       document.body
@@ -2713,7 +2726,14 @@ export default function GameEditingForm({
                                         track.
                                       </Text>
                                       {isMounted && (
-                                        <Select
+                                        <Select<
+                                          {
+                                            value: string;
+                                            id: number;
+                                            label: ReactNode;
+                                          },
+                                          true
+                                        >
                                           styles={styles}
                                           menuPortalTarget={document.body}
                                           menuPosition="fixed"
@@ -3797,7 +3817,14 @@ export default function GameEditingForm({
                       </Text>
                     </div>
                     {isMounted && (
-                      <Select
+                      <Select<
+                        {
+                          value: string;
+                          id: number;
+                          label: ReactNode;
+                        },
+                        true
+                      >
                         styles={styles}
                         menuPortalTarget={document.body}
                         menuPosition="fixed"
@@ -3847,7 +3874,14 @@ export default function GameEditingForm({
                       </Text>
                     </div>
                     {isMounted && (
-                      <Select
+                      <Select<
+                        {
+                          value: string;
+                          id: number;
+                          label: ReactNode;
+                        },
+                        true
+                      >
                         styles={styles}
                         menuPortalTarget={document.body}
                         menuPosition="fixed"

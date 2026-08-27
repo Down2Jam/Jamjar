@@ -415,7 +415,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       (isSingleCategory ? "Choose one" : "Choose any that fit")}
                   </Text>
                   {isSingleCategory ? (
-                    <Select
+                    <Select<
+                      { value: string; id: number; label: string }
+                    >
                       styles={selectStyles}
                       menuPortalTarget={menuPortalTarget}
                       menuPosition="fixed"
@@ -451,7 +453,10 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       }))}
                     />
                   ) : (
-                    <Select
+                    <Select<
+                      { value: string; id: number; label: string },
+                      true
+                    >
                       styles={selectStyles}
                       menuPortalTarget={menuPortalTarget}
                       menuPosition="fixed"
@@ -495,7 +500,10 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                   Additional listener warnings or notes.
                 </Text>
               </div>
-              <Select
+              <Select<
+                { value: string; id: number; label: string },
+                true
+              >
                 styles={selectStyles}
                 menuPortalTarget={menuPortalTarget}
                 menuPosition="fixed"
