@@ -18,6 +18,9 @@ interface TooltipProps {
     | "center";
   delay?: number;
   hideDelay?: number;
+  compact?: boolean;
+  showArrow?: boolean;
+  instant?: boolean;
 }
 
 export default function Tooltip({
@@ -26,6 +29,9 @@ export default function Tooltip({
   position = "bottom",
   delay = 100,
   hideDelay = 100,
+  compact = false,
+  showArrow = false,
+  instant = false,
 }: TooltipProps) {
   const [shown, setShown] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -121,8 +127,19 @@ export default function Tooltip({
         position={position}
         anchorToScreen
         positionerStyle={positionerStyle}
+        padding={compact ? 2 : 8}
+        showArrow={showArrow}
+        instant={instant}
       >
-        <div className="px-3 py-1 text-sm whitespace-nowrap">{content}</div>
+        <div
+          className={
+            compact
+              ? "whitespace-nowrap px-1.5 py-0.5 text-xs"
+              : "whitespace-nowrap px-3 py-1 text-sm"
+          }
+        >
+          {content}
+        </div>
       </Popover>
     </div>
   );

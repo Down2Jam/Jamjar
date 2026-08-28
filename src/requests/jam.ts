@@ -36,6 +36,7 @@ export async function joinJam(jamId: number) {
 
 export async function hasJoinedJam(jamSlug: string) {
   return fetch(`${BASE_URL}/jams/${encodeURIComponent(jamSlug)}/participation`, {
+    cache: "no-store",
     credentials: "include",
     headers: {
       Authorization: `Bearer ${getCookie("token")}`,

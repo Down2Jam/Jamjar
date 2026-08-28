@@ -139,9 +139,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               />
               <NavbarButton
                 icon="gamepad2"
-                href="/gamedle"
-                name="Navbar.Gamedle.Title"
-                description="Navbar.Gamedle.Description"
+                href="/d2guess"
+                name="Navbar.Down2Guess.Title"
+                description="Navbar.Down2Guess.Description"
                 hotkey={["G", "D"]}
                 isIconOnly
                 color="green"

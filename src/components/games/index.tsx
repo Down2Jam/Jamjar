@@ -648,6 +648,7 @@ export default function Games() {
 
     return loadedGames;
   }, [gamesPages]);
+  const totalGames = gamesPages?.pages[0]?.pageInfo?.totalCount ?? games.length;
 
   const hasData = Boolean(gamesPages);
   const isLoading = gamesLoading;
@@ -1202,7 +1203,7 @@ export default function Games() {
                 Games.Title
               </Text>
               <Text size="xl" color={headerColor} style={gamesHeaderTextShadow}>
-                ({games.length} results)
+                ({totalGames} results)
               </Text>
             </Hstack>
             <Text

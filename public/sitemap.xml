@@ -21,6 +21,6 @@
   <url><loc>https://d2jam.com/donate</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
   <url><loc>https://d2jam.com/why</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://d2jam.com/socials</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
-  <url><loc>https://d2jam.com/gamedle</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://d2jam.com/d2guess</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
   <url><loc>https://d2jam.com/recap</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
 </urlset>

@@ -29,7 +29,15 @@ export function useUnreadNews() {
 
   useEffect(() => {
     const readStoredValue = () => {
-      setLastRead(localStorage.getItem(NEWS_READ_STORAGE_KEY));
+      const storedValue = localStorage.getItem(NEWS_READ_STORAGE_KEY);
+      if (storedValue) {
+        setLastRead(storedValue);
+        return;
+      }
+
+      const firstVisit = new Date().toISOString();
+      localStorage.setItem(NEWS_READ_STORAGE_KEY, firstVisit);
+      setLastRead(firstVisit);
     };
     readStoredValue();
     window.addEventListener("storage", readStoredValue);

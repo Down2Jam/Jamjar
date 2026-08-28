@@ -34,7 +34,7 @@ const EventsPage = lazy(() => import("@/app/(main)/events/page"));
 const ForgotPasswordPage = lazy(
   () => import("@/app/(main)/forgot-password/page"),
 );
-const GamedlePage = lazy(() => import("@/app/(main)/gamedle/page"));
+const Down2GuessPage = lazy(() => import("@/app/(main)/down2guess/page"));
 const GamesPage = lazy(() => import("@/app/(main)/games/page"));
 const HomePage = lazy(() => import("@/app/(main)/home/page"));
 const InboxPage = lazy(() => import("@/app/(main)/inbox/page"));
@@ -240,9 +240,10 @@ const indexedRouteMetadata = [
     description: "Find Down2Jam community links and social channels.",
   },
   {
-    pattern: /^\/gamedle\/?$/,
-    title: "Gamedle",
-    description: "Play the Down2Jam game guessing challenge.",
+    pattern: /^\/d2guess\/?$/,
+    title: "Down2Guess",
+    description:
+      "Try to guess what random game from Down2Jam the site is thinking of!",
   },
   {
     pattern: /^\/recap(?:\/[^/]+)?\/?$/,
@@ -328,7 +329,9 @@ export default function App() {
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
           <Route path="g/:gameSlug" element={<GameRoute />} />
           <Route path="g/:gameSlug/edit" element={<GameEditRoute />} />
-          <Route path="gamedle" element={<GamedlePage />} />
+          <Route path="d2guess" element={<Down2GuessPage />} />
+          <Route path="down2guess" element={<Navigate to="/d2guess" replace />} />
+          <Route path="gamedle" element={<Navigate to="/d2guess" replace />} />
           <Route path="games" element={<GamesPage />} />
           <Route path="home" element={<HomePage />} />
           <Route path="inbox/*" element={<InboxPage />} />

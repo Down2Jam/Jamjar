@@ -26,17 +26,20 @@ type PaginatedGamesResponse = {
     pageInfo?: {
       hasMore?: boolean;
       nextCursor?: string | null;
+      totalCount?: number;
     };
   };
   meta?: {
     pageInfo?: {
       hasMore?: boolean;
       nextCursor?: string | null;
+      totalCount?: number;
     };
   };
   pageInfo?: {
     hasMore?: boolean;
     nextCursor?: string | null;
+    totalCount?: number;
   };
 };
 

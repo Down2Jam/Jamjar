@@ -39,6 +39,9 @@ export async function joinJam(jamId: number) {
 
   if (response.status == 401) {
     return false;
+  } else if (response.status === 409) {
+    // The desired state is already true, so let callers update their UI.
+    return true;
   } else if (response.ok) {
     return true;
   } else {

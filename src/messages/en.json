@@ -118,8 +118,8 @@
       "Title": "Radio",
       "Description": "Listen to the Down2Jam music radio"
     },
-    "Gamedle": {
-      "Title": "Gamedle",
+    "Down2Guess": {
+      "Title": "Down2Guess",
       "Description": "Guess a Down2Jam game"
     },
     "Collections": {
@@ -1194,7 +1194,7 @@
     "GameNotFound": "Game not found",
     "GameResults": "Game Results",
     "GameThumbnail": "Game thumbnail",
-    "GamedleUnlimited": "Gamedle Unlimited",
+    "Down2GuessUnlimited": "Down2Guess Unlimited",
     "GamepadController": "Gamepad / Controller",
     "GamesDown2jam": "Games | Down2Jam",
     "GamesCommentedOn": "Games commented on",

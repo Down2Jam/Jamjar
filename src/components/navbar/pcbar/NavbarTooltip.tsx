@@ -9,6 +9,7 @@ interface NavbarButtonProps {
   name?: string;
   description?: string;
   hotkey?: string[];
+  delay?: number;
   children: ReactNode | ReactNode[];
 }
 
@@ -18,6 +19,7 @@ export default function NavbarTooltip({
   name,
   description,
   hotkey,
+  delay = 1000,
   children,
 }: NavbarButtonProps) {
   const { siteTheme } = useTheme();
@@ -25,7 +27,7 @@ export default function NavbarTooltip({
 
   return (
     <Tooltip
-      delay={1000}
+      delay={delay}
       content={
         <div
           className="flex items-center flex-col"

@@ -41,6 +41,7 @@ interface PopoverProps {
   transformOrigin?: string;
   disableHoverScale?: boolean;
   showArrow?: boolean;
+  instant?: boolean;
 }
 
 export default function Popover({
@@ -66,6 +67,7 @@ export default function Popover({
   transformOrigin,
   disableHoverScale = false,
   showArrow = false,
+  instant = false,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
@@ -313,10 +315,14 @@ export default function Popover({
           <motion.div
             key="popover"
             layout
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={instant ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: hoverScale }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            exit={
+              instant
+                ? { opacity: 0, scale: hoverScale }
+                : { opacity: 0, scale: 0.95 }
+            }
+            transition={{ duration: instant ? 0 : 0.2, ease: "easeOut" }}
             style={{
               transformOrigin: transformOrigin ?? getTransformOrigin(position),
               pointerEvents: "auto",
