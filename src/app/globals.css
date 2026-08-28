@@ -80,6 +80,29 @@ html:not([data-theme-ready="true"]) *::after {
     0 4px 10px -6px var(--post-card-shadow) !important;
 }
 
+.create-post-prompt {
+  border-color: var(--create-post-border);
+  background-color: var(--create-post-background);
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    filter 160ms ease;
+}
+
+.create-post-prompt:hover,
+.create-post-prompt:focus-visible {
+  background-color: var(--create-post-background-hover);
+}
+
+.create-post-prompt-icon {
+  transition: transform 160ms ease;
+}
+
+.create-post-prompt:hover .create-post-prompt-icon,
+.create-post-prompt:focus-visible .create-post-prompt-icon {
+  transform: scale(1.15);
+}
+
 /* Post actions echo the existing controls, with a flatter borderless finish. */
 .post-action-button {
   height: 2rem !important;
@@ -92,7 +115,8 @@ html:not([data-theme-ready="true"]) *::after {
     color 160ms ease !important;
 }
 
-.post-action-button:hover {
+.post-action-button:hover,
+.post-reaction-button--hovered {
   background-color: var(--post-action-hover) !important;
 }
 
@@ -110,6 +134,45 @@ html:not([data-theme-ready="true"]) *::after {
 
 .post-tag-chip {
   padding: 0.25rem 0.625rem !important;
+}
+
+.post-title-link,
+.post-author-link {
+  transition: opacity 160ms ease;
+}
+
+.post-title-link:hover,
+.post-title-link:focus-visible,
+.post-author-link:hover,
+.post-author-link:focus-visible {
+  opacity: 0.68;
+}
+
+.post-tag-link .post-tag-chip {
+  transition: filter 160ms ease !important;
+}
+
+.post-tag-link:hover .post-tag-chip,
+.post-tag-link:focus-visible .post-tag-chip {
+  filter: brightness(var(--post-hover-brightness));
+}
+
+.tag-filter-chip {
+  transition: filter 160ms ease !important;
+}
+
+.tag-filter-chip:hover,
+.tag-filter-chip:focus-visible {
+  filter: brightness(var(--post-hover-brightness));
+}
+
+.sidebar-media-link {
+  transition: opacity 160ms ease;
+}
+
+.sidebar-media-link:hover,
+.sidebar-media-link:focus-visible {
+  opacity: 0.68;
 }
 
 .post-action-button[data-reaction-color="red"] {
@@ -150,6 +213,14 @@ html:not([data-theme-ready="true"]) *::after {
 }
 
 .post-action-button[data-reaction-color]:hover {
+  background-color: color-mix(
+    in srgb,
+    var(--post-selected-accent) 24%,
+    var(--post-action-surface)
+  ) !important;
+}
+
+.post-action-button[data-reaction-color].post-reaction-button--hovered {
   background-color: color-mix(
     in srgb,
     var(--post-selected-accent) 24%,

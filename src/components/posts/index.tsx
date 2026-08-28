@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import CreatePostPage from "@/app/(main)/create-post/page";
 import PostCard from "./PostCard";
 import {
   ForumFeedItemType,
@@ -10,7 +12,6 @@ import {
 import { addToast, Avatar } from "bioloom-ui";
 import { PostSort } from "@/types/PostSort";
 import { PostStyle } from "@/types/PostStyle";
-import { PostTime } from "@/types/PostTimes";
 import { TagType } from "@/types/TagType";
 import StickyPostCard from "./StickyPostCard";
 import { useRouter, useSearchParams } from "@/compat/next-navigation";
@@ -28,6 +29,7 @@ import { IconName } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Drawer } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
+import { Input } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { useTranslations } from "@/compat/next-intl";
 import MentionedContent from "../mentions/MentionedContent";
@@ -37,37 +39,58 @@ import { useSelf, useTags, usePosts } from "@/hooks/queries";
 import { PostListSkeleton } from "@/components/skeletons";
 import TagLabel from "@/components/tags/TagLabel";
 import GameReleaseCard from "./GameReleaseCard";
+import {
+  parsePostTagRules,
+  serializePostTagRules,
+} from "@/helpers/postTagFilter";
+import { queryKeys } from "@/hooks/queries/queryKeys";
+import {
+  Icon,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+} from "bioloom-ui";
+
+const preloadCreatePostDependencies = () =>
+  Promise.all([import("@/components/editor"), import("react-select")]);
 
 export default function Posts() {
   const searchParams = useSearchParams();
 
   const { siteTheme, colors } = useTheme();
+
+  useEffect(() => {
+    const preload = () => {
+      void preloadCreatePostDependencies();
+    };
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (
+        callback: IdleRequestCallback,
+        options?: IdleRequestOptions,
+      ) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (typeof idleWindow.requestIdleCallback === "function") {
+      const idleCallback = idleWindow.requestIdleCallback(preload, {
+        timeout: 1500,
+      });
+      return () => idleWindow.cancelIdleCallback?.(idleCallback);
+    }
+
+    const timeout = globalThis.setTimeout(preload, 500);
+    return () => globalThis.clearTimeout(timeout);
+  }, []);
   const [sort, setSort] = useState<PostSort>(
-    (["newest", "oldest", "top"].includes(
+    (["newest", "hot", "top", "all_time", "oldest"].includes(
       searchParams.get("sort") as PostSort
     ) &&
       (searchParams.get("sort") as PostSort)) ||
       "newest"
   );
-  const [time, setTime] = useState<PostTime>(
-    ([
-      "hour",
-      "three_hours",
-      "six_hours",
-      "twelve_hours",
-      "day",
-      "week",
-      "month",
-      "three_months",
-      "six_months",
-      "nine_months",
-      "year",
-      "all",
-    ].includes(searchParams.get("time") as PostTime) &&
-      (searchParams.get("time") as PostTime)) ||
-      "all"
-  );
-  const [timeDropdownOpen, setTimeDropdownOpen] = useState(false);
+  const apiSort = sort === "all_time" ? "top" : sort;
+  const apiTime = sort === "hot" ? "day" : sort === "top" ? "week" : "all";
   const [style, setStyle] = useState<PostStyle>(
     (["Cozy", "Compact", "Ultra"].includes(
       searchParams.get("style") as PostStyle
@@ -76,15 +99,21 @@ export default function Posts() {
       "Cozy"
   );
   const [oldIsOpen, setOldIsOpen] = useState<boolean | null>(null);
-  const [tagRules, setTagRules] = useState<{ [key: number]: number }>();
+  const tagFilterParam = searchParams.get("tags");
+  const [tagRules, setTagRules] = useState(() =>
+    parsePostTagRules(tagFilterParam),
+  );
   const [followingOnly, setFollowingOnly] = useState(
     searchParams.get("following") === "true"
   );
-  const [reduceMotion, setReduceMotion] = useState<boolean>(false);
   const router = useRouter();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [currentPost, setCurrentPost] = useState<number>(0);
+  const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [tagQuery, setTagQuery] = useState("");
   const t = useTranslations();
+  const queryClient = useQueryClient();
 
   // TanStack Query hooks
   const { data: user } = useSelf();
@@ -95,17 +124,28 @@ export default function Posts() {
     hasNextPage: hasMorePosts,
     fetchNextPage: fetchMorePosts,
     isFetchingNextPage: isFetchingMorePosts,
-  } = usePosts(sort, time, false, tagRules, user?.slug, followingOnly);
-  const { data: stickyPosts, isLoading: stickyLoading } = usePosts(
-    sort,
-    time,
+  } = usePosts(
+    apiSort,
+    apiTime,
+    false,
+    tagRules,
+    user?.slug,
+    followingOnly,
+    true,
+    12,
+  );
+  const { data: stickyPosts } = usePosts(
+    apiSort,
+    apiTime,
     true,
     tagRules,
     user?.slug,
-    followingOnly
+    followingOnly,
+    true,
+    5,
   );
 
-  const loading = postsLoading || stickyLoading;
+  const loading = postsLoading;
   const forumPosts = useMemo(
     () =>
       (posts ?? []).filter(
@@ -136,19 +176,36 @@ export default function Posts() {
     return tagObject;
   }, [rawTags]);
 
+  const visibleTagCategories = useMemo(() => {
+    if (!tags) return [];
+    const query = tagQuery.trim().toLowerCase();
+
+    return Object.entries(tags)
+      .sort(([, first], [, second]) => second.priority - first.priority)
+      .map(([category, value]) => ({
+        category,
+        tags: value.tags.filter(
+          (tag) =>
+            !query ||
+            tag.name.toLowerCase().includes(query) ||
+            tag.description?.toLowerCase().includes(query),
+        ),
+      }))
+      .filter((category) => category.tags.length > 0);
+  }, [tagQuery, tags]);
+
+  const activeTagRuleCount = Object.keys(tagRules ?? {}).length;
+  const activeTagRules = useMemo(
+    () =>
+      (rawTags ?? [])
+        .filter((tag) => Boolean(tagRules?.[tag.id]))
+        .map((tag) => ({ tag, rule: tagRules?.[tag.id] as 1 | -1 })),
+    [rawTags, tagRules],
+  );
+
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReduceMotion(mediaQuery.matches);
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches);
-    };
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []);
+    setTagRules(parsePostTagRules(tagFilterParam));
+  }, [tagFilterParam]);
 
   useEffect(() => {
     if (oldIsOpen == null) {
@@ -177,6 +234,23 @@ export default function Posts() {
     }
   }, [style, open]);
 
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current;
+    if (!loadMoreElement || !hasMorePosts) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFetchingMorePosts) {
+          void fetchMorePosts();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+
+    observer.observe(loadMoreElement);
+    return () => observer.disconnect();
+  }, [fetchMorePosts, hasMorePosts, isFetchingMorePosts]);
+
   const updateQueryParam = (key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
     if (value) {
@@ -187,19 +261,57 @@ export default function Posts() {
     navigateToSearchIfChanged(router, params);
   };
 
+  const setTagRule = (tagId: number, rule: 1 | -1) => {
+    const nextRules = { ...tagRules };
+
+    if (nextRules[tagId] === rule) {
+      delete nextRules[tagId];
+    } else {
+      nextRules[tagId] = rule;
+    }
+
+    const normalizedRules =
+      Object.keys(nextRules).length > 0 ? nextRules : undefined;
+    setTagRules(normalizedRules);
+    updateQueryParam("tags", serializePostTagRules(normalizedRules));
+  };
+
+  const clearTagRules = () => {
+    setTagRules(undefined);
+    updateQueryParam("tags", "");
+  };
+
+  const selectSort = (nextSort: PostSort) => {
+    setSort(nextSort);
+    const params = new URLSearchParams(window.location.search);
+    params.set("sort", nextSort);
+    params.delete("time");
+    navigateToSearchIfChanged(router, params);
+  };
+
   const sorts: Record<
     PostSort,
     { name: string; icon: IconName; description: string }
   > = {
-    top: {
-      name: "PostSort.Top.Title",
-      icon: "trophy",
-      description: "PostSort.Top.Description",
-    },
     newest: {
       name: "PostSort.Newest.Title",
       icon: "clockarrowup",
       description: "PostSort.Newest.Description",
+    },
+    hot: {
+      name: "Hot",
+      icon: "flame",
+      description: "Trending posts from the last 24 hours",
+    },
+    top: {
+      name: "PostSort.Top.Title",
+      icon: "trophy",
+      description: "Most liked posts from the last week",
+    },
+    all_time: {
+      name: "PostTime.All.Title",
+      icon: "infinity",
+      description: "Most liked posts of all time",
     },
     oldest: {
       name: "PostSort.Oldest.Title",
@@ -208,118 +320,24 @@ export default function Posts() {
     },
   };
 
-  const times: Record<
-    PostTime,
-    { name: string; icon: IconName; description: string }
-  > = {
-    hour: {
-      name: "PostTime.Hour.Title",
-      icon: "clock1",
-      description: "PostTime.Hour.Description",
-    },
-    three_hours: {
-      name: "PostTime.ThreeHours.Title",
-      icon: "clock2",
-      description: "PostTime.ThreeHours.Description",
-    },
-    six_hours: {
-      name: "PostTime.SixHours.Title",
-      icon: "clock3",
-      description: "PostTime.SixHours.Description",
-    },
-    twelve_hours: {
-      name: "PostTime.TwelveHours.Title",
-      icon: "clock4",
-      description: "PostTime.TwelveHours.Description",
-    },
-    day: {
-      name: "PostTime.Day.Title",
-      icon: "calendar",
-      description: "PostTime.Day.Description",
-    },
-    week: {
-      name: "PostTime.Week.Title",
-      icon: "calendardays",
-      description: "PostTime.Week.Description",
-    },
-    month: {
-      name: "PostTime.Month.Title",
-      icon: "calendarrange",
-      description: "PostTime.Month.Description",
-    },
-    three_months: {
-      name: "PostTime.ThreeMonths.Title",
-      icon: "calendarfold",
-      description: "PostTime.ThreeMonths.Description",
-    },
-    six_months: {
-      name: "PostTime.SixMonths.Title",
-      icon: "calendarcog",
-      description: "PostTime.SixMonths.Description",
-    },
-    nine_months: {
-      name: "PostTime.NineMonths.Title",
-      icon: "calendararrowdown",
-      description: "PostTime.NineMonths.Description",
-    },
-    year: {
-      name: "PostTime.Year.Title",
-      icon: "calendar1",
-      description: "PostTime.Year.Description",
-    },
-    all: {
-      name: "PostTime.All.Title",
-      icon: "sparkles",
-      description: "PostTime.All.Description",
-    },
-  };
-  const primaryTimes: PostTime[] = [
-    "hour",
-    "six_hours",
-    "twelve_hours",
-    "day",
-    "week",
-    "year",
-    "all",
-  ];
-  const otherTimes: PostTime[] = [
-    "three_hours",
-    "month",
-    "three_months",
-    "six_months",
-    "nine_months",
-  ];
-
-  const selectTime = (key: unknown) => {
-    const nextTime = key as PostTime;
-    setTime(nextTime);
-    updateQueryParam("time", nextTime);
-    setTimeDropdownOpen(false);
-  };
-
   return (
     <div>
-      {!loading &&
-        stickyPosts &&
-        stickyPosts.length > 0 && (
-          <Vstack align="stretch" className="p-4">
-            {stickyPosts
-              .filter(
-                (item): item is PostType => !isGameReleaseFeedItem(item)
-              )
-              .map((post) => (
-                <StickyPostCard key={post.id} post={post} />
-              ))}
-          </Vstack>
-        )}
+      {!loading && stickyPosts && stickyPosts.length > 0 && (
+        <Vstack align="stretch" className="p-4">
+          {stickyPosts
+            .filter((item): item is PostType => !isGameReleaseFeedItem(item))
+            .map((post) => (
+              <StickyPostCard key={post.id} post={post} />
+            ))}
+        </Vstack>
+      )}
 
       <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-0">
         <div className="flex flex-wrap gap-2">
           <Dropdown
             selectedValue={sort}
             onSelect={(key) => {
-              setSort(key as PostSort);
-              updateQueryParam("sort", key as string);
+              selectSort(key as PostSort);
             }}
           >
             {Object.entries(sorts).map(([key, sort]) => (
@@ -334,119 +352,179 @@ export default function Posts() {
             ))}
           </Dropdown>
           <Dropdown
-            isOpen={timeDropdownOpen}
-            onOpenChange={setTimeDropdownOpen}
-            selectedValue={time}
-            onSelect={selectTime}
-          >
-            {primaryTimes.map((key) => (
-              <Dropdown.Item
-                key={key}
-                value={key}
-                icon={times[key].icon}
-                description={times[key].description}
-              >
-                {times[key].name}
-              </Dropdown.Item>
-            ))}
-            <Dropdown
-              position="right"
-              backdrop={false}
-              selectedValue={time}
-              onSelect={selectTime}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon="morehorizontal"
-                  className="w-full !justify-start"
-                >
-                  Other
-                </Button>
-              }
-            >
-              {otherTimes.map((key) => (
-                <Dropdown.Item
-                  key={key}
-                  value={key}
-                  icon={times[key].icon}
-                  description={times[key].description}
-                >
-                  {times[key].name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
-          </Dropdown>
-          <Dropdown
+            freezePositionWhileOpen
             trigger={
               <Button
-                icon={
-                  tagRules && Object.keys(tagRules).length > 0
-                    ? "settings"
-                    : "tags"
+                icon={activeTagRules.length > 0 ? undefined : "tags"}
+                aria-label={
+                  activeTagRules.length > 0
+                    ? `${activeTagRules.length} active tag filters`
+                    : "All tags"
                 }
               >
-                {tagRules && Object.keys(tagRules).length > 0
-                  ? "PostTags.Custom"
-                  : "PostTags.All"}
+                {activeTagRules.length > 0 ? (
+                  <span
+                    className="flex h-5 items-center"
+                    style={{
+                      width: `${Math.min(activeTagRules.length * 22, 112)}px`,
+                    }}
+                  >
+                    {activeTagRules.map(({ tag, rule }) => {
+                      const accent =
+                        rule === 1
+                          ? siteTheme.colors["blue"]
+                          : siteTheme.colors["orange"];
+
+                      return (
+                        <span
+                          key={tag.id}
+                          className="relative h-5 min-w-[0.35rem] flex-1 basis-5"
+                          title={`${tag.name} — ${
+                            rule === 1 ? "included" : "excluded"
+                          }`}
+                        >
+                          <span
+                            className="absolute left-0 top-0 flex h-5 w-5 items-center justify-center rounded-sm border"
+                            style={{
+                              backgroundColor: siteTheme.colors["mantle"],
+                              borderColor: `color-mix(in srgb, ${accent} 65%, transparent)`,
+                              color: siteTheme.colors["text"],
+                            }}
+                          >
+                            <TagLabel name={tag.name} iconOnly />
+                            <span
+                              className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full"
+                              style={{
+                                backgroundColor: siteTheme.colors["mantle"],
+                                color: accent,
+                              }}
+                            >
+                              <Icon
+                                name={rule === 1 ? "check" : "x"}
+                                size={9}
+                              />
+                            </span>
+                          </span>
+                        </span>
+                      );
+                    })}
+                  </span>
+                ) : (
+                  "PostTags.All"
+                )}
               </Button>
             }
           >
-            <div className="p-4 max-w-[800px] max-h-[400px] overflow-y-scroll">
-              <Text size="2xl">PostTags.Filtering</Text>
-              {tags && Object.keys(tags).length > 0 ? (
-                Object.keys(tags)
-                  .sort(
-                    (tag1, tag2) => tags[tag2].priority - tags[tag1].priority
-                  )
-                  .map((category: string) => (
-                    <div key={category} className="w-full">
-                      <p>{category}</p>
-                      <div className="flex gap-1 flex-wrap p-4 w-full">
-                        {tags[category].tags.map((tag) => (
+            <div className="flex w-[min(42rem,calc(100vw-2rem))] flex-col">
+              <div className="flex flex-col gap-3 p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <Text size="xl">Tag filtering</Text>
+                    <Text size="xs" color="textFaded">
+                      Choose which tags should appear in the feed
+                    </Text>
+                  </div>
+                  {activeTagRuleCount > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon="x"
+                      onClick={clearTagRules}
+                    >
+                      Clear {activeTagRuleCount}
+                    </Button>
+                  )}
+                </div>
+
+                <Input
+                  value={tagQuery}
+                  onValueChange={setTagQuery}
+                  placeholder="Search tags"
+                  size="sm"
+                  fullWidth
+                />
+
+                <div
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs"
+                  style={{ color: colors.textFaded }}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name="check" size={14} color="blue" />
+                    Left-click to include
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon name="x" size={14} color="orange" />
+                    Right-click to exclude
+                  </span>
+                  <span>Click the same choice again to clear it</span>
+                </div>
+              </div>
+
+              <div className="max-h-[22rem] overflow-y-auto p-4">
+                {visibleTagCategories.length > 0 ? (
+                  <div className="flex flex-col gap-5">
+                    {visibleTagCategories.map(({ category, tags }) => (
+                      <section key={category} className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                          <Text size="sm">{category}</Text>
+                          <Text size="xs" color="textFaded" className="ml-auto">
+                            {tags.length}
+                          </Text>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {tags.map((tag) => {
+                            const rule = tagRules?.[tag.id];
+                            return (
                           <Chip
-                            // avatarSrc={tag.icon ? tag.icon : undefined}
                             key={tag.id}
-                            onClick={() => {
-                              if (!tagRules) {
-                                setTagRules({ [tag.id]: 1 });
-                              } else {
-                                if (tag.id in tagRules) {
-                                  if (tagRules[tag.id] === 1) {
-                                    setTagRules({
-                                      ...tagRules,
-                                      [tag.id]: -1,
-                                    });
-                                  } else {
-                                    const updatedRules = { ...tagRules };
-                                    delete updatedRules[tag.id];
-                                    setTagRules(updatedRules);
-                                  }
-                                } else {
-                                  setTagRules({ ...tagRules, [tag.id]: 1 });
-                                }
+                            onClick={() => setTagRule(tag.id, 1)}
+                            onContextMenu={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              setTagRule(tag.id, -1);
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                setTagRule(tag.id, event.shiftKey ? -1 : 1);
                               }
                             }}
-                            className={`post-tag-chip transition-all transform duration-500 ease-in-out cursor-pointer ${
-                              !reduceMotion ? "hover:scale-110" : ""
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={Boolean(rule)}
+                            aria-label={`${tag.name}: ${
+                              rule === 1
+                                ? "included"
+                                : rule === -1
+                                  ? "excluded"
+                                  : "not filtered"
                             }`}
+                            className="post-tag-chip tag-filter-chip cursor-pointer"
                             style={{
+                              "--post-hover-brightness":
+                                siteTheme.type === "Light" ? 0.78 : 1.22,
                               color:
-                                tagRules && tag.id in tagRules
-                                  ? tagRules[tag.id] === 1
+                                rule
+                                  ? rule === 1
                                     ? siteTheme.colors["blue"]
                                     : siteTheme.colors["orange"]
                                   : siteTheme.colors["text"],
                               borderColor:
-                                tagRules && tag.id in tagRules
-                                  ? tagRules[tag.id] === 1
+                                rule
+                                  ? rule === 1
                                     ? siteTheme.colors["blue"]
                                     : siteTheme.colors["orange"]
-                                  : siteTheme.colors["base"],
-                            }}
+                                  : `color-mix(in srgb, ${siteTheme.colors["text"]} 12%, transparent)`,
+                              backgroundColor:
+                                rule === 1
+                                  ? `color-mix(in srgb, ${siteTheme.colors["blue"]} 14%, ${siteTheme.colors["mantle"]})`
+                                  : rule === -1
+                                    ? `color-mix(in srgb, ${siteTheme.colors["orange"]} 14%, ${siteTheme.colors["mantle"]})`
+                                    : siteTheme.colors["mantle"],
+                            } as CSSProperties}
                             icon={
-                              tagRules && tag.id in tagRules
-                                ? tagRules[tag.id] === 1
+                              rule
+                                ? rule === 1
                                   ? "check"
                                   : "x"
                                 : undefined
@@ -454,13 +532,20 @@ export default function Posts() {
                           >
                             <TagLabel name={tag.name} />
                           </Chip>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-              ) : (
-                <p>No tags could be found</p>
-              )}
+                            );
+                          })}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center">
+                    <Text color="textFaded" size="sm">
+                      No tags match “{tagQuery}”
+                    </Text>
+                  </div>
+                )}
+              </div>
             </div>
           </Dropdown>
           {user && (user.followingCount ?? 0) > 0 && (
@@ -510,6 +595,34 @@ export default function Posts() {
         </div>
       </div>
 
+      {user && (
+        <button
+          type="button"
+          onClick={() => setCreatePostOpen(true)}
+          onPointerEnter={() => void preloadCreatePostDependencies()}
+          onFocus={() => void preloadCreatePostDependencies()}
+          className="create-post-prompt mx-4 mt-4 flex min-h-20 w-[calc(100%-2rem)] flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-3 text-center focus-visible:outline-none"
+          style={{
+            color: colors.text,
+            "--create-post-border": `color-mix(in srgb, ${colors.text} 18%, transparent)`,
+            "--create-post-background": `color-mix(in srgb, ${colors.mantle} 28%, transparent)`,
+            "--create-post-background-hover": `color-mix(in srgb, ${colors.mantle} 58%, transparent)`,
+          } as CSSProperties}
+          aria-haspopup="dialog"
+        >
+          <span className="flex items-center justify-center gap-2 font-semibold">
+            <span className="create-post-prompt-icon inline-flex items-center justify-center">
+              <Icon name="plus" size={19} />
+            </span>
+            Create post
+          </span>
+          <span className="text-xs" style={{ color: colors.textFaded }}>
+            Discuss something, share progress, talk about a cool game you found,
+            write up a post-mortem, or any other topic you want to post about!
+          </span>
+        </button>
+      )}
+
       {loading ? (
         <PostListSkeleton />
       ) : (
@@ -540,7 +653,7 @@ export default function Posts() {
               No posts match your filters
             </p>
           )}
-          <div>
+          <div ref={loadMoreRef}>
             {posts && hasMorePosts && (
               <Button
                 name=""
@@ -610,7 +723,20 @@ export default function Posts() {
           footer={<Button onClick={() => setOpen(false)}>Close</Button>}
         >
           <div className="flex flex-col gap-2 py-4">
-            <Card>
+            <Card
+              style={{
+                "--post-action-surface": `color-mix(in srgb, ${colors.mantle} 70%, ${colors.crust})`,
+                "--post-action-hover": colors.base,
+                "--reaction-red": colors.red,
+                "--reaction-orange": colors.orange,
+                "--reaction-yellow": colors.yellow,
+                "--reaction-green": colors.green,
+                "--reaction-blue": colors.blue,
+                "--reaction-purple": colors.purple,
+                "--reaction-pink": colors.pink,
+                "--reaction-gray": colors.gray,
+              } as CSSProperties}
+            >
               <Link href={`/p/${forumPosts[currentPost].slug}`}>
                 <p className="text-2xl">{forumPosts[currentPost].title}</p>
               </Link>
@@ -647,14 +773,19 @@ export default function Posts() {
                 />
               </ThemedProse>
 
-              <div className="flex gap-3 mt-4">
+              <div className="relative z-20 mt-2 flex flex-wrap items-center gap-1">
                 <LikeButton
                   likes={forumPosts[currentPost].likes.length}
                   liked={forumPosts[currentPost].hasLiked}
                   parentId={forumPosts[currentPost].id}
                 />
                 <Link href={`/p/${forumPosts[currentPost].slug}#create-comment`}>
-                  <Button size="sm" icon="messagecircle">
+                  <Button
+                    className="post-action-button min-w-12"
+                    variant="ghost"
+                    size="sm"
+                    icon="messagecircle"
+                  >
                     {forumPosts[currentPost].comments.length}
                   </Button>
                 </Link>
@@ -674,6 +805,40 @@ export default function Posts() {
             </div>
           </div>
         </Drawer>
+      )}
+      {createPostOpen && (
+        <Modal
+          isOpen={createPostOpen}
+          onOpenChange={(nextOpen?: boolean) =>
+            setCreatePostOpen(Boolean(nextOpen))
+          }
+          backdrop="opaque"
+          size="2xl"
+        >
+          <ModalContent className="overflow-visible">
+            {(onClose) => (
+              <>
+                <ModalHeader>
+                  <Text size="xl">Create post</Text>
+                  <Text size="sm" color="textFaded">
+                    Submit a post to the forum
+                  </Text>
+                </ModalHeader>
+                <ModalBody>
+                  <CreatePostPage
+                    embedded
+                    onCreated={async () => {
+                      onClose();
+                      await queryClient.invalidateQueries({
+                        queryKey: queryKeys.post.all,
+                      });
+                    }}
+                  />
+                </ModalBody>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       )}
     </div>
   );

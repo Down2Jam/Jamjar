@@ -5,7 +5,7 @@ import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
 import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
-import { Tooltip } from "bioloom-ui";
+import { Modal, ModalContent, Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
@@ -36,6 +36,7 @@ export default function SidebarStreams() {
   const { data: rawStreamers = [] as FeaturedStreamerType[], isLoading } =
     useStreamers();
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
+  const [viewerOpen, setViewerOpen] = useState(false);
   const { colors, siteTheme } = useTheme();
   const blacklistedStreamers = new Set(["morninchai", "lana_lux"]);
   const streamers = rawStreamers.filter(
@@ -84,10 +85,87 @@ export default function SidebarStreams() {
   }
 
   const currentStreamer = streamers[safeCurrentIndex];
+  const twitchParent =
+    typeof window === "undefined" ? "localhost" : window.location.hostname;
+  const twitchEmbedUrl = `https://player.twitch.tv/?channel=${encodeURIComponent(
+    currentStreamer.userName,
+  )}&parent=${encodeURIComponent(twitchParent)}&autoplay=false`;
 
   return (
-    <a href={`https://twitch.tv/${currentStreamer.userName}`} target="_blank">
-      <div className="transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] hover:cursor-pointer h-[320px]">
+    <div className="relative w-[480px] min-w-[480px] max-w-[480px]">
+      <Modal
+        isOpen={viewerOpen}
+        onOpenChange={(open?: boolean) => setViewerOpen(Boolean(open))}
+        backdrop="opaque"
+        size="2xl"
+        surface="transparent"
+        hideCloseButton
+      >
+        <ModalContent
+          className="overflow-visible"
+          style={{
+            width: "min(720px, calc(100vw - 32px))",
+            maxWidth: "none",
+          }}
+        >
+          <div className="aspect-video w-full overflow-hidden rounded-lg bg-black shadow-2xl">
+            <iframe
+              key={currentStreamer.userName}
+              src={twitchEmbedUrl}
+              title={`${currentStreamer.userName}'s Twitch stream`}
+              className="h-full w-full"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <Tooltip content="Previous Stream" position="top">
+              <Button
+                onClick={handlePrev}
+                icon="chevronleft"
+                aria-label="Previous stream"
+                variant="ghost"
+              />
+            </Tooltip>
+            <div className="flex min-w-0 items-center">
+              <Button
+                href={`https://twitch.tv/${currentStreamer.userName}`}
+                target="_blank"
+                icon="sitwitch"
+                size="sm"
+                variant="ghost"
+              >
+                Open on Twitch
+              </Button>
+            </div>
+            <Tooltip content="Next Stream" position="top">
+              <Button
+                onClick={handleNext}
+                icon="chevronright"
+                aria-label="Next stream"
+                variant="ghost"
+              />
+            </Tooltip>
+          </div>
+        </ModalContent>
+      </Modal>
+
+      <div
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+        aria-expanded={viewerOpen}
+        aria-label={`Watch ${currentStreamer.userName}'s Twitch stream`}
+        onClick={() => setViewerOpen(true)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            setViewerOpen(true);
+          }
+        }}
+        className="transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] cursor-pointer h-[320px] focus-visible:outline-none"
+      >
         <div className="absolute z-0">
           <NextImage
             src={currentStreamer.thumbnailUrl}
@@ -112,6 +190,7 @@ export default function SidebarStreams() {
               <Button
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   handlePrevPage();
                 }}
                 size="sm"
@@ -217,6 +296,7 @@ export default function SidebarStreams() {
               <Button
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   handleNextPage();
                 }}
                 size="sm"
@@ -230,6 +310,7 @@ export default function SidebarStreams() {
             <Button
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 handlePrev();
               }}
               icon="chevronleft"
@@ -245,6 +326,7 @@ export default function SidebarStreams() {
             <Button
               onClick={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 handleNext();
               }}
               icon="chevronright"
@@ -302,6 +384,6 @@ export default function SidebarStreams() {
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 }

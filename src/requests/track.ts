@@ -63,6 +63,7 @@ export async function getTracks(
   sort: string,
   jam?: string,
   pageVersion?: ListingPageVersion,
+  limit?: number,
 ) {
   const params = new URLSearchParams({ sort });
   if (jam && jam !== "all") {
@@ -74,6 +75,9 @@ export async function getTracks(
   }
   if (pageVersion && pageVersion !== "JAM") {
     params.set("pageVersion", pageVersion);
+  }
+  if (limit) {
+    params.set("limit", String(limit));
   }
 
   return fetch(`${BASE_URL}/tracks?${params.toString()}`);

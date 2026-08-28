@@ -98,6 +98,7 @@ function GamePreview({
   const screenshots = (game.screenshots ?? []).filter(Boolean).slice(0, 3);
   const tags = (game.tags ?? []).slice(0, 3);
   const flags = game.flags ?? [];
+  const tooltipBorderColor = `color-mix(in srgb, ${colors.text} 12%, ${colors.crust})`;
 
   return createPortal(
     <motion.div
@@ -119,7 +120,6 @@ function GamePreview({
           position.side === "right"
             ? `left ${position.arrowTop}px`
             : `right ${position.arrowTop}px`,
-        filter: "drop-shadow(0 14px 22px rgba(0, 0, 0, 0.55))",
       }}
     >
       <svg
@@ -139,7 +139,7 @@ function GamePreview({
               ? "M 0 12 L 15 0 L 15 24 Z"
               : "M 15 12 L 0 0 L 0 24 Z"
           }
-          fill={colors.mantle}
+          fill={colors.crust}
         />
         <path
           d={
@@ -148,7 +148,7 @@ function GamePreview({
               : "M 0 0 L 15 12 L 0 24"
           }
           fill="none"
-          stroke={colors.base}
+          stroke={tooltipBorderColor}
           strokeWidth="1"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -156,8 +156,13 @@ function GamePreview({
       </svg>
 
       <div
-        className="relative z-10 max-h-[calc(100vh-24px)] overflow-hidden rounded-lg border shadow-2xl"
-        style={{ backgroundColor: colors.mantle, borderColor: colors.base }}
+        className="relative z-10 max-h-[calc(100vh-24px)] overflow-hidden rounded-lg border"
+        style={{
+          backgroundColor: colors.crust,
+          borderColor: tooltipBorderColor,
+          boxShadow:
+            "0 12px 28px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.28)",
+        }}
       >
         {screenshots.length > 0 && (
           <div
@@ -222,7 +227,7 @@ function GamePreview({
               <span
                 key={tag.id ?? tag.name}
                 className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
               >
                 {tag.name}
               </span>
@@ -231,7 +236,7 @@ function GamePreview({
               <span
                 key={input}
                 className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
               >
                 {input}
               </span>
@@ -245,7 +250,7 @@ function GamePreview({
               <span
                 key={flag.id ?? flag.name}
                 className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.base, color: colors.textFaded }}
+                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
               >
                 {flag.name}
               </span>
@@ -304,9 +309,11 @@ function getBuildPlatforms(game: GameCardGame) {
 export function GameHoverPreview({
   game,
   children,
+  className = "",
 }: {
   game: GameCardGame;
   children: ReactNode;
+  className?: string;
 }) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -365,7 +372,7 @@ export function GameHoverPreview({
   return (
     <div
       ref={anchorRef}
-      className="relative"
+      className={`relative ${className}`}
       onMouseEnter={() => openPreview()}
       onMouseLeave={closePreview}
       onFocus={() => openPreview(true)}

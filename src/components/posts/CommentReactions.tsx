@@ -39,11 +39,38 @@ export default function CommentReactions({
   );
   const reactionColors = useReactionColors(current);
   const pickerRef = useRef<HTMLDivElement | null>(null);
+  const pickerCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openPicker = () => {
+    if (pickerCloseTimer.current) {
+      clearTimeout(pickerCloseTimer.current);
+      pickerCloseTimer.current = null;
+    }
+    setPickerOpen(true);
+  };
+
+  const schedulePickerClose = () => {
+    if (pickerCloseTimer.current) {
+      clearTimeout(pickerCloseTimer.current);
+    }
+    pickerCloseTimer.current = setTimeout(() => {
+      setPickerOpen(false);
+      pickerCloseTimer.current = null;
+    }, 140);
+  };
 
   useEffect(() => {
     setCurrent(reactions ?? []);
     setReactionEffectId(null);
   }, [commentId, reactions]);
+
+  useEffect(() => {
+    return () => {
+      if (pickerCloseTimer.current) {
+        clearTimeout(pickerCloseTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -158,7 +185,11 @@ export default function CommentReactions({
           onMouseLeave={() => setHoveredReactionId(null)}
         >
           <Button
-            className="post-action-button post-reaction-button min-w-12"
+            className={`post-action-button post-reaction-button min-w-12 ${
+              hoveredReactionId === entry.reaction.id
+                ? "post-reaction-button--hovered"
+                : ""
+            }`}
             size="sm"
             variant={entry.reacted ? "standard" : "ghost"}
             color={
@@ -185,9 +216,9 @@ export default function CommentReactions({
                 <img
                   src={entry.reaction.image}
                   alt={`:${entry.reaction.slug}:`}
-                  className="h-4 w-4"
-                  loading="lazy"
-                  decoding="async"
+                  className="h-5 w-5"
+                  loading="eager"
+                  decoding="auto"
                 />
               </span>
             }
@@ -210,10 +241,18 @@ export default function CommentReactions({
             position="top"
             padding={10}
             showArrow
+            surface="contrast"
           >
             <div className="flex min-w-[200px] flex-col gap-2">
-              <div className="text-xs uppercase tracking-wide opacity-70">
-                :{entry.reaction.slug}:
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wide opacity-70">
+                <img
+                  src={entry.reaction.image}
+                  alt=""
+                  className="h-4 w-4"
+                  loading="eager"
+                  decoding="auto"
+                />
+                <span>:{entry.reaction.slug}:</span>
               </div>
               {(entry.users ?? []).length === 0 ? (
                 <div className="text-sm opacity-70">No reactions yet.</div>
@@ -243,20 +282,35 @@ export default function CommentReactions({
       ))}
 
       {canAddNewReaction && availableEmojis.length > 0 && (
-        <div ref={pickerRef} className="relative z-30">
+        <div
+          ref={pickerRef}
+          className="relative z-30"
+          onMouseEnter={openPicker}
+          onMouseLeave={schedulePickerClose}
+        >
           <Button
             className="post-action-button min-w-12"
             size="sm"
             variant="ghost"
             icon="smileplus"
-            onClick={() => setPickerOpen((open) => !open)}
+            onClick={openPicker}
+            onFocus={openPicker}
           />
           <Popover
             shown={pickerOpen}
             anchorToScreen={false}
             position="bottom-left"
-            padding={8}
+            padding={12}
             showArrow
+            surface="contrast"
+            transformOrigin="center"
+            onHoverChange={(hovered) => {
+              if (hovered) {
+                openPicker();
+              } else {
+                schedulePickerClose();
+              }
+            }}
           >
             <div className="flex w-64 flex-col gap-2">
               <Input
@@ -264,6 +318,12 @@ export default function CommentReactions({
                 onValueChange={setEmojiQuery}
                 placeholder="Search emoji"
                 size="sm"
+                fullWidth
+                style={{
+                  backgroundColor: colors["mantle"],
+                  borderColor: "transparent",
+                  boxShadow: "none",
+                }}
               />
               {filteredEmojis.length === 0 ? (
                 <Text size="xs" color="textFaded">
@@ -281,12 +341,12 @@ export default function CommentReactions({
                         <img
                           src={emoji.image}
                           alt={`:${emoji.slug}:`}
-                          className="h-4 w-4"
+                          className="h-5 w-5"
                           loading="lazy"
                           decoding="async"
                         />
                       }
-                      tooltip={`:${emoji.slug}:`}
+                      tooltip={`:${emoji.slug.toUpperCase()}:`}
                       onClick={() => {
                         void handleToggle(emoji);
                         setPickerOpen(false);

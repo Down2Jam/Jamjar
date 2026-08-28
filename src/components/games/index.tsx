@@ -317,6 +317,7 @@ function canUseScoreSort(
 }
 
 export default function Games() {
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const { siteTheme } = useTheme();
   const headerColor = siteTheme.type === "Light" ? "textLight" : "text";
   const searchParams = useSearchParams();
@@ -633,6 +634,24 @@ export default function Games() {
     !jamDetecting,
     24,
   );
+
+  useEffect(() => {
+    const loadMoreElement = loadMoreRef.current;
+    if (!loadMoreElement || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+
+    observer.observe(loadMoreElement);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
   const games = useMemo(() => {
     const seen = new Set<string>();
     const loadedGames: GameType[] = [];
@@ -1534,17 +1553,9 @@ export default function Games() {
           <p>No games were found. :(</p>
         )}
       </section>
-      {hasNextPage && (
-        <div className="flex justify-center py-6">
-          <Button
-            icon="chevrondown"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-          >
-            {isFetchingNextPage ? "Loading..." : "Load More Games"}
-          </Button>
-        </div>
-      )}
+      <div ref={loadMoreRef} className="flex min-h-12 justify-center py-6">
+        {hasNextPage && isFetchingNextPage && <Spinner />}
+      </div>
     </>
   );
 }

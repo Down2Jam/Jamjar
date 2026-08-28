@@ -18,6 +18,10 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Star } from "lucide-react";
 import { CSSProperties, useState } from "react";
+import {
+  GameDataHoverPreview,
+  UserHoverPreview,
+} from "@/components/hover-previews";
 
 interface SidebarSongProps {
   slug?: string;
@@ -120,6 +124,7 @@ export default function SidebarSong({
                     : `/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
                 }
                 underline={false}
+                className="sidebar-media-link"
                 style={{ textDecoration: "none" }}
               >
                 <Text
@@ -130,36 +135,55 @@ export default function SidebarSong({
                   {name}
                 </Text>
               </Link>
-              <Link
-                href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
-                underline={false}
-                style={{ textDecoration: "none" }}
+              <GameDataHoverPreview
+                game={{
+                  slug: game.slug ?? "",
+                  name: game.name ?? game.slug ?? "Game",
+                  thumbnail: game.thumbnail,
+                  pageVersion,
+                }}
               >
-                <Text size="xs" color="textFaded">
-                  {game.name}
-                  {pageVersion === "POST_JAM" ? " · Post-Jam" : pageVersion === "JAM" ? " · Jam" : ""}
-                </Text>
-              </Link>
-              <Hstack gap={1} className="min-w-0">
-                {(wide || squareThumbnail) && (
-                  <Avatar
-                    size={16}
-                    src={artist.profilePicture || "/images/D2J_Icon.png"}
-                  />
-                )}
                 <Link
-                  href={`/u/${artist.slug}`}
+                  href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
                   underline={false}
+                  className="sidebar-media-link"
                   style={{ textDecoration: "none" }}
                 >
-                  <Text
-                    size="sm"
-                    color="textFaded"
-                    className="max-w-full truncate"
-                  >
-                    {artist.name || artist.slug}
+                  <Text size="xs" color="textFaded">
+                    {game.name}
+                    {pageVersion === "POST_JAM" ? " · Post-Jam" : pageVersion === "JAM" ? " · Jam" : ""}
                   </Text>
                 </Link>
+              </GameDataHoverPreview>
+              <Hstack gap={1} className="min-w-0">
+                <UserHoverPreview
+                  user={{
+                    slug: artist.slug ?? "",
+                    name: artist.name,
+                    profilePicture: artist.profilePicture,
+                  }}
+                >
+                  <Link
+                    href={`/u/${artist.slug}`}
+                    underline={false}
+                    className="sidebar-media-link inline-flex min-w-0 items-center gap-1"
+                    style={{ textDecoration: "none" }}
+                  >
+                    {(wide || squareThumbnail) && (
+                      <Avatar
+                        size={16}
+                        src={artist.profilePicture || "/images/D2J_Icon.png"}
+                      />
+                    )}
+                    <Text
+                      size="sm"
+                      color="textFaded"
+                      className="max-w-full truncate"
+                    >
+                      {artist.name || artist.slug}
+                    </Text>
+                  </Link>
+                </UserHoverPreview>
               </Hstack>
               {license && (
                 <span

@@ -369,7 +369,7 @@ export function Button(props: ButtonProps) {
   }
 
   return tooltip ? (
-    <Tooltip position="top" content={tooltip}>
+    <Tooltip position="top" content={tooltip} showArrow>
       {element}
     </Tooltip>
   ) : (

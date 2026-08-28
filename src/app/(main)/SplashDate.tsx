@@ -70,7 +70,7 @@ export default function SplashDate() {
   }
 
   return (
-    <Text color="textLightFaded" className="mx-auto sm:mx-0">
+    <Text color="textLight" className="mx-auto sm:mx-0">
       {formatJamRange(currentJam.startTime, currentJam.jammingHours)}
       {postJamLabel ? ` (${postJamLabel})` : null}
       {isPostJamPhase(activeJamResponse?.phase) && nextJam && (

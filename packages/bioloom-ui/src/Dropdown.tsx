@@ -114,6 +114,7 @@ interface DropdownProps {
   triggerClassName?: string;
   triggerIcon?: IconName;
   triggerStyle?: React.CSSProperties;
+  freezePositionWhileOpen?: boolean;
 }
 
 function Dropdown({
@@ -141,10 +142,12 @@ function Dropdown({
   triggerClassName = "",
   triggerIcon,
   triggerStyle,
+  freezePositionWhileOpen = false,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const [frozenAnchorRect, setFrozenAnchorRect] = useState<DOMRect | null>(null);
   const [internalSelectedValues, setInternalSelectedValues] = useState<
     Set<unknown>
   >(new Set());
@@ -181,11 +184,102 @@ function Dropdown({
 
   const setOpenAndNotify = useCallback(
     (value: boolean) => {
+      if (freezePositionWhileOpen) {
+        setFrozenAnchorRect(
+          value && rootRef.current
+            ? rootRef.current.getBoundingClientRect()
+            : null,
+        );
+      }
       if (isOpen === undefined) setInternalOpen(value);
       onOpenChange?.(value);
     },
-    [isOpen, onOpenChange]
+    [freezePositionWhileOpen, isOpen, onOpenChange]
   );
+
+  useEffect(() => {
+    if (open && freezePositionWhileOpen && !frozenAnchorRect && rootRef.current) {
+      setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
+    } else if (!open && frozenAnchorRect) {
+      setFrozenAnchorRect(null);
+    }
+  }, [freezePositionWhileOpen, frozenAnchorRect, open]);
+
+  const frozenPositionerStyle = useMemo<React.CSSProperties | undefined>(() => {
+    if (!freezePositionWhileOpen || !frozenAnchorRect) return undefined;
+
+    const offset = 8;
+    const base: React.CSSProperties = {
+      position: "fixed",
+      zIndex: 80,
+      pointerEvents: "none",
+    };
+    const centerX = frozenAnchorRect.left + frozenAnchorRect.width / 2;
+    const centerY = frozenAnchorRect.top + frozenAnchorRect.height / 2;
+
+    switch (position) {
+      case "top-left":
+        return {
+          ...base,
+          bottom: window.innerHeight - frozenAnchorRect.top + offset,
+          left: frozenAnchorRect.left,
+        };
+      case "top-right":
+        return {
+          ...base,
+          bottom: window.innerHeight - frozenAnchorRect.top + offset,
+          right: window.innerWidth - frozenAnchorRect.right,
+        };
+      case "top":
+        return {
+          ...base,
+          bottom: window.innerHeight - frozenAnchorRect.top + offset,
+          left: centerX,
+          transform: "translateX(-50%)",
+        };
+      case "bottom-left":
+        return {
+          ...base,
+          top: frozenAnchorRect.bottom + offset,
+          right: window.innerWidth - frozenAnchorRect.right,
+        };
+      case "bottom-right":
+        return {
+          ...base,
+          top: frozenAnchorRect.bottom + offset,
+          left: frozenAnchorRect.left,
+        };
+      case "left":
+        return {
+          ...base,
+          right: window.innerWidth - frozenAnchorRect.left + offset,
+          top: centerY,
+          transform: "translateY(-50%)",
+        };
+      case "right":
+        return {
+          ...base,
+          left: frozenAnchorRect.right + offset,
+          top: centerY,
+          transform: "translateY(-50%)",
+        };
+      case "center":
+        return {
+          ...base,
+          top: centerY,
+          left: centerX,
+          transform: "translate(-50%, -50%)",
+        };
+      case "bottom":
+      default:
+        return {
+          ...base,
+          top: frozenAnchorRect.bottom + offset,
+          left: centerX,
+          transform: "translateX(-50%)",
+        };
+    }
+  }, [freezePositionWhileOpen, frozenAnchorRect, position]);
 
   useEffect(() => {
     if (!open || !closeOnOutsideClick) return;
@@ -284,6 +378,7 @@ function Dropdown({
           position={position}
           anchorToScreen={false}
           className={className}
+          positionerStyle={frozenPositionerStyle}
           showArrow
         >
           <div role="menu" aria-orientation="vertical">

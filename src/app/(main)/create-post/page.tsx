@@ -39,7 +39,15 @@ type TagOption = {
   isFixed: boolean;
 };
 
-export default function CreatePostPage() {
+export type CreatePostPageProps = {
+  embedded?: boolean;
+  onCreated?: () => void | Promise<void>;
+};
+
+export default function CreatePostPage({
+  embedded = false,
+  onCreated,
+}: CreatePostPageProps = {}) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
@@ -209,6 +217,10 @@ export default function CreatePostPage() {
       backgroundColor: theme == "dark" ? "#181818" : "#fff",
       color: theme == "dark" ? "#fff" : "#444",
     }),
+    menuPortal: (styles) => ({
+      ...styles,
+      zIndex: 100,
+    }),
     option: (styles, { isFocused }) => ({
       ...styles,
       backgroundColor: isFocused
@@ -220,19 +232,34 @@ export default function CreatePostPage() {
   };
 
   return (
-    <Vstack>
-      <Card>
-        <Vstack>
-          <Hstack>
-            <Icon name="squarepen" />
-            <Text size="xl">Create Post</Text>
-          </Hstack>
-          <Text size="sm" color="textFaded">
-            Submit a post to the forum
-          </Text>
-        </Vstack>
-      </Card>
-      <Card>
+    <Vstack align="stretch">
+      {!embedded && (
+        <Card>
+          <Vstack>
+            <Hstack>
+              <Icon name="squarepen" />
+              <Text size="xl">Create Post</Text>
+            </Hstack>
+            <Text size="sm" color="textFaded">
+              Submit a post to the forum
+            </Text>
+          </Vstack>
+        </Card>
+      )}
+      <Card
+        padding={embedded ? 0 : 1}
+        shadow={embedded ? "none" : "sm"}
+        radius={embedded ? "none" : "md"}
+        style={
+          embedded
+            ? {
+                backgroundColor: "transparent",
+                borderColor: "transparent",
+                boxShadow: "none",
+              }
+            : undefined
+        }
+      >
         <Vstack>
           <Form
             className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
@@ -289,7 +316,15 @@ export default function CreatePostPage() {
                   title: "Successfully created post",
                 });
                 setWaitingPost(false);
-                redirect("/");
+                if (onCreated) {
+                  setTitle("");
+                  setContent("");
+                  setSelectedTags(null);
+                  setSticky(false);
+                  await onCreated();
+                } else {
+                  redirect("/");
+                }
               } else {
                 addToast({
                   title: "An error occurred",
@@ -339,6 +374,8 @@ export default function CreatePostPage() {
                 onChange={(value) => setSelectedTags(value)}
                 options={options}
                 isClearable={false}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
                 isOptionDisabled={() =>
                   selectedTags != null && selectedTags.length >= 5
                 }

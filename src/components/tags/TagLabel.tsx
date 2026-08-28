@@ -199,10 +199,36 @@ function TagIcon({ tag }: { tag: string }) {
 export default function TagLabel({
   name,
   label,
+  iconOnly = false,
 }: {
   name: string;
   label?: string;
+  iconOnly?: boolean;
 }) {
+  const normalizedTag = name.toLowerCase().replace(/[\s_-]+/g, "");
+  const hasIcon = Boolean(
+    GAME_ICONS[normalizedTag] ||
+      LOCAL_TAG_ICONS[normalizedTag] ||
+      TAG_ICONS[normalizedTag],
+  );
+
+  if (iconOnly) {
+    return (
+      <span
+        className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
+        aria-label={name}
+      >
+        {hasIcon ? (
+          <TagIcon tag={name} />
+        ) : (
+          <span className="text-[10px] font-semibold uppercase leading-none">
+            {name.slice(0, 1)}
+          </span>
+        )}
+      </span>
+    );
+  }
+
   return (
     <span className="inline-flex items-center gap-1">
       <TagIcon tag={name} />

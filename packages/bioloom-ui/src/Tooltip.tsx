@@ -30,7 +30,7 @@ export default function Tooltip({
   delay = 100,
   hideDelay = 100,
   compact = false,
-  showArrow = false,
+  showArrow = true,
   instant = false,
 }: TooltipProps) {
   const [shown, setShown] = useState(false);
@@ -130,6 +130,8 @@ export default function Tooltip({
         padding={compact ? 2 : 8}
         showArrow={showArrow}
         instant={instant}
+        interactive={false}
+        surface="contrast"
       >
         <div
           className={

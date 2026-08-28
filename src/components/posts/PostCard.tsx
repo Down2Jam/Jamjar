@@ -30,6 +30,8 @@ import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import ContentStatusMeta from "./ContentStatusMeta";
 import TagLabel from "@/components/tags/TagLabel";
+import { postTagFilterHref } from "@/helpers/postTagFilter";
+import { UserHoverPreview } from "@/components/hover-previews";
 
 export default function PostCard({
   post,
@@ -52,7 +54,7 @@ export default function PostCard({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const [actionsLayerOpen, setActionsLayerOpen] = useState(false);
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
   const t = useTranslations();
   const actionsOpen = dropdownOpen || reactionsOpen;
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -115,6 +117,7 @@ export default function PostCard({
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
         "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
         "--post-action-hover": colors["base"],
+        "--post-hover-brightness": siteTheme.type === "Light" ? 0.78 : 1.22,
         "--reaction-red": colors["red"],
         "--reaction-orange": colors["orange"],
         "--reaction-yellow": colors["yellow"],
@@ -131,6 +134,7 @@ export default function PostCard({
             <div className="flex items-center gap-4">
               <Link
                 href={`/p/${currentPostData.slug}`}
+                className="post-title-link"
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
                     if (onOpen) {
@@ -154,17 +158,7 @@ export default function PostCard({
                   color: colors["textFaded"],
                 }}
               >
-                <Link
-                  href={`/u/${currentPostData.author.slug}`}
-                  className="flex items-center gap-2"
-                >
-                  <Avatar
-                    size={24}
-                    src={currentPostData.author.profilePicture}
-                    style={{ backgroundColor: "transparent" }}
-                  />
-                  <p>{currentPostData.author.name}</p>
-                </Link>
+                <PostAuthorHoverLink author={currentPostData.author} />
                 <span aria-hidden="true" className="opacity-50">
                   ·
                 </span>
@@ -188,6 +182,7 @@ export default function PostCard({
             <div className="flex justify-between items-center">
               <Link
                 href={`/p/${currentPostData.slug}`}
+                className="post-title-link"
                 onClick={(e) => {
                   if (window.innerWidth > 500) {
                     if (onOpen) {
@@ -221,17 +216,7 @@ export default function PostCard({
                 color: colors["textFaded"],
               }}
             >
-              <Link
-                href={`/u/${currentPostData.author.slug}`}
-                className="flex items-center gap-2"
-              >
-                <Avatar
-                  size={24}
-                  src={currentPostData.author.profilePicture}
-                  style={{ backgroundColor: "transparent" }}
-                />
-                <p>{currentPostData.author.name}</p>
-              </Link>
+              <PostAuthorHoverLink author={currentPostData.author} />
               <span aria-hidden="true" className="opacity-50">
                 ·
               </span>
@@ -263,13 +248,17 @@ export default function PostCard({
             {!isModerated && visiblePostTags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {visiblePostTags.map((tag: TagType) => (
-                  <Chip
+                  <Link
                     key={tag.id}
-                    className="post-tag-chip"
-                    // avatarSrc={tag.icon ? tag.icon : undefined}
+                    href={postTagFilterHref(tag.id)}
+                    onClick={(event) => event.stopPropagation()}
+                    className="post-tag-link inline-flex"
+                    aria-label={`Filter posts by ${tag.name}`}
                   >
-                    <TagLabel name={tag.name} />
-                  </Chip>
+                    <Chip className="post-tag-chip cursor-pointer hover:brightness-110">
+                      <TagLabel name={tag.name} />
+                    </Chip>
+                  </Link>
                 ))}
               </div>
             )}
@@ -567,6 +556,7 @@ export default function PostCard({
           <div className="min-w-0">
             <Link
               href={`/p/${currentPostData.slug}`}
+              className="post-title-link"
               onClick={(e) => {
                 if (window.innerWidth > 500) {
                   if (onOpen) {
@@ -587,17 +577,7 @@ export default function PostCard({
             </Link>
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-default-500 pt-1.5">
-              <Link
-                href={`/u/${currentPostData.author.slug}`}
-                className="flex items-center gap-2"
-              >
-                <Avatar
-                  size={24}
-                  src={currentPostData.author.profilePicture}
-                  style={{ backgroundColor: "transparent" }}
-                />
-                <p>{currentPostData.author.name}</p>
-              </Link>
+              <PostAuthorHoverLink author={currentPostData.author} />
               <span aria-hidden="true" className="opacity-50">
                 ·
               </span>
@@ -629,6 +609,7 @@ export default function PostCard({
           <div className="flex min-w-0 items-center gap-4">
             <Link
               href={`/p/${currentPostData.slug}`}
+              className="post-title-link"
               onClick={(e) => {
                 if (window.innerWidth > 500) {
                   if (onOpen) {
@@ -647,17 +628,7 @@ export default function PostCard({
             </Link>
 
             <div className="flex items-center gap-2 text-xs text-default-500 pt-1">
-              <Link
-                href={`/u/${currentPostData.author.slug}`}
-                className="flex items-center gap-2"
-              >
-                <Avatar
-                  size={24}
-                  src={currentPostData.author.profilePicture}
-                  style={{ backgroundColor: "transparent" }}
-                />
-                <p>{currentPostData.author.name}</p>
-              </Link>
+              <PostAuthorHoverLink author={currentPostData.author} />
               <span aria-hidden="true" className="opacity-50">
                 ·
               </span>
@@ -685,5 +656,24 @@ export default function PostCard({
         </div>
       )}
     </Card>
+  );
+}
+
+function PostAuthorHoverLink({ author }: { author: UserType }) {
+  return (
+    <UserHoverPreview user={author}>
+      <Link
+        href={`/u/${author.slug}`}
+        className="post-author-link flex items-center gap-2"
+      >
+        <Avatar
+          className="post-author-avatar"
+          size={24}
+          src={author.profilePicture}
+          style={{ backgroundColor: "transparent" }}
+        />
+        <p>{author.name}</p>
+      </Link>
+    </UserHoverPreview>
   );
 }

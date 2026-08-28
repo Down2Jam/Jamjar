@@ -4,17 +4,27 @@ import {
   createElement,
   useCallback,
   type CSSProperties,
+  type AnchorHTMLAttributes,
   type ReactNode,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
+import { Popover } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { BASE_URL } from "@/requests/config";
 import useEmojiContent from "@/hooks/useEmojiContent";
 import { cleanMentionsHtml } from "./Mentions";
 import { renderRichTextToHtml } from "@/helpers/richText";
+import {
+  getLinkPreview,
+  type LinkPreviewData,
+} from "@/requests/linkPreview";
+import {
+  GameHoverPreview,
+  type GameCardGame,
+} from "@/components/gamecard";
 
 type MentionedContentProps = {
   html?: string;
@@ -37,12 +47,44 @@ type GameMentionData = {
   tags?: Array<{ name?: string | null }> | null;
   flags?: Array<{ name?: string | null }> | null;
   category?: string | null;
+  pageVersion?: "JAM" | "POST_JAM";
+  screenshots?: string[] | null;
+  inputMethods?: string[] | null;
+  itchEmbedUrl?: string | null;
+  downloadLinks?: Array<{ platform: string }> | null;
+  jam?: { name?: string | null; color?: string | null } | null;
   author?: {
     slug: string;
     name?: string | null;
     profilePicture?: string | null;
   } | null;
 };
+
+const toGamePreviewData = (data: GameMentionData): GameCardGame => ({
+  slug: data.slug,
+  name: data.name || data.slug,
+  short: data.short,
+  thumbnail: data.thumbnail,
+  pageVersion: data.pageVersion,
+  screenshots: data.screenshots ?? undefined,
+  inputMethods: data.inputMethods ?? undefined,
+  itchEmbedUrl: data.itchEmbedUrl,
+  downloadLinks: data.downloadLinks ?? undefined,
+  jam: data.jam ?? undefined,
+  creatorName: data.author?.name || data.author?.slug || null,
+  category:
+    data.category === "ODA" ||
+    data.category === "REGULAR" ||
+    data.category === "EXTRA"
+      ? data.category
+      : undefined,
+  tags: (data.tags ?? [])
+    .filter((tag): tag is { name: string } => Boolean(tag?.name))
+    .map((tag) => ({ name: tag.name })),
+  flags: (data.flags ?? [])
+    .filter((flag): flag is { name: string } => Boolean(flag?.name))
+    .map((flag) => ({ name: flag.name })),
+});
 
 const getCurrentHostname = () =>
   typeof window !== "undefined" ? window.location.hostname.toLowerCase() : "d2jam.com";
@@ -91,8 +133,120 @@ const pending = new Map<
   Promise<UserMentionData | GameMentionData | null>
 >();
 const popoverMap = new WeakMap<HTMLAnchorElement, HTMLDivElement>();
+const linkPreviewCache = new Map<string, Promise<LinkPreviewData | null>>();
 
 const FALLBACK_IMAGE = "/images/D2J_Icon.png";
+
+function loadLinkPreview(url: string) {
+  const cached = linkPreviewCache.get(url);
+  if (cached) return cached;
+  const request = getLinkPreview(url).catch(() => {
+    linkPreviewCache.delete(url);
+    return null;
+  });
+  linkPreviewCache.set(url, request);
+  return request;
+}
+
+function LinkPreviewAnchor({
+  href,
+  children,
+  ...props
+}: AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const { colors } = useTheme();
+  const [hovered, setHovered] = useState(false);
+  const [preview, setPreview] = useState<LinkPreviewData | null>(null);
+  const hoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const previewUrl = useMemo(() => {
+    if (!href || typeof window === "undefined") return null;
+    try {
+      const parsed = new URL(href, window.location.href);
+      return ["http:", "https:"].includes(parsed.protocol)
+        ? parsed.toString()
+        : null;
+    } catch {
+      return null;
+    }
+  }, [href]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    };
+  }, []);
+
+  const beginPreview = () => {
+    setHovered(true);
+    if (!previewUrl || preview) return;
+    hoverTimerRef.current = setTimeout(() => {
+      void loadLinkPreview(previewUrl).then((data) => {
+        if (data) setPreview(data);
+      });
+    }, 250);
+  };
+
+  const endPreview = () => {
+    setHovered(false);
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+  };
+
+  return (
+    <span className="relative inline-block" onMouseEnter={beginPreview} onMouseLeave={endPreview}>
+      <a href={href} {...props}>
+        {children}
+      </a>
+      <Popover
+        shown={hovered && Boolean(preview)}
+        anchorToScreen={false}
+        position="top"
+        padding={10}
+        showArrow
+        surface="contrast"
+        transformOrigin="bottom center"
+      >
+        {preview && (
+          <div className="not-prose flex w-72 items-start gap-3 text-left">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                {preview.favicon && (
+                  <img
+                    src={preview.favicon}
+                    alt=""
+                    className="!m-0 h-4 w-4 max-w-none shrink-0 rounded-sm"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <span className="truncate text-xs" style={{ color: colors["textFaded"] }}>
+                  {preview.siteName || new URL(preview.url).hostname}
+                </span>
+              </div>
+              <div className="line-clamp-2 text-sm font-semibold">{preview.title}</div>
+              {preview.description && (
+                <div
+                  className="mt-1 line-clamp-3 whitespace-normal text-xs leading-relaxed"
+                  style={{ color: colors["textFaded"] }}
+                >
+                  {preview.description}
+                </div>
+              )}
+            </div>
+            {preview.image && (
+              <img
+                src={preview.image}
+                alt=""
+                className="!m-0 h-16 w-16 max-w-none shrink-0 rounded-md object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+          </div>
+        )}
+      </Popover>
+    </span>
+  );
+}
 
 const applyChipStyles = (
   el: HTMLAnchorElement,
@@ -373,6 +527,13 @@ const loadMentionData = async (
                 tags: data.tags ?? page?.tags ?? null,
                 flags: data.flags ?? page?.flags ?? null,
                 category: data.category ?? null,
+                pageVersion: page?.version ?? undefined,
+                screenshots: page?.screenshots ?? data.screenshots ?? null,
+                inputMethods: page?.inputMethods ?? data.inputMethods ?? null,
+                itchEmbedUrl: page?.itchEmbedUrl ?? data.itchEmbedUrl ?? null,
+                downloadLinks:
+                  page?.downloadLinks ?? data.downloadLinks ?? null,
+                jam: data.jam ?? null,
                 author: data.team?.owner
                   ? {
                       slug: data.team.owner.slug,
@@ -449,9 +610,8 @@ function MentionChip({
   href?: string;
   colors: Record<string, string>;
 }) {
-  const anchorRef = useRef<HTMLAnchorElement | null>(null);
-  const hoveredRef = useRef(false);
   const latestCacheKeyRef = useRef("");
+  const [mentionHovered, setMentionHovered] = useState(false);
   const hostname = (() => {
     if (domain) return domain;
     if (href) {
@@ -487,31 +647,12 @@ function MentionChip({
 
     setData(nextData);
 
-    const anchor = anchorRef.current;
-    if (hoveredRef.current && anchor) {
-      showPopoverForAnchor(anchor, type, nextData, colors);
-    }
-
     return nextData;
-  }, [cacheKey, colors, hostname, slug, type]);
+  }, [cacheKey, hostname, slug, type]);
 
   useEffect(() => {
     void loadAndShowMention();
   }, [loadAndShowMention]);
-
-  useEffect(() => {
-    if (!hoveredRef.current || !anchorRef.current) return;
-    showPopoverForAnchor(anchorRef.current, type, data, colors);
-  }, [colors, data, type]);
-
-  useEffect(() => {
-    return () => {
-      const anchor = anchorRef.current;
-      if (anchor) {
-        hidePopoverForAnchor(anchor);
-      }
-    };
-  }, [type, slug, hostname]);
 
   const image =
     type === "user"
@@ -522,27 +663,8 @@ function MentionChip({
       ? (data as UserMentionData).name || slug
       : (data as GameMentionData).name || slug;
 
-  return (
-    <a
-      ref={anchorRef}
-      href={`https://${hostname}/${type === "user" ? "u" : "g"}/${slug}`}
-      className={`mention-chip mention-chip--${type}`}
-      data-mention-type={type}
-      data-mention-slug={slug}
-      data-mention-domain={domain}
-      style={chipStyle(colors)}
-      onMouseEnter={() => {
-        hoveredRef.current = true;
-        if (!anchorRef.current) return;
-        showPopoverForAnchor(anchorRef.current, type, data, colors);
-        if (!hasResolvedMentionData(type, data)) void loadAndShowMention();
-      }}
-      onMouseLeave={() => {
-        hoveredRef.current = false;
-        if (!anchorRef.current) return;
-        hidePopoverForAnchor(anchorRef.current);
-      }}
-    >
+  const mentionContent = (
+    <>
       <img
         src={image}
         alt={type === "user" ? "User avatar" : "Game thumbnail"}
@@ -558,7 +680,88 @@ function MentionChip({
         decoding="async"
       />
       <span>{label}</span>
-    </a>
+    </>
+  );
+
+  if (type === "game") {
+    return (
+      <GameHoverPreview
+        game={toGamePreviewData(data as GameMentionData)}
+        className="inline-block align-middle"
+      >
+        <a
+          href={`https://${hostname}/g/${slug}`}
+          className="mention-chip mention-chip--game"
+          data-mention-type="game"
+          data-mention-slug={slug}
+          data-mention-domain={domain}
+          style={chipStyle(colors)}
+        >
+          {mentionContent}
+        </a>
+      </GameHoverPreview>
+    );
+  }
+
+  const userData = data as UserMentionData;
+
+  return (
+    <span
+      className="relative inline-block align-middle"
+      onMouseEnter={() => {
+        setMentionHovered(true);
+        if (!hasResolvedMentionData("user", userData)) void loadAndShowMention();
+      }}
+      onMouseLeave={() => setMentionHovered(false)}
+    >
+      <a
+        href={`https://${hostname}/u/${slug}`}
+        className="mention-chip mention-chip--user"
+        data-mention-type="user"
+        data-mention-slug={slug}
+        data-mention-domain={domain}
+        style={chipStyle(colors)}
+      >
+        {mentionContent}
+      </a>
+      <Popover
+        shown={mentionHovered && hasResolvedMentionData("user", userData)}
+        anchorToScreen={false}
+        position="top"
+        padding={10}
+        showArrow
+        surface="contrast"
+      >
+        <div className="flex w-64 flex-col gap-2 text-left">
+          <div className="flex items-center gap-2">
+            <img
+              src={userData.profilePicture || FALLBACK_IMAGE}
+              alt=""
+              className="!m-0 h-8 w-8 max-w-none rounded-full object-cover"
+            />
+            <div className="min-w-0">
+              <div className="truncate text-sm font-semibold">
+                {userData.name || userData.slug}
+              </div>
+              <div
+                className="truncate text-xs"
+                style={{ color: colors.textFaded }}
+              >
+                @{userData.slug}
+              </div>
+            </div>
+          </div>
+          {userData.short && (
+            <div
+              className="text-xs leading-relaxed"
+              style={{ color: colors.textFaded }}
+            >
+              {userData.short}
+            </div>
+          )}
+        </div>
+      </Popover>
+    </span>
   );
 }
 
@@ -666,6 +869,14 @@ const domNodeToReact = (
   const children = Array.from(element.childNodes)
     .map((child, index) => domNodeToReact(child, `${key}.${index}`, colors))
     .filter((child) => child !== null && child !== undefined);
+
+  if (tag === "a" && typeof props.href === "string") {
+    return createElement(
+      LinkPreviewAnchor,
+      props,
+      children.length > 0 ? children : undefined,
+    );
+  }
 
   return createElement(tag, props, children.length > 0 ? children : undefined);
 };

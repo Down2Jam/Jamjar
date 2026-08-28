@@ -1709,148 +1709,125 @@ export default function ClientUserPage({
               </section>
             )}
             {profileSection === "posts" && (
-              <Card>
-                <Vstack align="stretch" gap={3}>
-                  <Text size="lg" weight="semibold">
-                    Posts
-                  </Text>
-                  {visiblePosts.length === 0 ? (
-                    <Text size="sm" color="textFaded">
-                      No posts yet.
-                    </Text>
-                  ) : (
-                    <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                      {visiblePosts
-                        .sort((a, b) => b.id - a.id)
-                        .map((post) => (
-                          <PostCard
-                            post={post}
-                            style="Compact"
-                            key={post.id}
-                            user={self}
-                          />
-                        ))}
-                    </section>
-                  )}
-                </Vstack>
-              </Card>
+              visiblePosts.length === 0 ? (
+                <Text size="sm" color="textFaded">
+                  No posts yet.
+                </Text>
+              ) : (
+                <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+                  {visiblePosts
+                    .sort((a, b) => b.id - a.id)
+                    .map((post) => (
+                      <PostCard
+                        post={post}
+                        style="Compact"
+                        key={post.id}
+                        user={self}
+                      />
+                    ))}
+                </section>
+              )
             )}
             {profileSection === "comments" && (
-              <Card>
-                <Vstack align="stretch" gap={3}>
-                  <Text size="lg" weight="semibold">
-                    Comments
-                  </Text>
-                  {visibleComments.length === 0 ? (
-                    <Text size="sm" color="textFaded">
-                      No comments yet.
-                    </Text>
-                  ) : (
-                    <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                      {visibleComments
-                        .sort((a, b) => b.id - a.id)
-                        .map((comment) => (
-                          <CommentCard
-                            key={comment.id}
-                            comment={comment}
-                            user={self}
-                          />
-                        ))}
-                    </section>
-                  )}
-                </Vstack>
-              </Card>
+              visibleComments.length === 0 ? (
+                <Text size="sm" color="textFaded">
+                  No comments yet.
+                </Text>
+              ) : (
+                <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+                  {visibleComments
+                    .sort((a, b) => b.id - a.id)
+                    .map((comment) => (
+                      <CommentCard
+                        key={comment.id}
+                        comment={comment}
+                        user={self}
+                      />
+                    ))}
+                </section>
+              )
             )}
             {profileSection === "scores" && (
-              <Card>
-                <Vstack align="stretch" gap={3}>
-                  <Text size="lg" weight="semibold">
-                    Scores
-                  </Text>
-                  {bestScores.length === 0 ? (
-                    <Text size="sm" color="textFaded">
-                      No scores yet.
-                    </Text>
-                  ) : (
-                    <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                      {bestScores
-                        .sort((a, b) => b.id - a.id)
-                        .map((score) => {
-                          const placement = computePlacement(score);
-                          const color = placementColor(placement, colors);
-                          return (
-                            <Card
-                              key={score.id}
-                              href={`/g/${score.leaderboard.game.slug}`}
-                              shadow="none"
-                            >
-                              <Hstack
-                                justify="between"
-                                gap={4}
+              bestScores.length === 0 ? (
+                <Text size="sm" color="textFaded">
+                  No scores yet.
+                </Text>
+              ) : (
+                <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                  {bestScores
+                    .sort((a, b) => b.id - a.id)
+                    .map((score) => {
+                      const placement = computePlacement(score);
+                      const color = placementColor(placement, colors);
+                      return (
+                        <Card
+                          key={score.id}
+                          href={`/g/${score.leaderboard.game.slug}`}
+                          shadow="none"
+                        >
+                          <Hstack
+                            justify="between"
+                            gap={4}
+                            className="min-w-0"
+                          >
+                            <Hstack gap={3} className="min-w-0">
+                              <Image
+                                src={
+                                  score.leaderboard.game.thumbnail ??
+                                  "/images/D2J_Icon.png"
+                                }
+                                alt=""
+                                width={48}
+                                height={27}
+                                className="shrink-0 rounded-md object-cover"
+                              />
+                              <Vstack
+                                align="start"
+                                gap={0}
                                 className="min-w-0"
                               >
-                                <Hstack gap={3} className="min-w-0">
-                                  <Image
-                                    src={
-                                      score.leaderboard.game.thumbnail ??
-                                      "/images/D2J_Icon.png"
-                                    }
-                                    alt=""
-                                    width={48}
-                                    height={27}
-                                    className="shrink-0 rounded-md object-cover"
-                                  />
-                                  <Vstack
-                                    align="start"
-                                    gap={0}
-                                    className="min-w-0"
-                                  >
-                                    <Text
-                                      weight="semibold"
-                                      className="max-w-full truncate"
-                                    >
-                                      {score.leaderboard.game.name}
-                                    </Text>
-                                    <Text
-                                      size="sm"
-                                      color="textFaded"
-                                      className="max-w-full truncate"
-                                    >
-                                      {score.leaderboard.name || "Leaderboard"}
-                                    </Text>
-                                  </Vstack>
-                                </Hstack>
-
-                                <Vstack
-                                  align="end"
-                                  gap={0}
-                                  className="shrink-0"
+                                <Text
+                                  weight="semibold"
+                                  className="max-w-full truncate"
                                 >
-                                  <Text
-                                    color="blue"
-                                    weight="semibold"
-                                    className="tabular-nums"
-                                  >
-                                    {formatScoreValue(score)}
-                                  </Text>
-                                  <Text
-                                    size="xs"
-                                    className="tabular-nums"
-                                    style={{ color }}
-                                  >
-                                    {placement
-                                      ? ordinal(placement)
-                                      : "Unranked"}
-                                  </Text>
-                                </Vstack>
-                              </Hstack>
-                            </Card>
-                          );
-                        })}
-                    </section>
-                  )}
-                </Vstack>
-              </Card>
+                                  {score.leaderboard.game.name}
+                                </Text>
+                                <Text
+                                  size="sm"
+                                  color="textFaded"
+                                  className="max-w-full truncate"
+                                >
+                                  {score.leaderboard.name || "Leaderboard"}
+                                </Text>
+                              </Vstack>
+                            </Hstack>
+
+                            <Vstack
+                              align="end"
+                              gap={0}
+                              className="shrink-0"
+                            >
+                              <Text
+                                color="blue"
+                                weight="semibold"
+                                className="tabular-nums"
+                              >
+                                {formatScoreValue(score)}
+                              </Text>
+                              <Text
+                                size="xs"
+                                className="tabular-nums"
+                                style={{ color }}
+                              >
+                                {placement ? ordinal(placement) : "Unranked"}
+                              </Text>
+                            </Vstack>
+                          </Hstack>
+                        </Card>
+                      );
+                    })}
+                </section>
+              )
             )}
             {profileSection === "achievements" && (
               <Card>

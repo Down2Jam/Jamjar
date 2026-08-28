@@ -20,6 +20,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       onValueChange,
       placeholder,
       onChange,
+      style,
       ...props
     },
     ref
@@ -81,6 +82,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       ].join(" ")}
       style={{
         ...variantStyles[variant],
+        ...style,
         ...(focused ? focusStyles : {}),
       }}
     >

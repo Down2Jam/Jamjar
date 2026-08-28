@@ -10,7 +10,7 @@ import { Card } from "bioloom-ui";
 import { CSSProperties } from "react";
 
 export default function StickyPostCard({ post }: { post: PostType }) {
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
 
   return (
     <Card
@@ -18,6 +18,7 @@ export default function StickyPostCard({ post }: { post: PostType }) {
       style={{
         "--post-card-border": `color-mix(in srgb, ${colors["text"]} 5%, transparent)`,
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+        "--post-hover-brightness": siteTheme.type === "Light" ? 0.78 : 1.22,
       } as CSSProperties}
     >
       <div className="flex items-center justify-between">
@@ -33,7 +34,7 @@ export default function StickyPostCard({ post }: { post: PostType }) {
             ) : (
               <Megaphone />
             )}
-            <Link href={`/p/${post.slug}`}>
+            <Link href={`/p/${post.slug}`} className="post-title-link">
               <p className="font-medium leading-tight">{post.title}</p>
             </Link>
           </div>
@@ -46,9 +47,10 @@ export default function StickyPostCard({ post }: { post: PostType }) {
           >
             <Link
               href={`/u/${post.author.slug}`}
-              className="flex items-center gap-2"
+              className="post-author-link flex items-center gap-2"
             >
               <Avatar
+                className="post-author-avatar"
                 size={24}
                 src={post.author.profilePicture}
                 style={{ backgroundColor: "transparent" }}

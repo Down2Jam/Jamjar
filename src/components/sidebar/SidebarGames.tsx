@@ -92,10 +92,9 @@ export default function SidebarGames() {
                 href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
               >
                 <div
-                className="post-card-shadow h-[77px] w-[136px] overflow-hidden rounded-xl border-1"
+                  className="post-card-shadow h-[77px] w-[136px] overflow-hidden rounded-xl"
                   style={{
                     backgroundColor: colors["mantle"],
-                    borderColor: colors["base"],
                     "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
                   } as CSSProperties}
                 >
@@ -120,10 +119,9 @@ export default function SidebarGames() {
                   href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
                 >
                   <div
-                    className="post-card-shadow h-[59px] w-[104px] overflow-hidden rounded-xl border-1"
+                    className="post-card-shadow h-[59px] w-[104px] overflow-hidden rounded-xl"
                     style={{
                       backgroundColor: colors["mantle"],
-                      borderColor: colors["base"],
                       "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
                     } as CSSProperties}
                   >

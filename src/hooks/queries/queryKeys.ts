@@ -50,7 +50,8 @@ export const queryKeys = {
       sticky: boolean,
       tagRules?: Record<number, number>,
       userSlug?: string,
-      following?: boolean
+      following?: boolean,
+      pageSize?: number,
     ) =>
       [
         ...queryKeys.post.all,
@@ -61,6 +62,7 @@ export const queryKeys = {
         tagRules,
         userSlug,
         following,
+        pageSize,
       ] as const,
     detail: (slug: string, userSlug?: string) =>
       [...queryKeys.post.all, "detail", slug, userSlug] as const,
@@ -113,8 +115,8 @@ export const queryKeys = {
   },
   track: {
     all: ["track"] as const,
-    list: (sort?: string, jamId?: string, pageVersion?: string) =>
-      [...queryKeys.track.all, "list", sort, jamId, pageVersion] as const,
+    list: (sort?: string, jamId?: string, pageVersion?: string, limit?: number) =>
+      [...queryKeys.track.all, "list", sort, jamId, pageVersion, limit] as const,
   },
   admin: {
     all: ["admin"] as const,

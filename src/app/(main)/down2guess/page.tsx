@@ -906,7 +906,10 @@ export default function Down2GuessPage() {
             align="center"
           >
             {hasWon ? "You got it!" : "Out of lives."} The game was{" "}
-            <Link href={`/g/${answer.slug}`}>{answer.name}</Link>.
+            <Link href={`/g/${answer.slug}`}>
+              {answerDisplay?.name ?? answer.name ?? "Unknown game"}
+            </Link>
+            .
           </Text>
         )}
       </Vstack>

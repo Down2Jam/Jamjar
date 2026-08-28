@@ -40,6 +40,7 @@ import TagLabel from "@/components/tags/TagLabel";
 import { readItem } from "@/requests/helpers";
 import { usePageMetadata, stripHtmlForMetadata } from "@/hooks/usePageMetadata";
 import { useTheme } from "@/providers/useSiteTheme";
+import { postTagFilterHref } from "@/helpers/postTagFilter";
 
 export default function PostPage() {
   const [post, setPost] = useState<PostType>();
@@ -55,7 +56,7 @@ export default function PostPage() {
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const t = useTranslations();
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
 
   useEffect(() => {
     const loadUserAndPosts = async () => {
@@ -155,12 +156,14 @@ export default function PostPage() {
               "--reaction-purple": colors["purple"],
               "--reaction-pink": colors["pink"],
               "--reaction-gray": colors["gray"],
+              "--post-hover-brightness":
+                siteTheme.type === "Light" ? 0.78 : 1.22,
             } as CSSProperties}
           >
             <div>
               {post && (
                 <div>
-                  <Link href={`/p/${post.slug}`}>
+                  <Link href={`/p/${post.slug}`} className="post-title-link">
                     <p className="text-[1.375rem] font-semibold leading-tight">
                       {isModerated
                         ? post.removedAt
@@ -173,10 +176,10 @@ export default function PostPage() {
                   <div className="mb-3 flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 text-xs text-default-500">
                     <Link
                       href={`/u/${post.author.slug}`}
-                      className="flex items-center gap-2"
+                      className="post-author-link flex items-center gap-2"
                     >
                       <Avatar
-                        className="w-6 h-6"
+                        className="post-author-avatar w-6 h-6"
                         src={post.author.profilePicture}
                       />
                       <p>{post.author.name}</p>
@@ -270,10 +273,17 @@ export default function PostPage() {
                   {!isModerated && visiblePostTags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {visiblePostTags.map((tag: TagType) => (
-                          <Chip key={tag.id} className="post-tag-chip">
+                        <Link
+                          key={tag.id}
+                          href={postTagFilterHref(tag.id)}
+                          className="post-tag-link inline-flex"
+                          aria-label={`Filter posts by ${tag.name}`}
+                        >
+                          <Chip className="post-tag-chip cursor-pointer hover:brightness-110">
                             <TagLabel name={tag.name} />
                           </Chip>
-                        ))}
+                        </Link>
+                      ))}
                     </div>
                   )}
 

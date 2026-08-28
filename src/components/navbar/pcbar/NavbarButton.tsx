@@ -40,7 +40,11 @@ export default function NavbarButton({
   const label = isIconOnly ? undefined : t(name);
 
   return (
-    <NavbarItem className={isIconOnly ? "p-1" : ""}>
+    <NavbarItem
+      className={
+        isIconOnly ? "flex h-8 w-8 items-center justify-center p-0" : ""
+      }
+    >
       <NavbarTooltip
         icon={icon}
         iconNode={iconNode}
@@ -65,7 +69,7 @@ export default function NavbarButton({
               target={target}
               icon={iconNode ? undefined : icon}
               leftSlot={iconNode}
-              size="sm"
+              size={isIconOnly ? "md" : "sm"}
               variant="ghost"
               onClick={onPress}
             >

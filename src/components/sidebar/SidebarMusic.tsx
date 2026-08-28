@@ -43,7 +43,9 @@ export default function SidebarMusic() {
   const { data: music, isLoading: musicLoading } = useTracks(
     sort,
     jamId,
-    pageVersion
+    pageVersion,
+    true,
+    50,
   );
 
   const featured = useMemo(() => {

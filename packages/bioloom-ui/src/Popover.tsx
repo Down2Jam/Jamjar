@@ -5,7 +5,7 @@ import useHasMounted from "./useHasMounted";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 
 type Position =
   | "top-left"
@@ -27,6 +27,9 @@ interface PopoverProps {
   shown?: boolean;
   showCloseButton?: boolean;
   closeButtonPosition?: Position;
+  closeButtonAlwaysVisible?: boolean;
+  closeButtonInside?: boolean;
+  closeButtonInset?: number;
   offset?: number;
   padding?: number | string;
   paddingX?: number | string;
@@ -42,6 +45,9 @@ interface PopoverProps {
   disableHoverScale?: boolean;
   showArrow?: boolean;
   instant?: boolean;
+  interactive?: boolean;
+  surface?: "default" | "contrast" | "card" | "transparent";
+  borderless?: boolean;
 }
 
 export default function Popover({
@@ -53,6 +59,9 @@ export default function Popover({
   shown: controlledShown,
   showCloseButton = false,
   closeButtonPosition = "top-right",
+  closeButtonAlwaysVisible = false,
+  closeButtonInside = false,
+  closeButtonInset = 8,
   offset = 8,
   padding = 8,
   paddingX,
@@ -66,13 +75,18 @@ export default function Popover({
   positionerStyle: positionerStyleProp,
   transformOrigin,
   disableHoverScale = false,
-  showArrow = false,
+  showArrow: showArrowProp,
   instant = false,
+  interactive = true,
+  surface = "contrast",
+  borderless = false,
 }: PopoverProps) {
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
   const [hovered, setHovered] = useState(false);
+  const [closeHovered, setCloseHovered] = useState(false);
   const [internalShown, setInternalShown] = useState<boolean>(startsShown);
+  const onHoverChangeRef = useRef(onHoverChange);
 
   const isControlled = controlledShown === undefined;
   const shown = isControlled ? internalShown : controlledShown;
@@ -86,8 +100,12 @@ export default function Popover({
   );
 
   useEffect(() => {
-    onHoverChange?.(hovered);
-  }, [hovered, onHoverChange]);
+    onHoverChangeRef.current = onHoverChange;
+  }, [onHoverChange]);
+
+  useEffect(() => {
+    onHoverChangeRef.current?.(hovered);
+  }, [hovered]);
 
   const getTransformOrigin = (p: Position) => {
     switch (p) {
@@ -113,7 +131,7 @@ export default function Popover({
   };
 
   const closeStyle: React.CSSProperties = useMemo(() => {
-    const closeOffset = -8;
+    const closeOffset = closeButtonInside ? closeButtonInset : -8;
 
     switch (closeButtonPosition) {
       case "top-right":
@@ -122,9 +140,37 @@ export default function Popover({
       default:
         return { top: closeOffset, left: closeOffset };
     }
-  }, [closeButtonPosition]);
+  }, [closeButtonInside, closeButtonInset, closeButtonPosition]);
   const hoverScale =
     hovered && showCloseButton && !disableHoverScale ? 1.015 : 1;
+  const showArrow = showArrowProp ?? position !== "center";
+
+  const surfaceBackgroundColor = glass
+    ? "rgba(8, 12, 20, 0.55)"
+    : surface === "transparent"
+      ? "transparent"
+    : surface === "card"
+      ? `color-mix(in srgb, ${colors["mantle"]} 98%, transparent)`
+    : surface === "contrast"
+      ? colors["crust"]
+      : colors["mantle"];
+  const surfaceBorderColor = glass
+    ? "rgba(255, 255, 255, 0.15)"
+    : surface === "transparent"
+      ? "transparent"
+    : surface === "card"
+      ? `color-mix(in srgb, ${colors["text"]} 5%, transparent)`
+    : surface === "contrast"
+      ? `color-mix(in srgb, ${colors["text"]} 12%, ${colors["crust"]})`
+      : colors["base"];
+  const surfaceShadow =
+    surface === "transparent"
+      ? "none"
+      : surface === "card"
+      ? "0 24px 60px rgba(0, 0, 0, 0.48), 0 8px 24px rgba(0, 0, 0, 0.32)"
+      : surface === "contrast"
+      ? "0 12px 28px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.28)"
+      : "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)";
 
   const getArrowStyle = (p: Position): React.CSSProperties => {
     const arrowSize = 10;
@@ -132,8 +178,8 @@ export default function Popover({
       position: "absolute",
       width: arrowSize,
       height: arrowSize,
-      backgroundColor: glass ? "rgba(8, 12, 20, 0.55)" : colors["mantle"],
-      borderColor: glass ? "rgba(255, 255, 255, 0.15)" : colors["base"],
+      backgroundColor: surfaceBackgroundColor,
+      borderColor: borderless ? "transparent" : surfaceBorderColor,
       borderStyle: "solid",
       zIndex: 0,
       pointerEvents: "none",
@@ -325,7 +371,7 @@ export default function Popover({
             transition={{ duration: instant ? 0 : 0.2, ease: "easeOut" }}
             style={{
               transformOrigin: transformOrigin ?? getTransformOrigin(position),
-              pointerEvents: "auto",
+              pointerEvents: interactive ? "auto" : "none",
               position: "relative",
               zIndex: 1,
               // sizing fixes
@@ -337,15 +383,12 @@ export default function Popover({
                 ? `calc(100vw - ${offset * 2}px)`
                 : undefined,
               color: colors["text"],
-              borderWidth: 1,
+              borderWidth: borderless ? 0 : 1,
               borderStyle: "solid",
               borderRadius: 8,
-              boxShadow:
-                "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
-              backgroundColor: glass
-                ? "rgba(8, 12, 20, 0.55)"
-                : colors["mantle"],
-              borderColor: glass ? "rgba(255, 255, 255, 0.15)" : colors["base"],
+              boxShadow: surfaceShadow,
+              backgroundColor: surfaceBackgroundColor,
+              borderColor: surfaceBorderColor,
               backdropFilter: glass ? "blur(12px) saturate(120%)" : undefined,
               WebkitBackdropFilter: glass
                 ? "blur(12px) saturate(120%)"
@@ -372,23 +415,40 @@ export default function Popover({
                 }}
                 style={{
                   position: "absolute",
-                  padding: 4,
+                  zIndex: 2,
+                  width: 32,
+                  height: 32,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
                   borderRadius: 8,
-                  backgroundColor: colors["mantle"],
+                  backgroundColor:
+                    closeHovered
+                      ? colors["base"]
+                      : surface === "transparent"
+                      ? colors["crust"]
+                      : "transparent",
                   color: colors["text"],
-                  boxShadow:
-                    "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
-                  transform: hovered ? "scale(1.05)" : "scale(1)",
-                  opacity: hovered ? 1 : 0,
-                  transition: "opacity 200ms ease, transform 200ms ease",
+                  border: "1px solid transparent",
+                  boxShadow: "none",
+                  opacity: closeButtonAlwaysVisible || hovered ? 1 : 0,
+                  transition: "opacity 200ms ease, background-color 200ms ease",
                   cursor: "pointer",
-                  border: "none",
                   ...closeStyle,
                 }}
+                onMouseEnter={() => setCloseHovered(true)}
+                onMouseLeave={() => setCloseHovered(false)}
                 aria-label="Close"
                 type="button"
               >
-                <X size={16} />
+                <X
+                  size={16}
+                  style={{
+                    transform: closeHovered ? "scale(1.15)" : "scale(1)",
+                    transition: "transform 150ms ease",
+                  }}
+                />
               </button>
             )}
           </motion.div>

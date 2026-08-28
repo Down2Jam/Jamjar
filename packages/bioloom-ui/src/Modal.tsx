@@ -65,6 +65,7 @@ interface OverlayModalProps {
   hideCloseButton?: boolean;
   backdrop?: "transparent" | "opaque";
   size?: OverlayModalSize;
+  surface?: "card" | "transparent";
   className?: string;
   children: React.ReactNode;
 }
@@ -115,9 +116,17 @@ function FormModal({
       position="center"
       onClose={onClose}
       showCloseButton
+      closeButtonAlwaysVisible
+      closeButtonInside
+      closeButtonInset={24}
+      disableHoverScale
+      backdrop
+      backdropColor="rgba(0, 0, 0, 0.78)"
+      padding={0}
+      surface="card"
     >
       <form onSubmit={handleSubmit}>
-        <Vstack gap={3} className="p-3 min-w-[280px]" align="stretch">
+        <Vstack gap={3} className="p-5 min-w-[280px]" align="stretch">
           {(title || icon) && (
             <Hstack gap={2} align="center" justify="center">
               {icon && (
@@ -246,8 +255,9 @@ function OverlayModal({
   isOpen,
   onOpenChange,
   hideCloseButton = false,
-  backdrop = "transparent",
+  backdrop = "opaque",
   size,
+  surface = "card",
   className = "",
   children,
 }: OverlayModalProps) {
@@ -263,9 +273,15 @@ function OverlayModal({
         position="center"
         onClose={handleClose}
         showCloseButton={!hideCloseButton}
+        closeButtonAlwaysVisible
+        closeButtonInside
+        closeButtonInset={24}
+        disableHoverScale
         backdrop={backdrop === "opaque"}
-        backdropColor="rgba(0, 0, 0, 0.6)"
+        backdropColor="rgba(0, 0, 0, 0.78)"
         padding={0}
+        surface={surface}
+        borderless={surface === "transparent"}
         className={className}
       >
         {children}
@@ -313,17 +329,17 @@ export function ModalContent({
 export interface ModalSectionProps extends HTMLAttributes<HTMLDivElement> {}
 
 export function ModalHeader({ className = "", ...props }: ModalSectionProps) {
-  return <div className={["px-4 pt-4", className].join(" ")} {...props} />;
+  return <div className={["px-6 pt-6", className].join(" ")} {...props} />;
 }
 
 export function ModalBody({ className = "", ...props }: ModalSectionProps) {
-  return <div className={["px-4 py-3", className].join(" ")} {...props} />;
+  return <div className={["px-6 py-4", className].join(" ")} {...props} />;
 }
 
 export function ModalFooter({ className = "", ...props }: ModalSectionProps) {
   return (
     <div
-      className={["px-4 pb-4 pt-2 flex justify-end gap-2", className].join(
+      className={["px-6 pb-6 pt-3 flex justify-end gap-2", className].join(
         " "
       )}
       {...props}

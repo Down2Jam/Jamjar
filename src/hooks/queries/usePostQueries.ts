@@ -63,10 +63,19 @@ export function usePosts(
   tagRules?: Record<number, number>,
   userSlug?: string,
   following = false,
-  enabled = true
+  enabled = true,
+  pageSize = 20,
 ) {
   return useInfiniteQuery<PostsPage, Error, ForumFeedItemType[], ReturnType<typeof queryKeys.post.list>, string | null>({
-    queryKey: queryKeys.post.list(sort, time, sticky, tagRules, userSlug, following),
+    queryKey: queryKeys.post.list(
+      sort,
+      time,
+      sticky,
+      tagRules,
+      userSlug,
+      following,
+      pageSize,
+    ),
     queryFn: async ({ pageParam }) => {
       const res = await getPosts(
         sort,
@@ -76,7 +85,7 @@ export function usePosts(
         userSlug,
         following,
         pageParam,
-        20,
+        pageSize,
       );
       const json = (await res.json()) as PostsPageResponse;
       return readPostsPage(json);

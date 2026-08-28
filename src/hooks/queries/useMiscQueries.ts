@@ -36,6 +36,7 @@ export function useStreamers(enabled = true) {
       return unwrapArray<FeaturedStreamerType>(json);
     },
     enabled,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -56,11 +57,12 @@ export function useTracks(
   jamId?: string,
   pageVersion?: ListingPageVersion,
   enabled = true,
+  limit?: number,
 ) {
   return useQuery<TrackType[]>({
-    queryKey: queryKeys.track.list(sort, jamId ?? "all", pageVersion),
+    queryKey: queryKeys.track.list(sort, jamId ?? "all", pageVersion, limit),
     queryFn: async () => {
-      const res = await getTracks(sort, jamId, pageVersion);
+      const res = await getTracks(sort, jamId, pageVersion, limit);
       const json = await res.json();
       return unwrapArray<TrackType>(json);
     },
