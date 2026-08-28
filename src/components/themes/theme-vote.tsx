@@ -10,25 +10,61 @@ import { ThemeType } from "@/types/ThemeType";
 import { useEffect, useState } from "react";
 import { getThemes, postThemeVotingVote } from "@/requests/theme";
 import { Button } from "bioloom-ui";
-import { Spinner } from "bioloom-ui";
+import { addToast, Spinner } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
+import {
+  buildVotingShareDraft,
+  openSharedPostDraft,
+} from "@/helpers/shareToPost";
 
 export default function VotingPage() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [sharingVotes, setSharingVotes] = useState(false);
+  const token = getCookie("token");
+  const canVote = Boolean(token && hasJoined);
+  const voteCount = themes.filter((theme) => theme.votes2?.length).length;
+
+  async function shareVotes() {
+    const getThemesWithScore = (score: number) =>
+      themes
+        .filter((theme) => theme.votes2?.[0]?.voteScore === score)
+        .map((theme) => theme.suggestion);
+
+    try {
+      setSharingVotes(true);
+      openSharedPostDraft(
+        await buildVotingShareDraft({
+          jamName: activeJamResponse?.jam?.name ?? "Game jam",
+          jamSlug: activeJamResponse?.jam?.slug,
+          starred: getThemesWithScore(3),
+          liked: getThemesWithScore(1),
+          skipped: getThemesWithScore(0),
+          total: themes.length,
+          url: `${window.location.origin}/theme-voting`,
+        }),
+      );
+    } catch (error) {
+      console.error("Error creating vote share image:", error);
+      addToast({ title: "Could not create the vote image" });
+      setSharingVotes(false);
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
-      try {
-        const joined = await hasJoinedCurrentJam();
-        setHasJoined(joined);
-      } catch (error) {
-        console.error("Error fetching current jam:", error);
+      if (token) {
+        try {
+          const joined = await hasJoinedCurrentJam();
+          setHasJoined(joined);
+        } catch (error) {
+          console.error("Error fetching current jam:", error);
+        }
       }
 
       try {
@@ -64,9 +100,10 @@ export default function VotingPage() {
     }
 
     fetchData();
-  }, []);
+  }, [token]);
 
   function voteSkip(index: number) {
+    if (!canVote) return;
     const newThemes = [...themes];
     newThemes[index] = {
       ...newThemes[index],
@@ -91,6 +128,7 @@ export default function VotingPage() {
   }
 
   function voteLike(index: number) {
+    if (!canVote) return;
     const newThemes = [...themes];
     newThemes[index] = {
       ...newThemes[index],
@@ -115,6 +153,7 @@ export default function VotingPage() {
   }
 
   function voteStar(index: number) {
+    if (!canVote) return;
     const newThemes = [...themes];
     newThemes[index] = {
       ...newThemes[index],
@@ -138,8 +177,6 @@ export default function VotingPage() {
     }
   }
 
-  const token = getCookie("token");
-
   if (phaseLoading) {
     return (
       <Vstack>
@@ -156,35 +193,7 @@ export default function VotingPage() {
     );
   }
 
-  if (!token) {
-    return (
-      <Vstack>
-        <Card className="max-w-96">
-          <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userx" />
-                <Text size="xl">Not signed in</Text>
-              </Hstack>
-              <Text color="textFaded">
-                Sign in to be able to eliminate themes
-              </Text>
-            </Vstack>
-            <Hstack>
-              <Button href="/signup" color="blue" icon="userplus">
-                Themes.Signup
-              </Button>
-              <Button href="/login" color="pink" icon="login">
-                Themes.Login
-              </Button>
-            </Hstack>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
-
-  if (!hasJoined) {
+  if (token && !hasJoined) {
     return (
       <Vstack>
         <Card>
@@ -269,6 +278,15 @@ export default function VotingPage() {
 
   return (
     <Vstack align="stretch">
+      {!token && (
+        <Hstack>
+          <Icon name="userx" />
+          <Text color="textFaded">Sign in and join the jam to vote.</Text>
+          <Button href="/login" color="pink" icon="login">
+            Themes.Login
+          </Button>
+        </Hstack>
+      )}
       <Vstack>
         <Card>
           <Vstack align="center" gap={0}>
@@ -293,6 +311,15 @@ export default function VotingPage() {
             theme&apos;s score while stars (that you can give 2 of) give +3 to a
             theme&apos;s score.
           </Text>
+          {canVote && (
+            <Button
+              icon="send"
+              onClick={shareVotes}
+              disabled={voteCount === 0 || sharingVotes}
+            >
+              {sharingVotes ? "Creating image…" : "Share votes"}
+            </Button>
+          )}
         </Card>
       </Vstack>
 
@@ -317,6 +344,7 @@ export default function VotingPage() {
                     <Button
                       size="sm"
                       tooltip="Skip"
+                      disabled={!canVote}
                       onClick={() => {
                         voteSkip(i);
                       }}
@@ -333,6 +361,7 @@ export default function VotingPage() {
                     <Button
                       size="sm"
                       tooltip="Like (+1)"
+                      disabled={!canVote}
                       onClick={() => {
                         voteLike(i);
                       }}
@@ -360,7 +389,8 @@ export default function VotingPage() {
                         voteStar(i);
                       }}
                       disabled={
-                        themes.reduce(
+                        !canVote ||
+                        (themes.reduce(
                           (prev, curr) =>
                             prev +
                             (curr.votes2 &&
@@ -374,7 +404,7 @@ export default function VotingPage() {
                           themes[i].votes2 &&
                           themes[i].votes2.length > 0 &&
                           themes[i].votes2[0].voteScore == 3
-                        )
+                        ))
                       }
                     />
                   </div>

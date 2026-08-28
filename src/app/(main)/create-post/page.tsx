@@ -22,6 +22,11 @@ import { Chip } from "bioloom-ui";
 import { readArray, readItem } from "@/requests/helpers";
 import { TagType } from "@/types/TagType";
 import TagLabel from "@/components/tags/TagLabel";
+import {
+  clearSharedPostDraft,
+  readSharedPostDraft,
+} from "@/helpers/shareToPost";
+import { useTheme } from "@/providers/useSiteTheme";
 
 const theme = "dark";
 const Editor = dynamic(() => import("@/components/editor"), {
@@ -48,8 +53,11 @@ export default function CreatePostPage({
   embedded = false,
   onCreated,
 }: CreatePostPageProps = {}) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [sharedDraft] = useState(() =>
+    embedded ? null : readSharedPostDraft()
+  );
+  const [title, setTitle] = useState(sharedDraft?.title ?? "");
+  const [content, setContent] = useState(sharedDraft?.content ?? "");
   const [waitingPost, setWaitingPost] = useState(false);
   const [selectedTags, setSelectedTags] = useState<MultiValue<TagOption> | null>(
     null
@@ -60,6 +68,15 @@ export default function CreatePostPage({
   const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [user, setUser] = useState<UserType>();
   const [sticky, setSticky] = useState(false);
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+
+  useEffect(() => {
+    if (!embedded && sharedDraft) {
+      clearSharedPostDraft();
+    }
+  }, [embedded, sharedDraft]);
 
   const combinedTagIds = () => [
     ...((selectedTags ?? [])
@@ -162,13 +179,25 @@ export default function CreatePostPage({
 
           setOptions(newoptions.filter((option) => !option.isFixed));
           setFixedOptions(newoptions.filter((option) => option.isFixed));
+          if (sharedDraft?.tags?.length) {
+            const sharedTagNames = new Set(
+              sharedDraft.tags.map((tag) => tag.toLowerCase()),
+            );
+            setSelectedTags(
+              newoptions.filter(
+                (option) =>
+                  !option.isFixed &&
+                  sharedTagNames.has(option.value.toLowerCase()),
+              ),
+            );
+          }
         }
       } catch (error) {
         console.error(error);
       }
     };
     load();
-  }, []);
+  }, [embedded, sharedDraft]);
 
   const styles: StylesConfig<
     TagOption,
@@ -232,21 +261,35 @@ export default function CreatePostPage({
   };
 
   return (
-    <Vstack align="stretch">
+    <Vstack
+      align="stretch"
+      className={embedded ? "w-full" : "mx-auto w-full max-w-7xl gap-4"}
+    >
       {!embedded && (
-        <Card>
-          <Vstack>
-            <Hstack>
-              <Icon name="squarepen" />
-              <Text size="xl">Create Post</Text>
-            </Hstack>
-            <Text size="sm" color="textFaded">
-              Submit a post to the forum
-            </Text>
-          </Vstack>
-        </Card>
+        <header className="py-2 text-center">
+          <p
+            className="text-3xl font-semibold"
+            style={{
+              color: headerColor,
+              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Create Post
+          </p>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: headerColor,
+              opacity: 0.82,
+              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Share something with the community
+          </p>
+        </header>
       )}
       <Card
+        className={embedded ? "w-full" : "mx-auto w-full max-w-3xl"}
         padding={embedded ? 0 : 1}
         shadow={embedded ? "none" : "sm"}
         radius={embedded ? "none" : "md"}
@@ -262,7 +305,7 @@ export default function CreatePostPage({
       >
         <Vstack>
           <Form
-            className="w-full max-w-2xl flex flex-col gap-4 text-[#333] dark:text-white"
+            className="w-full flex flex-col gap-4 text-[#333] dark:text-white"
             onSubmit={async (e) => {
               e.preventDefault();
 

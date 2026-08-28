@@ -118,6 +118,7 @@ export default function ThemeSuggestions() {
   const [userSuggestions, setUserSuggestions] = useState<ThemeType[]>([]);
   const [themeLimit, setThemeLimit] = useState(0);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const token = getCookie("token");
   const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true); // Loading state for fetching phase
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -148,10 +149,10 @@ export default function ThemeSuggestions() {
 
   // Fetch suggestions only when phase is "Suggestion"
   useEffect(() => {
-    if (activeJamResponse?.phase === "Suggestion") {
+    if (token && activeJamResponse?.phase === "Suggestion") {
       fetchSuggestions();
     }
-  }, [activeJamResponse]);
+  }, [activeJamResponse, token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,13 +254,17 @@ export default function ThemeSuggestions() {
 
   useEffect(() => {
     const init = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       const joined = await hasJoinedCurrentJam();
       setHasJoined(joined);
       setLoading(false);
     };
 
     init();
-  }, []);
+  }, [token]);
 
   // Render loading state while fetching phase
   if (phaseLoading || loading) {
@@ -278,35 +283,7 @@ export default function ThemeSuggestions() {
     );
   }
 
-  const token = getCookie("token");
-
-  if (!token) {
-    return (
-      <Vstack>
-        <Card className="max-w-96">
-          <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userx" />
-                <Text size="xl">ThemeSuggestions.SignIn.Title</Text>
-              </Hstack>
-              <Text color="textFaded">ThemeSuggestions.SignIn.Description</Text>
-            </Vstack>
-            <Hstack>
-              <Button href="/signup" color="blue" icon="userplus">
-                Themes.Signup
-              </Button>
-              <Button href="/login" color="pink" icon="login">
-                Themes.Login
-              </Button>
-            </Hstack>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
-
-  if (!hasJoined) {
+  if (token && !hasJoined) {
     return (
       <Vstack>
         <Card>
@@ -366,6 +343,15 @@ export default function ThemeSuggestions() {
 
   return (
     <Vstack>
+      {!token && (
+        <Hstack>
+          <Icon name="userx" />
+          <Text color="textFaded">Sign in and join the jam to suggest a theme.</Text>
+          <Button href="/login" color="pink" icon="login">
+            Themes.Login
+          </Button>
+        </Hstack>
+      )}
       <Card>
         <Vstack align="stretch">
           <Vstack align="center" gap={0}>
@@ -388,7 +374,7 @@ export default function ThemeSuggestions() {
               className="w-full"
               placeholder="Enter your theme suggestion..."
               required
-              disabled={userSuggestions.length >= themeLimit}
+              disabled={!token || userSuggestions.length >= themeLimit}
               value={suggestion}
               onChange={(e) => {
                 if (e.target.value.length <= 32) {
@@ -411,7 +397,7 @@ export default function ThemeSuggestions() {
             <Input
               className="w-full"
               placeholder="Enter clarification... (optional)"
-              disabled={userSuggestions.length >= themeLimit}
+              disabled={!token || userSuggestions.length >= themeLimit}
               value={examples}
               onChange={(e) => {
                 if (e.target.value.length <= 256) setExamples(e.target.value);
@@ -420,7 +406,7 @@ export default function ThemeSuggestions() {
             />
             <Button
               type="submit"
-              disabled={userSuggestions.length >= themeLimit}
+              disabled={!token || userSuggestions.length >= themeLimit}
               color={userSuggestions.length >= themeLimit ? "yellow" : "blue"}
               icon="send"
             >
@@ -451,7 +437,7 @@ export default function ThemeSuggestions() {
           )}
         </Vstack>
       </Card>
-      <Card>
+      {token && <Card>
         {/* List of user's suggestions */}
         <Vstack align="center">
           <Text size="xl">Your Suggestions</Text>
@@ -497,7 +483,7 @@ export default function ThemeSuggestions() {
             </Text>
           )}
         </Vstack>
-      </Card>
+      </Card>}
     </Vstack>
   );
 }

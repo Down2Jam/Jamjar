@@ -392,6 +392,7 @@ export default function MiniPlayer() {
   return (
     <Popover
       position="bottom-left"
+      showArrow={false}
       showCloseButton
       disableHoverScale
       closeButtonPosition="top-left"

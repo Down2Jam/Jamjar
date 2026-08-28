@@ -13,10 +13,10 @@
     "src"
   ],
   "peerDependencies": {
-    "@icons-pack/react-simple-icons": "^13.13.0",
-    "framer-motion": "^12.40.0",
-    "lucide-react": "^1.20.0",
-    "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "@icons-pack/react-simple-icons": "^13.15.1",
+    "framer-motion": "^13.1.1",
+    "lucide-react": "^1.35.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

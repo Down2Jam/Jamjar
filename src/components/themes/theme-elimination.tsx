@@ -9,11 +9,10 @@ import { getThemes, postThemeSlaughterVote } from "@/requests/theme";
 import { ThemeType } from "@/types/ThemeType";
 import { useEffect, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { getCookie } from "@/helpers/cookie";
+import { getCookie, hasCookie } from "@/helpers/cookie";
 import { useMemo } from "react";
-import { Spinner } from "bioloom-ui";
+import { addToast, Spinner } from "bioloom-ui";
 import { Card } from "bioloom-ui";
-import { Chip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -21,6 +20,10 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Switch } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
+import {
+  buildEliminationShareDraft,
+  openSharedPostDraft,
+} from "@/helpers/shareToPost";
 
 export default function ThemeSlaughter() {
   const [themes, setThemes] = useState<ThemeType[]>([]);
@@ -28,10 +31,51 @@ export default function ThemeSlaughter() {
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [currentTheme, setCurrentTheme] = useState(-1);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
+  const [sharingVotes, setSharingVotes] = useState(false);
+  const token = getCookie("token");
+  const hasLoggedInBefore = hasCookie("hasLoggedIn");
+  const canVote = Boolean(token && hasJoined);
+  const voteCount = themes.filter((theme) => theme.votes?.length).length;
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  async function shareVotes() {
+    const getThemesWithScore = (score: number) =>
+      themes
+        .filter((theme) => theme.votes?.[0]?.slaughterScore === score)
+        .map((theme) => theme.suggestion);
+
+    try {
+      setSharingVotes(true);
+      openSharedPostDraft(
+        await buildEliminationShareDraft({
+          jamName: activeJamResponse?.jam?.name ?? "Game jam",
+          jamSlug: activeJamResponse?.jam?.slug,
+          yes: getThemesWithScore(1),
+          no: getThemesWithScore(-1),
+          skipped: getThemesWithScore(0),
+          total: themes.length,
+          url: `${window.location.origin}/theme-elimination`,
+        }),
+      );
+    } catch (error) {
+      console.error("Error creating vote share image:", error);
+      addToast({ title: "Could not create the vote image" });
+      setSharingVotes(false);
+    }
+  }
+
+  async function joinCurrentJam() {
+    if (activeJamResponse?.jam?.id === undefined) return;
+
+    if (await joinJam(activeJamResponse.jam.id)) {
+      setHasJoined(true);
+    }
+  }
+
   const themeRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerTextColor = siteTheme.type === "Light" ? "textLight" : "text";
   const [descriptionShow, setDescriptionShown] = useState(true);
 
   useHotkeys("y", voteYes);
@@ -60,6 +104,7 @@ export default function ThemeSlaughter() {
   });
 
   function voteYes() {
+    if (!canVote) return;
     if (currentTheme >= themes.length) return;
     if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
@@ -85,237 +130,152 @@ export default function ThemeSlaughter() {
     }
   }
 
-  function VoteCircle({ themes }: { themes: ThemeType[] }) {
+  function VoteProgress({ themes }: { themes: ThemeType[] }) {
     const voteCounts = useMemo(() => {
-      let yes = 0,
-        no = 0,
-        skip = 0,
-        notVoted = 0;
+      const counts = { yes: 0, no: 0, skip: 0, notVoted: 0 };
 
       themes.forEach((theme) => {
-        if (!theme.votes || theme.votes.length === 0) {
-          notVoted++;
-        } else {
-          switch (theme.votes[0].slaughterScore) {
-            case 1:
-              yes++;
-              break;
-            case -1:
-              no++;
-              break;
-            case 0:
-              skip++;
-              break;
-          }
-        }
+        const score = theme.votes?.[0]?.slaughterScore;
+        if (score === 1) counts.yes++;
+        else if (score === -1) counts.no++;
+        else if (score === 0) counts.skip++;
+        else counts.notVoted++;
       });
 
-      const total = yes + no + skip + notVoted || 1; // Prevent division by zero
-      return {
-        amount: {
-          yes,
-          no,
-          skip,
-          notVoted,
-        },
-        percent: {
-          yes: (yes / total) * 100,
-          no: (no / total) * 100,
-          skip: (skip / total) * 100,
-          notVoted: (notVoted / total) * 100,
-        },
-      };
+      return counts;
     }, [themes]);
 
-    const circleSize = 30;
+    const total = Math.max(themes.length, 1);
+    const yesPercent = voteCounts.yes / total;
+    const skipPercent = voteCounts.skip / total;
+    const notVotedPercent = voteCounts.notVoted / total;
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
+    const themeNoun = (count: number) => (count === 1 ? "theme" : "themes");
 
     return (
       <Dropdown
-        openOn="hover"
+        openOn="both"
+        position="bottom"
+        backdrop={false}
         trigger={
-          <svg
-            width={circleSize}
-            height={circleSize}
-            viewBox="0 0 100 100"
-            className="hidden lg:block"
+          <button
+            type="button"
+            className="inline-flex rounded-full p-0.5 transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2"
+            style={{
+              background: "transparent",
+              border: 0,
+              color: colors["text"],
+              cursor: "pointer",
+            }}
+            aria-label="Show elimination vote progress"
           >
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke={colors["red"]}
-              strokeWidth="10"
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke={colors["blue"]}
-              strokeWidth="10"
-              strokeDasharray={`${
-                (voteCounts.percent.notVoted / 100) * circumference
-              } ${
-                circumference -
-                (voteCounts.percent.notVoted / 100) * circumference
-              }`}
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke={colors["green"]}
-              strokeWidth="10"
-              strokeDasharray={`${
-                (voteCounts.percent.yes / 100) * circumference
-              } ${
-                circumference - (voteCounts.percent.yes / 100) * circumference
-              }`}
-              strokeDashoffset={
-                -(voteCounts.percent.notVoted / 100) * circumference
-              }
-            />
-            <circle
-              cx="50"
-              cy="50"
-              r={radius}
-              fill="none"
-              stroke={colors["gray"]}
-              strokeWidth="10"
-              strokeDasharray={`${
-                (voteCounts.percent.skip / 100) * circumference
-              } ${
-                circumference - (voteCounts.percent.skip / 100) * circumference
-              }`}
-              strokeDashoffset={
-                -(voteCounts.percent.yes / 100) * circumference -
-                (voteCounts.percent.notVoted / 100) * circumference
-              }
-            />
-          </svg>
+            <svg
+              width="30"
+              height="30"
+              viewBox="0 0 100 100"
+              role="img"
+              aria-label={`Vote progress: ${voteCounts.yes} yes, ${voteCounts.no} no, ${voteCounts.skip} skipped, ${voteCounts.notVoted} remaining`}
+            >
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="none"
+                stroke={colors["red"]}
+                strokeWidth="10"
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="none"
+                stroke={colors["blue"]}
+                strokeWidth="10"
+                strokeDasharray={`${notVotedPercent * circumference} ${
+                  circumference - notVotedPercent * circumference
+                }`}
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="none"
+                stroke={colors["green"]}
+                strokeWidth="10"
+                strokeDasharray={`${yesPercent * circumference} ${
+                  circumference - yesPercent * circumference
+                }`}
+                strokeDashoffset={-notVotedPercent * circumference}
+              />
+              <circle
+                cx="50"
+                cy="50"
+                r={radius}
+                fill="none"
+                stroke={colors["gray"]}
+                strokeWidth="10"
+                strokeDasharray={`${skipPercent * circumference} ${
+                  circumference - skipPercent * circumference
+                }`}
+                strokeDashoffset={
+                  -(notVotedPercent + yesPercent) * circumference
+                }
+              />
+            </svg>
+          </button>
         }
       >
         <div
           className="px-1 py-2"
-          style={{
-            color: colors["textFaded"],
-            backgroundColor: colors["mantle"],
-          }}
+          style={{ color: colors["textFaded"] }}
         >
           <div
-            className="text-small font-bold"
-            style={{
-              color: colors["text"],
-            }}
+            className="text-sm font-bold"
+            style={{ color: colors["text"] }}
           >
             Elimination Stats
           </div>
-          <div className="text-tiny">
-            Voted{" "}
-            <span
-              style={{
-                color: colors["green"],
-              }}
-            >
-              yes
-            </span>{" "}
-            on{" "}
-            <span
-              style={{
-                color: colors["blue"],
-              }}
-            >
-              {voteCounts.amount.yes}
-            </span>{" "}
-            themes{" "}
-            <span
-              style={{
-                color: colors["blueDark"],
-              }}
-            >
-              ({Math.round(voteCounts.percent.yes)}%)
+          <div className="text-xs">
+            Voted <span style={{ color: colors["green"] }}>yes</span> on{" "}
+            <span style={{ color: colors["blue"] }}>{voteCounts.yes}</span>{" "}
+            {themeNoun(voteCounts.yes)}{" "}
+            <span style={{ color: colors["blueDark"] }}>
+              ({Math.round(yesPercent * 100)}%)
             </span>
           </div>
-          <div className="text-tiny">
-            Voted{" "}
-            <span
-              style={{
-                color: colors["red"],
-              }}
-            >
-              no
-            </span>{" "}
-            on{" "}
-            <span
-              style={{
-                color: colors["blue"],
-              }}
-            >
-              {voteCounts.amount.no}
-            </span>{" "}
-            themes{" "}
-            <span
-              style={{
-                color: colors["blueDark"],
-              }}
-            >
-              ({Math.round(voteCounts.percent.no)}%)
+          <div className="text-xs">
+            Voted <span style={{ color: colors["red"] }}>no</span> on{" "}
+            <span style={{ color: colors["blue"] }}>{voteCounts.no}</span>{" "}
+            {themeNoun(voteCounts.no)}{" "}
+            <span style={{ color: colors["blueDark"] }}>
+              ({Math.round((voteCounts.no / total) * 100)}%)
             </span>
           </div>
-          <div className="text-tiny">
-            Voted{" "}
-            <span
-              style={{
-                color: colors["yellow"],
-              }}
-            >
-              skip
-            </span>{" "}
-            on{" "}
-            <span
-              style={{
-                color: colors["blue"],
-              }}
-            >
-              {voteCounts.amount.skip}
-            </span>{" "}
-            themes{" "}
-            <span
-              style={{
-                color: colors["blueDark"],
-              }}
-            >
-              ({Math.round(voteCounts.percent.skip)}%)
+          <div className="text-xs">
+            Voted <span style={{ color: colors["yellow"] }}>skip</span> on{" "}
+            <span style={{ color: colors["blue"] }}>{voteCounts.skip}</span>{" "}
+            {themeNoun(voteCounts.skip)}{" "}
+            <span style={{ color: colors["blueDark"] }}>
+              ({Math.round(skipPercent * 100)}%)
             </span>
           </div>
-          <div className="text-tiny">
+          <div className="text-xs">
             Did not vote on{" "}
-            <span
-              style={{
-                color: colors["blue"],
-              }}
-            >
-              {voteCounts.amount.notVoted}
+            <span style={{ color: colors["blue"] }}>
+              {voteCounts.notVoted}
             </span>{" "}
-            themes{" "}
-            <span
-              style={{
-                color: colors["blueDark"],
-              }}
-            >
-              ({Math.round(voteCounts.percent.notVoted)}%)
+            {themeNoun(voteCounts.notVoted)}{" "}
+            <span style={{ color: colors["blueDark"] }}>
+              ({Math.round(notVotedPercent * 100)}%)
             </span>
           </div>
         </div>
       </Dropdown>
     );
   }
-
   function voteNo() {
+    if (!canVote) return;
     if (currentTheme >= themes.length) return;
     if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
@@ -342,6 +302,7 @@ export default function ThemeSlaughter() {
   }
 
   function voteSkip() {
+    if (!canVote) return;
     if (currentTheme >= themes.length) return;
     if (themes[currentTheme] === undefined) return;
     const newThemes = [...themes];
@@ -382,11 +343,13 @@ export default function ThemeSlaughter() {
 
   useEffect(() => {
     async function fetchData() {
-      try {
-        const joined = await hasJoinedCurrentJam();
-        setHasJoined(joined);
-      } catch (error) {
-        console.error("Error fetching current jam:", error);
+      if (token) {
+        try {
+          const joined = await hasJoinedCurrentJam();
+          setHasJoined(joined);
+        } catch (error) {
+          console.error("Error fetching current jam:", error);
+        }
       }
 
       try {
@@ -420,26 +383,18 @@ export default function ThemeSlaughter() {
     }
 
     fetchData();
-  }, []);
+  }, [token]);
 
   const scrollToIndex = (index: number) => {
-    if (themeRefs.current[index] && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({
-        top:
-          themeRefs.current[index]!.offsetTop -
-          scrollContainerRef.current.offsetTop,
-        behavior: "smooth",
-      });
-    }
+    themeRefs.current[index]?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
   };
 
   useEffect(() => {
     if (currentTheme != -1) {
       return;
-    }
-
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
     }
 
     const firstUnvotedIndex = themes.findIndex(
@@ -466,23 +421,16 @@ export default function ThemeSlaughter() {
     }
   }
 
-  function getStyleFromVote(vote: number) {
+  function getBackgroundFromVote(vote: number) {
     switch (vote) {
       case -1:
-        return {
-          background: "linear-gradient(to bottom right, #942e2e, #cc7529)",
-          border: "1px solid #942e2e",
-        };
+        return colors["redDarkDark"];
       case 0:
-        return {
-          background: "linear-gradient(to bottom right, #737373, #8c8c8c)",
-          border: "1px solid #737373",
-        };
+        return colors["grayDarkDark"];
       case 1:
-        return {
-          background: "linear-gradient(to bottom right, #2e947a, #2dcf50)",
-          border: "1px solid #2e947a",
-        };
+        return colors["greenDarkDark"];
+      default:
+        return colors["grayDarkDark"];
     }
   }
 
@@ -497,8 +445,6 @@ export default function ThemeSlaughter() {
     }
   }
 
-  const token = getCookie("token");
-
   if (phaseLoading) {
     return (
       <Vstack>
@@ -509,70 +455,6 @@ export default function ThemeSlaughter() {
               <Text size="xl">ThemeSuggestions.Loading.Title</Text>
             </Hstack>
             <Text color="textFaded">ThemeSuggestions.Loading.Description</Text>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
-
-  if (!token) {
-    return (
-      <Vstack>
-        <Card className="max-w-96">
-          <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userx" />
-                <Text size="xl">Not signed in</Text>
-              </Hstack>
-              <Text color="textFaded">
-                Sign in to be able to eliminate themes
-              </Text>
-            </Vstack>
-            <Hstack>
-              <Button href="/signup" color="blue" icon="userplus">
-                Themes.Signup
-              </Button>
-              <Button href="/login" color="pink" icon="login">
-                Themes.Login
-              </Button>
-            </Hstack>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
-
-  if (!hasJoined) {
-    return (
-      <Vstack>
-        <Card>
-          <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userplus" />
-                <Text size="xl">Join the Jam First</Text>
-              </Hstack>
-              <Text color="textFaded">
-                You need to join the current jam before you can eliminate
-                themes.
-              </Text>
-            </Vstack>
-            <Button
-              onClick={async () => {
-                if (activeJamResponse?.jam?.id !== undefined) {
-                  const ok = await joinJam(activeJamResponse.jam.id);
-
-                  if (ok) {
-                    setHasJoined(true);
-                  }
-                }
-              }}
-              icon="calendarplus"
-              color="green"
-            >
-              Navbar.JoinJam.Title
-            </Button>
           </Vstack>
         </Card>
       </Vstack>
@@ -601,208 +483,255 @@ export default function ThemeSlaughter() {
     );
   }
 
+  const hasCurrentTheme = themes[currentTheme] !== undefined;
+
   return (
-    <Vstack align="stretch">
-      <Vstack>
-        <Card>
-          <Vstack align="center" gap={0}>
-            <Hstack>
-              <Icon name="swords" />
-              <Text size="xl">Theme Elimination</Text>
-            </Hstack>
-            <Text color="textFaded" size="sm">
-              Vote as much as you want on whether you like or dislike certain
-              themes.
-            </Text>
-          </Vstack>
-        </Card>
-        <Card>
-          <Text color="textFaded" size="sm">
-            Welcome to the Theme Elimination! This is a spot to say which
-            submitted themes you like or dislike before they go to the voting
-            rounds.
+    <Vstack align="stretch" className="mx-auto w-full max-w-7xl gap-4">
+      <header className="py-2 text-center">
+        <p
+          className="text-3xl font-semibold"
+          style={{
+            color: headerColor,
+            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+          }}
+        >
+          Theme Elimination
+        </p>
+        <p
+          className="mx-auto mt-1 max-w-2xl text-sm"
+          style={{
+            color: headerColor,
+            opacity: 0.82,
+            textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+          }}
+        >
+          Help narrow the submitted themes down for the final voting round.
+        </p>
+      </header>
+
+      <Hstack justify="center" wrap className="relative z-20 gap-2">
+        <Hstack className="min-h-9 px-2">
+          <Switch checked={descriptionShow} onChange={setDescriptionShown} />
+          <Text color="text" size="sm">Show clarifications</Text>
+        </Hstack>
+        {canVote && (
+          <Button
+            icon="send"
+            onClick={shareVotes}
+            disabled={voteCount === 0 || sharingVotes}
+          >
+            {sharingVotes ? "Creating image…" : "Share votes"}
+          </Button>
+        )}
+      </Hstack>
+
+      <div className="relative z-30 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 px-1 text-center">
+        <Text
+          size="sm"
+          color={headerTextColor}
+          weight="semibold"
+          style={{
+            textShadow: "0 1px 4px rgba(0, 0, 0, 0.9)",
+          }}
+        >
+          {voteCount}/{themes.length} {themes.length === 1 ? "theme" : "themes"} reviewed
+        </Text>
+        {canVote && <VoteProgress themes={themes} />}
+      </div>
+
+      <div
+        className="sticky top-12 z-20 mx-auto w-full max-w-5xl rounded-xl border px-4 py-3"
+        style={{
+          backgroundColor: colors["mantle"],
+          borderColor: colors["base"],
+        }}
+      >
+        <Hstack justify="between" wrap className="gap-4">
+          <Text
+            color="text"
+            weight="semibold"
+            className="min-w-0 flex-1 truncate capitalize"
+          >
+            {hasCurrentTheme
+              ? `${currentTheme + 1}. ${themes[currentTheme].suggestion}`
+              : "Select a theme"}
           </Text>
-          <Text color="textFaded" size="sm">
-            You can vote on as many themes as you want and the themes with the
-            most score (Positive votes - Negative Votes) will move to the voting
-            rounds.
-          </Text>
-        </Card>
-        <Card>
-          <Hstack>
-            <Switch checked={descriptionShow} onChange={setDescriptionShown} />
-            <Vstack gap={0} align="start">
-              <Text color="text" size="sm">
-                Show Clarifications
-              </Text>
-              <Text color="textFaded" size="xs">
-                Show clarification text people have entered for their theme if
-                available
-              </Text>
-            </Vstack>
-          </Hstack>
-        </Card>
-      </Vstack>
-      <Card>
-        <Hstack wrap>
-          <Card className="min-h-12 min-w-60">
-            <Hstack>
-              <Text color="text" className="capitalize min-h-6">
-                {themes[currentTheme]?.suggestion}
-              </Text>
-              {themes[currentTheme]?.votes &&
-                themes[currentTheme].votes.length > 0 && (
-                  <Chip
-                    className="items-center lg:hidden"
-                    style={getStyleFromVote(
-                      themes[currentTheme].votes[0].slaughterScore
-                    )}
-                    icon={getIconFromVote(
-                      themes[currentTheme].votes[0].slaughterScore
-                    )}
-                  >
-                    <Text size="sm">
-                      {getTextFromVote(
-                        themes[currentTheme].votes[0].slaughterScore
-                      )}
-                    </Text>
-                  </Chip>
-                )}
-            </Hstack>
-            <Text
-              color="textFaded"
-              size="xs"
-              className="capitalize block lg:hidden min-h-32"
-            >
-              {themes[currentTheme]?.description}
-            </Text>
-          </Card>
-          <Hstack wrap>
+          <Hstack wrap className="gap-2.5">
+            {canVote ? (
+              <>
+                <Button
+                  size="sm"
+                  kbd="Y/A"
+                  onClick={voteYes}
+                  disabled={!hasCurrentTheme}
+                  color="green"
+                >
+                  Yes
+                </Button>
+                <Button
+                  size="sm"
+                  kbd="N/D"
+                  onClick={voteNo}
+                  disabled={!hasCurrentTheme}
+                  color="red"
+                >
+                  No
+                </Button>
+                <Button
+                  size="sm"
+                  kbd="S"
+                  onClick={voteSkip}
+                  disabled={!hasCurrentTheme}
+                  color="gray"
+                >
+                  Skip
+                </Button>
+              </>
+            ) : token ? (
+              <Button
+                size="sm"
+                onClick={joinCurrentJam}
+                color="green"
+                icon="calendarplus"
+              >
+                Join Jam to vote
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                href={hasLoggedInBefore ? "/login" : "/signup"}
+                color="pink"
+                icon="login"
+              >
+                {hasLoggedInBefore ? "Sign in to vote" : "Join to vote"}
+              </Button>
+            )}
             <Button
-              kbd="Y/A"
-              onClick={voteYes}
-              disabled={
-                currentTheme >= themes.length ||
-                themes[currentTheme] === undefined
-              }
-              color="green"
-            >
-              Yes
-            </Button>
-            <Button
-              kbd="N/D"
-              onClick={voteNo}
-              disabled={
-                currentTheme >= themes.length ||
-                themes[currentTheme] === undefined
-              }
-              color="red"
-            >
-              No
-            </Button>
-            <Button
-              kbd="S"
-              onClick={voteSkip}
-              disabled={
-                currentTheme >= themes.length ||
-                themes[currentTheme] === undefined
-              }
-              color="gray"
-            >
-              Skip
-            </Button>
-            <Button
+              size="sm"
+              tooltip="Previous theme"
+              icon="chevronup"
               kbd="↑"
-              onClick={() => {
-                changeSelectedTheme(-1);
-              }}
+              onClick={() => changeSelectedTheme(-1)}
+              disabled={!hasCurrentTheme || currentTheme === 0}
             >
               Prev
             </Button>
             <Button
+              size="sm"
+              tooltip="Next theme"
+              icon="chevrondown"
               kbd="↓"
-              onClick={() => {
-                changeSelectedTheme(1);
-              }}
+              onClick={() => changeSelectedTheme(1)}
+              disabled={!hasCurrentTheme || currentTheme >= themes.length - 1}
             >
               Next
             </Button>
             <Button
+              size="sm"
               icon="search"
+              kbd="→"
               target="_blank"
               href={`https://www.google.com/search?q=${encodeURIComponent(
-                themes[currentTheme]?.suggestion
+                themes[currentTheme]?.suggestion ?? ""
               )}`}
-              disabled={themes[currentTheme] === undefined}
-              kbd="→"
+              disabled={!hasCurrentTheme}
             >
               Lookup
             </Button>
           </Hstack>
-          <VoteCircle themes={themes} />
         </Hstack>
-        <div
-          className="overflow-y-auto p-4 min-h-[100px] max-h-[calc(100vh-410px)] hidden lg:block"
-          ref={scrollContainerRef}
-        >
-          <div className="flex flex-col gap-4">
-            {themes ? (
-              themes.map((theme, i) => (
-                <div
-                  key={theme.id}
-                  ref={(el) => {
-                    themeRefs.current[i] = el;
-                  }}
-                  onClick={() => {
-                    setSelectedTheme(i);
-                  }}
-                  className="cursor-pointer"
+      </div>
+
+      <Vstack
+        align="stretch"
+        gap={3}
+        className="relative z-0 min-h-80 w-full max-w-4xl self-center overflow-y-auto overscroll-contain px-1 pb-1 [max-height:calc(100dvh-20rem)] [scrollbar-gutter:stable]"
+        style={{
+          gap: "0.75rem",
+          scrollbarColor: `${colors["base"]} transparent`,
+          scrollbarWidth: "thin",
+        }}
+      >
+        {themes.length > 0 ? (
+          themes.map((theme, i) => (
+            <div
+              key={theme.id}
+              ref={(el) => {
+                themeRefs.current[i] = el;
+              }}
+              role="button"
+              tabIndex={0}
+              aria-current={i === currentTheme ? "true" : undefined}
+              onClick={() => setSelectedTheme(i)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  setSelectedTheme(i);
+                }
+              }}
+              className="cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <Card
+                className="w-full overflow-hidden"
+                padding={0}
+                style={{
+                  backgroundColor:
+                    i === currentTheme ? colors["base"] : colors["mantle"],
+                  borderColor:
+                    i === currentTheme ? colors["blue"] : colors["base"],
+                }}
+              >
+                <Hstack
+                  align="stretch"
+                  justify="between"
+                  gap={0}
+                  className="min-h-16 w-full"
                 >
-                  <Card
-                    className={`${
-                      theme.votes && theme.votes.length > 0 ? "opacity-50" : ""
-                    } ${
-                      i === currentTheme ? "border-2 shadow-lg" : "t"
-                    } w-full`}
-                    style={{
-                      backgroundColor:
-                        i === currentTheme ? colors["base"] : colors["mantle"],
-                    }}
-                  >
-                    <Hstack justify="between">
-                      <Vstack align="start">
-                        <Text color="text" className="capitalize">
-                          {theme.suggestion}
+                  <Hstack className="min-w-0 flex-1 gap-3 px-4 py-3">
+                    <Text size="xs" color="textFaded">
+                      {String(i + 1).padStart(2, "0")}
+                    </Text>
+                    <Vstack align="start" gap={0} className="min-w-0">
+                      <Text color="text" className="capitalize">
+                        {theme.suggestion}
+                      </Text>
+                      {theme.description && descriptionShow && (
+                        <Text size="xs" color="textFaded" className="line-clamp-2">
+                          {theme.description}
                         </Text>
-                        {theme.description && descriptionShow && (
-                          <Text size="xs" color="textFaded">
-                            {theme.description}
-                          </Text>
-                        )}
-                      </Vstack>
-                      {theme.votes && theme.votes.length > 0 && (
-                        <Chip
-                          className="items-center"
-                          style={getStyleFromVote(
-                            theme.votes[0].slaughterScore
-                          )}
-                          icon={getIconFromVote(theme.votes[0].slaughterScore)}
-                        >
-                          <Text size="sm">
-                            {getTextFromVote(theme.votes[0].slaughterScore)}
-                          </Text>
-                        </Chip>
                       )}
-                    </Hstack>
-                  </Card>
-                </div>
-              ))
-            ) : (
-              <>No themes were found</>
-            )}
-          </div>
-        </div>
-      </Card>
+                    </Vstack>
+                  </Hstack>
+                  {theme.votes && theme.votes.length > 0 && (
+                    <div
+                      className="flex w-16 shrink-0 items-center justify-center text-white"
+                      style={{
+                        backgroundColor: getBackgroundFromVote(
+                          theme.votes[0].slaughterScore,
+                        ),
+                      }}
+                      title={getTextFromVote(theme.votes[0].slaughterScore)}
+                      aria-label={`Vote: ${getTextFromVote(
+                        theme.votes[0].slaughterScore,
+                      )}`}
+                    >
+                      <Icon
+                        name={getIconFromVote(theme.votes[0].slaughterScore)}
+                        size={24}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  )}
+                </Hstack>
+              </Card>
+            </div>
+          ))
+        ) : (
+          <Text color="textFaded" className="py-8 text-center">
+            No themes were found.
+          </Text>
+        )}
+      </Vstack>
     </Vstack>
   );
 }
