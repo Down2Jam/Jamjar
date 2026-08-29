@@ -371,6 +371,23 @@ export default function ClientGamePage({
       game && selectedPage ? materializeGamePage(game, selectedPage) : game,
     [game, selectedPage],
   );
+  const soundtrackQueue = useMemo(() => {
+    if (!displayGame) return [];
+
+    return (displayGame.tracks ?? []).map((track) => ({
+      ...track,
+      game: {
+        ...track.game,
+        id: displayGame.id,
+        jamId: displayGame.jamId,
+        name: displayGame.name,
+        slug: displayGame.slug,
+        thumbnail: displayGame.thumbnail,
+        soundtrackThumbnail: displayGame.soundtrackThumbnail,
+        team: displayGame.team,
+      },
+    }));
+  }, [displayGame]);
   usePageMetadata({
     title: displayGame?.name ?? game?.name ?? gameSlug,
     description:
@@ -916,6 +933,8 @@ export default function ClientGamePage({
                       ? "blue"
                       : displayGame.category == "ODA"
                         ? "purple"
+                        : displayGame.category == "EXTERNAL"
+                          ? "orange"
                         : "pink"
                   }
                   key={displayGame.category}
@@ -1039,7 +1058,10 @@ export default function ClientGamePage({
                     )}
                     {isEditable && displayGame.category != "ODA" && (
                       <div>
-                        <Button icon="users" href={`/team`}>
+                        <Button
+                          icon="users"
+                          href={`/team?teamId=${displayGame.teamId}`}
+                        >
                           Edit Team
                         </Button>
                       </div>
@@ -2073,7 +2095,7 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
-            {displayGame.tracks && displayGame.tracks.length > 0 && (
+            {soundtrackQueue.length > 0 && (
               <Card>
                 <Vstack align="stretch">
                   <p
@@ -2085,13 +2107,15 @@ export default function ClientGamePage({
                     MUSIC
                   </p>
 
-                  {displayGame.tracks.map((track) => (
+                  {soundtrackQueue.map((track) => (
                     <SidebarSong
                       key={track.id}
                       trackId={track.id}
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
+                      squareThumbnail
+                      showGame={false}
                       thumbnail={
                         displayGame.soundtrackThumbnail ||
                         displayGame.thumbnail ||
@@ -2100,7 +2124,7 @@ export default function ClientGamePage({
                       game={track.game}
                       song={track.url}
                       loudnessGainDb={track.loudnessGainDb}
-                      queue={displayGame.tracks}
+                      queue={soundtrackQueue}
                       license={track.license}
                       allowDownload={track.allowDownload}
                       allowBackgroundUse={track.allowBackgroundUse}
@@ -2177,6 +2201,7 @@ export default function ClientGamePage({
                     )}
                   </Chip>
                   {displayGame.category !== "EXTRA" &&
+                    displayGame.category !== "EXTERNAL" &&
                     selectedVersion !== "POST_JAM" && (
                     <Hstack>
                       <Chip>
@@ -2191,7 +2216,8 @@ export default function ClientGamePage({
                                   team.game &&
                                   team.game.jamId == displayGame.jamId &&
                                   team.game.published &&
-                                  team.game.category !== "EXTRA",
+                                  team.game.category !== "EXTRA" &&
+                                  team.game.category !== "EXTERNAL",
                               ).length > 0,
                           ).length /
                             (displayGame.ratingCategories.length +
@@ -2208,7 +2234,8 @@ export default function ClientGamePage({
                                 team.game &&
                                 team.game.jamId == displayGame.jamId &&
                                 team.game.published &&
-                                team.game.category !== "EXTRA",
+                                team.game.category !== "EXTRA" &&
+                                team.game.category !== "EXTERNAL",
                             ).length > 0,
                         ).length /
                           (displayGame.ratingCategories.length +

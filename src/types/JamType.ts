@@ -6,6 +6,8 @@ export interface JamType {
   id: number;
   slug?: string;
   name: string;
+  sourceUrl?: string | null;
+  sourcePlatform?: string | null;
   suggestionHours: number;
   slaughterHours: number;
   votingHours: number;

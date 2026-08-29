@@ -9,6 +9,7 @@ export type TrackComposer = {
 export type TrackGame = {
   id?: number;
   jamId?: number;
+  category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
   name?: string;
   thumbnail?: string;
   soundtrackThumbnail?: string | null;

@@ -40,7 +40,7 @@ type JamOption = {
 };
 
 type TypeOption = {
-  id: "all" | "ODA" | "Extra" | "Regular";
+  id: "all" | "ODA" | "Extra" | "Regular" | "External";
   name: string;
   icon?: IconName;
   description?: string;
@@ -373,7 +373,7 @@ export default function Games() {
   const initialTypeParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     const p = new URLSearchParams(window.location.search).get("type");
-    const allowed = new Set(["ODA", "Extra", "Regular"]);
+    const allowed = new Set(["ODA", "Extra", "Regular", "External"]);
     if (!p) return "all";
     return allowed.has(p) ? (p as TypeOption["id"]) : "all";
   }, []);
@@ -461,6 +461,7 @@ export default function Games() {
     { id: "Regular", name: "Regular", icon: "gamepad2" },
     { id: "ODA", name: "ODA", icon: "swords" },
     { id: "Extra", name: "Extra", icon: "calendar" },
+    { id: "External", name: "External", icon: "externalLink" },
   ];
 
   // Fetch user via TanStack Query
@@ -1263,7 +1264,19 @@ export default function Games() {
             />
           </button>
           <div className="col-start-2 row-start-2 shrink-0">
-            {sortDropdown}
+            <Hstack wrap justify="end" className="gap-2">
+              {user && (
+                <Button
+                  size="lg"
+                  className="m-1 rounded-sm"
+                  icon="download"
+                  href="/import-game"
+                >
+                  Import game
+                </Button>
+              )}
+              {sortDropdown}
+            </Hstack>
           </div>
         </div>
 

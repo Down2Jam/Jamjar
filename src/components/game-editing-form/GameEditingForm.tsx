@@ -311,7 +311,9 @@ export default function GameEditingForm({
   const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
   const [teams, setTeams] = useState<TeamType[]>([]);
-  const [category, setCategory] = useState<"REGULAR" | "ODA" | "EXTRA">(
+  const [category, setCategory] = useState<
+    "REGULAR" | "ODA" | "EXTRA" | "EXTERNAL"
+  >(
     "REGULAR",
   );
   const [waitingPost, setWaitingPost] = useState(false);
@@ -540,21 +542,24 @@ export default function GameEditingForm({
 
       if (teamResponse.status == 200) {
         const data = await readArray<TeamType>(teamResponse);
-        const filteredTeams = data.filter((team: TeamType) => !team.game);
-        const matchingSlugTeam = data.filter(
-          (team: TeamType) => game && team.game?.slug === game.slug,
-        );
-
-        if (matchingSlugTeam.length !== 0) {
-          setTeams([...matchingSlugTeam, ...filteredTeams]);
-        } else {
-          setTeams(filteredTeams);
-        }
+        const relevantTeams = game
+          ? data.filter((team: TeamType) => team.game?.slug === game.slug)
+          : data.filter(
+              (team: TeamType) =>
+                !team.game && team.jamId === activeJamResponse?.jam?.id,
+            );
+        updateTeams(relevantTeams);
       }
     }
 
     loadData();
-  }, [game, activeJamResponse, inCurrentJamContext, isRatingPhase]);
+  }, [
+    game,
+    activeJamResponse,
+    inCurrentJamContext,
+    isRatingPhase,
+    updateTeams,
+  ]);
 
   useEffect(() => {
     setFlags(
@@ -609,11 +614,16 @@ export default function GameEditingForm({
     const teamResponse = await getTeamsUser();
     if (teamResponse.ok) {
       const data = await readArray<TeamType>(teamResponse);
-      const filtered = data.filter((t: TeamType) => !t.game);
+      const filtered = game
+        ? data.filter((team: TeamType) => team.game?.slug === game.slug)
+        : data.filter(
+            (team: TeamType) =>
+              !team.game && team.jamId === activeJamResponse?.jam?.id,
+          );
       updateTeams(filtered);
       setCurrentTeam((i) => Math.min(i, Math.max(filtered.length - 1, 0)));
     }
-  }, [updateTeams]);
+  }, [activeJamResponse?.jam?.id, game, updateTeams]);
 
   useEffect(() => {
     const load = async () => {
@@ -647,6 +657,11 @@ export default function GameEditingForm({
           return;
         }
         teamCheckDoneRef.current = true;
+
+        if (game) {
+          setLoading(false);
+          return;
+        }
 
         const response = await getSelf();
         const localuser = await readItem<UserType>(response);
@@ -820,21 +835,25 @@ export default function GameEditingForm({
   const doArtistSearch = useMemo(
     () =>
       debounce(async (songId: number, q: string) => {
-        if (!q) {
+        const query = q.trim();
+        if (!query) {
           setArtistResults((prev) => ({ ...prev, [songId]: [] }));
           return;
         }
         try {
-          const res = await searchUsers(q);
-          if (res.status === 200) {
-            const data = await res.json();
+          const res = await searchUsers(query);
+          if (res.ok) {
+            const data = await readArray<UserType>(res);
             setArtistResults((prev) => ({
               ...prev,
-              [songId]: data as UserType[],
+              [songId]: data.slice(0, 6),
             }));
+          } else {
+            setArtistResults((prev) => ({ ...prev, [songId]: [] }));
           }
         } catch (e) {
           console.error(e);
+          setArtistResults((prev) => ({ ...prev, [songId]: [] }));
         }
       }, 250),
     [],
@@ -1104,20 +1123,20 @@ export default function GameEditingForm({
                   ? t("CreateGame.Update.Success")
                   : t("CreateGame.Create.Success"),
               });
-              setWaitingPost(false);
               router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
             } else {
               const error = await response.text();
               addToast({
                 title: error || t("CreateGame.Create.Error"),
               });
-              setWaitingPost(false);
             }
           } catch (error) {
             console.error("Error creating game:", error);
             addToast({
               title: t("CreateGame.Create.Error"),
             });
+          } finally {
+            setWaitingPost(false);
           }
         }}
       >
@@ -1223,7 +1242,13 @@ export default function GameEditingForm({
                             disabled={!canSwapCategory}
                             selectedValue={category}
                             onSelect={(key) => {
-                              setCategory(key as "REGULAR" | "ODA" | "EXTRA");
+                              setCategory(
+                                key as
+                                  | "REGULAR"
+                                  | "ODA"
+                                  | "EXTRA"
+                                  | "EXTERNAL",
+                              );
                             }}
                           >
                             <Dropdown.Item
@@ -1255,6 +1280,15 @@ export default function GameEditingForm({
                             >
                               GameCategory.Extra.Title
                             </Dropdown.Item>
+                            {game?.category === "EXTERNAL" && (
+                              <Dropdown.Item
+                                value="EXTERNAL"
+                                description="Imported from an external jam"
+                                icon="externalLink"
+                              >
+                                External
+                              </Dropdown.Item>
+                            )}
                           </Dropdown>
                         }
                       </Vstack>
@@ -1296,21 +1330,23 @@ export default function GameEditingForm({
                   </Vstack>
                 </Card>
 
-                <Card>
-                  <Vstack align="start">
-                    <div>
-                      <Text color="text">CreateGame.Theme.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateGame.Theme.Description
-                      </Text>
-                    </div>
-                    <Textarea
-                      placeholder="CreateGame.Theme.Placeholder"
-                      value={themeJustification}
-                      onValueChange={setThemeJustification}
-                    />
-                  </Vstack>
-                </Card>
+                {game?.category !== "EXTERNAL" && (
+                  <Card>
+                    <Vstack align="start">
+                      <div>
+                        <Text color="text">CreateGame.Theme.Title</Text>
+                        <Text color="textFaded" size="xs">
+                          CreateGame.Theme.Description
+                        </Text>
+                      </div>
+                      <Textarea
+                        placeholder="CreateGame.Theme.Placeholder"
+                        value={themeJustification}
+                        onValueChange={setThemeJustification}
+                      />
+                    </Vstack>
+                  </Card>
+                )}
 
                 <Card>
                   <Vstack align="start">

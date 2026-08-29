@@ -11,7 +11,7 @@ import {
   ModalHeader,
   useDisclosure,
 } from "bioloom-ui";
-import { redirect } from "@/compat/next-navigation";
+import { redirect, useSearchParams } from "@/compat/next-navigation";
 import { useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 import { getSelf, searchUsers } from "@/requests/user";
@@ -42,6 +42,8 @@ import { readArray, readItem } from "@/requests/helpers";
 import { Chip } from "bioloom-ui";
 
 export default function EditTeamPage() {
+  const searchParams = useSearchParams();
+  const requestedTeamId = searchParams.get("teamId");
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
   const [roles, setRoles] = useState<RoleType[]>([]);
   const [user, setUser] = useState<UserType>();
@@ -89,10 +91,15 @@ export default function EditTeamPage() {
 
         if (teamResponse.status == 200) {
           const data = await readArray<TeamType>(teamResponse);
-          const filteredData = data.filter(
-            (team: TeamType) => team.jamId == currentJam?.id
-          );
+          const filteredData = requestedTeamId
+            ? data.filter(
+                (team: TeamType) => team.id === Number(requestedTeamId),
+              )
+            : data.filter(
+                (team: TeamType) => team.jamId === currentJam?.id,
+              );
           setTeams(filteredData);
+          setSelectedTeam(0);
 
           if (filteredData.length > 0) {
             setApplicationsOpen(filteredData[0].applicationsOpen);
@@ -123,7 +130,7 @@ export default function EditTeamPage() {
         console.error(error);
       }
     }
-  }, [activeJamResponse]);
+  }, [activeJamResponse, requestedTeamId]);
 
   function changeTeam(newid: number) {
     setSelectedTeam(newid);
@@ -227,6 +234,11 @@ export default function EditTeamPage() {
       </Vstack>
     );
 
+  const selectedTeamData = teams[selectedTeam];
+  const isCurrentJamTeam =
+    selectedTeamData.jamId === activeJamResponse?.jam?.id;
+  const teamGameName = selectedTeamData.game?.name;
+
   return (
     <div className="flex items-center justify-center">
       <Form
@@ -280,7 +292,9 @@ export default function EditTeamPage() {
               </Text>
             </Hstack>
             <Text size="sm" color="textFaded">
-              View and manage your team for the jam
+              {isCurrentJamTeam || !teamGameName
+                ? "View and manage your team for the jam"
+                : `View and manage your team for ${teamGameName}`}
             </Text>
           </Vstack>
         </Card>
@@ -319,9 +333,11 @@ export default function EditTeamPage() {
             >
               Invite User
             </Button>
-            <Button icon="users" href="/team-finder">
-              Go to Team Finder
-            </Button>
+            {isCurrentJamTeam && (
+              <Button icon="users" href="/team-finder">
+                Go to Team Finder
+              </Button>
+            )}
           </div>
         )}
         {users?.map((user2) => (
@@ -489,8 +505,9 @@ export default function EditTeamPage() {
             <div>
               <Text color="text">Team Name</Text>
               <Text color="textFaded" size="xs">
-                The team name that displays as the game author (and for your
-                team on the team finder)
+                {isCurrentJamTeam || !teamGameName
+                  ? "The team name that displays as the game author and for your team on the team finder"
+                  : `The team name displayed as the author of ${teamGameName}`}
               </Text>
             </div>
             <Input
@@ -501,68 +518,72 @@ export default function EditTeamPage() {
             />
           </Vstack>
         </Card>
-        <Card>
-          <Vstack align="start">
-            <div>
-              <Text color="text">Description</Text>
-              <Text color="textFaded" size="xs">
-                A description of the team (and a way to contact you if needed)
-                that shows in the team finder
-              </Text>
-            </div>
-            <Textarea
-              placeholder="Enter a description... (optional)"
-              disabled={teams[selectedTeam].ownerId != user.id}
-              onValueChange={setDescription}
-              value={description || ""}
-              fullWidth={true}
-            />
-          </Vstack>
-        </Card>
-        <Card>
-          <Hstack>
-            <Switch
-              checked={applicationsOpen}
-              onChange={setApplicationsOpen}
-              disabled={teams[selectedTeam].ownerId != user.id}
-            />
-            <Vstack align="start" gap={0}>
-              <Text color="text">Open Applications</Text>
-              <Text color="textFaded" size="xs">
-                Lets people apply for your team on the team finder
-              </Text>
-            </Vstack>
-          </Hstack>
-        </Card>
-        <Card>
-          <Vstack align="start">
-            <div>
-              <Text color="text">Wanted Roles</Text>
-              <Text color="textFaded" size="xs">
-                Roles that the team finder shows that you need
-              </Text>
-            </div>
-            <Dropdown
-              position="top"
-              multiple
-              disabled={teams[selectedTeam].ownerId != user.id}
-              selectedValues={wantedRoles}
-              onSelectionChange={(selection) => {
-                setWantedRoles(selection as Set<string>);
-              }}
-            >
-              {roles.map((secondaryRole) => (
-                <Dropdown.Item
-                  key={secondaryRole.slug}
-                  value={secondaryRole.slug}
-                  description={secondaryRole.description}
+        {isCurrentJamTeam && (
+          <>
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Description</Text>
+                  <Text color="textFaded" size="xs">
+                    A description of the team (and a way to contact you if
+                    needed) that shows in the team finder
+                  </Text>
+                </div>
+                <Textarea
+                  placeholder="Enter a description... (optional)"
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                  onValueChange={setDescription}
+                  value={description || ""}
+                  fullWidth={true}
+                />
+              </Vstack>
+            </Card>
+            <Card>
+              <Hstack>
+                <Switch
+                  checked={applicationsOpen}
+                  onChange={setApplicationsOpen}
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                />
+                <Vstack align="start" gap={0}>
+                  <Text color="text">Open Applications</Text>
+                  <Text color="textFaded" size="xs">
+                    Lets people apply for your team on the team finder
+                  </Text>
+                </Vstack>
+              </Hstack>
+            </Card>
+            <Card>
+              <Vstack align="start">
+                <div>
+                  <Text color="text">Wanted Roles</Text>
+                  <Text color="textFaded" size="xs">
+                    Roles that the team finder shows that you need
+                  </Text>
+                </div>
+                <Dropdown
+                  position="top"
+                  multiple
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                  selectedValues={wantedRoles}
+                  onSelectionChange={(selection) => {
+                    setWantedRoles(selection as Set<string>);
+                  }}
                 >
-                  {secondaryRole.name}
-                </Dropdown.Item>
-              ))}
-            </Dropdown>
-          </Vstack>
-        </Card>
+                  {roles.map((secondaryRole) => (
+                    <Dropdown.Item
+                      key={secondaryRole.slug}
+                      value={secondaryRole.slug}
+                      description={secondaryRole.description}
+                    >
+                      {secondaryRole.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              </Vstack>
+            </Card>
+          </>
+        )}
         {teams[selectedTeam].ownerId == user.id && (
           <div className="flex gap-2">
             {waitingSave ? (

@@ -21,7 +21,7 @@ export interface GameResultType {
   updatedAt: Date;
   downloadLinks: DownloadLinkType[];
   jam: JamType;
-  category: "ODA" | "REGULAR" | "EXTRA";
+  category: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
   teamId: number;
   team: TeamType;
   ratingCategories: RatingCategoryType[];

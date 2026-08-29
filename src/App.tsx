@@ -25,6 +25,7 @@ const AdminThemeVotingPage = lazy(
 const CollectionsPage = lazy(() => import("@/app/(main)/collections/page"));
 const CreateEventPage = lazy(() => import("@/app/(main)/create-event/page"));
 const CreateGamePage = lazy(() => import("@/app/(main)/create-game/page"));
+const ImportGamePage = lazy(() => import("@/app/(main)/import-game/page"));
 const CreatePostPage = lazy(() => import("@/app/(main)/create-post/page"));
 const DocsPage = lazy(() => import("@/app/(main)/docs/page"));
 const DocsNewPage = lazy(() => import("@/app/(main)/docs/new/page"));
@@ -163,6 +164,11 @@ const indexedRouteMetadata = [
     pattern: /^\/radio(?:\/[^/]+)?\/?$/,
     title: "Radio",
     description: "Listen to Down2Jam music radio.",
+  },
+  {
+    pattern: /^\/import-game\/?$/,
+    title: "Import a game",
+    description: "Import an itch.io jam game and add it to the game archive.",
   },
   {
     pattern: /^\/rss\/?$/,
@@ -333,6 +339,7 @@ export default function App() {
           <Route path="down2guess" element={<Navigate to="/d2guess" replace />} />
           <Route path="gamedle" element={<Navigate to="/d2guess" replace />} />
           <Route path="games" element={<GamesPage />} />
+          <Route path="import-game" element={<ImportGamePage />} />
           <Route path="home" element={<HomePage />} />
           <Route path="inbox/*" element={<InboxPage />} />
           <Route path="login" element={<LoginPage />} />

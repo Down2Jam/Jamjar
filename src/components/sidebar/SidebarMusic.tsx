@@ -113,6 +113,7 @@ export default function SidebarMusic() {
                 pageVersion={track.pageVersion}
                 song={track.url}
                 loudnessGainDb={track.loudnessGainDb}
+                queue={featured}
                 license={track.license}
                 allowDownload={track.allowDownload}
                 allowBackgroundUse={track.allowBackgroundUse}

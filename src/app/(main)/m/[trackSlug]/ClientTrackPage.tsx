@@ -792,6 +792,7 @@ export default function ClientTrackPage({
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
                     {track.game.category !== "EXTRA" &&
+                      track.game.category !== "EXTERNAL" &&
                       track.pageVersion !== "POST_JAM" &&
                       Math.round(overallScore?.ratingsGivenCount ?? 0) < 5 && (
                       <Tooltip

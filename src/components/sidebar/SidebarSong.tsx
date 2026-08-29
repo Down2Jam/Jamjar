@@ -45,6 +45,7 @@ interface SidebarSongProps {
   hideRatings?: boolean;
   wide?: boolean;
   squareThumbnail?: boolean;
+  showGame?: boolean;
   queue?: PlayerTrack[];
 }
 
@@ -69,6 +70,7 @@ export default function SidebarSong({
   hideRatings = false,
   wide = false,
   squareThumbnail = false,
+  showGame = true,
   queue,
 }: SidebarSongProps) {
   const { current, isPlaying, playItem, toggle } = useMusic();
@@ -113,14 +115,16 @@ export default function SidebarSong({
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             <Image
               src={thumbnail}
-              width={wide ? 96 : squareThumbnail ? 80 : 50}
-              height={wide ? 96 : squareThumbnail ? 80 : 50}
+              width={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
+              height={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
               className={
                 wide
                   ? "z-0 h-24 w-24 shrink-0 rounded-md object-cover"
                   : squareThumbnail
-                    ? "z-0 h-20 w-20 shrink-0 rounded-md object-cover"
-                  : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
+                    ? showGame
+                      ? "z-0 h-20 w-20 shrink-0 rounded-md object-cover"
+                      : "z-0 h-16 w-16 shrink-0 rounded-md object-cover"
+                    : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
               }
               alt="Song Thumbnail"
             />
@@ -143,26 +147,33 @@ export default function SidebarSong({
                   {name}
                 </Text>
               </Link>
-              <GameDataHoverPreview
-                game={{
-                  slug: game.slug ?? "",
-                  name: game.name ?? game.slug ?? "Game",
-                  thumbnail: game.thumbnail,
-                  pageVersion,
-                }}
-              >
-                <Link
-                  href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
-                  underline={false}
-                  className="sidebar-media-link"
-                  style={{ textDecoration: "none" }}
+              {showGame && (
+                <GameDataHoverPreview
+                  game={{
+                    slug: game.slug ?? "",
+                    name: game.name ?? game.slug ?? "Game",
+                    thumbnail: game.thumbnail,
+                    pageVersion,
+                  }}
                 >
-                  <Text size="xs" color="textFaded">
-                    {game.name}
-                    {pageVersion === "POST_JAM" ? " · Post-Jam" : pageVersion === "JAM" ? " · Jam" : ""}
-                  </Text>
-                </Link>
-              </GameDataHoverPreview>
+                  <Link
+                    href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
+                    underline={false}
+                    className="sidebar-media-link"
+                    style={{ textDecoration: "none" }}
+                  >
+                    <Text size="xs" color="textFaded">
+                      {game.name}
+                      {game.category !== "EXTERNAL" &&
+                        (pageVersion === "POST_JAM"
+                          ? " · Post-Jam"
+                          : pageVersion === "JAM"
+                            ? " · Jam"
+                            : "")}
+                    </Text>
+                  </Link>
+                </GameDataHoverPreview>
+              )}
               <Hstack gap={1} className="min-w-0">
                 <UserHoverPreview
                   user={{

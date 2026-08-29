@@ -79,6 +79,30 @@ export async function createPostJamVersion(gameSlug: string) {
   });
 }
 
+export async function importItchGame(url: string, jamUrl?: string) {
+  return fetch(`${BASE_URL}/games/import/itch`, {
+    method: "POST",
+    body: JSON.stringify({ url, jamUrl: jamUrl?.trim() || undefined }),
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
+}
+
+export async function previewItchGame(url: string) {
+  return fetch(`${BASE_URL}/games/import/itch/preview`, {
+    method: "POST",
+    body: JSON.stringify({ url }),
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+  });
+}
+
 export async function postGame(
   title: string,
   gameSlug: string,
@@ -91,7 +115,7 @@ export async function postGame(
     platform: PlatformType;
   }[],
   userSlug: string,
-  category: "ODA" | "REGULAR" | "EXTRA",
+  category: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL",
   targetTeamId: number,
   ratingCategories: number[],
   majRatingCategories: number[],
@@ -192,7 +216,7 @@ export async function updateGame(
     platform: PlatformType;
   }[],
   userSlug: string,
-  category: "ODA" | "REGULAR" | "EXTRA",
+  category: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL",
   ratingCategories: number[],
   majRatingCategories: number[],
   published: boolean,

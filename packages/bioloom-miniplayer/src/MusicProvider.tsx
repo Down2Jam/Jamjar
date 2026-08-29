@@ -265,7 +265,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       const i = playbackQueue.findIndex((x) => x.url === t.song);
       if (i >= 0) {
         if (queue) {
-          setBackStack([]);
+          setBackStack(Array.from({ length: i }, (_, index) => index));
         } else {
           setBackStack((bs) =>
             currentIndex == null || bs[bs.length - 1] === currentIndex

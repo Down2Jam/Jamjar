@@ -75,7 +75,8 @@ const toGamePreviewData = (data: GameMentionData): GameCardGame => ({
   category:
     data.category === "ODA" ||
     data.category === "REGULAR" ||
-    data.category === "EXTRA"
+    data.category === "EXTRA" ||
+    data.category === "EXTERNAL"
       ? data.category
       : undefined,
   tags: (data.tags ?? [])

@@ -817,6 +817,10 @@ export default function ClientUserPage({
         }
         return prev;
       }, []) ?? []
+    ).sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() ||
+        b.id - a.id,
     );
   }, [user]);
   const bestScores = useMemo(() => {
@@ -857,7 +861,33 @@ export default function ClientUserPage({
     () => recGames.slice(0, 3),
     [recGames],
   );
-  const visibleRecommendedTracks = recTracks.slice(0, 3);
+  const visibleRecommendedTracks = useMemo(
+    () => recTracks.slice(0, 3),
+    [recTracks],
+  );
+  const recommendedTrackQueue = useMemo(
+    () =>
+      visibleRecommendedTracks.map((track) => ({
+        ...track,
+        composer: track.composer ?? { name: "Unknown" },
+        game: track.game
+          ? {
+              ...track.game,
+              thumbnail: track.game.thumbnail ?? undefined,
+            }
+          : {
+              name: "Unknown game",
+              slug: "",
+              thumbnail: undefined,
+              soundtrackThumbnail: null,
+            },
+      })),
+    [visibleRecommendedTracks],
+  );
+  const orderedProfileTracks = useMemo(
+    () => [...visibleProfileTracks].sort((a, b) => b.id - a.id),
+    [visibleProfileTracks],
+  );
   const hasVisibleRecommendedGames =
     canShowRecommendedGames && visibleRecommendedGames.length > 0;
   const hasVisibleRecommendedTracks =
@@ -1533,28 +1563,22 @@ export default function ClientUserPage({
                       )}
                     </Hstack>
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {visibleRecommendedTracks.map((track) => (
+                      {recommendedTrackQueue.map((track) => (
                         <SidebarSong
                           key={track.id}
                           slug={track.slug}
                           name={track.name}
-                          artist={track.composer ?? { name: "Unknown" }}
+                          artist={track.composer}
                           squareThumbnail
                           thumbnail={
                             track.game?.soundtrackThumbnail ||
                             track.game?.thumbnail ||
                             "/images/D2J_Icon.png"
                           }
-                          game={
-                            track.game
-                              ? {
-                                  ...track.game,
-                                  thumbnail: track.game.thumbnail ?? undefined,
-                                }
-                              : {}
-                          }
+                          game={track.game}
                           song={track.url}
                           loudnessGainDb={track.loudnessGainDb}
+                          queue={recommendedTrackQueue}
                           license={track.license}
                           allowDownload={track.allowDownload}
                           allowBackgroundUse={track.allowBackgroundUse}
@@ -1606,18 +1630,14 @@ export default function ClientUserPage({
             )}
             {profileSection === "games" && (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {publishedGames
-                  .sort((a, b) => b.id - a.id)
-                  .map((game, index) => (
-                    <GameCard key={game.name + index} game={game} />
-                  ))}
+                {publishedGames.map((game, index) => (
+                  <GameCard key={game.name + index} game={game} />
+                ))}
               </section>
             )}
             {profileSection === "music" && (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...visibleProfileTracks]
-                  .sort((a, b) => b.id - a.id)
-                  .map((track) => (
+                {orderedProfileTracks.map((track) => (
                     <SidebarSong
                       key={track.id}
                       slug={track.slug}
@@ -1635,6 +1655,7 @@ export default function ClientUserPage({
                       }}
                       song={track.url}
                       loudnessGainDb={track.loudnessGainDb}
+                      queue={orderedProfileTracks}
                       license={track.license}
                       pageVersion={track.pageVersion}
                       allowDownload={track.allowDownload}
@@ -1643,7 +1664,7 @@ export default function ClientUserPage({
                         track.allowBackgroundUseAttribution
                       }
                     />
-                  ))}
+                ))}
               </section>
             )}
             {profileSection === "collections" && (

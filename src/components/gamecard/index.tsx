@@ -21,7 +21,7 @@ export type GameCardGame = {
   inputMethods?: string[];
   tags?: Array<{ id?: number; name: string }>;
   flags?: Array<{ id?: number; name: string }>;
-  category?: "ODA" | "REGULAR" | "EXTRA";
+  category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
   downloadLinks?: Array<{ platform: string }>;
   jam?: { name?: string | null; color?: string | null };
   creatorName?: string | null;
@@ -450,21 +450,25 @@ export function GameCard({
           style={{
             color: colors["text"],
             backgroundColor:
-              colors[
+              game.category == "EXTERNAL"
+                ? colors["base"]
+                : colors[
                 game.category == "REGULAR"
                   ? "blue"
                   : game.category == "ODA"
                   ? "purple"
                   : "pink"
-              ] + "aa",
+                ] + "aa",
             borderColor:
-              colors[
+              game.category == "EXTERNAL"
+                ? colors["base"]
+                : colors[
                 game.category == "REGULAR"
                   ? "blue"
                   : game.category == "ODA"
                   ? "purple"
                   : "pink"
-              ],
+                ],
           }}
         >
           {game.category}

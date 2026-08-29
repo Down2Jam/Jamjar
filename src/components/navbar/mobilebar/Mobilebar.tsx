@@ -79,6 +79,15 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             Settings
           </Dropdown.Item>
         )}
+        {user && (
+          <Dropdown.Item
+            key="import-game"
+            icon="download"
+            onClick={() => redirect("/import-game")}
+          >
+            Import Game
+          </Dropdown.Item>
+        )}
         <Dropdown.Item
           key="news"
           icon="megaphone"

@@ -34,7 +34,11 @@ export default function ClientGameEditPage({
           const payload = await readItem<GameType>(gameResponse);
           if (!payload) return;
           setGame(payload);
-          setSelectedVersion(payload?.postJamPage ? "POST_JAM" : "JAM");
+          setSelectedVersion(
+            payload.category !== "EXTERNAL" && payload.postJamPage
+              ? "POST_JAM"
+              : "JAM",
+          );
         }
 
         setLoading(false);
@@ -47,6 +51,7 @@ export default function ClientGameEditPage({
 
   const canCreateOrEditPostJamVersion =
     !!game &&
+    game.category !== "EXTERNAL" &&
     (!activeJamResponse?.jam ||
       activeJamResponse.jam.id !== game.jamId ||
       activeJamResponse.phase === "Post-Jam Refinement" ||

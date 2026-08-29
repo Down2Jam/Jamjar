@@ -32,6 +32,12 @@ export default function NavbarUser({ user }: NavbarUserProps) {
             description="Navbar.Settings.Description"
           />
           <Hotkey
+            hotkey={["G", "U"]}
+            onPress={() => redirect(`/import-game`)}
+            title="Import Game"
+            description="Import a game from itch.io"
+          />
+          <Hotkey
             hotkey={["G", "B"]}
             onPress={() =>
               redirect("https://github.com/Down2Jam/Jamjar/issues")
@@ -78,6 +84,15 @@ export default function NavbarUser({ user }: NavbarUserProps) {
               kbd="G O"
             >
               Navbar.Settings.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="import-game"
+              icon="download"
+              description="Import a game from itch.io"
+              href="/import-game"
+              kbd="G U"
+            >
+              Import Game
             </Dropdown.Item>
           </>
         ) : (

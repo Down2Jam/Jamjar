@@ -40,6 +40,7 @@ const categoryOptions: Array<{
   { id: "REGULAR", label: "Regular" },
   { id: "ODA", label: "ODA" },
   { id: "EXTRA", label: "Extra" },
+  { id: "EXTERNAL", label: "External" },
 ];
 
 function hashString(value: string) {

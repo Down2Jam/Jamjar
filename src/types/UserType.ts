@@ -38,7 +38,7 @@ export interface UserType {
     short?: string | null;
     thumbnail?: string | null;
     itchEmbedUrl?: string | null;
-    category?: "ODA" | "REGULAR" | "EXTRA";
+    category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
     downloadLinks?: Array<{
       id: number;
       url: string;
@@ -54,7 +54,7 @@ export interface UserType {
     short?: string | null;
     thumbnail?: string | null;
     itchEmbedUrl?: string | null;
-    category?: "ODA" | "REGULAR" | "EXTRA";
+    category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
     downloadLinks?: Array<{
       id: number;
       url: string;

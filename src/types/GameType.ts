@@ -13,6 +13,7 @@ import { TrackType } from "./TrackType";
 
 export type PageVersion = "JAM" | "POST_JAM";
 export type ListingPageVersion = PageVersion | "ALL";
+export type GameCategory = "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
 
 export type GameEmbedAspectRatio =
   | "16 / 9"
@@ -31,6 +32,8 @@ export interface GameType {
   id: number;
   pageVersion?: PageVersion;
   slug: string;
+  sourceUrl?: string | null;
+  sourcePlatform?: string | null;
   name: string;
   short: string;
   description?: string;
@@ -50,7 +53,7 @@ export interface GameType {
   updatedAt: Date;
   downloadLinks: DownloadLinkType[];
   jam: JamType;
-  category: "ODA" | "REGULAR" | "EXTRA";
+  category: GameCategory;
   teamId: number;
   team: TeamType;
   ratingCategories: RatingCategoryType[];

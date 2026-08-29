@@ -21,10 +21,11 @@ export async function getUser(userSlug: string) {
 
 export async function searchUsers(query: string) {
   const tokenCookie = getCookie("token");
-  if (!tokenCookie) return Promise.reject("Token cookie not found.");
 
   return fetch(`${BASE_URL}/users/search?q=${encodeURIComponent(query)}`, {
-    headers: { authorization: `Bearer ${tokenCookie}` },
+    headers: tokenCookie
+      ? { authorization: `Bearer ${tokenCookie}` }
+      : undefined,
     credentials: "include",
   });
 }
