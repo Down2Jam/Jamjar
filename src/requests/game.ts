@@ -350,11 +350,17 @@ export async function getGamesPage({
   return fetch(`${BASE_URL}/games?${params.toString()}`);
 }
 
-export async function getRandomGame() {
-  return fetch(`${BASE_URL}/games/random`, {
-    headers: { authorization: `Bearer ${getCookie("token")}` },
-    credentials: "include",
-  });
+export async function getRandomGame(includeExternal = true) {
+  const params = new URLSearchParams();
+  if (!includeExternal) params.set("includeExternal", "false");
+
+  return fetch(
+    `${BASE_URL}/games/random${params.size ? `?${params.toString()}` : ""}`,
+    {
+      headers: { authorization: `Bearer ${getCookie("token")}` },
+      credentials: "include",
+    },
+  );
 }
 
 export async function getGameDevlogPosts(

@@ -426,8 +426,14 @@ export function GameCard({
             className="rounded p-2 pt-1 pb-1 text-xs shadow-md backdrop-blur-md"
             style={{
               color: colors["text"],
-              backgroundColor: colors[jamColor] + "aa",
-              borderColor: colors[jamColor],
+              backgroundColor:
+                game.category === "EXTERNAL"
+                  ? colors["base"]
+                  : colors[jamColor] + "aa",
+              borderColor:
+                game.category === "EXTERNAL"
+                  ? colors["base"]
+                  : colors[jamColor],
             }}
           >
             {jamName}
@@ -450,25 +456,25 @@ export function GameCard({
           style={{
             color: colors["text"],
             backgroundColor:
-              game.category == "EXTERNAL"
-                ? colors["base"]
-                : colors[
+              colors[
                 game.category == "REGULAR"
                   ? "blue"
                   : game.category == "ODA"
                   ? "purple"
+                  : game.category == "EXTERNAL"
+                  ? "orange"
                   : "pink"
-                ] + "aa",
+              ] + "aa",
             borderColor:
-              game.category == "EXTERNAL"
-                ? colors["base"]
-                : colors[
+              colors[
                 game.category == "REGULAR"
                   ? "blue"
                   : game.category == "ODA"
                   ? "purple"
+                  : game.category == "EXTERNAL"
+                  ? "orange"
                   : "pink"
-                ],
+              ],
           }}
         >
           {game.category}

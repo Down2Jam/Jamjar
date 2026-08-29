@@ -108,6 +108,7 @@ async function getAllGuessableGames() {
       : payload.meta?.pageInfo ?? payload.pageInfo ?? null;
 
     pageGames.forEach((game) => {
+      if (game.category === "EXTERNAL") return;
       if (seen.has(game.id)) return;
       seen.add(game.id);
       games.push(game);
@@ -554,7 +555,7 @@ export default function Down2GuessPage() {
     const loadRandomGame = async () => {
       setGameLoading(true);
       try {
-        const randomRes = await getRandomGame();
+        const randomRes = await getRandomGame(false);
         const randomGame = await readItem<GameType>(randomRes);
         const slug = randomGame?.slug;
         if (!slug) {
@@ -596,7 +597,7 @@ export default function Down2GuessPage() {
     setGameLoading(true);
 
     try {
-      const randomRes = await getRandomGame();
+      const randomRes = await getRandomGame(false);
       const randomGame = await readItem<GameType>(randomRes);
       const slug = randomGame?.slug;
       if (!slug) {

@@ -2178,8 +2178,9 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
-            <Card className="order-50">
-              <Vstack align="start">
+            {displayGame.category !== "EXTERNAL" && (
+              <Card className="order-50">
+                <Vstack align="start">
                 <p
                   className="text-xs"
                   style={{
@@ -2201,7 +2202,6 @@ export default function ClientGamePage({
                     )}
                   </Chip>
                   {displayGame.category !== "EXTRA" &&
-                    displayGame.category !== "EXTERNAL" &&
                     selectedVersion !== "POST_JAM" && (
                     <Hstack>
                       <Chip>
@@ -2309,8 +2309,9 @@ export default function ClientGamePage({
                     )}
                   </Hstack>
                 </Vstack>
-              </Vstack>
-            </Card>
+                </Vstack>
+              </Card>
+            )}
             <Popover
               shown={
                 isScreenshotViewerOpen && selectedMedia?.type === "screenshot"

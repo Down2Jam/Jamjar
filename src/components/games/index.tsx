@@ -1265,16 +1265,6 @@ export default function Games() {
           </button>
           <div className="col-start-2 row-start-2 shrink-0">
             <Hstack wrap justify="end" className="gap-2">
-              {user && (
-                <Button
-                  size="lg"
-                  className="m-1 rounded-sm"
-                  icon="download"
-                  href="/import-game"
-                >
-                  Import game
-                </Button>
-              )}
               {sortDropdown}
             </Hstack>
           </div>
