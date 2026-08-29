@@ -97,20 +97,18 @@ export default function CommentReactions({
     onOverlayChange?.(pickerOpen || hoveredReactionId !== null);
   }, [hoveredReactionId, onOverlayChange, pickerOpen]);
 
-  const sortedEmojis = useMemo(() => {
-    return sortEmojisByUsage(emojis);
-  }, [emojis]);
   const availableEmojis = useMemo(() => {
     const usedReactionIds = new Set(current.map((entry) => entry.reaction.id));
     if (current.length >= MAX_UNIQUE_REACTIONS) {
       return [];
     }
-    return sortedEmojis.filter((emoji) => !usedReactionIds.has(emoji.id));
-  }, [current, sortedEmojis]);
+    return emojis.filter((emoji) => !usedReactionIds.has(emoji.id));
+  }, [current, emojis]);
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
-    if (!query) return availableEmojis;
-    return availableEmojis.filter((emoji) => emoji.slug.includes(query));
+    return sortEmojisByUsage(
+      availableEmojis.filter((emoji) => !query || emoji.slug.includes(query)),
+    );
   }, [availableEmojis, emojiQuery]);
   const canAddNewReaction = useMemo(() => {
     const firstReactionCount = current.filter(

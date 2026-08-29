@@ -33,6 +33,7 @@ export interface ReactionType {
     profilePicture?: string | null;
   } | null;
   popularityScore?: number;
+  createdAt?: string | Date;
 }
 
 export interface ReactionSummaryType {
