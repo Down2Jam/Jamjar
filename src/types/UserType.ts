@@ -79,6 +79,7 @@ export interface UserType {
     allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
+    loudnessGainDb?: number | null;
     composer?: { name: string };
     game?: {
       name: string;

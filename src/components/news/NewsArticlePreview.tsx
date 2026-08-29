@@ -129,7 +129,7 @@ export default function NewsArticlePreview({
         <PostReactions
           postId={post.id}
           reactions={post.reactions}
-          pickerPosition="top-left"
+          pickerPosition="top"
         />
         <div className="ml-auto">
           <ShareNewsPost slug={post.slug} />

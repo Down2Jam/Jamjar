@@ -9,6 +9,7 @@ import { useEmojis } from "@/providers/useEmojis";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 import { useReactionColors } from "./useReactionColors";
 import { useTheme } from "@/providers/useSiteTheme";
+import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 
 const MAX_UNIQUE_REACTIONS = 20;
 
@@ -17,7 +18,7 @@ type PostReactionsProps = {
   reactions?: ReactionSummaryType[];
   className?: string;
   onOverlayChange?: (open: boolean) => void;
-  pickerPosition?: "top-left" | "bottom-left";
+  pickerPosition?: "top" | "bottom";
 };
 
 export default function PostReactions({
@@ -25,7 +26,7 @@ export default function PostReactions({
   reactions,
   className,
   onOverlayChange,
-  pickerPosition = "top-left",
+  pickerPosition = "top",
 }: PostReactionsProps) {
   const { emojis } = useEmojis();
   const { colors } = useTheme();
@@ -99,7 +100,7 @@ export default function PostReactions({
   }, [hoveredReactionId, onOverlayChange, pickerOpen]);
 
   const sortedEmojis = useMemo(() => {
-    return [...emojis].sort((a, b) => a.slug.localeCompare(b.slug));
+    return sortEmojisByUsage(emojis);
   }, [emojis]);
   const availableEmojis = useMemo(() => {
     const usedReactionIds = new Set(current.map((entry) => entry.reaction.id));
@@ -111,14 +112,7 @@ export default function PostReactions({
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
     if (!query) return availableEmojis;
-    return availableEmojis
-      .filter((emoji) => emoji.slug.includes(query))
-      .sort((a, b) => {
-        const aStarts = a.slug.startsWith(query) ? 1 : 0;
-        const bStarts = b.slug.startsWith(query) ? 1 : 0;
-        if (aStarts !== bStarts) return bStarts - aStarts;
-        return a.slug.localeCompare(b.slug);
-      });
+    return availableEmojis.filter((emoji) => emoji.slug.includes(query));
   }, [availableEmojis, emojiQuery]);
   const canAddNewReaction = useMemo(() => {
     const firstReactionCount = current.filter(

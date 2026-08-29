@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { addToast } from "bioloom-ui";
 import {
   getGame,
+  getFlags,
   getGameTags,
   getGamesPage,
   getRandomGame,
@@ -13,6 +14,8 @@ import { readItem } from "@/requests/helpers";
 import { GameType } from "@/types/GameType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TagType } from "@/types/TagType";
+import { FlagType } from "@/types/FlagType";
+import TagLabel from "@/components/tags/TagLabel";
 import { Input } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
@@ -25,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "bioloom-ui";
-import { Icon } from "bioloom-ui";
+import { Icon, type IconName } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Link } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
@@ -235,10 +238,6 @@ function compareNumber(
   return { status, direction };
 }
 
-function formatList(values: string[]) {
-  return values.length > 0 ? values.join(", ") : "No Data";
-}
-
 function formatNumber(value: number | null) {
   return value == null ? "No Data" : value.toString();
 }
@@ -428,6 +427,7 @@ export default function Down2GuessPage() {
     { id: number; slug: string; name: string; thumbnail: string | null }[]
   >([]);
   const [allTags, setAllTags] = useState<TagType[]>([]);
+  const [allFlags, setAllFlags] = useState<FlagType[]>([]);
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
   >([]);
@@ -440,6 +440,10 @@ export default function Down2GuessPage() {
   const tagCategoryById = useMemo(() => {
     return new Map(allTags.map((tag) => [tag.id, tag.category?.name ?? ""]));
   }, [allTags]);
+  const flagByName = useMemo(
+    () => new Map(allFlags.map((flag) => [flag.name.toLowerCase(), flag])),
+    [allFlags],
+  );
 
   const livesLeft = MAX_LIVES - guesses.length - hintUses;
   const hasWon = answer
@@ -505,17 +509,20 @@ export default function Down2GuessPage() {
     const loadAll = async () => {
       setDataLoading(true);
       try {
-        const [tagsRes, games, ratingRes] = await Promise.all([
+        const [tagsRes, flagsRes, games, ratingRes] = await Promise.all([
           getGameTags(),
+          getFlags(),
           getAllGuessableGames(),
           getRatingCategories(true),
         ]);
 
         const tagsPayload = await tagsRes.json();
+        const flagsPayload = await flagsRes.json();
         const ratingPayload = await ratingRes.json();
 
         if (!cancelled) {
           setAllTags(tagsPayload.data ?? []);
+          setAllFlags(flagsPayload.data ?? []);
           setRatingCategories(ratingPayload.data ?? []);
           setGamesList(
             games.map((game) => ({
@@ -709,6 +716,69 @@ export default function Down2GuessPage() {
       "No Data"
     );
 
+  const renderTags = (tags: string[]) =>
+    tags.length > 0 ? (
+      <Hstack justify="center" className="flex-wrap gap-3">
+        {tags.map((tag) => (
+          <Tooltip
+            key={tag}
+            content={tag}
+            position="top"
+            delay={0}
+            hideDelay={0}
+            compact
+            showArrow
+            instant
+          >
+            <span
+              tabIndex={0}
+              aria-label={tag}
+              className="inline-flex origin-center outline-none hover:scale-125 focus-visible:scale-125 focus-visible:ring-2 focus-visible:ring-white/80"
+            >
+              <TagLabel name={tag} iconOnly size={24} />
+            </span>
+          </Tooltip>
+        ))}
+      </Hstack>
+    ) : (
+      "No Data"
+    );
+
+  const renderFlags = (flags: string[]) =>
+    flags.length > 0 ? (
+      <Hstack justify="center" className="flex-wrap gap-3">
+        {flags.map((flagName) => {
+          const flag = flagByName.get(flagName.toLowerCase());
+          return (
+            <Tooltip
+              key={flagName}
+              content={flagName}
+              position="top"
+              delay={0}
+              hideDelay={0}
+              compact
+              showArrow
+              instant
+            >
+              <span
+                tabIndex={0}
+                aria-label={flagName}
+                className="inline-flex origin-center outline-none hover:scale-125 focus-visible:scale-125 focus-visible:ring-2 focus-visible:ring-white/80"
+              >
+                <Icon
+                  name={(flag?.icon ?? "shieldalert") as IconName}
+                  size={24}
+                  color="text"
+                />
+              </span>
+            </Tooltip>
+          );
+        })}
+      </Hstack>
+    ) : (
+      "No Data"
+    );
+
   const renderDevelopers = (game: GameType) =>
     (game.team?.users ?? []).length > 0 ? (
       <Vstack align="center" gap={1} className="min-w-0 w-full">
@@ -743,15 +813,15 @@ export default function Down2GuessPage() {
       case "platforms":
         return renderPlatforms(answerDisplay.platforms);
       case "tags":
-        return formatList(answerDisplay.tags);
+        return renderTags(answerDisplay.tags);
       case "flags":
-        return formatList(answerDisplay.flags);
+        return renderFlags(answerDisplay.flags);
       case "category":
         return answerDisplay.category || "No Data";
       case "releaseYear":
         return formatNumber(answerDisplay.releaseYear);
       case "engine":
-        return formatList(answerDisplay.engine);
+        return renderTags(answerDisplay.engine);
       case "developers":
         return renderDevelopers(answer);
       case "overallRating":
@@ -1072,13 +1142,13 @@ export default function Down2GuessPage() {
                   className="text-center"
                   style={cellStyle(row.comparisons.tags.status)}
                 >
-                  {formatList(row.display.tags)}
+                  {renderTags(row.display.tags)}
                 </TableCell>
                 <TableCell
                   className="text-center"
                   style={cellStyle(row.comparisons.flags.status)}
                 >
-                  {formatList(row.display.flags)}
+                  {renderFlags(row.display.flags)}
                 </TableCell>
                 <TableCell
                   className="text-center font-medium"
@@ -1110,7 +1180,7 @@ export default function Down2GuessPage() {
                   className="text-center"
                   style={cellStyle(row.comparisons.engine.status)}
                 >
-                  {formatList(row.display.engine)}
+                  {renderTags(row.display.engine)}
                 </TableCell>
                 <TableCell
                   className="min-w-0 overflow-hidden text-center"

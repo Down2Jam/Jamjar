@@ -6,7 +6,7 @@ export default function MainLayout() {
   return (
     <PageBackground>
       <Navbar />
-      <div className="mt-4 max-w-6xl xl:max-w-7xl 2xl:max-w-[96em] mx-auto grow w-full px-2 pb-4 sm:px-8 z-10">
+      <div className="z-10 mx-auto mt-4 w-full max-w-6xl grow px-2 pb-[calc(5rem+env(safe-area-inset-bottom))] sm:px-8 sm:pb-4 xl:max-w-7xl 2xl:max-w-[96em]">
         <Outlet />
       </div>
     </PageBackground>

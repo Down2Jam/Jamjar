@@ -64,3 +64,24 @@ export async function hasJoinedCurrentJam(): Promise<boolean> {
     return false;
   }
 }
+
+export async function hasJoinedJam(jamSlug: string): Promise<boolean> {
+  try {
+    const response = await jamRequests.hasJoinedJam(jamSlug);
+
+    return Boolean(unwrapItem<boolean>(await response.json()));
+  } catch (error) {
+    console.error("Error checking jam participation:", error);
+    return false;
+  }
+}
+
+export async function leaveJam(jamSlug: string) {
+  try {
+    const response = await jamRequests.leaveJam(jamSlug);
+    return response.ok;
+  } catch (error) {
+    console.error("Error leaving jam:", error);
+    return false;
+  }
+}

@@ -25,8 +25,14 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { LanguageInfo } from "@/types/LanguageInfoType";
 import { Button } from "bioloom-ui";
 import { Badge } from "bioloom-ui";
-import { useSelf, useCurrentGame, useMessageCounts } from "@/hooks/queries";
-import { useState } from "react";
+import {
+  queryKeys,
+  useSelf,
+  useCurrentGame,
+  useJamParticipation,
+  useMessageCounts,
+} from "@/hooks/queries";
+import { useQueryClient } from "@tanstack/react-query";
 import { isPostJamPhase } from "@/helpers/jamDisplay";
 import { API_DOCS_URL } from "@/requests/config";
 import { AudioLines, LibraryBig, Paintbrush } from "lucide-react";
@@ -46,10 +52,14 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   const { data: messageCounts } = useMessageCounts(Boolean(user));
   const { data: currentGameData } = useCurrentGame(hasToken);
   const { siteTheme } = useTheme();
-  const [isInJam, setIsInJam] = useState<boolean | undefined>(undefined);
   const hasUnreadNews = useUnreadNews();
 
   const joinableJam = isPostJamPhase(jamPhase) && nextJam ? nextJam : jam;
+  const queryClient = useQueryClient();
+  const { data: participation } = useJamParticipation(
+    joinableJam?.slug,
+    Boolean(user),
+  );
   const currentJamTeams = jam
     ? (user?.teams ?? []).filter((team) => team.jamId == jam.id)
     : [];
@@ -59,13 +69,11 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
     currentGameData && currentGameData.length > 0 ? currentGameData[0] : null;
 
   // Derive isInJam from user + jam data
-  const computedIsInJam =
-    isInJam !== undefined
-      ? isInJam
-      : user && joinableJam
-        ? (user.jams?.filter((userjam: JamType) => userjam.id == joinableJam.id)
-            .length ?? 0) > 0
-        : false;
+  const computedIsInJam = user && joinableJam
+    ? participation ??
+      (user.jams?.filter((userjam: JamType) => userjam.id == joinableJam.id)
+        .length ?? 0) > 0
+    : false;
 
   return (
     <Navbar
@@ -380,7 +388,10 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 return;
               }
               if (await joinJam(joinableJam.id)) {
-                setIsInJam(true);
+                queryClient.setQueryData(
+                  queryKeys.jam.participation(joinableJam.slug),
+                  true,
+                );
               }
             }}
             name="Navbar.JoinJam.Title"

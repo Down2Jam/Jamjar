@@ -5,7 +5,14 @@ import useHasMounted from "./useHasMounted";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 
 type Position =
   | "top-left"
@@ -86,7 +93,10 @@ export default function Popover({
   const [hovered, setHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [internalShown, setInternalShown] = useState<boolean>(startsShown);
+  const [collisionShift, setCollisionShift] = useState({ x: 0, y: 0 });
+  const [collisionReady, setCollisionReady] = useState(false);
   const onHoverChangeRef = useRef(onHoverChange);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
 
   const isControlled = controlledShown === undefined;
   const shown = isControlled ? internalShown : controlledShown;
@@ -172,6 +182,12 @@ export default function Popover({
       ? "0 12px 28px rgba(0, 0, 0, 0.38), 0 2px 8px rgba(0, 0, 0, 0.28)"
       : "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)";
 
+  const formatCalcOffset = (value: number) =>
+    `${value < 0 ? "-" : "+"} ${Math.abs(value)}px`;
+  const arrowLeftCorrection = formatCalcOffset(-collisionShift.x);
+  const arrowRightCorrection = formatCalcOffset(collisionShift.x);
+  const arrowTopCorrection = formatCalcOffset(-collisionShift.y);
+
   const getArrowStyle = (p: Position): React.CSSProperties => {
     const arrowSize = 10;
     const base: React.CSSProperties = {
@@ -192,9 +208,18 @@ export default function Popover({
         return {
           ...base,
           bottom: -6,
-          left: p === "top-right" ? undefined : p === "top-left" ? 16 : "50%",
-          right: p === "top-right" ? 16 : undefined,
-          transform: p === "top" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
+          left:
+            p === "top-right"
+              ? undefined
+              : p === "top-left"
+                ? `clamp(10px, calc(16px ${arrowLeftCorrection}), calc(100% - 10px))`
+                : `clamp(10px, calc(50% ${arrowLeftCorrection}), calc(100% - 10px))`,
+          right:
+            p === "top-right"
+              ? `clamp(10px, calc(16px ${arrowRightCorrection}), calc(100% - 10px))`
+              : undefined,
+          transform:
+            p === "top" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
           borderWidth: "0 1px 1px 0",
         };
       case "bottom-left":
@@ -203,16 +228,27 @@ export default function Popover({
         return {
           ...base,
           top: -6,
-          left: p === "bottom-right" ? 16 : p === "bottom-left" ? undefined : "50%",
-          right: p === "bottom-left" ? 16 : undefined,
-          transform: p === "bottom" ? "translateX(-50%) rotate(45deg)" : "rotate(45deg)",
+          left:
+            p === "bottom-right"
+              ? `clamp(10px, calc(16px ${arrowLeftCorrection}), calc(100% - 10px))`
+              : p === "bottom-left"
+                ? undefined
+                : `clamp(10px, calc(50% ${arrowLeftCorrection}), calc(100% - 10px))`,
+          right:
+            p === "bottom-left"
+              ? `clamp(10px, calc(16px ${arrowRightCorrection}), calc(100% - 10px))`
+              : undefined,
+          transform:
+            p === "bottom"
+              ? "translateX(-50%) rotate(45deg)"
+              : "rotate(45deg)",
           borderWidth: "1px 0 0 1px",
         };
       case "left":
         return {
           ...base,
           right: -6,
-          top: "50%",
+          top: `clamp(10px, calc(50% ${arrowTopCorrection}), calc(100% - 10px))`,
           transform: "translateY(-50%) rotate(45deg)",
           borderWidth: "1px 1px 0 0",
         };
@@ -220,7 +256,7 @@ export default function Popover({
         return {
           ...base,
           left: -6,
-          top: "50%",
+          top: `clamp(10px, calc(50% ${arrowTopCorrection}), calc(100% - 10px))`,
           transform: "translateY(-50%) rotate(45deg)",
           borderWidth: "0 0 1px 1px",
         };
@@ -342,6 +378,61 @@ export default function Popover({
   }, [anchorToScreen, position, offset]);
   const positionerStyle = positionerStyleProp ?? computedPositionerStyle;
 
+  const updateCollisionShift = useCallback(() => {
+    const node = popoverRef.current;
+    if (!shown || !node) return;
+
+    const viewportPadding = 8;
+    const rect = node.getBoundingClientRect();
+    let deltaX = 0;
+    let deltaY = 0;
+
+    if (rect.left < viewportPadding) {
+      deltaX = viewportPadding - rect.left;
+    } else if (rect.right > window.innerWidth - viewportPadding) {
+      deltaX = window.innerWidth - viewportPadding - rect.right;
+    }
+
+    if (rect.top < viewportPadding) {
+      deltaY = viewportPadding - rect.top;
+    } else if (rect.bottom > window.innerHeight - viewportPadding) {
+      deltaY = window.innerHeight - viewportPadding - rect.bottom;
+    }
+
+    if (deltaX !== 0 || deltaY !== 0) {
+      setCollisionShift((current) => ({
+        x: current.x + deltaX,
+        y: current.y + deltaY,
+      }));
+    }
+    setCollisionReady(true);
+  }, [shown]);
+
+  useLayoutEffect(() => {
+    if (!shown) {
+      setCollisionShift({ x: 0, y: 0 });
+      setCollisionReady(false);
+      return;
+    }
+
+    setCollisionReady(false);
+    setCollisionShift({ x: 0, y: 0 });
+    updateCollisionShift();
+    const node = popoverRef.current;
+    const resizeObserver = node
+      ? new ResizeObserver(updateCollisionShift)
+      : undefined;
+    if (node) resizeObserver?.observe(node);
+    window.addEventListener("resize", updateCollisionShift);
+    window.addEventListener("scroll", updateCollisionShift, true);
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", updateCollisionShift);
+      window.removeEventListener("scroll", updateCollisionShift, true);
+    };
+  }, [shown, updateCollisionShift]);
+
   if (!hasMounted) return null;
 
   const toCssValue = (value?: number | string) =>
@@ -359,8 +450,8 @@ export default function Popover({
       <AnimatePresence initial={false}>
         {shown && !closed && (
           <motion.div
+            ref={popoverRef}
             key="popover"
-            layout
             initial={instant ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: hoverScale }}
             exit={
@@ -373,15 +464,14 @@ export default function Popover({
               transformOrigin: transformOrigin ?? getTransformOrigin(position),
               pointerEvents: interactive ? "auto" : "none",
               position: "relative",
+              left: collisionShift.x,
+              top: collisionShift.y,
+              visibility: collisionReady ? "visible" : "hidden",
               zIndex: 1,
               // sizing fixes
               display: "inline-block",
               width: "max-content",
-              minWidth: "max-content",
-              // optional: keep from blowing past viewport when anchored to screen
-              maxWidth: anchorToScreen
-                ? `calc(100vw - ${offset * 2}px)`
-                : undefined,
+              maxWidth: `calc(100vw - ${offset * 2}px)`,
               color: colors["text"],
               borderWidth: borderless ? 0 : 1,
               borderStyle: "solid",

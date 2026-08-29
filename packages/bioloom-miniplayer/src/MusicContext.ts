@@ -25,6 +25,7 @@ export type TrackType = {
   slug?: string;
   url: string;
   name: string;
+  loudnessGainDb?: number | null;
   composer: TrackComposer;
   game: TrackGame;
 };
@@ -37,6 +38,7 @@ export type PlayableTrack = {
   thumbnail: string;
   game: TrackGame;
   song: string;
+  loudnessGainDb?: number | null;
 };
 
 export type MusicContextValue = {
@@ -47,7 +49,7 @@ export type MusicContextValue = {
   isPlaying: boolean;
   toggle: () => void;
   volume: number;
-  playItem: (t: PlayableTrack) => Promise<void>;
+  playItem: (t: PlayableTrack, queue?: TrackType[]) => Promise<void>;
   next: () => Promise<void>;
   prev: () => Promise<void>;
   canPrev: boolean;

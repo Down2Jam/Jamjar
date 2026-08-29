@@ -24,9 +24,11 @@ import { getCookie } from "@/helpers/cookie";
 import { Hstack } from "bioloom-ui";
 import { addToast, Button } from "bioloom-ui";
 import { useEmojis } from "@/providers/useEmojis";
+import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Popover, Text, Input } from "bioloom-ui";
 import { BASE_URL } from "@/requests/config";
+import { useTheme } from "@/providers/useSiteTheme";
 
 type EditorMenuProps = {
   editor: Editor | null;
@@ -39,6 +41,7 @@ export default function EditorMenuBar({
 }: EditorMenuProps) {
   if (!editor) return null;
   const { emojis } = useEmojis();
+  const { colors } = useTheme();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
   const pickerRef = useRef<HTMLDivElement | null>(null);
@@ -269,15 +272,9 @@ export default function EditorMenuBar({
 
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
-    if (!query) return emojis;
-    return emojis
-      .filter((emoji) => emoji.slug.includes(query))
-      .sort((a, b) => {
-        const aStarts = a.slug.startsWith(query) ? 1 : 0;
-        const bStarts = b.slug.startsWith(query) ? 1 : 0;
-        if (aStarts !== bStarts) return bStarts - aStarts;
-        return a.slug.localeCompare(b.slug);
-      });
+    return sortEmojisByUsage(
+      emojis.filter((emoji) => !query || emoji.slug.includes(query)),
+    );
   }, [emojiQuery, emojis]);
 
   return (
@@ -305,8 +302,11 @@ export default function EditorMenuBar({
         <Popover
           shown={emojiOpen}
           anchorToScreen={false}
-          position="bottom-left"
-          padding={8}
+          position="bottom"
+          padding={12}
+          showArrow
+          surface="contrast"
+          transformOrigin="center"
         >
           <div className="flex w-64 flex-col gap-2">
             <Input
@@ -314,6 +314,12 @@ export default function EditorMenuBar({
               onValueChange={setEmojiQuery}
               placeholder="Search emoji"
               size="sm"
+              fullWidth
+              style={{
+                backgroundColor: colors["mantle"],
+                borderColor: "transparent",
+                boxShadow: "none",
+              }}
             />
             {filteredEmojis.length === 0 ? (
               <Text size="xs" color="textFaded">
@@ -331,16 +337,14 @@ export default function EditorMenuBar({
                       <img
                         src={emoji.image}
                         alt={`:${emoji.slug}:`}
-                        className="h-4 w-4"
+                        className="h-5 w-5"
                         loading="lazy"
                         decoding="async"
                       />
                     }
-                    tooltip={`:${emoji.slug}:`}
+                    tooltip={`:${emoji.slug.toUpperCase()}:`}
                     onClick={() => {
                       editor.chain().focus().insertContent(`:${emoji.slug}:`).run();
-                      setEmojiOpen(false);
-                      setEmojiQuery("");
                     }}
                   >
                   </Button>

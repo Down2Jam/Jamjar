@@ -22,9 +22,9 @@ export default function StickyPostCard({ post }: { post: PostType }) {
       } as CSSProperties}
     >
       <div className="flex items-center justify-between">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-x-4 sm:gap-y-2">
           <div
-            className="flex gap-4 items-center transition-all duration-250 ease-linear"
+            className="flex items-start gap-3 transition-all duration-250 ease-linear sm:items-center sm:gap-4"
             style={{
               color: colors["blue"],
             }}
@@ -35,12 +35,14 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               <Megaphone />
             )}
             <Link href={`/p/${post.slug}`} className="post-title-link">
-              <p className="font-medium leading-tight">{post.title}</p>
+              <p className="line-clamp-2 font-medium leading-tight sm:line-clamp-none">
+                {post.title}
+              </p>
             </Link>
           </div>
 
           <div
-            className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs"
+            className="ml-9 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:ml-0"
             style={{
               color: colors["textFaded"],
             }}

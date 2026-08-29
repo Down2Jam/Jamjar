@@ -43,3 +43,13 @@ export async function hasJoinedJam(jamSlug: string) {
     },
   });
 }
+
+export async function leaveJam(jamSlug: string) {
+  return fetch(`${BASE_URL}/jams/${encodeURIComponent(jamSlug)}/participation`, {
+    method: "DELETE",
+    credentials: "include",
+    headers: {
+      Authorization: `Bearer ${getCookie("token")}`,
+    },
+  });
+}

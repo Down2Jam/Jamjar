@@ -110,6 +110,9 @@ export async function postGame(
     flagIds?: number[];
     bpm?: number | null;
     musicalKey?: string | null;
+    integratedLufs?: number | null;
+    truePeakDb?: number | null;
+    loudnessGainDb?: number | null;
     softwareUsed?: string[];
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
@@ -207,6 +210,9 @@ export async function updateGame(
     flagIds?: number[];
     bpm?: number | null;
     musicalKey?: string | null;
+    integratedLufs?: number | null;
+    truePeakDb?: number | null;
+    loudnessGainDb?: number | null;
     softwareUsed?: string[];
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;

@@ -1,26 +1,89 @@
 import type { IconType } from "react-icons";
 import {
   GiCargoCrate,
+  GiBattleGear,
+  GiBanjo,
+  GiCampfire,
+  GiCardRandom,
   GiCharacter,
+  GiChemicalDrop,
+  GiChessKnight,
   GiChecklist,
+  GiClick,
+  GiConsoleController,
+  GiCrownedSkull,
+  GiCrystalBall,
+  GiCycle,
+  GiCrossedSwords,
+  GiCrosshair,
+  GiDeadHead,
+  GiDiceTwentyFacesTwenty,
+  GiDramaMasks,
+  GiDrum,
+  GiFist,
+  GiFilmSpool,
+  GiCube,
   GiDividedSquare,
+  GiFlatPlatform,
   GiGamepad,
+  GiGears,
+  GiGhost,
+  GiGuitar,
+  GiGuitarBassHead,
+  GiHamburgerMenu,
+  GiHeadphones,
+  GiHeavenGate,
+  GiHearts,
+  GiHourglass,
+  GiImpLaugh,
   GiJesterHat,
+  GiLaurelCrown,
+  GiLightningTrio,
+  GiLoveSong,
+  GiMagnifyingGlass,
+  GiMaze,
   GiMegaphone,
   GiMeeple,
   GiMeepleGroup,
+  GiMultipleTargets,
+  GiMeditation,
   GiMeshBall,
+  GiMicrophone,
+  GiMoon,
   GiMusicalNotes,
+  GiNightSleep,
   GiNotebook,
   GiPalette,
   GiPencilBrush,
   GiPencilRuler,
+  GiPathDistance,
+  GiPistolGun,
+  GiPlatform,
+  GiProgression,
   GiPhotoCamera,
   GiProcessor,
+  GiPunchBlast,
+  GiPuzzle,
+  GiRaceCar,
   GiRadioTower,
+  GiRetroController,
+  GiSandCastle,
+  GiSaxophone,
+  GiScrollQuill,
+  GiSportMedal,
   GiSparkles,
+  GiSun,
+  GiTearTracks,
   GiTombstone,
+  GiTreasureMap,
+  GiTrophyCup,
+  GiViolin,
+  GiVillage,
   GiVote,
+  GiWindSlap,
+  GiWorld,
+  GiAlarmClock,
+  GiElectric,
 } from "react-icons/gi";
 
 const TAG_ICONS: Record<string, string> = {
@@ -126,6 +189,76 @@ type GameIconDefinition = {
 };
 
 const GAME_ICONS: Record<string, GameIconDefinition> = {
+  "2d": { icon: GiFlatPlatform, color: "#38bdf8" },
+  "3d": { icon: GiCube, color: "#a78bfa" },
+  action: { icon: GiCrossedSwords, color: "#ef4444" },
+  adventure: { icon: GiTreasureMap, color: "#d97706" },
+  ambient: { icon: GiWindSlap, color: "#a78bfa" },
+  battle: { icon: GiCrossedSwords, color: "#ef4444" },
+  battleroyale: { icon: GiMultipleTargets, color: "#f97316" },
+  beatemup: { icon: GiPunchBlast, color: "#dc2626" },
+  boss: { icon: GiCrownedSkull, color: "#dc2626" },
+  bulletheaven: { icon: GiHeavenGate, color: "#eab308" },
+  bullethell: { icon: GiCrosshair, color: "#f43f5e" },
+  cardgame: { icon: GiCardRandom, color: "#8b5cf6" },
+  chiptune: { icon: GiConsoleController, color: "#22c55e" },
+  classical: { icon: GiViolin, color: "#f59e0b" },
+  orchestral: { icon: GiViolin, color: "#f59e0b" },
+  hiphop: { icon: GiMicrophone, color: "#f97316" },
+  horror: { icon: GiGhost, color: "#c084fc" },
+  fighting: { icon: GiFist, color: "#ef4444" },
+  idle: { icon: GiHourglass, color: "#a3a3a3" },
+  incremental: { icon: GiProgression, color: "#22c55e" },
+  jazz: { icon: GiSaxophone, color: "#eab308" },
+  mmo: { icon: GiWorld, color: "#3b82f6" },
+  multiplayer: { icon: GiMeepleGroup, color: "#06b6d4" },
+  mystery: { icon: GiMagnifyingGlass, color: "#8b5cf6" },
+  platformer: { icon: GiPlatform, color: "#06b6d4" },
+  pointandclick: { icon: GiClick, color: "#0ea5e9" },
+  puzzle: { icon: GiPuzzle, color: "#14b8a6" },
+  racing: { icon: GiRaceCar, color: "#ef4444" },
+  retro: { icon: GiRetroController, color: "#f59e0b" },
+  rhythm: { icon: GiDrum, color: "#ec4899" },
+  roguelike: { icon: GiMaze, color: "#a855f7" },
+  roguelite: { icon: GiMaze, color: "#c084fc" },
+  rock: { icon: GiGuitar, color: "#dc2626" },
+  rpg: { icon: GiDiceTwentyFacesTwenty, color: "#8b5cf6" },
+  rts: { icon: GiBattleGear, color: "#f97316" },
+  sandbox: { icon: GiSandCastle, color: "#eab308" },
+  shooter: { icon: GiPistolGun, color: "#f43f5e" },
+  simulation: { icon: GiGears, color: "#64748b" },
+  sports: { icon: GiSportMedal, color: "#22c55e" },
+  strategy: { icon: GiChessKnight, color: "#64748b" },
+  survival: { icon: GiCampfire, color: "#ea580c" },
+  tbs: { icon: GiCycle, color: "#0ea5e9" },
+  textbased: { icon: GiScrollQuill, color: "#d97706" },
+  visualnovel: { icon: GiDramaMasks, color: "#ec4899" },
+  calm: { icon: GiMeditation, color: "#38bdf8" },
+  credits: { icon: GiScrollQuill, color: "#eab308" },
+  cute: { icon: GiHearts, color: "#f472b6" },
+  cutscene: { icon: GiFilmSpool, color: "#a78bfa" },
+  relaxing: { icon: GiMeditation, color: "#38bdf8" },
+  dark: { icon: GiMoon, color: "#818cf8" },
+  dreamy: { icon: GiNightSleep, color: "#c084fc" },
+  electronic: { icon: GiElectric, color: "#06b6d4" },
+  energetic: { icon: GiLightningTrio, color: "#f97316" },
+  experimental: { icon: GiChemicalDrop, color: "#84cc16" },
+  exploration: { icon: GiPathDistance, color: "#22c55e" },
+  folk: { icon: GiBanjo, color: "#d97706" },
+  gameover: { icon: GiDeadHead, color: "#ef4444" },
+  happy: { icon: GiSun, color: "#facc15" },
+  lofi: { icon: GiHeadphones, color: "#8b5cf6" },
+  metal: { icon: GiGuitarBassHead, color: "#9ca3af" },
+  menu: { icon: GiHamburgerMenu, color: "#3b82f6" },
+  mischevious: { icon: GiImpLaugh, color: "#f97316" },
+  mysterious: { icon: GiCrystalBall, color: "#8b5cf6" },
+  pop: { icon: GiLoveSong, color: "#ec4899" },
+  sad: { icon: GiTearTracks, color: "#60a5fa" },
+  tense: { icon: GiAlarmClock, color: "#ef4444" },
+  town: { icon: GiVillage, color: "#d97706" },
+  triumphant: { icon: GiLaurelCrown, color: "#eab308" },
+  victory: { icon: GiTrophyCup, color: "#facc15" },
+  uplifting: { icon: GiSun, color: "#facc15" },
   siteannouncement: { icon: GiMegaphone, color: "#f97316" },
   sitechangelog: { icon: GiChecklist, color: "#3b82f6" },
   imin: { icon: GiMeeple, color: "#22c55e" },
@@ -149,13 +282,33 @@ const GAME_ICONS: Record<string, GameIconDefinition> = {
   music: { icon: GiMusicalNotes, color: "#9333ea" },
 };
 
+type TagIconFallback = "game" | "music" | "mood" | "use-case";
+
+const FALLBACK_GAME_ICONS: Record<TagIconFallback, GameIconDefinition> = {
+  game: { icon: GiGamepad, color: "#16a34a" },
+  music: { icon: GiMusicalNotes, color: "#9333ea" },
+  mood: { icon: GiSparkles, color: "#ea580c" },
+  "use-case": { icon: GiChecklist, color: "#3b82f6" },
+};
+
 const LOCAL_TAG_ICONS: Record<string, string> = {
   d2jam: "/images/tags/d2jam.png",
 };
 
-function TagIcon({ tag }: { tag: string }) {
+function TagIcon({
+  tag,
+  fallback,
+  size = 16,
+}: {
+  tag: string;
+  fallback?: TagIconFallback;
+  size?: number;
+}) {
   const normalizedTag = tag.toLowerCase().replace(/[\s_-]+/g, "");
   const gameIcon = GAME_ICONS[normalizedTag];
+  const fallbackIcon = fallback
+    ? FALLBACK_GAME_ICONS[fallback]
+    : undefined;
   const localIcon = LOCAL_TAG_ICONS[normalizedTag];
   const icon = TAG_ICONS[normalizedTag];
 
@@ -165,8 +318,9 @@ function TagIcon({ tag }: { tag: string }) {
     return (
       <GameIcon
         aria-hidden="true"
-        className="h-4 w-4 shrink-0"
+        className="shrink-0"
         color={gameIcon.color}
+        size={size}
       />
     );
   }
@@ -177,12 +331,25 @@ function TagIcon({ tag }: { tag: string }) {
         src={localIcon}
         alt=""
         aria-hidden="true"
-        className="h-4 w-4 shrink-0 object-contain"
+        className="shrink-0 object-contain"
+        style={{ width: size, height: size }}
       />
     );
   }
 
-  if (!icon) return null;
+  if (!icon) {
+    if (!fallbackIcon) return null;
+
+    const FallbackIcon = fallbackIcon.icon;
+    return (
+      <FallbackIcon
+        aria-hidden="true"
+        className="shrink-0"
+        color={fallbackIcon.color}
+        size={size}
+      />
+    );
+  }
 
   const filename = icon.includes(".") ? icon : `${icon}.png`;
 
@@ -191,7 +358,8 @@ function TagIcon({ tag }: { tag: string }) {
       src={`/images/tag-icons/${filename}`}
       alt=""
       aria-hidden="true"
-      className="h-4 w-4 shrink-0 object-contain"
+      className="shrink-0 object-contain"
+      style={{ width: size, height: size }}
     />
   );
 }
@@ -200,26 +368,32 @@ export default function TagLabel({
   name,
   label,
   iconOnly = false,
+  fallback,
+  size = 16,
 }: {
   name: string;
   label?: string;
   iconOnly?: boolean;
+  fallback?: TagIconFallback;
+  size?: number;
 }) {
   const normalizedTag = name.toLowerCase().replace(/[\s_-]+/g, "");
   const hasIcon = Boolean(
     GAME_ICONS[normalizedTag] ||
       LOCAL_TAG_ICONS[normalizedTag] ||
-      TAG_ICONS[normalizedTag],
+      TAG_ICONS[normalizedTag] ||
+      fallback,
   );
 
   if (iconOnly) {
     return (
       <span
-        className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
+        className="inline-flex shrink-0 items-center justify-center"
+        style={{ width: size, height: size }}
         aria-label={name}
       >
         {hasIcon ? (
-          <TagIcon tag={name} />
+          <TagIcon tag={name} fallback={fallback} size={size} />
         ) : (
           <span className="text-[10px] font-semibold uppercase leading-none">
             {name.slice(0, 1)}
@@ -231,7 +405,7 @@ export default function TagLabel({
 
   return (
     <span className="inline-flex items-center gap-1">
-      <TagIcon tag={name} />
+      <TagIcon tag={name} fallback={fallback} size={size} />
       <span>{label ?? name}</span>
     </span>
   );

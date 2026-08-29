@@ -9,6 +9,7 @@ import { Avatar } from "bioloom-ui";
 import {
   type TrackComposer,
   type TrackGame,
+  type TrackType as PlayerTrack,
   useMusic,
 } from "bioloom-miniplayer";
 import Image from "@/compat/next-image";
@@ -30,6 +31,7 @@ interface SidebarSongProps {
   artist: TrackComposer;
   thumbnail: string;
   song: string;
+  loudnessGainDb?: number | null;
   game: TrackGame;
   pageVersion?: "JAM" | "POST_JAM";
   license?: string | null;
@@ -43,6 +45,7 @@ interface SidebarSongProps {
   hideRatings?: boolean;
   wide?: boolean;
   squareThumbnail?: boolean;
+  queue?: PlayerTrack[];
 }
 
 export default function SidebarSong({
@@ -51,6 +54,7 @@ export default function SidebarSong({
   name,
   thumbnail,
   song,
+  loudnessGainDb,
   game,
   pageVersion,
   artist,
@@ -65,6 +69,7 @@ export default function SidebarSong({
   hideRatings = false,
   wide = false,
   squareThumbnail = false,
+  queue,
 }: SidebarSongProps) {
   const { current, isPlaying, playItem, toggle } = useMusic();
   const { colors } = useTheme();
@@ -85,7 +90,10 @@ export default function SidebarSong({
       return;
     }
 
-    void playItem({ slug, name, artist, thumbnail, game, song });
+    void playItem(
+      { slug, name, artist, thumbnail, game, song, loudnessGainDb },
+      queue,
+    );
   };
 
   return (

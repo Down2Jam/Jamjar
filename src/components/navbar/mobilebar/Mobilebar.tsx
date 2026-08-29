@@ -1,6 +1,5 @@
 "use client";
 
-import { addToast } from "bioloom-ui";
 import { redirect } from "@/compat/next-navigation";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { Button, Navbar, NavbarItem } from "bioloom-ui";
@@ -11,6 +10,7 @@ import { hasCookie } from "@/helpers/cookie";
 import { useMessageCounts, useSelf } from "@/hooks/queries";
 import { Badge } from "bioloom-ui";
 import { useUnreadNews } from "@/components/news/useUnreadNews";
+import SearchBar from "../pcbar/SearchBar";
 
 type MobilebarProps = {
   isLoggedIn: boolean;
@@ -30,8 +30,10 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
     <Navbar
       className={`${
         hidden ? "translate-y-full" : "translate-y-0"
-      } border-t-2 fixed !top-auto bottom-0 left-0 right-0 z-50 p-1 duration-500 ease-in-out transition-color shadow-2xl`}
+      } border-t-2 !fixed !top-auto bottom-0 left-0 right-0 z-50 px-4 py-1 duration-500 ease-in-out transition-color shadow-2xl`}
       style={{
+        height: "calc(60px + env(safe-area-inset-bottom))",
+        paddingBottom: "env(safe-area-inset-bottom)",
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
         backgroundPositionY: "center, center",
@@ -41,7 +43,6 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         backgroundColor: colors["crust"],
       }}
       isBordered
-      height={60}
     >
       <Button href="/" icon="home" variant="ghost"></Button>
       <Button href="/games" icon="gamepad" variant="ghost"></Button>
@@ -103,20 +104,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           Report Bug
         </Dropdown.Item>
       </Dropdown>
-      <NavbarItem>
-        <Button
-          onClick={() => {
-            addToast({
-              title: "Mobile search coming soon",
-              color: "warning",
-              variant: "bordered",
-              timeout: 3000,
-            });
-          }}
-          icon="search"
-          variant="ghost"
-        />
-      </NavbarItem>
+      <SearchBar compact />
       <NavbarItem>
         {!isLoggedIn ? (
           <Button href="/signup" icon="login" variant="ghost" />

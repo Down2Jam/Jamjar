@@ -25,7 +25,11 @@ import SearchResultTrack from "./SearchResultTrack";
 import { TrackType } from "@/types/TrackType";
 import { search as searchRequest } from "@/requests/search";
 
-export default function SearchBar() {
+type SearchBarProps = {
+  compact?: boolean;
+};
+
+export default function SearchBar({ compact = false }: SearchBarProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const inputRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState("");
@@ -117,12 +121,14 @@ export default function SearchBar() {
     <>
       <NavbarItem>
         <Button
-          size="sm"
-          className=" text-xs !duration-500"
-          variant="standard"
-          leftSlot={<Search size={16} />}
+          size={compact ? "md" : "sm"}
+          className={compact ? undefined : "text-xs !duration-500"}
+          variant={compact ? "ghost" : "standard"}
+          icon={compact ? "search" : undefined}
+          leftSlot={compact ? undefined : <Search size={16} />}
           onClick={onOpen}
-          rightSlot={
+          aria-label={compact ? t("Search") : undefined}
+          rightSlot={!compact ? (
             <Kbd
               className="text-xs !duration-500 border-1 shadow-md"
               style={{
@@ -133,12 +139,12 @@ export default function SearchBar() {
             >
               S
             </Kbd>
-          }
+          ) : undefined}
           style={{
             color: colors["textFaded"],
           }}
         >
-          {t("Search")}
+          {compact ? undefined : t("Search")}
         </Button>
       </NavbarItem>
       <Modal
@@ -149,7 +155,7 @@ export default function SearchBar() {
         backdrop="opaque"
       >
         <ModalContent
-          className="max-w-[820px] w-[90vw]"
+          className="max-w-[820px] w-[calc(100vw-1rem)] sm:w-[90vw]"
           style={{
             backgroundColor: siteTheme.colors["mantle"],
             borderColor: siteTheme.colors["base"],
@@ -157,7 +163,7 @@ export default function SearchBar() {
         >
           {(onClose) => (
             <>
-              <ModalBody className="py-4">
+              <ModalBody className="max-h-[calc(100dvh-2rem)] overflow-y-auto py-4">
                 <Vstack align="stretch" gap={2}>
                   <Input
                     ref={inputRef}

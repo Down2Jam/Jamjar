@@ -19,6 +19,9 @@ export interface TrackType {
   allowBackgroundUseAttribution?: boolean;
   bpm?: number | null;
   musicalKey?: string | null;
+  integratedLufs?: number | null;
+  truePeakDb?: number | null;
+  loudnessGainDb?: number | null;
   softwareUsed?: string[];
   commentary?: string | null;
   tags?: TrackTagType[];

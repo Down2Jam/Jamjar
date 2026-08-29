@@ -193,7 +193,7 @@ export default function CommentCard({
           </ThemedProse>
         )}
 
-        {!isModerated && <div className="mb-4 mt-2 flex flex-wrap items-center gap-1">
+        {!isModerated && <div className="mt-2 flex flex-wrap items-center gap-1">
           <LikeButton
             likes={currentComment.likes.length}
             liked={currentComment.hasLiked}

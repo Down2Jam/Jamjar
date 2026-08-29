@@ -167,6 +167,7 @@ import {
   SiGithub,
   SiHtml5,
   SiInstagram,
+  SiLiberadotchat,
   SiLinux,
   SiTwitch,
   SiYoutube,
@@ -371,6 +372,7 @@ const iconMap = {
   siforgejo: SiForgejo,
   sigithub: SiGithub,
   siinstagram: SiInstagram,
+  siliberadotchat: SiLiberadotchat,
   sitwitch: SiTwitch,
   siyoutube: SiYoutube,
 

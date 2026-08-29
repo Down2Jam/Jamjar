@@ -1,7 +1,10 @@
 import { TrackType } from "./TrackType";
 
 export interface TrackResultType
-  extends Pick<TrackType, "id" | "slug" | "name" | "url" | "composer" | "game"> {
+  extends Pick<
+    TrackType,
+    "id" | "slug" | "name" | "url" | "composer" | "game" | "loudnessGainDb"
+  > {
   categoryAverages: Array<{
     averageScore: number;
     averageUnrankedScore: number;

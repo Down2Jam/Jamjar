@@ -33,6 +33,19 @@ body {
   overflow-x: hidden;
 }
 
+/* Keep wheel and touch scrolling inside nested scroll regions at their edges. */
+.overflow-y-auto {
+  overscroll-behavior-y: contain;
+}
+
+.overflow-x-auto {
+  overscroll-behavior-x: contain;
+}
+
+.overflow-auto {
+  overscroll-behavior: contain;
+}
+
 html:not([data-theme-ready="true"]) *,
 html:not([data-theme-ready="true"]) *::before,
 html:not([data-theme-ready="true"]) *::after {
@@ -45,6 +58,13 @@ html:not([data-theme-ready="true"]) *::after {
   height: 1em;
   vertical-align: -0.15em;
   margin: 0 0.05em;
+}
+
+.emoji-only-line .emoji-inline {
+  width: 2.5em;
+  height: 2.5em;
+  vertical-align: -0.55em;
+  margin: 0 0.08em;
 }
 
 .mention-chip {

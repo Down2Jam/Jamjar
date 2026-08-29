@@ -422,6 +422,7 @@ export default function ClientTrackPage({
                   "/images/D2J_Icon.png"
                 }
                 url={track.url}
+                loudnessGainDb={track.loudnessGainDb}
                 comments={track.timestampComments ?? []}
                 canComment={Boolean(user)}
                 onSubmitTimestampComment={async (content, timestamp) => {

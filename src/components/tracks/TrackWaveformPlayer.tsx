@@ -18,6 +18,7 @@ import {
 } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEmojis } from "@/providers/useEmojis";
+import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 import { useTheme } from "@/providers/useSiteTheme";
 
 type TimestampComment = {
@@ -49,6 +50,7 @@ export default function TrackWaveformPlayer({
   game,
   thumbnail,
   url,
+  loudnessGainDb,
   comments,
   canComment,
   onSubmitTimestampComment,
@@ -67,6 +69,7 @@ export default function TrackWaveformPlayer({
   };
   thumbnail?: string | null;
   url: string;
+  loudnessGainDb?: number | null;
   comments: TimestampComment[];
   canComment: boolean;
   onSubmitTimestampComment: (content: string, timestamp: number) => Promise<void>;
@@ -231,10 +234,10 @@ export default function TrackWaveformPlayer({
   );
 
   const filteredEmojis = useMemo(() => {
-    const sorted = [...emojis].sort((a, b) => a.slug.localeCompare(b.slug));
     const query = emojiQuery.trim().toLowerCase();
-    if (!query) return sorted;
-    return sorted.filter((emoji) => emoji.slug.includes(query));
+    return sortEmojisByUsage(
+      emojis.filter((emoji) => !query || emoji.slug.includes(query)),
+    );
   }, [emojiQuery, emojis]);
 
   const seekTo = (nextTime: number) => {
@@ -253,6 +256,7 @@ export default function TrackWaveformPlayer({
         thumbnail || game.soundtrackThumbnail || game.thumbnail || "",
       game,
       song: url,
+      loudnessGainDb,
     }).then(() => {
       seek(clampedTime);
       setCurrentTime(clampedTime);
@@ -481,6 +485,7 @@ export default function TrackWaveformPlayer({
                 thumbnail || game.soundtrackThumbnail || game.thumbnail || "",
               game,
               song: url,
+              loudnessGainDb,
             });
             if (!shown) {
               setShown(true);
@@ -524,8 +529,11 @@ export default function TrackWaveformPlayer({
                     <Popover
                       shown={pickerOpen}
                       anchorToScreen={false}
-                      position="top-right"
-                      padding={8}
+                      position="top"
+                      padding={12}
+                      showArrow
+                      surface="contrast"
+                      transformOrigin="center"
                     >
                       <div className="flex w-64 flex-col gap-2">
                         <Input
@@ -533,6 +541,12 @@ export default function TrackWaveformPlayer({
                           onValueChange={setEmojiQuery}
                           placeholder="Search emoji"
                           size="sm"
+                          fullWidth
+                          style={{
+                            backgroundColor: colors["mantle"],
+                            borderColor: "transparent",
+                            boxShadow: "none",
+                          }}
                         />
                         {filteredEmojis.length === 0 ? (
                           <Text size="xs" color="textFaded">
@@ -550,12 +564,12 @@ export default function TrackWaveformPlayer({
                                   <img
                                     src={emoji.image}
                                     alt={`:${emoji.slug}:`}
-                                    className="h-4 w-4"
+                                    className="h-5 w-5"
                                     loading="lazy"
                                     decoding="async"
                                   />
                                 }
-                                tooltip={`:${emoji.slug}:`}
+                                tooltip={`:${emoji.slug.toUpperCase()}:`}
                                 onClick={() => {
                                   setCommentDraft((current) =>
                                     current

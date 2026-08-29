@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getCurrentJam,
+  hasJoinedJam,
   hasJoinedCurrentJam,
   type ActiveJamResponse,
 } from "@/helpers/jam";
@@ -35,5 +36,13 @@ export function useHasJoinedCurrentJam(enabled = true) {
     queryKey: queryKeys.jam.participation(),
     queryFn: hasJoinedCurrentJam,
     enabled,
+  });
+}
+
+export function useJamParticipation(jamSlug?: string, enabled = true) {
+  return useQuery<boolean>({
+    queryKey: queryKeys.jam.participation(jamSlug),
+    queryFn: () => hasJoinedJam(jamSlug!),
+    enabled: enabled && Boolean(jamSlug),
   });
 }

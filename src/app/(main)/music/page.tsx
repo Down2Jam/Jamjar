@@ -35,8 +35,18 @@ import {
   listingPageVersionOptions,
 } from "@/helpers/listingPageVersion";
 import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
+import TagLabel from "@/components/tags/TagLabel";
 import { readArray, readItem } from "@/requests/helpers";
 import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
+import {
+  FaCopyright,
+  FaCreativeCommons,
+  FaCreativeCommonsBy,
+  FaCreativeCommonsNc,
+  FaCreativeCommonsNd,
+  FaCreativeCommonsSa,
+  FaCreativeCommonsZero,
+} from "react-icons/fa";
 
 type JamOption = {
   id: string;
@@ -60,6 +70,52 @@ const DEFAULT_MORE_FILTERS = new Set<string>([
   MORE_FILTERS.moveRatedMusicToEnd,
 ]);
 const EMPTY_MORE_FILTERS_PARAM = "none";
+
+function LicenseMark({ license }: { license: string }) {
+  const normalized = license.toUpperCase().replace(/\s+/g, " ").trim();
+
+  if (normalized === "ALL RIGHTS RESERVED") {
+    return (
+      <span aria-hidden="true" className="flex w-16 shrink-0 items-center">
+        <FaCopyright size={18} />
+      </span>
+    );
+  }
+
+  if (normalized.startsWith("CC0")) {
+    return (
+      <span
+        aria-hidden="true"
+        className="flex w-16 shrink-0 items-center -space-x-0.5"
+      >
+        <FaCreativeCommons size={16} />
+        <FaCreativeCommonsZero size={16} />
+      </span>
+    );
+  }
+
+  const terms = new Set(normalized.split(/[\s-]+/));
+
+  return (
+    <span
+      aria-hidden="true"
+      className="flex w-16 shrink-0 items-center -space-x-0.5"
+    >
+      <FaCreativeCommons size={16} />
+      {terms.has("BY") && <FaCreativeCommonsBy size={16} />}
+      {terms.has("NC") && <FaCreativeCommonsNc size={16} />}
+      {terms.has("ND") && <FaCreativeCommonsNd size={16} />}
+      {terms.has("SA") && <FaCreativeCommonsSa size={16} />}
+    </span>
+  );
+}
+
+function loopingIconForLabel(label: string): IconName {
+  const normalized = label.toLowerCase();
+  if (normalized.includes("does not loop")) return "refreshcwoff";
+  if (normalized.includes("loop")) return "repeat";
+  return "infinity";
+}
 
 function parseMultiValueParam(value: string | null): Set<string> {
   if (!value) return new Set();
@@ -943,7 +999,7 @@ export default function MusicPage() {
             <Dropdown.Item
               key={option.value}
               value={option.value}
-              icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
+              icon={option.icon}
               description={option.description}
             >
               {option.label}
@@ -1027,7 +1083,7 @@ export default function MusicPage() {
           >
             {visibleTagsByCategory.get("Genre")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
-                {tag.name}
+                <TagLabel name={tag.name} fallback="music" />
               </Dropdown.Item>
             ))}
           </Dropdown>
@@ -1048,7 +1104,7 @@ export default function MusicPage() {
           >
             {visibleTagsByCategory.get("Mood")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
-                {tag.name}
+                <TagLabel name={tag.name} fallback="mood" />
               </Dropdown.Item>
             ))}
           </Dropdown>
@@ -1069,7 +1125,7 @@ export default function MusicPage() {
           >
             {visibleTagsByCategory.get("Use Case")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
-                {tag.name}
+                <TagLabel name={tag.name} fallback="use-case" />
               </Dropdown.Item>
             ))}
           </Dropdown>
@@ -1084,9 +1140,15 @@ export default function MusicPage() {
               updateQueryParam("looping", next);
             }}
           >
-            <Dropdown.Item value="all">All Looping</Dropdown.Item>
+            <Dropdown.Item value="all" icon="infinity">
+              All Looping
+            </Dropdown.Item>
             {visibleTagsByCategory.get("Looping")!.map((tag) => (
-              <Dropdown.Item key={tag.id} value={String(tag.id)}>
+              <Dropdown.Item
+                key={tag.id}
+                value={String(tag.id)}
+                icon={loopingIconForLabel(tag.name)}
+              >
                 {tag.name}
               </Dropdown.Item>
             ))}
@@ -1108,7 +1170,10 @@ export default function MusicPage() {
           >
             {availableLicenses.map((license) => (
               <Dropdown.Item key={license} value={license}>
-                {license}
+                <span className="flex items-center gap-2">
+                  <LicenseMark license={license} />
+                  <span>{license}</span>
+                </span>
               </Dropdown.Item>
             ))}
           </Dropdown>
@@ -1126,52 +1191,60 @@ export default function MusicPage() {
         >
           <Dropdown.Item
             value={MORE_FILTERS.downloadable}
+            icon="download"
             description="Only show tracks that can be downloaded"
           >
             Downloadable
           </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.backgroundSafe}
+            icon="shield"
             description="Only show tracks marked safe for background use in streams and videos"
           >
             Stream / Video Safe
           </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.hideOwnMusic}
+            icon="userx"
             description="Hide tracks from teams you are on"
           >
             Hide Own Music
           </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.hideRatedMusic}
+            icon="staroff"
             description="Hide tracks you have already rated"
           >
             Hide Rated Music
           </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.moveOwnMusicToEnd}
+            icon="user"
             description="Show your own tracks after other tracks"
           >
             Move Own Music To End
           </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.moveRatedMusicToEnd}
+            icon="star"
             description="Show unrated tracks first and keep rated tracks at the end"
           >
             Move Rated Music To End
           </Dropdown.Item>
         </Dropdown>
-          {activeFilterCount > 0 && (
-            <Button
-              size="sm"
-              variant="ghost"
-              icon="x"
-              onClick={clearContentFilters}
-            >
-              Clear {activeFilterCount}
-            </Button>
-          )}
       </Hstack>
+      {activeFilterCount > 0 && (
+        <Hstack justify="center" className="relative z-30 w-full">
+          <Button
+            size="sm"
+            variant="ghost"
+            icon="x"
+            onClick={clearContentFilters}
+          >
+            Clear {activeFilterCount}
+          </Button>
+        </Hstack>
+      )}
 
       {/* List */}
       <div className="relative z-0 flex items-center justify-center px-1 text-center">
@@ -1221,6 +1294,8 @@ export default function MusicPage() {
                 game={track.game}
                 pageVersion={track.pageVersion}
                 song={track.url}
+                loudnessGainDb={track.loudnessGainDb}
+                queue={displayedMusic}
                 license={track.license}
                 allowDownload={track.allowDownload}
                 allowBackgroundUse={track.allowBackgroundUse}

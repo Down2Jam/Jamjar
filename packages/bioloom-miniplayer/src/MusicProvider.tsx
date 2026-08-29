@@ -63,6 +63,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const [music, setMusic] = useState<TrackType[]>([]);
   const [externalTrack, setExternalTrack] = useState<TrackType | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const [analyserState, setAnalyserState] = useState<AnalyserNode | null>(null);
 
@@ -77,11 +78,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       if (!AudioContextCtor) return;
       const ctx = new AudioContextCtor();
       const analyser = ctx.createAnalyser();
+      const gain = ctx.createGain();
       analyser.fftSize = 256;
       const source = ctx.createMediaElementSource(audio);
-      source.connect(analyser);
+      source.connect(gain);
+      gain.connect(analyser);
       analyser.connect(ctx.destination);
       audioCtxRef.current = ctx;
+      gainRef.current = gain;
       analyserRef.current = analyser;
       setAnalyserState(analyser);
       return;
@@ -92,22 +96,33 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const applyLoudnessGain = useCallback((gainDb?: number | null) => {
+    const ctx = audioCtxRef.current;
+    const gain = gainRef.current;
+    if (!ctx || !gain) return;
+
+    const safeGainDb = Number.isFinite(gainDb) ? Number(gainDb) : 0;
+    gain.gain.setValueAtTime(10 ** (safeGainDb / 20), ctx.currentTime);
+  }, []);
+
   const playIndex = useCallback(
-    async (i: number) => {
-      if (!audioRef.current || !music[i]) return;
+    async (i: number, queue: TrackType[] = music) => {
+      if (!audioRef.current || !queue[i]) return;
       ensureAudioContext();
       const audio = audioRef.current;
-      const track = music[i];
+      const track = queue[i];
       const src = track.url;
       if (audio.src !== src) audio.src = src;
+      applyLoudnessGain(track.loudnessGainDb);
       audio.volume = volume;
+      if (queue !== music) setMusic(queue);
       setExternalTrack(null);
       setCurrentIndex(i);
       await audio.play();
 
       setShown(true);
     },
-    [volume, music, ensureAudioContext],
+    [volume, music, ensureAudioContext, applyLoudnessGain],
   );
 
   useEffect(() => {
@@ -136,11 +151,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
     if (!music.length) return;
     const cur = currentIndex ?? -1;
-    let nextIdx = 0;
-    if (music.length > 1) {
-      do nextIdx = Math.floor(Math.random() * music.length);
-      while (nextIdx === cur);
-    }
+    const nextIdx = (cur + 1) % music.length;
 
     if (currentIndex != null) {
       setBackStack((bs) =>
@@ -249,28 +260,35 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   const current = currentIndex == null ? externalTrack : music[currentIndex];
 
   const playItem = useCallback(
-    async (t: PlayableTrack) => {
-      const i = music.findIndex((x) => x.url === t.song);
+    async (t: PlayableTrack, queue?: TrackType[]) => {
+      const playbackQueue = queue ?? music;
+      const i = playbackQueue.findIndex((x) => x.url === t.song);
       if (i >= 0) {
-        setBackStack((bs) =>
-          currentIndex == null || bs[bs.length - 1] === currentIndex
-            ? bs
-            : [...bs, currentIndex],
-        );
+        if (queue) {
+          setBackStack([]);
+        } else {
+          setBackStack((bs) =>
+            currentIndex == null || bs[bs.length - 1] === currentIndex
+              ? bs
+              : [...bs, currentIndex],
+          );
+        }
         setFwdStack([]);
-        await playIndex(i);
+        await playIndex(i, playbackQueue);
         return;
       }
       if (!audioRef.current) return;
       ensureAudioContext();
       const audio = audioRef.current;
       audio.src = t.song;
+      applyLoudnessGain(t.loudnessGainDb);
       audio.volume = volume;
       setExternalTrack({
         id: t.id,
         slug: t.slug,
         url: t.song,
         name: t.name,
+        loudnessGainDb: t.loudnessGainDb,
         composer: t.artist,
         game: {
           ...t.game,
@@ -288,7 +306,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       await audio.play();
       setShown(true);
     },
-    [currentIndex, playIndex, volume, music, ensureAudioContext],
+    [currentIndex, playIndex, volume, music, ensureAudioContext, applyLoudnessGain],
   );
 
   const value = useMemo(
@@ -344,6 +362,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
           slug: value.current?.slug,
           song: value.current?.url || "",
           name: value.current?.name || "",
+          loudnessGainDb: value.current?.loudnessGainDb,
           artist: value.current?.composer || {},
           thumbnail:
             value.current?.game.soundtrackThumbnail ||

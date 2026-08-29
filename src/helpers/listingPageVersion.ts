@@ -37,21 +37,25 @@ export const listingPageVersionOptions: Array<{
   value: ListingPageVersion;
   label: string;
   description: string;
+  icon: "gamepad2" | "clock" | "hammer";
 }> = [
   {
     value: "ALL",
     label: "All Versions",
+    icon: "gamepad2",
     description:
       "Show the post-jam version of the game if available, otherwise show the jam version",
   },
   {
     value: "JAM",
     label: "Jam Versions",
+    icon: "clock",
     description: "Only show jam versions of games",
   },
   {
     value: "POST_JAM",
     label: "Post-Jam Versions",
+    icon: "hammer",
     description: "Only show post-jam versions of games",
   },
 ];

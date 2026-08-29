@@ -162,6 +162,7 @@ export default function Posts() {
     } = {};
     for (const tag of rawTags) {
       if (tag.name == "D2Jam") continue;
+      if (tag._count?.posts === 0) continue;
       if (tag.category) {
         if (tag.category.name in tagObject) {
           tagObject[tag.category.name].tags.push(tag);
@@ -321,9 +322,9 @@ export default function Posts() {
   };
 
   return (
-    <div>
+    <div className="flex flex-col">
       {!loading && stickyPosts && stickyPosts.length > 0 && (
-        <Vstack align="stretch" className="p-4">
+        <Vstack align="stretch" gap={2} className="px-0 pt-4 sm:p-4">
           {stickyPosts
             .filter((item): item is PostType => !isGameReleaseFeedItem(item))
             .map((post) => (
@@ -332,10 +333,12 @@ export default function Posts() {
         </Vstack>
       )}
 
-      <div className="flex flex-wrap items-center justify-between gap-2 p-4 pb-0">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center justify-center gap-2 px-0 py-3 sm:justify-between sm:p-4 sm:pb-0">
+        <div className="flex max-w-full flex-wrap justify-center gap-2">
           <Dropdown
+            freezePositionWhileOpen
             selectedValue={sort}
+            triggerClassName="max-sm:!gap-1 max-sm:!px-3"
             onSelect={(key) => {
               selectSort(key as PostSort);
             }}
@@ -353,8 +356,14 @@ export default function Posts() {
           </Dropdown>
           <Dropdown
             freezePositionWhileOpen
+            menuStyle={{
+              height: "min(20rem, calc(100dvh - 32px))",
+              maxHeight: "none",
+              overflowY: "hidden",
+            }}
             trigger={
               <Button
+                className="max-sm:!gap-1 max-sm:!px-3"
                 icon={activeTagRules.length > 0 ? undefined : "tags"}
                 aria-label={
                   activeTagRules.length > 0
@@ -415,8 +424,8 @@ export default function Posts() {
               </Button>
             }
           >
-            <div className="flex w-[min(42rem,calc(100vw-2rem))] flex-col">
-              <div className="flex flex-col gap-3 p-4">
+            <div className="flex h-full w-[min(42rem,calc(100vw-2rem))] flex-col">
+              <div className="flex shrink-0 flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <Text size="xl">Tag filtering</Text>
@@ -460,16 +469,13 @@ export default function Posts() {
                 </div>
               </div>
 
-              <div className="max-h-[22rem] overflow-y-auto p-4">
+              <div className="min-h-0 flex-1 overflow-y-auto p-4">
                 {visibleTagCategories.length > 0 ? (
                   <div className="flex flex-col gap-5">
                     {visibleTagCategories.map(({ category, tags }) => (
                       <section key={category} className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center">
                           <Text size="sm">{category}</Text>
-                          <Text size="xs" color="textFaded" className="ml-auto">
-                            {tags.length}
-                          </Text>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {tags.map((tag) => {
@@ -550,6 +556,7 @@ export default function Posts() {
           </Dropdown>
           {user && (user.followingCount ?? 0) > 0 && (
             <Button
+              className="max-sm:!gap-1 max-sm:!px-3"
               icon={followingOnly ? "check" : "users"}
               color={followingOnly ? "blue" : "default"}
               onClick={() => {
@@ -562,9 +569,11 @@ export default function Posts() {
             </Button>
           )}
         </div>
-        <div>
+        <div className="shrink-0">
           <Dropdown
+            freezePositionWhileOpen
             selectedValue={style}
+            triggerClassName="max-sm:!gap-1 max-sm:!px-3"
             onSelect={(key) => {
               setStyle(key as PostStyle);
               updateQueryParam("style", key as string);
@@ -601,7 +610,7 @@ export default function Posts() {
           onClick={() => setCreatePostOpen(true)}
           onPointerEnter={() => void preloadCreatePostDependencies()}
           onFocus={() => void preloadCreatePostDependencies()}
-          className="create-post-prompt mx-4 mt-4 flex min-h-20 w-[calc(100%-2rem)] flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-3 text-center focus-visible:outline-none"
+          className="create-post-prompt mx-0 mt-3 flex min-h-20 w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-3 text-center focus-visible:outline-none sm:mx-4 sm:mt-4 sm:w-[calc(100%-2rem)]"
           style={{
             color: colors.text,
             "--create-post-border": `color-mix(in srgb, ${colors.text} 18%, transparent)`,
@@ -626,7 +635,7 @@ export default function Posts() {
       {loading ? (
         <PostListSkeleton />
       ) : (
-        <Vstack align="stretch" gap={3} className="p-4">
+        <Vstack align="stretch" gap={3} className="px-0 py-3 sm:p-4">
           {posts && posts.length > 0 ? (
             posts.map((item: ForumFeedItemType) =>
               isGameReleaseFeedItem(item) ? (
@@ -640,6 +649,8 @@ export default function Posts() {
                   index={forumPosts.findIndex((post) => post.id === item.id)}
                   setCurrentPost={style === "Cozy" ? undefined : setCurrentPost}
                   onOpen={style === "Cozy" ? undefined : setOpen}
+                  tagRules={tagRules}
+                  onTagRule={setTagRule}
                 />
               )
             )

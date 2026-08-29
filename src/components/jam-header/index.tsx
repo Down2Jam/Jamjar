@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
 import { JamPhase } from "@/types/JamType";
@@ -16,6 +16,8 @@ export default function JamHeader() {
   const displayJam = activeJamResponse?.jam ?? null;
   const [topTheme, setTopTheme] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const activeEventRef = useRef<HTMLLIElement>(null);
   const { siteTheme, colors } = useTheme();
 
   const getJamMilestones = (jam?: ActiveJamResponse["jam"] | null) => {
@@ -265,6 +267,17 @@ export default function JamHeader() {
       ? Math.min(effectiveNextEventIndex - 1, sortedEvents.length - 1)
       : -1;
 
+  useEffect(() => {
+    const timeline = timelineRef.current;
+    const activeEvent = activeEventRef.current;
+
+    if (!timeline || !activeEvent) return;
+
+    const timelineRect = timeline.getBoundingClientRect();
+    const activeEventRect = activeEvent.getBoundingClientRect();
+    timeline.scrollLeft += activeEventRect.left - timelineRect.left;
+  }, [activeEventIndex]);
+
   // Helper function to get ordinal suffix
   const getOrdinalSuffix = (day: number): string => {
     if (day > 3 && day < 21) return "th";
@@ -280,10 +293,13 @@ export default function JamHeader() {
     }
   };
 
+  const formatDate = (date: Date, includeMonth = true) =>
+    `${includeMonth ? `${date.toLocaleDateString("en-US", { month: "long" })} ` : ""}${date.getDate()}${getOrdinalSuffix(date.getDate())}`;
+
   if (isLoading) {
     return (
       <>
-        <div className="relative z-10 ml-4 mr-4 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-2xl">
+        <div className="relative z-10 mx-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-2xl sm:mx-4">
           <div className="flex">
             <div className="flex items-center gap-2 bg-white/10 p-4 px-6">
               <Skeleton className="h-6 w-6 rounded" />
@@ -297,7 +313,7 @@ export default function JamHeader() {
             <Skeleton className="mx-auto h-5 w-72" />
           </div>
         </div>
-        <div className="relative ml-4 mr-4 mt-3 flex gap-2 overflow-hidden pb-2">
+        <div className="relative mx-0 mt-3 flex gap-2 overflow-hidden pb-2 sm:mx-4">
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-[60px] min-w-36 grow rounded-md" />
           ))}
@@ -309,6 +325,22 @@ export default function JamHeader() {
   const currentPhase = activeJamResponse?.phase
     ? getPhaseObj(activeJamResponse.phase)
     : null;
+  const phaseStartDate = displayJam
+    ? new Date(phaseDateRange?.start ?? displayJam.startTime)
+    : null;
+  const phaseEndDate = displayJam
+    ? new Date(
+        phaseDateRange?.end ??
+          new Date(displayJam.startTime).getTime() +
+            displayJam.jammingHours * 60 * 60 * 1000,
+      )
+    : null;
+  const compactDateRange =
+    phaseStartDate && phaseEndDate
+      ? phaseStartDate.getMonth() === phaseEndDate.getMonth()
+        ? `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate, false)}`
+        : `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate)}`
+      : "Dates TBA";
 
   return (
     <>
@@ -317,11 +349,40 @@ export default function JamHeader() {
           backgroundColor: siteTheme.colors["blueDark"],
           color: siteTheme.colors["textLight"],
         }}
-        className="z-10 relative ml-4 mr-4 flex flex-col rounded-xl overflow-hidden transition-color duration-250 shadow-2xl"
+        className="relative z-10 mx-0 flex flex-col overflow-hidden rounded-xl shadow-2xl transition-color duration-250 sm:mx-4"
       >
         {/* Jam Header */}
         <a href="/about" className="relative">
-          <div className="flex">
+          <div className="flex sm:hidden">
+            <div
+              className="flex w-1/2 min-w-0 items-center justify-center gap-2 px-2 py-3"
+              style={{ backgroundColor: siteTheme.colors["blue"] }}
+            >
+              <Calendar size={18} />
+              <Text
+                weight="semibold"
+                className="min-w-0"
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {displayJam ? displayJam.name : "No active jams"}
+              </Text>
+            </div>
+            <div className="flex w-1/2 min-w-0 items-center justify-center px-2 py-3">
+              <Text
+                size="sm"
+                weight="semibold"
+                style={{ whiteSpace: "nowrap" }}
+              >
+                {compactDateRange}
+              </Text>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex">
             <div
               style={{
                 backgroundColor: siteTheme.colors["blue"],
@@ -329,59 +390,15 @@ export default function JamHeader() {
               className="p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250"
             >
               <Calendar />
-              <p>
-                {displayJam && activeJamResponse?.phase ? (
-                  <span className="text-sm font-normal">
-                    {`${displayJam.name} - ${activeJamResponse.phase} Phase`}
-                  </span>
-                ) : (
-                  <span className="text-sm font-normal">(No Active Jams)</span>
-                )}
-              </p>
+              <Text size="sm" weight="normal">
+                {displayJam && activeJamResponse?.phase
+                  ? `${displayJam.name} - ${activeJamResponse.phase} Phase`
+                  : "(No Active Jams)"}
+              </Text>
             </div>
 
-            <div className="p-4 px-6 font-bold">
-              <p>
-                {displayJam ? (
-                  <>
-                    {new Date(
-                      phaseDateRange?.start ?? displayJam.startTime,
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                    })}{" "}
-                    {new Date(
-                      phaseDateRange?.start ?? displayJam.startTime,
-                    ).getDate()}
-                    {getOrdinalSuffix(
-                      new Date(
-                        phaseDateRange?.start ?? displayJam.startTime,
-                      ).getDate(),
-                    )}
-                    {" - "}
-                    {new Date(
-                      phaseDateRange?.end ??
-                        new Date(displayJam.startTime).getTime() +
-                          displayJam.jammingHours * 60 * 60 * 1000,
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                    })}{" "}
-                    {new Date(
-                      phaseDateRange?.end ??
-                        new Date(displayJam.startTime).getTime() +
-                          displayJam.jammingHours * 60 * 60 * 1000,
-                    ).getDate()}
-                    {getOrdinalSuffix(
-                      new Date(
-                        phaseDateRange?.end ??
-                          new Date(displayJam.startTime).getTime() +
-                            displayJam.jammingHours * 60 * 60 * 1000,
-                      ).getDate(),
-                    )}
-                  </>
-                ) : (
-                  "Dates TBA"
-                )}
-              </p>
+            <div className="p-4 px-6">
+              <Text weight="bold">{compactDateRange}</Text>
             </div>
           </div>
         </a>
@@ -459,12 +476,12 @@ export default function JamHeader() {
               {currentPhase?.href ? (
                 <Link
                   href={currentPhase.href}
-                  className="flex justify-center p-4 hover:underline"
+                  className="flex justify-center p-3 hover:underline sm:p-4"
                 >
                   <Text weight="semibold">{currentPhase.text}</Text>
                 </Link>
               ) : (
-                <div className="flex justify-center p-4">
+                <div className="flex justify-center p-3 sm:p-4">
                   <Text weight="semibold">{currentPhase?.text ?? ""}</Text>
                 </div>
               )}
@@ -473,12 +490,19 @@ export default function JamHeader() {
       </div>
 
       <div
-        className="relative ml-4 mr-4 mt-3 overflow-x-auto pb-2"
+        ref={timelineRef}
+        className="relative mx-0 mt-3 overflow-x-auto pb-2 sm:mx-4"
         aria-label="Jam timeline"
       >
         <ol className="flex min-w-max snap-x gap-2">
           {sortedEvents.map((event, index) => {
             const isActive = index === activeEventIndex;
+            const eventStyle = getStyleForDateDisplay(
+              index,
+              effectiveNextEventIndex,
+              currentDate,
+              event.date,
+            );
             const nextEvent = sortedEvents[index + 1];
             const nextEventStyle = nextEvent
               ? getStyleForDateDisplay(
@@ -491,6 +515,7 @@ export default function JamHeader() {
 
             return (
               <li
+                ref={isActive ? activeEventRef : undefined}
                 key={event.name}
                 className="relative min-w-36 grow snap-start"
                 aria-current={isActive ? "step" : undefined}
@@ -504,6 +529,7 @@ export default function JamHeader() {
                         nextEventStyle?.borderColor ??
                         nextEventStyle?.backgroundColor ??
                         colors["violetDark"],
+                      opacity: eventStyle.opacity ?? 1,
                     }}
                   />
                 )}
@@ -513,12 +539,7 @@ export default function JamHeader() {
                   style={{
                     color: siteTheme.colors["text"],
                     backgroundColor: colors["mantle"] + "e6",
-                    ...getStyleForDateDisplay(
-                      index,
-                      effectiveNextEventIndex,
-                      currentDate,
-                      event.date,
-                    ),
+                    ...eventStyle,
                   }}
                 >
                   <Text

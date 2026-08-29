@@ -46,7 +46,7 @@ export default function SplashRoute() {
               <Stack
                 direction="flex-col sm:flex-row"
                 align="stretch"
-                className="self-start"
+                className="self-center sm:self-start"
               >
                 {hasLoggedIn ? (
                   <Button href="/login" icon="login" color="blue">

@@ -1204,8 +1204,12 @@ export default function Games() {
   return (
     <>
       <Vstack align="stretch" className="p-4 gap-2">
-        <Hstack justify="between" align="end" className="w-full gap-4 m-2">
-          <Vstack align="start" gap={1} className="min-w-0">
+        <div className="m-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-x-4 gap-y-2">
+          <Vstack
+            align="start"
+            gap={1}
+            className="col-span-2 min-w-0"
+          >
             <Hstack className="gap-3">
               <Icon
                 name="gamepad2"
@@ -1221,7 +1225,12 @@ export default function Games() {
               >
                 Games.Title
               </Text>
-              <Text size="xl" color={headerColor} style={gamesHeaderTextShadow}>
+              <Text
+                size="xl"
+                color={headerColor}
+                className="shrink-0"
+                style={{ ...gamesHeaderTextShadow, whiteSpace: "nowrap" }}
+              >
                 ({totalGames} results)
               </Text>
             </Hstack>
@@ -1233,28 +1242,30 @@ export default function Games() {
             >
               Games.Description
             </Text>
-            <button
-              type="button"
-              className="mx-1 mt-3 inline-flex items-center gap-2 cursor-pointer border-0 bg-transparent p-0"
-              style={gamesHeaderTextShadow}
-              onClick={() => setAdvancedSearchOpen((open) => !open)}
-            >
-              <Icon name="settings2" color={headerColor} size={16} />
-              <Text size="sm" color={headerColor} weight="semibold">
-                Advanced Search
-              </Text>
-              <Icon
-                name="chevrondown"
-                color={headerColor}
-                size={16}
-                className={`transform transition-transform duration-200 ${
-                  advancedSearchOpen ? "rotate-180" : "rotate-0"
-                }`}
-              />
-            </button>
           </Vstack>
-          <div className="shrink-0">{sortDropdown}</div>
-        </Hstack>
+          <button
+            type="button"
+            className="col-start-1 row-start-2 mx-1 mt-1 inline-flex w-fit items-center gap-2 cursor-pointer border-0 bg-transparent p-0"
+            style={gamesHeaderTextShadow}
+            onClick={() => setAdvancedSearchOpen((open) => !open)}
+          >
+            <Icon name="settings2" color={headerColor} size={16} />
+            <Text size="sm" color={headerColor} weight="semibold">
+              Advanced Search
+            </Text>
+            <Icon
+              name="chevrondown"
+              color={headerColor}
+              size={16}
+              className={`transform transition-transform duration-200 ${
+                advancedSearchOpen ? "rotate-180" : "rotate-0"
+              }`}
+            />
+          </button>
+          <div className="col-start-2 row-start-2 shrink-0">
+            {sortDropdown}
+          </div>
+        </div>
 
         <Vstack align="stretch" className="mx-2 mt-0 mb-1 gap-2">
           {advancedSearchOpen && (
@@ -1277,7 +1288,7 @@ export default function Games() {
                   <Dropdown.Item
                     key={option.value}
                     value={option.value}
-                    icon={option.value === "ALL" ? "gamepad2" : "sparkles"}
+                    icon={option.icon}
                     description={option.description}
                   >
                     {option.label}
@@ -1404,7 +1415,7 @@ export default function Games() {
                       value={tag.id}
                       description={tag.description}
                     >
-                      <TagLabel name={tag.name} />
+                      <TagLabel name={tag.name} fallback="game" />
                     </Dropdown.Item>
                   ))}
                 </Dropdown>

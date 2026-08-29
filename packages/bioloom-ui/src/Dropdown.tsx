@@ -114,6 +114,7 @@ interface DropdownProps {
   triggerClassName?: string;
   triggerIcon?: IconName;
   triggerStyle?: React.CSSProperties;
+  menuStyle?: React.CSSProperties;
   freezePositionWhileOpen?: boolean;
 }
 
@@ -142,11 +143,13 @@ function Dropdown({
   triggerClassName = "",
   triggerIcon,
   triggerStyle,
+  menuStyle,
   freezePositionWhileOpen = false,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [frozenAnchorRect, setFrozenAnchorRect] = useState<DOMRect | null>(null);
   const [internalSelectedValues, setInternalSelectedValues] = useState<
     Set<unknown>
@@ -184,12 +187,8 @@ function Dropdown({
 
   const setOpenAndNotify = useCallback(
     (value: boolean) => {
-      if (freezePositionWhileOpen) {
-        setFrozenAnchorRect(
-          value && rootRef.current
-            ? rootRef.current.getBoundingClientRect()
-            : null,
-        );
+      if (freezePositionWhileOpen && value && rootRef.current) {
+        setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
       }
       if (isOpen === undefined) setInternalOpen(value);
       onOpenChange?.(value);
@@ -200,8 +199,6 @@ function Dropdown({
   useEffect(() => {
     if (open && freezePositionWhileOpen && !frozenAnchorRect && rootRef.current) {
       setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
-    } else if (!open && frozenAnchorRect) {
-      setFrozenAnchorRect(null);
     }
   }, [freezePositionWhileOpen, frozenAnchorRect, open]);
 
@@ -286,7 +283,8 @@ function Dropdown({
     const onDown = (e: MouseEvent) => {
       const root = rootRef.current;
       if (!root) return;
-      if (!root.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (!root.contains(target) && !menuRef.current?.contains(target)) {
         setOpenAndNotify(false);
       }
     };
@@ -376,12 +374,22 @@ function Dropdown({
         <Popover
           shown={open}
           position={position}
-          anchorToScreen={false}
+          anchorToScreen={freezePositionWhileOpen}
           className={className}
           positionerStyle={frozenPositionerStyle}
           showArrow
         >
-          <div role="menu" aria-orientation="vertical">
+          <div
+            ref={menuRef}
+            role="menu"
+            aria-orientation="vertical"
+            style={{
+              maxHeight: "min(20rem, calc(100dvh - 32px))",
+              overflowY: "auto",
+              overscrollBehaviorY: "contain",
+              ...menuStyle,
+            }}
+          >
             {children}
           </div>
         </Popover>

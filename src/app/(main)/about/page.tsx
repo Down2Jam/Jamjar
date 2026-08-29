@@ -4,19 +4,72 @@ import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
 import { useTheme } from "@/providers/useSiteTheme";
-import { Accordion, AccordionItem } from "bioloom-ui";
+import { Accordion, AccordionItem, addToast, Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Hstack, Stack, Vstack } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import AboutLogo from "../AboutLogo";
-import { useCurrentJam } from "@/hooks/queries";
+import {
+  queryKeys,
+  useCurrentJam,
+  useJamParticipation,
+  useSelf,
+} from "@/hooks/queries";
 import { getDisplayJamForPublicView } from "@/helpers/jamDisplay";
+import { hasCookie } from "@/helpers/cookie";
+import { joinJam, leaveJam } from "@/helpers/jam";
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 export default function AboutPage() {
   const { data: jamResponse } = useCurrentJam();
   const jam = getDisplayJamForPublicView(jamResponse);
+  const jamSlug = jam?.slug;
   const { colors } = useTheme();
+  const queryClient = useQueryClient();
+  const { data: user, isLoading: userLoading } = useSelf(hasCookie("token"));
+  const { data: hasJoined, isLoading: participationLoading } =
+    useJamParticipation(jamSlug, Boolean(user));
+  const [isJoining, setIsJoining] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
+
+  const handleJoinJam = async () => {
+    if (!jam || !jamSlug) return;
+
+    setIsJoining(true);
+    const ok = await joinJam(jam.id);
+    setIsJoining(false);
+
+    if (!ok) {
+      addToast({ title: "Failed to join jam", color: "danger" });
+      return;
+    }
+
+    queryClient.setQueryData(queryKeys.jam.participation(jamSlug), true);
+    await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+    addToast({ title: "Joined jam" });
+  };
+
+  const handleLeaveJam = async () => {
+    if (!jamSlug) return;
+
+    setIsLeaving(true);
+    const ok = await leaveJam(jamSlug);
+    setIsLeaving(false);
+
+    if (!ok) {
+      addToast({ title: "Failed to leave jam", color: "danger" });
+      return;
+    }
+
+    queryClient.setQueryData(
+      queryKeys.jam.participation(jamSlug),
+      false,
+    );
+    await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+    addToast({ title: "Left jam" });
+  };
 
   return (
     <Vstack align="stretch" className="w-full">
@@ -30,7 +83,37 @@ export default function AboutPage() {
             <Text size="sm" color="textFaded">
               Splash.Description
             </Text>
-            <div className="mt-4 flex flex-col gap-3">
+            {jamSlug && !userLoading && !participationLoading &&
+              (hasJoined ? (
+                <Button
+                  className="mt-2"
+                  color="red"
+                  loading={isLeaving}
+                  onClick={handleLeaveJam}
+                >
+                  Leave Jam
+                </Button>
+              ) : user ? (
+                <Button
+                  className="mt-2"
+                  color="green"
+                  icon="calendarplus"
+                  loading={isJoining}
+                  onClick={handleJoinJam}
+                >
+                  Join Jam
+                </Button>
+              ) : (
+                <Button
+                  className="mt-2"
+                  color="green"
+                  icon="calendarplus"
+                  href="/signup"
+                >
+                  Join Jam
+                </Button>
+              ))}
+            <div className="mt-2 flex flex-col gap-3">
               <div className="flex gap-3 items-center">
                 <div
                   className="flex-none border-1 rounded-small text-center w-11 overflow-hidden"

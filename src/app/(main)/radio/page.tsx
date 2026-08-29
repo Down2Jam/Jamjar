@@ -11,6 +11,7 @@ import {
 import { readItem } from "@/requests/helpers";
 import { useTheme } from "@/providers/useSiteTheme";
 import { useEmojis } from "@/providers/useEmojis";
+import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 import {
   addToast,
   Button,
@@ -704,35 +705,19 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     const hasPersonalCounts = Object.values(personalEmoteCounts).some(
       (count) => count > 0,
     );
-    return [...emojis]
-      .sort((a, b) => {
-        if (hasPersonalCounts) {
-          const personalDelta =
-            (personalEmoteCounts[b.slug] ?? 0) -
-            (personalEmoteCounts[a.slug] ?? 0);
-          if (personalDelta !== 0) return personalDelta;
-        } else {
-          const globalDelta = (b.globalUseCount ?? 0) - (a.globalUseCount ?? 0);
-          if (globalDelta !== 0) return globalDelta;
-        }
-        return a.slug.localeCompare(b.slug);
-      })
+    return sortEmojisByUsage(
+      emojis,
+      hasPersonalCounts ? personalEmoteCounts : {},
+    )
       .slice(0, 8);
   }, [emojis, personalEmoteCounts]);
 
   const filteredSearchEmojis = useMemo(() => {
     const query = emoteSearch.trim().toLowerCase();
-    return [...emojis]
-      .filter((emoji) => !query || emoji.slug.includes(query))
-      .sort((a, b) => {
-        const personalDelta =
-          (personalEmoteCounts[b.slug] ?? 0) -
-          (personalEmoteCounts[a.slug] ?? 0);
-        if (personalDelta !== 0) return personalDelta;
-        const globalDelta = (b.globalUseCount ?? 0) - (a.globalUseCount ?? 0);
-        if (globalDelta !== 0) return globalDelta;
-        return a.slug.localeCompare(b.slug);
-      })
+    return sortEmojisByUsage(
+      emojis.filter((emoji) => !query || emoji.slug.includes(query)),
+      personalEmoteCounts,
+    )
       .slice(0, 18);
   }, [emojis, emoteSearch, personalEmoteCounts]);
 

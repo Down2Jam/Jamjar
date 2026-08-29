@@ -606,6 +606,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                                   "/images/D2J_Icon.png",
                                 game: track.game,
                                 song: track.url,
+                                loudnessGainDb: track.loudnessGainDb,
                               })
                             }
                           >

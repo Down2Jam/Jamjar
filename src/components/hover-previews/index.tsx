@@ -43,6 +43,7 @@ export function UserHoverPreview({
         position="top"
         padding={10}
         showArrow
+        interactive={false}
         surface="contrast"
       >
         <div className="flex w-64 flex-col gap-2 text-left">

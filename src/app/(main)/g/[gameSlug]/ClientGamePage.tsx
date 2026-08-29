@@ -2099,6 +2099,8 @@ export default function ClientGamePage({
                       }
                       game={track.game}
                       song={track.url}
+                      loudnessGainDb={track.loudnessGainDb}
+                      queue={displayGame.tracks}
                       license={track.license}
                       allowDownload={track.allowDownload}
                       allowBackgroundUse={track.allowBackgroundUse}

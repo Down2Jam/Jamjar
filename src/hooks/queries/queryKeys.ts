@@ -3,7 +3,8 @@ export const queryKeys = {
     all: ["jam"] as const,
     current: () => [...queryKeys.jam.all, "current"] as const,
     list: () => [...queryKeys.jam.all, "list"] as const,
-    participation: () => [...queryKeys.jam.all, "participation"] as const,
+    participation: (jamSlug?: string) =>
+      [...queryKeys.jam.all, "participation", jamSlug] as const,
   },
   user: {
     all: ["user"] as const,

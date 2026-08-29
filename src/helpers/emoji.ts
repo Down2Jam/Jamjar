@@ -1,6 +1,8 @@
 import type { EmojiType } from "@/providers/useEmojis";
 
 const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
+const EMOJI_LINE_SELECTOR = "p,li,h1,h2,h3,h4,h5,h6";
+const MAX_LARGE_EMOJIS = 5;
 
 export function replaceEmojiShortcodes(
   html: string,
@@ -61,6 +63,24 @@ export function replaceEmojiShortcodes(
     }
 
     node.parentNode?.replaceChild(fragment, node);
+  });
+
+  doc.body.querySelectorAll(EMOJI_LINE_SELECTOR).forEach((element) => {
+    const emojiImages = element.querySelectorAll("img.emoji-inline");
+    if (emojiImages.length === 0 || emojiImages.length > MAX_LARGE_EMOJIS) {
+      return;
+    }
+
+    const remainder = element.cloneNode(true) as Element;
+    remainder.querySelectorAll("img.emoji-inline").forEach((emoji) => emoji.remove());
+
+    const hasOtherContent =
+      remainder.textContent?.trim() ||
+      remainder.querySelector("img,video,audio,iframe,svg,canvas,hr,table");
+
+    if (!hasOtherContent) {
+      element.classList.add("emoji-only-line");
+    }
   });
 
   return doc.body.innerHTML;

@@ -9,6 +9,7 @@ import { useEmojis } from "@/providers/useEmojis";
 import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 import { useReactionColors } from "./useReactionColors";
 import { useTheme } from "@/providers/useSiteTheme";
+import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 
 const MAX_UNIQUE_REACTIONS = 20;
 
@@ -97,7 +98,7 @@ export default function CommentReactions({
   }, [hoveredReactionId, onOverlayChange, pickerOpen]);
 
   const sortedEmojis = useMemo(() => {
-    return [...emojis].sort((a, b) => a.slug.localeCompare(b.slug));
+    return sortEmojisByUsage(emojis);
   }, [emojis]);
   const availableEmojis = useMemo(() => {
     const usedReactionIds = new Set(current.map((entry) => entry.reaction.id));
@@ -109,14 +110,7 @@ export default function CommentReactions({
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
     if (!query) return availableEmojis;
-    return availableEmojis
-      .filter((emoji) => emoji.slug.includes(query))
-      .sort((a, b) => {
-        const aStarts = a.slug.startsWith(query) ? 1 : 0;
-        const bStarts = b.slug.startsWith(query) ? 1 : 0;
-        if (aStarts !== bStarts) return bStarts - aStarts;
-        return a.slug.localeCompare(b.slug);
-      });
+    return availableEmojis.filter((emoji) => emoji.slug.includes(query));
   }, [availableEmojis, emojiQuery]);
   const canAddNewReaction = useMemo(() => {
     const firstReactionCount = current.filter(
@@ -299,7 +293,7 @@ export default function CommentReactions({
           <Popover
             shown={pickerOpen}
             anchorToScreen={false}
-            position="bottom-left"
+            position="bottom"
             padding={12}
             showArrow
             surface="contrast"

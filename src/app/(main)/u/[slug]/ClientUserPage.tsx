@@ -23,6 +23,7 @@ import {
   ModalContent,
   ModalFooter,
   ModalHeader,
+  Stack,
   Text,
   Tooltip,
   Vstack,
@@ -1017,7 +1018,7 @@ export default function ClientUserPage({
           </div>
           <button
             type="button"
-            className={`absolute left-16 top-16 ${
+            className={`absolute left-4 top-14 sm:left-16 sm:top-16 ${
               isOwner ? "cursor-pointer group" : "cursor-default"
             }`}
             onClick={() => {
@@ -1065,10 +1066,13 @@ export default function ClientUserPage({
               )}
             </div>
           </button>
-          <Vstack align="start" className="mt-0 px-8 pt-3 pb-8 gap-4">
-            <Hstack className="items-start gap-6 w-full">
-              <Vstack align="start" className="gap-1 pl-44">
-                <Hstack className="items-center gap-3">
+          <Vstack
+            align="start"
+            className="mt-0 gap-4 px-4 pb-4 pt-3 sm:px-8 sm:pb-8"
+          >
+            <div className="flex w-full flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:gap-6">
+              <Vstack align="start" className="min-w-0 gap-1 pl-28 sm:pl-44">
+                <Hstack wrap className="items-center gap-3">
                   <button
                     type="button"
                     onClick={() => {
@@ -1080,7 +1084,12 @@ export default function ClientUserPage({
                       isOwner ? "group cursor-pointer" : "cursor-default"
                     }`}
                   >
-                    <Text size="3xl">{user.name}</Text>
+                    <Text size="2xl" className="sm:hidden">
+                      {user.name}
+                    </Text>
+                    <Text size="3xl" className="hidden sm:block">
+                      {user.name}
+                    </Text>
                     {isOwner && (
                       <div
                         className="absolute inset-0 rounded-lg border border-dashed opacity-0 group-hover:opacity-100 transition-opacity"
@@ -1177,7 +1186,7 @@ export default function ClientUserPage({
                     </button>
                   )}
                 </Hstack>
-                <Hstack className="items-center gap-3">
+                <Hstack wrap className="items-center gap-2 sm:gap-3">
                   <Text size="sm" color="textFaded">
                     @{user.slug}
                   </Text>
@@ -1206,7 +1215,10 @@ export default function ClientUserPage({
                   )}
                 </Hstack>
               </Vstack>
-              <Hstack className="ml-auto flex-wrap items-center justify-end gap-2">
+              <Hstack
+                wrap
+                className="w-full items-center justify-start gap-2 sm:ml-auto sm:w-auto sm:justify-end"
+              >
                 {self && !isOwner && (
                   <Button
                     size="sm"
@@ -1317,26 +1329,26 @@ export default function ClientUserPage({
                         )
                       }
                     >
-                      <Hstack gap={1} className="items-center">
+                      <span className="inline-flex items-center gap-1">
                         <Icon name={section.icon} size={14} />
                         <span>{section.label}</span>
                         <span className="text-xs opacity-70">
                           {section.count}
                         </span>
-                      </Hstack>
+                      </span>
                     </Button>
                   ))}
               </Hstack>
-            </Hstack>
+            </div>
           </Vstack>
         </Card>
 
         {profileSection === "bio" ? (
-          <Hstack align="start">
+          <Stack align="stretch" direction="flex-col md:flex-row">
             {(user.links?.length || isOwner) && (
               <Card
                 shadow="none"
-                className="min-w-48"
+                className="w-full md:w-auto md:min-w-48"
                 style={profileSurfaceStyle}
               >
                 <div
@@ -1476,7 +1488,7 @@ export default function ClientUserPage({
                 </Card>
               </div>
             )}
-          </Hstack>
+          </Stack>
         ) : (
           <Vstack align="stretch" gap={4} className="w-full">
             {profileSection === "recommendations" && (
@@ -1542,6 +1554,7 @@ export default function ClientUserPage({
                               : {}
                           }
                           song={track.url}
+                          loudnessGainDb={track.loudnessGainDb}
                           license={track.license}
                           allowDownload={track.allowDownload}
                           allowBackgroundUse={track.allowBackgroundUse}
@@ -1621,6 +1634,7 @@ export default function ClientUserPage({
                         thumbnail: track.game.thumbnail ?? undefined,
                       }}
                       song={track.url}
+                      loudnessGainDb={track.loudnessGainDb}
                       license={track.license}
                       pageVersion={track.pageVersion}
                       allowDownload={track.allowDownload}

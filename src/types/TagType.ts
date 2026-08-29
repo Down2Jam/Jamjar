@@ -14,4 +14,7 @@ export interface TagType {
   gameTag: boolean;
   postTag: boolean;
   category: TagCategoryType;
+  _count?: {
+    posts: number;
+  };
 }

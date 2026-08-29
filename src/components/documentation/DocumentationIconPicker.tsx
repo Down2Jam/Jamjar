@@ -238,7 +238,7 @@ export default function DocumentationIconPicker({
       <Popover
         shown={open}
         anchorToScreen={false}
-        position="bottom-left"
+        position="bottom"
         padding={8}
       >
         <Card className="w-[min(26rem,calc(100vw-2rem))] p-3">

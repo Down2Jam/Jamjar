@@ -212,6 +212,9 @@ type SongEdit = {
   flagIds: number[];
   bpm?: number | null;
   musicalKey?: string | null;
+  integratedLufs?: number | null;
+  truePeakDb?: number | null;
+  loudnessGainDb?: number | null;
   softwareUsed: string[];
   license: string;
   allowDownload: boolean;
@@ -223,6 +226,13 @@ type SongEdit = {
   licenseShareAlike: boolean;
   links: SongLinkEdit[];
   credits: SongCreditEdit[];
+};
+
+type UploadedMusic = {
+  url: string;
+  integratedLufs?: number | null;
+  truePeakDb?: number | null;
+  loudnessGainDb?: number | null;
 };
 
 const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
@@ -464,6 +474,9 @@ export default function GameEditingForm({
         flagIds: (s.flags ?? []).map((flag) => flag.id),
         bpm: s.bpm ?? null,
         musicalKey: s.musicalKey ?? "",
+        integratedLufs: s.integratedLufs ?? null,
+        truePeakDb: s.truePeakDb ?? null,
+        loudnessGainDb: s.loudnessGainDb ?? null,
         softwareUsed: s.softwareUsed ?? [],
         license: licenseFlagsToLabel(flags),
         allowDownload: Boolean(s.allowDownload),
@@ -747,11 +760,21 @@ export default function GameEditingForm({
       .substring(0, 50); // Limit length to 50 characters
   };
 
-  const uploadTo = async (
+  async function uploadTo(
+    endpoint: "image",
+    file: File,
+    crop?: ImageCropData,
+  ): Promise<string | null>;
+  async function uploadTo(
+    endpoint: "music",
+    file: File,
+    crop?: ImageCropData,
+  ): Promise<UploadedMusic | null>;
+  async function uploadTo(
     endpoint: "image" | "music",
     file: File,
     crop?: ImageCropData,
-  ): Promise<string | null> => {
+  ): Promise<string | UploadedMusic | null> {
     const formData = new FormData();
     formData.append("upload", file);
     if (crop && endpoint === "image") {
@@ -771,7 +794,19 @@ export default function GameEditingForm({
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
         addToast({ title: data.message ?? "Uploaded" });
-        return unwrapItem<string>(data);
+        const uploadedUrl = unwrapItem<string>(data);
+        if (!uploadedUrl) return null;
+        if (endpoint === "image") return uploadedUrl;
+        const loudness =
+          data && typeof data === "object" && "loudness" in data
+            ? (data.loudness as Partial<UploadedMusic>)
+            : {};
+        return {
+          url: uploadedUrl,
+          integratedLufs: loudness.integratedLufs ?? null,
+          truePeakDb: loudness.truePeakDb ?? null,
+          loudnessGainDb: loudness.loudnessGainDb ?? null,
+        };
       }
       addToast({ title: data?.message ?? `Failed to upload ${endpoint}` });
       return null;
@@ -780,7 +815,7 @@ export default function GameEditingForm({
       addToast({ title: `Error uploading ${endpoint}` });
       return null;
     }
-  };
+  }
 
   const doArtistSearch = useMemo(
     () =>
@@ -949,6 +984,9 @@ export default function GameEditingForm({
               flagIds: s.flagIds,
               bpm: s.bpm ?? null,
               musicalKey: s.musicalKey?.trim() || null,
+              integratedLufs: s.integratedLufs ?? null,
+              truePeakDb: s.truePeakDb ?? null,
+              loudnessGainDb: s.loudnessGainDb ?? null,
               softwareUsed: s.softwareUsed,
               links: s.links,
               credits: s.credits
@@ -3725,17 +3763,23 @@ export default function GameEditingForm({
                                             ev.target as HTMLInputElement
                                           )?.files?.[0];
                                           if (!file) return;
-                                          const newUrl = await uploadTo(
+                                          const uploaded = await uploadTo(
                                             "music",
                                             file,
                                           );
-                                          if (!newUrl) return;
+                                          if (!uploaded) return;
                                           setSongs((prev) =>
                                             prev.map((s) =>
                                               s.id === song.id
                                                 ? {
                                                     ...s,
-                                                    url: newUrl,
+                                                    url: uploaded.url,
+                                                    integratedLufs:
+                                                      uploaded.integratedLufs,
+                                                    truePeakDb:
+                                                      uploaded.truePeakDb,
+                                                    loudnessGainDb:
+                                                      uploaded.loudnessGainDb,
                                                     name:
                                                       s.name ||
                                                       file.name.replace(
@@ -3772,15 +3816,18 @@ export default function GameEditingForm({
                             const file = (ev.target as HTMLInputElement)
                               ?.files?.[0];
                             if (!file) return;
-                            const url = await uploadTo("music", file);
-                            if (!url) return;
+                            const uploaded = await uploadTo("music", file);
+                            if (!uploaded) return;
                             const baseName = file.name.replace(/\.[^/.]+$/, "");
                             const songId = Date.now();
                             setSongs((prev) => [
                               ...prev,
                               {
                                 id: songId,
-                                url,
+                                url: uploaded.url,
+                                integratedLufs: uploaded.integratedLufs,
+                                truePeakDb: uploaded.truePeakDb,
+                                loudnessGainDb: uploaded.loudnessGainDb,
                                 name: baseName,
                                 slug: sanitizeSlug(baseName),
                                 commentary: "",

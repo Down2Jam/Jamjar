@@ -30,7 +30,10 @@ import MentionedContent from "../mentions/MentionedContent";
 import PostReactions from "./PostReactions";
 import ContentStatusMeta from "./ContentStatusMeta";
 import TagLabel from "@/components/tags/TagLabel";
-import { postTagFilterHref } from "@/helpers/postTagFilter";
+import {
+  postTagFilterHref,
+  type PostTagRules,
+} from "@/helpers/postTagFilter";
 import { UserHoverPreview } from "@/components/hover-previews";
 
 export default function PostCard({
@@ -40,6 +43,8 @@ export default function PostCard({
   index,
   setCurrentPost,
   onOpen,
+  tagRules,
+  onTagRule,
 }: {
   post: PostType;
   style: PostStyle;
@@ -47,6 +52,8 @@ export default function PostCard({
   index?: number;
   setCurrentPost?: Dispatch<SetStateAction<number>>;
   onOpen?: (val1: boolean) => void;
+  tagRules?: PostTagRules;
+  onTagRule?: (tagId: number, rule: 1 | -1) => void;
 }) {
   const [currentPostData, setCurrentPostData] = useState<PostType>(post);
   const [minimized, setMinimized] = useState<boolean>(false);
@@ -54,14 +61,41 @@ export default function PostCard({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [reactionsOpen, setReactionsOpen] = useState(false);
   const [actionsLayerOpen, setActionsLayerOpen] = useState(false);
+  const [contentExpanded, setContentExpanded] = useState(false);
+  const [contentCanExpand, setContentCanExpand] = useState(false);
   const { colors, siteTheme } = useTheme();
   const t = useTranslations();
   const actionsOpen = dropdownOpen || reactionsOpen;
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const contentPreviewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setCurrentPostData(post);
+    setContentExpanded(false);
+    setContentCanExpand(false);
   }, [post]);
+
+  useEffect(() => {
+    const preview = contentPreviewRef.current;
+    if (!preview || contentExpanded) return;
+
+    const measureOverflow = () => {
+      setContentCanExpand(preview.scrollHeight > preview.clientHeight + 1);
+    };
+    const resizeObserver = new ResizeObserver(measureOverflow);
+
+    resizeObserver.observe(preview);
+    Array.from(preview.children).forEach((child) =>
+      resizeObserver.observe(child),
+    );
+    window.addEventListener("resize", measureOverflow);
+    measureOverflow();
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measureOverflow);
+    };
+  }, [contentExpanded, currentPostData.content]);
 
   useEffect(() => {
     if (closeTimerRef.current) {
@@ -109,7 +143,7 @@ export default function PostCard({
 
   return (
     <Card
-      className={`post-card-shell relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
+      className={`post-card-shell relative overflow-visible max-sm:!p-3 ${actionsLayerOpen ? "z-50" : "z-0"}`}
       padding={style === "Cozy" ? 1.25 : 1}
       style={{
         display: hidden ? "none" : "flex",
@@ -197,7 +231,7 @@ export default function PostCard({
                   }
                 }}
               >
-                <p className="text-[1.375rem] font-semibold leading-tight">
+                <p className="line-clamp-2 text-lg font-semibold leading-tight sm:line-clamp-none sm:text-[1.375rem]">
                   {titleText}
                 </p>
               </Link>
@@ -211,7 +245,7 @@ export default function PostCard({
             </div>
 
             <div
-              className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs pt-2"
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-xs sm:pt-2"
               style={{
                 color: colors["textFaded"],
               }}
@@ -228,7 +262,7 @@ export default function PostCard({
               />
             </div>
 
-            <div className="h-3" />
+            <div className="h-2 sm:h-3" />
 
             {isModerated ? (
               <Text color="textFaded" size="sm">
@@ -237,29 +271,76 @@ export default function PostCard({
                   : "This post was deleted."}
               </Text>
             ) : (
-              <ThemedProse className="[&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
-                <MentionedContent
-                  html={currentPostData.content}
-                  className="!duration-250 !ease-linear !transition-all max-w-[72ch] break-words leading-relaxed"
-                />
-              </ThemedProse>
+              <>
+                <div className="relative">
+                  <div
+                    ref={contentPreviewRef}
+                    className={
+                      contentExpanded
+                        ? ""
+                        : "max-sm:max-h-72 max-sm:overflow-hidden"
+                    }
+                  >
+                    <ThemedProse className="[&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
+                      <MentionedContent
+                        html={currentPostData.content}
+                        className="!duration-250 !ease-linear !transition-all max-w-[72ch] break-words leading-relaxed"
+                      />
+                    </ThemedProse>
+                  </div>
+                  {contentCanExpand && !contentExpanded && (
+                    <div
+                      className="absolute inset-x-0 bottom-0 flex h-24 items-end justify-center pb-2 sm:hidden"
+                      style={{
+                        background: `linear-gradient(to bottom, transparent, ${colors["mantle"]} 72%)`,
+                      }}
+                    >
+                      <button
+                        type="button"
+                        className="text-sm font-semibold text-white hover:underline"
+                        onClick={() => setContentExpanded(true)}
+                      >
+                        Read more
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {!isModerated && visiblePostTags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
-                {visiblePostTags.map((tag: TagType) => (
-                  <Link
+                {visiblePostTags.map((tag: TagType) => {
+                  const rule = tagRules?.[tag.id];
+                  return <Link
                     key={tag.id}
                     href={postTagFilterHref(tag.id)}
-                    onClick={(event) => event.stopPropagation()}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (!onTagRule) return;
+                      event.preventDefault();
+                      onTagRule(tag.id, event.shiftKey ? -1 : 1);
+                    }}
+                    onContextMenu={(event) => {
+                      if (!onTagRule) return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onTagRule(tag.id, -1);
+                    }}
                     className="post-tag-link inline-flex"
-                    aria-label={`Filter posts by ${tag.name}`}
+                    aria-label={`${tag.name}: ${
+                      rule === 1
+                        ? "included; click to remove"
+                        : rule === -1
+                          ? "excluded; right-click to remove"
+                          : "click to include or right-click to exclude"
+                    }`}
                   >
                     <Chip className="post-tag-chip cursor-pointer hover:brightness-110">
                       <TagLabel name={tag.name} />
                     </Chip>
-                  </Link>
-                ))}
+                  </Link>;
+                })}
               </div>
             )}
 

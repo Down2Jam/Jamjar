@@ -458,7 +458,7 @@ export default function UserPage() {
           </Vstack>
         </Card>
 
-        <Stack align="stretch" className="flex-col lg:flex-row">
+        <Stack align="stretch" direction="flex-col lg:flex-row">
           <Card>
             <Vstack align="start">
               <div>
@@ -501,7 +501,7 @@ export default function UserPage() {
           </Card>
         </Stack>
 
-        <Stack align="stretch" className="flex-col lg:flex-row">
+        <Stack align="stretch" direction="flex-col lg:flex-row">
           <Card className="flex-1">
             <Vstack align="start" className="gap-3">
               <div>

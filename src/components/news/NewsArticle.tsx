@@ -220,7 +220,7 @@ export default function NewsArticle() {
         <PostReactions
           postId={post.id}
           reactions={post.reactions}
-          pickerPosition="top-left"
+          pickerPosition="top"
         />
         <Button
           href="#news-comments"

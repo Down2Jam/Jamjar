@@ -906,6 +906,7 @@ function HighlightTrackCard({
                   "/images/D2J_Icon.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
+                loudnessGainDb: track.loudnessGainDb,
               })
             }
           >
@@ -1012,6 +1013,7 @@ function TrackScoreCard({
                   "/images/D2J_Icon.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
+                loudnessGainDb: track.loudnessGainDb,
               })
             }
           >
@@ -2008,6 +2010,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                         : { name: "Unknown game", slug: "" }
                     }
                     song={track.url}
+                    loudnessGainDb={track.loudnessGainDb}
                     license={track.license}
                     allowDownload={track.allowDownload}
                     allowBackgroundUse={track.allowBackgroundUse}
