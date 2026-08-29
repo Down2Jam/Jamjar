@@ -504,6 +504,7 @@ export default function Games() {
         icon: "calendar",
       },
     ];
+    let hasExternalJams = false;
 
     if (currentJamData?.jam && currentJamHasContentListing) {
       const cjId = currentJamData.jam.id?.toString();
@@ -532,7 +533,13 @@ export default function Games() {
           startTime?: string;
           jammingHours?: number;
           games?: unknown[];
+          sourcePlatform?: string | null;
         }) => {
+          if (j.sourcePlatform) {
+            hasExternalJams = true;
+            return;
+          }
+
           const id = String(j?.id ?? "");
           const value = getJamUrlValue(
             j as Parameters<typeof getJamUrlValue>[0],
@@ -560,6 +567,15 @@ export default function Games() {
           }
         },
       );
+    }
+
+    if (hasExternalJams) {
+      options.push({
+        id: "external",
+        name: "External jams",
+        icon: "globe",
+        description: "Browse entries from imported jams",
+      });
     }
 
     return options;

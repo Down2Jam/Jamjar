@@ -305,6 +305,11 @@ export async function updateGame(
 function setJamListingParam(params: URLSearchParams, jam?: string) {
   if (!jam || jam === "all") return;
 
+  if (jam === "external") {
+    params.set("externalJams", "true");
+    return;
+  }
+
   if (isNumericJamValue(jam)) {
     params.set("jamId", jam);
     return;
