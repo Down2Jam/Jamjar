@@ -88,8 +88,8 @@ export const queryKeys = {
     all: ["theme"] as const,
     current: () => [...queryKeys.theme.all, "current"] as const,
     suggestions: () => [...queryKeys.theme.all, "suggestions"] as const,
-    list: (isVoting?: boolean) =>
-      [...queryKeys.theme.all, "list", isVoting] as const,
+    list: (isVoting?: boolean, includeAll?: boolean) =>
+      [...queryKeys.theme.all, "list", isVoting, includeAll] as const,
     votes: () => [...queryKeys.theme.all, "votes"] as const,
   },
   emoji: {

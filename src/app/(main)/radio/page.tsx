@@ -708,8 +708,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     return sortEmojisByUsage(
       emojis,
       hasPersonalCounts ? personalEmoteCounts : {},
-    )
-      .slice(0, 8);
+    ).slice(0, 8);
   }, [emojis, personalEmoteCounts]);
 
   const filteredSearchEmojis = useMemo(() => {
@@ -717,8 +716,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
     return sortEmojisByUsage(
       emojis.filter((emoji) => !query || emoji.slug.includes(query)),
       personalEmoteCounts,
-    )
-      .slice(0, 18);
+    ).slice(0, 18);
   }, [emojis, emoteSearch, personalEmoteCounts]);
 
   useEffect(() => {
@@ -1008,7 +1006,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   if (loading) {
     return (
       <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-[url('/images/sitebg.png')] bg-cover bg-center opacity-20" />
+        <div className="absolute inset-0 bg-[url('/images/sitebg.webp')] bg-cover bg-center opacity-20" />
         <div className="absolute inset-0 bg-black/75" />
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/40" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">

@@ -75,7 +75,7 @@ export function replaceEmojiShortcodes(
     remainder.querySelectorAll("img.emoji-inline").forEach((emoji) => emoji.remove());
 
     const hasOtherContent =
-      remainder.textContent?.trim() ||
+      remainder.textContent?.replace(/[\u200B-\u200D\uFEFF]/g, "").trim() ||
       remainder.querySelector("img,video,audio,iframe,svg,canvas,hr,table");
 
     if (!hasOtherContent) {

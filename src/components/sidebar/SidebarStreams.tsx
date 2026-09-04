@@ -5,7 +5,7 @@ import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
 import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
-import { Modal, ModalContent, Tooltip } from "bioloom-ui";
+import { Modal, ModalContent, Text, Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
@@ -77,7 +77,7 @@ export default function SidebarStreams() {
   };
 
   if (isLoading) {
-    return <SidebarCardSkeleton media lines={2} className="h-[320px]" />;
+    return <SidebarCardSkeleton media lines={2} className="mt-20 h-[320px]" />;
   }
 
   if (totalStreamers === 0) {
@@ -92,7 +92,17 @@ export default function SidebarStreams() {
   )}&parent=${encodeURIComponent(twitchParent)}&autoplay=false`;
 
   return (
-    <div className="relative w-[480px] min-w-[480px] max-w-[480px]">
+    <div className="mt-20 flex w-[480px] min-w-[480px] max-w-[480px] flex-col items-center gap-2">
+      <Text
+        size="2xl"
+        color={siteTheme.type === "Light" ? "textLight" : "text"}
+        style={{
+          textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+        }}
+      >
+        Featured Streams
+      </Text>
+
       <Modal
         isOpen={viewerOpen}
         onOpenChange={(open?: boolean) => setViewerOpen(Boolean(open))}
@@ -164,7 +174,7 @@ export default function SidebarStreams() {
             setViewerOpen(true);
           }
         }}
-        className="transition-color duration-250 w-[480px] min-w-[480px] max-w-[480px] cursor-pointer h-[320px] focus-visible:outline-none"
+        className="transition-color relative h-[320px] w-[480px] min-w-[480px] max-w-[480px] cursor-pointer duration-250 focus-visible:outline-none"
       >
         <div className="absolute z-0">
           <NextImage

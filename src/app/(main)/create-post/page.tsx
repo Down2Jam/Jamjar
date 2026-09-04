@@ -308,8 +308,13 @@ export default function CreatePostPage({
             className="w-full flex flex-col gap-4 text-[#333] dark:text-white"
             onSubmit={async (e) => {
               e.preventDefault();
+              const submittedContent = content
+                .replace(
+                  /^[\s\u200B-\u200D\uFEFF]+|[\s\u200B-\u200D\uFEFF]+$/g,
+                  "",
+                );
 
-              if (!title && !content) {
+              if (!title && !submittedContent) {
                 addToast({
                   title: "Please enter valid content and a valid title",
                 });
@@ -323,7 +328,7 @@ export default function CreatePostPage({
                 return;
               }
 
-              if (!content) {
+              if (!submittedContent) {
                 addToast({
                   title: "Please enter valid content",
                 });
@@ -341,7 +346,7 @@ export default function CreatePostPage({
 
               const response = await postPost(
                 title,
-                content,
+                submittedContent,
                 sticky,
                 combinedTagIds()
               );

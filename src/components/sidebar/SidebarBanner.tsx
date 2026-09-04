@@ -1,24 +1,29 @@
 "use client";
 
-import { useTheme } from "@/providers/useSiteTheme";
-import Banner from "../banner";
-import { Text } from "bioloom-ui";
+import { useState } from "react";
+
+const HOME_BANNERS = [
+  "/images/D2J_Home_Banner.webp",
+  "/images/D2J_Home_Banner_Attracts_Devs.webp",
+  "/images/D2J_Home_Banner_Cat.webp",
+] as const;
 
 export default function SidebarBanner() {
-  const { colors } = useTheme();
+  const [banner] = useState(
+    () =>
+      HOME_BANNERS[Math.floor(Math.random() * HOME_BANNERS.length)] ??
+      HOME_BANNERS[0],
+  );
 
   return (
     <a href="/about">
-      <div
-        className="absolute z-10 flex items-center justify-center w-[480px] h-[160px] flex-col"
-        style={{
-          color: colors["textLight"],
-        }}
-      >
-        <Text size="6xl">Splash.Title</Text>
-        <Text>Splash.Description</Text>
-      </div>
-      <Banner width={480} className="z-0 shadow-2xl" />
+      <img
+        src={banner}
+        alt="D2 Jam — the community centered jam"
+        width={480}
+        height={160}
+        className="rounded-xl shadow-2xl"
+      />
     </a>
   );
 }

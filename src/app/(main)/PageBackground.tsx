@@ -26,7 +26,7 @@ export default function PageBackground({
               : "opacity-30 sm:opacity-40"
           }`}
           style={{
-            backgroundImage: "url('/images/sitebg.png')",
+            backgroundImage: "url('/images/sitebg.webp')",
             filter: isLightTheme
               ? "brightness(1.02) saturate(0.8) contrast(0.9)"
               : "brightness(0.68) saturate(0.72) contrast(0.92)",

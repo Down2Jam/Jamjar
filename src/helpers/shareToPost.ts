@@ -32,6 +32,29 @@ type ThemeShareImage = {
   stats: ShareStat[];
 };
 
+type ThemeVotingChoice = {
+  id: number;
+  theme: string;
+  vote: 0 | 1 | 3 | null;
+};
+
+function stableHash(value: string) {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function orderVotingChoices(choices: ThemeVotingChoice[], jamKey: string) {
+  return [...choices].sort((a, b) => {
+    const hashDifference =
+      stableHash(`${jamKey}:${a.id}`) - stableHash(`${jamKey}:${b.id}`);
+    return hashDifference || a.id - b.id;
+  });
+}
+
 export function openSharedPostDraft(draft: SharedPostDraft) {
   window.sessionStorage.setItem(SHARE_DRAFT_KEY, JSON.stringify(draft));
   window.location.assign("/create-post");
@@ -155,6 +178,96 @@ async function createThemeShareImage(image: ThemeShareImage) {
   return canvasToBlob(canvas);
 }
 
+async function createVotingShareImage(
+  jamName: string,
+  choices: ThemeVotingChoice[],
+) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 520;
+  canvas.height = Math.max(260, 92 + choices.length * 36);
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas is not available");
+
+  context.fillStyle = OBSIDIAN.background;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.textAlign = "center";
+  context.fillStyle = OBSIDIAN.muted;
+  context.font = "600 13px Inter, Arial, sans-serif";
+  context.fillText(jamName, 260, 30);
+  context.fillStyle = OBSIDIAN.text;
+  context.font = "700 23px Inter, Arial, sans-serif";
+  context.fillText("Theme Votes", 260, 57);
+
+  const voteOptions = [
+    {
+      vote: 0 as const,
+      label: "0",
+      x: 418,
+      color: OBSIDIAN.muted,
+    },
+    {
+      vote: 1 as const,
+      label: "1",
+      x: 446,
+      color: OBSIDIAN.green,
+    },
+    {
+      vote: 3 as const,
+      label: "★",
+      x: 474,
+      color: OBSIDIAN.yellow,
+    },
+  ];
+  choices.forEach((_choice, index) => {
+    const centerY = 88 + index * 36;
+    const isLightRow = index % 2 === 0;
+    context.fillStyle = isLightRow ? OBSIDIAN.surface : "#1b1b1b";
+    context.beginPath();
+    context.roundRect(32, centerY - 15, 456, 30, 6);
+    context.fill();
+
+    context.save();
+    context.beginPath();
+    context.roundRect(32, centerY - 15, 456, 30, 6);
+    context.clip();
+    const laneColors = isLightRow
+      ? ["#1b1b1b", "#1f1f1f", "#1b1b1b"]
+      : ["#151515", "#181818", "#151515"];
+    laneColors.forEach((color, laneIndex) => {
+      context.fillStyle = color;
+      context.fillRect(404 + laneIndex * 28, centerY - 15, 28, 30);
+    });
+    context.restore();
+  });
+
+  choices.forEach((choice, index) => {
+    const centerY = 88 + index * 36;
+    const displayedVote = choice.vote ?? 0;
+
+    context.textAlign = "left";
+    context.fillStyle = OBSIDIAN.text;
+    context.font = "600 14px Inter, Arial, sans-serif";
+    context.fillText(fitText(context, choice.theme, 330), 48, centerY + 5);
+
+    context.textAlign = "center";
+    voteOptions.forEach((option) => {
+      if (displayedVote !== option.vote) return;
+      context.fillStyle = option.color;
+      context.font =
+        option.vote === 3
+          ? "700 18px Arial, sans-serif"
+          : "700 14px Inter, Arial, sans-serif";
+      context.fillText(
+        option.label,
+        option.x,
+        centerY + (option.vote === 3 ? 6 : 5),
+      );
+    });
+  });
+
+  return canvasToBlob(canvas);
+}
+
 async function uploadThemeShareImage(blob: Blob, filename: string) {
   const formData = new FormData();
   formData.append("upload", new File([blob], filename, { type: "image/png" }));
@@ -231,38 +344,21 @@ export function buildEliminationShareDraft({
 
 export function buildVotingShareDraft({
   jamName,
-  starred,
-  liked,
-  skipped,
-  total,
+  jamSlug,
+  choices,
 }: {
   jamName: string;
   jamSlug?: string;
-  starred: string[];
-  liked: string[];
-  skipped: string[];
-  total: number;
+  choices: ThemeVotingChoice[];
   url: string;
 }) {
-  const voted = starred.length + liked.length + skipped.length;
-  return buildImageDraft({
-    alt: `${jamName} theme voting picks`,
-    filename: "theme-voting-picks.png",
-    image: {
-      jamName,
-      heading: "Theme Voting Stats",
-      total,
-      stats: [
-        { lead: "Voted", status: "star", color: OBSIDIAN.yellow, count: starred.length },
-        { lead: "Voted", status: "like", color: OBSIDIAN.green, count: liked.length },
-        { lead: "Voted", status: "skip", color: OBSIDIAN.muted, count: skipped.length },
-        {
-          lead: "Did",
-          status: "not vote",
-          color: OBSIDIAN.muted,
-          count: Math.max(0, total - voted),
-        },
-      ],
-    },
-  });
+  const orderedChoices = orderVotingChoices(choices, jamSlug ?? jamName);
+
+  return createVotingShareImage(jamName, orderedChoices)
+    .then((blob) => uploadThemeShareImage(blob, "theme-voting-picks.png"))
+    .then((imageUrl) => ({
+      title: "",
+      content: `\u200B\n\n![${jamName} theme voting picks](${imageUrl})`,
+      tags: ["ThemeVote"],
+    }));
 }

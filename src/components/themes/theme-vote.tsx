@@ -1,20 +1,23 @@
 "use client";
 
-import { getCookie } from "@/helpers/cookie";
-import {
-  hasJoinedCurrentJam,
-  joinJam,
-} from "@/helpers/jam";
+import { getCookie, hasCookie } from "@/helpers/cookie";
+import { hasJoinedCurrentJam, joinJam } from "@/helpers/jam";
 import { useCurrentJam } from "@/hooks/queries";
-import { ThemeType } from "@/types/ThemeType";
-import { useEffect, useState } from "react";
 import { getThemes, postThemeVotingVote } from "@/requests/theme";
-import { Button } from "bioloom-ui";
-import { addToast, Spinner } from "bioloom-ui";
-import { Card } from "bioloom-ui";
-import { Hstack, Vstack } from "bioloom-ui";
-import { Text } from "bioloom-ui";
-import { Icon } from "bioloom-ui";
+import { ThemeType } from "@/types/ThemeType";
+import { useTheme } from "@/providers/useSiteTheme";
+import { useEffect, useState } from "react";
+import { Star } from "lucide-react";
+import {
+  addToast,
+  Button,
+  Card,
+  Hstack,
+  Icon,
+  Spinner,
+  Text,
+  Vstack,
+} from "bioloom-ui";
 import {
   buildVotingShareDraft,
   openSharedPostDraft,
@@ -26,26 +29,44 @@ export default function VotingPage() {
   const [phaseLoading, setPhaseLoading] = useState(true);
   const [hasJoined, setHasJoined] = useState<boolean>(false);
   const [sharingVotes, setSharingVotes] = useState(false);
+  const [voteEffect, setVoteEffect] = useState<{
+    themeId: number;
+    score: number;
+  } | null>(null);
   const token = getCookie("token");
+  const hasLoggedInBefore = hasCookie("hasLoggedIn");
   const canVote = Boolean(token && hasJoined);
   const voteCount = themes.filter((theme) => theme.votes2?.length).length;
+  const starCount = themes.filter(
+    (theme) => theme.votes2?.[0]?.voteScore === 3,
+  ).length;
+  const { colors, siteTheme } = useTheme();
+  const headerColor =
+    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+
+  async function joinCurrentJam() {
+    if (activeJamResponse?.jam?.id === undefined) return;
+
+    if (await joinJam(activeJamResponse.jam.id)) {
+      setHasJoined(true);
+    }
+  }
 
   async function shareVotes() {
-    const getThemesWithScore = (score: number) =>
-      themes
-        .filter((theme) => theme.votes2?.[0]?.voteScore === score)
-        .map((theme) => theme.suggestion);
-
     try {
       setSharingVotes(true);
       openSharedPostDraft(
         await buildVotingShareDraft({
           jamName: activeJamResponse?.jam?.name ?? "Game jam",
           jamSlug: activeJamResponse?.jam?.slug,
-          starred: getThemesWithScore(3),
-          liked: getThemesWithScore(1),
-          skipped: getThemesWithScore(0),
-          total: themes.length,
+          choices: themes.map((theme) => {
+            const vote = theme.votes2?.[0]?.voteScore;
+            return {
+              id: theme.id,
+              theme: theme.suggestion,
+              vote: vote === 0 || vote === 1 || vote === 3 ? vote : null,
+            };
+          }),
           url: `${window.location.origin}/theme-voting`,
         }),
       );
@@ -74,17 +95,17 @@ export default function VotingPage() {
 
           const votedThemes = data.data
             .filter(
-              (theme: ThemeType) => theme.votes2 && theme.votes2.length > 0
+              (theme: ThemeType) => theme.votes2 && theme.votes2.length > 0,
             )
             .sort(
               (a: ThemeType, b: ThemeType) =>
                 (a.votes2 ? new Date(a.votes2[0].updatedAt).getTime() : 0) -
-                (b.votes2 ? new Date(b.votes2[0].updatedAt).getTime() : 0)
+                (b.votes2 ? new Date(b.votes2[0].updatedAt).getTime() : 0),
             );
 
           const nonVotedThemes = data.data
             .filter(
-              (theme: ThemeType) => !theme.votes2 || theme.votes2.length === 0
+              (theme: ThemeType) => !theme.votes2 || theme.votes2.length === 0,
             )
             .sort(() => Math.random() - 0.5); // Shuffle
 
@@ -119,6 +140,7 @@ export default function VotingPage() {
     };
 
     setThemes(newThemes);
+    setVoteEffect({ themeId: themes[index].id, score: 0 });
 
     try {
       postThemeVotingVote(themes[index].id, 0);
@@ -144,6 +166,7 @@ export default function VotingPage() {
     };
 
     setThemes(newThemes);
+    setVoteEffect({ themeId: themes[index].id, score: 1 });
 
     try {
       postThemeVotingVote(themes[index].id, 1);
@@ -169,6 +192,7 @@ export default function VotingPage() {
     };
 
     setThemes(newThemes);
+    setVoteEffect({ themeId: themes[index].id, score: 3 });
 
     try {
       postThemeVotingVote(themes[index].id, 3);
@@ -187,41 +211,6 @@ export default function VotingPage() {
               <Text size="xl">ThemeSuggestions.Loading.Title</Text>
             </Hstack>
             <Text color="textFaded">ThemeSuggestions.Loading.Description</Text>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
-
-  if (token && !hasJoined) {
-    return (
-      <Vstack>
-        <Card>
-          <Vstack>
-            <Vstack gap={0}>
-              <Hstack>
-                <Icon name="userplus" />
-                <Text size="xl">Join the Jam First</Text>
-              </Hstack>
-              <Text color="textFaded">
-                You need to join the current jam before you can vote for themes.
-              </Text>
-            </Vstack>
-            <Button
-              onClick={async () => {
-                if (activeJamResponse?.jam?.id !== undefined) {
-                  const ok = await joinJam(activeJamResponse.jam.id);
-
-                  if (ok) {
-                    setHasJoined(true);
-                  }
-                }
-              }}
-              icon="calendarplus"
-              color="green"
-            >
-              Navbar.JoinJam.Title
-            </Button>
           </Vstack>
         </Card>
       </Vstack>
@@ -277,41 +266,33 @@ export default function VotingPage() {
   }
 
   return (
-    <Vstack align="stretch">
-      {!token && (
-        <Hstack>
-          <Icon name="userx" />
-          <Text color="textFaded">Sign in and join the jam to vote.</Text>
-          <Button href="/login" color="pink" icon="login">
-            Themes.Login
-          </Button>
-        </Hstack>
-      )}
-      <Vstack>
-        <Card>
-          <Vstack align="center" gap={0}>
-            <Hstack>
-              <Icon name="vote" />
-              <Text size="xl">Theme Voting</Text>
-            </Hstack>
-            <Text color="textFaded" size="sm">
-              Vote for the theme of the game jam.
-            </Text>
-          </Vstack>
-        </Card>
-        <Card>
-          <Text color="textFaded" size="sm">
-            Welcome to the Theme Voting! You can vote on the top 15 themes from
-            the theme elimination round to show which ones you enjoy. The top
-            voted theme after taking into account everybody&apos;s votes will be
-            the theme of the jam.
-          </Text>
-          <Text color="textFaded" size="sm">
-            You can vote on as many themes as you want. Likes add +1 to the
-            theme&apos;s score while stars (that you can give 2 of) give +3 to a
-            theme&apos;s score.
-          </Text>
-          {canVote && (
+    <Vstack align="stretch" gap={4} className="mx-auto w-full max-w-7xl">
+      <header className="flex flex-col items-center gap-3 py-2 text-center">
+        <div>
+          <p
+            className="text-3xl font-semibold"
+            style={{
+              color: headerColor,
+              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Theme Voting
+          </p>
+          <p
+            className="mx-auto mt-1 max-w-2xl text-sm"
+            style={{
+              color: headerColor,
+              opacity: 0.82,
+              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Vote for the theme of the jam. Likes add +1 and your two stars add
+            +3 each.
+          </p>
+        </div>
+
+        <Hstack justify="center" wrap className="relative z-20">
+          {canVote ? (
             <Button
               icon="send"
               onClick={shareVotes}
@@ -319,103 +300,156 @@ export default function VotingPage() {
             >
               {sharingVotes ? "Creating image…" : "Share votes"}
             </Button>
+          ) : token ? (
+            <Button onClick={joinCurrentJam} color="green" icon="calendarplus">
+              Join Jam to vote
+            </Button>
+          ) : (
+            <Button
+              href={hasLoggedInBefore ? "/login" : "/signup"}
+              color="pink"
+              icon="login"
+            >
+              {hasLoggedInBefore ? "Sign in to vote" : "Join to vote"}
+            </Button>
           )}
-        </Card>
-      </Vstack>
+        </Hstack>
+      </header>
 
-      <div className="py-4">
-        <Vstack align="stretch">
-          {themes ? (
-            themes.map((theme, i) => (
+      <Vstack
+        align="stretch"
+        gap={3}
+        className="relative z-0 min-h-80 w-full max-w-4xl self-center overflow-y-auto overscroll-contain px-1 pb-1 [max-height:calc(100dvh-15rem)] [scrollbar-gutter:stable]"
+        style={{
+          gap: "0.75rem",
+          scrollbarColor: `${colors["base"]} transparent`,
+          scrollbarWidth: "thin",
+        }}
+      >
+        {themes.length > 0 ? (
+          themes.map((theme, i) => {
+            const voteScore = theme.votes2?.[0]?.voteScore;
+            const isStarred = voteScore === 3;
+
+            return (
               <Card
-                className={`border border-transparent w-full`}
+                className="w-full overflow-hidden"
                 key={theme.id}
+                padding={0}
+                style={{
+                  backgroundColor: colors["mantle"],
+                  borderColor: colors["base"],
+                }}
               >
-                <Hstack justify="between">
-                  <Hstack>
+                <Hstack
+                  align="stretch"
+                  justify="between"
+                  gap={0}
+                  className="min-h-16 w-full flex-wrap sm:flex-nowrap"
+                >
+                  <Hstack className="min-w-0 flex-1 gap-3 px-4 py-3">
                     <Text size="xs" color="textFaded">
                       {String(i + 1).padStart(2, "0")}
-                    </Text>{" "}
+                    </Text>
                     <Text color="text" className="capitalize">
                       {theme.suggestion}
                     </Text>
                   </Hstack>
-                  <div className="items-center flex gap-3">
+                  <Hstack
+                    wrap
+                    className="w-full justify-end gap-2 px-3 py-2 sm:w-auto"
+                  >
                     <Button
                       size="sm"
+                      style={{
+                        width: "2rem",
+                        height: "2rem",
+                        padding: 0,
+                        border: 0,
+                      }}
                       tooltip="Skip"
                       disabled={!canVote}
-                      onClick={() => {
-                        voteSkip(i);
-                      }}
-                      color={
-                        themes[i].votes2 &&
-                        themes[i].votes2.length > 0 &&
-                        themes[i].votes2[0].voteScore == 0
-                          ? "gray"
-                          : "default"
-                      }
+                      onClick={() => voteSkip(i)}
+                      color={voteScore === 0 ? "gray" : "default"}
                     >
-                      0
+                      <span
+                        className={
+                          voteEffect?.themeId === theme.id &&
+                          voteEffect.score === 0
+                            ? "post-reaction-icon--pulse inline-flex"
+                            : "inline-flex"
+                        }
+                        onAnimationEnd={() => setVoteEffect(null)}
+                      >
+                        0
+                      </span>
                     </Button>
                     <Button
                       size="sm"
+                      style={{
+                        width: "2rem",
+                        height: "2rem",
+                        padding: 0,
+                        border: 0,
+                      }}
                       tooltip="Like (+1)"
                       disabled={!canVote}
-                      onClick={() => {
-                        voteLike(i);
-                      }}
-                      color={
-                        themes[i].votes2 &&
-                        themes[i].votes2.length > 0 &&
-                        themes[i].votes2[0].voteScore == 1
-                          ? "green"
-                          : "default"
-                      }
+                      onClick={() => voteLike(i)}
+                      color={voteScore === 1 ? "green" : "default"}
                     >
-                      1
+                      <span
+                        className={
+                          voteEffect?.themeId === theme.id &&
+                          voteEffect.score === 1
+                            ? "post-reaction-icon--pulse inline-flex"
+                            : "inline-flex"
+                        }
+                        onAnimationEnd={() => setVoteEffect(null)}
+                      >
+                        1
+                      </span>
                     </Button>
                     <Button
-                      color={
-                        themes[i].votes2 &&
-                        themes[i].votes2.length > 0 &&
-                        themes[i].votes2[0].voteScore == 3
-                          ? "yellow"
-                          : "default"
-                      }
-                      tooltip="Star (+3)"
-                      icon="star"
-                      onClick={() => {
-                        voteStar(i);
+                      size="sm"
+                      style={{
+                        width: "2rem",
+                        height: "2rem",
+                        padding: 0,
+                        border: 0,
                       }}
-                      disabled={
-                        !canVote ||
-                        (themes.reduce(
-                          (prev, curr) =>
-                            prev +
-                            (curr.votes2 &&
-                            curr.votes2.length > 0 &&
-                            curr.votes2[0].voteScore == 3
-                              ? 1
-                              : 0),
-                          0
-                        ) >= 2 &&
-                        !(
-                          themes[i].votes2 &&
-                          themes[i].votes2.length > 0 &&
-                          themes[i].votes2[0].voteScore == 3
-                        ))
+                      tooltip="Star (+3)"
+                      leftSlot={
+                        <span
+                          className={
+                            voteEffect?.themeId === theme.id &&
+                            voteEffect.score === 3
+                              ? "post-reaction-icon--pulse inline-flex"
+                              : "inline-flex"
+                          }
+                          onAnimationEnd={() => setVoteEffect(null)}
+                        >
+                          <Star
+                            size={16}
+                            fill={isStarred ? "currentColor" : "none"}
+                            aria-hidden="true"
+                          />
+                        </span>
                       }
+                      onClick={() => voteStar(i)}
+                      color={isStarred ? "yellow" : "default"}
+                      disabled={!canVote || (starCount >= 2 && !isStarred)}
                     />
-                  </div>
+                  </Hstack>
                 </Hstack>
               </Card>
-            ))
-          ) : (
-            <>No themes were found</>
-          )}
-        </Vstack>
-      </div>
+            );
+          })
+        ) : (
+          <Text color="textFaded" className="py-8 text-center">
+            No themes were found.
+          </Text>
+        )}
+      </Vstack>
     </Vstack>
   );
 }

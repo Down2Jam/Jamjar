@@ -6,6 +6,7 @@ import SidebarStreams from "./SidebarStreams";
 import SidebarEvents from "./SidebarEvents";
 import SidebarGames from "./SidebarGames";
 import SidebarMusic from "./SidebarMusic";
+import SidebarScreenshots from "./SidebarScreenshots";
 
 export default function Sidebar() {
   return (
@@ -18,6 +19,7 @@ export default function Sidebar() {
       <SidebarEvents />
       <SidebarGames />
       <SidebarMusic />
+      <SidebarScreenshots />
     </div>
   );
 }

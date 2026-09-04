@@ -17,6 +17,8 @@ export function useCurrentJam() {
     queryKey: queryKeys.jam.current(),
     queryFn: getCurrentJam,
     staleTime: 5 * 60 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: true,
   });
 }
 

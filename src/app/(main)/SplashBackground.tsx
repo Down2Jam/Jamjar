@@ -5,7 +5,7 @@ import Image from "@/compat/next-image";
 
 export default function HomeBackground() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const posterUrl = "/images/sitebg.png";
+  const posterUrl = "/images/sitebg.webp";
 
   return (
     <div

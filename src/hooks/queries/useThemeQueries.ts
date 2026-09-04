@@ -34,11 +34,11 @@ export function useThemeSuggestions(enabled = true) {
   });
 }
 
-export function useThemes(isVoting = false, enabled = true) {
+export function useThemes(isVoting = false, enabled = true, includeAll = false) {
   return useQuery<ThemeType[]>({
-    queryKey: queryKeys.theme.list(isVoting),
+    queryKey: queryKeys.theme.list(isVoting, includeAll),
     queryFn: async () => {
-      const res = await getThemes(isVoting);
+      const res = await getThemes(isVoting, includeAll);
       const json = await res.json();
       return unwrapArray<ThemeType>(json);
     },

@@ -13,13 +13,14 @@ function isEmojiOnlyLine(
   text: string,
   emojis: Record<string, EmojiType>,
 ): boolean {
+  const visibleText = text.replace(/[\u200B-\u200D\uFEFF]/g, "");
   const regex = /:([a-zA-Z0-9_-]+):/g;
   let count = 0;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = regex.exec(text))) {
-    if (text.slice(lastIndex, match.index).trim() || !emojis[match[1]]) {
+  while ((match = regex.exec(visibleText))) {
+    if (visibleText.slice(lastIndex, match.index).trim() || !emojis[match[1]]) {
       return false;
     }
 
@@ -28,7 +29,7 @@ function isEmojiOnlyLine(
     lastIndex = match.index + match[0].length;
   }
 
-  return count > 0 && !text.slice(lastIndex).trim();
+  return count > 0 && !visibleText.slice(lastIndex).trim();
 }
 
 export function createEmojiShortcodeExtension(

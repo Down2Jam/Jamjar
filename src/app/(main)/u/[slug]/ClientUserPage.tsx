@@ -410,7 +410,7 @@ export default function ClientUserPage({
   } = useDisclosure();
 
   const defaultBanners = ["/images/D2J_Banner.png"];
-  const defaultBackgrounds = ["/images/sitebg.png"];
+  const defaultBackgrounds = ["/images/sitebg.webp"];
 
   const rarityStyles: Record<
     RarityTier,
@@ -1638,32 +1638,32 @@ export default function ClientUserPage({
             {profileSection === "music" && (
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {orderedProfileTracks.map((track) => (
-                    <SidebarSong
-                      key={track.id}
-                      slug={track.slug}
-                      name={track.name}
-                      artist={track.composer}
-                      squareThumbnail
-                      thumbnail={
-                        track.game.soundtrackThumbnail ||
-                        track.game.thumbnail ||
-                        "/images/D2J_Icon.png"
-                      }
-                      game={{
-                        ...track.game,
-                        thumbnail: track.game.thumbnail ?? undefined,
-                      }}
-                      song={track.url}
-                      loudnessGainDb={track.loudnessGainDb}
-                      queue={orderedProfileTracks}
-                      license={track.license}
-                      pageVersion={track.pageVersion}
-                      allowDownload={track.allowDownload}
-                      allowBackgroundUse={track.allowBackgroundUse}
-                      allowBackgroundUseAttribution={
-                        track.allowBackgroundUseAttribution
-                      }
-                    />
+                  <SidebarSong
+                    key={track.id}
+                    slug={track.slug}
+                    name={track.name}
+                    artist={track.composer}
+                    squareThumbnail
+                    thumbnail={
+                      track.game.soundtrackThumbnail ||
+                      track.game.thumbnail ||
+                      "/images/D2J_Icon.png"
+                    }
+                    game={{
+                      ...track.game,
+                      thumbnail: track.game.thumbnail ?? undefined,
+                    }}
+                    song={track.url}
+                    loudnessGainDb={track.loudnessGainDb}
+                    queue={orderedProfileTracks}
+                    license={track.license}
+                    pageVersion={track.pageVersion}
+                    allowDownload={track.allowDownload}
+                    allowBackgroundUse={track.allowBackgroundUse}
+                    allowBackgroundUseAttribution={
+                      track.allowBackgroundUseAttribution
+                    }
+                  />
                 ))}
               </section>
             )}
@@ -1743,8 +1743,8 @@ export default function ClientUserPage({
                 )}
               </section>
             )}
-            {profileSection === "posts" && (
-              visiblePosts.length === 0 ? (
+            {profileSection === "posts" &&
+              (visiblePosts.length === 0 ? (
                 <Text size="sm" color="textFaded">
                   No posts yet.
                 </Text>
@@ -1761,10 +1761,9 @@ export default function ClientUserPage({
                       />
                     ))}
                 </section>
-              )
-            )}
-            {profileSection === "comments" && (
-              visibleComments.length === 0 ? (
+              ))}
+            {profileSection === "comments" &&
+              (visibleComments.length === 0 ? (
                 <Text size="sm" color="textFaded">
                   No comments yet.
                 </Text>
@@ -1780,10 +1779,9 @@ export default function ClientUserPage({
                       />
                     ))}
                 </section>
-              )
-            )}
-            {profileSection === "scores" && (
-              bestScores.length === 0 ? (
+              ))}
+            {profileSection === "scores" &&
+              (bestScores.length === 0 ? (
                 <Text size="sm" color="textFaded">
                   No scores yet.
                 </Text>
@@ -1800,11 +1798,7 @@ export default function ClientUserPage({
                           href={`/g/${score.leaderboard.game.slug}`}
                           shadow="none"
                         >
-                          <Hstack
-                            justify="between"
-                            gap={4}
-                            className="min-w-0"
-                          >
+                          <Hstack justify="between" gap={4} className="min-w-0">
                             <Hstack gap={3} className="min-w-0">
                               <Image
                                 src={
@@ -1816,11 +1810,7 @@ export default function ClientUserPage({
                                 height={27}
                                 className="shrink-0 rounded-md object-cover"
                               />
-                              <Vstack
-                                align="start"
-                                gap={0}
-                                className="min-w-0"
-                              >
+                              <Vstack align="start" gap={0} className="min-w-0">
                                 <Text
                                   weight="semibold"
                                   className="max-w-full truncate"
@@ -1837,11 +1827,7 @@ export default function ClientUserPage({
                               </Vstack>
                             </Hstack>
 
-                            <Vstack
-                              align="end"
-                              gap={0}
-                              className="shrink-0"
-                            >
+                            <Vstack align="end" gap={0} className="shrink-0">
                               <Text
                                 color="blue"
                                 weight="semibold"
@@ -1862,8 +1848,7 @@ export default function ClientUserPage({
                       );
                     })}
                 </section>
-              )
-            )}
+              ))}
             {profileSection === "achievements" && (
               <Card>
                 <Vstack align="stretch" gap={3}>

@@ -12,8 +12,15 @@ export async function getTheme() {
   return fetch(`${BASE_URL}/theme`);
 }
 
-export async function getThemes(isVoting: boolean = false) {
-  return fetch(`${BASE_URL}/themes?isVoting=${isVoting ? 1 : 0}`, {
+export async function getThemes(
+  isVoting: boolean = false,
+  includeAll: boolean = false
+) {
+  const params = new URLSearchParams({
+    isVoting: isVoting ? "1" : "0",
+    ...(includeAll ? { includeAll: "1" } : {}),
+  });
+  return fetch(`${BASE_URL}/themes?${params}`, {
     headers: { Authorization: `Bearer ${getCookie("token")}` },
     credentials: "include",
   });

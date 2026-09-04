@@ -23,7 +23,7 @@ type ThemeWithScore = ThemeType & {
 };
 
 export default function AdminThemeEliminationResults() {
-  const { data, isLoading: loading } = useThemes(true);
+  const { data, isLoading: loading } = useThemes(true, true, true);
   const themes: ThemeWithScore[] = data ?? [];
 
   const rankedThemes = useMemo(() => {
@@ -42,7 +42,7 @@ export default function AdminThemeEliminationResults() {
             Theme Elimination Results
           </Text>
           <Text size="sm" color="textFaded">
-            Track the highest scoring themes from the elimination round.
+            Review every theme and score from the elimination round.
           </Text>
         </Vstack>
         <Hstack wrap>
@@ -50,7 +50,7 @@ export default function AdminThemeEliminationResults() {
             Open Elimination Page
           </Button>
           <Text size="sm" color="textFaded">
-            {rankedThemes.length} themes in shortlist - top score {topScore}
+            {rankedThemes.length} themes - top score {topScore}
           </Text>
         </Hstack>
       </section>
@@ -58,7 +58,7 @@ export default function AdminThemeEliminationResults() {
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            Elimination Shortlist
+            All Elimination Results
           </Text>
           {loading ? (
             <Spinner />
