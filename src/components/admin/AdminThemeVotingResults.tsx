@@ -22,15 +22,19 @@ type ThemeWithScore = ThemeType & {
   slaughterScoreSum?: number;
 };
 
-function formatVote(score?: number) {
-  if (score === 3) return "Star (+3)";
-  if (score === 1) return "Like (+1)";
-  if (score === 0) return "Skip (0)";
-  return "No vote";
+function summarizeVotes(votes2?: ThemeWithScore["votes2"]) {
+  const votes = votes2 ?? [];
+  if (votes.length === 0) return "No votes";
+
+  const stars = votes.filter((vote) => vote.voteScore === 3).length;
+  const likes = votes.filter((vote) => vote.voteScore === 1).length;
+  const skips = votes.filter((vote) => vote.voteScore === 0).length;
+
+  return `${votes.length} votes (${stars} star, ${likes} like, ${skips} skip)`;
 }
 
 export default function AdminThemeVotingResults() {
-  const { data, isLoading: loading } = useThemes(true);
+  const { data, isLoading: loading } = useThemes(true, true, true);
   const themes: ThemeWithScore[] = data ?? [];
 
   const rankedThemes = useMemo(() => {
@@ -39,10 +43,11 @@ export default function AdminThemeVotingResults() {
     );
   }, [themes]);
 
-  const starVotes = useMemo(() => {
-    return rankedThemes.filter(
-      (theme) => theme.votes2 && theme.votes2[0]?.voteScore === 3
-    ).length;
+  const totalVotes = useMemo(() => {
+    return rankedThemes.reduce(
+      (sum, theme) => sum + (theme.votes2?.length ?? 0),
+      0
+    );
   }, [rankedThemes]);
 
   return (
@@ -53,7 +58,7 @@ export default function AdminThemeVotingResults() {
             Theme Voting Preview
           </Text>
           <Text size="sm" color="textFaded">
-            Review the shortlist for the voting round and your current votes.
+            Review the shortlist for the voting round and the total votes cast.
           </Text>
         </Vstack>
         <Hstack wrap>
@@ -61,7 +66,7 @@ export default function AdminThemeVotingResults() {
             Open Voting Page
           </Button>
           <Text size="sm" color="textFaded">
-            {rankedThemes.length} themes - {starVotes} starred by you
+            {rankedThemes.length} themes - {totalVotes} total votes cast
           </Text>
         </Hstack>
       </section>
@@ -83,7 +88,7 @@ export default function AdminThemeVotingResults() {
                 <TableColumn>Rank</TableColumn>
                 <TableColumn>Theme</TableColumn>
                 <TableColumn>Seed Score</TableColumn>
-                <TableColumn>Your Vote</TableColumn>
+                <TableColumn>Votes</TableColumn>
               </TableHeader>
               <TableBody>
                 {rankedThemes.map((theme, index) => (
@@ -93,9 +98,7 @@ export default function AdminThemeVotingResults() {
                       {theme.suggestion}
                     </TableCell>
                     <TableCell>{theme.slaughterScoreSum ?? 0}</TableCell>
-                    <TableCell>
-                      {formatVote(theme.votes2?.[0]?.voteScore)}
-                    </TableCell>
+                    <TableCell>{summarizeVotes(theme.votes2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

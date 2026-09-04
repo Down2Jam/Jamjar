@@ -85,6 +85,10 @@ export function clearSharedPostDraft() {
   window.sessionStorage.removeItem(SHARE_DRAFT_KEY);
 }
 
+function capitalizeWords(value: string) {
+  return value.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function fitText(context: CanvasRenderingContext2D, value: string, maxWidth: number) {
   if (context.measureText(value).width <= maxWidth) return value;
   let shortened = value;
@@ -247,7 +251,11 @@ async function createVotingShareImage(
     context.textAlign = "left";
     context.fillStyle = OBSIDIAN.text;
     context.font = "600 14px Inter, Arial, sans-serif";
-    context.fillText(fitText(context, choice.theme, 330), 48, centerY + 5);
+    context.fillText(
+      fitText(context, capitalizeWords(choice.theme), 330),
+      48,
+      centerY + 5,
+    );
 
     context.textAlign = "center";
     voteOptions.forEach((option) => {
