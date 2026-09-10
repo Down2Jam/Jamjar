@@ -12,6 +12,10 @@ export default defineConfig({
         target: process.env.API_BASE_ORIGIN ?? "http://localhost:3005",
         changeOrigin: true,
       },
+      "/game-builds": {
+        target: process.env.API_BASE_ORIGIN ?? "http://localhost:3005",
+        changeOrigin: true,
+      },
     },
   },
   resolve: {

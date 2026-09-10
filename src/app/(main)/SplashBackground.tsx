@@ -5,7 +5,7 @@ import Image from "@/compat/next-image";
 
 export default function HomeBackground() {
   const prefersReducedMotion = usePrefersReducedMotion();
-  const posterUrl = "/images/sitebg.webp";
+  const posterUrl = "/images/mountain_beautypath_render.png";
 
   return (
     <div

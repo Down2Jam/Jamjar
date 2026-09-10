@@ -62,7 +62,8 @@ export default function EditTeamPage() {
   const [invitations, setInvitations] = useState<TeamInviteType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
   const [name, setName] = useState<string>("");
-  const { colors } = useTheme();
+  const { siteTheme, colors } = useTheme();
+  const headerColor = colors["text"];
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
 
 
@@ -283,21 +284,35 @@ export default function EditTeamPage() {
           }
         }}
       >
-        <Card>
-          <Vstack align="start">
-            <Hstack>
-              <Icon name="users" color="text" />
-              <Text size="xl" color="text" weight="semibold">
-                Team
-              </Text>
-            </Hstack>
-            <Text size="sm" color="textFaded">
-              {isCurrentJamTeam || !teamGameName
-                ? "View and manage your team for the jam"
-                : `View and manage your team for ${teamGameName}`}
-            </Text>
-          </Vstack>
-        </Card>
+        <header className="py-2 text-center">
+          <p
+            className="text-3xl font-semibold"
+            style={{
+              color: headerColor,
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Team
+          </p>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: headerColor,
+              opacity: 0.82,
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            {isCurrentJamTeam || !teamGameName
+              ? "View and manage your team for the jam"
+              : `View and manage your team for ${teamGameName}`}
+          </p>
+        </header>
         {teams[selectedTeam].ownerId != user.id && (
           <p>You cannot edit the team if you are not the owner</p>
         )}

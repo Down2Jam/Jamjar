@@ -67,6 +67,7 @@ const ThemeSuggestionsPage = lazy(
   () => import("@/app/(main)/theme-suggestions/page"),
 );
 const ThemeVotingPage = lazy(() => import("@/app/(main)/theme-voting/page"));
+const ThemesPage = lazy(() => import("@/app/(main)/themes/page"));
 const WhyPage = lazy(() => import("@/app/(main)/why/page"));
 
 const lazyRoute = <T extends ComponentType>(
@@ -214,6 +215,11 @@ const indexedRouteMetadata = [
     pattern: /^\/theme-voting\/?$/,
     title: "Theme Voting",
     description: "Vote on themes for the next Down2Jam.",
+  },
+  {
+    pattern: /^\/themes\/?$/,
+    title: "Site Themes",
+    description: "Browse and preview the available Down2Jam site themes.",
   },
   {
     pattern: /^\/docs(?:\/[^/]+)?\/?$/,
@@ -372,6 +378,7 @@ export default function App() {
           <Route path="theme-elimination" element={<ThemeEliminationPage />} />
           <Route path="theme-suggestions" element={<ThemeSuggestionsPage />} />
           <Route path="theme-voting" element={<ThemeVotingPage />} />
+          <Route path="themes" element={<ThemesPage />} />
           <Route path="u/:slug" element={<UserRoute />} />
           <Route path="why" element={<WhyPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />

@@ -1,5 +1,3 @@
-import { UserType } from "./UserType";
-
 export interface EventType {
   id: number;
   slug: string;
@@ -8,7 +6,12 @@ export interface EventType {
   endTime: Date;
   createdAt: Date;
   updatedAt: Date;
-  host: UserType;
+  host: {
+    id: number;
+    slug: string;
+    name: string;
+    profilePicture?: string | null;
+  };
   content?: string;
   icon?: string;
   link?: string;

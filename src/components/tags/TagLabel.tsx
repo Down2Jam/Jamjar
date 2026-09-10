@@ -292,7 +292,7 @@ const FALLBACK_GAME_ICONS: Record<TagIconFallback, GameIconDefinition> = {
 };
 
 const LOCAL_TAG_ICONS: Record<string, string> = {
-  d2jam: "/images/tags/d2jam.png",
+  d2jam: "/images/D2J_Icon.svg",
 };
 
 function TagIcon({

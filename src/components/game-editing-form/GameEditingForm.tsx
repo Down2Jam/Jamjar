@@ -10,7 +10,7 @@ import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
-import { BASE_URL } from "@/requests/config";
+import { BASE_URL, getPlayableBuildUrl } from "@/requests/config";
 import { useCurrentJam } from "@/hooks/queries";
 import { sanitize } from "@/helpers/sanitize";
 import useHasMounted from "@/hooks/useHasMounted";
@@ -20,6 +20,7 @@ import {
   getRatingCategories,
   postGame,
   updateGame,
+  uploadWebBuild,
 } from "@/requests/game";
 import { getTrackFlags, getTrackTags } from "@/requests/track";
 import { getTeamsUser } from "@/requests/team";
@@ -34,7 +35,6 @@ import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "bioloom-ui";
 import Image from "@/compat/next-image";
-import { Play } from "lucide-react";
 import {
   ReactNode,
   useCallback,
@@ -91,8 +91,6 @@ type InputMethodType =
 
 const MIN_EMOTE_PREFIX_LENGTH = 4;
 const MAX_EMOTE_PREFIX_LENGTH = 8;
-const ITCH_EMBED_STALL_TIMEOUT_MS = 12000;
-
 const YT_ID_REGEX =
   /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/;
 
@@ -386,11 +384,15 @@ export default function GameEditingForm({
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
-  const [isItchPreviewActive, setIsItchPreviewActive] = useState(false);
-  const [itchPreviewAttempt, setItchPreviewAttempt] = useState(0);
-  const [showItchPreviewRecovery, setShowItchPreviewRecovery] = useState(false);
+  const [playableBuildUrl, setPlayableBuildUrl] = useState<string>("");
+  const [uploadingWebBuild, setUploadingWebBuild] = useState(false);
   const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
     useState<GameEmbedAspectRatio>("16 / 9");
+  const [playableBuildAspectRatio, setPlayableBuildAspectRatio] =
+    useState<GameEmbedAspectRatio>("16 / 9");
+  const [playableBuildShowFullscreenButton, setPlayableBuildShowFullscreenButton] =
+    useState(true);
+  const playableBuildPreviewRef = useRef<HTMLIFrameElement>(null);
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
 
   const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
@@ -453,8 +455,17 @@ export default function GameEditingForm({
     setScreenshots(game?.screenshots ?? []);
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
+    setPlayableBuildUrl(game?.playableBuildUrl ?? "");
     setItchEmbedAspectRatio(
       normalizeItchEmbedAspectRatio(game?.itchEmbedAspectRatio),
+    );
+    setPlayableBuildAspectRatio(
+      normalizeItchEmbedAspectRatio(
+        game?.playableBuildAspectRatio ?? game?.itchEmbedAspectRatio,
+      ),
+    );
+    setPlayableBuildShowFullscreenButton(
+      game?.playableBuildShowFullscreenButton ?? true,
     );
     setEmotePrefixInput(game?.emotePrefix ?? "");
     setInputMethods(
@@ -576,39 +587,6 @@ export default function GameEditingForm({
         .filter((index) => index !== -1) || [],
     );
   }, [game, allTags]);
-
-  useEffect(() => {
-    setIsItchPreviewActive(false);
-    setItchPreviewAttempt(0);
-    setShowItchPreviewRecovery(false);
-  }, [itchEmbedUrl]);
-
-  useEffect(() => {
-    const canonicalUrl = toCanonicalItchEmbedUrl(itchEmbedUrl);
-
-    if (!isItchPreviewActive || !canonicalUrl) {
-      setShowItchPreviewRecovery(false);
-      return;
-    }
-
-    setShowItchPreviewRecovery(false);
-    const timeoutId = window.setTimeout(() => {
-      setShowItchPreviewRecovery(true);
-    }, ITCH_EMBED_STALL_TIMEOUT_MS);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [isItchPreviewActive, itchEmbedUrl, itchPreviewAttempt]);
-
-  const activeItchPreviewUrl = useMemo(() => {
-    const canonicalUrl = toCanonicalItchEmbedUrl(itchEmbedUrl);
-    if (!canonicalUrl) return null;
-
-    const url = new URL(canonicalUrl);
-    if (itchPreviewAttempt > 0) {
-      url.searchParams.set("d2jam_retry", String(itchPreviewAttempt));
-    }
-    return url.toString();
-  }, [itchEmbedUrl, itchPreviewAttempt]);
 
   const refreshTeams = useCallback(async () => {
     const teamResponse = await getTeamsUser();
@@ -1073,6 +1051,9 @@ export default function GameEditingForm({
                   toCanonicalItchEmbedUrl(itchEmbedUrl)
                     ? itchEmbedAspectRatio
                     : null,
+                  playableBuildUrl || null,
+                  playableBuildUrl ? playableBuildAspectRatio : null,
+                  playableBuildShowFullscreenButton,
                   Array.from(inputMethods),
                   estOneRun || null,
                   estAnyPercent || null,
@@ -1107,6 +1088,9 @@ export default function GameEditingForm({
                   toCanonicalItchEmbedUrl(itchEmbedUrl)
                     ? itchEmbedAspectRatio
                     : null,
+                  playableBuildUrl || null,
+                  playableBuildUrl ? playableBuildAspectRatio : null,
+                  playableBuildShowFullscreenButton,
                   Array.from(inputMethods),
                   estOneRun || null,
                   estAnyPercent || null,
@@ -1347,6 +1331,180 @@ export default function GameEditingForm({
                     </Vstack>
                   </Card>
                 )}
+
+                <Card className="relative z-10 overflow-visible">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text" size="lg" weight="semibold">
+                        Playable web build
+                      </Text>
+                      <Text color="textFaded" size="xs">
+                        Upload a ZIP containing an index.html file and all of the
+                        files your browser game needs. The build runs in a
+                        restricted sandbox when players launch it. Use relative
+                        paths for assets inside the build.
+                      </Text>
+                    </div>
+
+                    <label className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-current p-6 text-center">
+                      <Icon name="upload" color="text" />
+                      <Text color="text" weight="semibold">
+                        {uploadingWebBuild
+                          ? "Checking and uploading…"
+                          : playableBuildUrl
+                            ? "Replace web build ZIP"
+                            : "Choose web build ZIP"}
+                      </Text>
+                      <Text color="textFaded" size="xs">
+                        ZIP only · 95 MB archive · 500 MB expanded · 1,000 files
+                      </Text>
+                      <input
+                        className="sr-only"
+                        type="file"
+                        accept=".zip,application/zip,application/x-zip-compressed"
+                        disabled={uploadingWebBuild}
+                        onChange={async (event) => {
+                          const file = event.currentTarget.files?.[0];
+                          event.currentTarget.value = "";
+                          if (!file) return;
+                          if (file.size > 95_000_000) {
+                            addToast({ title: "The web build ZIP must be 95 MB or smaller." });
+                            return;
+                          }
+                          setUploadingWebBuild(true);
+                          try {
+                            const response = await uploadWebBuild(file);
+                            if (!response.ok) {
+                              const body = await response.json().catch(() => null) as
+                                | { error?: { message?: string } }
+                                | null;
+                              throw new Error(
+                                body?.error?.message ||
+                                  "The web build could not be uploaded.",
+                              );
+                            }
+                            const uploaded = await readItem<{
+                              playableUrl: string;
+                            }>(response);
+                            if (!uploaded?.playableUrl) {
+                              throw new Error("The upload returned no playable build.");
+                            }
+                            setPlayableBuildUrl(uploaded.playableUrl);
+                            setPlayableBuildShowFullscreenButton(true);
+                            addToast({ title: "Web build uploaded and checked." });
+                          } catch (error) {
+                            addToast({
+                              title:
+                                error instanceof Error
+                                  ? error.message
+                                  : "The web build could not be uploaded.",
+                            });
+                          } finally {
+                            setUploadingWebBuild(false);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {(playableBuildUrl || itchEmbedUrl) && (
+                      <>
+                        <div>
+                          <Text color="text">Game aspect ratio</Text>
+                          <Text color="textFaded" size="xs">
+                            Choose the shape that best matches the game window.
+                          </Text>
+                        </div>
+                        <Dropdown
+                          selectedValue={
+                            playableBuildUrl
+                              ? playableBuildAspectRatio
+                              : itchEmbedAspectRatio
+                          }
+                          onSelect={(value) => {
+                            const ratio = normalizeItchEmbedAspectRatio(
+                              typeof value === "string" ? value : null,
+                            );
+                            if (playableBuildUrl) setPlayableBuildAspectRatio(ratio);
+                            else setItchEmbedAspectRatio(ratio);
+                          }}
+                        >
+                          {ITCH_EMBED_ASPECT_RATIO_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+
+                        {playableBuildUrl && (
+                          <Hstack>
+                            <Switch
+                              checked={playableBuildShowFullscreenButton}
+                              onChange={setPlayableBuildShowFullscreenButton}
+                            />
+                            <Vstack gap={0} align="start">
+                              <Text color="text">Fullscreen button</Text>
+                              <Text color="textFaded" size="xs">
+                                Show a fullscreen control in the bottom-right corner.
+                              </Text>
+                            </Vstack>
+                          </Hstack>
+                        )}
+
+                        {playableBuildUrl && (
+                          <div
+                            className="relative w-full overflow-hidden rounded-xl bg-black"
+                            style={{ aspectRatio: playableBuildAspectRatio }}
+                          >
+                            <iframe
+                              ref={playableBuildPreviewRef}
+                              src={getPlayableBuildUrl(playableBuildUrl)}
+                              title="Playable web build preview"
+                              className="h-full w-full border-0"
+                              sandbox="allow-scripts allow-pointer-lock"
+                              allow="fullscreen; gamepad"
+                              allowFullScreen
+                            />
+                            {playableBuildShowFullscreenButton && (
+                              <button
+                                type="button"
+                                aria-label="Open game preview in fullscreen"
+                                title="Fullscreen"
+                                className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
+                                style={{
+                                  backgroundColor: colors.mantle,
+                                  color: colors.text,
+                                  border: `1px solid ${colors.crust}`,
+                                }}
+                                onClick={() => {
+                                  void playableBuildPreviewRef.current
+                                    ?.requestFullscreen()
+                                    .catch(() => {
+                                      addToast({ title: "Fullscreen is unavailable." });
+                                    });
+                                }}
+                              >
+                                <Icon name="maximize2" color="text" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {itchEmbedUrl && !playableBuildUrl && (
+                          <Text color="textFaded" size="xs">
+                            This imported game still uses its legacy itch player.
+                            Upload a ZIP above to replace it with a hosted build.
+                          </Text>
+                        )}
+
+                        {playableBuildUrl && (
+                          <Button color="red" onClick={() => setPlayableBuildUrl("")}>
+                            Remove web build
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </Vstack>
+                </Card>
 
                 <Card>
                   <Vstack align="start">
@@ -2357,165 +2515,6 @@ export default function GameEditingForm({
                             />
                           </div>
                         )}
-                      </Vstack>
-                    </Card>
-                  </AccordionItem>
-                  <AccordionItem
-                    title="Playable Embed"
-                    subtitle="Allow web builds to be played directly on the site from an itch embed"
-                    icon="play"
-                  >
-                    <Card>
-                      <Vstack align="start">
-                        <div>
-                          <Text color="text">Playable Embed (Itch Widget)</Text>
-                          <Text color="textFaded" size="xs">
-                            Paste your Itch widget URL here, such as
-                            {" https://itch.io/embed/123456 "}. Use the embed
-                            link from Itch (settings -&gt; distribute -&gt;
-                            embed game -&gt; direct link), not the normal game
-                            page URL. This will show below the game name and
-                            above the description as a playable embed.
-                          </Text>
-                        </div>
-                        <Input
-                          placeholder="https://itch.io/embed/123456"
-                          value={itchEmbedUrl}
-                          onValueChange={setItchEmbedUrl}
-                          onBlur={() => {
-                            if (
-                              itchEmbedUrl &&
-                              !toCanonicalItchEmbedUrl(itchEmbedUrl)
-                            ) {
-                              addToast({
-                                title:
-                                  "That doesn't look like a valid Itch widget URL.",
-                              });
-                            }
-                          }}
-                        />
-                        <div>
-                          <Text color="text">Embed aspect ratio</Text>
-                          <Text color="textFaded" size="xs">
-                            Choose the shape that best matches your playable
-                            game.
-                          </Text>
-                        </div>
-                        <Dropdown
-                          selectedValue={itchEmbedAspectRatio}
-                          onSelect={(value) =>
-                            setItchEmbedAspectRatio(
-                              normalizeItchEmbedAspectRatio(
-                                typeof value === "string" ? value : null,
-                              ),
-                            )
-                          }
-                        >
-                          {ITCH_EMBED_ASPECT_RATIO_OPTIONS.map((value) => (
-                            <Dropdown.Item key={value} value={value}>
-                              {value}
-                            </Dropdown.Item>
-                          ))}
-                        </Dropdown>
-                        {itchEmbedUrl &&
-                          toCanonicalItchEmbedUrl(itchEmbedUrl) && (
-                            <div
-                              className="relative w-full rounded-xl overflow-hidden"
-                              style={{
-                                aspectRatio: itchEmbedAspectRatio,
-                                background: "#111",
-                              }}
-                            >
-                              {isItchPreviewActive ? (
-                                <>
-                                  <iframe
-                                    key={activeItchPreviewUrl}
-                                    src={activeItchPreviewUrl ?? ""}
-                                    title="Playable Itch Embed"
-                                    className="w-full h-full"
-                                    style={{ border: 0 }}
-                                    allowFullScreen
-                                  />
-                                  {showItchPreviewRecovery && (
-                                    <div className="absolute bottom-4 left-1/2 z-10 flex w-[min(30rem,calc(100%-2rem))] -translate-x-1/2 flex-col gap-3 rounded-xl border border-white/10 bg-black/80 p-4 text-white backdrop-blur-sm">
-                                      <Text className="font-semibold">
-                                        Embed still loading?
-                                      </Text>
-                                      <Text
-                                        style={{
-                                          color: "rgba(255,255,255,0.72)",
-                                        }}
-                                      >
-                                        Retry the preview or open it on itch if
-                                        the first boot hangs.
-                                      </Text>
-                                      <div className="flex flex-wrap gap-3">
-                                        <Button
-                                          color="blue"
-                                          onClick={() => {
-                                            setShowItchPreviewRecovery(false);
-                                            setItchPreviewAttempt(
-                                              (current) => current + 1,
-                                            );
-                                          }}
-                                        >
-                                          Retry preview
-                                        </Button>
-                                        <a
-                                          href={
-                                            toCanonicalItchEmbedUrl(
-                                              itchEmbedUrl,
-                                            ) ?? "#"
-                                          }
-                                          target="_blank"
-                                          rel="noreferrer"
-                                          className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/10 px-4 py-2"
-                                        >
-                                          Open on itch
-                                        </a>
-                                      </div>
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => setIsItchPreviewActive(true)}
-                                  className="absolute inset-0 flex cursor-pointer items-center justify-center transition-opacity hover:opacity-95"
-                                  style={{
-                                    background:
-                                      "linear-gradient(180deg, rgba(0, 0, 0, 0.12) 0%, rgba(0, 0, 0, 0.38) 100%)",
-                                  }}
-                                  aria-label="Play preview embed"
-                                >
-                                  <div className="flex flex-col items-center gap-3 text-white">
-                                    <div
-                                      className="flex items-center justify-center rounded-full"
-                                      style={{
-                                        width: "4.5rem",
-                                        height: "4.5rem",
-                                        backgroundColor: colors["mantle"],
-                                        border: `1px solid ${colors["surface0"]}`,
-                                        boxShadow: `0 16px 32px ${colors["crust"]}66`,
-                                      }}
-                                    >
-                                      <Play
-                                        size={28}
-                                        fill="currentColor"
-                                        style={{ marginLeft: "0.2rem" }}
-                                      />
-                                    </div>
-                                    <Text
-                                      className="font-semibold"
-                                      style={{ color: "#fff" }}
-                                    >
-                                      Click to play
-                                    </Text>
-                                  </div>
-                                </button>
-                              )}
-                            </div>
-                          )}
                       </Vstack>
                     </Card>
                   </AccordionItem>

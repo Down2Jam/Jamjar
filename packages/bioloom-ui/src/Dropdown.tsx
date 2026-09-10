@@ -22,7 +22,7 @@ import { ExternalLink } from "lucide-react";
 import Text from "./Text";
 import { Hstack } from "./Stack";
 import { Button } from "./Button";
-import { ButtonSize } from "./Button.types";
+import { ButtonSize, ButtonVariant } from "./Button.types";
 
 const isExternalHref = (href: string) =>
   href.startsWith("http://") || href.startsWith("https://");
@@ -111,6 +111,7 @@ interface DropdownProps {
   placeholder?: string;
   showChevron?: boolean;
   triggerSize?: ButtonSize;
+  triggerVariant?: ButtonVariant;
   triggerClassName?: string;
   triggerIcon?: IconName;
   triggerStyle?: React.CSSProperties;
@@ -140,6 +141,7 @@ function Dropdown({
   placeholder = "Select",
   showChevron = true,
   triggerSize = "md",
+  triggerVariant = "standard",
   triggerClassName = "",
   triggerIcon,
   triggerStyle,
@@ -325,6 +327,7 @@ function Dropdown({
     <Button
       icon={computedIcon}
       size={triggerSize}
+      variant={triggerVariant}
       className={triggerClassName}
       style={triggerStyle}
       disabled={disabled}
@@ -470,7 +473,7 @@ export function DropdownItem<T = unknown>({
   };
 
   const commonClass = [
-    "flex w-full select-none items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors",
+    "flex w-full cursor-pointer select-none items-center gap-3 rounded-lg px-3 py-2 text-left text-sm outline-none transition-colors",
     "disabled:cursor-not-allowed disabled:opacity-50 justify-between",
     className,
   ].join(" ");
@@ -482,18 +485,18 @@ export function DropdownItem<T = unknown>({
 
   const content = (
     <>
-      <div className="flex items-center gap-3">
-        {icon && <Icon size={16} name={icon} />}
-        <span className="flex flex-col">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {icon && <Icon size={16} name={icon} className="shrink-0" />}
+        <span className="flex min-w-0 flex-1 flex-col">
           <Text>{children}</Text>
           {description && (
-            <Text color="textFaded" size="xs">
+            <Text color="textFaded" size="xs" className="max-w-full">
               {description}
             </Text>
           )}
         </span>
       </div>
-      {kbd && <Chip>{kbd}</Chip>}
+      {kbd && <Chip className="shrink-0">{kbd}</Chip>}
     </>
   );
 

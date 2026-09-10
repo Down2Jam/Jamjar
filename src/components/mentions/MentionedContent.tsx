@@ -51,6 +51,9 @@ type GameMentionData = {
   screenshots?: string[] | null;
   inputMethods?: string[] | null;
   itchEmbedUrl?: string | null;
+  playableBuildUrl?: string | null;
+  playableBuildAspectRatio?: string | null;
+  playableBuildShowFullscreenButton?: boolean;
   downloadLinks?: Array<{ platform: string }> | null;
   jam?: { name?: string | null; color?: string | null } | null;
   author?: {
@@ -69,6 +72,10 @@ const toGamePreviewData = (data: GameMentionData): GameCardGame => ({
   screenshots: data.screenshots ?? undefined,
   inputMethods: data.inputMethods ?? undefined,
   itchEmbedUrl: data.itchEmbedUrl,
+  playableBuildUrl: data.playableBuildUrl,
+  playableBuildAspectRatio: data.playableBuildAspectRatio,
+  playableBuildShowFullscreenButton:
+    data.playableBuildShowFullscreenButton,
   downloadLinks: data.downloadLinks ?? undefined,
   jam: data.jam ?? undefined,
   creatorName: data.author?.name || data.author?.slug || null,
@@ -532,6 +539,16 @@ const loadMentionData = async (
                 screenshots: page?.screenshots ?? data.screenshots ?? null,
                 inputMethods: page?.inputMethods ?? data.inputMethods ?? null,
                 itchEmbedUrl: page?.itchEmbedUrl ?? data.itchEmbedUrl ?? null,
+                playableBuildUrl:
+                  page?.playableBuildUrl ?? data.playableBuildUrl ?? null,
+                playableBuildAspectRatio:
+                  page?.playableBuildAspectRatio ??
+                  data.playableBuildAspectRatio ??
+                  null,
+                playableBuildShowFullscreenButton:
+                  page?.playableBuildShowFullscreenButton ??
+                  data.playableBuildShowFullscreenButton ??
+                  true,
                 downloadLinks:
                   page?.downloadLinks ?? data.downloadLinks ?? null,
                 jam: data.jam ?? null,

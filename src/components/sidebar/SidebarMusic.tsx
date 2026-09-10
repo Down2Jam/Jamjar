@@ -2,16 +2,14 @@
 
 import SidebarSong from "./SidebarSong";
 import useHasMounted from "@/hooks/useHasMounted";
-import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
 import { useCurrentJam, useTracks } from "@/hooks/queries";
 import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 import { Skeleton } from "@/components/skeletons";
-import { useTheme } from "@/providers/useSiteTheme";
+import SidebarSectionTitle from "./SidebarSectionTitle";
 
 export default function SidebarMusic() {
-  const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
@@ -57,15 +55,15 @@ export default function SidebarMusic() {
         seenGameKeys.add(gameKey);
         return true;
       })
-      .slice(0, 5);
+      .slice(0, 10);
   }, [music]);
 
   if (!hasMounted || jamLoading || musicLoading) {
     return (
-      <div className="mt-20 flex flex-col items-center gap-2">
+      <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-44" />
-        <div className="flex w-[488px] flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, index) => (
+        <div className="flex w-full flex-col gap-2">
+          {Array.from({ length: 10 }).map((_, index) => (
             <div
               key={index}
               className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] p-2"
@@ -87,17 +85,11 @@ export default function SidebarMusic() {
   return (
     <>
       {featured.length > 0 && (
-        <div className="flex flex-col gap-2 items-center mt-20">
-          <Text
-            size="2xl"
-            color={siteTheme.type === "Light" ? "textLight" : "text"}
-            style={{
-              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
-            }}
-          >
+        <div className="flex flex-col gap-2 items-center mt-12">
+          <SidebarSectionTitle>
             SidebarMusic.Title
-          </Text>
-          <div className="flex flex-col w-[488px] gap-2">
+          </SidebarSectionTitle>
+          <div className="flex w-full flex-col gap-2">
             {featured.map((track, index) => (
               <SidebarSong
                 key={index}

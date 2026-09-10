@@ -61,8 +61,7 @@ function visibilityLabel(visibility?: string) {
 
 export default function CollectionsPage() {
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerColor = colors["text"];
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
   const [query, setQuery] = useState("");
@@ -122,7 +121,10 @@ export default function CollectionsPage() {
             className="text-3xl font-semibold"
             style={{
               color: headerColor,
-              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
             Collections
@@ -132,7 +134,10 @@ export default function CollectionsPage() {
             style={{
               color: headerColor,
               opacity: 0.82,
-              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
             Curated games, posts, D2Jam music, and external music links.

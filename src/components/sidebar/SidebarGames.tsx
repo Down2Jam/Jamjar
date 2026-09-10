@@ -3,7 +3,6 @@
 import { GameType } from "@/types/GameType";
 import { useTheme } from "@/providers/useSiteTheme";
 import Image from "@/compat/next-image";
-import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { useCurrentJam, useGames } from "@/hooks/queries";
@@ -11,9 +10,10 @@ import { CSSProperties, useMemo } from "react";
 import { getDefaultListingPageVersion } from "@/helpers/listingPageVersion";
 import { Skeleton } from "@/components/skeletons";
 import { GameHoverPreview } from "@/components/gamecard";
+import SidebarSectionTitle from "./SidebarSectionTitle";
 
 export default function SidebarGames() {
-  const { colors, siteTheme } = useTheme();
+  const { colors } = useTheme();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
   const { jamId, sort, pageVersion } = useMemo(() => {
@@ -44,7 +44,7 @@ export default function SidebarGames() {
     jamId,
     pageVersion,
     true,
-    10,
+    18,
   );
 
   const games: GameType[] = useMemo(
@@ -54,13 +54,16 @@ export default function SidebarGames() {
 
   if (jamLoading || isLoading) {
     return (
-      <div className="mt-20 flex flex-col items-center gap-2">
+      <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-44" />
-        <div className="flex w-[496px] flex-wrap justify-center gap-2">
+        <div className="flex w-full flex-wrap justify-center gap-2">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={`large-${index}`} className="h-[119px] w-[212px] rounded-xl" />
+          ))}
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-[77px] w-[136px] rounded-xl" />
           ))}
-          {Array.from({ length: 4 }).map((_, index) => (
+          {Array.from({ length: 8 }).map((_, index) => (
             <Skeleton key={`small-${index}`} className="h-[59px] w-[104px] rounded-xl" />
           ))}
         </div>
@@ -72,18 +75,38 @@ export default function SidebarGames() {
 
   return (
     <>
-      <div className="flex flex-col gap-2 items-center mt-20">
-        <Text
-          size="2xl"
-          color={siteTheme.type === "Light" ? "textLight" : "text"}
-          style={{
-            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
-          }}
-        >
+      <div className="flex flex-col gap-2 items-center mt-12">
+        <SidebarSectionTitle>
           SidebarGames.Title
-        </Text>
-        <div className="flex flex-wrap w-[496px] gap-2 justify-center">
-          {games.slice(0, 6).map((game, index) => (
+        </SidebarSectionTitle>
+        <div className="flex w-full flex-wrap justify-center gap-2">
+          {games.slice(0, 4).map((game, index) => (
+            <GameHoverPreview
+              key={`large-${game.name}${index}${game.pageVersion ?? "JAM"}`}
+              game={game}
+            >
+              <Link
+                href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+              >
+                <div
+                  className="post-card-shadow h-[119px] w-[212px] overflow-hidden rounded-xl"
+                  style={{
+                    backgroundColor: colors["mantle"],
+                    "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+                  } as CSSProperties}
+                >
+                  <Image
+                    alt={`${game.name}'s thumbnail`}
+                    className="z-0 h-full w-full object-cover"
+                    height={119}
+                    width={212}
+                    src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                  />
+                </div>
+              </Link>
+            </GameHoverPreview>
+          ))}
+          {games.slice(4, 10).map((game, index) => (
             <GameHoverPreview
               key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
               game={game}
@@ -109,8 +132,8 @@ export default function SidebarGames() {
               </Link>
             </GameHoverPreview>
             ))}
-          {games.length > 6 &&
-            games.slice(6, 10).map((game, index) => (
+          {games.length > 10 &&
+            games.slice(10, 18).map((game, index) => (
               <GameHoverPreview
                 key={`${game.name}${index}${game.pageVersion ?? "JAM"}`}
                 game={game}

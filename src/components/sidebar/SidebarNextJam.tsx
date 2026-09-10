@@ -9,9 +9,13 @@ import { CSSProperties, useMemo, useState } from "react";
 import Timer from "../timers/Timer";
 import { SidebarCardSkeleton } from "@/components/skeletons";
 import { useTheme } from "@/providers/useSiteTheme";
+import useBreakpoint from "@/hooks/useBreakpoint";
 
 export default function SidebarNextJam() {
   const { colors } = useTheme();
+  const { width, isXlUp } = useBreakpoint();
+  const textSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
+  const iconSize = isXlUp ? 24 : width >= 1024 ? 20 : 18;
   const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
   const { data: ratingCategories = [], isLoading: categoriesLoading } =
     useRatingCategories(true);
@@ -65,35 +69,39 @@ export default function SidebarNextJam() {
     >
       <Vstack>
         <Hstack>
-          <Icon name="calendarplus" color="textFaded" />
-          <Text>Next Jam</Text>
-          <Text color="blue">{nextJam.name}</Text>
+          <Icon name="calendarplus" color="textFaded" size={iconSize} />
+          <Text size={textSize}>Next Jam</Text>
+          <Text size={textSize} color="blue">{nextJam.name}</Text>
         </Hstack>
-        <Timer name="Stats.Timer" targetDate={new Date(nextJam.startTime)} />
+        <Timer
+          name="Stats.Timer"
+          targetDate={new Date(nextJam.startTime)}
+          size={textSize}
+        />
         <Hstack>
-          <Icon name="users" color="textFaded" />
-          <Text>Stats.Entrants</Text>
-          <Text color="blue">{entrantCount}</Text>
+          <Icon name="users" color="textFaded" size={iconSize} />
+          <Text size={textSize}>Stats.Entrants</Text>
+          <Text size={textSize} color="blue">{entrantCount}</Text>
         </Hstack>
         {gameCount !== 0 && (
           <Hstack>
-            <Icon name="gamepad2" color="textFaded" />
-            <Text>Stats.Games</Text>
-            <Text color="blue">{gameCount}</Text>
+            <Icon name="gamepad2" color="textFaded" size={iconSize} />
+            <Text size={textSize}>Stats.Games</Text>
+            <Text size={textSize} color="blue">{gameCount}</Text>
           </Hstack>
         )}
         {musicCount !== 0 && (
           <Hstack>
-            <Icon name="music" color="textFaded" />
-            <Text>Music</Text>
-            <Text color="blue">{musicCount}</Text>
+            <Icon name="music" color="textFaded" size={iconSize} />
+            <Text size={textSize}>Music</Text>
+            <Text size={textSize} color="blue">{musicCount}</Text>
           </Hstack>
         )}
         {ratings !== null && ratings !== 0 ? (
           <Hstack>
-            <Icon name="star" color="textFaded" />
-            <Text>Stats.Ratings</Text>
-            <Text color="blue">{ratings}</Text>
+            <Icon name="star" color="textFaded" size={iconSize} />
+            <Text size={textSize}>Stats.Ratings</Text>
+            <Text size={textSize} color="blue">{ratings}</Text>
           </Hstack>
         ) : null}
         <Hstack wrap className="pt-2">

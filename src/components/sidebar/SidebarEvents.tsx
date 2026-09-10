@@ -3,6 +3,8 @@
 import { Avatar, Badge } from "bioloom-ui";
 import { useEvents } from "@/hooks/queries";
 import { EventType } from "@/types/EventType";
+import { isStreamEventIcon } from "@/types/EventIcon";
+import SidebarSectionTitle from "./SidebarSectionTitle";
 import Timer from "../timers/Timer";
 import Link from "@/compat/next-link";
 import { getIcon } from "@/helpers/icon";
@@ -26,33 +28,31 @@ export default function SidebarEvents() {
     [currentEvents, upcomingEvents]
   );
 
-  if (isLoading) return <SidebarCardSkeleton lines={2} className="mt-10" />;
+  const now = new Date();
+  const activeEvents = events.filter(
+    (event) =>
+      new Date(event.endTime) > now &&
+      new Date(event.startTime) <= now &&
+      !isStreamEventIcon(event.icon),
+  );
+  const upcomingEventList = events.filter(
+    (event) => new Date(event.startTime) > now,
+  );
 
-  if (
-    events.filter((event) => new Date(event.endTime) > new Date()).length == 0
-  )
-    return <></>;
+  if (isLoading) return <SidebarCardSkeleton lines={2} className="mt-6" />;
+
+  if (activeEvents.length === 0 && upcomingEventList.length === 0) return null;
 
   return (
     <>
-      <div className="flex flex-col gap-12 mt-10">
-        {events.filter(
-          (event) =>
-            new Date(event.endTime) > new Date() &&
-            new Date(event.startTime) <= new Date()
-        ).length > 0 && (
+      <div className="flex flex-col gap-12 mt-6">
+        {activeEvents.length > 0 && (
           <div className="flex flex-col gap-2 items-center">
-            <Text size="2xl" color="text">
+            <SidebarSectionTitle>
               Active Events
-            </Text>
-            <div className="flex flex-col w-[488px] gap-2">
-              {events
-                .filter(
-                  (event) =>
-                    new Date(event.endTime) > new Date() &&
-                    new Date(event.startTime) <= new Date()
-                )
-                ?.map((event) => (
+            </SidebarSectionTitle>
+            <div className="flex w-full flex-col gap-2">
+              {activeEvents.map((event) => (
                   <Card key={event.id}>
                     <Hstack justify="center" gap={4}>
                       <Badge
@@ -60,7 +60,7 @@ export default function SidebarEvents() {
                         size={20}
                         className="min-w-8 min-h-8"
                       >
-                        <Avatar src={event.host.profilePicture} />
+                        <Avatar src={event.host.profilePicture ?? undefined} />
                       </Badge>
                       <div className="flex flex-col gap-1 text-center">
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>
@@ -82,16 +82,13 @@ export default function SidebarEvents() {
             </Button>
           </div>
         )}
-        {events.filter((event) => new Date(event.startTime) > new Date())
-          .length > 0 && (
+        {upcomingEventList.length > 0 && (
           <div className="flex flex-col gap-2 items-center">
-            <Text size="2xl" color="text">
+            <SidebarSectionTitle>
               Upcoming Events
-            </Text>
-            <div className="flex flex-col w-[488px] gap-2">
-              {events
-                .filter((event) => new Date(event.startTime) > new Date())
-                ?.map((event) => (
+            </SidebarSectionTitle>
+            <div className="flex w-full flex-col gap-2">
+              {upcomingEventList.map((event) => (
                   <Card key={event.id}>
                     <Hstack justify="center" gap={4}>
                       <Badge
@@ -99,7 +96,7 @@ export default function SidebarEvents() {
                         size={20}
                         className="min-w-8 min-h-8"
                       >
-                        <Avatar src={event.host.profilePicture} />
+                        <Avatar src={event.host.profilePicture ?? undefined} />
                       </Badge>
                       <div className="flex flex-col gap-1 text-center">
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>

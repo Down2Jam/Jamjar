@@ -23,8 +23,11 @@ export function useEvent(slug: string, enabled = true) {
     queryKey: queryKeys.event.detail(slug),
     queryFn: async () => {
       const res = await getEvent(slug);
+      if (!res.ok) throw new Error("Failed to load event");
       const json = await res.json();
-      return unwrapItem<EventType>(json)!;
+      const event = unwrapItem<EventType>(json);
+      if (!event) throw new Error("Event not found");
+      return event;
     },
     enabled: enabled && !!slug,
   });

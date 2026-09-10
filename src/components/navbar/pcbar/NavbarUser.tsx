@@ -4,17 +4,23 @@ import { Avatar, NavbarItem } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import { redirect } from "@/compat/next-navigation";
 import Hotkey from "../../hotkey";
-import useBreakpoint from "@/hooks/useBreakpoint";
 import { Dropdown } from "bioloom-ui";
 import { Button } from "bioloom-ui";
+import type { ReactNode } from "react";
 
 interface NavbarUserProps {
   user?: UserType;
+  showResponsiveShortcuts: boolean;
+  showThemesLink: boolean;
+  coloredOverflowItems?: ReactNode;
 }
 
-export default function NavbarUser({ user }: NavbarUserProps) {
-  const { isLgDown } = useBreakpoint();
-
+export default function NavbarUser({
+  user,
+  showResponsiveShortcuts,
+  showThemesLink,
+  coloredOverflowItems,
+}: NavbarUserProps) {
   return (
     <NavbarItem className="flex items-center">
       {user && (
@@ -98,16 +104,37 @@ export default function NavbarUser({ user }: NavbarUserProps) {
         ) : (
           <></>
         )}
-        {isLgDown ? (
+        {showThemesLink && (
+          <Dropdown.Item
+            value="themes"
+            icon="palette"
+            href="/themes"
+            description="Browse all community site themes"
+            kbd="G Y"
+          >
+            Browse all themes
+          </Dropdown.Item>
+        )}
+        {coloredOverflowItems}
+        {showResponsiveShortcuts ? (
           <>
             <Dropdown.Item
-              value="donate"
-              icon="heart"
-              href="/donate"
-              description="Navbar.Donate.Description"
-              kbd="G D"
+              value="screenshots"
+              icon="images"
+              href="/screenshots"
+              description="Navbar.Screenshots.Description"
+              kbd="G S"
             >
-              Navbar.Donate.Title
+              Navbar.Screenshots.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="radio"
+              icon="broadcast"
+              href="/radio"
+              description="Navbar.Radio.Description"
+              kbd="G B"
+            >
+              Navbar.Radio.Title
             </Dropdown.Item>
             <Dropdown.Item
               value="lucky"
@@ -117,6 +144,33 @@ export default function NavbarUser({ user }: NavbarUserProps) {
               kbd="G L"
             >
               Navbar.Lucky.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="news"
+              icon="megaphone"
+              href="/news"
+              description="Navbar.News.Description"
+              kbd="G W"
+            >
+              Navbar.News.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="music"
+              icon="music"
+              href="/music"
+              description="Navbar.Music.Description"
+              kbd="G M"
+            >
+              Navbar.Music.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="donate"
+              icon="heart"
+              href="/donate"
+              description="Navbar.Donate.Description"
+              kbd="G D"
+            >
+              Navbar.Donate.Title
             </Dropdown.Item>
             <Dropdown.Item
               value="rss"

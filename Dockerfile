@@ -14,6 +14,8 @@ RUN --mount=type=cache,target=/root/.npm \
 FROM deps AS builder
 COPY . .
 ENV VITE_PUBLIC_MODE=PROD
+ARG VITE_GAME_BUILDS_ORIGIN=
+ENV VITE_GAME_BUILDS_ORIGIN=$VITE_GAME_BUILDS_ORIGIN
 RUN npm run build
 
 FROM base AS production

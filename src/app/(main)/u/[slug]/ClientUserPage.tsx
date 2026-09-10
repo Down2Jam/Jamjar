@@ -165,9 +165,9 @@ function pickBestByType(
       : a;
 }
 
-function bestPerLeaderboardForUser(userScores: LeaderboardScore[]) {
+function bestPerLeaderboardForUser(userScores?: LeaderboardScore[]) {
   const best = new Map<number, LeaderboardScore>();
-  for (const s of userScores) {
+  for (const s of userScores ?? []) {
     const lbId = s.leaderboard.id;
     const type = s.leaderboard.type;
     best.set(lbId, pickBestByType(best.get(lbId), s, type));
@@ -301,6 +301,22 @@ const hexToRgba = (hex: string | undefined, alpha: number) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
+const normalizeProfileUser = (user: UserType): UserType => ({
+  ...user,
+  primaryRoles: user.primaryRoles ?? [],
+  secondaryRoles: user.secondaryRoles ?? [],
+  teams: user.teams ?? [],
+  teamInvites: user.teamInvites ?? [],
+  ownedTeams: user.ownedTeams ?? [],
+  ratings: user.ratings ?? [],
+  tracks: user.tracks ?? [],
+  achievements: user.achievements ?? [],
+  scores: user.scores ?? [],
+  posts: user.posts ?? [],
+  comments: user.comments ?? [],
+  receivedNotifications: user.receivedNotifications ?? [],
+});
+
 export default function ClientUserPage({
   params,
 }: {
@@ -309,6 +325,7 @@ export default function ClientUserPage({
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const [user, setUser] = useState<UserType>();
+  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
   const [self, setSelf] = useState<UserType>();
   const { colors } = useTheme();
   const [roles, setRoles] = useState<RoleType[]>([]);
@@ -410,7 +427,7 @@ export default function ClientUserPage({
   } = useDisclosure();
 
   const defaultBanners = ["/images/D2J_Banner.png"];
-  const defaultBackgrounds = ["/images/sitebg.webp"];
+  const defaultBackgrounds = ["/images/mountain_beautypath_render.png"];
 
   const rarityStyles: Record<
     RarityTier,
@@ -456,7 +473,21 @@ export default function ClientUserPage({
 
   const refreshUser = async () => {
     const response = await getUser(`${slug}`);
-    setUser((await readItem<UserType>(response)) ?? undefined);
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as {
+        error?: { message?: string };
+        message?: string;
+      } | null;
+      setUser(undefined);
+      setProfileLoadError(
+        payload?.error?.message ?? payload?.message ?? "Unable to load profile",
+      );
+      return;
+    }
+
+    const nextUser = await readItem<UserType>(response);
+    setProfileLoadError(null);
+    setUser(nextUser ? normalizeProfileUser(nextUser) : undefined);
   };
 
   const normalizeImage = (value?: string | null) => {
@@ -501,7 +532,8 @@ export default function ClientUserPage({
       ]);
 
       if (selfRes.ok) {
-        setSelf((await readItem<UserType>(selfRes)) ?? undefined);
+        const nextSelf = await readItem<UserType>(selfRes);
+        setSelf(nextSelf ? normalizeProfileUser(nextSelf) : undefined);
       }
       setActiveJamResponse(jamRes);
     };
@@ -983,6 +1015,19 @@ export default function ClientUserPage({
   };
 
   if (!user) {
+    if (profileLoadError) {
+      return (
+        <Card className="mx-auto max-w-lg">
+          <Vstack align="center" gap={3} className="py-4 text-center">
+            <Text size="lg" weight="semibold">
+              Unable to load this profile
+            </Text>
+            <Text color="textFaded">{profileLoadError}</Text>
+            <Button onClick={() => void refreshUser()}>Try again</Button>
+          </Vstack>
+        </Card>
+      );
+    }
     return <></>;
   }
 

@@ -119,6 +119,14 @@ export const queryKeys = {
     list: (sort?: string, jamId?: string, pageVersion?: string, limit?: number) =>
       [...queryKeys.track.all, "list", sort, jamId, pageVersion, limit] as const,
   },
+  achievement: {
+    all: ["achievement"] as const,
+    recent: () => [...queryKeys.achievement.all, "recent"] as const,
+  },
+  score: {
+    all: ["score"] as const,
+    recent: () => [...queryKeys.score.all, "recent"] as const,
+  },
   admin: {
     all: ["admin"] as const,
     images: () => [...queryKeys.admin.all, "images"] as const,

@@ -416,8 +416,7 @@ function getGuessRows(
 
 export default function Down2GuessPage() {
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerColor = colors["text"];
   const [dataLoading, setDataLoading] = useState(true);
   const [gameLoading, setGameLoading] = useState(true);
   const [answer, setAnswer] = useState<GameType | null>(null);
@@ -839,7 +838,10 @@ export default function Down2GuessPage() {
           className="text-3xl font-semibold"
           style={{
             color: headerColor,
-            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
           Down2Guess
@@ -849,7 +851,10 @@ export default function Down2GuessPage() {
           style={{
             color: headerColor,
             opacity: 0.82,
-            textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
           Guess the mystery game in 10 tries

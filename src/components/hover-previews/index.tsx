@@ -4,8 +4,23 @@ import { GameHoverPreview, type GameCardGame } from "@/components/gamecard";
 import { useGame, useUser } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
 import { materializeGamePage } from "@/helpers/gamePages";
+import type {
+  AchievementRarityTier,
+  RecentAchievementType,
+} from "@/types/RecentAchievementType";
+import type { RecentScoreType } from "@/types/RecentScoreType";
+import { formatRecentScore } from "@/helpers/scoreDisplay";
 import { Popover } from "bioloom-ui";
 import { useState, type ReactNode } from "react";
+
+const achievementTierColor: Record<AchievementRarityTier, string> = {
+  Abyssal: "magenta",
+  Diamond: "blue",
+  Gold: "yellow",
+  Silver: "gray",
+  Bronze: "orange",
+  Default: "textFaded",
+};
 
 type PreviewUser = {
   slug: string;
@@ -107,6 +122,188 @@ export function GameDataHoverPreview({
       <GameHoverPreview game={previewGame} className="inline-flex">
         {children}
       </GameHoverPreview>
+    </span>
+  );
+}
+
+export function AchievementHoverPreview({
+  entry,
+  children,
+  className = "",
+}: {
+  entry: RecentAchievementType;
+  children: ReactNode;
+  className?: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const { colors } = useTheme();
+  const accent = colors[achievementTierColor[entry.tier]];
+  const rarity = entry.tier === "Default" ? "Common" : entry.tier;
+  const earnedPercent = Number.isFinite(entry.earnedPercent)
+    ? entry.earnedPercent
+    : entry.engagedCount > 0
+      ? (entry.earnedCount / entry.engagedCount) * 100
+      : 0;
+
+  return (
+    <span
+      className={`relative inline-flex ${className}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+    >
+      {children}
+      <Popover
+        shown={hovered}
+        anchorToScreen={false}
+        position="top"
+        padding={10}
+        showArrow
+        interactive={false}
+        surface="contrast"
+      >
+        <div className="flex w-72 flex-col gap-3 text-left">
+          <div className="flex items-center gap-3">
+            <img
+              src={
+                entry.achievement.image ||
+                entry.game.thumbnail ||
+                "/images/D2J_Icon.png"
+              }
+              alt=""
+              className="h-12 w-12 shrink-0 rounded-lg object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold">
+                {entry.achievement.name}
+              </div>
+              <div
+                className="mt-1 inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold"
+                style={{
+                  borderColor: `${accent}80`,
+                  color: accent,
+                  backgroundColor: `${accent}18`,
+                }}
+              >
+                {rarity}
+              </div>
+            </div>
+          </div>
+
+          {entry.achievement.description && (
+            <div
+              className="text-xs leading-relaxed"
+              style={{ color: colors.textFaded }}
+            >
+              {entry.achievement.description}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <img
+              src={entry.game.thumbnail || "/images/D2J_Icon.png"}
+              alt=""
+              className="h-8 w-12 shrink-0 rounded-md object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-semibold">
+                From {entry.game.name}
+              </div>
+              <div className="text-[11px]" style={{ color: colors.textFaded }}>
+                {earnedPercent.toFixed(1)}% of players earned this
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
+    </span>
+  );
+}
+
+export function ScoreHoverPreview({
+  score,
+  children,
+  className = "",
+}: {
+  score: RecentScoreType;
+  children: ReactNode;
+  className?: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const { colors } = useTheme();
+  const accent =
+    score.placement === 1
+      ? colors.yellow
+      : score.placement === 2
+        ? colors.gray
+        : score.placement === 3
+          ? colors.orange
+          : colors.blue;
+
+  return (
+    <span
+      className={`relative inline-flex ${className}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+    >
+      {children}
+      <Popover
+        shown={hovered}
+        anchorToScreen={false}
+        position="top"
+        padding={10}
+        showArrow
+        interactive={false}
+        surface="contrast"
+      >
+        <div className="flex w-72 flex-col gap-3 text-left">
+          <div className="flex items-center gap-3">
+            <img
+              src={score.game.thumbnail || "/images/D2J_Icon.png"}
+              alt=""
+              className="h-12 w-12 shrink-0 rounded-lg object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold">
+                {formatRecentScore(score)}
+              </div>
+              <div
+                className="mt-1 inline-flex rounded-full border px-2 py-0.5 text-[11px] font-semibold"
+                style={{
+                  borderColor: `${accent}80`,
+                  color: accent,
+                  backgroundColor: `${accent}18`,
+                }}
+              >
+                #{score.placement}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xs leading-relaxed" style={{ color: colors.textFaded }}>
+            {score.leaderboard.name}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <img
+              src={score.user.profilePicture || "/images/D2J_Icon.png"}
+              alt=""
+              className="h-8 w-8 shrink-0 rounded-full object-cover"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-semibold">
+                From {score.game.name}
+              </div>
+              <div className="truncate text-[11px]" style={{ color: colors.textFaded }}>
+                {score.user.name} · {score.totalScores.toLocaleString()} total scores
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popover>
     </span>
   );
 }

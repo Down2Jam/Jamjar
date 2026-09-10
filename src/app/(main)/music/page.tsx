@@ -234,9 +234,8 @@ function getDefaultMusicMoreFilters(
 
 export default function MusicPage() {
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
-  const headerTextColor = siteTheme.type === "Light" ? "textLight" : "text";
+  const headerColor = colors["text"];
+  const headerTextColor = "text";
   const router = useRouter();
   const { data: currentJamData } = useCurrentJam();
   const restrictedSorts = useMemo(
@@ -936,7 +935,10 @@ export default function MusicPage() {
           className="text-3xl font-semibold"
           style={{
             color: headerColor,
-            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
           Music
@@ -946,7 +948,10 @@ export default function MusicPage() {
           style={{
             color: headerColor,
             opacity: 0.82,
-            textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
           All the music uploaded to the site
@@ -1252,7 +1257,12 @@ export default function MusicPage() {
           size="sm"
           color={headerTextColor}
           weight="semibold"
-          style={{ textShadow: "0 1px 4px rgba(0, 0, 0, 0.9)" }}
+          style={{
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 4px rgba(0, 0, 0, 0.9)",
+          }}
         >
           {displayedMusic.length}{" "}
           {displayedMusic.length === 1 ? "track" : "tracks"}

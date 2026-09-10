@@ -71,8 +71,7 @@ function defaultEndsAt() {
 
 export default function QuiltsPage() {
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerColor = colors["text"];
   const [quilts, setQuilts] = useState<QuiltSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [createLoading, setCreateLoading] = useState(false);
@@ -113,7 +112,10 @@ export default function QuiltsPage() {
               className="text-3xl font-semibold"
               style={{
                 color: headerColor,
-                textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+                textShadow:
+                  siteTheme.type === "Light"
+                    ? "none"
+                    : "0 1px 5px rgba(0, 0, 0, 0.75)",
               }}
             >
               Quilts
@@ -123,7 +125,10 @@ export default function QuiltsPage() {
               style={{
                 color: headerColor,
                 opacity: 0.82,
-                textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+                textShadow:
+                  siteTheme.type === "Light"
+                    ? "none"
+                    : "0 1px 4px rgba(0, 0, 0, 0.8)",
               }}
             >
               Collaborative pixel art canvases built from community submissions.

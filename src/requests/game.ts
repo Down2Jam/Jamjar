@@ -103,6 +103,17 @@ export async function previewItchGame(url: string) {
   });
 }
 
+export async function uploadWebBuild(file: File) {
+  const form = new FormData();
+  form.append("upload", file);
+  return fetch(`${BASE_URL}/games/web-builds`, {
+    method: "POST",
+    body: form,
+    headers: { authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
+}
+
 export async function postGame(
   title: string,
   gameSlug: string,
@@ -152,6 +163,9 @@ export async function postGame(
   trailerUrl: string | null,
   itchEmbedUrl: string | null,
   itchEmbedAspectRatio: GameEmbedAspectRatio | null,
+  playableBuildUrl: string | null,
+  playableBuildAspectRatio: GameEmbedAspectRatio | null,
+  playableBuildShowFullscreenButton: boolean,
   inputMethods: string[],
   estOneRun: string | null,
   estAnyPercent: string | null,
@@ -185,6 +199,9 @@ export async function postGame(
       trailerUrl,
       itchEmbedUrl,
       itchEmbedAspectRatio,
+      playableBuildUrl,
+      playableBuildAspectRatio,
+      playableBuildShowFullscreenButton,
       inputMethods,
       estOneRun,
       estAnyPercent,
@@ -252,6 +269,9 @@ export async function updateGame(
   trailerUrl: string | null,
   itchEmbedUrl: string | null,
   itchEmbedAspectRatio: GameEmbedAspectRatio | null,
+  playableBuildUrl: string | null,
+  playableBuildAspectRatio: GameEmbedAspectRatio | null,
+  playableBuildShowFullscreenButton: boolean,
   inputMethods: string[],
   estOneRun: string | null,
   estAnyPercent: string | null,
@@ -284,6 +304,9 @@ export async function updateGame(
       trailerUrl,
       itchEmbedUrl,
       itchEmbedAspectRatio,
+      playableBuildUrl,
+      playableBuildAspectRatio,
+      playableBuildShowFullscreenButton,
       inputMethods,
       estOneRun,
       estAnyPercent,
@@ -366,6 +389,11 @@ export async function getRandomGame(includeExternal = true) {
       credentials: "include",
     },
   );
+}
+
+export async function getFeaturedGameVideos(limit = 20) {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return fetch(`${BASE_URL}/games/featured-videos?${params.toString()}`);
 }
 
 export async function getGameDevlogPosts(

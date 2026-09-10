@@ -134,6 +134,10 @@
       "Title": "Quilts",
       "Description": "Make collaborative pixel art together"
     },
+    "Events": {
+      "Title": "Events",
+      "Description": "Browse community events and streams"
+    },
     "Docs": {
       "Title": "Docs",
       "Description": "Read the site documentation"

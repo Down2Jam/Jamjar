@@ -9,14 +9,17 @@ export default function Timer({
   name,
   targetDate,
   reverse = false,
+  size = "md",
 }: {
   name: string;
   targetDate: Date;
   reverse?: boolean;
+  size?: "xs" | "sm" | "md";
 }) {
   const [timeLeft, setTimeLeft] = useState(targetDate.getTime() - Date.now());
   const [mounted, setMounted] = useState<boolean>(false);
   const { siteTheme } = useTheme();
+  const iconSize = size === "xs" ? 18 : size === "sm" ? 20 : 24;
 
   useEffect(() => {
     setMounted(true);
@@ -66,18 +69,15 @@ export default function Timer({
     <div>
       <div className="flex items-center gap-4 justify-center">
         <TimerIcon
+          size={iconSize}
           style={{
             color: siteTheme.colors["textFaded"],
           }}
         />
-        <Text>{name}</Text>
-        <p
-          style={{
-            color: siteTheme.colors["blue"],
-          }}
-        >
+        <Text size={size}>{name}</Text>
+        <Text size={size} color="blue">
           {formatTime(timeLeft)}
-        </p>
+        </Text>
       </div>
     </div>
   );

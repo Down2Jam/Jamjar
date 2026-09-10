@@ -167,7 +167,7 @@ export default function AdminEvents() {
                           className="min-w-7"
                         >
                           <Avatar
-                            src={event.host?.profilePicture}
+                            src={event.host?.profilePicture ?? undefined}
                             alt={event.host?.name ?? "Host"}
                             size={28}
                           />

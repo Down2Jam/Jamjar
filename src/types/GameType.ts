@@ -45,6 +45,9 @@ export interface GameType {
   trailerUrl?: string | null;
   itchEmbedUrl?: string | null;
   itchEmbedAspectRatio?: GameEmbedAspectRatio | null;
+  playableBuildUrl?: string | null;
+  playableBuildAspectRatio?: GameEmbedAspectRatio | null;
+  playableBuildShowFullscreenButton?: boolean;
   inputMethods?: string[];
   estOneRun?: string | null;
   estAnyPercent?: string | null;
@@ -115,6 +118,9 @@ export interface GamePageType {
   trailerUrl?: string | null;
   itchEmbedUrl?: string | null;
   itchEmbedAspectRatio?: GameEmbedAspectRatio | null;
+  playableBuildUrl?: string | null;
+  playableBuildAspectRatio?: GameEmbedAspectRatio | null;
+  playableBuildShowFullscreenButton?: boolean;
   inputMethods?: string[];
   estOneRun?: string | null;
   estAnyPercent?: string | null;

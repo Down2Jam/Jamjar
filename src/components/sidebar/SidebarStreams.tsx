@@ -5,12 +5,13 @@ import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
 import { Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
-import { Modal, ModalContent, Text, Tooltip } from "bioloom-ui";
+import { Modal, ModalContent, Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
 import { useStreamers } from "@/hooks/queries";
 import { SidebarCardSkeleton } from "@/components/skeletons";
 import TagLabel from "@/components/tags/TagLabel";
+import SidebarSectionTitle from "./SidebarSectionTitle";
 
 function isMatureStreamer(streamer: FeaturedStreamerType) {
   const title = streamer.streamTitle.toLowerCase();
@@ -77,7 +78,7 @@ export default function SidebarStreams() {
   };
 
   if (isLoading) {
-    return <SidebarCardSkeleton media lines={2} className="mt-20 h-[320px]" />;
+    return <SidebarCardSkeleton media lines={2} className="mt-12 h-[320px]" />;
   }
 
   if (totalStreamers === 0) {
@@ -92,16 +93,10 @@ export default function SidebarStreams() {
   )}&parent=${encodeURIComponent(twitchParent)}&autoplay=false`;
 
   return (
-    <div className="mt-20 flex w-[480px] min-w-[480px] max-w-[480px] flex-col items-center gap-2">
-      <Text
-        size="2xl"
-        color={siteTheme.type === "Light" ? "textLight" : "text"}
-        style={{
-          textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
-        }}
-      >
+    <div className="mt-12 flex w-full flex-col items-center gap-2">
+      <SidebarSectionTitle>
         Featured Streams
-      </Text>
+      </SidebarSectionTitle>
 
       <Modal
         isOpen={viewerOpen}
@@ -174,15 +169,15 @@ export default function SidebarStreams() {
             setViewerOpen(true);
           }
         }}
-        className="transition-color relative h-[320px] w-[480px] min-w-[480px] max-w-[480px] cursor-pointer duration-250 focus-visible:outline-none"
+        className="transition-color relative aspect-[3/2] w-full cursor-pointer duration-250 focus-visible:outline-none"
       >
-        <div className="absolute z-0">
+        <div className="absolute inset-x-0 top-0 z-0">
           <NextImage
             src={currentStreamer.thumbnailUrl}
             width={480}
             height={270}
             alt={`${currentStreamer.userName}'s thumbnail`}
-            className="brightness-75 rounded-2xl"
+            className="aspect-video h-auto w-full rounded-2xl object-cover brightness-75"
           />
         </div>
 
@@ -191,10 +186,10 @@ export default function SidebarStreams() {
             style={{
               backgroundImage: `radial-gradient(transparent 40%, color-mix(in srgb, ${colors["crust"]} 50%, transparent) 100%)`,
             }}
-            className="absolute z-10 rounded-2xl w-[480px] min-w-[480px] max-w-[480px] h-[270px] min-h-[270px]"
+            className="absolute inset-x-0 top-0 z-10 aspect-video w-full rounded-2xl"
           />
         )}
-        <div className="absolute mt-60 flex z-20 gap-2 justify-center w-[480px] min-w-[480px] max-w-[480px] items-center">
+        <div className="absolute inset-x-0 bottom-0 z-20 flex w-full items-center justify-center gap-2">
           {totalStreamers > 3 && (
             <Tooltip content="Previous Page" position="top">
               <Button
@@ -226,7 +221,7 @@ export default function SidebarStreams() {
               alt={`${
                 streamers[0 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
+              className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 0 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
@@ -257,7 +252,7 @@ export default function SidebarStreams() {
               alt={`${
                 streamers[1 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
+              className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 1 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
@@ -288,7 +283,7 @@ export default function SidebarStreams() {
               alt={`${
                 streamers[2 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
               }'s thumbnail`}
-              className={`rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
+              className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 2 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
                   : "brightness-[0.25] hover:brightness-[0.75]"
@@ -315,7 +310,7 @@ export default function SidebarStreams() {
             </Tooltip>
           )}
         </div>
-        <div className="absolute z-20 mt-[120px] justify-between flex items-center w-[480px] min-w-[480px] max-w-[480px] px-2">
+        <div className="absolute inset-x-0 top-[42%] z-20 flex w-full -translate-y-1/2 items-center justify-between px-2">
           <Tooltip content="Previous Stream" position="top">
             <Button
               onClick={(e) => {
@@ -328,6 +323,7 @@ export default function SidebarStreams() {
           </Tooltip>
           <Play
             size={32}
+            fill="currentColor"
             style={{
               color: colors["textLight"],
             }}
@@ -346,13 +342,14 @@ export default function SidebarStreams() {
         <div className="relative z-10 p-2">
           <div className="flex flex-col gap-1">
             <p
+              className="line-clamp-2 text-xs leading-4 lg:text-sm lg:leading-5 xl:text-base xl:leading-6"
               style={{
                 color: colors["textLight"],
               }}
             >
               {currentStreamer.userName} - {currentStreamer.streamTitle}
             </p>
-            <div className="flex gap-2 pl-4 items-center">
+            <div className="hidden items-center gap-2 pl-4 xl:flex">
               <Tooltip content="Viewer Count" position="top">
                 <Chip>
                   <div className="flex gap-1 items-center">

@@ -41,8 +41,7 @@ export default function VotingPage() {
     (theme) => theme.votes2?.[0]?.voteScore === 3,
   ).length;
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const headerColor = colors["text"];
 
   async function joinCurrentJam() {
     if (activeJamResponse?.jam?.id === undefined) return;
@@ -273,7 +272,10 @@ export default function VotingPage() {
             className="text-3xl font-semibold"
             style={{
               color: headerColor,
-              textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
             Theme Voting
@@ -283,7 +285,10 @@ export default function VotingPage() {
             style={{
               color: headerColor,
               opacity: 0.82,
-              textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
             Vote for the theme of the jam. Likes add +1 and your two stars add

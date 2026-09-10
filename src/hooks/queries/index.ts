@@ -9,5 +9,7 @@ export * from "./useEventQueries";
 export * from "./useThemeQueries";
 export * from "./useTeamQueries";
 export * from "./useEmojiQueries";
+export * from "./useAchievementQueries";
+export * from "./useScoreQueries";
 export * from "./useMiscQueries";
 export * from "./useMessageQueries";

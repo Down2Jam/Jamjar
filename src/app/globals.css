@@ -46,10 +46,35 @@ body {
   overscroll-behavior: contain;
 }
 
+.jam-timeline-scrollbar {
+  scrollbar-width: none;
+}
+
+.jam-timeline-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 html:not([data-theme-ready="true"]) *,
 html:not([data-theme-ready="true"]) *::before,
 html:not([data-theme-ready="true"]) *::after {
   transition: none !important;
+}
+
+html.theme-preview-transitioning *,
+html.theme-preview-transitioning *::before,
+html.theme-preview-transitioning *::after {
+  transition-duration: 250ms !important;
+  transition-property: background-color, border-color, box-shadow, color, fill,
+    stroke !important;
+  transition-timing-function: ease-in-out !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-preview-transitioning *,
+  html.theme-preview-transitioning *::before,
+  html.theme-preview-transitioning *::after {
+    transition-duration: 0ms !important;
+  }
 }
 
 .emoji-inline {
@@ -90,14 +115,14 @@ html:not([data-theme-ready="true"]) *::after {
   border-color: var(--post-card-border) !important;
   border-radius: 0.5rem !important;
   box-shadow:
-    0 14px 30px -14px var(--post-card-shadow),
-    0 4px 10px -6px var(--post-card-shadow) !important;
+    0 14px 30px -14px rgba(0, 0, 0, 0.5),
+    0 4px 10px -6px rgba(0, 0, 0, 0.35) !important;
 }
 
 .post-card-shadow {
   box-shadow:
-    0 14px 30px -14px var(--post-card-shadow),
-    0 4px 10px -6px var(--post-card-shadow) !important;
+    0 14px 30px -14px rgba(0, 0, 0, 0.5),
+    0 4px 10px -6px rgba(0, 0, 0, 0.35) !important;
 }
 
 .create-post-prompt {

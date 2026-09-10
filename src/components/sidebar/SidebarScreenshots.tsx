@@ -4,44 +4,68 @@ import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import { Skeleton } from "@/components/skeletons";
 import { useGames } from "@/hooks/queries";
-import { useTheme } from "@/providers/useSiteTheme";
-import { Button, Text } from "bioloom-ui";
+import { Button } from "bioloom-ui";
 import { useMemo } from "react";
+import SidebarSectionTitle from "./SidebarSectionTitle";
+
+const MAX_FEATURED_SCREENSHOTS = 20;
 
 export default function SidebarScreenshots() {
-  const { siteTheme } = useTheme();
   const { data: games = [], isLoading } = useGames(
     "random",
     undefined,
     "ALL",
     true,
-    30,
+    50,
   );
 
   const screenshots = useMemo(() => {
     const seen = new Set<string>();
-
-    return games
-      .flatMap((game) => {
-        const src = [
+    const screenshotsByGame = games.map((game) => ({
+      game,
+      sources: [
           ...(game.screenshots ?? []),
           ...(game.jamPage?.screenshots ?? []),
           ...(game.postJamPage?.screenshots ?? []),
-        ].find((candidate) => candidate?.trim() && !seen.has(candidate));
+        ].filter((candidate): candidate is string => {
+          if (!candidate?.trim() || seen.has(candidate)) return false;
+          seen.add(candidate);
+          return true;
+        }),
+    }));
+    const selected: Array<{
+      game: (typeof games)[number];
+      src: string;
+    }> = [];
 
-        if (!src) return [];
-        seen.add(src);
-        return [{ game, src }];
-      })
-      .slice(0, 6);
+    for (
+      let screenshotIndex = 0;
+      selected.length < MAX_FEATURED_SCREENSHOTS;
+      screenshotIndex += 1
+    ) {
+      let addedScreenshot = false;
+
+      for (const { game, sources } of screenshotsByGame) {
+        const src = sources[screenshotIndex];
+        if (!src) continue;
+
+        selected.push({ game, src });
+        addedScreenshot = true;
+        if (selected.length === MAX_FEATURED_SCREENSHOTS) break;
+      }
+
+      if (!addedScreenshot) break;
+    }
+
+    return selected;
   }, [games]);
 
   if (isLoading) {
     return (
-      <div className="mt-20 flex flex-col items-center gap-2">
+      <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-52" />
-        <div className="grid w-[488px] grid-cols-2 gap-2">
-          {Array.from({ length: 6 }).map((_, index) => (
+        <div className="grid w-full grid-cols-2 gap-2">
+          {Array.from({ length: MAX_FEATURED_SCREENSHOTS }).map((_, index) => (
             <Skeleton
               key={index}
               className="aspect-video w-full rounded-xl"
@@ -55,18 +79,12 @@ export default function SidebarScreenshots() {
   if (screenshots.length === 0) return null;
 
   return (
-    <div className="mt-20 flex flex-col items-center gap-2">
-      <Text
-        size="2xl"
-        color={siteTheme.type === "Light" ? "textLight" : "text"}
-        style={{
-          textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
-        }}
-      >
+    <div className="mt-12 flex flex-col items-center gap-2">
+      <SidebarSectionTitle>
         Featured Screenshots
-      </Text>
+      </SidebarSectionTitle>
 
-      <div className="grid w-[488px] grid-cols-2 gap-2">
+      <div className="grid w-full grid-cols-2 gap-2">
         {screenshots.map(({ game, src }) => (
           <Link
             key={`${game.id}:${game.pageVersion ?? "JAM"}:${src}`}

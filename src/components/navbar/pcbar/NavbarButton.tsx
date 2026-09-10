@@ -14,7 +14,14 @@ interface NavbarButtonProps {
   isIconOnly?: boolean;
   description: string;
   hotkey?: string[];
-  color?: "blue" | "yellow" | "green" | "lime" | "orange" | "red";
+  color?:
+    | "blue"
+    | "cyan"
+    | "yellow"
+    | "green"
+    | "lime"
+    | "orange"
+    | "red";
   onPress?: () => void;
   className?: string;
   indicator?: boolean;
@@ -42,7 +49,9 @@ export default function NavbarButton({
   return (
     <NavbarItem
       className={
-        isIconOnly ? "flex h-8 w-8 items-center justify-center p-0" : ""
+        isIconOnly
+          ? "flex h-8 w-8 shrink-0 items-center justify-center p-0"
+          : "shrink-0"
       }
     >
       <NavbarTooltip
@@ -61,7 +70,9 @@ export default function NavbarButton({
             offset={5}
           >
             <Button
-              className={className}
+              className={[!isIconOnly && "whitespace-nowrap", className]
+                .filter(Boolean)
+                .join(" ")}
               style={{
                 color: siteTheme.colors[color],
               }}

@@ -1,280 +1,409 @@
 "use client";
 
-import Editor from "@/components/editor";
-import { hasCookie } from "@/helpers/cookie";
+import { useState, type ReactNode } from "react";
 import {
   fromDate,
   getLocalTimeZone,
-  now,
-  ZonedDateTime,
 } from "@internationalized/date";
-import { addToast, Dropdown, Form, Input } from "bioloom-ui";
 import {
   Calendar,
+  CalendarClock,
   Code,
   FileCode,
   Gamepad2,
+  Link2,
   Palette,
   Trophy,
 } from "lucide-react";
+import Editor from "@/components/editor";
 import { redirect } from "@/compat/next-navigation";
-import { useEffect, useState } from "react";
-import Timers from "@/components/timers";
-import { UserType } from "@/types/UserType";
-import { getSelf } from "@/requests/user";
+import { hasCookie } from "@/helpers/cookie";
 import { sanitize } from "@/helpers/sanitize";
-import SidebarStreams from "@/components/sidebar/SidebarStreams";
+import { useSelf } from "@/hooks/queries";
+import { usePageMetadata } from "@/hooks/usePageMetadata";
+import { useTheme } from "@/providers/useSiteTheme";
 import { postEvent } from "@/requests/event";
-import { EventIcon } from "@/types/EventIcon";
-import { Button, Spinner } from "bioloom-ui";
-import { readItem } from "@/requests/helpers";
+import type { EventIcon } from "@/types/EventIcon";
+import {
+  addToast,
+  Button,
+  Card,
+  Dropdown,
+  Form,
+  Hstack,
+  Input,
+  Spinner,
+  Text,
+  Vstack,
+} from "bioloom-ui";
+import type { IconName } from "bioloom-ui";
 
-const icons = {
-  palette: {
-    description: "Streams where you make art content for the jam",
-    icon: <Palette />,
-    name: "Art",
-  },
+const EVENT_TYPES: Record<
+  EventIcon,
+  { name: string; description: string; icon: ReactNode }
+> = {
   calendar: {
-    description: "A generic event icon",
-    icon: <Calendar />,
-    name: "Event",
+    name: "Community event",
+    description: "A meetup, announcement, or other general event",
+    icon: <Calendar size={18} />,
+  },
+  palette: {
+    name: "Art stream",
+    description: "Drawing art for a game in the jam",
+    icon: <Palette size={18} />,
   },
   code: {
-    description: "Streams where you make games for the jam",
-    icon: <Code />,
-    name: "Gamedev",
+    name: "Game development stream",
+    description: "Building a game for the jam",
+    icon: <Code size={18} />,
   },
   gamepad2: {
-    description: "Streams where you play games from the jam",
-    icon: <Gamepad2 />,
-    name: "Games",
+    name: "Game showcase stream",
+    description: "Playing or showcasing games from the community",
+    icon: <Gamepad2 size={18} />,
   },
   trophy: {
-    description:
-      "Streams where you run a tournament (e.g. a score chasing tournament)",
-    icon: <Trophy />,
-    name: "Tournament",
+    name: "Tournament stream",
+    description: "A tournament, challenge, or score competition",
+    icon: <Trophy size={18} />,
   },
   filecode: {
-    description:
-      "Streams where you make web content (e.g. work on the d2jam site)",
-    icon: <FileCode />,
-    name: "Webdev",
+    name: "Web development stream",
+    description: "Working on the Down2Jam site or other web content",
+    icon: <FileCode size={18} />,
   },
 };
 
-export default function CreatePostPage() {
+function toLocalInputValue(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate(),
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+function defaultSchedule() {
+  const start = new Date();
+  start.setSeconds(0, 0);
+  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000);
+  return {
+    start: toLocalInputValue(start),
+    end: toLocalInputValue(end),
+  };
+}
+
+function FieldLabel({ children, hint }: { children: ReactNode; hint?: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <Text size="sm" weight="semibold" color="text">
+        {children}
+      </Text>
+      {hint && (
+        <Text size="xs" color="textFaded">
+          {hint}
+        </Text>
+      )}
+    </div>
+  );
+}
+
+export default function CreateEventPage() {
+  const { colors, siteTheme } = useTheme();
+  const headerColor = colors["text"];
+  const hasToken = hasCookie("token");
+  const { data: user, isLoading } = useSelf(hasToken);
+  const initialSchedule = defaultSchedule();
   const [title, setTitle] = useState("");
   const [link, setLink] = useState("");
   const [icon, setIcon] = useState<EventIcon>("calendar");
   const [content, setContent] = useState("");
-  const [errors, setErrors] = useState({});
-  const [waitingPost, setWaitingPost] = useState(false);
-  const [user, setUser] = useState<UserType>();
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [date, setDate] = useState<{
-    start: ZonedDateTime | undefined;
-    end: ZonedDateTime | undefined;
-  }>({
-    start: now(getLocalTimeZone()),
-    end: now(getLocalTimeZone()).add({ hours: 3 }),
+  const [start, setStart] = useState(initialSchedule.start);
+  const [end, setEnd] = useState(initialSchedule.end);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  usePageMetadata({
+    title: "Create Event",
+    description: "Add a community event to the Down2Jam calendar.",
+    canonical: "/create-event",
+    robots: "noindex,nofollow",
   });
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await getSelf();
+  const canCreateEvent = Boolean(user?.twitch || user?.mod);
+  const selectedType = EVENT_TYPES[icon];
 
-        const localuser = await readItem<UserType>(response);
-        if (!localuser) {
-          setLoading(false);
-          return;
-        }
-        setUser(localuser);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
+  const submitEvent = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormError(null);
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      setFormError("Give your event a title before publishing it.");
+      return;
+    }
+
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    if (
+      !start ||
+      !end ||
+      Number.isNaN(startDate.getTime()) ||
+      Number.isNaN(endDate.getTime())
+    ) {
+      setFormError("Choose a valid start and end time.");
+      return;
+    }
+
+    if (endDate <= startDate) {
+      setFormError("The event must end after it starts.");
+      return;
+    }
+
+    if (!hasCookie("token")) {
+      setFormError("Your session has expired. Sign in again to create an event.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const timeZone = getLocalTimeZone();
+      const response = await postEvent(
+        trimmedTitle,
+        sanitize(content),
+        fromDate(startDate, timeZone).toString(),
+        fromDate(endDate, timeZone).toString(),
+        link.trim(),
+        icon,
+      );
+
+      if (response.ok) {
+        addToast({ title: "Event created" });
+        redirect("/events");
+        return;
       }
-    };
-    loadData();
-  }, []);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  if (loading) return <Spinner />;
-
-  if (!user?.twitch && !user?.mod) return <p>You cannot create events</p>;
-
-  const toLocalInputValue = (value?: ZonedDateTime) => {
-    if (!value) return "";
-    const date = value.toDate();
-    const pad = (num: number) => String(num).padStart(2, "0");
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-      date.getDate()
-    )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-  };
-
-  const parseLocalInputValue = (value: string) => {
-    if (!value) return undefined;
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return undefined;
-    return fromDate(parsed, getLocalTimeZone());
+      const payload = await response.json().catch(() => null);
+      setFormError(
+        response.status === 401
+          ? "Your session has expired. Sign in again to create an event."
+          : payload?.message ?? "The event could not be created. Please try again.",
+      );
+    } catch {
+      setFormError("The event could not be created. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="static flex items-top mt-10 justify-center top-0 left-0 gap-16">
-      <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
-        validationErrors={errors}
-        onSubmit={async (e) => {
-          e.preventDefault();
-
-          if (!title) {
-            setErrors({ title: "Please enter a valid title" });
-            return;
-          }
-
-          if (!date || !date.end || !date.start) {
-            setErrors({ content: "Please enter valid dates" });
-            addToast({
-              title: "Please enter valid dates",
-            });
-            return;
-          }
-
-          if (!hasCookie("token")) {
-            setErrors({ content: "You are not logged in" });
-            return;
-          }
-
-          const sanitizedHtml = sanitize(content);
-          setWaitingPost(true);
-
-          const response = await postEvent(
-            title,
-            sanitizedHtml,
-            date.start.toString(),
-            date.end.toString(),
-            link,
-            icon
-          );
-
-          if (response.status == 401) {
-            setErrors({ content: "Invalid user" });
-            setWaitingPost(false);
-            return;
-          }
-
-          if (response.ok) {
-            addToast({
-              title: "Successfully created event",
-            });
-            setWaitingPost(false);
-            redirect("/events");
-          } else {
-            addToast({
-              title: "An error occured",
-            });
-            setWaitingPost(false);
-          }
-        }}
-      >
-        <Input
-          required
-          label="Title"
-          labelPlacement="outside"
-          name="title"
-          placeholder="Enter a title"
-          type="text"
-          value={title}
-          onValueChange={setTitle}
-        />
-
-        <Input
-          label="Link"
-          labelPlacement="outside"
-          name="link"
-          placeholder="Enter a link"
-          type="text"
-          value={link}
-          onValueChange={setLink}
-        />
-
-        <Editor content={content} setContent={setContent} />
-
-        <p className="mt-1">Icon</p>
-        <Dropdown
-          backdrop
-          trigger={<Button size="sm">{icons[icon]?.name}</Button>}
-          onSelect={(key) => {
-            setIcon(key as EventIcon);
-          }}
-        >
-          {Object.entries(icons).map(([key, icon]) => (
-            <Dropdown.Item key={key} value={key} description={icon.description}>
-              {icon.name}
-            </Dropdown.Item>
-          ))}
-        </Dropdown>
-
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <Input
-              fullWidth
-              label="Start"
-              labelPlacement="outside"
-              type="datetime-local"
-              value={toLocalInputValue(date.start)}
-              onValueChange={(value) =>
-                setDate((prev) => ({
-                  ...prev,
-                  start: parseLocalInputValue(value),
-                }))
-              }
-            />
-          </div>
-          <div className="flex-1">
-            <Input
-              fullWidth
-              label="End"
-              labelPlacement="outside"
-              type="datetime-local"
-              value={toLocalInputValue(date.end)}
-              onValueChange={(value) =>
-                setDate((prev) => ({
-                  ...prev,
-                  end: parseLocalInputValue(value),
-                }))
-              }
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 mt-1">
-          {waitingPost ? (
-            <Spinner />
-          ) : (
-            <Button color="blue" type="submit">
-              Create
+    <main className="mx-auto w-full max-w-4xl pb-10">
+      <Vstack align="stretch" gap={5}>
+        <header className="relative py-2 text-center">
+          <h1
+            className="text-3xl font-semibold"
+            style={{
+              color: headerColor,
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Create an event
+          </h1>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: headerColor,
+              opacity: 0.82,
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Add a stream, tournament, showcase, or community get-together.
+          </p>
+          <div className="mt-3 flex justify-center sm:absolute sm:left-0 sm:top-2 sm:mt-0">
+            <Button href="/events" icon="arrowleft" variant="ghost">
+              Events
             </Button>
-          )}
-        </div>
-      </Form>
-      {!isMobile && (
-        <div className="flex flex-col gap-4 px-8 items-end">
-          <Timers />
-          <SidebarStreams />
-        </div>
-      )}
-    </div>
+          </div>
+        </header>
+
+        {isLoading ? (
+          <Card radius="lg">
+            <Hstack justify="center" className="py-14">
+              <Spinner />
+              <Text color="textFaded">Checking event access...</Text>
+            </Hstack>
+          </Card>
+        ) : !hasToken ? (
+          <Card radius="lg">
+            <Vstack gap={3} className="py-10 text-center">
+              <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
+              <Text size="xl" weight="semibold">Sign in to create an event</Text>
+              <Text color="textFaded" className="max-w-md">
+                Event creation is available to Down2Jam community members with a connected Twitch account.
+              </Text>
+              <Hstack>
+                <Button href="/login" color="blue">Sign in</Button>
+                <Button href="/events" variant="ghost">Back to events</Button>
+              </Hstack>
+            </Vstack>
+          </Card>
+        ) : !canCreateEvent ? (
+          <Card radius="lg">
+            <Vstack gap={3} className="py-10 text-center">
+              <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
+              <Text size="xl" weight="semibold">Connect Twitch to create events</Text>
+              <Text color="textFaded" className="max-w-md">
+                Connect your Twitch account in settings so community members know where to watch your events.
+              </Text>
+              <Hstack>
+                <Button href="/settings" color="blue">Open settings</Button>
+                <Button href="/events" variant="ghost">Back to events</Button>
+              </Hstack>
+            </Vstack>
+          </Card>
+        ) : (
+          <Form onSubmit={submitEvent}>
+            <Card padding={0} radius="lg" className="overflow-hidden">
+              <Vstack align="stretch" gap={0}>
+                <section className="space-y-5 p-5 sm:p-7">
+                  <Vstack align="start" gap={0}>
+                    <Text size="xl" weight="semibold">Event details</Text>
+                  </Vstack>
+
+                  <Vstack align="stretch" gap={2}>
+                    <FieldLabel>Title</FieldLabel>
+                    <Input
+                      required
+                      fullWidth
+                      name="title"
+                      placeholder="What’s happening?"
+                      value={title}
+                      onValueChange={setTitle}
+                      disabled={submitting}
+                      aria-invalid={Boolean(formError && !title.trim())}
+                    />
+                  </Vstack>
+
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Vstack align="stretch" gap={2}>
+                      <FieldLabel>Event type</FieldLabel>
+                      <Dropdown
+                        backdrop
+                        onSelect={(key) => setIcon(key as EventIcon)}
+                        trigger={
+                          <Button
+                            fullWidth
+                            leftSlot={selectedType.icon}
+                            className="justify-start"
+                            disabled={submitting}
+                          >
+                            {selectedType.name}
+                          </Button>
+                        }
+                      >
+                        {Object.entries(EVENT_TYPES).map(([key, type]) => (
+                          <Dropdown.Item
+                            key={key}
+                            value={key}
+                            icon={key as IconName}
+                            description={type.description}
+                          >
+                            {type.name}
+                          </Dropdown.Item>
+                        ))}
+                      </Dropdown>
+                    </Vstack>
+
+                    <Vstack align="stretch" gap={2}>
+                      <FieldLabel hint="Optional">Stream or event link</FieldLabel>
+                      <Input
+                        fullWidth
+                        name="link"
+                        type="url"
+                        placeholder="https://twitch.tv/..."
+                        value={link}
+                        onValueChange={setLink}
+                        disabled={submitting}
+                        leftIcon={<Link2 size={15} />}
+                      />
+                    </Vstack>
+                  </div>
+                </section>
+
+                <section
+                  className="space-y-5 border-y p-5 sm:p-7"
+                  style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 7%, transparent)` }}
+                >
+                  <Vstack align="start" gap={0}>
+                    <Text size="xl" weight="semibold">Schedule</Text>
+                    <Text size="sm" color="textFaded">
+                      Times are shown in your local timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}.
+                    </Text>
+                  </Vstack>
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <Input
+                      required
+                      fullWidth
+                      label="Starts"
+                      labelPlacement="outside"
+                      type="datetime-local"
+                      value={start}
+                      onValueChange={setStart}
+                      disabled={submitting}
+                    />
+                    <Input
+                      required
+                      fullWidth
+                      label="Ends"
+                      labelPlacement="outside"
+                      type="datetime-local"
+                      min={start}
+                      value={end}
+                      onValueChange={setEnd}
+                      disabled={submitting}
+                    />
+                  </div>
+                </section>
+
+                <section className="space-y-3 p-5 sm:p-7">
+                  <Vstack align="start" gap={0}>
+                    <Text size="xl" weight="semibold">About the event</Text>
+                    <Text size="sm" color="textFaded">
+                      Share what you’ll be doing and anything attendees should know.
+                    </Text>
+                  </Vstack>
+                  <Editor content={content} setContent={setContent} />
+                </section>
+
+                <footer
+                  className="flex flex-col-reverse items-stretch justify-between gap-3 border-t p-5 sm:flex-row sm:items-center sm:p-7"
+                  style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 7%, transparent)` }}
+                >
+                  <div className="min-h-5">
+                    {formError && (
+                      <Text size="sm" color="red" role="alert">
+                        {formError}
+                      </Text>
+                    )}
+                  </div>
+                  <Hstack className="justify-end">
+                    <Button href="/events" variant="ghost" disabled={submitting}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" icon="calendarplus" color="blue" loading={submitting}>
+                      Create event
+                    </Button>
+                  </Hstack>
+                </footer>
+              </Vstack>
+            </Card>
+          </Form>
+        )}
+      </Vstack>
+    </main>
   );
 }
