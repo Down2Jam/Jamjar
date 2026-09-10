@@ -22,7 +22,7 @@ export default function SidebarBanner() {
         alt="D2 Jam — the community centered jam"
         width={480}
         height={160}
-        className="rounded-xl shadow-2xl"
+        className="h-auto w-full rounded-xl shadow-2xl"
       />
     </a>
   );

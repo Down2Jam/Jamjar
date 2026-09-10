@@ -28,6 +28,10 @@ export function materializeGamePage(
     trailerUrl: page.trailerUrl ?? null,
     itchEmbedUrl: page.itchEmbedUrl ?? null,
     itchEmbedAspectRatio: page.itchEmbedAspectRatio ?? null,
+    playableBuildUrl: page.playableBuildUrl ?? null,
+    playableBuildAspectRatio: page.playableBuildAspectRatio ?? null,
+    playableBuildShowFullscreenButton:
+      page.playableBuildShowFullscreenButton ?? true,
     inputMethods: page.inputMethods ?? [],
     estOneRun: page.estOneRun ?? null,
     estAnyPercent: page.estAnyPercent ?? null,

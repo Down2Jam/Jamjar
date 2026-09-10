@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: production
+      args:
+        VITE_GAME_BUILDS_ORIGIN: ${VITE_GAME_BUILDS_ORIGIN:-}
     user: "node"
     init: true
     restart: unless-stopped

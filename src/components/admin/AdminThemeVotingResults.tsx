@@ -20,9 +20,16 @@ import {
 
 type ThemeWithScore = ThemeType & {
   slaughterScoreSum?: number;
+  score: number;
 };
 
-function summarizeVotes(votes2?: ThemeWithScore["votes2"]) {
+const THEME_VOTING_ROUND_SIZE = 15;
+
+function calculateScore(votes2?: ThemeType["votes2"]) {
+  return (votes2 ?? []).reduce((sum, vote) => sum + vote.voteScore, 0);
+}
+
+function summarizeVotes(votes2?: ThemeType["votes2"]) {
   const votes = votes2 ?? [];
   if (votes.length === 0) return "No votes";
 
@@ -35,12 +42,21 @@ function summarizeVotes(votes2?: ThemeWithScore["votes2"]) {
 
 export default function AdminThemeVotingResults() {
   const { data, isLoading: loading } = useThemes(true, true, true);
-  const themes: ThemeWithScore[] = data ?? [];
+  const themes = data ?? [];
 
   const rankedThemes = useMemo(() => {
-    return [...themes].sort(
-      (a, b) => (b.slaughterScoreSum ?? 0) - (a.slaughterScoreSum ?? 0)
-    );
+    return themes
+      .slice(0, THEME_VOTING_ROUND_SIZE)
+      .map<ThemeWithScore>((theme) => ({
+        ...theme,
+        score: calculateScore(theme.votes2),
+      }))
+      .sort(
+        (a, b) =>
+          b.score - a.score ||
+          (b.slaughterScoreSum ?? 0) - (a.slaughterScoreSum ?? 0) ||
+          a.id - b.id,
+      );
   }, [themes]);
 
   const totalVotes = useMemo(() => {
@@ -87,6 +103,7 @@ export default function AdminThemeVotingResults() {
               <TableHeader>
                 <TableColumn>Rank</TableColumn>
                 <TableColumn>Theme</TableColumn>
+                <TableColumn>Score</TableColumn>
                 <TableColumn>Seed Score</TableColumn>
                 <TableColumn>Votes</TableColumn>
               </TableHeader>
@@ -97,6 +114,7 @@ export default function AdminThemeVotingResults() {
                     <TableCell className="capitalize">
                       {theme.suggestion}
                     </TableCell>
+                    <TableCell>{theme.score}</TableCell>
                     <TableCell>{theme.slaughterScoreSum ?? 0}</TableCell>
                     <TableCell>{summarizeVotes(theme.votes2)}</TableCell>
                   </TableRow>

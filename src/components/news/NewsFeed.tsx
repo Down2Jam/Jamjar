@@ -11,9 +11,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 type NewsFilter = "all" | "announcement" | "changelog";
 
 export default function NewsFeed() {
-  const { colors, siteTheme } = useTheme();
-  const backgroundTextColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const { colors } = useTheme();
+  const backgroundTextColor = colors["text"];
   const [filter, setFilter] = useState<NewsFilter>("all");
   const { data: user } = useSelf();
   const { data: tags, isLoading: tagsLoading, isError: tagsError } = useTags();

@@ -17,6 +17,9 @@ export type GameCardGame = {
   short?: string | null;
   thumbnail?: string | null;
   itchEmbedUrl?: string | null;
+  playableBuildUrl?: string | null;
+  playableBuildAspectRatio?: string | null;
+  playableBuildShowFullscreenButton?: boolean;
   screenshots?: string[];
   inputMethods?: string[];
   tags?: Array<{ id?: number; name: string }>;
@@ -300,7 +303,7 @@ function getCreatorName(game: GameCardGame) {
 function getBuildPlatforms(game: GameCardGame) {
   return [
     ...new Set([
-      ...(game.itchEmbedUrl ? (["Web"] as const) : []),
+      ...(game.playableBuildUrl || game.itchEmbedUrl ? (["Web"] as const) : []),
       ...(game.downloadLinks ?? []).map((type) => type.platform),
     ]),
   ].sort((a, b) => (platformOrder[a] ?? 99) - (platformOrder[b] ?? 99));
@@ -510,8 +513,8 @@ export function GameCard({
             backgroundColor: colors["base"],
           }}
         >
-          <Vstack gap={0} align="start">
-            <Text size="2xl" color="text">
+          <Vstack gap={0} align="start" className="min-w-0 flex-1">
+            <Text size="2xl" color="text" className="line-clamp-1">
               {game.name}
             </Text>
 
@@ -532,7 +535,7 @@ export function GameCard({
               </Text>
             )}
           </Vstack>
-          <Hstack>
+          <Hstack className="shrink-0">
             {buildPlatforms.map((platform) => {
               const icon = platformIcons[platform];
               return icon ? <Icon key={platform} name={icon} size={16} /> : null;

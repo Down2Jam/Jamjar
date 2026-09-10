@@ -49,7 +49,6 @@ export default function LanguageDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
   const { setPreviewLocale, previewLocale } = useLanguagePreview();
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { siteTheme } = useTheme();
 
@@ -58,27 +57,20 @@ export default function LanguageDropdown({
     window.location.reload();
   }
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    setIsOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-      setHoveredKey(null);
-      setPreviewLocale(null);
-    }, 150);
-  };
-
   return (
-    <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <Popover shown={!!previewLocale}>Previewing {previewLocale}</Popover>
+    <div>
+      <Popover shown={!!previewLocale} showArrow={false}>
+        Previewing {previewLocale}
+      </Popover>
       <Dropdown
-        onOpenChange={setIsOpen}
-        openOn="hover"
+        onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) {
+            setHoveredKey(null);
+            setPreviewLocale(null);
+          }
+        }}
+        openOn="click"
         trigger={
           <Button
             size="sm"
@@ -105,11 +97,6 @@ export default function LanguageDropdown({
                 }}
               />
             }
-            onClick={() => {
-              if (isOpen) {
-                setIsOpen(false);
-              }
-            }}
           />
         }
       >

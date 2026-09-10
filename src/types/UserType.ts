@@ -22,6 +22,7 @@ export interface UserType {
   hideRatings?: boolean;
   autoHideRatingsWhileStreaming?: boolean;
   messageRequestPolicy?: "EVERYONE" | "FOLLOWING" | "NOBODY";
+  siteTheme?: string | null;
   createdAt: Date;
   mod: boolean;
   admin: boolean;
@@ -38,6 +39,9 @@ export interface UserType {
     short?: string | null;
     thumbnail?: string | null;
     itchEmbedUrl?: string | null;
+    playableBuildUrl?: string | null;
+    playableBuildAspectRatio?: string | null;
+    playableBuildShowFullscreenButton?: boolean;
     category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
     downloadLinks?: Array<{
       id: number;
@@ -54,6 +58,9 @@ export interface UserType {
     short?: string | null;
     thumbnail?: string | null;
     itchEmbedUrl?: string | null;
+    playableBuildUrl?: string | null;
+    playableBuildAspectRatio?: string | null;
+    playableBuildShowFullscreenButton?: boolean;
     category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
     downloadLinks?: Array<{
       id: number;

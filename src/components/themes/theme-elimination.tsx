@@ -73,9 +73,8 @@ export default function ThemeSlaughter() {
 
   const themeRefs = useRef<(HTMLDivElement | null)[]>([]);
   const { colors, siteTheme } = useTheme();
-  const headerColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
-  const headerTextColor = siteTheme.type === "Light" ? "textLight" : "text";
+  const headerColor = colors["text"];
+  const headerTextColor = "text";
   const [descriptionShow, setDescriptionShown] = useState(true);
 
   useHotkeys("y", voteYes);
@@ -492,7 +491,10 @@ export default function ThemeSlaughter() {
           className="text-3xl font-semibold"
           style={{
             color: headerColor,
-            textShadow: "0 1px 5px rgba(0, 0, 0, 0.75)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
           Theme Elimination
@@ -502,7 +504,10 @@ export default function ThemeSlaughter() {
           style={{
             color: headerColor,
             opacity: 0.82,
-            textShadow: "0 1px 4px rgba(0, 0, 0, 0.8)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
           Help narrow the submitted themes down for the final voting round.
@@ -531,7 +536,10 @@ export default function ThemeSlaughter() {
           color={headerTextColor}
           weight="semibold"
           style={{
-            textShadow: "0 1px 4px rgba(0, 0, 0, 0.9)",
+            textShadow:
+              siteTheme.type === "Light"
+                ? "none"
+                : "0 1px 4px rgba(0, 0, 0, 0.9)",
           }}
         >
           {voteCount}/{themes.length} {themes.length === 1 ? "theme" : "themes"} reviewed

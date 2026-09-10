@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar } from "lucide-react";
+import { ArrowRight, Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActiveJamResponse } from "../../helpers/jam";
 import { getTheme } from "@/requests/theme";
@@ -10,6 +10,9 @@ import { Text } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { useCurrentJam } from "@/hooks/queries";
 import { Skeleton } from "@/components/skeletons";
+import SidebarBanner from "@/components/sidebar/SidebarBanner";
+import SidebarButtons from "@/components/sidebar/SidebarButtons";
+import Logo from "@/components/logo";
 
 export default function JamHeader() {
   const { data: activeJamResponse, isLoading } = useCurrentJam();
@@ -18,6 +21,15 @@ export default function JamHeader() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const timelineRef = useRef<HTMLDivElement>(null);
   const activeEventRef = useRef<HTMLLIElement>(null);
+  const timelineDragRef = useRef({
+    pointerId: null as number | null,
+    startX: 0,
+    startScrollLeft: 0,
+    lastX: 0,
+    lastTime: 0,
+    velocity: 0,
+    momentumFrame: null as number | null,
+  });
   const { siteTheme, colors } = useTheme();
 
   const getJamMilestones = (jam?: ActiveJamResponse["jam"] | null) => {
@@ -187,6 +199,14 @@ export default function JamHeader() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(
+    () => () => {
+      const frame = timelineDragRef.current.momentumFrame;
+      if (frame !== null) cancelAnimationFrame(frame);
+    },
+    [],
+  );
+
   const events = [
     {
       name: "Phases.ThemeSubmission.Title",
@@ -278,6 +298,39 @@ export default function JamHeader() {
     timeline.scrollLeft += activeEventRect.left - timelineRect.left;
   }, [activeEventIndex]);
 
+  const startTimelineMomentum = (timeline: HTMLDivElement) => {
+    const drag = timelineDragRef.current;
+    if (
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      Math.abs(drag.velocity) < 0.02
+    ) {
+      drag.velocity = 0;
+      return;
+    }
+
+    let previousTime = performance.now();
+
+    const coast = (time: number) => {
+      const elapsed = Math.min(time - previousTime, 32);
+      previousTime = time;
+      const previousScrollLeft = timeline.scrollLeft;
+
+      timeline.scrollLeft += drag.velocity * elapsed;
+      drag.velocity *= Math.pow(0.94, elapsed / 16.67);
+
+      const reachedEdge = timeline.scrollLeft === previousScrollLeft;
+      if (Math.abs(drag.velocity) < 0.02 || reachedEdge) {
+        drag.velocity = 0;
+        drag.momentumFrame = null;
+        return;
+      }
+
+      drag.momentumFrame = requestAnimationFrame(coast);
+    };
+
+    drag.momentumFrame = requestAnimationFrame(coast);
+  };
+
   // Helper function to get ordinal suffix
   const getOrdinalSuffix = (day: number): string => {
     if (day > 3 && day < 21) return "th";
@@ -298,27 +351,25 @@ export default function JamHeader() {
 
   if (isLoading) {
     return (
-      <>
-        <div className="relative z-10 mx-0 overflow-hidden rounded-xl border border-white/10 bg-white/[0.035] shadow-2xl sm:mx-4">
-          <div className="flex">
-            <div className="flex items-center gap-2 bg-white/10 p-4 px-6">
-              <Skeleton className="h-6 w-6 rounded" />
-              <Skeleton className="h-5 w-56" />
-            </div>
-            <div className="p-4 px-6">
-              <Skeleton className="h-5 w-64" />
-            </div>
-          </div>
-          <div className="bg-black/20 p-4">
-            <Skeleton className="mx-auto h-5 w-72" />
+      <div className="relative left-1/2 -mt-4 w-[calc(100%+1rem)] -translate-x-1/2 overflow-hidden sm:w-[calc(100%+4rem)]">
+        <div className="mx-auto flex min-h-48 w-full max-w-6xl items-center gap-6 px-4 py-5 sm:px-8 xl:max-w-7xl 2xl:max-w-[96em]">
+          <Skeleton className="hidden h-36 w-36 translate-y-4 shrink-0 rounded-2xl sm:block" />
+          <div className="flex w-full max-w-xl translate-y-7 flex-col gap-4">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-5 w-52" />
+            <Skeleton className="h-11 w-44 rounded-lg" />
           </div>
         </div>
-        <div className="relative mx-0 mt-3 flex gap-2 overflow-hidden pb-2 sm:mx-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-[60px] min-w-36 grow rounded-md" />
-          ))}
+        <div>
+          <div className="mx-auto w-full max-w-6xl xl:max-w-7xl 2xl:max-w-[96em]">
+            <div className="flex gap-2 overflow-hidden px-2 py-3 sm:px-8 md:w-[calc(100%_-_clamp(260px,30vw,480px))]">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="h-[70px] min-w-[150px] grow rounded-lg" />
+              ))}
+            </div>
+          </div>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -342,160 +393,178 @@ export default function JamHeader() {
         : `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate)}`
       : "Dates TBA";
 
-  return (
-    <>
-      <div
-        style={{
-          backgroundColor: siteTheme.colors["blueDark"],
-          color: siteTheme.colors["textLight"],
-        }}
-        className="relative z-10 mx-0 flex flex-col overflow-hidden rounded-xl shadow-2xl transition-color duration-250 sm:mx-4"
+  const primaryAction = (() => {
+    if (!activeJamResponse?.jam) return { href: "/about", text: "About Down2Jam" };
+    if (activeJamResponse.phase === "Rating")
+      return { href: "/games", text: "JamHeader.RateGames" };
+    if (activeJamResponse.phase === "Post-Jam Rating")
+      return { href: "/games", text: "Rate updated games" };
+    return currentPhase?.href
+      ? { href: currentPhase.href, text: currentPhase.text }
+      : { href: "/about", text: "Explore the jam" };
+  })();
+
+  const renderPrimaryAction = (className = "") => (
+    <Link
+      href={primaryAction.href}
+      className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+        activeJamResponse?.phase === "Voting"
+          ? "min-h-10 py-2 pl-10 pr-3 text-[11px] sm:text-xs"
+          : "min-h-10 px-4 py-2 text-sm sm:text-base"
+      } ${className}`}
+      style={{
+        color: colors["text"],
+        borderColor: colors["base"],
+        backgroundColor: `${colors["mantle"]}e6`,
+        outlineColor: colors["blue"],
+      }}
+    >
+      {activeJamResponse?.phase === "Voting" && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden"
+        >
+          <img
+            src="/images/voted.png"
+            alt=""
+            className="h-full w-full -scale-x-100 object-contain object-right"
+          />
+        </span>
+      )}
+      <Text
+        size={activeJamResponse?.phase === "Voting" ? "xs" : "md"}
+        weight="semibold"
+        className="relative z-10"
       >
-        {/* Jam Header */}
-        <a href="/about" className="relative">
-          <div className="flex sm:hidden">
+        {primaryAction.text}
+      </Text>
+      <ArrowRight
+        size={activeJamResponse?.phase === "Voting" ? 15 : 17}
+        aria-hidden="true"
+        className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5"
+        style={{ color: "#fff" }}
+      />
+    </Link>
+  );
+
+  return (
+    <section
+      className="relative left-1/2 isolate -mt-4 w-[calc(100%+1rem)] -translate-x-1/2 overflow-hidden sm:w-[calc(100%+4rem)]"
+      style={{
+        color: siteTheme.colors["textLight"],
+      }}
+      aria-labelledby="home-jam-title"
+    >
+      <div className="mx-auto flex min-h-48 w-full max-w-6xl items-center gap-5 px-4 py-5 sm:gap-8 sm:px-8 md:pr-[calc(clamp(260px,30vw,480px)_+_32px)] xl:max-w-7xl 2xl:max-w-[96em]">
+        <Logo
+          width={160}
+          className="hidden h-36 w-36 translate-y-4 shrink-0 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] sm:block lg:h-40 lg:w-40"
+        />
+
+        <div className="min-w-0 flex-1 translate-y-7">
+          <h1
+            id="home-jam-title"
+            className="text-3xl font-black tracking-tight drop-shadow-lg sm:text-4xl"
+            style={{
+              color: colors["text"],
+            }}
+          >
+            {displayJam?.name ?? "Down2Jam"}
+          </h1>
+          <p
+            className="mt-1 text-base font-medium sm:text-lg"
+            style={{
+              color: colors["text"],
+            }}
+          >
+            The community-centered jam
+          </p>
+
+          <div className="mt-0 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
             <div
-              className="flex w-1/2 min-w-0 items-center justify-center gap-2 px-2 py-3"
-              style={{ backgroundColor: siteTheme.colors["blue"] }}
+              className="flex items-center gap-2 text-sm font-semibold sm:text-base"
+              style={{
+                color: colors["text"],
+              }}
             >
-              <Calendar size={18} />
-              <Text
-                weight="semibold"
-                className="min-w-0"
-                style={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {displayJam ? displayJam.name : "No active jams"}
-              </Text>
+              <Calendar size={20} aria-hidden="true" />
+              <span>{compactDateRange}</span>
             </div>
-            <div className="flex w-1/2 min-w-0 items-center justify-center px-2 py-3">
-              <Text
-                size="sm"
-                weight="semibold"
-                style={{ whiteSpace: "nowrap" }}
-              >
-                {compactDateRange}
-              </Text>
-            </div>
+            {renderPrimaryAction(
+              `md:hidden xl:inline-flex xl:mr-8 ${
+                activeJamResponse?.phase === "Voting"
+                  ? "xl:translate-y-4"
+                  : ""
+              }`,
+            )}
           </div>
-
-          <div className="hidden sm:flex">
-            <div
-              style={{
-                backgroundColor: siteTheme.colors["blue"],
-              }}
-              className="p-4 px-6 flex items-center gap-2 font-bold transition-color duration-250"
-            >
-              <Calendar />
-              <Text size="sm" weight="normal">
-                {displayJam && activeJamResponse?.phase
-                  ? `${displayJam.name} - ${activeJamResponse.phase} Phase`
-                  : "(No Active Jams)"}
-              </Text>
-            </div>
-
-            <div className="p-4 px-6">
-              <Text weight="bold">{compactDateRange}</Text>
-            </div>
-          </div>
-        </a>
-
-        {activeJamResponse &&
-          activeJamResponse.jam &&
-          activeJamResponse.phase != "Upcoming Jam" &&
-          (activeJamResponse.phase == "Rating" ? (
-            <div
-              className="grid grid-cols-2"
-              style={{
-                backgroundColor: colors["blueDarkDark"],
-              }}
-            >
-              <Link
-                href="/games"
-                className="hover:underline"
-                style={{
-                  color: colors["blue"],
-                }}
-              >
-                <div className="p-4 text-center flex justify-center">
-                  <Text weight="semibold">JamHeader.RateGames</Text>
-                </div>
-              </Link>
-              <Link
-                href="/music"
-                className="hover:underline"
-                style={{
-                  color: colors["blue"],
-                }}
-              >
-                <div className="p-4 text-center flex justify-center">
-                  <Text weight="semibold">JamHeader.RateMusic</Text>
-                </div>
-              </Link>
-            </div>
-          ) : activeJamResponse.phase == "Post-Jam Rating" ? (
-            <div
-              className="grid grid-cols-1"
-              style={{
-                backgroundColor: colors["blueDarkDark"],
-              }}
-            >
-              <Link
-                href="/games"
-                className="hover:underline"
-                style={{
-                  color: colors["blue"],
-                }}
-              >
-                <div className="p-4 text-center flex justify-center">
-                  <Text weight="semibold">Go rate Updated Games!</Text>
-                </div>
-              </Link>
-              {/* <Link
-                href="/music"
-                className="hover:underline"
-                style={{
-                  color: colors["blue"],
-                }}
-              >
-                <div className="p-4 text-center flex justify-center">
-                  <Text weight="semibold">Go rate Post-Jam Music!</Text>
-                </div>
-              </Link> */}
-            </div>
-          ) : (
-            <div
-              className="text-center rounded-b-xl"
-              style={{
-                backgroundColor: colors["blueDarkDark"],
-              }}
-            >
-              {currentPhase?.href ? (
-                <Link
-                  href={currentPhase.href}
-                  className="flex justify-center p-3 hover:underline sm:p-4"
-                >
-                  <Text weight="semibold">{currentPhase.text}</Text>
-                </Link>
-              ) : (
-                <div className="flex justify-center p-3 sm:p-4">
-                  <Text weight="semibold">{currentPhase?.text ?? ""}</Text>
-                </div>
-              )}
-            </div>
-          ))}
+        </div>
       </div>
 
-      <div
-        ref={timelineRef}
-        className="relative mx-0 mt-3 overflow-x-auto pb-2 sm:mx-4"
-        aria-label="Jam timeline"
-      >
-        <ol className="flex min-w-max snap-x gap-2">
-          {sortedEvents.map((event, index) => {
+      <div>
+        <div className="mx-auto flex w-full max-w-6xl items-start px-2 sm:px-8 md:pl-0 xl:max-w-7xl 2xl:max-w-[96em]">
+          <div className="min-w-0 flex-1 overflow-hidden sm:mr-4 md:ml-12 md:mr-8">
+            <div
+              ref={timelineRef}
+              className="jam-timeline-scrollbar w-full max-w-[58.75rem] cursor-grab select-none overflow-x-auto py-3 active:cursor-grabbing sm:py-4"
+              aria-label="Jam timeline. Drag horizontally to view more phases."
+              tabIndex={0}
+              onPointerDown={(event) => {
+                if (event.button !== 0) return;
+
+                const previousFrame = timelineDragRef.current.momentumFrame;
+                if (previousFrame !== null) cancelAnimationFrame(previousFrame);
+
+                timelineDragRef.current = {
+                  pointerId: event.pointerId,
+                  startX: event.clientX,
+                  startScrollLeft: event.currentTarget.scrollLeft,
+                  lastX: event.clientX,
+                  lastTime: performance.now(),
+                  velocity: 0,
+                  momentumFrame: null,
+                };
+                event.currentTarget.setPointerCapture(event.pointerId);
+              }}
+              onPointerMove={(event) => {
+                const drag = timelineDragRef.current;
+                if (drag.pointerId !== event.pointerId) return;
+
+                const now = performance.now();
+                const elapsed = Math.max(now - drag.lastTime, 1);
+                const movement = event.clientX - drag.lastX;
+                const instantaneousVelocity = -movement / elapsed;
+
+                event.currentTarget.scrollLeft =
+                  drag.startScrollLeft - (event.clientX - drag.startX);
+                drag.velocity =
+                  drag.velocity * 0.65 + instantaneousVelocity * 0.35;
+                drag.lastX = event.clientX;
+                drag.lastTime = now;
+              }}
+              onPointerUp={(event) => {
+                if (timelineDragRef.current.pointerId !== event.pointerId)
+                  return;
+
+                const drag = timelineDragRef.current;
+                drag.pointerId = null;
+                if (performance.now() - drag.lastTime > 80) {
+                  drag.velocity *= 0.25;
+                }
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+                startTimelineMomentum(event.currentTarget);
+              }}
+              onPointerCancel={(event) => {
+                if (timelineDragRef.current.pointerId === event.pointerId) {
+                  timelineDragRef.current.pointerId = null;
+                }
+              }}
+              style={{ touchAction: "pan-y" }}
+            >
+              <ol className="flex min-w-max gap-2">
+              {sortedEvents.map((event, index) => {
             const isActive = index === activeEventIndex;
             const eventStyle = getStyleForDateDisplay(
               index,
@@ -517,28 +586,29 @@ export default function JamHeader() {
               <li
                 ref={isActive ? activeEventRef : undefined}
                 key={event.name}
-                className="relative min-w-36 grow snap-start"
+                className="relative min-w-[112px] grow md:min-w-[120px] xl:min-w-[126px] 2xl:min-w-[150px]"
                 aria-current={isActive ? "step" : undefined}
               >
                 {index < sortedEvents.length - 1 && (
-                  <div
-                    aria-hidden="true"
-                    className="absolute left-full top-1/2 h-0.5 w-2 -translate-y-1/2"
-                    style={{
-                      backgroundColor:
-                        nextEventStyle?.borderColor ??
-                        nextEventStyle?.backgroundColor ??
-                        colors["violetDark"],
-                      opacity: eventStyle.opacity ?? 1,
-                    }}
-                  />
+                    <div
+                      aria-hidden="true"
+                      className="absolute left-full top-1/2 h-0.5 w-2 -translate-y-1/2"
+                      style={{
+                        backgroundColor:
+                          nextEventStyle?.borderColor ??
+                          nextEventStyle?.backgroundColor ??
+                          colors["violetDark"],
+                        opacity: eventStyle.opacity ?? 1,
+                      }}
+                    />
                 )}
 
                 <div
-                  className="relative z-10 flex min-h-[60px] flex-col items-center justify-center rounded-md p-2 text-center"
+                  className="relative z-10 flex min-h-[70px] flex-col items-center justify-center rounded-lg p-2 text-center shadow-md"
                   style={{
-                    color: siteTheme.colors["text"],
-                    backgroundColor: colors["mantle"] + "e6",
+                    backgroundColor: isActive
+                      ? `${colors["blueDark"]}f2`
+                      : `${colors["mantle"]}e6`,
                     ...eventStyle,
                   }}
                 >
@@ -560,9 +630,21 @@ export default function JamHeader() {
                 </div>
               </li>
             );
-          })}
-        </ol>
+              })}
+              </ol>
+            </div>
+          </div>
+          <div className="relative hidden shrink-0 flex-col gap-3 self-start pt-4 md:flex md:w-[clamp(260px,30vw,480px)]">
+            <div className="absolute bottom-[calc(100%_-_8px)] left-0 flex w-full flex-col items-center gap-2">
+              <div className="hidden md:flex xl:hidden">
+                {renderPrimaryAction()}
+              </div>
+              <SidebarButtons />
+            </div>
+            <SidebarBanner />
+          </div>
+        </div>
       </div>
-    </>
+    </section>
   );
 }

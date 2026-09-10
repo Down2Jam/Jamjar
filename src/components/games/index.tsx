@@ -175,7 +175,7 @@ function serializeMoreFiltersParam(values: Set<string>): string {
 function getGameBuildTypes(game: GameType): Set<BuildTypeFilter> {
   const buildTypes = new Set<BuildTypeFilter>();
 
-  if (game.itchEmbedUrl) {
+  if (game.playableBuildUrl || game.itchEmbedUrl) {
     buildTypes.add("Web");
   }
 
@@ -319,7 +319,11 @@ function canUseScoreSort(
 export default function Games() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { siteTheme } = useTheme();
-  const headerColor = siteTheme.type === "Light" ? "textLight" : "text";
+  const headerColor = "text";
+  const headerTextStyle =
+    siteTheme.type === "Light" ? {} : gamesHeaderTextShadow;
+  const headerIconStyle =
+    siteTheme.type === "Light" ? {} : gamesHeaderIconShadow;
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations();
@@ -1183,13 +1187,13 @@ export default function Games() {
                 name="gamepad2"
                 color={headerColor}
                 size={40}
-                style={gamesHeaderIconShadow}
+                style={headerIconStyle}
               />
               <Text
                 size="4xl"
                 color={headerColor}
                 weight="semibold"
-                style={gamesHeaderTextShadow}
+                style={headerTextStyle}
               >
                 Games.Title
               </Text>
@@ -1198,7 +1202,7 @@ export default function Games() {
               size="md"
               color={headerColor}
               align="left"
-              style={gamesHeaderTextShadow}
+              style={headerTextStyle}
             >
               Games.Description
             </Text>
@@ -1232,13 +1236,13 @@ export default function Games() {
                 name="gamepad2"
                 color={headerColor}
                 size={40}
-                style={gamesHeaderIconShadow}
+                style={headerIconStyle}
               />
               <Text
                 size="4xl"
                 color={headerColor}
                 weight="semibold"
-                style={gamesHeaderTextShadow}
+                style={headerTextStyle}
               >
                 Games.Title
               </Text>
@@ -1246,7 +1250,7 @@ export default function Games() {
                 size="xl"
                 color={headerColor}
                 className="shrink-0"
-                style={{ ...gamesHeaderTextShadow, whiteSpace: "nowrap" }}
+                style={{ ...headerTextStyle, whiteSpace: "nowrap" }}
               >
                 ({totalGames} results)
               </Text>
@@ -1255,7 +1259,7 @@ export default function Games() {
               size="md"
               color={headerColor}
               align="left"
-              style={gamesHeaderTextShadow}
+              style={headerTextStyle}
             >
               Games.Description
             </Text>
@@ -1263,7 +1267,7 @@ export default function Games() {
           <button
             type="button"
             className="col-start-1 row-start-2 mx-1 mt-1 inline-flex w-fit items-center gap-2 cursor-pointer border-0 bg-transparent p-0"
-            style={gamesHeaderTextShadow}
+            style={headerTextStyle}
             onClick={() => setAdvancedSearchOpen((open) => !open)}
           >
             <Icon name="settings2" color={headerColor} size={16} />

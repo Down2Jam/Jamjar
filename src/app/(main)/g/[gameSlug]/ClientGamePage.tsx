@@ -61,6 +61,7 @@ import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { BASE_URL } from "@/requests/config";
+import { getPlayableBuildUrl } from "@/requests/config";
 import { Popover } from "bioloom-ui";
 import { Modal } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
@@ -358,6 +359,7 @@ export default function ClientGamePage({
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
   const [isItchEmbedActive, setIsItchEmbedActive] = useState(false);
+  const playableEmbedRef = useRef<HTMLIFrameElement>(null);
   const trailerFrameRef = useRef<HTMLIFrameElement | null>(null);
   const requestedPageVersion = searchParams.get("pageVersion");
 
@@ -682,13 +684,22 @@ export default function ClientGamePage({
   };
 
   const itchEmbedUrl = toCanonicalItchEmbedUrl(displayGame?.itchEmbedUrl);
+  const playableBuildUrl = displayGame?.playableBuildUrl
+    ? getPlayableBuildUrl(displayGame.playableBuildUrl)
+    : null;
+  const playableEmbedUrl = playableBuildUrl || itchEmbedUrl;
   const itchEmbedAspectRatio = normalizeItchEmbedAspectRatio(
     displayGame?.itchEmbedAspectRatio,
   );
+  const playableBuildAspectRatio = normalizeItchEmbedAspectRatio(
+    displayGame?.playableBuildAspectRatio ?? displayGame?.itchEmbedAspectRatio,
+  );
+  const playableBuildShowFullscreenButton =
+    displayGame?.playableBuildShowFullscreenButton ?? true;
 
   useEffect(() => {
     setIsItchEmbedActive(false);
-  }, [itchEmbedUrl]);
+  }, [playableEmbedUrl]);
 
   const trailerId = extractYouTubeId(displayGame?.trailerUrl);
   const screenshots = (displayGame?.screenshots ?? []).filter(Boolean);
@@ -943,22 +954,31 @@ export default function ClientGamePage({
                 </Chip>
               </Hstack>
             </div>
-            {itchEmbedUrl && (
+            {playableEmbedUrl && (
               <div
                 className="w-full rounded-xl overflow-hidden relative"
                 style={{
-                  aspectRatio: itchEmbedAspectRatio,
+                  aspectRatio: playableBuildUrl
+                    ? playableBuildAspectRatio
+                    : itchEmbedAspectRatio,
                   backgroundColor: colors["base"],
                   border: `1px solid ${colors["crust"]}`,
                 }}
               >
                 {isItchEmbedActive ? (
                   <iframe
-                    key={itchEmbedUrl}
-                    src={itchEmbedUrl}
+                    ref={playableEmbedRef}
+                    key={playableEmbedUrl}
+                    src={playableEmbedUrl}
                     title={`${displayGame.name} playable embed`}
                     className="w-full h-full"
                     style={{ border: 0 }}
+                    sandbox={
+                      playableBuildUrl
+                        ? "allow-scripts allow-pointer-lock"
+                        : undefined
+                    }
+                    allow="fullscreen; gamepad"
                     allowFullScreen
                   />
                 ) : (
@@ -987,9 +1007,33 @@ export default function ClientGamePage({
                     </span>
                   </button>
                 )}
+                {playableBuildUrl &&
+                  playableBuildShowFullscreenButton &&
+                  isItchEmbedActive && (
+                    <button
+                      type="button"
+                      aria-label="Open game in fullscreen"
+                      title="Fullscreen"
+                      className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
+                      style={{
+                        backgroundColor: colors["mantle"],
+                        color: colors["text"],
+                        border: `1px solid ${colors["crust"]}`,
+                      }}
+                      onClick={() => {
+                        void playableEmbedRef.current
+                          ?.requestFullscreen()
+                          .catch(() => {
+                            addToast({ title: "Fullscreen is unavailable." });
+                          });
+                      }}
+                    >
+                      <Icon name="maximize2" color="text" />
+                    </button>
+                  )}
               </div>
             )}
-            {!itchEmbedUrl && sortedDownloadLinks.length > 0 && (
+            {!playableEmbedUrl && sortedDownloadLinks.length > 0 && (
               <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
                 {sortedDownloadLinks.map((downloadLink) => {
                   const icon = getPlatformIcon(downloadLink.platform);

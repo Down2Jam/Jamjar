@@ -47,6 +47,8 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
   const [loadingResults, setLoadingResults] = useState<boolean>(false);
   const t = useTranslations("Navbar");
   const { siteTheme, colors } = useTheme();
+  const searchLabel =
+    t("Search") === "Search" ? "Search games, users, or posts..." : t("Search");
 
   const shortcuts = useShortcut();
   const registerShortcut = shortcuts?.registerShortcut;
@@ -122,7 +124,11 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
       <NavbarItem>
         <Button
           size={compact ? "md" : "sm"}
-          className={compact ? undefined : "text-xs !duration-500"}
+          className={
+            compact
+              ? undefined
+              : "w-[330px] justify-start text-xs !duration-500"
+          }
           variant={compact ? "ghost" : "standard"}
           icon={compact ? "search" : undefined}
           leftSlot={compact ? undefined : <Search size={16} />}
@@ -130,7 +136,7 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
           aria-label={compact ? t("Search") : undefined}
           rightSlot={!compact ? (
             <Kbd
-              className="text-xs !duration-500 border-1 shadow-md"
+              className="ml-auto border-1 text-xs shadow-md !duration-500"
               style={{
                 backgroundColor: colors["base"],
                 borderColor: colors["base"],
@@ -142,9 +148,15 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
           ) : undefined}
           style={{
             color: colors["textFaded"],
+            ...(!compact
+              ? {
+                  backgroundColor: `color-mix(in srgb, ${colors["base"]} 58%, ${colors["mantle"]})`,
+                  borderColor: colors["base"],
+                }
+              : {}),
           }}
         >
-          {compact ? undefined : t("Search")}
+          {compact ? undefined : searchLabel}
         </Button>
       </NavbarItem>
       <Modal
@@ -167,7 +179,7 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
                 <Vstack align="stretch" gap={2}>
                   <Input
                     ref={inputRef}
-                    placeholder={t("Search")}
+                    placeholder={searchLabel}
                     value={search}
                     onValueChange={setSearch}
                     rightIcon={

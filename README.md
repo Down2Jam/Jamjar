@@ -35,7 +35,10 @@ Useful environment variables:
 PORT=3000
 PUBLIC_ORIGIN=https://d2jam.com
 API_BASE_URL=https://d2jam.com/api/v1
+VITE_GAME_BUILDS_ORIGIN=https://play.d2jam.com
 ```
+
+In production, `VITE_GAME_BUILDS_ORIGIN` should be a dedicated cookieless origin that proxies `/game-builds/*` to Jamcore. Keep it unset for local same-origin development.
 
 ## Docker
 

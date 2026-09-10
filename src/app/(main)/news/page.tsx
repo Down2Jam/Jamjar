@@ -5,9 +5,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { Button } from "bioloom-ui";
 
 export default function NewsPage() {
-  const { colors, siteTheme } = useTheme();
-  const backgroundTextColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const { colors } = useTheme();
+  const backgroundTextColor = colors["text"];
 
   usePageMetadata({
     title: "News",

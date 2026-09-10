@@ -34,9 +34,8 @@ import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
 
 export default function NewsArticle() {
-  const { colors, siteTheme } = useTheme();
-  const backgroundTextColor =
-    siteTheme.type === "Light" ? colors["textLight"] : colors["text"];
+  const { colors } = useTheme();
+  const backgroundTextColor = colors["text"];
   const { slug = "" } = useParams();
   const { data: user } = useSelf();
   const { data: post, isLoading, isError } = usePost(String(slug), user?.slug);

@@ -4,4 +4,5 @@ export interface SiteThemeType {
   type: "Light" | "Dark";
   colors: Record<string, string>;
   hidden?: boolean;
+  usageCount?: number;
 }

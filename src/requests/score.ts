@@ -4,7 +4,7 @@ import { BASE_URL } from "./config";
 export async function postScore(
   value: number,
   evidence: string,
-  leaderboardId: number
+  leaderboardId: number,
 ) {
   return fetch(`${BASE_URL}/score`, {
     body: JSON.stringify({
@@ -23,9 +23,7 @@ export async function postScore(
 
 export async function deleteScore(scoreId: number) {
   return fetch(`${BASE_URL}/score`, {
-    body: JSON.stringify({
-      scoreId,
-    }),
+    body: JSON.stringify({ scoreId }),
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
@@ -33,4 +31,8 @@ export async function deleteScore(scoreId: number) {
     },
     credentials: "include",
   });
+}
+
+export function getRecentScores() {
+  return fetch(`${BASE_URL}/scores/recent`);
 }

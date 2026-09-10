@@ -216,9 +216,9 @@ function RadioLandingChoice({
       <div className="absolute inset-0 bg-black/70 transition-colors duration-300 group-hover:bg-black/55" />
       <div className="relative z-10 flex h-full w-full flex-col justify-end gap-3 p-8 md:p-12">
         <Text size="5xl">{title}</Text>
-        <Text color="textFaded">{description}</Text>
+        <Text color="textLightFaded">{description}</Text>
         {state?.current?.track && (
-          <Text size="sm" color="textFaded">
+          <Text size="sm" color="textLightFaded">
             Playing {state.current.track.name} by{" "}
             {state.current.track.composer?.name ?? "Unknown composer"}
           </Text>
@@ -1006,7 +1006,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   if (loading) {
     return (
       <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-[url('/images/sitebg.webp')] bg-cover bg-center opacity-20" />
+        <div className="absolute inset-0 bg-[url('/images/mountain_beautypath_render.png')] bg-cover bg-center opacity-20" />
         <div className="absolute inset-0 bg-black/75" />
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/40" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">

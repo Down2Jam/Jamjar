@@ -324,7 +324,7 @@ export default function Posts() {
   return (
     <div className="flex flex-col">
       {!loading && stickyPosts && stickyPosts.length > 0 && (
-        <Vstack align="stretch" gap={2} className="px-0 pt-4 sm:p-4">
+        <Vstack align="stretch" gap={2} className="px-0 sm:px-4 sm:pb-4">
           {stickyPosts
             .filter((item): item is PostType => !isGameReleaseFeedItem(item))
             .map((post) => (
@@ -569,7 +569,19 @@ export default function Posts() {
             </Button>
           )}
         </div>
-        <div className="shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
+          {user && (
+            <Button
+              icon="plus"
+              className="max-sm:!gap-1 max-sm:!px-3"
+              onClick={() => setCreatePostOpen(true)}
+              onPointerEnter={() => void preloadCreatePostDependencies()}
+              onFocus={() => void preloadCreatePostDependencies()}
+              aria-haspopup="dialog"
+            >
+              Create post
+            </Button>
+          )}
           <Dropdown
             freezePositionWhileOpen
             selectedValue={style}
@@ -603,34 +615,6 @@ export default function Posts() {
           </Dropdown>
         </div>
       </div>
-
-      {user && (
-        <button
-          type="button"
-          onClick={() => setCreatePostOpen(true)}
-          onPointerEnter={() => void preloadCreatePostDependencies()}
-          onFocus={() => void preloadCreatePostDependencies()}
-          className="create-post-prompt mx-0 mt-3 flex min-h-20 w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed px-4 py-3 text-center focus-visible:outline-none sm:mx-4 sm:mt-4 sm:w-[calc(100%-2rem)]"
-          style={{
-            color: colors.text,
-            "--create-post-border": `color-mix(in srgb, ${colors.text} 18%, transparent)`,
-            "--create-post-background": `color-mix(in srgb, ${colors.mantle} 28%, transparent)`,
-            "--create-post-background-hover": `color-mix(in srgb, ${colors.mantle} 58%, transparent)`,
-          } as CSSProperties}
-          aria-haspopup="dialog"
-        >
-          <span className="flex items-center justify-center gap-2 font-semibold">
-            <span className="create-post-prompt-icon inline-flex items-center justify-center">
-              <Icon name="plus" size={19} />
-            </span>
-            Create post
-          </span>
-          <span className="text-xs" style={{ color: colors.textFaded }}>
-            Discuss something, share progress, talk about a cool game you found,
-            write up a post-mortem, or any other topic you want to post about!
-          </span>
-        </button>
-      )}
 
       {loading ? (
         <PostListSkeleton />
@@ -817,40 +801,38 @@ export default function Posts() {
           </div>
         </Drawer>
       )}
-      {createPostOpen && (
-        <Modal
-          isOpen={createPostOpen}
-          onOpenChange={(nextOpen?: boolean) =>
-            setCreatePostOpen(Boolean(nextOpen))
-          }
-          backdrop="opaque"
-          size="2xl"
-        >
-          <ModalContent className="overflow-visible">
-            {(onClose) => (
-              <>
-                <ModalHeader>
-                  <Text size="xl">Create post</Text>
-                  <Text size="sm" color="textFaded">
-                    Submit a post to the forum
-                  </Text>
-                </ModalHeader>
-                <ModalBody>
-                  <CreatePostPage
-                    embedded
-                    onCreated={async () => {
-                      onClose();
-                      await queryClient.invalidateQueries({
-                        queryKey: queryKeys.post.all,
-                      });
-                    }}
-                  />
-                </ModalBody>
-              </>
-            )}
-          </ModalContent>
-        </Modal>
-      )}
+      <Modal
+        isOpen={createPostOpen}
+        onOpenChange={(nextOpen?: boolean) =>
+          setCreatePostOpen(Boolean(nextOpen))
+        }
+        backdrop="opaque"
+        size="2xl"
+      >
+        <ModalContent className="overflow-visible">
+          {(onClose) => (
+            <>
+              <ModalHeader>
+                <Text size="xl">Create post</Text>
+                <Text size="sm" color="textFaded">
+                  Submit a post to the forum
+                </Text>
+              </ModalHeader>
+              <ModalBody>
+                <CreatePostPage
+                  embedded
+                  onCreated={async () => {
+                    onClose();
+                    await queryClient.invalidateQueries({
+                      queryKey: queryKeys.post.all,
+                    });
+                  }}
+                />
+              </ModalBody>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }

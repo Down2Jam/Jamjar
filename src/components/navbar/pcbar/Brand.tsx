@@ -19,7 +19,7 @@ export default function Brand({ userLoggedIn }: { userLoggedIn: boolean }) {
           href={userLoggedIn ? "/home" : "/"}
           className={`duration-500 ease-in-out transition-all transform flex items-center gap-2 text-white`}
         >
-          <Logo width={40} />
+          <Logo width={48} />
           <Text gradient={{ from: "blue", to: "pink" }} size="xl">
             Navbar.Brand.Name
           </Text>
