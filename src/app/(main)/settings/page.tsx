@@ -24,6 +24,7 @@ import { useEmojis } from "@/providers/useEmojis";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 import { readArray, readItem, unwrapArray } from "@/requests/helpers";
 import { BASE_URL } from "@/requests/config";
+import GameTokensSection from "@/components/settings/GameTokensSection";
 
 const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const MIN_EMOTE_PREFIX_LENGTH = 4;
@@ -557,6 +558,8 @@ export default function UserPage() {
             </Vstack>
           </Card>
         </Stack>
+
+        <GameTokensSection />
 
         <Card>
           <Vstack align="start" className="gap-3">
