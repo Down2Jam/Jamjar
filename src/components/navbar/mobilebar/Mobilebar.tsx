@@ -18,7 +18,7 @@ import { useUnreadNews } from "@/components/news/useUnreadNews";
 import SearchBar from "../pcbar/SearchBar";
 import { API_DOCS_URL } from "@/requests/config";
 import { useJam } from "@/hooks/useJam";
-import { isPostJamPhase } from "@/helpers/jamDisplay";
+import { isPostJamPhase, isThemeVotingOpen } from "@/helpers/jamDisplay";
 import { joinJam } from "@/helpers/jam";
 import { useQueryClient } from "@tanstack/react-query";
 import { GameType } from "@/types/GameType";
@@ -164,7 +164,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             Theme Elimination
           </Dropdown.Item>
         )}
-        {jamPhase === "Voting" && (
+        {isThemeVotingOpen(jamPhase, jam) && (
           <Dropdown.Item
             value="theme-voting"
             icon="vote"

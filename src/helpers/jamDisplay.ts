@@ -14,6 +14,21 @@ export function isPreJamPhase(phase?: JamPhase | null) {
   );
 }
 
+const THEME_VOTING_CUTOFF_MS = 24 * 60 * 60 * 1000;
+
+export function isThemeVotingOpen(
+  phase?: JamPhase | null,
+  jam?: JamType | null,
+  now = new Date(),
+) {
+  if (phase !== "Voting" || !jam) return false;
+
+  return (
+    new Date(jam.startTime).getTime() - now.getTime() >
+    THEME_VOTING_CUTOFF_MS
+  );
+}
+
 export function getDisplayJamForPublicView(
   response?: ActiveJamResponse | null,
 ): JamType | null {

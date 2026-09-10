@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/skeletons";
 import SidebarBanner from "@/components/sidebar/SidebarBanner";
 import SidebarButtons from "@/components/sidebar/SidebarButtons";
 import Logo from "@/components/logo";
+import { isThemeVotingOpen } from "@/helpers/jamDisplay";
 
 export default function JamHeader() {
   const { data: activeJamResponse, isLoading } = useCurrentJam();
@@ -135,13 +136,7 @@ export default function JamHeader() {
         href: "/theme-elimination",
       };
     if (jamPhase === "Voting") {
-      if (
-        activeJamResponse &&
-        activeJamResponse.jam &&
-        new Date(activeJamResponse.jam.startTime).getTime() -
-          new Date().getTime() <=
-          60 * 60 * 1000 * 24
-      )
+      if (!isThemeVotingOpen(jamPhase, activeJamResponse?.jam, currentDate))
         return {
           text: "JamHeader.JamSoon",
         };
@@ -392,9 +387,17 @@ export default function JamHeader() {
         ? `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate, false)}`
         : `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate)}`
       : "Dates TBA";
+  const themeVotingOpen = isThemeVotingOpen(
+    activeJamResponse?.phase,
+    activeJamResponse?.jam,
+    currentDate,
+  );
+  const isVotingPhase = activeJamResponse?.phase === "Voting";
 
   const primaryAction = (() => {
     if (!activeJamResponse?.jam) return { href: "/about", text: "About Down2Jam" };
+    if (activeJamResponse.phase === "Voting" && !themeVotingOpen)
+      return { href: "/about", text: "JamHeader.JamSoon" };
     if (activeJamResponse.phase === "Rating")
       return { href: "/games", text: "JamHeader.RateGames" };
     if (activeJamResponse.phase === "Post-Jam Rating")
@@ -408,7 +411,7 @@ export default function JamHeader() {
     <Link
       href={primaryAction.href}
       className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-        activeJamResponse?.phase === "Voting"
+        isVotingPhase
           ? "min-h-10 py-2 pl-10 pr-3 text-[11px] sm:text-xs"
           : "min-h-10 px-4 py-2 text-sm sm:text-base"
       } ${className}`}
@@ -419,15 +422,21 @@ export default function JamHeader() {
         outlineColor: colors["blue"],
       }}
     >
-      {activeJamResponse?.phase === "Voting" && (
+      {isVotingPhase && (
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden"
         >
           <img
-            src="/images/voted.png"
+            src={
+              themeVotingOpen
+                ? "/images/voted.png"
+                : "/images/theme-reveal.gif"
+            }
             alt=""
-            className="h-full w-full -scale-x-100 object-contain object-right"
+            className={`h-full w-full object-contain object-right ${
+              themeVotingOpen ? "-scale-x-100" : ""
+            }`}
           />
         </span>
       )}
@@ -438,12 +447,14 @@ export default function JamHeader() {
       >
         {primaryAction.text}
       </Text>
-      <ArrowRight
-        size={activeJamResponse?.phase === "Voting" ? 15 : 17}
-        aria-hidden="true"
-        className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5"
-        style={{ color: "#fff" }}
-      />
+      {(activeJamResponse?.phase !== "Voting" || themeVotingOpen) && (
+        <ArrowRight
+          size={themeVotingOpen ? 15 : 17}
+          aria-hidden="true"
+          className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5"
+          style={{ color: "#fff" }}
+        />
+      )}
     </Link>
   );
 
@@ -492,7 +503,7 @@ export default function JamHeader() {
             </div>
             {renderPrimaryAction(
               `md:hidden xl:inline-flex xl:mr-8 ${
-                activeJamResponse?.phase === "Voting"
+                isVotingPhase
                   ? "xl:translate-y-4"
                   : ""
               }`,

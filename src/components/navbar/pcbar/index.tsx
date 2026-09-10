@@ -33,7 +33,7 @@ import {
   useMessageCounts,
 } from "@/hooks/queries";
 import { useQueryClient } from "@tanstack/react-query";
-import { isPostJamPhase } from "@/helpers/jamDisplay";
+import { isPostJamPhase, isThemeVotingOpen } from "@/helpers/jamDisplay";
 import { API_DOCS_URL } from "@/requests/config";
 import { AudioLines } from "lucide-react";
 import { useUnreadNews } from "@/components/news/useUnreadNews";
@@ -520,7 +520,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
             />
           </div>
         )}
-        {jamPhase == "Voting" && isLgUp && hiddenColoredActionCount < 2 && (
+        {isThemeVotingOpen(jamPhase, jam) &&
+          isLgUp &&
+          hiddenColoredActionCount < 2 && (
           <div className="flex shrink-0" data-navbar-colored-priority="1">
             <NavbarButton
               icon="vote"
@@ -808,7 +810,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                       {t("Navbar.ThemeElimination.Title")}
                     </Dropdown.Item>
                   )}
-                  {hiddenColoredActionCount >= 2 && jamPhase == "Voting" && (
+                  {hiddenColoredActionCount >= 2 &&
+                    isThemeVotingOpen(jamPhase, jam) && (
                     <Dropdown.Item
                       value="theme-voting"
                       icon="vote"
