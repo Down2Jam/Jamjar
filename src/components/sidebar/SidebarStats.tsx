@@ -6,7 +6,7 @@ import { Hstack, Vstack } from "bioloom-ui";
 import Timers from "../timers";
 import { Icon } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { useCurrentJam, useRatingCategories, useSelf } from "@/hooks/queries";
+import { useCurrentJam, useRatingCategories, useSelf, useTheme } from "@/hooks/queries";
 import { SidebarCardSkeleton } from "@/components/skeletons";
 import { isPostJamPhase, isPreJamPhase } from "@/helpers/jamDisplay";
 import { hasCookie } from "@/helpers/cookie";
@@ -20,6 +20,7 @@ export default function SidebarStats() {
   const iconSize = isXlUp ? 24 : width >= 1024 ? 20 : 18;
   const buttonSize = isXlUp ? "md" : "sm";
   const { data: jamResponse, isLoading: jamLoading } = useCurrentJam();
+  const { data: theme } = useTheme();
   const { data: ratingCategories = [], isLoading: categoriesLoading } =
     useRatingCategories(true);
   const hasToken = hasCookie("token");
@@ -67,6 +68,15 @@ export default function SidebarStats() {
   return (
     <Card>
       <Vstack>
+        {theme?.suggestion && (
+          <Hstack>
+            <Icon name="image" color="textFaded" size={iconSize} />
+            <Text size={textSize}>Theme</Text>
+            <Text size={textSize} color="blue" className="min-w-0 break-words">
+              {theme.suggestion}
+            </Text>
+          </Hstack>
+        )}
         <Timers size={textSize} />
         <Hstack>
           <Icon name="users" color="textFaded" size={iconSize} />
