@@ -8,7 +8,8 @@ import {
   UserHoverPreview,
 } from "@/components/hover-previews";
 import { Skeleton } from "@/components/skeletons";
-import { useRecentAchievements } from "@/hooks/queries";
+import { isJamPhase, isPostJamPhase } from "@/helpers/listingPageVersion";
+import { useCurrentJam, useRecentAchievements } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { AchievementRarityTier } from "@/types/RecentAchievementType";
 import { formatDistance } from "date-fns";
@@ -28,14 +29,20 @@ function gameHref(slug: string, pageVersion: "JAM" | "POST_JAM") {
 }
 
 export default function SidebarAchievements() {
+  const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
+  const jamId =
+    activeJam?.jam &&
+    (isJamPhase(activeJam.phase) || isPostJamPhase(activeJam.phase))
+      ? activeJam.jam.id
+      : undefined;
   const {
     data: achievements = [],
     isError,
     isLoading,
-  } = useRecentAchievements();
+  } = useRecentAchievements(jamId);
   const { colors } = useTheme();
 
-  if (isLoading) {
+  if (jamLoading || isLoading) {
     return (
       <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-56" />
@@ -47,6 +54,8 @@ export default function SidebarAchievements() {
       </div>
     );
   }
+
+  if (!isError && achievements.length === 0) return null;
 
   return (
     <section className="mt-12 flex flex-col items-center gap-2">
@@ -65,18 +74,6 @@ export default function SidebarAchievements() {
             }}
           >
             Recent achievements couldn&apos;t be loaded.
-          </div>
-        )}
-        {!isError && achievements.length === 0 && (
-          <div
-            className="rounded-xl border p-4 text-center text-sm"
-            style={{
-              backgroundColor: colors.mantle,
-              borderColor: colors.crust,
-              color: colors.textFaded,
-            }}
-          >
-            No achievements have been earned yet.
           </div>
         )}
         {achievements.map((entry) => {

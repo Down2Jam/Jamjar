@@ -16,7 +16,7 @@ import {
   newsTagLabel,
 } from "./news";
 import { useTheme } from "@/providers/useSiteTheme";
-import { useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 export default function NewsArticlePreview({
   post,
@@ -26,7 +26,6 @@ export default function NewsArticlePreview({
   featured?: boolean;
 }) {
   const { colors } = useTheme();
-  const [previewImageUnavailable, setPreviewImageUnavailable] = useState(false);
   const excerpt = newsExcerpt(post.content);
   const newsTags = post.tags.filter(isNewsTag);
   const commentCount = newsCommentCount(post.comments);
@@ -38,11 +37,7 @@ export default function NewsArticlePreview({
   return (
     <article
       className={`post-card-shell overflow-visible border ${
-        featured && !previewImageUnavailable
-          ? "grid lg:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]"
-          : featured
-            ? "block"
-            : "flex h-full flex-col p-5"
+        featured ? "block" : "flex h-full flex-col p-5"
       }`}
       style={{
         borderColor: `color-mix(in srgb, ${colors["text"]} 5%, transparent)`,
@@ -136,20 +131,6 @@ export default function NewsArticlePreview({
         </div>
       </div>
       </div>
-      {featured && !previewImageUnavailable && (
-        <Link
-          href={newsPostPath(post.slug)}
-          className="min-h-56 overflow-hidden rounded-b-md lg:min-h-full lg:rounded-b-none lg:rounded-r-md"
-          aria-label={`Read ${post.title}`}
-        >
-          <img
-            src={`/og/news/${encodeURIComponent(post.slug)}.png`}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setPreviewImageUnavailable(true)}
-          />
-        </Link>
-      )}
     </article>
   );
 }

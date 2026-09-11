@@ -347,9 +347,9 @@ export default function JamHeader() {
   if (isLoading) {
     return (
       <div className="relative left-1/2 -mt-4 w-[calc(100%+1rem)] -translate-x-1/2 overflow-hidden sm:w-[calc(100%+4rem)]">
-        <div className="mx-auto flex min-h-48 w-full max-w-6xl items-center gap-6 px-4 py-5 sm:px-8 xl:max-w-7xl 2xl:max-w-[96em]">
-          <Skeleton className="hidden h-36 w-36 translate-y-4 shrink-0 rounded-2xl sm:block" />
-          <div className="flex w-full max-w-xl translate-y-7 flex-col gap-4">
+        <div className="mx-auto flex min-h-48 w-full max-w-6xl flex-col items-center gap-4 px-4 py-5 sm:px-8 md:flex-row md:gap-6 xl:max-w-7xl 2xl:max-w-[96em]">
+          <Skeleton className="h-24 w-24 shrink-0 rounded-2xl md:h-36 md:w-36 md:translate-y-4" />
+          <div className="flex w-full max-w-xl flex-col items-center gap-4 md:translate-y-7 md:items-start">
             <Skeleton className="h-10 w-64" />
             <Skeleton className="h-5 w-52" />
             <Skeleton className="h-11 w-44 rounded-lg" />
@@ -398,6 +398,8 @@ export default function JamHeader() {
     if (!activeJamResponse?.jam) return { href: "/about", text: "About Down2Jam" };
     if (activeJamResponse.phase === "Voting" && !themeVotingOpen)
       return { href: "/about", text: "JamHeader.JamSoon" };
+    if (activeJamResponse.phase === "Jamming")
+      return { href: "/radio", text: "Listen to the Down2Jam Radio" };
     if (activeJamResponse.phase === "Rating")
       return { href: "/games", text: "JamHeader.RateGames" };
     if (activeJamResponse.phase === "Post-Jam Rating")
@@ -407,12 +409,18 @@ export default function JamHeader() {
       : { href: "/about", text: "Explore the jam" };
   })();
 
+  const hasPrimaryActionImage =
+    activeJamResponse?.phase === "Voting" ||
+    activeJamResponse?.phase === "Jamming";
+
   const renderPrimaryAction = (className = "") => (
     <Link
       href={primaryAction.href}
       className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-        isVotingPhase
-          ? "min-h-10 py-2 pl-10 pr-3 text-[11px] sm:text-xs"
+        hasPrimaryActionImage
+          ? `min-h-10 py-2 pr-3 text-[11px] sm:text-xs ${
+              activeJamResponse?.phase === "Jamming" ? "pl-12" : "pl-10"
+            }`
           : "min-h-10 px-4 py-2 text-sm sm:text-base"
       } ${className}`}
       style={{
@@ -422,16 +430,18 @@ export default function JamHeader() {
         outlineColor: colors["blue"],
       }}
     >
-      {isVotingPhase && (
+      {hasPrimaryActionImage && (
         <span
           aria-hidden="true"
           className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden"
         >
           <img
             src={
-              themeVotingOpen
-                ? "/images/voted.png"
-                : "/images/theme-reveal.gif"
+              activeJamResponse?.phase === "Jamming"
+                ? "/images/down2jam-radio.gif"
+                : themeVotingOpen
+                  ? "/images/voted.png"
+                  : "/images/theme-reveal.gif"
             }
             alt=""
             className={`h-full w-full object-contain object-right ${
@@ -441,7 +451,7 @@ export default function JamHeader() {
         </span>
       )}
       <Text
-        size={activeJamResponse?.phase === "Voting" ? "xs" : "md"}
+        size={hasPrimaryActionImage ? "xs" : "md"}
         weight="semibold"
         className="relative z-10"
       >
@@ -449,7 +459,7 @@ export default function JamHeader() {
       </Text>
       {(activeJamResponse?.phase !== "Voting" || themeVotingOpen) && (
         <ArrowRight
-          size={themeVotingOpen ? 15 : 17}
+          size={hasPrimaryActionImage ? 15 : 17}
           aria-hidden="true"
           className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5"
           style={{ color: "#fff" }}
@@ -466,16 +476,16 @@ export default function JamHeader() {
       }}
       aria-labelledby="home-jam-title"
     >
-      <div className="mx-auto flex min-h-48 w-full max-w-6xl items-center gap-5 px-4 py-5 sm:gap-8 sm:px-8 md:pr-[calc(clamp(260px,30vw,480px)_+_32px)] xl:max-w-7xl 2xl:max-w-[96em]">
+      <div className="mx-auto flex min-h-48 w-full max-w-6xl flex-col items-center justify-center gap-3 px-4 py-5 text-center sm:px-8 md:flex-row md:justify-start md:gap-8 md:pr-[calc(clamp(260px,30vw,480px)_+_32px)] md:text-left xl:max-w-7xl 2xl:max-w-[96em]">
         <Logo
           width={160}
-          className="hidden h-36 w-36 translate-y-4 shrink-0 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] sm:block lg:h-40 lg:w-40"
+          className="h-24 w-24 shrink-0 object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.55)] md:h-36 md:w-36 md:translate-y-4 lg:h-40 lg:w-40"
         />
 
-        <div className="min-w-0 flex-1 translate-y-7">
+        <div className="flex min-w-0 flex-1 flex-col items-center md:translate-y-7 md:items-start">
           <h1
             id="home-jam-title"
-            className="text-3xl font-black tracking-tight drop-shadow-lg sm:text-4xl"
+            className="text-3xl font-black tracking-tight drop-shadow-lg md:text-4xl"
             style={{
               color: colors["text"],
             }}
@@ -483,7 +493,7 @@ export default function JamHeader() {
             {displayJam?.name ?? "Down2Jam"}
           </h1>
           <p
-            className="mt-1 text-base font-medium sm:text-lg"
+            className="mt-1 text-base font-medium md:text-lg"
             style={{
               color: colors["text"],
             }}
@@ -491,9 +501,9 @@ export default function JamHeader() {
             The community-centered jam
           </p>
 
-          <div className="mt-0 flex flex-wrap items-center justify-between gap-3 sm:gap-4">
+          <div className="mt-3 flex flex-col items-center gap-3 md:items-start md:gap-4 xl:w-full xl:flex-row xl:justify-between">
             <div
-              className="flex items-center gap-2 text-sm font-semibold sm:text-base"
+              className="flex items-center gap-2 text-sm font-semibold md:text-base"
               style={{
                 color: colors["text"],
               }}

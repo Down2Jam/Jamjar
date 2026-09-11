@@ -7,11 +7,11 @@ import type { RecentAchievementType } from "@/types/RecentAchievementType";
 import { unwrapArray } from "./helpers";
 import { queryKeys } from "./queryKeys";
 
-export function useRecentAchievements() {
+export function useRecentAchievements(jamId?: number) {
   return useQuery<RecentAchievementType[]>({
-    queryKey: queryKeys.achievement.recent(),
+    queryKey: queryKeys.achievement.recent(jamId),
     queryFn: async () => {
-      const response = await getRecentAchievements();
+      const response = await getRecentAchievements(jamId);
       if (!response.ok) throw new Error("Failed to load recent achievements");
       return unwrapArray<RecentAchievementType>(await response.json());
     },

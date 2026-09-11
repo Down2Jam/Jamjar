@@ -391,8 +391,9 @@ export async function getRandomGame(includeExternal = true) {
   );
 }
 
-export async function getFeaturedGameVideos(limit = 20) {
+export async function getFeaturedGameVideos(limit = 20, jamId?: number) {
   const params = new URLSearchParams({ limit: String(limit) });
+  if (jamId !== undefined) params.set("jamId", String(jamId));
   return fetch(`${BASE_URL}/games/featured-videos?${params.toString()}`);
 }
 

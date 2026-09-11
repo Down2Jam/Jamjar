@@ -16,6 +16,7 @@ export default function SidebarNextJam() {
   const { width, isXlUp } = useBreakpoint();
   const textSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
   const iconSize = isXlUp ? 24 : width >= 1024 ? 20 : 18;
+  const buttonSize = isXlUp ? "md" : "sm";
   const { data: activeJamResponse, isLoading: jamLoading } = useCurrentJam();
   const { data: ratingCategories = [], isLoading: categoriesLoading } =
     useRatingCategories(true);
@@ -106,13 +107,14 @@ export default function SidebarNextJam() {
         ) : null}
         <Hstack wrap className="pt-2">
           {!user ? (
-            <Button href="/signup" icon="login" color="green">
+            <Button href="/signup" icon="login" color="green" size={buttonSize}>
               Join Jam
             </Button>
           ) : !hasJoinedNextJam ? (
             <Button
               icon="calendarplus"
               color="green"
+              size={buttonSize}
               onClick={async () => {
                 if (await joinJam(nextJam.id)) {
                   setJoinedOverride(true);
@@ -126,15 +128,15 @@ export default function SidebarNextJam() {
               Join Jam
             </Button>
           ) : hasTeamInNextJam ? (
-            <Button href="/team" icon="users" color="green">
+            <Button href="/team" icon="users" color="green" size={buttonSize}>
               My Team
             </Button>
           ) : (
-            <Button href="/team-finder" icon="users" color="green">
+            <Button href="/team-finder" icon="users" color="green" size={buttonSize}>
               Team Finder
             </Button>
           )}
-          <Button href="/about" icon="info">
+          <Button href="/about" icon="info" size={buttonSize}>
             About
           </Button>
         </Hstack>

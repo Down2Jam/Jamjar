@@ -272,6 +272,7 @@ const GAME_ICONS: Record<string, GameIconDefinition> = {
   gameassets: { icon: GiCargoCrate, color: "#d97706" },
   gamedesign: { icon: GiPencilRuler, color: "#f59e0b" },
   gamedev: { icon: GiGamepad, color: "#16a34a" },
+  gamejam: { icon: GiHourglass, color: "#f59e0b" },
   screenshotsaturday: { icon: GiPhotoCamera, color: "#d946ef" },
   art: { icon: GiPalette, color: "#ec4899" },
   digitalart: { icon: GiPencilBrush, color: "#0891b2" },

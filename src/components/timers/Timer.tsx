@@ -47,18 +47,26 @@ export default function Timer({
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
+    const parts: string[] = [];
 
-    return `${days != 0 ? `${days} day${days == 1 ? "" : "s"} ` : ""}${
-      hours != 0 ? `${hours} hour${hours == 1 ? "" : "s"} ` : ""
-    }${
-      hours == 0 || days == 0
-        ? `${minutes} minute${minutes == 1 ? "" : "s"} `
-        : ""
-    }${
-      days == 0 && (hours == 0 || minutes == 0)
-        ? `${seconds} second${seconds == 1 ? "" : "s"}`
-        : ""
-    }${reverse ? " ago" : ""}`;
+    if (days !== 0) {
+      parts.push(`${days} day${days === 1 ? "" : "s"}`);
+      if (hours !== 0) {
+        parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+      } else if (minutes !== 0) {
+        parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+      }
+    } else if (hours !== 0) {
+      parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+      parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+    } else if (minutes !== 0) {
+      parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+      parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+    } else {
+      parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+    }
+
+    return `${parts.join(" ")}${reverse ? " ago" : ""}`;
   };
 
   if (!mounted) {
@@ -67,15 +75,19 @@ export default function Timer({
 
   return (
     <div>
-      <div className="flex items-center gap-4 justify-center">
+      <div
+        className={`flex items-center justify-center ${
+          size === "xs" ? "gap-2" : size === "sm" ? "gap-3" : "gap-4"
+        }`}
+      >
         <TimerIcon
           size={iconSize}
           style={{
             color: siteTheme.colors["textFaded"],
           }}
         />
-        <Text size={size}>{name}</Text>
-        <Text size={size} color="blue">
+        <Text size={size} className="whitespace-nowrap">{name}</Text>
+        <Text size={size} color="blue" className="whitespace-nowrap">
           {formatTime(timeLeft)}
         </Text>
       </div>

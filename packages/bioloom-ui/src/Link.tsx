@@ -43,7 +43,7 @@ export function Link({
       ? "noopener noreferrer"
       : undefined);
 
-  const classes = `inline-flex items-center gap-1 underline transition-colors duration-300 ${
+  const classes = `inline-flex items-center gap-1 transition-colors duration-300 ${
     underline ? "underline" : "no-underline"
   } ${className}`;
   const mergedStyle = {

@@ -121,11 +121,13 @@ export const queryKeys = {
   },
   achievement: {
     all: ["achievement"] as const,
-    recent: () => [...queryKeys.achievement.all, "recent"] as const,
+    recent: (jamId?: number) =>
+      [...queryKeys.achievement.all, "recent", jamId ?? null] as const,
   },
   score: {
     all: ["score"] as const,
-    recent: () => [...queryKeys.score.all, "recent"] as const,
+    recent: (jamId?: number) =>
+      [...queryKeys.score.all, "recent", jamId ?? null] as const,
   },
   admin: {
     all: ["admin"] as const,

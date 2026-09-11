@@ -14,6 +14,7 @@ export interface InputProps
   rightIcon?: ReactNode;
   label?: string;
   labelPlacement?: LabelPlacement;
+  focusBorderColor?: string;
   onValueChange?: (value: string) => void;
   placeholder?: string;
 }

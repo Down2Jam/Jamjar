@@ -9,7 +9,8 @@ import {
 } from "@/components/hover-previews";
 import { formatRecentScore } from "@/helpers/scoreDisplay";
 import { Skeleton } from "@/components/skeletons";
-import { useRecentScores } from "@/hooks/queries";
+import { isJamPhase, isPostJamPhase } from "@/helpers/listingPageVersion";
+import { useCurrentJam, useRecentScores } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { RecentScoreType } from "@/types/RecentScoreType";
 import { formatDistance } from "date-fns";
@@ -27,10 +28,16 @@ function placementColor(placement: number, colors: Record<string, string>) {
 }
 
 export default function SidebarScores() {
-  const { data: scores = [], isError, isLoading } = useRecentScores();
+  const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
+  const jamId =
+    activeJam?.jam &&
+    (isJamPhase(activeJam.phase) || isPostJamPhase(activeJam.phase))
+      ? activeJam.jam.id
+      : undefined;
+  const { data: scores = [], isError, isLoading } = useRecentScores(jamId);
   const { colors } = useTheme();
 
-  if (isLoading) {
+  if (jamLoading || isLoading) {
     return (
       <div className="mt-20 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-44" />
@@ -42,6 +49,8 @@ export default function SidebarScores() {
       </div>
     );
   }
+
+  if (!isError && scores.length === 0) return null;
 
   return (
     <section className="mt-20 flex flex-col items-center gap-2">
@@ -60,18 +69,6 @@ export default function SidebarScores() {
             }}
           >
             Recent scores couldn&apos;t be loaded.
-          </div>
-        )}
-        {!isError && scores.length === 0 && (
-          <div
-            className="rounded-xl border p-4 text-center text-sm"
-            style={{
-              backgroundColor: colors.mantle,
-              borderColor: colors.crust,
-              color: colors.textFaded,
-            }}
-          >
-            No recent top scores yet.
           </div>
         )}
         {scores.map((score) => {

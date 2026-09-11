@@ -17,6 +17,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       rightIcon,
       label,
       labelPlacement = "outside",
+      focusBorderColor,
       onValueChange,
       placeholder,
       onChange,
@@ -66,7 +67,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   }
 
   const focusStyles: React.CSSProperties = {
-    borderColor: colors.blue,
+    borderColor: focusBorderColor ?? colors.blue,
   };
 
   const [focused, setFocused] = React.useState(false);

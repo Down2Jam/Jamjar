@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
 import { Eye, Play } from "lucide-react";
@@ -33,6 +33,12 @@ function isMatureStreamer(streamer: FeaturedStreamerType) {
   });
 }
 
+function hasD2JamTag(streamer: FeaturedStreamerType) {
+  return (streamer.streamTags ?? []).some((tag) =>
+    ["d2jam", "down2jam"].includes(tag.trim().toLowerCase()),
+  );
+}
+
 export default function SidebarStreams() {
   const { data: rawStreamers = [] as FeaturedStreamerType[], isLoading } =
     useStreamers();
@@ -40,10 +46,18 @@ export default function SidebarStreams() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const { colors, siteTheme } = useTheme();
   const blacklistedStreamers = new Set(["morninchai", "lana_lux"]);
-  const streamers = rawStreamers.filter(
-    (streamer) =>
-      !blacklistedStreamers.has(streamer.userName.toLowerCase()) &&
-      !isMatureStreamer(streamer),
+  const streamers = useMemo(
+    () =>
+      rawStreamers
+        .filter(
+          (streamer) =>
+            !blacklistedStreamers.has(streamer.userName.toLowerCase()) &&
+            !isMatureStreamer(streamer),
+        )
+        .sort(
+          (a, b) => Number(hasD2JamTag(b)) - Number(hasD2JamTag(a)),
+        ),
+    [rawStreamers],
   );
   const totalStreamers = streamers.length;
   const safeCurrentIndex = totalStreamers === 0 ? 0 : currentIndex % totalStreamers;

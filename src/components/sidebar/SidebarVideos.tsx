@@ -2,6 +2,8 @@
 
 import { Skeleton } from "@/components/skeletons";
 import { featuredVideos } from "@/data/featuredVideos";
+import { isJamPhase, isPostJamPhase } from "@/helpers/listingPageVersion";
+import { useCurrentJam } from "@/hooks/queries";
 import { unwrapArray } from "@/hooks/queries/helpers";
 import { useTheme } from "@/providers/useSiteTheme";
 import { getCollectionMusicMetadata } from "@/requests/collection";
@@ -59,12 +61,26 @@ function extractYouTubeId(value?: string | null) {
 
 export default function SidebarVideos() {
   const { colors } = useTheme();
+  const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
+  const jamId =
+    activeJam?.jam &&
+    (isJamPhase(activeJam.phase) || isPostJamPhase(activeJam.phase))
+      ? activeJam.jam.id
+      : undefined;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewerOpen, setViewerOpen] = useState(false);
   const { data: gameVideos = [], isLoading } = useQuery<FeaturedGameVideo[]>({
-    queryKey: ["featured-game-videos", "v2", FEATURED_VIDEO_CANDIDATE_LIMIT],
+    queryKey: [
+      "featured-game-videos",
+      "v2",
+      FEATURED_VIDEO_CANDIDATE_LIMIT,
+      jamId ?? null,
+    ],
     queryFn: async () => {
-      const response = await getFeaturedGameVideos(FEATURED_VIDEO_CANDIDATE_LIMIT);
+      const response = await getFeaturedGameVideos(
+        FEATURED_VIDEO_CANDIDATE_LIMIT,
+        jamId,
+      );
       if (!response.ok) throw new Error("Featured videos unavailable");
       return unwrapArray<FeaturedGameVideo>(await response.json());
     },
@@ -76,6 +92,7 @@ export default function SidebarVideos() {
     const seen = new Set<string>();
 
     for (const video of featuredVideos) {
+      if (jamId !== undefined && video.jamId !== jamId) continue;
       const id = extractYouTubeId(video.url);
       if (!id || seen.has(id)) continue;
 
@@ -102,7 +119,7 @@ export default function SidebarVideos() {
     }
 
     return selected.slice(0, MAX_FEATURED_VIDEOS);
-  }, [gameVideos]);
+  }, [gameVideos, jamId]);
 
   const titleQueries = useQueries({
     queries: videos.map((video) => ({
@@ -121,7 +138,7 @@ export default function SidebarVideos() {
     })),
   });
 
-  if (isLoading && videos.length === 0) {
+  if (jamLoading || (isLoading && videos.length === 0)) {
     return (
       <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-44" />

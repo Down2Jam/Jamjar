@@ -3,7 +3,12 @@
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import { Skeleton } from "@/components/skeletons";
-import { useGames } from "@/hooks/queries";
+import {
+  getDefaultListingPageVersion,
+  isJamPhase,
+  isPostJamPhase,
+} from "@/helpers/listingPageVersion";
+import { useCurrentJam, useGames } from "@/hooks/queries";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
 import SidebarSectionTitle from "./SidebarSectionTitle";
@@ -11,10 +16,27 @@ import SidebarSectionTitle from "./SidebarSectionTitle";
 const MAX_FEATURED_SCREENSHOTS = 20;
 
 export default function SidebarScreenshots() {
+  const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
+  const { jamId, pageVersion } = useMemo(() => {
+    const phase = activeJam?.phase;
+    const currentJamId = activeJam?.jam?.id?.toString() ?? null;
+    const useCurrentJam = isJamPhase(phase) || isPostJamPhase(phase);
+    const selectedJamId = useCurrentJam ? currentJamId : null;
+
+    return {
+      jamId: selectedJamId ?? undefined,
+      pageVersion: getDefaultListingPageVersion(
+        selectedJamId ?? "all",
+        currentJamId,
+        phase,
+      ),
+    };
+  }, [activeJam]);
+
   const { data: games = [], isLoading } = useGames(
     "random",
-    undefined,
-    "ALL",
+    jamId,
+    pageVersion,
     true,
     50,
   );
@@ -60,7 +82,7 @@ export default function SidebarScreenshots() {
     return selected;
   }, [games]);
 
-  if (isLoading) {
+  if (jamLoading || isLoading) {
     return (
       <div className="mt-12 flex flex-col items-center gap-2">
         <Skeleton className="h-8 w-52" />

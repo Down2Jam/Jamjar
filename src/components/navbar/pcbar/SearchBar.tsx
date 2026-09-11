@@ -165,17 +165,20 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
         hideCloseButton={true}
         size="2xl"
         backdrop="opaque"
+        surface="transparent"
+        placement="top"
+        offset={compact ? 24 : 96}
       >
-        <ModalContent
-          className="max-w-[820px] w-[calc(100vw-1rem)] sm:w-[90vw]"
-          style={{
-            backgroundColor: siteTheme.colors["mantle"],
-            borderColor: siteTheme.colors["base"],
-          }}
-        >
+        <ModalContent className="max-w-[820px] w-[calc(100vw-1rem)] sm:w-[90vw]">
           {(onClose) => (
             <>
-              <ModalBody className="max-h-[calc(100dvh-2rem)] overflow-y-auto py-4">
+              <ModalBody
+                className={`${
+                  compact
+                    ? "max-h-[calc(100dvh-3rem)]"
+                    : "max-h-[calc(100dvh-7rem)]"
+                } overflow-y-auto py-4`}
+              >
                 <Vstack align="stretch" gap={2}>
                   <Input
                     ref={inputRef}
@@ -186,6 +189,7 @@ export default function SearchBar({ compact = false }: SearchBarProps) {
                       loadingResults ? <Spinner /> : <Search size={16} />
                     }
                     className="w-full"
+                    focusBorderColor={`color-mix(in srgb, ${siteTheme.colors["text"]} 12%, transparent)`}
                     style={{
                       backgroundColor: siteTheme.colors["mantle"],
                       borderColor: siteTheme.colors["base"],

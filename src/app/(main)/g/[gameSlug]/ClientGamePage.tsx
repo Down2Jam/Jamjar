@@ -80,6 +80,7 @@ import {
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
+import { UserHoverPreview } from "@/components/hover-previews";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -364,6 +365,7 @@ export default function ClientGamePage({
   const requestedPageVersion = searchParams.get("pageVersion");
 
   const { siteTheme, colors } = useTheme();
+  const interactiveOutlineColor = `color-mix(in srgb, ${colors["text"]} 5%, ${colors["mantle"]})`;
   const t = useTranslations();
   const selectedPage = useMemo(() => {
     return getSelectedGamePage(game, selectedVersion);
@@ -962,7 +964,7 @@ export default function ClientGamePage({
                     ? playableBuildAspectRatio
                     : itchEmbedAspectRatio,
                   backgroundColor: colors["base"],
-                  border: `1px solid ${colors["crust"]}`,
+                  border: `1px solid ${interactiveOutlineColor}`,
                 }}
               >
                 {isItchEmbedActive ? (
@@ -996,11 +998,7 @@ export default function ClientGamePage({
                     aria-label={`Load ${displayGame.name} playable embed`}
                   >
                     <span
-                      className="flex items-center gap-3 rounded-lg px-5 py-3 text-base font-semibold transition-transform hover:scale-105"
-                      style={{
-                        backgroundColor: colors["surface0"],
-                        border: `1px solid ${colors["crust"]}`,
-                      }}
+                      className="flex items-center gap-3 text-base font-semibold transition-transform hover:scale-105"
                     >
                       <Play size={20} fill="currentColor" />
                       Play game
@@ -1018,7 +1016,7 @@ export default function ClientGamePage({
                       style={{
                         backgroundColor: colors["mantle"],
                         color: colors["text"],
-                        border: `1px solid ${colors["crust"]}`,
+                        border: `1px solid ${interactiveOutlineColor}`,
                       }}
                       onClick={() => {
                         void playableEmbedRef.current
@@ -1045,7 +1043,7 @@ export default function ClientGamePage({
                       className="group flex min-h-28 flex-col items-center justify-center gap-3 rounded-xl px-5 py-5 text-center font-semibold transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
                       style={{
                         backgroundColor: colors["surface0"],
-                        border: `1px solid ${colors["crust"]}`,
+                        border: `1px solid ${interactiveOutlineColor}`,
                         color: colors["text"],
                       }}
                       target="_blank"
@@ -1088,19 +1086,17 @@ export default function ClientGamePage({
           <div className="flex flex-col w-1/3 gap-4 p-4">
             <Card className="order-40">
               <Vstack align="stretch">
-                <Hstack>
+                {isEditable && (
                   <Hstack>
-                    {isEditable && (
-                      <div>
-                        <Button
-                          icon="squarepen"
-                          href={`/g/${displayGame.slug}/edit`}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    )}
-                    {isEditable && displayGame.category != "ODA" && (
+                    <div>
+                      <Button
+                        icon="squarepen"
+                        href={`/g/${displayGame.slug}/edit`}
+                      >
+                        Edit
+                      </Button>
+                    </div>
+                    {displayGame.category != "ODA" && (
                       <div>
                         <Button
                           icon="users"
@@ -1111,15 +1107,15 @@ export default function ClientGamePage({
                       </div>
                     )}
                   </Hstack>
-                </Hstack>
-                <div className="flex">
-                  {game?.postJamPage && (
+                )}
+                {game?.postJamPage && (
+                  <div className="flex">
                     <PageVersionToggle
                       value={selectedVersion}
                       onChange={setSelectedVersion}
                     />
-                  )}
-                </div>
+                  </div>
+                )}
                 <>
                   <p
                     className="text-xs"
@@ -2007,20 +2003,22 @@ export default function ClientGamePage({
                                               (page - 1)}
                                         </TableCell>
                                         <TableCell>
-                                          <Link
-                                            href={`/u/${score.user.slug}`}
-                                            underline={false}
-                                          >
-                                            <Hstack>
-                                              <Avatar
-                                                src={score.user.profilePicture}
-                                                size={24}
-                                              />
-                                              <Text color="text">
-                                                {score.user.name}
-                                              </Text>
-                                            </Hstack>
-                                          </Link>
+                                          <UserHoverPreview user={score.user} portal>
+                                            <Link
+                                              href={`/u/${score.user.slug}`}
+                                              underline={false}
+                                            >
+                                              <Hstack>
+                                                <Avatar
+                                                  src={score.user.profilePicture}
+                                                  size={24}
+                                                />
+                                                <Text color="text">
+                                                  {score.user.name}
+                                                </Text>
+                                              </Hstack>
+                                            </Link>
+                                          </UserHoverPreview>
                                         </TableCell>
                                         <TableCell
                                           style={{
@@ -2071,7 +2069,7 @@ export default function ClientGamePage({
                                               setSelectedScore(score.evidence);
                                               setIsOpen(true);
                                             }}
-                                            size="sm"
+                                            size="md"
                                           />
                                           {(isEditable ||
                                             score.user.id == user?.id ||
@@ -2380,6 +2378,8 @@ export default function ClientGamePage({
             <Popover
               showCloseButton
               position="center"
+              backdrop
+              backdropColor="rgba(0, 0, 0, 0.78)"
               shown={isOpen}
               onClose={() => {
                 setIsOpen(false);

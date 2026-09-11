@@ -4,7 +4,11 @@ import { useTheme } from "@/providers/useSiteTheme";
 import useHasMounted from "@/hooks/useHasMounted";
 import { useCurrentJam } from "@/hooks/queries";
 
-export default function Timers() {
+export default function Timers({
+  size = "md",
+}: {
+  size?: "xs" | "sm" | "md";
+}) {
   const { data: activeJamResponse } = useCurrentJam();
   const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
@@ -34,6 +38,7 @@ export default function Timers() {
           <Timer
             name="Stats.Timer"
             targetDate={new Date(activeJamResponse.jam.startTime)}
+            size={size}
           />
         </div>
       );
@@ -47,6 +52,7 @@ export default function Timers() {
         >
           <Timer
             name="Jam ends in"
+            size={size}
             targetDate={
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +
@@ -66,6 +72,7 @@ export default function Timers() {
         >
           <Timer
             name="Submissions ends in"
+            size={size}
             targetDate={
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +
@@ -86,6 +93,7 @@ export default function Timers() {
         >
           <Timer
             name="Rating ends in"
+            size={size}
             targetDate={
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +
@@ -107,6 +115,7 @@ export default function Timers() {
         >
           <Timer
             name="Post-jam refinement ends in"
+            size={size}
             targetDate={
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +
@@ -129,6 +138,7 @@ export default function Timers() {
         >
           <Timer
             name="Post-jam rating ends in"
+            size={size}
             targetDate={
               new Date(
                 new Date(activeJamResponse.jam.startTime).getTime() +

@@ -1,6 +1,7 @@
 export interface FeaturedVideo {
   url: string;
   title?: string;
+  jamId?: number;
 }
 
 // Videos listed here always appear before trailers pulled from game pages.

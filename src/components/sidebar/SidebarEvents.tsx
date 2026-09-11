@@ -14,8 +14,12 @@ import { Hstack } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { useMemo } from "react";
 import { SidebarCardSkeleton } from "@/components/skeletons";
+import useBreakpoint from "@/hooks/useBreakpoint";
 
 export default function SidebarEvents() {
+  const { width, isXlUp } = useBreakpoint();
+  const timerSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
+  const buttonSize = isXlUp ? "md" : "sm";
   const { data: currentEvents, isLoading: isLoadingCurrent } =
     useEvents("current");
   const { data: upcomingEvents, isLoading: isLoadingUpcoming } =
@@ -54,7 +58,7 @@ export default function SidebarEvents() {
             <div className="flex w-full flex-col gap-2">
               {activeEvents.map((event) => (
                   <Card key={event.id}>
-                    <Hstack justify="center" gap={4}>
+                    <Hstack justify="center" gap={isXlUp ? 4 : 2}>
                       <Badge
                         content={getIcon(event.icon, 16)}
                         size={20}
@@ -64,20 +68,31 @@ export default function SidebarEvents() {
                       </Badge>
                       <div className="flex flex-col gap-1 text-center">
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>
-                        <Timer
-                          name="Ends in"
-                          targetDate={new Date(event.endTime)}
-                        />
+                        {isXlUp && (
+                          <Timer
+                            name="Ends in"
+                            targetDate={new Date(event.endTime)}
+                          />
+                        )}
                       </div>
 
                       <div className="flex flex-row items-center gap-3">
                         {event.link && <Button href={event.link} />}
                       </div>
                     </Hstack>
+                    {!isXlUp && (
+                      <div className="mt-2">
+                        <Timer
+                          name="Ends in"
+                          targetDate={new Date(event.endTime)}
+                          size={timerSize}
+                        />
+                      </div>
+                    )}
                   </Card>
                 ))}
             </div>
-            <Button icon="moveupright" href="/events?filter=current">
+            <Button icon="moveupright" href="/events?filter=current" size={buttonSize}>
               To Events Page
             </Button>
           </div>
@@ -90,7 +105,7 @@ export default function SidebarEvents() {
             <div className="flex w-full flex-col gap-2">
               {upcomingEventList.map((event) => (
                   <Card key={event.id}>
-                    <Hstack justify="center" gap={4}>
+                    <Hstack justify="center" gap={isXlUp ? 4 : 2}>
                       <Badge
                         content={getIcon(event.icon, 16)}
                         size={20}
@@ -100,19 +115,30 @@ export default function SidebarEvents() {
                       </Badge>
                       <div className="flex flex-col gap-1 text-center">
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>
-                        <Timer
-                          name="Starts in"
-                          targetDate={new Date(event.startTime)}
-                        />
+                        {isXlUp && (
+                          <Timer
+                            name="Starts in"
+                            targetDate={new Date(event.startTime)}
+                          />
+                        )}
                       </div>
                       <div className="flex flex-row items-center gap-3">
                         {event.link && <Button href={event.link} />}
                       </div>
                     </Hstack>
+                    {!isXlUp && (
+                      <div className="mt-2">
+                        <Timer
+                          name="Starts in"
+                          targetDate={new Date(event.startTime)}
+                          size={timerSize}
+                        />
+                      </div>
+                    )}
                   </Card>
                 ))}
             </div>
-            <Button icon="moveupright" href="/events?filter=upcoming">
+            <Button icon="moveupright" href="/events?filter=upcoming" size={buttonSize}>
               To Events Page
             </Button>
           </div>

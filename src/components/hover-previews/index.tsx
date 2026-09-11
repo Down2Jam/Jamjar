@@ -11,7 +11,14 @@ import type {
 import type { RecentScoreType } from "@/types/RecentScoreType";
 import { formatRecentScore } from "@/helpers/scoreDisplay";
 import { Popover } from "bioloom-ui";
-import { useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 const achievementTierColor: Record<AchievementRarityTier, string> = {
   Abyssal: "magenta",
@@ -33,18 +40,47 @@ export function UserHoverPreview({
   user,
   children,
   className = "",
+  portal = false,
 }: {
   user: PreviewUser;
   children: ReactNode;
   className?: string;
+  portal?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const [portalPosition, setPortalPosition] = useState<CSSProperties>();
   const { data } = useUser(user.slug, hovered);
   const { colors } = useTheme();
   const preview = data ?? user;
 
+  const updatePortalPosition = useCallback(() => {
+    if (!portal || !anchorRef.current) return;
+    const rect = anchorRef.current.getBoundingClientRect();
+    setPortalPosition({
+      position: "fixed",
+      zIndex: 80,
+      pointerEvents: "none",
+      left: rect.left + rect.width / 2,
+      top: rect.top - 8,
+      transform: "translate(-50%, -100%)",
+    });
+  }, [portal]);
+
+  useEffect(() => {
+    if (!hovered || !portal) return;
+    updatePortalPosition();
+    window.addEventListener("resize", updatePortalPosition);
+    window.addEventListener("scroll", updatePortalPosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePortalPosition);
+      window.removeEventListener("scroll", updatePortalPosition, true);
+    };
+  }, [hovered, portal, updatePortalPosition]);
+
   return (
     <span
+      ref={anchorRef}
       className={`relative inline-flex ${className}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -53,8 +89,9 @@ export function UserHoverPreview({
     >
       {children}
       <Popover
-        shown={hovered}
-        anchorToScreen={false}
+        shown={hovered && (!portal || Boolean(portalPosition))}
+        anchorToScreen={portal}
+        positionerStyle={portal ? portalPosition : undefined}
         position="top"
         padding={10}
         showArrow

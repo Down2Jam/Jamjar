@@ -33,6 +33,10 @@ export async function deleteScore(scoreId: number) {
   });
 }
 
-export function getRecentScores() {
-  return fetch(`${BASE_URL}/scores/recent`);
+export function getRecentScores(jamId?: number) {
+  const params = new URLSearchParams();
+  if (jamId !== undefined) params.set("jamId", String(jamId));
+  return fetch(
+    `${BASE_URL}/scores/recent${params.size ? `?${params.toString()}` : ""}`,
+  );
 }

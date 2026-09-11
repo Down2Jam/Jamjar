@@ -15,12 +15,17 @@ export default function SearchResultTrack({
   track: TrackType;
   onPress: () => void;
 }) {
+  const thumbnail =
+    track.game.soundtrackThumbnail ||
+    track.game.thumbnail ||
+    "/images/D2J_Icon.png";
+
   return (
     <Card
       key={track.id}
       href={`/m/${track.slug}`}
       onPress={onPress}
-      backgroundImage={track.game.banner || track.game.thumbnail}
+      backgroundImage={thumbnail}
     >
       <Hstack>
         <Badge
@@ -29,11 +34,7 @@ export default function SearchResultTrack({
           offset={4}
         >
           <Image
-            src={
-              track.game.soundtrackThumbnail ||
-              track.game.thumbnail ||
-              "/images/D2J_Icon.png"
-            }
+            src={thumbnail}
             alt="Album thumbnail"
             width={40}
             height={40}

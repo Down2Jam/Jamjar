@@ -185,7 +185,7 @@ export default function CommentCard({
             </Text>
           </div>
         ) : (
-          <ThemedProse className="p-4">
+          <ThemedProse className="px-4 pb-1 pt-4">
             <MentionedContent
               html={currentComment.content}
               className="!duration-250 !ease-linear !transition-all max-w-full break-words"
@@ -193,7 +193,7 @@ export default function CommentCard({
           </ThemedProse>
         )}
 
-        {!isModerated && <div className="mt-2 flex flex-wrap items-center gap-1">
+        {!isModerated && <div className="mt-1 flex flex-wrap items-center gap-1">
           <LikeButton
             likes={currentComment.likes.length}
             liked={currentComment.hasLiked}
@@ -340,7 +340,7 @@ export default function CommentCard({
 
         {childComments.length > 0 &&
           (childComments[0].author ? (
-            <div className="flex flex-col gap-3">
+            <div className="mt-3 flex flex-col gap-3">
               {childComments.map((comment) => (
                 <CommentCard
                   key={comment.id}

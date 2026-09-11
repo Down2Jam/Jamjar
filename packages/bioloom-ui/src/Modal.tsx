@@ -66,6 +66,8 @@ interface OverlayModalProps {
   backdrop?: "transparent" | "opaque";
   size?: OverlayModalSize;
   surface?: "card" | "transparent";
+  placement?: "center" | "top";
+  offset?: number;
   className?: string;
   children: React.ReactNode;
 }
@@ -258,6 +260,8 @@ function OverlayModal({
   backdrop = "opaque",
   size,
   surface = "card",
+  placement = "center",
+  offset = 8,
   className = "",
   children,
 }: OverlayModalProps) {
@@ -270,7 +274,8 @@ function OverlayModal({
       <Popover
         shown={isOpen}
         anchorToScreen
-        position="center"
+        position={placement}
+        offset={offset}
         onClose={handleClose}
         showCloseButton={!hideCloseButton}
         closeButtonAlwaysVisible
@@ -282,6 +287,7 @@ function OverlayModal({
         padding={0}
         surface={surface}
         borderless={surface === "transparent"}
+        showArrow={false}
         className={className}
       >
         {children}
