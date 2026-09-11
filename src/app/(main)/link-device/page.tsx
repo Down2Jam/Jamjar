@@ -22,7 +22,7 @@ import { GameType } from "@/types/GameType";
 
 type LinkStatus = "idle" | "approving" | "denying" | "approved" | "denied";
 
-const AUTO_CLOSE_DELAY_MS = 2000;
+const AUTO_CLOSE_DELAY_MS = 3000;
 
 function gameDisplayName(game: GameType | undefined, fallbackSlug: string) {
   return game?.postJamPage?.name ?? game?.jamPage?.name ?? fallbackSlug;
