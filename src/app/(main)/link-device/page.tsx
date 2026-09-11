@@ -7,7 +7,6 @@ import {
   Card,
   Hstack,
   Icon,
-  Input,
   Spinner,
   Text,
   Vstack,
@@ -15,16 +14,26 @@ import {
 import { hasCookie } from "@/helpers/cookie";
 import { redirect, useSearchParams } from "@/compat/next-navigation";
 import { getSelf } from "@/requests/user";
+import { getGame } from "@/requests/game";
 import { approveDeviceCode, denyDeviceCode } from "@/requests/auth";
 import { readItem } from "@/requests/helpers";
 import { UserType } from "@/types/UserType";
+import { GameType } from "@/types/GameType";
 
 type LinkStatus = "idle" | "approving" | "denying" | "approved" | "denied";
+
+const AUTO_CLOSE_DELAY_MS = 2000;
+
+function gameDisplayName(game: GameType | undefined, fallbackSlug: string) {
+  return game?.postJamPage?.name ?? game?.jamPage?.name ?? fallbackSlug;
+}
 
 export default function LinkDevicePage() {
   const searchParams = useSearchParams();
   const [user, setUser] = useState<UserType>();
-  const [userCode, setUserCode] = useState(searchParams.get("code") ?? "");
+  const userCode = (searchParams.get("code") ?? "").trim().toUpperCase();
+  const gameSlug = searchParams.get("game") ?? "";
+  const [game, setGame] = useState<GameType>();
   const [status, setStatus] = useState<LinkStatus>("idle");
 
   useEffect(() => {
@@ -45,16 +54,32 @@ export default function LinkDevicePage() {
     loadUser();
   }, []);
 
-  const normalizedCode = userCode.trim().toUpperCase();
+  useEffect(() => {
+    async function loadGame() {
+      if (!gameSlug) return;
+      const response = await getGame(gameSlug);
+      if (response.status === 200) {
+        setGame((await readItem<GameType>(response)) ?? undefined);
+      }
+    }
+
+    loadGame();
+  }, [gameSlug]);
+
+  useEffect(() => {
+    if (status !== "approved" && status !== "denied") return;
+    const timer = setTimeout(() => window.close(), AUTO_CLOSE_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [status]);
 
   async function handleApprove() {
-    if (!normalizedCode) {
-      addToast({ title: "Enter the code shown in the game" });
+    if (!userCode) {
+      addToast({ title: "No device code found in this link" });
       return;
     }
     setStatus("approving");
     try {
-      const response = await approveDeviceCode(normalizedCode);
+      const response = await approveDeviceCode(userCode);
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         addToast({ title: data?.error?.message ?? "Failed to approve device" });
@@ -70,13 +95,13 @@ export default function LinkDevicePage() {
   }
 
   async function handleDeny() {
-    if (!normalizedCode) {
-      addToast({ title: "Enter the code shown in the game" });
+    if (!userCode) {
+      addToast({ title: "No device code found in this link" });
       return;
     }
     setStatus("denying");
     try {
-      const response = await denyDeviceCode(normalizedCode);
+      const response = await denyDeviceCode(userCode);
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         addToast({ title: data?.error?.message ?? "Failed to deny device" });
@@ -117,31 +142,45 @@ export default function LinkDevicePage() {
 
           {status === "approved" ? (
             <Text color="textFaded">
-              Device linked. You can close this window and return to the game.
+              Device linked. This tab will close automatically, or you can
+              close it and return to the game.
             </Text>
           ) : status === "denied" ? (
             <Text color="textFaded">
-              Request denied. You can close this window.
+              Request denied. This tab will close automatically, or you can
+              close it now.
             </Text>
           ) : (
             <>
               <Text size="sm" color="textFaded">
-                A game is requesting to link to your account as{" "}
+                <span className="font-semibold">
+                  {gameDisplayName(game, gameSlug || "A game")}
+                </span>{" "}
+                is requesting to link to your account as{" "}
                 <span className="font-semibold">{user.name}</span>. This will
                 let the game submit scores and achievements on your behalf.
               </Text>
-              <Input
-                label="Code"
-                labelPlacement="outside"
-                placeholder="ABCD-1234"
-                value={userCode}
-                onValueChange={(value) => setUserCode(value.toUpperCase())}
-              />
+              {userCode ? (
+                <Vstack align="start" gap={1}>
+                  <Text size="xs" color="textFaded">
+                    Code
+                  </Text>
+                  <Text size="lg" weight="semibold" color="text">
+                    {userCode}
+                  </Text>
+                </Vstack>
+              ) : (
+                <Text size="sm" color="textFaded">
+                  This link is missing its device code. Go back to the game
+                  and try again.
+                </Text>
+              )}
               <Hstack>
                 <Button
                   color="red"
                   variant="ghost"
                   loading={status === "denying"}
+                  disabled={!userCode}
                   onClick={handleDeny}
                 >
                   Deny
@@ -149,6 +188,7 @@ export default function LinkDevicePage() {
                 <Button
                   color="blue"
                   loading={status === "approving"}
+                  disabled={!userCode}
                   onClick={handleApprove}
                 >
                   Approve
