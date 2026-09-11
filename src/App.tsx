@@ -39,6 +39,7 @@ const Down2GuessPage = lazy(() => import("@/app/(main)/down2guess/page"));
 const GamesPage = lazy(() => import("@/app/(main)/games/page"));
 const HomePage = lazy(() => import("@/app/(main)/home/page"));
 const InboxPage = lazy(() => import("@/app/(main)/inbox/page"));
+const LinkDevicePage = lazy(() => import("@/app/(main)/link-device/page"));
 const LoginPage = lazy(() => import("@/app/(main)/login/page"));
 const LogoutPage = lazy(() => import("@/app/(main)/logout/page"));
 const MusicPage = lazy(() => import("@/app/(main)/music/page"));
@@ -270,6 +271,7 @@ const noindexRoutePatterns = [
   /^\/docs\/new\/?$/,
   /^\/forgot-password\/?$/,
   /^\/inbox\/?$/,
+  /^\/link-device\/?$/,
   /^\/login\/?$/,
   /^\/logout\/?$/,
   /^\/lucky\/?$/,
@@ -348,6 +350,7 @@ export default function App() {
           <Route path="import-game" element={<ImportGamePage />} />
           <Route path="home" element={<HomePage />} />
           <Route path="inbox/*" element={<InboxPage />} />
+          <Route path="link-device" element={<LinkDevicePage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="logout" element={<LogoutPage />} />
           <Route path="lucky" element={<LuckyRoute />} />
