@@ -19,7 +19,7 @@ export default function SidebarBanner() {
     <a href="/about">
       <img
         src={banner}
-        alt="D2 Jam — the community centered jam"
+        alt="D2Jam banner"
         width={480}
         height={160}
         className="h-auto w-full rounded-xl shadow-2xl"
