@@ -13,3 +13,5 @@ export interface LeaderboardType {
   maxUsersShown: number;
   decimalPlaces: number;
 }
+
+export type LeaderboardInput = Omit<LeaderboardType, "id"> & { id?: number };

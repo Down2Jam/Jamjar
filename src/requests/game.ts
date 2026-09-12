@@ -2,7 +2,7 @@ import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PlatformType } from "@/types/DownloadLinkType";
 import { AchievementType } from "@/types/AchievementType";
-import { LeaderboardType } from "@/types/LeaderboardType";
+import { LeaderboardInput } from "@/types/LeaderboardType";
 import {
   GameEmbedAspectRatio,
   ListingPageVersion,
@@ -135,7 +135,7 @@ export async function postGame(
   achievements: AchievementType[],
   flags: number[],
   tags: number[],
-  leaderboards: LeaderboardType[],
+  leaderboards: LeaderboardInput[],
   short: string,
   songs: {
     name: string;
@@ -241,7 +241,7 @@ export async function updateGame(
   achievements: AchievementType[],
   flags: number[],
   tags: number[],
-  leaderboards: LeaderboardType[],
+  leaderboards: LeaderboardInput[],
   short: string,
   songs: {
     name: string;

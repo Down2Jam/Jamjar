@@ -30,7 +30,7 @@ import { FlagType } from "@/types/FlagType";
 import { GameTagType } from "@/types/GameTagType";
 import { GameEmbedAspectRatio, GameType } from "@/types/GameType";
 import { PageVersion } from "@/types/GameType";
-import { LeaderboardType, LeaderboardTypeType } from "@/types/LeaderboardType";
+import { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "bioloom-ui";
@@ -306,7 +306,7 @@ export default function GameEditingForm({
   const [editorKey, setEditorKey] = useState(0);
   const [flags, setFlags] = useState<number[]>([]);
   const [tags, setTags] = useState<number[]>([]);
-  const [leaderboards, setLeaderboards] = useState<LeaderboardType[]>([]);
+  const [leaderboards, setLeaderboards] = useState<LeaderboardInput[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
   const [teams, setTeams] = useState<TeamType[]>([]);
   const [category, setCategory] = useState<
@@ -4363,7 +4363,6 @@ export default function GameEditingForm({
                           setLeaderboards([
                             ...leaderboards,
                             {
-                              id: -1,
                               name: "",
                               type: "SCORE",
                               onlyBest: true,
