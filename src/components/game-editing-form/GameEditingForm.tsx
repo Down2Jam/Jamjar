@@ -336,7 +336,7 @@ export default function GameEditingForm({
   const [artistResults, setArtistResults] = useState<
     Record<number, UserType[]>
   >({});
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
   const { emojis, refresh: refreshEmojis } = useEmojis();
   const [gameEmoteSlug, setGameEmoteSlug] = useState("");
@@ -1125,27 +1125,39 @@ export default function GameEditingForm({
         }}
       >
         <Vstack align="start">
-          <Card>
-            <Vstack align="start">
-              <Hstack>
-                <Icon name="gamepad2" color="text" />
-                <Text size="xl" color="text" weight="semibold">
+          <header className="w-full py-2 text-center">
+                <h1
+                  className="text-3xl font-semibold"
+                  style={{
+                    color: colors["text"],
+                    textShadow: siteTheme.type === "Light"
+                      ? "none"
+                      : "0 1px 5px rgba(0, 0, 0, 0.75)",
+                  }}
+                >
                   {prevSlug
                     ? pageVersion === "POST_JAM"
                       ? "Edit Post-Jam Page"
-                      : "CreateGame.Edit.Title"
-                    : "CreateGame.Create.Title"}
-                </Text>
-              </Hstack>
-              <Text size="sm" color="textFaded">
+                      : t("CreateGame.Edit.Title")
+                    : t("CreateGame.Create.Title")}
+                </h1>
+              <p
+                className="mt-1 text-sm"
+                style={{
+                  color: colors["text"],
+                  opacity: 0.82,
+                  textShadow: siteTheme.type === "Light"
+                    ? "none"
+                    : "0 1px 4px rgba(0, 0, 0, 0.8)",
+                }}
+              >
                 {prevSlug
                   ? pageVersion === "POST_JAM"
                     ? "Edit the post-jam version of your game page."
-                    : "CreateGame.Edit.Description"
-                  : "CreateGame.Create.Description"}
-              </Text>
-            </Vstack>
-          </Card>
+                    : t("CreateGame.Edit.Description")
+                  : t("CreateGame.Create.Description")}
+              </p>
+          </header>
 
           <Tabs addBottomTabs>
             <Tab title="General" icon="cog">
@@ -2353,7 +2365,7 @@ export default function GameEditingForm({
                         <div>
                           <Text color="text">Screenshots (up to 5)</Text>
                           <Text color="textFaded" size="xs">
-                            First two will be shown on hover. All will be shown
+                            First three will be shown on hover. All will be shown
                             on game page.
                           </Text>
                         </div>

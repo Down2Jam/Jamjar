@@ -6,7 +6,6 @@ import SidebarGames from "./SidebarGames";
 import SidebarMusic from "./SidebarMusic";
 import SidebarScreenshots from "./SidebarScreenshots";
 import SidebarVideos from "./SidebarVideos";
-import SidebarEmojis from "./SidebarEmojis";
 import SidebarAchievements from "./SidebarAchievements";
 import SidebarScores from "./SidebarScores";
 
@@ -21,7 +20,6 @@ export default function Sidebar() {
       <SidebarMusic />
       <SidebarVideos />
       <SidebarScreenshots />
-      <SidebarEmojis />
       <SidebarAchievements />
       <SidebarScores />
     </div>

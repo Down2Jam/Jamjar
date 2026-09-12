@@ -399,7 +399,7 @@ export default function JamHeader() {
     if (activeJamResponse.phase === "Voting" && !themeVotingOpen)
       return { href: "/about", text: "JamHeader.JamSoon" };
     if (activeJamResponse.phase === "Jamming")
-      return { href: "/radio", text: "Listen to the Down2Jam Radio" };
+      return null;
     if (activeJamResponse.phase === "Rating")
       return { href: "/games", text: "JamHeader.RateGames" };
     if (activeJamResponse.phase === "Post-Jam Rating")
@@ -409,18 +409,14 @@ export default function JamHeader() {
       : { href: "/about", text: "Explore the jam" };
   })();
 
-  const hasPrimaryActionImage =
-    activeJamResponse?.phase === "Voting" ||
-    activeJamResponse?.phase === "Jamming";
+  const hasPrimaryActionImage = activeJamResponse?.phase === "Voting";
 
-  const renderPrimaryAction = (className = "") => (
+  const renderPrimaryAction = (className = "") => primaryAction ? (
     <Link
       href={primaryAction.href}
       className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
         hasPrimaryActionImage
-          ? `min-h-10 py-2 pr-3 text-[11px] sm:text-xs ${
-              activeJamResponse?.phase === "Jamming" ? "pl-12" : "pl-10"
-            }`
+          ? "min-h-10 py-2 pr-3 pl-10 text-[11px] sm:text-xs"
           : "min-h-10 px-4 py-2 text-sm sm:text-base"
       } ${className}`}
       style={{
@@ -437,11 +433,9 @@ export default function JamHeader() {
         >
           <img
             src={
-              activeJamResponse?.phase === "Jamming"
-                ? "/images/down2jam-radio.gif"
-                : themeVotingOpen
-                  ? "/images/voted.png"
-                  : "/images/theme-reveal.gif"
+              themeVotingOpen
+                ? "/images/voted.png"
+                : "/images/theme-reveal.gif"
             }
             alt=""
             className={`h-full w-full object-contain object-right ${
@@ -466,7 +460,7 @@ export default function JamHeader() {
         />
       )}
     </Link>
-  );
+  ) : null;
 
   return (
     <section
