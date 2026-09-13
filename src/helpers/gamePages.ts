@@ -18,6 +18,7 @@ export function materializeGamePage(
     short: page.short,
     description: page.description,
     thumbnail: page.thumbnail ?? undefined,
+    soundtrackThumbnail: page.soundtrackThumbnail ?? undefined,
     banner: page.banner ?? undefined,
     themeJustification: page.themeJustification,
     published: Boolean(game.published),
