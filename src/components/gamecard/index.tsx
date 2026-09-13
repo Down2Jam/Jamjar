@@ -459,7 +459,7 @@ export function GameCard({
           )}
         </div>
         <div
-          className="absolute top-0 right-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
+          className="absolute top-0 right-0 z-10 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
           style={{
             color: colors["text"],
             backgroundColor:
