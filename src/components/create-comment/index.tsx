@@ -1,7 +1,9 @@
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
-import { useState } from "react";
+import { useId, useState } from "react";
+import useMobileLayout from "@/hooks/useMobileLayout";
+import MobileComposerDialog from "./MobileComposerDialog";
 import { Button } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
@@ -20,27 +22,38 @@ export default function CreateComment({
   trackId?: number | null;
   size?: "xs" | "sm";
 }) {
+  const mobile = useMobileLayout();
+  const [open, setOpen] = useState(false);
+  const titleId = useId();
+  const close = () => { if (!waitingPost) setOpen(false); };
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
   const { colors } = useTheme();
 
-  return (
-    <div className={size === "sm" ? styles.composer : undefined} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": colors.blue } as React.CSSProperties}>
-      {size === "sm" && <h2 className="mb-3 text-base font-semibold">Leave a comment</h2>}
+  const composer = (
+    <div className={!mobile && size === "sm" ? styles.composer : undefined} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": `color-mix(in srgb, ${colors.text} 20%, ${colors.mantle})` } as React.CSSProperties}>
+      {(size === "sm" || mobile) && <div className="mb-3 flex items-center justify-between gap-3">
+        {(size === "sm" || mobile) && <h2 id={titleId} className="text-base font-semibold">{size === "sm" ? "Leave a comment" : "Leave feedback"}</h2>}
+        {mobile && <Button size="sm" variant="ghost" icon="x" aria-label="Close comment" disabled={waitingPost} onClick={close} />}
+      </div>}
+      {mobile && <p className="mb-2 text-xs font-medium">{size === "sm" ? "Your comment" : "Your feedback"}</p>}
+      <fieldset disabled={waitingPost} className={waitingPost ? "pointer-events-none opacity-60" : ""}>
       <Editor
         content={content}
         setContent={setContent}
-        size={size}
+        size={mobile ? "xs" : size}
         format="markdown"
         showStats={false}
       />
-      <div className={size === "sm" ? "mt-3 flex justify-start" : ""}>
-      {waitingPost ? (
-        <Spinner />
-      ) : (
+      </fieldset>
+      <div className={mobile ? "mt-3 flex justify-end gap-2" : size === "sm" ? styles.submitRow : ""}>
+      {mobile && <Button size="sm" variant="ghost" disabled={waitingPost} onClick={close}>Cancel</Button>}
         <Button
-          size={size}
-          icon={size === "sm" ? "send" : "plus"}
+          size={mobile ? "sm" : size}
+          icon={mobile ? undefined : size === "sm" ? "send" : "plus"}
+          color={mobile ? "blue" : "default"}
+          disabled={waitingPost || (mobile && !content.trim())}
+          aria-busy={waitingPost}
           onClick={async () => {
             if (!content) {
               addToast({
@@ -58,6 +71,7 @@ export default function CreateComment({
 
             setWaitingPost(true);
 
+            try {
             const response = await postComment(
               content,
               null,
@@ -87,12 +101,26 @@ export default function CreateComment({
               });
               setWaitingPost(false);
             }
+            } catch {
+              addToast({ title: "Failed to post comment. Please try again." });
+            } finally {
+              setWaitingPost(false);
+            }
           }}
         >
-          {size == "sm" ? "Post comment" : "Submit Feedback"}
+          {waitingPost ? <Spinner /> : size == "sm" ? "Post comment" : "Submit Feedback"}
         </Button>
-      )}
       </div>
     </div>
   );
+
+  if (!mobile) return composer;
+  return <>
+    <Button size="sm" icon="send" fullWidth className="min-h-11" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      {size === "sm" ? "Leave a comment" : "Leave feedback"}
+    </Button>
+    <MobileComposerDialog open={open} onClose={close}>
+      <div role="dialog" aria-modal="true" aria-labelledby={titleId}>{composer}</div>
+    </MobileComposerDialog>
+  </>;
 }

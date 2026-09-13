@@ -67,7 +67,9 @@ export async function getTracks(
 ) {
   const params = new URLSearchParams({ sort });
   if (jam && jam !== "all") {
-    if (isNumericJamValue(jam)) {
+    if (jam === "external") {
+      params.set("externalJams", "true");
+    } else if (isNumericJamValue(jam)) {
       params.set("jamId", jam);
     } else {
       params.set("jamSlug", jam);

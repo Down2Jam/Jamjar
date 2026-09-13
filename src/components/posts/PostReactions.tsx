@@ -29,7 +29,7 @@ export default function PostReactions({
   onOverlayChange,
   pickerPosition = "top",
 }: PostReactionsProps) {
-  const { emojis } = useEmojis();
+  const { emojis, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [current, setCurrent] = useState<ReactionSummaryType[]>(
     reactions ?? [],
@@ -89,8 +89,10 @@ export default function PostReactions({
     const query = emojiQuery.trim().toLowerCase();
     return sortEmojisByUsage(
       availableEmojis.filter((emoji) => !query || emoji.slug.includes(query)),
+      {},
+      priorityEmotes,
     );
-  }, [availableEmojis, emojiQuery]);
+  }, [availableEmojis, emojiQuery, priorityEmotes]);
   const canAddNewReaction = useMemo(() => {
     const firstReactionCount = current.filter(
       (entry) => entry.isFirstReactor,

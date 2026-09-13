@@ -135,7 +135,8 @@ export default function SidebarSong({
           borderTop: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
           borderRadius: 0,
           boxShadow: "none",
-          padding: "6px 0",
+          padding: "4px 0",
+          paddingTop: 4, paddingBottom: 4, paddingLeft: 0, paddingRight: 0,
           backgroundColor: "transparent",
         } : {}),
       } as CSSProperties}
@@ -154,7 +155,7 @@ export default function SidebarSong({
                 variant="ghost"
                 onClick={togglePlayback}
                 aria-label={`${isCurrent && isPlaying ? "Pause" : "Play"} ${name}`}
-                className="group/track-play relative !h-9 !w-9 shrink-0 !rounded-md !p-0"
+                className="group/track-play relative !h-7 !w-7 shrink-0 !rounded-md !p-0"
               >
                 <span className={isCurrent ? "hidden" : "text-xs tabular-nums group-hover/track-play:hidden group-focus-visible/track-play:hidden"}>
                   {String(playlistIndex + 1).padStart(2, "0")}
@@ -186,13 +187,13 @@ export default function SidebarSong({
                     : `/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
                 }
                 underline={false}
-                className="sidebar-media-link"
+                className={playlist ? "sidebar-media-link max-w-full" : "sidebar-media-link"}
                 style={{ textDecoration: "none" }}
               >
                 <Text
-                  size={wide ? "lg" : undefined}
-                  weight={wide ? "semibold" : undefined}
-                  className={playlist ? "max-w-full break-words text-sm font-semibold" : "max-w-full truncate"}
+                  size={playlist ? "xs" : wide ? "lg" : undefined}
+                  weight={playlist ? "normal" : wide ? "semibold" : undefined}
+                  className={playlist ? "max-w-full truncate text-xs font-normal" : "max-w-full truncate"}
                   style={playlist && isCurrent ? { color: colors.blue } : undefined}
                 >
                   {name}
@@ -227,6 +228,7 @@ export default function SidebarSong({
               )}
               {showArtist && <Hstack gap={1} align="baseline" justify="start" className={playlist ? "min-w-0 w-full" : "min-w-0"}>
                 <UserHoverPreview
+                  portal
                   user={{
                     slug: artist.slug ?? "",
                     name: artist.name,
@@ -246,7 +248,7 @@ export default function SidebarSong({
                       />
                     )}
                     <Text
-                      size="sm"
+                      size={playlist ? "xs" : "sm"}
                       color={playlist ? "text" : "textFaded"}
                       className="max-w-full truncate"
                     >
@@ -255,7 +257,7 @@ export default function SidebarSong({
                   </Link>
                 </UserHoverPreview>
                 {playlist && duration !== null && (
-                  <span className="shrink-0 pl-2 text-sm leading-5 tabular-nums" style={{ color: colors.text }}>
+                  <span className="shrink-0 pl-2 text-xs leading-4 tabular-nums" style={{ color: colors.text }}>
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
                   </span>
                 )}
@@ -295,7 +297,7 @@ export default function SidebarSong({
               <Button
                 size="sm"
                 color="default"
-                className={playlist ? "!h-8 !w-8 !rounded-md !p-0" : "!h-9 !w-14 !rounded-md !p-0"}
+                className={playlist ? "!h-7 !w-7 !rounded-md !p-0" : "!h-9 !w-14 !rounded-md !p-0"}
                 variant={playlist ? "ghost" : undefined}
                 loading={isDownloading}
                 icon="download"

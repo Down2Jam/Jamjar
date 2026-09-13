@@ -234,7 +234,7 @@ export default function Editor({
 }: EditorProps) {
   const { colors } = useTheme();
   const t = useTranslations();
-  const { emojiMap, emojis } = useEmojis();
+  const { emojiMap, emojis, priorityEmotes } = useEmojis();
   const emojiMapRef = useRef(emojiMap);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiMatches, setEmojiMatches] = useState<EmojiType[]>([]);
@@ -445,9 +445,12 @@ export default function Editor({
       }
 
       const normalized = query.toLowerCase();
+      const prioritySlugs = new Set(priorityEmotes.map((emoji) => emoji.slug));
       const matches = emojis
         .filter((emoji) => emoji.slug.includes(normalized))
         .sort((a, b) => {
+          const priorityDelta = Number(prioritySlugs.has(b.slug)) - Number(prioritySlugs.has(a.slug));
+          if (priorityDelta !== 0) return priorityDelta;
           const aStarts = a.slug.startsWith(normalized) ? 1 : 0;
           const bStarts = b.slug.startsWith(normalized) ? 1 : 0;
           if (aStarts !== bStarts) return bStarts - aStarts;
@@ -469,7 +472,7 @@ export default function Editor({
       setEmojiRange(range);
       setEmojiCoords({ left: coords.left, top: coords.bottom + 6 });
     },
-    [emojis, mentionOpen]
+    [emojis, mentionOpen, priorityEmotes]
   );
 
   const handleEmojiKeyDown = useCallback(
@@ -632,7 +635,7 @@ export default function Editor({
             ? "min-h-[150px] max-h-[400px]"
             : "min-h-[100px] max-h-[400px]") +
           (size == "sm" ? " border-gray-500" : " border-gray-600") +
-          " overflow-y-auto cursor-text rounded-md border px-5 focus-within:outline-none focus-within:border-blue-500 !duration-250 !ease-linear !transition-all",
+          " overflow-y-auto cursor-text rounded-md border px-5 focus-within:outline-none focus-within:border-current/25 !duration-250 !ease-linear !transition-all",
       },
       handleKeyDown: (_view, event) => {
         if (handleMentionKeyDown(event)) return true;
@@ -921,10 +924,12 @@ export default function Editor({
 
   return (
     <div className="w-full">
+      <div data-editor-surface>
       <EditorMenuBar editor={editor} size={size} />
       <ThemedProse className="[&_.ProseMirror_h1]:my-0 [&_.ProseMirror_h1]:text-inherit [&_.ProseMirror_h1]:leading-inherit [&_.ProseMirror_h2]:my-0 [&_.ProseMirror_h2]:text-inherit [&_.ProseMirror_h2]:leading-inherit [&_.ProseMirror_h3]:my-0 [&_.ProseMirror_h3]:text-inherit [&_.ProseMirror_h3]:leading-inherit [&_.ProseMirror_p]:my-3 [&_.ProseMirror_p:empty]:h-auto [&_.ProseMirror_p:empty]:my-3 [&_.ProseMirror_p>br:only-child]:inline">
         <EditorContent editor={editor} />
       </ThemedProse>
+      </div>
       {mentionOpen && mentionMatches.length > 0 && mentionCoords && (
         <div
           style={{

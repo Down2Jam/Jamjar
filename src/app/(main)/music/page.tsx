@@ -7,6 +7,7 @@ import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { TrackType } from "@/types/TrackType";
+import type { JamType } from "@/types/JamType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
@@ -491,9 +492,14 @@ export default function MusicPage() {
       try {
         if (typeof getJams === "function") {
           const jr = await getJams();
-          const js = await jr.json();
+          const js = await readArray<JamType>(jr);
+          let hasExternalJams = false;
           if (Array.isArray(js)) {
             js.forEach((j) => {
+              if (j.sourcePlatform) {
+                hasExternalJams = true;
+                return;
+              }
               const id = String(j?.id ?? "");
               const value = getJamUrlValue(j);
               if (
@@ -511,6 +517,14 @@ export default function MusicPage() {
                   description: formatJamWindow(j.startTime, j.jammingHours),
                 });
               }
+            });
+          }
+          if (hasExternalJams) {
+            options.push({
+              id: "external",
+              name: "External jams",
+              icon: "globe",
+              description: "Browse entries from imported jams",
             });
           }
         }
@@ -1239,7 +1253,7 @@ export default function MusicPage() {
         </Dropdown>
       </Hstack>
       {activeFilterCount > 0 && (
-        <Hstack justify="center" className="relative z-30 w-full">
+        <Hstack justify="center" className="relative z-20 w-full">
           <Button
             size="sm"
             variant="ghost"

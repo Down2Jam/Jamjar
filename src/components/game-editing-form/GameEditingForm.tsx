@@ -1,5 +1,8 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/hooks/queries/queryKeys";
+
 import "./game-editor.css";
 import ItemEditor from "./ItemEditor";
 import ArtistSuggestions from "./ArtistSuggestions";
@@ -323,6 +326,7 @@ export default function GameEditingForm({
   const [editGame, setEditGame] = useState(false);
   const [currentTeam, setCurrentTeam] = useState<number>(0);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const t = useTranslations();
 
   const [newSongId, setNewSongId] = useState<number | null>(null);
@@ -1155,6 +1159,7 @@ export default function GameEditingForm({
             const response = await request;
 
             if (response.ok) {
+              await queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
               setSavedFormSnapshot(formSnapshot);
               addToast({
                 title: prevSlug

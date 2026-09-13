@@ -31,15 +31,19 @@ function uploadTime(emoji: SortableEmoji) {
 export function sortEmojisByUsage<T extends SortableEmoji>(
   emojis: T[],
   personalUseCounts: Record<string, number> = {},
+  priorityEmotes: SortableEmoji[] = [],
 ) {
-  const usageSorted = [...emojis].sort((a, b) =>
+  const prioritySlugs = new Set(priorityEmotes.map((emoji) => emoji.slug));
+  const priorityEmojis = emojis.filter((emoji) => prioritySlugs.has(emoji.slug));
+  const remainingEmojis = emojis.filter((emoji) => !prioritySlugs.has(emoji.slug));
+  const usageSorted = [...remainingEmojis].sort((a, b) =>
     compareByUsage(a, b, personalUseCounts),
   );
   const usagePriority = usageSorted.slice(0, USAGE_PRIORITY_COUNT);
-  const prioritySlugs = new Set(usagePriority.map((emoji) => emoji.slug));
-  const newestRemaining = emojis
-    .filter((emoji) => !prioritySlugs.has(emoji.slug))
+  const usagePrioritySlugs = new Set(usagePriority.map((emoji) => emoji.slug));
+  const newestRemaining = remainingEmojis
+    .filter((emoji) => !usagePrioritySlugs.has(emoji.slug))
     .sort((a, b) => uploadTime(b) - uploadTime(a) || a.slug.localeCompare(b.slug));
 
-  return [...usagePriority, ...newestRemaining];
+  return [...priorityEmojis, ...usagePriority, ...newestRemaining];
 }

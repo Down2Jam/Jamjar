@@ -20,7 +20,6 @@ import {
   Chip,
   Hstack,
   Link as UiLink,
-  Spinner,
   Text,
   Tooltip,
   Vstack,
@@ -36,6 +35,7 @@ import {
 } from "@/helpers/trackRatingSync";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import CreateComment from "@/components/create-comment";
+import TrackPageLoading from "@/components/track-page-loading";
 import CommentCard from "@/components/posts/CommentCard";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import Link from "@/compat/next-link";
@@ -281,16 +281,7 @@ export default function ClientTrackPage({
   }, [overallCategory, track, user?.id]);
 
   if (isLoading) {
-    return (
-      <Vstack className="p-6">
-        <Card className="max-w-96">
-          <Hstack>
-            <Spinner />
-            <Text size="xl">Loading track</Text>
-          </Hstack>
-        </Card>
-      </Vstack>
-    );
+    return <TrackPageLoading />;
   }
 
   if (!track) {
@@ -374,12 +365,12 @@ export default function ClientTrackPage({
   };
 
   return (
-    <div className="p-4">
+    <>
       <div
-        className="relative overflow-visible rounded-2xl border"
+        className="relative mb-6 overflow-visible border-0 rounded-none lg:border lg:rounded-xl"
         style={{
-          borderColor: colors["base"],
-          background: `linear-gradient(135deg, ${colors["mantle"]}, ${colors["crust"]})`,
+          borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          background: `linear-gradient(135deg, ${colors.mantle}, ${colors.crust})`,
         }}
       >
         <div
@@ -390,88 +381,93 @@ export default function ClientTrackPage({
             backgroundPosition: "center",
           }}
         />
-        <div className="relative p-6">
-          <Vstack align="start" className="gap-4">
-            <Link
-              href={`/g/${track.game.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
-            >
-              <Text size="xs" color="textFaded">
-                {track.game.name}
-              </Text>
-            </Link>
-            <Text size="4xl" color="text" weight="semibold">
-              {track.name}
-            </Text>
-            <Hstack className="flex-wrap gap-3">
-              <Text color="textFaded">By</Text>
-              <Link href={`/u/${primaryArtist.slug}`}>
-                <Text color="text">
-                  {primaryArtist.name || primaryArtist.slug}
+        <div className="relative p-4 md:p-6">
+            <Vstack align="start" className="gap-4">
+              <Link
+                href={`/g/${track.game.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+              >
+                <Text size="xs" color="textFaded">
+                  {track.game.name}
                 </Text>
               </Link>
-            </Hstack>
-            <div className="w-full max-w-6xl">
-              <TrackWaveformPlayer
-                slug={track.slug}
-                name={track.name}
-                artist={primaryArtist}
-                game={track.game}
-                thumbnail={
-                  track.game.soundtrackThumbnail ||
-                  track.game.thumbnail ||
-                  "/images/D2J_Icon.png"
-                }
-                url={track.url}
-                loudnessGainDb={track.loudnessGainDb}
-                comments={track.timestampComments ?? []}
-                canComment={Boolean(user)}
-                onSubmitTimestampComment={async (content, timestamp) => {
-                  const response = await postTrackTimestampComment(
-                    track.id,
-                    content,
-                    timestamp,
-                  );
-                  const payload = await response.json().catch(() => null);
-                  if (!response.ok) {
-                    addToast({
-                      title:
-                        payload?.message ?? "Failed to add timestamp comment",
-                    });
-                    return;
+              <Text size="4xl" color="text" weight="semibold">
+                {track.name}
+              </Text>
+              <Hstack className="flex-wrap gap-3">
+                <Text color="textFaded">By</Text>
+                <Link href={`/u/${primaryArtist.slug}`}>
+                  <Text color="text">
+                    {primaryArtist.name || primaryArtist.slug}
+                  </Text>
+                </Link>
+              </Hstack>
+              <div className="w-full max-w-6xl">
+                <TrackWaveformPlayer
+                  slug={track.slug}
+                  name={track.name}
+                  artist={primaryArtist}
+                  game={track.game}
+                  thumbnail={
+                    track.game.soundtrackThumbnail ||
+                    track.game.thumbnail ||
+                    "/images/D2J_Icon.png"
                   }
-                  setTrack((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          timestampComments: [
-                            ...(prev.timestampComments ?? []),
-                            payload.data,
-                          ].sort((a, b) => a.timestamp - b.timestamp),
-                        }
-                      : prev,
-                  );
-                }}
-              />
-            </div>
-          </Vstack>
+                  url={track.url}
+                  loudnessGainDb={track.loudnessGainDb}
+                  comments={track.timestampComments ?? []}
+                  canComment={Boolean(user)}
+                  onSubmitTimestampComment={async (content, timestamp) => {
+                    const response = await postTrackTimestampComment(
+                      track.id,
+                      content,
+                      timestamp,
+                    );
+                    const payload = await response.json().catch(() => null);
+                    if (!response.ok) {
+                      addToast({
+                        title:
+                          payload?.message ?? "Failed to add timestamp comment",
+                      });
+                      return;
+                    }
+                    setTrack((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            timestampComments: [
+                              ...(prev.timestampComments ?? []),
+                              payload.data,
+                            ].sort((a, b) => a.timestamp - b.timestamp),
+                          }
+                        : prev,
+                    );
+                  }}
+                />
+              </div>
+            </Vstack>
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-6">
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-          <Card>
-            <Vstack align="start" className="gap-4">
-              {track.commentary ? (
-                <ThemedProse>
-                  <MentionedContent content={track.commentary} />
-                </ThemedProse>
-              ) : (
-                <Text color="textFaded">No commentary yet.</Text>
-              )}
-            </Vstack>
-          </Card>
+      <div
+        className="relative overflow-visible border-0 rounded-none lg:border lg:rounded-xl"
+        style={{
+          borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          backgroundColor: colors.mantle,
+          color: colors.text,
+        }}
+      >
+        <div className="grid gap-6 p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]">
+          <div className="min-w-0 flex flex-col gap-4">
+            {track.commentary ? (
+              <ThemedProse className="min-w-0 max-w-full break-words">
+                <MentionedContent content={track.commentary} />
+              </ThemedProse>
+            ) : (
+              <Text color="textFaded">No commentary yet.</Text>
+            )}
+          </div>
 
-          <Vstack align="start" className="gap-4">
+          <Vstack align="stretch" gap={4} className="min-w-0">
             <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 {(isTeamMember || hasVersionToggle) && (
@@ -501,7 +497,7 @@ export default function ClientTrackPage({
                 <div className="flex flex-wrap gap-2">
                   {track.tags && track.tags.length > 0 ? (
                     track.tags.map((tag) => (
-                      <Chip key={tag.id}>{tag.name}</Chip>
+                      <Chip className="post-tag-chip" key={tag.id}>{tag.name}</Chip>
                     ))
                   ) : (
                     <Text size="sm" color="textFaded">
@@ -514,7 +510,7 @@ export default function ClientTrackPage({
                 </Text>
                 <div className="flex flex-wrap gap-2">
                   {credits.map((credit) => (
-                    <Chip
+                    <Chip className="post-tag-chip"
                       key={`${credit.id}-${credit.role}-${credit.userId}`}
                       avatarSrc={credit.user?.profilePicture}
                       href={credit.user ? `/u/${credit.user.slug}` : undefined}
@@ -535,7 +531,7 @@ export default function ClientTrackPage({
                   </Text>
                   <div className="flex flex-wrap gap-2">
                     {visibleFlags.map((flag) => (
-                      <Chip key={flag.id}>{flag.name}</Chip>
+                      <Chip className="post-tag-chip" key={flag.id}>{flag.name}</Chip>
                     ))}
                   </div>
                 </Vstack>
@@ -757,11 +753,11 @@ export default function ClientTrackPage({
                   <Text size="xs" color="textFaded">
                     DETAILS
                   </Text>
-                  {track.bpm && <Chip>BPM: {track.bpm}</Chip>}
-                  {track.musicalKey && <Chip>Key: {track.musicalKey}</Chip>}
-                  {track.license && <Chip>License: {track.license}</Chip>}
+                  {track.bpm && <Chip className="post-tag-chip">BPM: {track.bpm}</Chip>}
+                  {track.musicalKey && <Chip className="post-tag-chip">Key: {track.musicalKey}</Chip>}
+                  {track.license && <Chip className="post-tag-chip">License: {track.license}</Chip>}
                   {track.allowBackgroundUse && (
-                    <Chip>Background use in streams/videos allowed</Chip>
+                    <Chip className="post-tag-chip">Background use in streams/videos allowed</Chip>
                   )}
                   {(track.softwareUsed?.length ?? 0) > 0 && (
                     <>
@@ -770,7 +766,7 @@ export default function ClientTrackPage({
                       </Text>
                       <div className="flex flex-wrap gap-2">
                         {(track.softwareUsed ?? []).map((tool) => (
-                          <Chip key={tool}>{tool}</Chip>
+                          <Chip className="post-tag-chip" key={tool}>{tool}</Chip>
                         ))}
                       </div>
                     </>
@@ -785,9 +781,9 @@ export default function ClientTrackPage({
                   STATS
                 </Text>
                 <Vstack align="start" className="gap-3">
-                  <Chip>Ratings Received: {track.ratings?.length ?? 0}</Chip>
+                  <Chip className="post-tag-chip">Ratings Received: {track.ratings?.length ?? 0}</Chip>
                   <Hstack>
-                    <Chip>
+                    <Chip className="post-tag-chip">
                       Ratings Given:{" "}
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
@@ -813,25 +809,22 @@ export default function ClientTrackPage({
             </Card>
           </Vstack>
         </div>
-
-        <div className="my-10 w-fit">
-          <CreateComment trackId={track.id} />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          {(track.comments ?? [])
-            .sort((a, b) => b.id - a.id)
-            .map((comment) => (
-              <div key={comment.id}>
-                <CommentCard comment={comment} user={user} />
-              </div>
-            ))}
-          {(track.comments ?? []).length === 0 && (
-            <Text color="textFaded">No comments yet.</Text>
-          )}
-        </div>
       </div>
-    </div>
+
+      <Card padding={1.5} shadow="none" className="my-10 w-full max-lg:!rounded-none max-sm:!px-3 max-sm:!py-4">
+        <CreateComment trackId={track.id} />
+      </Card>
+
+      <div className="flex flex-col gap-3">
+        {(track.comments ?? [])
+          .sort((a, b) => b.id - a.id)
+          .map((comment) => (
+            <div key={comment.id}>
+              <CommentCard comment={comment} user={user} edgeToEdge />
+            </div>
+          ))}
+      </div>
+    </>
   );
 }
 

@@ -7,5 +7,7 @@ export interface AchievementType {
   image: string;
   description: string;
   users: UserType[];
+  createdAt?: string;
+  unlocks?: Array<{ userId: number; earnedAt: string }>;
   game: GameType;
 }

@@ -11,6 +11,7 @@ import {
   Italic,
   LinkIcon,
   Minus,
+  Ellipsis,
   Quote,
   Redo,
   SmilePlus,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import EditorMenuButton from "./EditorMenuButton";
 import { getCookie } from "@/helpers/cookie";
-import { Hstack } from "bioloom-ui";
+import { Dropdown, Hstack } from "bioloom-ui";
 import { addToast, Button } from "bioloom-ui";
 import { useEmojis } from "@/providers/useEmojis";
 import { sortEmojisByUsage } from "@/helpers/emojiSorting";
@@ -40,7 +41,7 @@ export default function EditorMenuBar({
   size = "sm",
 }: EditorMenuProps) {
   if (!editor) return null;
-  const { emojis } = useEmojis();
+  const { emojis, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
@@ -140,81 +141,99 @@ export default function EditorMenuBar({
   }
 
   const iconSize = size === "sm" ? 20 : 16;
-  const isXS = size === "xs";
 
   const buttons = [
     {
+      label: "Bold",
+      primary: true,
       icon: <Bold size={iconSize} />,
       onClick: () => editor.chain().focus().toggleBold().run(),
       disabled: !editor.can().toggleBold?.() && false,
       isActive: editor.isActive("bold"),
     },
     {
+      label: "Italic",
+      primary: true,
       icon: <Italic size={iconSize} />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
       disabled: !editor.can().toggleItalic?.() && false,
       isActive: editor.isActive("italic"),
     },
     {
+      label: "Highlight",
+      primary: false,
       icon: <Highlighter size={iconSize} />,
       onClick: () => editor.chain().focus().toggleHighlight().run(),
       disabled: !editor.can().toggleHighlight?.() && false,
       isActive: editor.isActive("highlight"),
     },
     {
+      label: "Strikethrough",
+      primary: false,
       icon: <Strikethrough size={iconSize} />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
       disabled: !editor.can().toggleStrike?.() && false,
       isActive: editor.isActive("strike"),
     },
     {
+      label: "Link",
+      primary: true,
       icon: <LinkIcon size={iconSize} />,
       onClick: addLink,
       disabled: false,
       isActive: editor.isActive("link"),
     },
     {
+      label: "Image",
+      primary: true,
       icon: <ImageIcon size={iconSize} />,
       onClick: addImage,
       disabled: false,
       isActive: false,
     },
     {
+      label: "Subscript",
+      primary: false,
       icon: <Subscript size={iconSize} />,
       onClick: () => editor.chain().focus().toggleSubscript().run(),
       disabled: !editor.can().toggleSubscript?.(),
       isActive: editor.isActive("subscript"),
-      hideOnXS: true,
     },
     {
+      label: "Superscript",
+      primary: false,
       icon: <Superscript size={iconSize} />,
       onClick: () => editor.chain().focus().toggleSuperscript().run(),
       disabled: !editor.can().toggleSuperscript?.(),
       isActive: editor.isActive("superscript"),
-      hideOnXS: true,
     },
     {
+      label: "Horizontal rule",
+      primary: false,
       icon: <Minus size={iconSize} />,
       onClick: () => editor.chain().focus().setHorizontalRule().run(),
       disabled: !editor.can().setHorizontalRule?.(),
       isActive: false,
-      hideOnXS: true,
     },
     {
+      label: "Blockquote",
+      primary: false,
       icon: <Quote size={iconSize} />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
       disabled: !editor.can().toggleBlockquote?.(),
       isActive: editor.isActive("blockquote"),
-      hideOnXS: true,
     },
     {
+      label: "Code block",
+      primary: false,
       icon: <Code size={iconSize} />,
       onClick: () => editor.chain().focus().toggleCodeBlock().run(),
       disabled: !editor.can().toggleCodeBlock?.(),
       isActive: editor.isActive("codeBlock"),
-      hideOnXS: true,
     },
     {
+      label: "Align right",
+      primary: false,
       icon: <AlignRight size={iconSize} />,
       onClick: () =>
         editor.isActive({ textAlign: "right" })
@@ -222,9 +241,10 @@ export default function EditorMenuBar({
           : editor.chain().focus().setTextAlign("right").run(),
       disabled: !editor.can().setTextAlign?.("right"),
       isActive: editor.isActive({ textAlign: "right" }),
-      hideOnXS: true,
     },
     {
+      label: "Align center",
+      primary: false,
       icon: <AlignCenter size={iconSize} />,
       onClick: () =>
         editor.isActive({ textAlign: "center" })
@@ -232,15 +252,18 @@ export default function EditorMenuBar({
           : editor.chain().focus().setTextAlign("center").run(),
       disabled: !editor.can().setTextAlign?.("center"),
       isActive: editor.isActive({ textAlign: "center" }),
-      hideOnXS: true,
     },
     {
+      label: "Undo",
+      primary: false,
       icon: <Undo size={iconSize} />,
       onClick: () => editor.chain().focus().undo().run(),
       disabled: !editor.can().undo(),
       isActive: false,
     },
     {
+      label: "Redo",
+      primary: false,
       icon: <Redo size={iconSize} />,
       onClick: () => editor.chain().focus().redo().run(),
       disabled: !editor.can().redo(),
@@ -248,7 +271,8 @@ export default function EditorMenuBar({
     },
   ];
 
-  const visibleButtons = buttons.filter((b) => !(isXS && b.hideOnXS));
+  const visibleButtons = buttons.filter((button) => button.primary);
+  const moreButtons = buttons.filter((button) => !button.primary);
 
   useEffect(() => {
     if (!emojiOpen) return;
@@ -272,16 +296,16 @@ export default function EditorMenuBar({
 
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
-    return sortEmojisByUsage(
-      emojis.filter((emoji) => !query || emoji.slug.includes(query)),
-    );
-  }, [emojiQuery, emojis]);
+    const matches = (emoji: { slug: string }) => !query || emoji.slug.toLowerCase().includes(query);
+    return sortEmojisByUsage(emojis.filter(matches), {}, priorityEmotes);
+  }, [emojiQuery, emojis, priorityEmotes]);
 
   return (
-    <Hstack className="mb-2" wrap>
-      {visibleButtons.map(({ icon, onClick, disabled, isActive }, index) => (
+    <Hstack className="mb-2" data-editor-toolbar wrap>
+      {visibleButtons.map(({ label, icon, onClick, disabled, isActive }) => (
         <EditorMenuButton
-          key={index}
+          key={label}
+          label={label}
           onClick={onClick}
           isActive={isActive}
           disabled={disabled}
@@ -292,9 +316,10 @@ export default function EditorMenuBar({
       ))}
       <div ref={pickerRef} className="relative z-30">
         <EditorMenuButton
+          label="Emotes"
           onClick={() => setEmojiOpen((open) => !open)}
           isActive={emojiOpen}
-          disabled={emojis.length === 0}
+          disabled={emojis.length === 0 && priorityEmotes.length === 0}
           size={size}
         >
           <SmilePlus size={iconSize} />
@@ -354,6 +379,15 @@ export default function EditorMenuBar({
           </div>
         </Popover>
       </div>
+      <Dropdown portal backdrop={false} onOpenChange={(open) => { if (open) setEmojiOpen(false); }} trigger={
+        <Button data-editor-toolbar-action type="button" size={size} aria-label="More formatting" title="More formatting"><Ellipsis size={iconSize} /></Button>
+      }>
+        {moreButtons.map((button) => <Dropdown.Item key={button.label} disabled={button.disabled} onClick={button.onClick}>
+          <span className="flex items-center gap-2" style={{ color: button.isActive ? colors.blue : undefined }}>
+            {button.icon}<span>{button.label}</span>{button.isActive && <span className="sr-only"> (active)</span>}
+          </span>
+        </Dropdown.Item>)}
+      </Dropdown>
     </Hstack>
   );
 }

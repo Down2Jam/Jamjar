@@ -1808,11 +1808,7 @@ export default function ClientUserPage({
                 </section>
               ))}
             {profileSection === "comments" &&
-              (visibleComments.length === 0 ? (
-                <Text size="sm" color="textFaded">
-                  No comments yet.
-                </Text>
-              ) : (
+              (visibleComments.length > 0 && (
                 <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
                   {visibleComments
                     .sort((a, b) => b.id - a.id)

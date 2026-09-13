@@ -1,6 +1,14 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
+export async function getCommentReplies(commentId: number) {
+  const token = getCookie("token");
+  return fetch(`${BASE_URL}/comment/replies?commentId=${commentId}`, {
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+    credentials: "include",
+  });
+}
+
 export async function postComment(
   content: string,
   postId: number | null,

@@ -177,6 +177,16 @@ html.theme-preview-transitioning *::after {
   top: -1px;
 }
 
+.game-page-description :is(h1, h2, h3, h4, h5, h6) {
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.game-page-description :is(h1, h2, h3, h4, h5, h6) + p:is(:empty, :has(> br:only-child)),
+.game-page-description p:is(:empty, :has(> br:only-child)):has(+ :is(h1, h2, h3, h4, h5, h6)) {
+  display: none;
+}
+
 .post-tag-chip {
   padding: 0.25rem 0.625rem !important;
 }

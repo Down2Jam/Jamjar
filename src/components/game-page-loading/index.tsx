@@ -11,10 +11,10 @@ export default function GamePageLoading() {
 
   return (
     <div role="status" aria-label="Loading game" aria-busy="true">
-      <Card shadow="none" padding={0} className="overflow-hidden" style={{ borderRadius: "0.75rem" }}>
+      <Card shadow="none" padding={0} className="overflow-hidden !rounded-none !border-0 lg:!rounded-xl lg:!border">
         <div aria-hidden="true" className="motion-safe:animate-pulse">
           <div className="h-60" style={{ backgroundColor: placeholderColor }} />
-          <div className="grid gap-8 border-t p-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]" style={{ borderColor }}>
+          <div className="grid gap-6 border-t p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]" style={{ borderColor }}>
             <div className="min-w-0">
               {placeholder("h-9 w-2/5")}
               {placeholder("mt-3 h-4 w-1/4")}

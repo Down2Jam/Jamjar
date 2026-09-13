@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import Popover from "./Popover";
+import { useTheme } from "./theme";
+import { getNeutralBorderColor } from "./borders";
 import { Vstack, Hstack } from "./Stack";
 import { Input } from "./Input";
 import ImageInput from "./ImageInput";
@@ -334,8 +336,9 @@ export function ModalContent({
 
 export interface ModalSectionProps extends HTMLAttributes<HTMLDivElement> {}
 
-export function ModalHeader({ className = "", ...props }: ModalSectionProps) {
-  return <div className={["px-6 pt-6", className].join(" ")} {...props} />;
+export function ModalHeader({ className = "", style, ...props }: ModalSectionProps) {
+  const { colors } = useTheme();
+  return <div className={["border-b px-6 py-5", className].join(" ")} style={{ borderColor: getNeutralBorderColor(colors), ...style }} {...props} />;
 }
 
 export function ModalBody({ className = "", ...props }: ModalSectionProps) {

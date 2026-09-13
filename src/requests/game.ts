@@ -352,7 +352,7 @@ export async function getGames(
     params.set("pageVersion", pageVersion);
   }
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`);
+  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store" });
 }
 
 export async function getGamesPage({
@@ -375,7 +375,7 @@ export async function getGamesPage({
   if (pageVersion && pageVersion !== "JAM") params.set("pageVersion", pageVersion);
   if (cursor) params.set("cursor", cursor);
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`);
+  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store" });
 }
 
 export async function getRandomGame(includeExternal = true) {

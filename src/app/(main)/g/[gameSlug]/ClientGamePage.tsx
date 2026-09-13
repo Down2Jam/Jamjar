@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useRef } from "react";
+import { use, useCallback, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
 import { addToast } from "bioloom-ui";
@@ -36,7 +36,9 @@ import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
 import { postRating, postTrackRating } from "@/requests/rating";
+import ScrollableTracks from "@/components/sidebar/ScrollableTracks";
 import SidebarSong from "@/components/sidebar/SidebarSong";
+import { PriorityEmotesContext } from "@/components/editor/PriorityEmotesContext";
 import { getTrackRatingCategories } from "@/requests/track";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { emitTrackRatingSync, subscribeToTrackRatingSync } from "@/helpers/trackRatingSync";
@@ -53,6 +55,7 @@ import {
   Legend,
 } from "recharts";
 import CreateComment from "@/components/create-comment";
+import useMobileLayout from "@/hooks/useMobileLayout";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Chip } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
@@ -64,6 +67,10 @@ import { useSearchParams } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import GamePageLoading from "@/components/game-page-loading";
+import GameSidebarSection from "@/components/game-sidebar-section";
+import GameLeaderboards from "@/components/game-leaderboards";
+import GameAchievements from "@/components/game-achievements";
+import GameInfoButton from "@/components/game-info-button";
 import { useMusic } from "bioloom-miniplayer";
 import { BASE_URL } from "@/requests/config";
 import { getPlayableBuildUrl } from "@/requests/config";
@@ -332,9 +339,11 @@ export default function ClientGamePage({
   const resolvedParams = use(params);
   const gameSlug = resolvedParams.gameSlug;
   const searchParams = useSearchParams();
+  const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
   const [user, setUser] = useState<UserType | null>(null);
   const [page, setPage] = useState(1);
+  const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [selectedScore, setSelectedScore] = useState<string>("");
   const [selectedLeaderboard, setSelectedLeaderboard] =
     useState<LeaderboardType>();
@@ -364,7 +373,7 @@ export default function ClientGamePage({
   const requestedPageVersion = searchParams.get("pageVersion");
 
   const { siteTheme, colors } = useTheme();
-  const { playItem } = useMusic();
+  const { playItem, current, isPlaying, toggle } = useMusic();
   const interactiveOutlineColor = `color-mix(in srgb, ${colors["text"]} 5%, ${colors["mantle"]})`;
   const t = useTranslations();
   const selectedPage = useMemo(() => {
@@ -392,6 +401,9 @@ export default function ClientGamePage({
       },
     }));
   }, [displayGame]);
+  const isSoundtrackCurrent = soundtrackQueue.some((track) =>
+    current?.slug === track.slug || current?.song === track.url,
+  );
   usePageMetadata({
     title: displayGame?.name ?? game?.name ?? gameSlug,
     description:
@@ -481,59 +493,6 @@ export default function ClientGamePage({
 
     return ids;
   }, [displayGame, game]);
-
-  type RarityTier =
-    | "Abyssal"
-    | "Diamond"
-    | "Gold"
-    | "Silver"
-    | "Bronze"
-    | "Default";
-  function getRarityTier(
-    haveCount: number,
-    totalEngaged: number,
-  ): { tier: RarityTier; pct: number } {
-    const pct = totalEngaged > 0 ? (haveCount / totalEngaged) * 100 : 0;
-
-    if (totalEngaged >= 40 && pct <= 5) return { tier: "Abyssal", pct };
-    if (totalEngaged >= 20 && pct <= 10) return { tier: "Diamond", pct };
-    if (totalEngaged >= 10 && pct <= 25) return { tier: "Gold", pct };
-    if (totalEngaged >= 5 && pct <= 50) return { tier: "Silver", pct };
-    if (totalEngaged >= 5 && pct <= 100) return { tier: "Bronze", pct };
-    return { tier: "Default", pct };
-  }
-
-  const rarityStyles: Record<
-    RarityTier,
-    { border: string; glow?: string; text: string }
-  > = {
-    Abyssal: {
-      border: colors["magenta"] + "99",
-      glow: `0 0 12px ${colors["magentaDark"] + "99"}`,
-      text: colors["magenta"],
-    },
-    Diamond: {
-      border: colors["blue"] + "99",
-      glow: `0 0 10px ${colors["blueDark"] + "99"}`,
-      text: colors["blue"],
-    },
-    Gold: {
-      border: colors["yellow"] + "99",
-      glow: `0 0 10px ${colors["yellowDark"] + "99"}`,
-      text: colors["yellow"],
-    },
-    Silver: {
-      border: colors["gray"] + "99",
-      glow: `0 0 8px ${colors["gray"] + "99"}`,
-      text: colors["gray"],
-    },
-    Bronze: {
-      border: colors["orange"] + "99",
-      glow: `0 0 8px ${colors["orangeDark"] + "99"}`,
-      text: colors["orange"],
-    },
-    Default: { border: colors["base"] + "99", text: colors["textFaded"] },
-  };
 
   useEffect(() => {
     const fetchGameAndUser = async () => {
@@ -694,6 +653,27 @@ export default function ClientGamePage({
     return items;
   }, [screenshots, trailerId]);
   const selectedMedia = mediaItems[currentMediaIndex] ?? null;
+  const screenshotIndices = useMemo(() => mediaItems.flatMap((item, index) => item.type === "screenshot" ? [index] : []), [mediaItems]);
+  const navigateScreenshot = useCallback((direction: number) => {
+    if (!screenshotIndices.length) return;
+    setCurrentMediaIndex((index) => {
+      const position = screenshotIndices.indexOf(index);
+      return screenshotIndices[(position + direction + screenshotIndices.length) % screenshotIndices.length];
+    });
+  }, [screenshotIndices]);
+  useEffect(() => {
+    if (!isScreenshotViewerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsScreenshotViewerOpen(false);
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        navigateScreenshot(event.key === "ArrowLeft" ? -1 : 1);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isScreenshotViewerOpen, navigateScreenshot]);
   const hasMedia = Boolean(trailerId || screenshots.length > 0);
   const trailerPlayerId =
     trailerId && displayGame ? `game-trailer-${displayGame.id}` : null;
@@ -802,7 +782,7 @@ export default function ClientGamePage({
   }, [firstScreenshotIndex, selectedMedia, trailerPlayerId]);
 
   useEffect(() => {
-    if (!selectedMedia || selectedMedia.type !== "screenshot") return;
+    if (isScreenshotViewerOpen || !selectedMedia || selectedMedia.type !== "screenshot") return;
 
     const screenshotIndices = mediaItems.reduce<number[]>(
       (acc, item, index) => {
@@ -827,7 +807,7 @@ export default function ClientGamePage({
     }, 5000);
 
     return () => window.clearTimeout(timeout);
-  }, [currentMediaIndex, mediaItems, selectedMedia]);
+  }, [currentMediaIndex, mediaItems, selectedMedia, isScreenshotViewerOpen]);
 
   const showPreviousMedia = () => {
     if (mediaItems.length <= 1) return;
@@ -866,17 +846,17 @@ export default function ClientGamePage({
   ];
 
   return (
-    <>
+    <PriorityEmotesContext.Provider value={gameEmotes}>
       <div
         style={{
           backgroundColor: siteTheme.colors["mantle"],
           borderColor: interactiveOutlineColor,
           color: siteTheme.colors["text"],
         }}
-        className="border relative rounded-xl overflow-visible"
+        className="relative border-0 lg:border rounded-none lg:rounded-xl overflow-visible"
       >
         <div
-          className="relative h-60 overflow-hidden rounded-t-[11px]"
+          className="relative h-60 overflow-hidden lg:rounded-t-[11px]"
           style={{
             backgroundColor: colors["mantle"],
           }}
@@ -891,12 +871,12 @@ export default function ClientGamePage({
           )}
         </div>
         <div
-          className="flex border-t"
+          className="grid gap-6 border-t p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]"
           style={{
             borderColor: interactiveOutlineColor,
           }}
         >
-          <div className="w-2/3 p-4 flex flex-col gap-4">
+          <div className="min-w-0 flex flex-col gap-4">
             <div>
               <p className="text-4xl">{displayGame.name}</p>
               <Hstack>
@@ -925,9 +905,20 @@ export default function ClientGamePage({
                 </Chip>
               </Hstack>
             </div>
+            <div className="flex flex-wrap gap-2 lg:hidden" aria-label="Game information">
+              {[
+                { name: "Details", icon: "info", show: true },
+                { name: "Media", icon: "image", show: hasMedia },
+                { name: "Ratings", icon: "star", show: showRatingSection },
+                { name: "Soundtrack", icon: "music", show: soundtrackQueue.length > 0 },
+                { name: "Leaderboards", icon: "trophy", show: !!displayGame.leaderboards?.length },
+                { name: "Achievements", icon: "award", show: !!displayGame.achievements?.length },
+                { name: "Stats", icon: "linechart", show: displayGame.category !== "EXTERNAL" },
+              ].filter((section) => section.show).map((section) => <Button key={section.name} size="sm" variant="ghost" icon={section.icon as IconName} onClick={() => setMobileSection(section.name)}>{section.name}</Button>)}
+            </div>
             {playableEmbedUrl && (
               <div
-                className="w-full rounded-xl overflow-hidden relative"
+                className="box-content w-[calc(100%-2px)] max-w-[960px] rounded-xl overflow-hidden relative"
                 style={{
                   aspectRatio: playableBuildUrl
                     ? playableBuildAspectRatio
@@ -1035,7 +1026,7 @@ export default function ClientGamePage({
                 })}
               </div>
             )}
-            <ThemedProse className="[&>div>:last-child]:!mb-0 [&>div>:last-child>:last-child]:!mb-0">
+            <ThemedProse className="game-page-description [&>div>:last-child]:!mb-0 [&>div>:last-child>:last-child]:!mb-0">
               <MentionedContent
                 html={displayGame?.description || t("General.NoDescription")}
               />
@@ -1055,11 +1046,37 @@ export default function ClientGamePage({
               ))}
             </Hstack>
           </div>
-          <div className="flex flex-col w-1/3 gap-4 p-4">
-            <Card shadow="none" className="order-40">
-              <Vstack align="stretch">
+          <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-4">
+            <GameSidebarSection name="Details" selected={mobileSection} onClose={() => setMobileSection(null)}>
+            <Card padding={1} shadow="none">
+                {hasGameplayDetails && (
+                  <div className="absolute right-0 top-0 z-20 hidden items-center gap-1 lg:flex">
+                    {gameplayDetails.length > 0 && (
+                      <GameInfoButton label="Controls" icon="gamepad2">
+                        <div className="flex flex-wrap gap-2">
+                          {gameplayDetails.map((method) => (
+                            <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{method.label}</Chip>
+                          ))}
+                        </div>
+                      </GameInfoButton>
+                    )}
+                    {playtimeDetails.length > 0 && (
+                      <GameInfoButton label="Playtime" icon="clock">
+                        <dl className="flex flex-col gap-2 text-sm">
+                          {playtimeDetails.map((entry) => (
+                            <div key={entry.label} className="flex items-start justify-between gap-4">
+                              <dt style={{ color: colors.textFaded }}>{entry.label}</dt>
+                              <dd className="text-right">{entry.value}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </GameInfoButton>
+                    )}
+                  </div>
+                )}
+              <Vstack align="stretch" gap={3}>
                 {isEditable && (
-                  <Hstack>
+                  <Hstack className={hasGameplayDetails ? "flex-wrap lg:pr-16" : "flex-wrap"}>
                     <div>
                       <Button
                         icon="squarepen"
@@ -1083,7 +1100,7 @@ export default function ClientGamePage({
                   </Hstack>
                 )}
                 {game?.postJamPage && (
-                  <div className="flex">
+                  <div className={`flex pb-1 ${hasGameplayDetails && !isEditable ? "lg:pr-16" : ""}`}>
                     <PageVersionToggle
                       borderColor={interactiveOutlineColor}
                       value={selectedVersion}
@@ -1091,15 +1108,17 @@ export default function ClientGamePage({
                     />
                   </div>
                 )}
-                <>
+                <div className="flex flex-col gap-2">
+                  <div className={`flex min-h-6 items-center gap-2 ${hasGameplayDetails && !isEditable && !game?.postJamPage ? "lg:pr-16" : ""}`}>
                   <p
-                    className="text-xs"
+                    className="text-xs leading-4"
                     style={{
                       color: colors["textFaded"],
                     }}
                   >
                     AUTHORS
                   </p>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {displayGame.team.users.map((user) => (
                       <UserHoverPreview key={user.id} user={user} portal>
@@ -1112,12 +1131,12 @@ export default function ClientGamePage({
                       </UserHoverPreview>
                     ))}
                   </div>
-                </>
+                </div>
 
                 {displayGame.tags && displayGame.tags.length > 0 && (
-                  <>
+                  <div className="flex flex-col gap-2">
                     <p
-                      className="text-xs"
+                      className="text-xs leading-4"
                       style={{
                         color: colors["textFaded"],
                       }}
@@ -1131,12 +1150,12 @@ export default function ClientGamePage({
                         </Chip>
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
                 {displayGame.flags && displayGame.flags.length > 0 && (
-                  <>
+                  <div className="flex flex-col gap-2">
                     <p
-                      className="text-xs"
+                      className="text-xs leading-4"
                       style={{
                         color: colors["textFaded"],
                       }}
@@ -1148,13 +1167,13 @@ export default function ClientGamePage({
                         <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} key={flag.id}>{flag.name}</Chip>
                       ))}
                     </div>
-                  </>
+                  </div>
                 )}
                 {displayGame.downloadLinks &&
                   displayGame.downloadLinks.length > 0 && (
-                    <>
+                    <div className="flex flex-col gap-2">
                       <p
-                        className="text-xs"
+                        className="text-xs leading-4"
                         style={{
                           color: colors["textFaded"],
                         }}
@@ -1174,17 +1193,32 @@ export default function ClientGamePage({
                           </Link>
                         ))}
                       </div>
-                    </>
+                    </div>
                   )}
+                {gameplayDetails.length > 0 && <div className="flex flex-col gap-2 lg:hidden">
+                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>CONTROLS</p>
+                  <div className="flex flex-wrap gap-2">
+                    {gameplayDetails.map((method) => <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{method.label}</Chip>)}
+                  </div>
+                </div>}
+                {playtimeDetails.length > 0 && <div className="flex flex-col gap-2 lg:hidden">
+                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>PLAYTIME</p>
+                  <dl className="flex flex-col gap-2 text-sm">
+                    {playtimeDetails.map((entry) => <div key={entry.label} className="flex items-start justify-between gap-4">
+                      <dt style={{ color: colors.textFaded }}>{entry.label}</dt>
+                      <dd className="text-right">{entry.value}</dd>
+                    </div>)}
+                  </dl>
+                </div>}
               </Vstack>
-
-
             </Card>
+            </GameSidebarSection>
+            <GameSidebarSection name="Media" selected={mobileSection} onClose={() => setMobileSection(null)}>
             {hasMedia && (
-              <Card shadow="none" className="order-20">
-                <Vstack align="stretch" gap={3}>
+              <Card padding={1} shadow="none">
+                <Vstack align="stretch" gap={2}>
                   <p
-                    className="text-xs"
+                    className="text-xs leading-4"
                     style={{
                       color: colors["textFaded"],
                     }}
@@ -1331,68 +1365,13 @@ export default function ClientGamePage({
               </Card>
             )}
 
-            {hasGameplayDetails && (
-              <Card shadow="none" className="order-25">
-                <Vstack align="stretch" gap={3}>
-                  {gameplayDetails.length > 0 && (
-                    <>
-                      <p
-                        className="text-xs"
-                        style={{
-                          color: colors["textFaded"],
-                        }}
-                      >
-                        INPUT METHODS
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {gameplayDetails.map((method) => (
-                          <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} key={method.label} icon={method.icon}>
-                            {method.label}
-                          </Chip>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {playtimeDetails.length > 0 && (
-                    <>
-                      <p
-                        className="text-xs"
-                        style={{
-                          color: colors["textFaded"],
-                        }}
-                      >
-                        PLAYTIME
-                      </p>
-                      <Vstack align="stretch" gap={2}>
-                        <div className="grid grid-cols-1 gap-2">
-                          {playtimeDetails.map((entry) => (
-                            <div
-                              key={entry.label}
-                              className="flex items-center justify-between rounded-lg px-3 py-2"
-                              style={{
-                                backgroundColor: colors["base"],
-                              }}
-                            >
-                              <Text size="sm" color="textFaded">
-                                {entry.label}
-                              </Text>
-                              <Text size="sm" color="textFaded">
-                                {entry.value}
-                              </Text>
-                            </div>
-                          ))}
-                        </div>
-                      </Vstack>
-                    </>
-                  )}
-                </Vstack>
-              </Card>
-            )}
+            </GameSidebarSection>
+            <GameSidebarSection name="Ratings" selected={mobileSection} onClose={() => setMobileSection(null)}>
             {showRatingSection && (
-            <Card shadow="none">
+            <Card padding={1} shadow="none">
               <Vstack align="start">
                 <p
-                  className="text-xs"
+                  className="text-xs leading-4"
                   style={{
                     color: colors["textFaded"],
                   }}
@@ -1607,518 +1586,11 @@ export default function ClientGamePage({
               </Vstack>
             </Card>
             )}
-            {displayGame.achievements &&
-              displayGame.achievements.length > 0 && (
-                <Card shadow="none" className="order-30">
-                  <Vstack align="start">
-                    <p
-                      className="text-xs"
-                      style={{
-                        color: colors["textFaded"],
-                      }}
-                    >
-                      ACHIEVEMENTS
-                    </p>
 
-                    <Text color="textFaded" size="xs">
-                      You&apos;ve unlocked{" "}
-                      {
-                        displayGame.achievements.filter(
-                          (achievement) =>
-                            achievement.users.filter(
-                              (user2) => user?.id === user2.id,
-                            ).length > 0,
-                        ).length
-                      }
-                      /{displayGame.achievements.length}
-                    </Text>
-
-                    <Hstack wrap>
-                      {displayGame.achievements
-                        .sort((a, b) => {
-                          const haveCount = a.users.length;
-                          const haveCountB = b.users.length;
-                          const users = engagedUserIds.size;
-                          return haveCountB / users - haveCount / users;
-                        })
-                        .map((achievement) => {
-                          const haveCount = achievement.users.length;
-                          const isLoggedIn = Boolean(user);
-                          const hasAchievement = achievement.users.some(
-                            (u) => u.id === user?.id,
-                          );
-                          const { tier, pct } = getRarityTier(
-                            haveCount,
-                            engagedUserIds.size,
-                          );
-                          const style = rarityStyles[tier];
-
-                          return (
-                            <div key={achievement.id} className="relative">
-                              <Tooltip
-                                position="top"
-                                content={
-                                  <Vstack align="start">
-                                    <Hstack>
-                                      <Image
-                                        src={
-                                          achievement.image ||
-                                          displayGame.thumbnail ||
-                                          "/images/D2J_Icon.png"
-                                        }
-                                        width={48}
-                                        height={48}
-                                        alt="Achievement"
-                                        className="rounded-xl w-12 h-12 object-cover"
-                                      />
-                                      <Vstack align="start" gap={0}>
-                                        <Text color="text">
-                                          {achievement.name}
-                                        </Text>
-                                        <Text color="textFaded" size="xs">
-                                          {achievement.description}
-                                        </Text>
-                                        <Text
-                                          size="xs"
-                                          style={{ color: style.text }}
-                                        >
-                                          {tier == "Default"
-                                            ? undefined
-                                            : `${tier} • `}
-                                          {pct.toFixed(1)}% of users achieved
-                                        </Text>
-                                        <Text
-                                          color={
-                                            hasAchievement ? "red" : "green"
-                                          }
-                                          size="xs"
-                                        >
-                                          {isLoggedIn
-                                            ? hasAchievement
-                                              ? "Click to mark as unachieved"
-                                              : "Click to mark as achieved"
-                                            : ""}
-                                        </Text>
-                                      </Vstack>
-                                    </Hstack>
-                                  </Vstack>
-                                }
-                              >
-                                <button
-                                  onClick={async () => {
-                                    if (!user) return;
-                                    const hasIt = achievement.users.some(
-                                      (u) => u.id === user.id,
-                                    );
-                                    const method = hasIt ? "DELETE" : "POST";
-                                    const res = await fetch(
-                                      `${BASE_URL}/achievement`,
-                                      {
-                                        method,
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                          authorization: `Bearer ${getCookie(
-                                            "token",
-                                          )}`,
-                                        },
-                                        credentials: "include",
-                                        body: JSON.stringify({
-                                          achievementId: achievement.id,
-                                        }),
-                                      },
-                                    );
-                                    if (res.ok) {
-                                      const nextUsers = hasIt
-                                        ? achievement.users.filter(
-                                            (u) => u.id !== user.id,
-                                          )
-                                        : [...achievement.users, user];
-
-                                      setGame((prev) => {
-                                        if (!prev) return prev;
-
-                                        const targetPageKey =
-                                          selectedVersion === "POST_JAM"
-                                            ? "postJamPage"
-                                            : "jamPage";
-                                        const targetPage = prev[targetPageKey];
-
-                                        if (!targetPage) return prev;
-
-                                        const updatedPage = {
-                                          ...targetPage,
-                                          achievements: (
-                                            targetPage.achievements ?? []
-                                          ).map((entry) =>
-                                            entry.id === achievement.id
-                                              ? {
-                                                  ...entry,
-                                                  users: nextUsers,
-                                                }
-                                              : entry,
-                                          ),
-                                        };
-
-                                        return {
-                                          ...prev,
-                                          [targetPageKey]: updatedPage,
-                                          achievements:
-                                            selectedVersion === "JAM"
-                                              ? updatedPage.achievements
-                                              : prev.achievements,
-                                        };
-                                      });
-                                    } else {
-                                      const payload = await res
-                                        .json()
-                                        .catch(() => null);
-                                      addToast({
-                                        title:
-                                          payload?.message ??
-                                          "Failed to update achievement",
-                                      });
-                                    }
-                                  }}
-                                  disabled={!isLoggedIn}
-                                  className={`rounded-xl p-1 ${
-                                    isLoggedIn
-                                      ? "cursor-pointer"
-                                      : "cursor-default"
-                                  }`}
-                                  style={{
-                                    backgroundColor: colors["base"],
-                                    borderWidth: 2,
-                                    borderStyle: "solid",
-                                    borderColor: style.border,
-                                    boxShadow: style.glow,
-                                    opacity: hasAchievement ? 1 : 0.5,
-                                    filter: hasAchievement
-                                      ? ""
-                                      : "grayscale(1)",
-                                  }}
-                                >
-                                  <Image
-                                    src={
-                                      achievement.image ||
-                                      displayGame.thumbnail ||
-                                      "/images/D2J_Icon.png"
-                                    }
-                                    width={48}
-                                    height={48}
-                                    alt="Achievement"
-                                    className="rounded-lg object-cover w-12 h-12"
-                                  />
-                                </button>
-                              </Tooltip>
-
-                              {tier != "Default" && (
-                                <div
-                                  className="absolute -top-1 -right-1 px-1 py-0.5 rounded-md text-[10px]"
-                                  style={{
-                                    backgroundColor: colors["mantle"],
-                                    color: style.text,
-                                    border: `1px solid ${style.border}`,
-                                    filter: hasAchievement
-                                      ? ""
-                                      : "grayscale(1)",
-                                  }}
-                                >
-                                  {tier}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                    </Hstack>
-                  </Vstack>
-                </Card>
-              )}
-            {displayGame.leaderboards &&
-              displayGame.leaderboards.length > 0 && (
-                <Card shadow="none" className="order-10">
-                  <Vstack align="start">
-                    <p
-                      className="text-xs"
-                      style={{
-                        color: colors["textFaded"],
-                      }}
-                    >
-                      LEADERBOARD
-                    </p>
-
-                    <Tabs>
-                      {displayGame.leaderboards.map((leaderboard) => (
-                        <Tab
-                          key={leaderboard.id}
-                          title={leaderboard.name}
-                          icon={
-                            leaderboard.type == "SCORE"
-                              ? "trophy"
-                              : leaderboard.type == "GOLF"
-                                ? "landplot"
-                                : leaderboard.type == "SPEEDRUN"
-                                  ? "rabbit"
-                                  : "turtle"
-                          }
-                        >
-                          {leaderboard.scores && (
-                            <>
-                              <div />
-                              <Table
-                                bottomContent={
-                                  (leaderboard.onlyBest
-                                    ? Array.from(
-                                        leaderboard.scores
-                                          .reduce((acc, score) => {
-                                            if (
-                                              !acc.has(score.user.id) ||
-                                              acc.get(score.user.id).data <
-                                                score.data
-                                            ) {
-                                              acc.set(score.user.id, score);
-                                            }
-                                            return acc;
-                                          }, new Map())
-                                          .values(),
-                                      )
-                                    : leaderboard.scores
-                                  ).length >= leaderboard.maxUsersShown ? (
-                                    <div className="flex w-full justify-center">
-                                      <Pagination
-                                        showControls
-                                        color="primary"
-                                        variant="faded"
-                                        page={page}
-                                        total={Math.ceil(
-                                          (leaderboard.onlyBest
-                                            ? Array.from(
-                                                leaderboard.scores
-                                                  .reduce((acc, score) => {
-                                                    if (
-                                                      !acc.has(score.user.id) ||
-                                                      acc.get(score.user.id)
-                                                        .data < score.data
-                                                    ) {
-                                                      acc.set(
-                                                        score.user.id,
-                                                        score,
-                                                      );
-                                                    }
-                                                    return acc;
-                                                  }, new Map())
-                                                  .values(),
-                                              )
-                                            : leaderboard.scores
-                                          ).length / leaderboard.maxUsersShown,
-                                        )}
-                                        onChange={(page) => setPage(page)}
-                                      />
-                                    </div>
-                                  ) : undefined
-                                }
-                              >
-                                <TableHeader>
-                                  <TableColumn>#</TableColumn>
-                                  <TableColumn>User</TableColumn>
-                                  <TableColumn>
-                                    {leaderboard.type == "SCORE" ||
-                                    leaderboard.type == "GOLF"
-                                      ? "Score"
-                                      : "Time"}
-                                  </TableColumn>
-                                  <TableColumn>Actions</TableColumn>
-                                </TableHeader>
-                                <TableBody>
-                                  {(leaderboard.onlyBest
-                                    ? Array.from(
-                                        leaderboard.scores
-                                          .reduce((acc, score) => {
-                                            if (
-                                              !acc.has(score.user.id) ||
-                                              (acc.get(score.user.id).data <
-                                                score.data &&
-                                                (leaderboard.type == "SCORE" ||
-                                                  leaderboard.type ==
-                                                    "ENDURANCE")) ||
-                                              (acc.get(score.user.id).data >
-                                                score.data &&
-                                                (leaderboard.type == "GOLF" ||
-                                                  leaderboard.type ==
-                                                    "SPEEDRUN"))
-                                            ) {
-                                              acc.set(score.user.id, score);
-                                            }
-                                            return acc;
-                                          }, new Map())
-                                          .values(),
-                                      )
-                                    : leaderboard.scores
-                                  )
-                                    .sort((a, b) => {
-                                      if (
-                                        leaderboard.type == "GOLF" ||
-                                        leaderboard.type == "SPEEDRUN"
-                                      ) {
-                                        return a.data - b.data;
-                                      } else {
-                                        return b.data - a.data;
-                                      }
-                                    })
-                                    .slice(
-                                      0 +
-                                        leaderboard.maxUsersShown * (page - 1),
-                                      leaderboard.maxUsersShown * page,
-                                    )
-                                    .map((score, i) => (
-                                      <TableRow key={score.id}>
-                                        <TableCell
-                                          style={{
-                                            color: colors["textFaded"],
-                                          }}
-                                        >
-                                          {i +
-                                            1 +
-                                            leaderboard.maxUsersShown *
-                                              (page - 1)}
-                                        </TableCell>
-                                        <TableCell>
-                                          <UserHoverPreview user={score.user} portal>
-                                            <Link
-                                              href={`/u/${score.user.slug}`}
-                                              underline={false}
-                                            >
-                                              <Hstack>
-                                                <Avatar
-                                                  src={score.user.profilePicture}
-                                                  size={24}
-                                                />
-                                                <Text color="text">
-                                                  {score.user.name}
-                                                </Text>
-                                              </Hstack>
-                                            </Link>
-                                          </UserHoverPreview>
-                                        </TableCell>
-                                        <TableCell
-                                          style={{
-                                            color: colors["blue"],
-                                          }}
-                                        >
-                                          {leaderboard.type == "GOLF" ||
-                                          leaderboard.type == "SCORE"
-                                            ? score.data /
-                                              10 ** leaderboard.decimalPlaces
-                                            : (() => {
-                                                const totalMilliseconds =
-                                                  score.data;
-                                                const hours = Math.floor(
-                                                  totalMilliseconds / 3600000,
-                                                );
-                                                const minutes = Math.floor(
-                                                  (totalMilliseconds %
-                                                    3600000) /
-                                                    60000,
-                                                );
-                                                const seconds = Math.floor(
-                                                  (totalMilliseconds % 60000) /
-                                                    1000,
-                                                );
-                                                const milliseconds =
-                                                  totalMilliseconds % 1000;
-
-                                                return `${
-                                                  hours > 0 ? `${hours}:` : ""
-                                                }${minutes
-                                                  .toString()
-                                                  .padStart(2, "0")}:${seconds
-                                                  .toString()
-                                                  .padStart(2, "0")}${
-                                                  milliseconds > 0
-                                                    ? `.${milliseconds
-                                                        .toString()
-                                                        .padStart(3, "0")}`
-                                                    : ""
-                                                }`;
-                                              })()}
-                                        </TableCell>
-                                        <TableCell className="flex gap-2">
-                                          <Button
-                                            icon="eye"
-                                            onClick={() => {
-                                              setSelectedScore(score.evidence);
-                                              setIsOpen(true);
-                                            }}
-                                            size="md"
-                                          />
-                                          {(isEditable ||
-                                            score.user.id == user?.id ||
-                                            user?.mod) && (
-                                            <Button
-                                              color="red"
-                                              icon="trash"
-                                              onClick={async () => {
-                                                const success =
-                                                  await deleteScore(score.id);
-                                                if (success) {
-                                                  window.location.reload();
-                                                }
-                                              }}
-                                              size="sm"
-                                            />
-                                          )}
-                                        </TableCell>
-                                      </TableRow>
-                                    ))}
-                                </TableBody>
-                              </Table>
-                            </>
-                          )}
-                          <div className="mt-2">
-                            <Button
-                              icon="plus"
-                              style={{ boxShadow: "none" }}
-                              onClick={() => {
-                                setSelectedLeaderboard(leaderboard);
-                                setIsOpen2(true);
-                              }}
-                            >
-                              Submit Score
-                            </Button>
-                          </div>
-                        </Tab>
-                      ))}
-                    </Tabs>
-                  </Vstack>
-                </Card>
-              )}
-            {gameEmotes.length > 0 && (
-              <Card shadow="none">
-                <Vstack align="stretch">
-                  <p
-                    className="text-xs"
-                    style={{
-                      color: colors["textFaded"],
-                    }}
-                  >
-                    EMOTES
-                  </p>
-
-                  <div className="flex flex-wrap gap-3">
-                    {gameEmotes.map((emoji) => (
-                      <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}
-                        key={emoji.id}
-                        avatarSrc={emoji.image}
-                        avatarAlt={`:${emoji.slug}:`}
-                      >
-                        <Text size="sm">:{emoji.slug}:</Text>
-                      </Chip>
-                    ))}
-                  </div>
-                </Vstack>
-              </Card>
-            )}
+            </GameSidebarSection>
+            <GameSidebarSection name="Soundtrack" selected={mobileSection} onClose={() => setMobileSection(null)}>
             {soundtrackQueue.length > 0 && (
-              <Card shadow="none">
+              <Card padding={1} shadow="none">
                 <Vstack align="stretch" gap={0}>
                   <div className="flex items-center gap-3 pb-3">
                     <img
@@ -2128,17 +1600,21 @@ export default function ClientGamePage({
                     />
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">Soundtrack</p>
-                      <p className="text-xs" style={{ color: colors.textFaded }}>
+                      <p className="text-xs leading-4" style={{ color: colors.textFaded }}>
                         {soundtrackQueue.length} {soundtrackQueue.length === 1 ? "track" : "tracks"}
                       </p>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
-                      icon="play"
-                      aria-label="Play soundtrack from the first track"
+                      icon={isSoundtrackCurrent && isPlaying ? "pause" : "play"}
+                      aria-label={isSoundtrackCurrent && isPlaying ? "Pause soundtrack" : isSoundtrackCurrent ? "Resume soundtrack" : "Play soundtrack from the first track"}
                       className="shrink-0"
                       onClick={() => {
+                        if (isSoundtrackCurrent) {
+                          toggle();
+                          return;
+                        }
                         const firstTrack = soundtrackQueue[0];
                         if (!firstTrack) return;
                         void playItem({
@@ -2152,9 +1628,10 @@ export default function ClientGamePage({
                         }, soundtrackQueue);
                       }}
                     >
-                      Play
+                      {isSoundtrackCurrent && isPlaying ? "Pause" : "Play"}
                     </Button>
                   </div>
+                  <ScrollableTracks activeIndex={soundtrackQueue.findIndex((track) => current?.slug === track.slug || current?.song === track.url)}>
                   {soundtrackQueue.map((track, index) => (
                     <SidebarSong
                       key={track.id}
@@ -2193,22 +1670,116 @@ export default function ClientGamePage({
                       }}
                     />
                   ))}
+                  </ScrollableTracks>
                 </Vstack>
               </Card>
             )}
 
+            </GameSidebarSection>
+            <GameSidebarSection name="Leaderboards" selected={mobileSection} onClose={() => setMobileSection(null)}>
+            {!!displayGame.leaderboards?.length && <GameLeaderboards key={`${displayGame.id}-${selectedVersion}`} leaderboards={displayGame.leaderboards} userId={user?.id} canManage={!!(isEditable || user?.mod)} onSubmit={(leaderboard) => {
+              setSelectedLeaderboard(leaderboard);
+              setIsOpen2(true);
+            }} onDelete={async (score) => {
+              if (await deleteScore(score.id)) window.location.reload();
+            }} />}
+            </GameSidebarSection>
+            <GameSidebarSection name="Achievements" directMobile selected={mobileSection} onClose={() => setMobileSection(null)}>
+            {(mobile) => displayGame.achievements &&
+              displayGame.achievements.length > 0 && (
+                <GameAchievements modalOnly={mobile} onClose={() => setMobileSection(null)} gameName={displayGame.name} achievements={displayGame.achievements} userId={user?.id} thumbnail={displayGame.thumbnail} engagedUsers={engagedUserIds.size} onToggle={async (achievement) => {
+                                    if (!user) return;
+                                    const hasIt = achievement.users.some(
+                                      (u) => u.id === user.id,
+                                    );
+                                    const method = hasIt ? "DELETE" : "POST";
+                                    const res = await fetch(
+                                      `${BASE_URL}/achievement`,
+                                      {
+                                        method,
+                                        headers: {
+                                          "Content-Type": "application/json",
+                                          authorization: `Bearer ${getCookie(
+                                            "token",
+                                          )}`,
+                                        },
+                                        credentials: "include",
+                                        body: JSON.stringify({
+                                          achievementId: achievement.id,
+                                        }),
+                                      },
+                                    );
+                                    if (res.ok) {
+                                      const payload = await res.json().catch(() => null);
+                                      const nextUnlocks = (achievement.unlocks ?? []).filter((entry) => entry.userId !== user.id);
+                                      if (!hasIt && payload?.earnedAt) nextUnlocks.push({ userId: user.id, earnedAt: payload.earnedAt });
+                                      const nextUsers = hasIt
+                                        ? achievement.users.filter(
+                                            (u) => u.id !== user.id,
+                                          )
+                                        : [...achievement.users, user];
+
+                                      setGame((prev) => {
+                                        if (!prev) return prev;
+
+                                        const targetPageKey =
+                                          selectedVersion === "POST_JAM"
+                                            ? "postJamPage"
+                                            : "jamPage";
+                                        const targetPage = prev[targetPageKey];
+
+                                        if (!targetPage) return prev;
+
+                                        const updatedPage = {
+                                          ...targetPage,
+                                          achievements: (
+                                            targetPage.achievements ?? []
+                                          ).map((entry) =>
+                                            entry.id === achievement.id
+                                              ? {
+                                                  ...entry,
+                                                  users: nextUsers,
+                                                  unlocks: nextUnlocks,
+                                                }
+                                              : entry,
+                                          ),
+                                        };
+
+                                        return {
+                                          ...prev,
+                                          [targetPageKey]: updatedPage,
+                                          achievements:
+                                            selectedVersion === "JAM"
+                                              ? updatedPage.achievements
+                                              : prev.achievements,
+                                        };
+                                      });
+                                    } else {
+                                      const payload = await res
+                                        .json()
+                                        .catch(() => null);
+                                      addToast({
+                                        title:
+                                          payload?.message ??
+                                          "Failed to update achievement",
+                                      });
+                                    }
+}} />
+              )}
+            </GameSidebarSection>
+            <GameSidebarSection name="Stats" selected={mobileSection} onClose={() => setMobileSection(null)}>
 {displayGame.category !== "EXTERNAL" && (
-              <Card shadow="none" className="order-50">
+              <Card padding={1} shadow="none">
                 <Vstack align="start">
                 <p
-                  className="text-xs"
+                  className="text-xs leading-4"
                   style={{
                     color: colors["textFaded"],
                   }}
                 >
                   STATS
                 </p>
-                <Vstack align="start">
+                <Vstack align="start" gap={1.5}>
                   <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                     Ratings Received:{" "}
                     {Math.round(
@@ -2331,6 +1902,7 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
+            </GameSidebarSection>
             <Popover
               shown={
                 isScreenshotViewerOpen && selectedMedia?.type === "screenshot"
@@ -2343,12 +1915,18 @@ export default function ClientGamePage({
               onClose={() => setIsScreenshotViewerOpen(false)}
             >
               {selectedMedia?.type === "screenshot" && (
-                <div className="relative inline-flex max-h-[90vh] max-w-[92vw] items-center justify-center p-4">
+                <div className="relative flex max-h-[90vh] max-w-[92vw] flex-col items-center gap-3 p-4">
                   <img
                     src={selectedMedia.src}
                     alt={`${displayGame.name} screenshot ${selectedMedia.index + 1}`}
-                    className="max-h-[84vh] max-w-full object-contain"
+                    className="max-h-[min(720px,76vh)] max-w-[min(1280px,calc(92vw-32px))] object-contain"
                   />
+                  <div className="flex items-center gap-3 rounded-lg border p-2" style={{ backgroundColor: colors.mantle, borderColor: interactiveOutlineColor }}>
+                    <Button icon="chevronleft" variant="ghost" aria-label="Previous screenshot" disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(-1)} />
+                    <span className="text-sm tabular-nums" aria-live="polite">{screenshotIndices.indexOf(currentMediaIndex) + 1} / {screenshotIndices.length}</span>
+                    <Button icon="chevronright" variant="ghost" aria-label="Next screenshot" disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(1)} />
+                    <Button icon="x" variant="ghost" aria-label="Close screenshot viewer" onClick={() => setIsScreenshotViewerOpen(false)} />
+                  </div>
                 </div>
               )}
             </Popover>
@@ -2503,20 +2081,22 @@ export default function ClientGamePage({
           </div>
         </div>
       </div>
-      <Card shadow="none" className="my-10">
+      {mobileLayout ? <div className="my-6 px-3">
         <CreateComment gamePageId={selectedPage?.id} />
-      </Card>
+      </div> : <Card padding={1.5} shadow="none" className="my-10 max-lg:!rounded-none">
+        <CreateComment gamePageId={selectedPage?.id} />
+      </Card>}
 
       <div className="flex flex-col gap-3">
         {displayComments
           ?.sort((a, b) => b.id - a.id)
           .map((comment) => (
             <div key={comment.id}>
-              <CommentCard comment={comment} user={user} />
+              <CommentCard comment={comment} user={user} edgeToEdge />
             </div>
           ))}
       </div>
-    </>
+    </PriorityEmotesContext.Provider>
   );
 }
 

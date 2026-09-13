@@ -30,7 +30,7 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
       </div>
       <table className="w-full text-left text-sm">
         <thead style={{ color: colors.textFaded }}><tr><th className="p-3 font-medium">Rank</th><th className="p-3 font-medium">Player</th><th className="p-3 text-right font-medium">{time ? "Time" : "Score"}</th></tr></thead>
-        <tbody>{samples.slice(0, Math.max(0, leaderboard.maxUsersShown)).map((value, index) => (
+        <tbody>{samples.map((value, index) => (
           <tr key={index} className="border-t" style={{ borderColor: colors.base }}>
             <td className="p-3" style={{ color: index === 0 ? colors.yellow : colors.textFaded }}>#{index + 1}</td>
             <td className="p-3">Player {String.fromCharCode(65 + index)}</td>
@@ -38,7 +38,6 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
           </tr>
         ))}</tbody>
       </table>
-      {leaderboard.maxUsersShown === 0 && <p className="p-3 text-xs" style={{ color: colors.textFaded }}>No entries are displayed when players per page is 0.</p>}
       <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{types[leaderboard.type].rule} · {leaderboard.onlyBest ? "Best entry per player" : "All entries"}</p>
     </section>
   );
@@ -63,8 +62,7 @@ export default function LeaderboardManager({ value, onChange }: {
   const apply = () => {
     if (!editing) return;
     const { draft, index } = editing;
-    if (!Number.isInteger(draft.maxUsersShown) || draft.maxUsersShown < 0 || draft.maxUsersShown > 100 ||
-        !Number.isInteger(draft.decimalPlaces) || draft.decimalPlaces < 0 || draft.decimalPlaces > 3) {
+    if (!Number.isInteger(draft.decimalPlaces) || draft.decimalPlaces < 0 || draft.decimalPlaces > 3) {
       setInvalidNumber(true);
       return;
     }
@@ -85,7 +83,7 @@ export default function LeaderboardManager({ value, onChange }: {
               <div className="flex min-w-0 items-start gap-3">
                 <Icon name={types[lb.type].icon} />
                 <div className="min-w-0"><p className="break-words text-sm font-semibold">{lb.name || `Leaderboard ${index + 1}`}</p>
-                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{types[lb.type].rule} · {lb.onlyBest ? "Best per player" : "All entries"} · {lb.maxUsersShown} per page · {lb.scores.length} entries</p>
+                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{types[lb.type].rule} · {lb.onlyBest ? "Best per player" : "All entries"} · {lb.scores.length} entries</p>
                 </div>
               </div>
               <Button icon="pencil" variant="ghost" onClick={() => open(index)} aria-label={`Preview and edit ${lb.name || `leaderboard ${index + 1}`}`}>Preview & edit</Button>
@@ -105,10 +103,9 @@ export default function LeaderboardManager({ value, onChange }: {
                     {Object.entries(types).map(([type, info]) => <Dropdown.Item key={type} value={type} icon={info.icon} description={info.rule}>{info.label}</Dropdown.Item>)}
                   </Dropdown>
                 </div>
-                <Input label="Players per page" type="number" min={0} max={100} value={editing.draft.maxUsersShown} onValueChange={v => update({ maxUsersShown: Number(v) })} />
                 {(editing.draft.type === "SCORE" || editing.draft.type === "GOLF") && <Input label="Decimal places" type="number" min={0} max={3} value={editing.draft.decimalPlaces} onValueChange={v => update({ decimalPlaces: Number(v) })} />}
                 <label className="flex items-center gap-2 text-sm"><Switch checked={editing.draft.onlyBest} onChange={onlyBest => update({ onlyBest })} />Only show each player’s best entry</label>
-                {invalidNumber && <p role="alert" className="text-sm" style={{ color: colors.red }}>Use whole numbers: 0–100 players and 0–3 decimal places.</p>}
+                {invalidNumber && <p role="alert" className="text-sm" style={{ color: colors.red }}>Use a whole number from 0 to 3 for decimal places.</p>}
               </div>
               <div className="min-w-0"><Preview leaderboard={{ ...editing.draft, decimalPlaces: Math.max(0, Math.min(3, editing.draft.decimalPlaces || 0)) }} /></div>
             </div>

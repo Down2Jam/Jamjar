@@ -1,0 +1,28 @@
+.icon {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 calc(var(--rarity-glow, 0px) + 4px) -3px color-mix(in srgb, var(--rarity-color, transparent) calc(var(--rarity-opacity, 0) * 100%), transparent);
+}
+
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, color-mix(in srgb, var(--rarity-color) 45%, transparent) 48%, #ffffff70 50%, transparent 65%);
+  background-size: 300% 100%;
+  animation: sheen 6s ease-in-out infinite;
+}
+
+@keyframes sheen {
+  0%, 65% { background-position: 150% 0; opacity: 0; }
+  72% { opacity: 0.25; }
+  90%, 100% { background-position: -50% 0; opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer::after { animation: none; opacity: 0; }
+}

@@ -77,7 +77,7 @@ export default function TrackWaveformPlayer({
   onSubmitTimestampComment: (content: string, timestamp: number) => Promise<void>;
 }) {
   const { colors } = useTheme();
-  const { emojis } = useEmojis();
+  const { emojis, priorityEmotes } = useEmojis();
   const { audioEl, current, isPlaying, playItem, seek, shown, setShown } =
     useMusic();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -239,8 +239,10 @@ export default function TrackWaveformPlayer({
     const query = emojiQuery.trim().toLowerCase();
     return sortEmojisByUsage(
       emojis.filter((emoji) => !query || emoji.slug.includes(query)),
+      {},
+      priorityEmotes,
     );
-  }, [emojiQuery, emojis]);
+  }, [emojiQuery, emojis, priorityEmotes]);
 
   const seekTo = (nextTime: number) => {
     const clampedTime = Math.min(Math.max(0, nextTime), duration || 0);

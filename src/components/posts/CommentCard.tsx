@@ -1,5 +1,5 @@
 import { CommentType } from "@/types/CommentType";
-import { MoreVertical, Reply } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import Link from "@/compat/next-link";
 import {
   CSSProperties,
@@ -9,11 +9,10 @@ import {
   useState,
 } from "react";
 import Editor from "../editor";
-import { hasCookie } from "@/helpers/cookie";
 import LikeButton from "./LikeButton";
 import {
   deleteComment,
-  postComment,
+  getCommentReplies,
   updateComment,
 } from "@/requests/comment";
 import { Card } from "bioloom-ui";
@@ -21,7 +20,6 @@ import { Button } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import ThemedProse from "../themed-prose";
 import { Avatar } from "bioloom-ui";
-import { Spinner } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import MentionedContent from "../mentions/MentionedContent";
@@ -29,21 +27,23 @@ import { Dropdown } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import ContentStatusMeta from "./ContentStatusMeta";
 import CommentReactions from "./CommentReactions";
+import CommentReplyPopover from "./CommentReplyPopover";
 import { UserHoverPreview } from "@/components/hover-previews";
 
 export default function CommentCard({
   comment,
   user,
   onOverlayChange,
+  edgeToEdge = false,
 }: {
+  edgeToEdge?: boolean;
   comment: CommentType;
   user?: UserType | null;
   onOverlayChange?: (open: boolean) => void;
 }) {
   const [currentComment, setCurrentComment] = useState<CommentType>(comment);
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
-  const [content, setContent] = useState("");
-  const [waitingPost, setWaitingPost] = useState(false);
+  const [loadingReplies, setLoadingReplies] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftContent, setDraftContent] = useState(comment.content);
   const [reactionsOpen, setReactionsOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function CommentCard({
   const [actionsLayerOpen, setActionsLayerOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { colors } = useTheme();
-  const overlayOpen = reactionsOpen || descendantOverlayOpen;
+  const overlayOpen = creatingReply || reactionsOpen || descendantOverlayOpen;
   const canSeeModerated = Boolean(user?.mod || user?.admin);
   const isModerated = Boolean(
     currentComment.deletedAt || currentComment.removedAt
@@ -106,6 +106,7 @@ export default function CommentCard({
       className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
     >
       <Card
+        className={edgeToEdge ? "max-lg:!rounded-none" : undefined}
         style={{
           "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
           "--post-action-hover": colors["base"],
@@ -204,14 +205,15 @@ export default function CommentCard({
             isComment
           />
 
-          <Button
-            className="post-action-button min-w-12"
-            size="sm"
-            variant="ghost"
-            leftSlot={<Reply size={16} />}
-            aria-label={creatingReply ? "Cancel reply" : "Reply"}
-            onClick={() => {
-              setCreatingReply(!creatingReply);
+          <CommentReplyPopover
+            comment={currentComment}
+            onOpenChange={setCreatingReply}
+            onPosted={async () => {
+              const response = await getCommentReplies(currentComment.id);
+              if (!response.ok) throw new Error("Failed to refresh replies");
+              const { data } = await response.json();
+              if (!Array.isArray(data)) throw new Error("Invalid replies");
+              setCurrentComment((previous) => ({ ...previous, children: data }));
             }}
           />
           <CommentReactions
@@ -281,66 +283,6 @@ export default function CommentCard({
           )}
         </div>}
 
-        {creatingReply && !isModerated && (
-          <>
-            <Editor
-              content={content}
-              setContent={setContent}
-              format="markdown"
-            />
-            <div id="create-comment" className="mt-2" />
-            <Button
-              onClick={async () => {
-                if (!content) {
-                  addToast({
-                    title: "Please enter valid content",
-                  });
-                  return;
-                }
-
-                if (!hasCookie("token")) {
-                  addToast({
-                    title: "You are not logged in",
-                  });
-                  return;
-                }
-
-                setWaitingPost(true);
-
-                const response = await postComment(
-                  content,
-                  null,
-                  currentComment.id
-                );
-
-                if (response.status == 401) {
-                  addToast({
-                    title: "Invalid User",
-                  });
-                  setWaitingPost(false);
-                  return;
-                }
-
-                if (response.ok) {
-                  addToast({
-                    title: "Successfully created comment",
-                  });
-                  setWaitingPost(false);
-                  window.location.reload();
-                } else {
-                  addToast({
-                    title: "An error occured",
-                  });
-                  setWaitingPost(false);
-                }
-              }}
-            >
-              {waitingPost ? <Spinner /> : <p>Create Reply</p>}
-            </Button>
-            <div className="p-2" />
-          </>
-        )}
-
         {childComments.length > 0 &&
           (childComments[0].author ? (
             <div className="mt-3 flex flex-col gap-3">
@@ -355,13 +297,28 @@ export default function CommentCard({
             </div>
           ) : (
             <Button
-              onClick={() => {
-                addToast({
-                  title: "Feature coming soon",
-                });
+              disabled={loadingReplies}
+              aria-busy={loadingReplies}
+              onClick={async () => {
+                if (loadingReplies) return;
+                const commentId = currentComment.id;
+                setLoadingReplies(true);
+                try {
+                  const response = await getCommentReplies(commentId);
+                  if (!response.ok) throw new Error("Failed to load replies");
+                  const { data } = await response.json();
+                  if (!Array.isArray(data)) throw new Error("Invalid replies");
+                  setCurrentComment((previous) => previous.id === commentId
+                    ? { ...previous, children: data }
+                    : previous);
+                } catch {
+                  addToast({ title: "Failed to load replies. Please try again." });
+                } finally {
+                  setLoadingReplies(false);
+                }
               }}
             >
-              Load replies
+              {loadingReplies ? "Loading replies…" : "Load replies"}
             </Button>
           ))}
       </div>
