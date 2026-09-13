@@ -13,6 +13,7 @@ import ItemEditor from "./ItemEditor";
 import AudioPreview from "./AudioPreview";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
+import ReorderControls, { moveItem } from "./ReorderControls";
 
 import { Button } from "bioloom-ui";
 import { Card } from "bioloom-ui";
@@ -88,7 +89,7 @@ import { TrackFlagType } from "@/types/TrackFlagType";
 import { TrackTagType } from "@/types/TrackTagType";
 import { useTheme } from "@/providers/useSiteTheme";
 import { useEmojis } from "@/providers/useEmojis";
-import { readArray, readItem, unwrapItem } from "@/requests/helpers";
+import { getApiErrorMessage, readArray, readItem, unwrapItem } from "@/requests/helpers";
 import { debounce } from "lodash";
 import { createTeam } from "@/helpers/team";
 import { Tab, Tabs } from "bioloom-ui";
@@ -867,7 +868,7 @@ export default function GameEditingForm({
           loudnessGainDb: loudness.loudnessGainDb ?? null,
         };
       }
-      addToast({ title: data?.message ?? uiText("AppStrings.FailedToUploadValue0", { value0: endpoint }) });
+      addToast({ title: getApiErrorMessage(data) ?? `${uiText("AppStrings.FailedToUploadValue0", { value0: endpoint })} (HTTP ${response.status})` });
       return null;
     } catch (e) {
       console.error(e);
@@ -1519,7 +1520,7 @@ export default function GameEditingForm({
                                 type="button"
                                 aria-label={uiText("AppStrings.OpenGamePreviewInFullscreen")}
                                 title={uiText("AppStrings.Fullscreen")}
-                                className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
+                                className="absolute bottom-3 right-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg shadow-lg transition-[filter,transform] duration-150 hover:scale-110 hover:brightness-150 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:transform-none"
                                 style={{
                                   backgroundColor: colors.mantle,
                                   color: colors.text,
@@ -1533,7 +1534,7 @@ export default function GameEditingForm({
                                     });
                                 }}
                               >
-                                <Icon name="maximize2" color="text" />
+                                <Icon name="expand" color="text" />
                               </button>
                             )}
                           </div>
@@ -2800,9 +2801,10 @@ export default function GameEditingForm({
                       {/* List songs */}
                       {songs.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
-                          {songs.map((song) => {
+                          {songs.map((song, index) => {
                             return (
                               <ItemEditor key={song.id} item={song} title={song.name || uiText("AppStrings.UntitledTrack")}
+      actions={<ReorderControls index={index} count={songs.length} name={song.name || uiText("AppStrings.UntitledTrack")} onMove={direction => setSongs(current => moveItem(current, index, direction))} />}
       initiallyOpen={newSongId === song.id}
       onClose={() => setNewSongId(null)}
       onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}

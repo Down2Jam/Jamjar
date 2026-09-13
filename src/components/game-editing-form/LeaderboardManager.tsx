@@ -5,6 +5,7 @@ import type { IconName } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardType";
 import type { GameType } from "@/types/GameType";
+import ReorderControls, { moveItem } from "./ReorderControls";
 
 const types: Record<LeaderboardTypeType, { label: string; rule: string; icon: IconName }> = {
   SCORE: { label: "LeaderboardType.Score.Title", rule: "AppStrings.HighestScoreWins", icon: "trophy" },
@@ -89,7 +90,10 @@ export default function LeaderboardManager({ value, onChange }: {
                   <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText(types[lb.type].rule)} · {lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")} · {lb.scores.length}  {uiText("AppStrings.Entries")}</p>
                 </div>
               </div>
-              <Button icon="pencil" variant="ghost" onClick={() => open(index)} aria-label={uiText("AppStrings.PreviewAndEditValue0", { value0: lb.name || `leaderboard ${index + 1}` })}>{uiText("AppStrings.PreviewEdit")}</Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <ReorderControls index={index} count={value.length} name={lb.name || uiText("AppStrings.UntitledLeaderboard")} onMove={direction => onChange(moveItem(value, index, direction))} />
+                <Button icon="pencil" variant="ghost" onClick={() => open(index)} aria-label={uiText("AppStrings.PreviewAndEditValue0", { value0: lb.name || `leaderboard ${index + 1}` })}>{uiText("AppStrings.PreviewEdit")}</Button>
+              </div>
             </div>
           ))}
         </div>

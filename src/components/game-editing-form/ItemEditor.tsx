@@ -3,10 +3,11 @@ import { useState, type ReactNode, type Dispatch, type SetStateAction } from "re
 import { Button, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 
-export default function ItemEditor<T>({ item, title, summary, preview, onApply, onRemove, children, initiallyOpen = false, onClose, onOpen, discardNewOnCancel = false }: {
+export default function ItemEditor<T>({ item, title, summary, preview, onApply, onRemove, children, initiallyOpen = false, onClose, onOpen, discardNewOnCancel = false, actions }: {
   item: T;
   title: string;
   summary: ReactNode;
+  actions?: ReactNode;
   preview: (draft: T) => ReactNode;
   onApply: (draft: T) => void;
   onRemove: () => void;
@@ -29,6 +30,7 @@ export default function ItemEditor<T>({ item, title, summary, preview, onApply, 
     <div className="w-full border-b py-4 last:border-b-0" style={{ borderColor: colors.base }}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 flex-1">{summary}</div>
+        {actions}
         <Button icon="pencil" variant="ghost" onClick={() => { onOpen?.(); setDraft(structuredClone(item)); }} aria-label={uiText("AppStrings.PreviewAndEditValue0", { value0: title })}>{uiText("AppStrings.PreviewEdit")}</Button>
       </div>
       <Modal isOpen={draft !== null} onOpenChange={open => { if (!open) close(); }} size="2xl">

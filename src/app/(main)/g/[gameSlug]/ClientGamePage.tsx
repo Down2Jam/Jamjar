@@ -975,7 +975,7 @@ export default function ClientGamePage({
                       type="button"
                       aria-label={uiText("AppStrings.OpenGameInFullscreen")}
                       title={uiText("AppStrings.Fullscreen")}
-                      className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
+                      className="absolute bottom-3 right-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg shadow-lg transition-[filter,transform] duration-150 hover:scale-110 hover:brightness-150 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:transform-none"
                       style={{
                         backgroundColor: colors["mantle"],
                         color: colors["text"],
@@ -989,7 +989,7 @@ export default function ClientGamePage({
                           });
                       }}
                     >
-                      <Icon name="maximize2" color="text" />
+                      <Icon name="expand" color="text" />
                     </button>
                   )}
               </div>

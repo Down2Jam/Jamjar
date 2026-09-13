@@ -3,6 +3,17 @@ export type ApiEnvelope<T> = {
   message?: string;
 };
 
+export function getApiErrorMessage(json: unknown): string | null {
+  if (!json || typeof json !== "object") return null;
+  if ("error" in json && json.error && typeof json.error === "object" &&
+      "message" in json.error && typeof json.error.message === "string" && json.error.message.trim()) {
+    return json.error.message;
+  }
+  return "message" in json && typeof json.message === "string" && json.message.trim()
+    ? json.message
+    : null;
+}
+
 export function unwrapItem<T>(json: unknown): T | null {
   if (json && typeof json === "object" && "data" in json) {
     return ((json as ApiEnvelope<T>).data as T) ?? null;
