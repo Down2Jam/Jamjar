@@ -6,7 +6,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { useMemo, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
-import { Eye, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Play } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Modal, ModalContent, Tooltip } from "bioloom-ui";
 import { Button } from "bioloom-ui";
@@ -320,16 +320,25 @@ export default function SidebarStreams() {
             </Tooltip>
           )}
         </div>
-        <div className="absolute inset-x-0 top-[42%] z-20 flex w-full -translate-y-1/2 items-center justify-between px-2">
+        <div className="absolute inset-x-0 top-[42%] z-20 flex w-full -translate-y-1/2 items-center justify-between px-3">
           <Tooltip content="Previous Stream" position="top">
-            <Button
+            <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 handlePrev();
               }}
-              icon="chevronleft"
-            />
+              className="flex cursor-pointer items-center justify-center rounded-full p-2 transition-colors"
+              style={{
+                backgroundColor: `${colors["mantle"]}dd`,
+                color: colors["text"],
+                border: `1px solid ${colors["surface0"]}`,
+              }}
+              aria-label={uiText("AppStrings.PreviousStream2")}
+            >
+              <ChevronLeft size={18} />
+            </button>
           </Tooltip>
           <Play
             size={32}
@@ -339,14 +348,23 @@ export default function SidebarStreams() {
             }}
           />
           <Tooltip content="Next Stream" position="top">
-            <Button
+            <button
+              type="button"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 handleNext();
               }}
-              icon="chevronright"
-            />
+              className="flex cursor-pointer items-center justify-center rounded-full p-2 transition-colors"
+              style={{
+                backgroundColor: `${colors["mantle"]}dd`,
+                color: colors["text"],
+                border: `1px solid ${colors["surface0"]}`,
+              }}
+              aria-label={uiText("AppStrings.NextStream2")}
+            >
+              <ChevronRight size={18} />
+            </button>
           </Tooltip>
         </div>
         <div className="relative z-10 p-2">

@@ -10,6 +10,7 @@ import { queryKeys } from "@/hooks/queries/queryKeys";
 import "./game-editor.css";
 import EditorFooter from "./EditorFooter";
 import ItemEditor from "./ItemEditor";
+import AudioPreview from "./AudioPreview";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
 
@@ -389,6 +390,7 @@ export default function GameEditingForm({
     [],
   );
   const creatingTeamRef = useRef(false);
+  const uploadedAudioFiles = useRef(new Map<string, File>());
   const teamCheckDoneRef = useRef(false);
 
   const [screenshots, setScreenshots] = useState<string[]>([]);
@@ -853,6 +855,7 @@ export default function GameEditingForm({
         const uploadedUrl = unwrapItem<string>(data);
         if (!uploadedUrl) return null;
         if (endpoint === "image") return uploadedUrl;
+        uploadedAudioFiles.current.set(uploadedUrl, file);
         const loudness =
           data && typeof data === "object" && "loudness" in data
             ? (data.loudness as Partial<UploadedMusic>)
@@ -2806,7 +2809,7 @@ export default function GameEditingForm({
       onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
       onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
       summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length}  {uiText("AppStrings.Credits2")} {(song.license && translateSystemLabel(song.license, uiText)) || uiText("AppStrings.NoLicenseSelected")}</p></div></div>}
-      preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <audio controls preload="none" src={draft.url} className="w-full" />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
+      preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <AudioPreview key={draft.url} url={draft.url} file={uploadedAudioFiles.current.get(draft.url)} />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
       {(song, setDraft) => {
         const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
         const setDraftSongs: typeof setSongs = next => setDraft(current => (typeof next === "function" ? next([current]) : next)[0] ?? current);
