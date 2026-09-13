@@ -1,3 +1,4 @@
+import { getPlayableSandbox } from "@/helpers/playableSandbox";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 
@@ -1518,7 +1519,7 @@ export default function GameEditingForm({
                                 src={getPlayableBuildUrl(playableBuildUrl)}
                                 title={uiText("AppStrings.PlayableWebBuildPreview")}
                                 className="h-full w-full border-0"
-                                sandbox="allow-scripts allow-pointer-lock"
+                                sandbox={getPlayableSandbox(getPlayableBuildUrl(playableBuildUrl), window.location.origin)}
                                 allow="fullscreen; gamepad"
                                 allowFullScreen
                               />

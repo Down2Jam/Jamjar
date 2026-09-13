@@ -76,6 +76,7 @@ import GameAchievements from "@/components/game-achievements";
 import GameInfoButton from "@/components/game-info-button";
 import { useMusic } from "bioloom-miniplayer";
 import { BASE_URL } from "@/requests/config";
+import { getPlayableSandbox } from "@/helpers/playableSandbox";
 import { getPlayableBuildUrl } from "@/requests/config";
 import { Popover } from "bioloom-ui";
 import { Modal } from "bioloom-ui";
@@ -941,7 +942,7 @@ export default function ClientGamePage({
                     style={{ border: 0 }}
                     sandbox={
                       playableBuildUrl
-                        ? "allow-scripts allow-pointer-lock"
+                        ? getPlayableSandbox(playableEmbedUrl, window.location.origin)
                         : undefined
                     }
                     allow="fullscreen; gamepad"
