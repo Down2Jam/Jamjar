@@ -1,11 +1,15 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useRouter } from "@/compat/next-navigation";
 import { useEffect } from "react";
 import { logout as logoutUser } from "@/requests/auth";
 import { addToast } from "bioloom-ui";
 
 export default function UserPage() {
+  const uiText = useUiTranslations();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,13 +23,13 @@ export default function UserPage() {
           "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 
         addToast({
-          title: "Successfully logged out",
+          title: uiText("AppStrings.SuccessfullyLoggedOut"),
         });
         router.replace("/");
         router.refresh();
       } else {
         addToast({
-          title: "Error while trying to log out",
+          title: uiText("AppStrings.ErrorWhileTryingToLogOut"),
         });
       }
     }
@@ -35,7 +39,7 @@ export default function UserPage() {
 
   return (
     <div className="absolute flex items-center justify-center top-0 left-0 w-screen h-screen">
-      <p>Logging out...</p>
+      <p>{uiText("AppStrings.LoggingOut")}</p>
     </div>
   );
 }

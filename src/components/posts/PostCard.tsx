@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { addToast, Avatar } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { PostType } from "@/types/PostType";
@@ -55,6 +58,7 @@ export default function PostCard({
   tagRules?: PostTagRules;
   onTagRule?: (tagId: number, rule: 1 | -1) => void;
 }) {
+  const uiText = useUiTranslations();
   const [currentPostData, setCurrentPostData] = useState<PostType>(post);
   const [minimized, setMinimized] = useState<boolean>(false);
   const [hidden, setHidden] = useState<boolean>(false);
@@ -267,8 +271,8 @@ export default function PostCard({
             {isModerated ? (
               <Text color="textFaded" size="sm">
                 {currentPostData.removedAt
-                  ? "This post was removed."
-                  : "This post was deleted."}
+                  ? uiText("AppStrings.ThisPostWasRemoved")
+                  : uiText("AppStrings.ThisPostWasDeleted")}
               </Text>
             ) : (
               <>
@@ -300,8 +304,7 @@ export default function PostCard({
                         className="text-sm font-semibold text-white hover:underline"
                         onClick={() => setContentExpanded(true)}
                       >
-                        Read more
-                      </button>
+                         {uiText("AppStrings.ReadMore")} </button>
                     </div>
                   )}
                 </div>
@@ -328,13 +331,11 @@ export default function PostCard({
                       onTagRule(tag.id, -1);
                     }}
                     className="post-tag-link inline-flex"
-                    aria-label={`${tag.name}: ${
-                      rule === 1
+                    aria-label={uiText("AppStrings.Value0Value12", { value0: tag.name, value1: rule === 1
                         ? "included; click to remove"
                         : rule === -1
                           ? "excluded; right-click to remove"
-                          : "click to include or right-click to exclude"
-                    }`}
+                          : "click to include or right-click to exclude" })}
                   >
                     <Chip className="post-tag-chip cursor-pointer hover:brightness-110">
                       <TagLabel name={tag.name} />
@@ -401,10 +402,9 @@ export default function PostCard({
                       key="edit"
                       href={`/p/${currentPostData.slug}?edit=1`}
                       icon="squarepen"
-                      description="Edit your post"
+                      description={uiText("AppStrings.EditYourPost")}
                     >
-                      Edit
-                    </Dropdown.Item>
+                       {uiText("ThemeSuggestions.Edit.Title")} </Dropdown.Item>
                   ) : null}
                   {isAuthor ? (
                     <Dropdown.Item

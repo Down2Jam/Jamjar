@@ -5,6 +5,7 @@ import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
 import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
 import { useTheme } from "@/providers/useSiteTheme";
 import { EmojiProvider } from "@/providers/EmojiProvider";
+import LanguageAccountSync from "@/providers/LanguageAccountSync";
 import { BASE_URL } from "@/requests/config";
 import { MusicProvider } from "bioloom-miniplayer";
 import { ThemeProvider, ToastProvider } from "bioloom-ui";
@@ -43,12 +44,14 @@ export default function Providers({
   dehydratedState?: DehydratedState;
 }>) {
   const { isMobile } = useBreakpoint();
-  const { previewLocale } = useLanguagePreview();
+  const { previewLocale, selectedLocale } = useLanguagePreview();
   const [activeMessages, setActiveMessages] = useState(messages);
   const [activeLocale, setActiveLocale] = useState(locale);
 
   useEffect(() => {
-    if (!previewLocale || previewLocale === locale) {
+    let cancelled = false;
+    const targetLocale = previewLocale ?? selectedLocale;
+    if (targetLocale === locale) {
       setActiveMessages(messages);
       setActiveLocale(locale);
       return;
@@ -57,15 +60,17 @@ export default function Providers({
     const loadPreviewMessages = async () => {
       try {
         const loadPreviewMessages =
-          previewMessageLoaders[`../messages/${previewLocale}.json`];
+          previewMessageLoaders[`../messages/${targetLocale}.json`];
         if (!loadPreviewMessages) {
-          throw new Error(`No preview messages found for ${previewLocale}`);
+          throw new Error(`No messages found for ${targetLocale}`);
         }
 
         const merged = merge({}, messages, await loadPreviewMessages());
+        if (cancelled) return;
         setActiveMessages(merged);
-        setActiveLocale(previewLocale);
+        setActiveLocale(targetLocale);
       } catch (e) {
+        if (cancelled) return;
         console.error("Error loading preview messages:", e);
         setActiveMessages(messages); // fallback to server-provided merged messages
         setActiveLocale(locale);
@@ -73,11 +78,13 @@ export default function Providers({
     };
 
     loadPreviewMessages();
-  }, [previewLocale, locale, messages]);
+    return () => { cancelled = true; };
+  }, [previewLocale, selectedLocale, locale, messages]);
 
   return (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={dehydratedState}>
+        <LanguageAccountSync />
         <ShortcutProvider>
           <SiteThemeProvider>
             <BioloomThemeBridge>

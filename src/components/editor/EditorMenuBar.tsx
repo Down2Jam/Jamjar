@@ -1,5 +1,10 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
+import { useTranslations } from "@/compat/next-intl";
+
 import { Editor } from "@tiptap/react";
 import {
   AlignCenter,
@@ -41,6 +46,12 @@ export default function EditorMenuBar({
   size = "sm",
 }: EditorMenuProps) {
   if (!editor) return null;
+  return <ReadyEditorMenuBar editor={editor} size={size} />;
+}
+
+function ReadyEditorMenuBar({ editor, size = "sm" }: { editor: Editor; size?: "xs" | "sm" }) {
+  const uiText = useUiTranslations();
+  const t = useTranslations();
   const { emojis, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [emojiOpen, setEmojiOpen] = useState(false);
@@ -48,7 +59,7 @@ export default function EditorMenuBar({
   const pickerRef = useRef<HTMLDivElement | null>(null);
 
   const addLink = () => {
-    const url = prompt("Enter link URL:");
+    const url = prompt(t("AppStrings.EnterLinkURL"));
     if (url) {
       editor
         .chain()
@@ -92,14 +103,14 @@ export default function EditorMenuBar({
 
     if (!allowedTypes.includes(file.type)) {
       addToast({
-        title: "Invalid file format",
+        title: t("AppStrings.InvalidFileFormat"),
       });
       return false;
     }
 
     if (filesize > 8) {
       addToast({
-        title: "Image is too big",
+        title: t("AppStrings.ImageIsTooBig"),
       });
       return false;
     }
@@ -134,7 +145,7 @@ export default function EditorMenuBar({
         });
       } else {
         addToast({
-          title: "Failed to upload image",
+          title: t("AppStrings.FailedToUploadImage"),
         });
       }
     });
@@ -144,7 +155,7 @@ export default function EditorMenuBar({
 
   const buttons = [
     {
-      label: "Bold",
+      label: t("Markdown.Bold.Title"),
       primary: true,
       icon: <Bold size={iconSize} />,
       onClick: () => editor.chain().focus().toggleBold().run(),
@@ -152,7 +163,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("bold"),
     },
     {
-      label: "Italic",
+      label: t("Markdown.Italic.Title"),
       primary: true,
       icon: <Italic size={iconSize} />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
@@ -160,7 +171,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("italic"),
     },
     {
-      label: "Highlight",
+      label: t("Markdown.Highlight.Title"),
       primary: false,
       icon: <Highlighter size={iconSize} />,
       onClick: () => editor.chain().focus().toggleHighlight().run(),
@@ -168,7 +179,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("highlight"),
     },
     {
-      label: "Strikethrough",
+      label: t("Markdown.Strikethrough.Title"),
       primary: false,
       icon: <Strikethrough size={iconSize} />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
@@ -176,7 +187,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("strike"),
     },
     {
-      label: "Link",
+      label: t("Markdown.Link.Title"),
       primary: true,
       icon: <LinkIcon size={iconSize} />,
       onClick: addLink,
@@ -184,7 +195,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("link"),
     },
     {
-      label: "Image",
+      label: t("Markdown.Image.Title"),
       primary: true,
       icon: <ImageIcon size={iconSize} />,
       onClick: addImage,
@@ -192,7 +203,7 @@ export default function EditorMenuBar({
       isActive: false,
     },
     {
-      label: "Subscript",
+      label: t("Markdown.Subscript.Title"),
       primary: false,
       icon: <Subscript size={iconSize} />,
       onClick: () => editor.chain().focus().toggleSubscript().run(),
@@ -200,7 +211,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("subscript"),
     },
     {
-      label: "Superscript",
+      label: t("Markdown.Superscript.Title"),
       primary: false,
       icon: <Superscript size={iconSize} />,
       onClick: () => editor.chain().focus().toggleSuperscript().run(),
@@ -208,7 +219,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("superscript"),
     },
     {
-      label: "Horizontal rule",
+      label: t("AppStrings.HorizontalRule"),
       primary: false,
       icon: <Minus size={iconSize} />,
       onClick: () => editor.chain().focus().setHorizontalRule().run(),
@@ -216,7 +227,7 @@ export default function EditorMenuBar({
       isActive: false,
     },
     {
-      label: "Blockquote",
+      label: t("AppStrings.Blockquote"),
       primary: false,
       icon: <Quote size={iconSize} />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
@@ -224,7 +235,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("blockquote"),
     },
     {
-      label: "Code block",
+      label: t("AppStrings.CodeBlock"),
       primary: false,
       icon: <Code size={iconSize} />,
       onClick: () => editor.chain().focus().toggleCodeBlock().run(),
@@ -232,7 +243,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive("codeBlock"),
     },
     {
-      label: "Align right",
+      label: t("AppStrings.AlignRight"),
       primary: false,
       icon: <AlignRight size={iconSize} />,
       onClick: () =>
@@ -243,7 +254,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive({ textAlign: "right" }),
     },
     {
-      label: "Align center",
+      label: t("AppStrings.AlignCenter"),
       primary: false,
       icon: <AlignCenter size={iconSize} />,
       onClick: () =>
@@ -254,7 +265,7 @@ export default function EditorMenuBar({
       isActive: editor.isActive({ textAlign: "center" }),
     },
     {
-      label: "Undo",
+      label: t("Markdown.Undo.Title"),
       primary: false,
       icon: <Undo size={iconSize} />,
       onClick: () => editor.chain().focus().undo().run(),
@@ -262,7 +273,7 @@ export default function EditorMenuBar({
       isActive: false,
     },
     {
-      label: "Redo",
+      label: t("Markdown.Redo.Title"),
       primary: false,
       icon: <Redo size={iconSize} />,
       onClick: () => editor.chain().focus().redo().run(),
@@ -316,7 +327,7 @@ export default function EditorMenuBar({
       ))}
       <div ref={pickerRef} className="relative z-30">
         <EditorMenuButton
-          label="Emotes"
+          label={t("AppStrings.Emotes")}
           onClick={() => setEmojiOpen((open) => !open)}
           isActive={emojiOpen}
           disabled={emojis.length === 0 && priorityEmotes.length === 0}
@@ -337,7 +348,7 @@ export default function EditorMenuBar({
             <Input
               value={emojiQuery}
               onValueChange={setEmojiQuery}
-              placeholder="Search emoji"
+              placeholder={t("AppStrings.SearchEmoji")}
               size="sm"
               fullWidth
               style={{
@@ -348,8 +359,7 @@ export default function EditorMenuBar({
             />
             {filteredEmojis.length === 0 ? (
               <Text size="xs" color="textFaded">
-                No emojis found.
-              </Text>
+                 {t("AppStrings.NoEmojisFound")} </Text>
             ) : (
               <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
                 {filteredEmojis.map((emoji) => (
@@ -361,13 +371,13 @@ export default function EditorMenuBar({
                     leftSlot={
                       <img
                         src={emoji.image}
-                        alt={`:${emoji.slug}:`}
+                        alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                         className="h-5 w-5"
                         loading="lazy"
                         decoding="async"
                       />
                     }
-                    tooltip={`:${emoji.slug.toUpperCase()}:`}
+                    tooltip={uiText("AppStrings.Value03", { value0: emoji.slug.toUpperCase() })}
                     onClick={() => {
                       editor.chain().focus().insertContent(`:${emoji.slug}:`).run();
                     }}
@@ -380,11 +390,11 @@ export default function EditorMenuBar({
         </Popover>
       </div>
       <Dropdown portal backdrop={false} onOpenChange={(open) => { if (open) setEmojiOpen(false); }} trigger={
-        <Button data-editor-toolbar-action type="button" size={size} aria-label="More formatting" title="More formatting"><Ellipsis size={iconSize} /></Button>
+        <Button data-editor-toolbar-action type="button" size={size} aria-label={t("AppStrings.MoreFormatting")} title={t("AppStrings.MoreFormatting")}><Ellipsis size={iconSize} /></Button>
       }>
         {moreButtons.map((button) => <Dropdown.Item key={button.label} disabled={button.disabled} onClick={button.onClick}>
           <span className="flex items-center gap-2" style={{ color: button.isActive ? colors.blue : undefined }}>
-            {button.icon}<span>{button.label}</span>{button.isActive && <span className="sr-only"> (active)</span>}
+            {button.icon}<span>{button.label}</span>{button.isActive && <span className="sr-only">  {t("AppStrings.Active2")}</span>}
           </span>
         </Dropdown.Item>)}
       </Dropdown>

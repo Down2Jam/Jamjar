@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Hstack, Text, getNeutralBorderColor } from "bioloom-ui";
 import { PageVersion } from "@/types/GameType";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -15,11 +18,12 @@ export default function PageVersionToggle({
   disabled?: boolean;
   borderColor?: string;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
 
   const options: Array<{ value: PageVersion; label: string }> = [
-    { value: "JAM", label: "Jam Page" },
-    { value: "POST_JAM", label: "Post-Jam Page" },
+    { value: "JAM", label: uiText("AppStrings.JamPage") },
+    { value: "POST_JAM", label: uiText("AppStrings.PostJamPage") },
   ];
 
   return (

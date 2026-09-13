@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import {
   createCollection,
   listCollections,
@@ -41,16 +44,16 @@ const FILTERS: Array<{
   label: string;
   collectionType?: CollectionType;
 }> = [
-  { key: "all", label: "All" },
-  { key: "game", label: "Games", collectionType: "game" },
-  { key: "music", label: "Music", collectionType: "music" },
-  { key: "post", label: "Posts", collectionType: "post" },
+  { key: "all", label: "AppStrings.All" },
+  { key: "game", label: "Navbar.Games.Title", collectionType: "game" },
+  { key: "music", label: "Navbar.Music.Title", collectionType: "music" },
+  { key: "post", label: "AppStrings.Posts", collectionType: "post" },
 ];
 
 const COLLECTION_TYPES: Array<{ key: CollectionType; label: string }> = [
-  { key: "game", label: "Games" },
-  { key: "music", label: "Music" },
-  { key: "post", label: "Posts" },
+  { key: "game", label: "Navbar.Games.Title" },
+  { key: "music", label: "Navbar.Music.Title" },
+  { key: "post", label: "AppStrings.Posts" },
 ];
 
 function visibilityLabel(visibility?: string) {
@@ -60,6 +63,7 @@ function visibilityLabel(visibility?: string) {
 }
 
 export default function CollectionsPage() {
+  const uiText = useUiTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const [collections, setCollections] = useState<CollectionSummary[]>([]);
@@ -75,8 +79,8 @@ export default function CollectionsPage() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   usePageMetadata({
-    title: "Collections",
-    description: "Curated games, posts, D2Jam music, and external music links.",
+    title: uiText("Navbar.Collections.Title"),
+    description: uiText("AppStrings.CuratedGamesPostsD2JamMusicAndExternalMusicLinks"),
     canonical: "/collections",
     image: "/images/D2J_Icon.png",
   });
@@ -127,8 +131,7 @@ export default function CollectionsPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Collections
-          </p>
+             {uiText("Navbar.Collections.Title")} </p>
           <p
             className="mt-1 text-sm"
             style={{
@@ -140,12 +143,10 @@ export default function CollectionsPage() {
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Curated games, posts, D2Jam music, and external music links.
-          </p>
+             {uiText("AppStrings.CuratedGamesPostsD2JamMusicAndExternalMusicLinks")} </p>
           <div className="mt-3 flex justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0">
             <Button icon="plus" color="blue" onClick={onOpen}>
-              New Collection
-            </Button>
+               {uiText("AppStrings.NewCollection2")} </Button>
           </div>
         </header>
 
@@ -159,7 +160,7 @@ export default function CollectionsPage() {
                 color={filter === entry.key ? "blue" : "default"}
                 onClick={() => setFilter(entry.key)}
               >
-                {entry.label}
+                {uiText(entry.label)}
               </Button>
             ))}
           </Hstack>
@@ -173,11 +174,10 @@ export default function CollectionsPage() {
             <Input
               value={query}
               onValueChange={setQuery}
-              placeholder="Search collections"
+              placeholder={uiText("AppStrings.SearchCollections")}
             />
             <Button icon="search" type="submit" disabled={loading}>
-              Search
-            </Button>
+               {uiText("Navbar.Search")} </Button>
           </form>
         </Hstack>
 
@@ -198,7 +198,7 @@ export default function CollectionsPage() {
           </section>
         ) : collections.length === 0 ? (
           <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
-            <Text color="textFaded">No collections found.</Text>
+            <Text color="textFaded">{uiText("AppStrings.NoCollectionsFound")}</Text>
           </div>
         ) : (
           <section className="grid gap-x-5 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -224,7 +224,7 @@ export default function CollectionsPage() {
                         color="text"
                         className="min-w-0 flex-1 truncate transition-colors group-hover:text-blue-300"
                       >
-                        {collection.title}
+                        {uiText(collection.title)}
                       </Text>
                       {privateLabel && (
                         <span className="shrink-0 rounded border border-white/10 bg-white/5 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-white/70">
@@ -233,7 +233,7 @@ export default function CollectionsPage() {
                       )}
                     </div>
                     <Text size="sm" color="textFaded" className="w-full truncate">
-                      {collection.owner?.name ?? "Unknown"}
+                      {collection.owner?.name ?? uiText("AppStrings.Unknown")}
                     </Text>
                   </Vstack>
                 </NextLink>
@@ -265,17 +265,17 @@ export default function CollectionsPage() {
                   setDescription("");
                   setCollectionType("music");
                   if (created) setCollections((current) => [created, ...current]);
-                  addToast({ title: "Collection created" });
+                  addToast({ title: uiText("AppStrings.CollectionCreated") });
                   onClose();
                 } else {
-                  addToast({ title: "Could not create collection" });
+                  addToast({ title: uiText("AppStrings.CouldNotCreateCollection") });
                 }
               }}
             >
               <ModalHeader>
                 <Hstack>
                   <LibraryBig size={20} />
-                  <span>Create Collection</span>
+                  <span>{uiText("AppStrings.CreateCollection2")}</span>
                 </Hstack>
               </ModalHeader>
               <ModalBody>
@@ -286,7 +286,7 @@ export default function CollectionsPage() {
                       setTitle(value);
                       if (!slugEdited) setSlug(toKebabSlug(value));
                     }}
-                    placeholder="Title"
+                    placeholder={uiText("AppStrings.Title")}
                   />
                   <Input
                     value={slug}
@@ -294,17 +294,16 @@ export default function CollectionsPage() {
                       setSlugEdited(true);
                       setSlug(toKebabSlug(value));
                     }}
-                    placeholder="collection-slug"
+                    placeholder={uiText("AppStrings.CollectionSlug")}
                   />
                   <Input
                     value={description}
                     onValueChange={setDescription}
-                    placeholder="Description"
+                    placeholder={uiText("AppStrings.Description")}
                   />
                   <Vstack align="start" gap={2}>
                     <Text size="sm" color="textFaded">
-                      Type
-                    </Text>
+                       {uiText("AppStrings.Type")} </Text>
                     <Hstack wrap>
                       {COLLECTION_TYPES.map((entry) => (
                         <Button
@@ -315,7 +314,7 @@ export default function CollectionsPage() {
                           color={collectionType === entry.key ? "blue" : "default"}
                           onClick={() => setCollectionType(entry.key)}
                         >
-                          {entry.label}
+                          {uiText(entry.label)}
                         </Button>
                       ))}
                     </Hstack>
@@ -324,11 +323,9 @@ export default function CollectionsPage() {
               </ModalBody>
               <ModalFooter>
                 <Button variant="ghost" onClick={onClose}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button type="submit" icon="plus" color="blue">
-                  Create
-                </Button>
+                   {uiText("CreateGame.Create.Title")} </Button>
               </ModalFooter>
             </form>
           )}

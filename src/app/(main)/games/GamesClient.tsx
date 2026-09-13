@@ -1,11 +1,6 @@
 "use client";
 
-import dynamic from "@/compat/next-dynamic";
-
-const Games = dynamic(() => import("@/components/games"), {
-  ssr: false,
-  loading: () => <div>Loading...</div>,
-});
+import Games from "@/components/games";
 
 export default function GamesClient() {
   return <Games />;

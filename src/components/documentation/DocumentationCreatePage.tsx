@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { hasCookie } from "@/helpers/cookie";
 import { createDocumentationDocument } from "@/requests/documentation";
 import { useSelf } from "@/hooks/queries";
@@ -26,6 +29,7 @@ export default function DocumentationCreatePage({
   basePath,
   icon,
 }: Props) {
+  const uiText = useUiTranslations();
   const hasToken = hasCookie("token");
   const { data: user, isLoading } = useSelf(hasToken);
   const router = useRouter();
@@ -46,8 +50,7 @@ export default function DocumentationCreatePage({
     return (
       <Card>
         <Text color="textFaded">
-          You must be an admin to create documents here.
-        </Text>
+           {uiText("AppStrings.YouMustBeAnAdminToCreateDocuments")} </Text>
       </Card>
     );
   }
@@ -70,7 +73,7 @@ export default function DocumentationCreatePage({
           <Input
             value={documentTitle}
             onChange={(event) => setDocumentTitle(event.target.value)}
-            placeholder="Document title"
+            placeholder={uiText("AppStrings.DocumentTitle")}
           />
           <DocumentationIconPicker value={iconName} onChange={setIconName} />
           <Editor content={content} setContent={setContent} format="markdown" />
@@ -83,7 +86,7 @@ export default function DocumentationCreatePage({
                 icon="plus"
                 onClick={async () => {
                   if (!documentTitle.trim() || !content.trim()) {
-                    addToast({ title: "Please enter a title and content" });
+                    addToast({ title: uiText("AppStrings.PleaseEnterATitleAndContent") });
                     return;
                   }
 
@@ -96,7 +99,7 @@ export default function DocumentationCreatePage({
                   );
 
                   if (!response.ok) {
-                    addToast({ title: "Failed to create document" });
+                    addToast({ title: uiText("AppStrings.FailedToCreateDocument") });
                     setSaving(false);
                     return;
                   }
@@ -105,10 +108,9 @@ export default function DocumentationCreatePage({
                   router.push(`${basePath}/${json.data.slug}`);
                 }}
               >
-                Create document
-              </Button>
+                 {uiText("AppStrings.CreateDocument")} </Button>
             )}
-            <Button href={basePath}>Cancel</Button>
+            <Button href={basePath}>{uiText("AppStrings.Cancel")}</Button>
           </Hstack>
         </Vstack>
       </Card>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import {
   hasJoinedCurrentJam,
   joinJam,
@@ -26,6 +29,7 @@ import {
 } from "@/helpers/shareToPost";
 
 export default function ThemeSlaughter() {
+  const uiText = useUiTranslations();
   const [themes, setThemes] = useState<ThemeType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true);
@@ -58,7 +62,7 @@ export default function ThemeSlaughter() {
       );
     } catch (error) {
       console.error("Error creating vote share image:", error);
-      addToast({ title: "Could not create the vote image" });
+      addToast({ title: uiText("AppStrings.CouldNotCreateTheVoteImage") });
       setSharingVotes(false);
     }
   }
@@ -130,6 +134,7 @@ export default function ThemeSlaughter() {
   }
 
   function VoteProgress({ themes }: { themes: ThemeType[] }) {
+  const uiText = useUiTranslations();
     const voteCounts = useMemo(() => {
       const counts = { yes: 0, no: 0, skip: 0, notVoted: 0 };
 
@@ -167,14 +172,14 @@ export default function ThemeSlaughter() {
               color: colors["text"],
               cursor: "pointer",
             }}
-            aria-label="Show elimination vote progress"
+            aria-label={uiText("AppStrings.ShowEliminationVoteProgress")}
           >
             <svg
               width="30"
               height="30"
               viewBox="0 0 100 100"
               role="img"
-              aria-label={`Vote progress: ${voteCounts.yes} yes, ${voteCounts.no} no, ${voteCounts.skip} skipped, ${voteCounts.notVoted} remaining`}
+              aria-label={uiText("AppStrings.VoteProgressValue0YesValue1NoValue2SkippedValue3Remaining", { value0: voteCounts.yes, value1: voteCounts.no, value2: voteCounts.skip, value3: voteCounts.notVoted })}
             >
               <circle
                 cx="50"
@@ -233,10 +238,9 @@ export default function ThemeSlaughter() {
             className="text-sm font-bold"
             style={{ color: colors["text"] }}
           >
-            Elimination Stats
-          </div>
+             {uiText("AppStrings.EliminationStats")} </div>
           <div className="text-xs">
-            Voted <span style={{ color: colors["green"] }}>yes</span> on{" "}
+             {uiText("AppStrings.Voted")} <span style={{ color: colors["green"] }}>{uiText("AppStrings.Yes2")}</span>  {uiText("AppStrings.On")}{" "}
             <span style={{ color: colors["blue"] }}>{voteCounts.yes}</span>{" "}
             {themeNoun(voteCounts.yes)}{" "}
             <span style={{ color: colors["blueDark"] }}>
@@ -244,7 +248,7 @@ export default function ThemeSlaughter() {
             </span>
           </div>
           <div className="text-xs">
-            Voted <span style={{ color: colors["red"] }}>no</span> on{" "}
+             {uiText("AppStrings.Voted")} <span style={{ color: colors["red"] }}>{uiText("AppStrings.No2")}</span>  {uiText("AppStrings.On")}{" "}
             <span style={{ color: colors["blue"] }}>{voteCounts.no}</span>{" "}
             {themeNoun(voteCounts.no)}{" "}
             <span style={{ color: colors["blueDark"] }}>
@@ -252,7 +256,7 @@ export default function ThemeSlaughter() {
             </span>
           </div>
           <div className="text-xs">
-            Voted <span style={{ color: colors["yellow"] }}>skip</span> on{" "}
+             {uiText("AppStrings.Voted")} <span style={{ color: colors["yellow"] }}>{uiText("AppStrings.Skip2")}</span>  {uiText("AppStrings.On")}{" "}
             <span style={{ color: colors["blue"] }}>{voteCounts.skip}</span>{" "}
             {themeNoun(voteCounts.skip)}{" "}
             <span style={{ color: colors["blueDark"] }}>
@@ -260,7 +264,7 @@ export default function ThemeSlaughter() {
             </span>
           </div>
           <div className="text-xs">
-            Did not vote on{" "}
+             {uiText("AppStrings.DidNotVoteOn")}{" "}
             <span style={{ color: colors["blue"] }}>
               {voteCounts.notVoted}
             </span>{" "}
@@ -468,13 +472,11 @@ export default function ThemeSlaughter() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="x" />
-                <Text size="xl">Not in Theme Elimination Phase</Text>
+                <Text size="xl">{uiText("AppStrings.NotInThemeEliminationPhase")}</Text>
               </Hstack>
               <Text color="textFaded">
-                The current phase is{" "}
-                <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please
-                come back during the Theme Elimination phase.
-              </Text>
+                 {uiText("AppStrings.TheCurrentPhaseIs")}{" "}
+                <strong>{activeJamResponse?.phase || uiText("AppStrings.Unknown")}</strong>{uiText("AppStrings.PleaseComeBackDuringTheThemeEliminationPhase")} </Text>
             </Vstack>
           </Vstack>
         </Card>
@@ -497,8 +499,7 @@ export default function ThemeSlaughter() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Theme Elimination
-        </p>
+           {uiText("Navbar.ThemeElimination.Title")} </p>
         <p
           className="mx-auto mt-1 max-w-2xl text-sm"
           style={{
@@ -510,14 +511,13 @@ export default function ThemeSlaughter() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          Help narrow the submitted themes down for the final voting round.
-        </p>
+           {uiText("AppStrings.HelpNarrowTheSubmittedThemesDownForTheFinalVotingRound")} </p>
       </header>
 
       <Hstack justify="center" wrap className="relative z-20 gap-2">
         <Hstack className="min-h-9 px-2">
           <Switch checked={descriptionShow} onChange={setDescriptionShown} />
-          <Text color="text" size="sm">Show clarifications</Text>
+          <Text color="text" size="sm">{uiText("AppStrings.ShowClarifications2")}</Text>
         </Hstack>
         {canVote && (
           <Button
@@ -525,7 +525,7 @@ export default function ThemeSlaughter() {
             onClick={shareVotes}
             disabled={voteCount === 0 || sharingVotes}
           >
-            {sharingVotes ? "Creating image…" : "Share votes"}
+            {sharingVotes ? uiText("AppStrings.CreatingImage") : uiText("AppStrings.ShareVotes")}
           </Button>
         )}
       </Hstack>
@@ -542,8 +542,7 @@ export default function ThemeSlaughter() {
                 : "0 1px 4px rgba(0, 0, 0, 0.9)",
           }}
         >
-          {voteCount}/{themes.length} {themes.length === 1 ? "theme" : "themes"} reviewed
-        </Text>
+          {voteCount}/{themes.length} {themes.length === 1 ? uiText("AppStrings.Theme2") : uiText("AppStrings.Themes2")}  {uiText("AppStrings.Reviewed")} </Text>
         {canVote && <VoteProgress themes={themes} />}
       </div>
 
@@ -561,8 +560,8 @@ export default function ThemeSlaughter() {
             className="min-w-0 flex-1 truncate capitalize"
           >
             {hasCurrentTheme
-              ? `${currentTheme + 1}. ${themes[currentTheme].suggestion}`
-              : "Select a theme"}
+              ? uiText("AppStrings.Value0Value15", { value0: currentTheme + 1, value1: themes[currentTheme].suggestion })
+              : uiText("AppStrings.SelectATheme")}
           </Text>
           <Hstack wrap className="gap-2.5">
             {canVote ? (
@@ -574,8 +573,7 @@ export default function ThemeSlaughter() {
                   disabled={!hasCurrentTheme}
                   color="green"
                 >
-                  Yes
-                </Button>
+                   {uiText("AppStrings.Yes")} </Button>
                 <Button
                   size="sm"
                   kbd="N/D"
@@ -583,8 +581,7 @@ export default function ThemeSlaughter() {
                   disabled={!hasCurrentTheme}
                   color="red"
                 >
-                  No
-                </Button>
+                   {uiText("AppStrings.No")} </Button>
                 <Button
                   size="sm"
                   kbd="S"
@@ -592,8 +589,7 @@ export default function ThemeSlaughter() {
                   disabled={!hasCurrentTheme}
                   color="gray"
                 >
-                  Skip
-                </Button>
+                   {uiText("AppStrings.Skip")} </Button>
               </>
             ) : token ? (
               <Button
@@ -602,8 +598,7 @@ export default function ThemeSlaughter() {
                 color="green"
                 icon="calendarplus"
               >
-                Join Jam to vote
-              </Button>
+                 {uiText("AppStrings.JoinJamToVote")} </Button>
             ) : (
               <Button
                 size="sm"
@@ -611,29 +606,27 @@ export default function ThemeSlaughter() {
                 color="pink"
                 icon="login"
               >
-                {hasLoggedInBefore ? "Sign in to vote" : "Join to vote"}
+                {hasLoggedInBefore ? uiText("AppStrings.SignInToVote") : uiText("AppStrings.JoinToVote")}
               </Button>
             )}
             <Button
               size="sm"
-              tooltip="Previous theme"
+              tooltip={uiText("AppStrings.PreviousTheme")}
               icon="chevronup"
               kbd="↑"
               onClick={() => changeSelectedTheme(-1)}
               disabled={!hasCurrentTheme || currentTheme === 0}
             >
-              Prev
-            </Button>
+               {uiText("AppStrings.Prev")} </Button>
             <Button
               size="sm"
-              tooltip="Next theme"
+              tooltip={uiText("AppStrings.NextTheme")}
               icon="chevrondown"
               kbd="↓"
               onClick={() => changeSelectedTheme(1)}
               disabled={!hasCurrentTheme || currentTheme >= themes.length - 1}
             >
-              Next
-            </Button>
+               {uiText("AppStrings.Next")} </Button>
             <Button
               size="sm"
               icon="search"
@@ -644,8 +637,7 @@ export default function ThemeSlaughter() {
               )}`}
               disabled={!hasCurrentTheme}
             >
-              Lookup
-            </Button>
+               {uiText("AppStrings.Lookup")} </Button>
           </Hstack>
         </Hstack>
       </div>
@@ -719,9 +711,9 @@ export default function ThemeSlaughter() {
                         ),
                       }}
                       title={getTextFromVote(theme.votes[0].slaughterScore)}
-                      aria-label={`Vote: ${getTextFromVote(
+                      aria-label={uiText("AppStrings.VoteValue0", { value0: getTextFromVote(
                         theme.votes[0].slaughterScore,
-                      )}`}
+                      ) })}
                     >
                       <Icon
                         name={getIconFromVote(theme.votes[0].slaughterScore)}
@@ -736,8 +728,7 @@ export default function ThemeSlaughter() {
           ))
         ) : (
           <Text color="textFaded" className="py-8 text-center">
-            No themes were found.
-          </Text>
+             {uiText("AppStrings.NoThemesWereFound2")} </Text>
         )}
       </Vstack>
     </Vstack>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Badge } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
@@ -15,6 +18,7 @@ export default function SearchResultTrack({
   track: TrackType;
   onPress: () => void;
 }) {
+  const uiText = useUiTranslations();
   const thumbnail =
     track.game.soundtrackThumbnail ||
     track.game.thumbnail ||
@@ -35,7 +39,7 @@ export default function SearchResultTrack({
         >
           <Image
             src={thumbnail}
-            alt="Album thumbnail"
+            alt={uiText("AppStrings.AlbumThumbnail2")}
             width={40}
             height={40}
             className="rounded-lg"

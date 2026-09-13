@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useState } from "react";
 import { getEvents } from "@/requests/event";
 import type { EventType } from "@/types/EventType";
@@ -29,18 +32,18 @@ const filters: Record<
   { name: string; description: string; icon: IconName }
 > = {
   upcoming: {
-    name: "Upcoming",
-    description: "Scheduled events that have not started yet",
+    name: "AppStrings.Upcoming",
+    description: "AppStrings.ScheduledEventsThatHaveNotStartedYet",
     icon: "clock",
   },
   current: {
-    name: "Current",
-    description: "Events running right now",
+    name: "AppStrings.Current",
+    description: "AppStrings.EventsRunningRightNow",
     icon: "treedeciduous",
   },
   past: {
-    name: "Past",
-    description: "Completed events",
+    name: "AppStrings.Past",
+    description: "AppStrings.CompletedEvents",
     icon: "hourglass",
   },
 };
@@ -64,6 +67,7 @@ function formatEventWindow(start: string | Date, end: string | Date) {
 }
 
 export default function AdminEvents() {
+  const uiText = useUiTranslations();
   const [events, setEvents] = useState<EventType[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<EventFilter>("upcoming");
@@ -101,19 +105,15 @@ export default function AdminEvents() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Event Control
-          </Text>
+             {uiText("AppStrings.EventControl")} </Text>
           <Text size="sm" color="textFaded">
-            Schedule jam streams and keep the public calendar up to date.
-          </Text>
+             {uiText("AppStrings.ScheduleJamStreamsAndKeepThePublicCalendar")} </Text>
         </Vstack>
         <Hstack wrap>
           <Button color="blue" href="/create-event" icon="calendarplus">
-            Create Event
-          </Button>
+             {uiText("AppStrings.CreateEvent")} </Button>
           <Button href="/events" icon="calendar">
-            View Public Events
-          </Button>
+             {uiText("AppStrings.ViewPublicEvents")} </Button>
         </Hstack>
       </section>
 
@@ -121,8 +121,7 @@ export default function AdminEvents() {
         <Vstack align="stretch" gap={3}>
           <Hstack justify="between">
             <Text size="lg" weight="semibold">
-              Events
-            </Text>
+               {uiText("Navbar.Events.Title")} </Text>
             <Dropdown
               trigger={<Button size="sm">{filters[filter].name}</Button>}
               onSelect={(key) => {
@@ -134,7 +133,7 @@ export default function AdminEvents() {
                   key={key}
                   value={key}
                   icon={value.icon}
-                  description={value.description}
+                  description={uiText(value.description)}
                 >
                   {value.name}
                 </Dropdown.Item>
@@ -146,15 +145,14 @@ export default function AdminEvents() {
             <Spinner />
           ) : events.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No events found for this filter.
-            </Text>
+               {uiText("AppStrings.NoEventsFoundForThisFilter")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Event</TableColumn>
-                <TableColumn>Window</TableColumn>
-                <TableColumn>Host</TableColumn>
-                <TableColumn>Actions</TableColumn>
+                <TableColumn>{uiText("AppStrings.Event")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Window")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Host")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Actions")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {events.map((event) => (
@@ -168,7 +166,7 @@ export default function AdminEvents() {
                         >
                           <Avatar
                             src={event.host?.profilePicture ?? undefined}
-                            alt={event.host?.name ?? "Host"}
+                            alt={event.host?.name ?? uiText("AppStrings.Host")}
                             size={28}
                           />
                         </Badge>
@@ -186,13 +184,12 @@ export default function AdminEvents() {
                       </Text>
                     </TableCell>
                     <TableCell>
-                      <Text size="sm">{event.host?.name ?? "Unknown"}</Text>
+                      <Text size="sm">{event.host?.name ?? uiText("AppStrings.Unknown")}</Text>
                     </TableCell>
                     <TableCell>
                       <Hstack>
                         <Button size="sm" href={`/e/${event.slug}`}>
-                          Open
-                        </Button>
+                           {uiText("AppStrings.Open")} </Button>
                         {event.link && (
                           <Button
                             size="sm"
@@ -200,8 +197,7 @@ export default function AdminEvents() {
                             href={event.link}
                             icon="link"
                           >
-                            Link
-                          </Button>
+                             {uiText("Markdown.Link.Title")} </Button>
                         )}
                       </Hstack>
                     </TableCell>

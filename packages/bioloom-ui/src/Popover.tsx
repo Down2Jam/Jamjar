@@ -1,4 +1,7 @@
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 import { getNeutralBorderColor } from "./borders";
 
 import { useTheme } from "./theme";
@@ -89,6 +92,7 @@ export default function Popover({
   surface = "contrast",
   borderless = false,
 }: PopoverProps) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const hasMounted = useHasMounted();
   const [hovered, setHovered] = useState(false);
@@ -523,7 +527,7 @@ export default function Popover({
                 }}
                 onMouseEnter={() => setCloseHovered(true)}
                 onMouseLeave={() => setCloseHovered(false)}
-                aria-label="Close"
+                aria-label={uiText("AppStrings.Close")}
                 type="button"
               >
                 <X

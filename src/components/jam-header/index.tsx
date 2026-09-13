@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { ArrowRight, Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { ActiveJamResponse } from "../../helpers/jam";
@@ -16,6 +19,7 @@ import Logo from "@/components/logo";
 import { isThemeVotingOpen } from "@/helpers/jamDisplay";
 
 export default function JamHeader() {
+  const uiText = useUiTranslations();
   const { data: activeJamResponse, isLoading } = useCurrentJam();
   const displayJam = activeJamResponse?.jam ?? null;
   const [topTheme, setTopTheme] = useState<string | null>(null);
@@ -484,7 +488,7 @@ export default function JamHeader() {
               color: colors["text"],
             }}
           >
-            {displayJam?.name ?? "Down2Jam"}
+            {displayJam?.name ?? uiText("Splash.Title")}
           </h1>
           <p
             className="mt-1 text-base font-medium md:text-lg"
@@ -492,8 +496,7 @@ export default function JamHeader() {
               color: colors["text"],
             }}
           >
-            The community-centered jam
-          </p>
+             {uiText("AppStrings.TheCommunityCenteredJam")} </p>
 
           <div className="mt-3 flex flex-col items-center gap-3 md:items-start md:gap-4 xl:w-full xl:flex-row xl:justify-between">
             <div
@@ -522,7 +525,7 @@ export default function JamHeader() {
             <div
               ref={timelineRef}
               className="jam-timeline-scrollbar w-full max-w-[58.75rem] cursor-grab select-none overflow-x-auto py-3 active:cursor-grabbing sm:py-4"
-              aria-label="Jam timeline. Drag horizontally to view more phases."
+              aria-label={uiText("AppStrings.JamTimelineDragHorizontallyToViewMorePhases")}
               tabIndex={0}
               onPointerDown={(event) => {
                 if (event.button !== 0) return;

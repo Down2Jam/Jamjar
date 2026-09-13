@@ -41,21 +41,21 @@ export const listingPageVersionOptions: Array<{
 }> = [
   {
     value: "ALL",
-    label: "All Versions",
+    label: "AppStrings.AllVersions",
     icon: "gamepad2",
     description:
-      "Show the post-jam version of the game if available, otherwise show the jam version",
+      "AppStrings.ShowThePostJamVersionOfTheGame",
   },
   {
     value: "JAM",
-    label: "Jam Versions",
+    label: "AppStrings.JamVersions",
     icon: "clock",
-    description: "Only show jam versions of games",
+    description: "AppStrings.OnlyShowJamVersionsOfGames",
   },
   {
     value: "POST_JAM",
-    label: "Post-Jam Versions",
+    label: "AppStrings.PostJamVersions",
     icon: "hammer",
-    description: "Only show post-jam versions of games",
+    description: "AppStrings.OnlyShowPostJamVersionsOfGames",
   },
 ];

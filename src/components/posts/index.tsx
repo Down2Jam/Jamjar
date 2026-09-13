@@ -1,4 +1,8 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 
 import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -56,6 +60,7 @@ const preloadCreatePostDependencies = () =>
   Promise.all([import("@/components/editor"), import("react-select")]);
 
 export default function Posts() {
+  const uiText = useUiTranslations();
   const searchParams = useSearchParams();
 
   const { siteTheme, colors } = useTheme();
@@ -300,19 +305,19 @@ export default function Posts() {
       description: "PostSort.Newest.Description",
     },
     hot: {
-      name: "Hot",
+      name: uiText("AppStrings.Hot"),
       icon: "flame",
-      description: "Trending posts from the last 24 hours",
+      description: uiText("AppStrings.TrendingPostsFromTheLast24Hours"),
     },
     top: {
       name: "PostSort.Top.Title",
       icon: "trophy",
-      description: "Most liked posts from the last week",
+      description: uiText("AppStrings.MostLikedPostsFromTheLastWeek"),
     },
     all_time: {
       name: "PostTime.All.Title",
       icon: "infinity",
-      description: "Most liked posts of all time",
+      description: uiText("AppStrings.MostLikedPostsOfAllTime"),
     },
     oldest: {
       name: "PostSort.Oldest.Title",
@@ -367,8 +372,8 @@ export default function Posts() {
                 icon={activeTagRules.length > 0 ? undefined : "tags"}
                 aria-label={
                   activeTagRules.length > 0
-                    ? `${activeTagRules.length} active tag filters`
-                    : "All tags"
+                    ? uiText("AppStrings.Value0ActiveTagFilters", { value0: activeTagRules.length })
+                    : uiText("AppStrings.AllTags")
                 }
               >
                 {activeTagRules.length > 0 ? (
@@ -388,9 +393,7 @@ export default function Posts() {
                         <span
                           key={tag.id}
                           className="relative h-5 min-w-[0.35rem] flex-1 basis-5"
-                          title={`${tag.name} — ${
-                            rule === 1 ? "included" : "excluded"
-                          }`}
+                          title={uiText("AppStrings.Value0Value14", { value0: tag.name, value1: rule === 1 ? "included" : "excluded" })}
                         >
                           <span
                             className="absolute left-0 top-0 flex h-5 w-5 items-center justify-center rounded-sm border"
@@ -428,10 +431,9 @@ export default function Posts() {
               <div className="flex shrink-0 flex-col gap-3 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <Text size="xl">Tag filtering</Text>
+                    <Text size="xl">{uiText("AppStrings.TagFiltering")}</Text>
                     <Text size="xs" color="textFaded">
-                      Choose which tags should appear in the feed
-                    </Text>
+                       {uiText("AppStrings.ChooseWhichTagsShouldAppearInTheFeed")} </Text>
                   </div>
                   {activeTagRuleCount > 0 && (
                     <Button
@@ -440,7 +442,7 @@ export default function Posts() {
                       icon="x"
                       onClick={clearTagRules}
                     >
-                      Clear {activeTagRuleCount}
+                       {uiText("AppStrings.Clear")} {activeTagRuleCount}
                     </Button>
                   )}
                 </div>
@@ -448,7 +450,7 @@ export default function Posts() {
                 <Input
                   value={tagQuery}
                   onValueChange={setTagQuery}
-                  placeholder="Search tags"
+                  placeholder={uiText("AppStrings.SearchTags")}
                   size="sm"
                   fullWidth
                 />
@@ -459,13 +461,11 @@ export default function Posts() {
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Icon name="check" size={14} color="blue" />
-                    Left-click to include
-                  </span>
+                     {uiText("AppStrings.LeftClickToInclude")} </span>
                   <span className="inline-flex items-center gap-1.5">
                     <Icon name="x" size={14} color="orange" />
-                    Right-click to exclude
-                  </span>
-                  <span>Click the same choice again to clear it</span>
+                     {uiText("AppStrings.RightClickToExclude")} </span>
+                  <span>{uiText("AppStrings.ClickTheSameChoiceAgainToClearIt")}</span>
                 </div>
               </div>
 
@@ -475,7 +475,7 @@ export default function Posts() {
                     {visibleTagCategories.map(({ category, tags }) => (
                       <section key={category} className="flex flex-col gap-2">
                         <div className="flex items-center">
-                          <Text size="sm">{category}</Text>
+                          <Text size="sm">{translateSystemLabel(category, uiText)}</Text>
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {tags.map((tag) => {
@@ -498,13 +498,11 @@ export default function Posts() {
                             role="button"
                             tabIndex={0}
                             aria-pressed={Boolean(rule)}
-                            aria-label={`${tag.name}: ${
-                              rule === 1
+                            aria-label={uiText("AppStrings.Value0Value12", { value0: tag.name, value1: rule === 1
                                 ? "included"
                                 : rule === -1
                                   ? "excluded"
-                                  : "not filtered"
-                            }`}
+                                  : "not filtered" })}
                             className="post-tag-chip tag-filter-chip cursor-pointer"
                             style={{
                               "--post-hover-brightness":
@@ -547,7 +545,7 @@ export default function Posts() {
                 ) : (
                   <div className="py-8 text-center">
                     <Text color="textFaded" size="sm">
-                      No tags match “{tagQuery}”
+                       {uiText("AppStrings.NoTagsMatch")}{tagQuery}”
                     </Text>
                   </div>
                 )}
@@ -565,8 +563,7 @@ export default function Posts() {
                 updateQueryParam("following", next ? "true" : "");
               }}
             >
-              Following
-            </Button>
+               {uiText("AppStrings.Following")} </Button>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -579,8 +576,7 @@ export default function Posts() {
               onFocus={() => void preloadCreatePostDependencies()}
               aria-haspopup="dialog"
             >
-              Create post
-            </Button>
+               {uiText("AppStrings.CreatePost")} </Button>
           )}
           <Dropdown
             freezePositionWhileOpen
@@ -645,8 +641,7 @@ export default function Posts() {
                 color: colors["text"],
               }}
             >
-              No posts match your filters
-            </p>
+               {uiText("AppStrings.NoPostsMatchYourFilters")} </p>
           )}
           <div ref={loadMoreRef}>
             {posts && hasMorePosts && (
@@ -655,7 +650,7 @@ export default function Posts() {
                 onClick={() => fetchMorePosts()}
                 disabled={isFetchingMorePosts}
               >
-                {isFetchingMorePosts ? "Loading..." : "Load More Posts"}
+                {isFetchingMorePosts ? uiText("ThemeSuggestions.Loading.Title") : uiText("AppStrings.LoadMorePosts")}
               </Button>
             )}
           </div>
@@ -690,8 +685,7 @@ export default function Posts() {
                   size="sm"
                   href={`/p/${forumPosts[currentPost].slug}`}
                 >
-                  Post Page
-                </Button>
+                   {uiText("AppStrings.PostPage")} </Button>
               </Hstack>
               <div className="flex gap-1 items-center">
                 <Tooltip content="Previous">
@@ -715,7 +709,7 @@ export default function Posts() {
               </div>
             </>
           }
-          footer={<Button onClick={() => setOpen(false)}>Close</Button>}
+          footer={<Button onClick={() => setOpen(false)}>{uiText("AppStrings.Close")}</Button>}
         >
           <div className="flex flex-col gap-2 py-4">
             <Card
@@ -813,10 +807,9 @@ export default function Posts() {
           {(onClose) => (
             <>
               <ModalHeader>
-                <Text size="xl">Create post</Text>
+                <Text size="xl">{uiText("AppStrings.CreatePost")}</Text>
                 <Text size="sm" color="textFaded">
-                  Submit a post to the forum
-                </Text>
+                   {uiText("AppStrings.SubmitAPostToTheForum")} </Text>
               </ModalHeader>
               <ModalBody>
                 <CreatePostPage

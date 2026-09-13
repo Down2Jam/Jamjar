@@ -15,7 +15,7 @@ const outputDir = path.join(__dirname, "../../src/messages");
 await mkdir(outputDir, { recursive: true });
 
 // Read and parse the CSV
-const csv = await readFile(csvFilePath, "utf8");
+const csv = (await readFile(csvFilePath, "utf8")).replace(/\r\n/g, "\n");
 const { data } = Papa.parse(csv, { header: true });
 const fields = Object.keys(data[0] ?? {});
 
@@ -88,6 +88,16 @@ const englishKeyCount = rows.filter((row) => row.key && row.en?.trim()).length;
 // Coverage info
 const coverage = {};
 
+// Meow is generated from English for untranslated entries. Keep interpolation,
+// markup, and links intact so translated messages remain usable.
+function meowify(english) {
+  return english.split(/(\{[^}]+\}|<[^>]+>|https?:\/\/[^\s<>]+|`[^`]*`)/g)
+    .map((part, index) => index % 2 ? part : part.replace(/\p{L}+/gu, (word) => {
+      if (word === word.toUpperCase()) return "MEOW";
+      return word[0] === word[0].toUpperCase() ? "Meow" : "meow";
+    })).join("");
+}
+
 for (const lang of languages) {
   const flat = {};
   let translatedCount = 0;
@@ -95,10 +105,11 @@ for (const lang of languages) {
   for (const row of rows) {
     if (!row.key) continue;
 
-    const value = row[lang]?.trim();
+    const value = row[lang]?.trim() ||
+      (lang === "mis-meow" && row.en?.trim() ? meowify(row.en.trim()) : "");
     if (value) {
       flat[row.key] = value;
-      translatedCount++;
+      if (row.en?.trim()) translatedCount++;
     }
   }
 

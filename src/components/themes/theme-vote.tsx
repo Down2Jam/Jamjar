@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { hasJoinedCurrentJam, joinJam } from "@/helpers/jam";
 import { useCurrentJam } from "@/hooks/queries";
@@ -24,6 +27,7 @@ import {
 } from "@/helpers/shareToPost";
 
 export default function VotingPage() {
+  const uiText = useUiTranslations();
   const [themes, setThemes] = useState<ThemeType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
   const [phaseLoading, setPhaseLoading] = useState(true);
@@ -71,7 +75,7 @@ export default function VotingPage() {
       );
     } catch (error) {
       console.error("Error creating vote share image:", error);
-      addToast({ title: "Could not create the vote image" });
+      addToast({ title: uiText("AppStrings.CouldNotCreateTheVoteImage") });
       setSharingVotes(false);
     }
   }
@@ -224,13 +228,11 @@ export default function VotingPage() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="x" />
-                <Text size="xl">Not in Theme Voting Phase</Text>
+                <Text size="xl">{uiText("AppStrings.NotInThemeVotingPhase")}</Text>
               </Hstack>
               <Text color="textFaded">
-                The current phase is{" "}
-                <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please
-                come back during the Theme Voting phase.
-              </Text>
+                 {uiText("AppStrings.TheCurrentPhaseIs")}{" "}
+                <strong>{activeJamResponse?.phase || uiText("AppStrings.Unknown")}</strong>{uiText("AppStrings.PleaseComeBackDuringTheThemeVotingPhase")} </Text>
             </Vstack>
           </Vstack>
         </Card>
@@ -252,11 +254,10 @@ export default function VotingPage() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="x" />
-                <Text size="xl">Not in Theme Voting Phase</Text>
+                <Text size="xl">{uiText("AppStrings.NotInThemeVotingPhase")}</Text>
               </Hstack>
               <Text color="textFaded">
-                Theme will be revealed on jam start.
-              </Text>
+                 {uiText("AppStrings.ThemeWillBeRevealedOnJamStart")} </Text>
             </Vstack>
           </Vstack>
         </Card>
@@ -278,8 +279,7 @@ export default function VotingPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Theme Voting
-          </p>
+             {uiText("Navbar.ThemeVoting.Title")} </p>
           <p
             className="mx-auto mt-1 max-w-2xl text-sm"
             style={{
@@ -291,9 +291,7 @@ export default function VotingPage() {
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Vote for the theme of the jam. Likes add +1 and your two stars add
-            +3 each.
-          </p>
+             {uiText("AppStrings.VoteForTheThemeOfTheJamLikesAdd1AndYourTwoStarsAdd3Each")} </p>
         </div>
 
         <Hstack justify="center" wrap className="relative z-20">
@@ -303,19 +301,18 @@ export default function VotingPage() {
               onClick={shareVotes}
               disabled={voteCount === 0 || sharingVotes}
             >
-              {sharingVotes ? "Creating image…" : "Share votes"}
+              {sharingVotes ? uiText("AppStrings.CreatingImage") : uiText("AppStrings.ShareVotes")}
             </Button>
           ) : token ? (
             <Button onClick={joinCurrentJam} color="green" icon="calendarplus">
-              Join Jam to vote
-            </Button>
+               {uiText("AppStrings.JoinJamToVote")} </Button>
           ) : (
             <Button
               href={hasLoggedInBefore ? "/login" : "/signup"}
               color="pink"
               icon="login"
             >
-              {hasLoggedInBefore ? "Sign in to vote" : "Join to vote"}
+              {hasLoggedInBefore ? uiText("AppStrings.SignInToVote") : uiText("AppStrings.JoinToVote")}
             </Button>
           )}
         </Hstack>
@@ -372,7 +369,7 @@ export default function VotingPage() {
                         padding: 0,
                         border: 0,
                       }}
-                      tooltip="Skip"
+                      tooltip={uiText("AppStrings.Skip")}
                       disabled={!canVote}
                       onClick={() => voteSkip(i)}
                       color={voteScore === 0 ? "gray" : "default"}
@@ -397,7 +394,7 @@ export default function VotingPage() {
                         padding: 0,
                         border: 0,
                       }}
-                      tooltip="Like (+1)"
+                      tooltip={uiText("AppStrings.Like1")}
                       disabled={!canVote}
                       onClick={() => voteLike(i)}
                       color={voteScore === 1 ? "green" : "default"}
@@ -422,7 +419,7 @@ export default function VotingPage() {
                         padding: 0,
                         border: 0,
                       }}
-                      tooltip="Star (+3)"
+                      tooltip={uiText("AppStrings.Star3")}
                       leftSlot={
                         <span
                           className={
@@ -451,8 +448,7 @@ export default function VotingPage() {
           })
         ) : (
           <Text color="textFaded" className="py-8 text-center">
-            No themes were found.
-          </Text>
+             {uiText("AppStrings.NoThemesWereFound2")} </Text>
         )}
       </Vstack>
     </Vstack>

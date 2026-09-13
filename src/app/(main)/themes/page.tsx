@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useState } from "react";
 
 import { useTheme } from "@/providers/useSiteTheme";
@@ -108,6 +111,7 @@ function ThemePreview({ theme }: { theme: SiteThemeType }) {
 }
 
 export default function ThemesPage() {
+  const uiText = useUiTranslations();
   const { siteTheme, allSiteThemes, setSiteTheme, setPreviewedSiteTheme } =
     useTheme();
   const headerColor = siteTheme.colors["text"];
@@ -145,8 +149,7 @@ export default function ThemesPage() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Site themes
-        </p>
+           {uiText("AppStrings.SiteThemes")} </p>
         <p
           className="mx-auto mt-1 max-w-2xl text-sm"
           style={{
@@ -158,14 +161,12 @@ export default function ThemesPage() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          Browse every available theme. Hover or focus a card to preview it
-          across the page, then select it to save the choice to your account.
-        </p>
+           {uiText("AppStrings.BrowseEveryAvailableThemeHoverOrFocusACardToPreviewItAcrossThePageThenSelectItToSaveT")} </p>
       </header>
 
       <section
         className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-        aria-label="Available site themes"
+        aria-label={uiText("AppStrings.AvailableSiteThemes")}
         role="radiogroup"
       >
         {allSiteThemes.map((theme) => {
@@ -177,7 +178,7 @@ export default function ThemesPage() {
               tabIndex={0}
               role="radio"
               aria-checked={isSelected}
-              aria-label={`${theme.name}, ${theme.type} theme${isSelected ? ", selected" : ""}`}
+              aria-label={uiText("AppStrings.Value0Value1ThemeValue2", { value0: theme.name, value1: theme.type, value2: isSelected ? ", selected" : "" })}
               className="cursor-pointer rounded-2xl border p-4 shadow-lg outline-none transition duration-200 hover:-translate-y-1 focus-visible:-translate-y-1"
               style={{
                 color: theme.colors["text"],
@@ -209,8 +210,8 @@ export default function ThemesPage() {
                     className="text-xs"
                     style={{ color: theme.colors["textFaded"] }}
                   >
-                    {theme.type} theme · {theme.usageCount ?? 0}{" "}
-                    {(theme.usageCount ?? 0) === 1 ? "user" : "users"}
+                    {theme.type}  {uiText("AppStrings.Theme")} {theme.usageCount ?? 0}{" "}
+                    {(theme.usageCount ?? 0) === 1 ? uiText("AppStrings.User2") : uiText("AppStrings.Users")}
                   </p>
                 </div>
                 {isSelected && (
@@ -221,21 +222,20 @@ export default function ThemesPage() {
                       backgroundColor: theme.colors["green"],
                     }}
                   >
-                    Selected
-                  </span>
+                     {uiText("AppStrings.Selected2")} </span>
                 )}
               </div>
 
               <ThemePreview theme={theme} />
 
               <div className="mt-4 flex items-center gap-3">
-                <div className="flex gap-1.5" aria-label={`${theme.name} palette`}>
+                <div className="flex gap-1.5" aria-label={uiText("AppStrings.Value0Palette", { value0: theme.name })}>
                   {["crust", "mantle", "base", "blue", "green", "pink"].map(
                     (color) => (
                       <span
                         key={color}
                         className="h-5 w-5 rounded border"
-                        title={`${color}: ${theme.colors[color]}`}
+                        title={uiText("AppStrings.Value0Value12", { value0: color, value1: theme.colors[color] })}
                         style={{
                           backgroundColor: theme.colors[color],
                           borderColor: theme.colors["gray"],

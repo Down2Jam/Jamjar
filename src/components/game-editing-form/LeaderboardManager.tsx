@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { useState } from "react";
 import { Button, Dropdown, Icon, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch } from "bioloom-ui";
 import type { IconName } from "bioloom-ui";
@@ -6,13 +7,14 @@ import type { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardT
 import type { GameType } from "@/types/GameType";
 
 const types: Record<LeaderboardTypeType, { label: string; rule: string; icon: IconName }> = {
-  SCORE: { label: "Score", rule: "Highest score wins", icon: "trophy" },
-  GOLF: { label: "Golf", rule: "Lowest score wins", icon: "landplot" },
-  SPEEDRUN: { label: "Speedrun", rule: "Fastest time wins", icon: "rabbit" },
-  ENDURANCE: { label: "Endurance", rule: "Longest time wins", icon: "turtle" },
+  SCORE: { label: "LeaderboardType.Score.Title", rule: "AppStrings.HighestScoreWins", icon: "trophy" },
+  GOLF: { label: "LeaderboardType.Golf.Title", rule: "AppStrings.LowestScoreWins", icon: "landplot" },
+  SPEEDRUN: { label: "LeaderboardType.Speedrun.Title", rule: "AppStrings.FastestTimeWins", icon: "rabbit" },
+  ENDURANCE: { label: "LeaderboardType.Endurance.Title", rule: "AppStrings.LongestTimeWins", icon: "turtle" },
 };
 
 function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const time = leaderboard.type === "SPEEDRUN" || leaderboard.type === "ENDURANCE";
   const descending = leaderboard.type === "SCORE" || leaderboard.type === "ENDURANCE";
@@ -25,20 +27,20 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
   return (
     <section className="overflow-hidden rounded-lg border" style={{ borderColor: colors.base, background: colors.crust }}>
       <div className="border-b p-4" style={{ borderColor: colors.base }}>
-        <div className="flex items-center gap-2 font-semibold"><Icon name={types[leaderboard.type].icon} />{leaderboard.name || "Untitled leaderboard"}</div>
-        <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>Preview · Sample entries</p>
+        <div className="flex items-center gap-2 font-semibold"><Icon name={types[leaderboard.type].icon} />{leaderboard.name || uiText("AppStrings.UntitledLeaderboard")}</div>
+        <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText("AppStrings.PreviewSampleEntries")}</p>
       </div>
       <table className="w-full text-left text-sm">
-        <thead style={{ color: colors.textFaded }}><tr><th className="p-3 font-medium">Rank</th><th className="p-3 font-medium">Player</th><th className="p-3 text-right font-medium">{time ? "Time" : "Score"}</th></tr></thead>
+        <thead style={{ color: colors.textFaded }}><tr><th className="p-3 font-medium">{uiText("AppStrings.Rank")}</th><th className="p-3 font-medium">{uiText("AppStrings.Player")}</th><th className="p-3 text-right font-medium">{time ? uiText("AppStrings.Time") : uiText("LeaderboardType.Score.Title")}</th></tr></thead>
         <tbody>{samples.map((value, index) => (
           <tr key={index} className="border-t" style={{ borderColor: colors.base }}>
             <td className="p-3" style={{ color: index === 0 ? colors.yellow : colors.textFaded }}>#{index + 1}</td>
-            <td className="p-3">Player {String.fromCharCode(65 + index)}</td>
+            <td className="p-3">{uiText("AppStrings.Player")} {String.fromCharCode(65 + index)}</td>
             <td className="p-3 text-right font-mono">{format(value)}</td>
           </tr>
         ))}</tbody>
       </table>
-      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{types[leaderboard.type].rule} · {leaderboard.onlyBest ? "Best entry per player" : "All entries"}</p>
+      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{uiText(types[leaderboard.type].rule)} · {leaderboard.onlyBest ? uiText("AppStrings.BestEntryPerPlayer") : uiText("AppStrings.AllEntries")}</p>
     </section>
   );
 }
@@ -47,6 +49,7 @@ export default function LeaderboardManager({ value, onChange }: {
   value: LeaderboardInput[];
   onChange: (value: LeaderboardInput[]) => void;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const [editing, setEditing] = useState<{ index: number | null; draft: LeaderboardInput } | null>(null);
   const [invalidNumber, setInvalidNumber] = useState(false);
@@ -73,47 +76,47 @@ export default function LeaderboardManager({ value, onChange }: {
   return (
     <div className="w-full">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-sm" style={{ color: colors.textFaded }}>{value.length} {value.length === 1 ? "leaderboard" : "leaderboards"}</p>
-        <Button icon="plus" onClick={() => open(null)}>Add leaderboard</Button>
+        <p className="text-sm" style={{ color: colors.textFaded }}>{value.length} {value.length === 1 ? uiText("AppStrings.Leaderboard3") : uiText("AppStrings.Leaderboards")}</p>
+        <Button icon="plus" onClick={() => open(null)}>{uiText("AppStrings.AddLeaderboard")}</Button>
       </div>
-      {value.length === 0 ? <div className="py-8 text-center text-sm" style={{ color: colors.textFaded }}>No leaderboards yet. Add one to let players compete for scores or times.</div> : (
+      {value.length === 0 ? <div className="py-8 text-center text-sm" style={{ color: colors.textFaded }}>{uiText("AppStrings.NoLeaderboardsYetAddOneToLetPlayersCompeteForScoresOrTimes")}</div> : (
         <div>
           {value.map((lb, index) => (
             <div key={lb.id ?? index} className="flex flex-wrap items-center justify-between gap-3 border-b py-4 last:border-b-0" style={{ borderColor: colors.base }}>
               <div className="flex min-w-0 items-start gap-3">
                 <Icon name={types[lb.type].icon} />
-                <div className="min-w-0"><p className="break-words text-sm font-semibold">{lb.name || `Leaderboard ${index + 1}`}</p>
-                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{types[lb.type].rule} · {lb.onlyBest ? "Best per player" : "All entries"} · {lb.scores.length} entries</p>
+                <div className="min-w-0"><p className="break-words text-sm font-semibold">{lb.name || uiText("AppStrings.LeaderboardValue0", { value0: index + 1 })}</p>
+                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText(types[lb.type].rule)} · {lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")} · {lb.scores.length}  {uiText("AppStrings.Entries")}</p>
                 </div>
               </div>
-              <Button icon="pencil" variant="ghost" onClick={() => open(index)} aria-label={`Preview and edit ${lb.name || `leaderboard ${index + 1}`}`}>Preview & edit</Button>
+              <Button icon="pencil" variant="ghost" onClick={() => open(index)} aria-label={uiText("AppStrings.PreviewAndEditValue0", { value0: lb.name || `leaderboard ${index + 1}` })}>{uiText("AppStrings.PreviewEdit")}</Button>
             </div>
           ))}
         </div>
       )}
       <Modal isOpen={editing !== null} onOpenChange={open => { if (!open) close(); }} size="2xl">
         <ModalContent>
-          <ModalHeader className="pr-14 text-lg font-semibold">{editing?.index === null ? "Add leaderboard" : "Edit leaderboard"}</ModalHeader>
+          <ModalHeader className="pr-14 text-lg font-semibold">{editing?.index === null ? uiText("AppStrings.AddLeaderboard") : uiText("AppStrings.EditLeaderboard")}</ModalHeader>
           {editing && <ModalBody className="max-h-[65dvh] overflow-y-auto">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="flex min-w-0 flex-col gap-4">
-                <Input label="Name" fullWidth value={editing.draft.name} placeholder="e.g. Highest score" onValueChange={name => update({ name })} />
-                <div><p className="mb-2 text-sm">Scoring type</p>
+                <Input label={uiText("Settings.Name.Title")} fullWidth value={editing.draft.name} placeholder={uiText("AppStrings.EGHighestScore")} onValueChange={name => update({ name })} />
+                <div><p className="mb-2 text-sm">{uiText("AppStrings.ScoringType")}</p>
                   <Dropdown portal selectedValue={editing.draft.type} onSelect={type => update({ type: type as LeaderboardTypeType })}>
-                    {Object.entries(types).map(([type, info]) => <Dropdown.Item key={type} value={type} icon={info.icon} description={info.rule}>{info.label}</Dropdown.Item>)}
+                    {Object.entries(types).map(([type, info]) => <Dropdown.Item key={type} value={type} icon={info.icon} description={info.rule}>{uiText(info.label)}</Dropdown.Item>)}
                   </Dropdown>
                 </div>
-                {(editing.draft.type === "SCORE" || editing.draft.type === "GOLF") && <Input label="Decimal places" type="number" min={0} max={3} value={editing.draft.decimalPlaces} onValueChange={v => update({ decimalPlaces: Number(v) })} />}
-                <label className="flex items-center gap-2 text-sm"><Switch checked={editing.draft.onlyBest} onChange={onlyBest => update({ onlyBest })} />Only show each player’s best entry</label>
-                {invalidNumber && <p role="alert" className="text-sm" style={{ color: colors.red }}>Use a whole number from 0 to 3 for decimal places.</p>}
+                {(editing.draft.type === "SCORE" || editing.draft.type === "GOLF") && <Input label={uiText("CreateLeaderboard.Decimals.Title")} type="number" min={0} max={3} value={editing.draft.decimalPlaces} onValueChange={v => update({ decimalPlaces: Number(v) })} />}
+                <label className="flex items-center gap-2 text-sm"><Switch checked={editing.draft.onlyBest} onChange={onlyBest => update({ onlyBest })} />{uiText("AppStrings.OnlyShowEachPlayerSBestEntry")}</label>
+                {invalidNumber && <p role="alert" className="text-sm" style={{ color: colors.red }}>{uiText("AppStrings.UseAWholeNumberFrom0To3ForDecimalPlaces")}</p>}
               </div>
               <div className="min-w-0"><Preview leaderboard={{ ...editing.draft, decimalPlaces: Math.max(0, Math.min(3, editing.draft.decimalPlaces || 0)) }} /></div>
             </div>
           </ModalBody>}
           <ModalFooter className="flex-wrap">
-            {editing?.index != null && <Button icon="trash" variant="ghost" style={{ color: colors.red }} onClick={() => { onChange(value.filter((_, index) => index !== editing.index)); close(); }}>Remove</Button>}
-            <Button variant="ghost" onClick={close}>Cancel</Button>
-            <Button icon="check" color="blue" onClick={apply}>Apply changes</Button>
+            {editing?.index != null && <Button icon="trash" variant="ghost" style={{ color: colors.red }} onClick={() => { onChange(value.filter((_, index) => index !== editing.index)); close(); }}>{uiText("PostCard.Remove.Title")}</Button>}
+            <Button variant="ghost" onClick={close}>{uiText("AppStrings.Cancel")}</Button>
+            <Button icon="check" color="blue" onClick={apply}>{uiText("AppStrings.ApplyChanges")}</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button, Card, Hstack, Icon, Input, Popover, Text, type IconName } from "bioloom-ui";
 
@@ -183,6 +186,7 @@ export default function DocumentationIconPicker({
   value,
   onChange,
 }: Props) {
+  const uiText = useUiTranslations();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const pickerRef = useRef<HTMLDivElement | null>(null);
@@ -233,8 +237,7 @@ export default function DocumentationIconPicker({
         leftSlot={<Icon name={selectedIcon} size={18} />}
         rightSlot={<Icon name="chevrondown" size={16} color="textFaded" />}
       >
-        Pick Icon
-      </Button>
+         {uiText("AppStrings.PickIcon")} </Button>
       <Popover
         shown={open}
         anchorToScreen={false}
@@ -246,13 +249,12 @@ export default function DocumentationIconPicker({
             <Input
               value={query}
               onValueChange={setQuery}
-              placeholder="Search icons"
+              placeholder={uiText("AppStrings.SearchIcons")}
               size="sm"
             />
             <Hstack justify="between">
               <Text size="xs" color="textFaded">
-                {filteredIcons.length} icons
-              </Text>
+                {filteredIcons.length}  {uiText("AppStrings.Icons")} </Text>
               <Hstack>
                 <Icon name={selectedIcon} size={16} color="blue" />
                 <Text size="xs" color="blue">
@@ -262,8 +264,7 @@ export default function DocumentationIconPicker({
             </Hstack>
             {filteredIcons.length === 0 ? (
               <Text size="sm" color="textFaded">
-                No icons found.
-              </Text>
+                 {uiText("AppStrings.NoIconsFound")} </Text>
             ) : (
               <div className="grid max-h-80 grid-cols-6 gap-2 overflow-y-auto sm:grid-cols-7">
                 {filteredIcons.map((iconName) => {

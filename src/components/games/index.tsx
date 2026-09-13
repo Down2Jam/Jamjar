@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { GameType, ListingPageVersion } from "@/types/GameType";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GameSort } from "@/types/GameSort";
@@ -8,9 +11,8 @@ import { IconName } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
 import { GameCard } from "../gamecard";
-import { Spinner } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
-import { Card } from "bioloom-ui";
+import { GamesListingHeading, ListingSkeleton } from "@/components/listing-loading";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { useTranslations } from "@/compat/next-intl";
@@ -80,10 +82,6 @@ const gamesHeaderTextShadow = {
   textShadow:
     "0 1px 2px rgba(0, 0, 0, 0.85), 0 6px 14px rgba(0, 0, 0, 0.55), 0 18px 36px rgba(0, 0, 0, 0.35)",
 };
-const gamesHeaderIconShadow = {
-  filter:
-    "drop-shadow(0 2px 3px rgba(0, 0, 0, 0.85)) drop-shadow(0 8px 16px rgba(0, 0, 0, 0.55)) drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35))",
-};
 const gamesDropdownShadow = {
   boxShadow:
     "0 18px 34px rgba(0, 0, 0, 0.46), 0 7px 14px rgba(0, 0, 0, 0.34), 0 2px 4px rgba(0, 0, 0, 0.35)",
@@ -93,27 +91,27 @@ const INPUT_METHOD_OPTIONS: Record<
   InputMethodFilter,
   { name: string; icon: IconName }
 > = {
-  KeyboardMouse: { name: "Keyboard + Mouse", icon: "keyboard" },
-  Gamepad: { name: "Gamepad / Controller", icon: "gamepad2" },
-  Touch: { name: "Touch", icon: "touchpad" },
-  KeyboardOnly: { name: "Keyboard Only", icon: "keyboard" },
-  MouseOnly: { name: "Mouse Only", icon: "mouse" },
-  Motion: { name: "Motion Controls", icon: "move3d" },
-  VR: { name: "VR", icon: "headset" },
-  Other: { name: "Other", icon: "morehorizontal" },
+  KeyboardMouse: { name: "AppStrings.KeyboardMouse", icon: "keyboard" },
+  Gamepad: { name: "AppStrings.GamepadController", icon: "gamepad2" },
+  Touch: { name: "AppStrings.Touch", icon: "touchpad" },
+  KeyboardOnly: { name: "AppStrings.KeyboardOnly", icon: "keyboard" },
+  MouseOnly: { name: "AppStrings.MouseOnly", icon: "mouse" },
+  Motion: { name: "AppStrings.MotionControls", icon: "move3d" },
+  VR: { name: "AppStrings.VR", icon: "headset" },
+  Other: { name: "AppStrings.Other", icon: "morehorizontal" },
 };
 
 const BUILD_TYPE_OPTIONS: Record<
   BuildTypeFilter,
   { name: string; icon: IconName }
 > = {
-  Windows: { name: "Windows", icon: "customwindows" },
-  MacOS: { name: "macOS", icon: "custommacos" },
-  Linux: { name: "Linux", icon: "customlinux" },
-  Web: { name: "Web", icon: "sihtml5" },
-  Mobile: { name: "Mobile", icon: "smartphone" },
-  Other: { name: "Other", icon: "morehorizontal" },
-  SourceCode: { name: "Source Code", icon: "code2" },
+  Windows: { name: "AppStrings.Windows", icon: "customwindows" },
+  MacOS: { name: "AppStrings.MacOS2", icon: "custommacos" },
+  Linux: { name: "AppStrings.Linux", icon: "customlinux" },
+  Web: { name: "AppStrings.Web", icon: "sihtml5" },
+  Mobile: { name: "AppStrings.Mobile", icon: "smartphone" },
+  Other: { name: "AppStrings.Other", icon: "morehorizontal" },
+  SourceCode: { name: "AppStrings.SourceCode", icon: "code2" },
 };
 
 const BUILD_TYPE_ORDER: BuildTypeFilter[] = [
@@ -317,13 +315,12 @@ function canUseScoreSort(
 }
 
 export default function Games() {
+  const uiText = useUiTranslations();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { siteTheme } = useTheme();
   const headerColor = "text";
   const headerTextStyle =
     siteTheme.type === "Light" ? {} : gamesHeaderTextShadow;
-  const headerIconStyle =
-    siteTheme.type === "Light" ? {} : gamesHeaderIconShadow;
   const searchParams = useSearchParams();
   const router = useRouter();
   const t = useTranslations();
@@ -372,7 +369,6 @@ export default function Games() {
     return new URLSearchParams(window.location.search).has("more");
   }, []);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
-  const [showBusy, setShowBusy] = useState(false);
 
   const initialTypeParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
@@ -461,18 +457,18 @@ export default function Games() {
   );
 
   const typeOptions: TypeOption[] = [
-    { id: "all", name: "All Categories", icon: "layers" },
-    { id: "Regular", name: "Regular", icon: "gamepad2" },
-    { id: "ODA", name: "ODA", icon: "swords" },
-    { id: "Extra", name: "Extra", icon: "calendar" },
-    { id: "External", name: "External", icon: "externalLink" },
+    { id: "all", name: uiText("AppStrings.AllCategories"), icon: "layers" },
+    { id: "Regular", name: uiText("GameCategory.Regular.Title"), icon: "gamepad2" },
+    { id: "ODA", name: uiText("AppStrings.ODA"), icon: "swords" },
+    { id: "Extra", name: uiText("GameCategory.Extra.Title"), icon: "calendar" },
+    { id: "External", name: uiText("AppStrings.External"), icon: "externalLink" },
   ];
 
   // Fetch user via TanStack Query
   const { data: user } = useSelf();
 
   // Fetch current jam and all jams via TanStack Query
-  const { data: currentJamData } = useCurrentJam();
+  const { data: currentJamData, isPending: currentJamPending } = useCurrentJam();
   const { data: allJams } = useJams();
 
   const currentJamId = currentJamData?.jam?.id?.toString();
@@ -504,7 +500,7 @@ export default function Games() {
     const options: JamOption[] = [
       {
         id: "all",
-        name: "All Jams",
+        name: uiText("AppStrings.AllJams"),
         icon: "calendar",
       },
     ];
@@ -517,12 +513,12 @@ export default function Games() {
         options.push({
           id: cjValue,
           slug: currentJamData.jam.slug,
-          name: currentJamData.jam.name || "Current Jam",
+          name: currentJamData.jam.name || uiText("AppStrings.CurrentJam"),
           icon: currentJamData.jam.icon,
-          description: `${formatJamWindow(
+          description: uiText("AppStrings.Value06", { value0: formatJamWindow(
             currentJamData.jam.startTime,
             currentJamData.jam.jammingHours,
-          )}`,
+          ) }),
         });
       }
     }
@@ -576,9 +572,9 @@ export default function Games() {
     if (hasExternalJams) {
       options.push({
         id: "external",
-        name: "External jams",
+        name: uiText("AppStrings.ExternalJams"),
         icon: "globe",
-        description: "Browse entries from imported jams",
+        description: uiText("AppStrings.BrowseEntriesFromImportedJams"),
       });
     }
 
@@ -587,7 +583,7 @@ export default function Games() {
 
   // Handle jam detection and default selection
   useEffect(() => {
-    if (!currentJamData && !allJams) return; // still loading
+    if (currentJamPending) return;
 
     const isCurrentJamDefaultPhase =
       currentJamData?.phase === "Rating" ||
@@ -622,6 +618,7 @@ export default function Games() {
     setJamDetecting(false);
   }, [
     currentJamData,
+    currentJamPending,
     allJams,
     router,
     initialJamParam,
@@ -645,6 +642,8 @@ export default function Games() {
   const {
     data: gamesPages,
     isLoading: gamesLoading,
+    isError: gamesError,
+    refetch: refetchGames,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -698,22 +697,22 @@ export default function Games() {
     { name: string; icon: IconName; description: string }
   > = {
     score: {
-      name: "Score",
+      name: uiText("LeaderboardType.Score.Title"),
       icon: "star",
       description:
-        "Sorts by overall star score, pulling low-rating-count entries toward the middle",
+        uiText("AppStrings.SortsByOverallStarScorePullingLowRating"),
     },
     recommended: {
-      name: "Recommended",
+      name: uiText("AppStrings.Recommended"),
       icon: "thumbsup",
       description:
-        "Like Karma, but gives a small boost to games people enjoy as well",
+        uiText("AppStrings.LikeKarmaButGivesASmallBoostTo"),
     },
     karma: {
-      name: "Karma",
+      name: uiText("AppStrings.Karma"),
       icon: "sparkles",
       description:
-        "Shows games from people who are rating and giving good feedback",
+        uiText("AppStrings.ShowsGamesFromPeopleWhoAreRatingAnd"),
     },
     random: {
       name: "GameSort.Random.Title",
@@ -731,25 +730,13 @@ export default function Games() {
       description: "GameSort.Danger.Description",
     },
     ratingbalance: {
-      name: "Rating Balance",
+      name: uiText("AppStrings.RatingBalance"),
       icon: "scale",
-      description: "Sorts by ratings given minus ratings gotten",
+      description: uiText("AppStrings.SortsByRatingsGivenMinusRatingsGotten"),
     },
   };
   const getSortName = (name: string) =>
     /^\w+(?:\.\w+)+$/.test(name) ? t(name) : name;
-
-  useEffect(() => {
-    let t: number | undefined;
-    if (isLoading || jamDetecting) {
-      t = window.setTimeout(() => setShowBusy(true), 250);
-    } else {
-      setShowBusy(false);
-    }
-    return () => {
-      if (t) clearTimeout(t);
-    };
-  }, [isLoading, jamDetecting]);
 
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
@@ -789,13 +776,13 @@ export default function Games() {
   );
 
   useEffect(() => {
-    if (jamDetecting || jamId === "all") return;
+    if (jamDetecting || !allJams || jamId === "all") return;
     if (jamOptions.some((option) => option.id === jamId)) return;
 
     const resolved = resolveJamUrlValue(jamId, jamOptions);
     setJamId(resolved);
     updateQueryParam("jam", resolved);
-  }, [jamDetecting, jamId, jamOptions, updateQueryParam]);
+  }, [jamDetecting, allJams, jamId, jamOptions, updateQueryParam]);
 
   useEffect(() => {
     const isRestricted = restrictedSorts.has(sort);
@@ -977,27 +964,27 @@ export default function Games() {
   }> = [
     {
       id: "hideOwnGame",
-      name: "Hide Own Game",
+      name: uiText("AppStrings.HideOwnGame"),
       icon: "eye",
-      description: "Hide games from teams you are on",
+      description: uiText("AppStrings.HideGamesFromTeamsYouAreOn"),
     },
     {
       id: "hideRatedGames",
-      name: "Hide Rated Games",
+      name: uiText("AppStrings.HideRatedGames"),
       icon: "star",
-      description: "Hide games you have already rated",
+      description: uiText("AppStrings.HideGamesYouHaveAlreadyRated"),
     },
     {
       id: "moveOwnGameToEnd",
-      name: "Move Own Game To End",
+      name: uiText("AppStrings.MoveOwnGameToEnd"),
       icon: "move3d",
-      description: "Show your own games after other games",
+      description: uiText("AppStrings.ShowYourOwnGamesAfterOtherGames"),
     },
     {
       id: "moveRatedGamesToEnd",
-      name: "Move Rated Games To End",
+      name: uiText("AppStrings.MoveRatedGamesToEnd"),
       icon: "staroff",
-      description: "Show unrated games first and keep rated games at the end",
+      description: uiText("AppStrings.ShowUnratedGamesFirstAndKeepRatedGames"),
     },
   ];
 
@@ -1140,7 +1127,7 @@ export default function Games() {
           icon={sorts[sort].icon}
           rightSlot={<Icon name="chevrondown" size={16} className="ml-2" />}
         >
-          {`Sorted by ${getSortName(sorts[sort].name)}`}
+          {uiText("AppStrings.SortedByValue0", { value0: getSortName(sorts[sort].name) })}
         </Button>
       }
       onSelect={(key) => {
@@ -1177,93 +1164,13 @@ export default function Games() {
     </Dropdown>
   );
 
-  if (!hasData && (isLoading || showBusy || jamDetecting)) {
-    return (
-      <Vstack align="stretch" className="p-4 gap-1">
-        <Hstack justify="between" align="end" className="w-full gap-4">
-          <Vstack align="start" gap={1} className="min-w-0">
-            <Hstack className="gap-3">
-              <Icon
-                name="gamepad2"
-                color={headerColor}
-                size={40}
-                style={headerIconStyle}
-              />
-              <Text
-                size="4xl"
-                color={headerColor}
-                weight="semibold"
-                style={headerTextStyle}
-              >
-                Games.Title
-              </Text>
-            </Hstack>
-            <Text
-              size="md"
-              color={headerColor}
-              align="left"
-              style={headerTextStyle}
-            >
-              Games.Description
-            </Text>
-          </Vstack>
-          <div className="shrink-0">{sortDropdown}</div>
-        </Hstack>
-        <Card className="max-w-96">
-          <Vstack>
-            <Hstack>
-              <Spinner />
-              <Text size="xl">Loading</Text>
-            </Hstack>
-            <Text color="textFaded">Loading games...</Text>
-          </Vstack>
-        </Card>
-      </Vstack>
-    );
-  }
+  const initialLoading = !hasData && (isLoading || jamDetecting);
 
   return (
     <>
       <Vstack align="stretch" className="p-4 gap-2">
         <div className="m-2 grid w-full grid-cols-[minmax(0,1fr)_auto] items-end gap-x-4 gap-y-2">
-          <Vstack
-            align="start"
-            gap={1}
-            className="col-span-2 min-w-0"
-          >
-            <Hstack className="gap-3">
-              <Icon
-                name="gamepad2"
-                color={headerColor}
-                size={40}
-                style={headerIconStyle}
-              />
-              <Text
-                size="4xl"
-                color={headerColor}
-                weight="semibold"
-                style={headerTextStyle}
-              >
-                Games.Title
-              </Text>
-              <Text
-                size="xl"
-                color={headerColor}
-                className="shrink-0"
-                style={{ ...headerTextStyle, whiteSpace: "nowrap" }}
-              >
-                ({totalGames} results)
-              </Text>
-            </Hstack>
-            <Text
-              size="md"
-              color={headerColor}
-              align="left"
-              style={headerTextStyle}
-            >
-              Games.Description
-            </Text>
-          </Vstack>
+          <GamesListingHeading totalGames={initialLoading ? undefined : totalGames} />
           <button
             type="button"
             className="col-start-1 row-start-2 mx-1 mt-1 inline-flex w-fit items-center gap-2 cursor-pointer border-0 bg-transparent p-0"
@@ -1272,8 +1179,7 @@ export default function Games() {
           >
             <Icon name="settings2" color={headerColor} size={16} />
             <Text size="sm" color={headerColor} weight="semibold">
-              Advanced Search
-            </Text>
+               {uiText("AppStrings.AdvancedSearch")} </Text>
             <Icon
               name="chevrondown"
               color={headerColor}
@@ -1379,7 +1285,7 @@ export default function Games() {
                     description={
                       j.description ??
                       (j.id === "all"
-                        ? "Browse entries from every jam"
+                        ? uiText("AppStrings.BrowseEntriesFromEveryJam")
                         : undefined)
                     }
                   >
@@ -1406,8 +1312,8 @@ export default function Games() {
                     icon={t.icon || "gamepad2"}
                     description={
                       t.id === "all"
-                        ? "Show all game categories"
-                        : `Only ${t.name} entries`
+                        ? uiText("AppStrings.ShowAllGameCategories")
+                        : uiText("AppStrings.OnlyValue0Entries", { value0: t.name })
                     }
                   >
                     {t.name}
@@ -1430,7 +1336,7 @@ export default function Games() {
                     setSelectedTags(next);
                     updateMultiQueryParam("tags", next);
                   }}
-                  placeholder="Tags"
+                  placeholder={uiText("CreateGame.Tags.Title")}
                 >
                   {tagOptions.map((tag) => (
                     <Dropdown.Item
@@ -1459,7 +1365,7 @@ export default function Games() {
                     setSelectedInputMethods(next);
                     updateMultiQueryParam("inputMethods", next);
                   }}
-                  placeholder="Input Methods"
+                  placeholder={uiText("AppStrings.InputMethods")}
                 >
                   {inputMethodOptions.map((method) => (
                     <Dropdown.Item
@@ -1489,7 +1395,7 @@ export default function Games() {
                     setSelectedBuildTypes(next);
                     updateMultiQueryParam("buildTypes", next);
                   }}
-                  placeholder="Build Types"
+                  placeholder={uiText("AppStrings.BuildTypes")}
                 >
                   {buildTypeOptions.map((buildType) => (
                     <Dropdown.Item
@@ -1519,7 +1425,7 @@ export default function Games() {
                     setExcludedFlags(next);
                     updateMultiQueryParam("excludeFlags", next);
                   }}
-                  placeholder="Exclude Flags"
+                  placeholder={uiText("AppStrings.ExcludeFlags")}
                 >
                   {flagOptions.map((flag) => (
                     <Dropdown.Item
@@ -1551,8 +1457,7 @@ export default function Games() {
                     style={gamesDropdownShadow}
                     icon="morehorizontal"
                   >
-                    More
-                  </Button>
+                     {uiText("AppStrings.More")} </Button>
                 }
               >
                 {moreOptions.map((option) => (
@@ -1571,7 +1476,9 @@ export default function Games() {
         </Vstack>
       </Vstack>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {initialLoading ? <ListingSkeleton kind="games" /> : gamesError && !hasData ? (
+        <Button onClick={() => void refetchGames()}>{uiText("AppStrings.Retry")}</Button>
+      ) : <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {displayedGames.length > 0 ? (
           displayedGames.map((game: GameType) => (
             <GameCard
@@ -1584,11 +1491,15 @@ export default function Games() {
             />
           ))
         ) : (
-          <p>No games were found. :(</p>
+          <p>{uiText("AppStrings.NoGamesWereFound")}</p>
         )}
-      </section>
+      </section>}
+      {hasNextPage && isFetchingNextPage && (
+        <div className="mt-4">
+          <ListingSkeleton kind="games" count={4} />
+        </div>
+      )}
       <div ref={loadMoreRef} className="flex min-h-12 justify-center py-6">
-        {hasNextPage && isFetchingNextPage && <Spinner />}
       </div>
     </>
   );

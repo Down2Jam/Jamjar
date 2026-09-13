@@ -1,9 +1,14 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/queries/queryKeys";
 
 import "./game-editor.css";
+import EditorFooter from "./EditorFooter";
 import ItemEditor from "./ItemEditor";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
@@ -128,14 +133,14 @@ const INPUT_METHOD_OPTIONS: {
   label: string;
   icon?: IconName;
 }[] = [
-  { value: "KeyboardMouse", label: "Keyboard + Mouse", icon: "keyboard" },
-  { value: "Gamepad", label: "Gamepad / Controller", icon: "gamepad2" },
-  { value: "Touch", label: "Touch", icon: "touchpad" },
-  { value: "KeyboardOnly", label: "Keyboard Only", icon: "keyboard" },
-  { value: "MouseOnly", label: "Mouse Only", icon: "mouse" },
-  { value: "Motion", label: "Motion Controls", icon: "move3d" },
-  { value: "VR", label: "VR", icon: "headset" },
-  { value: "Other", label: "Other", icon: "morehorizontal" },
+  { value: "KeyboardMouse", label: "AppStrings.KeyboardMouse", icon: "keyboard" },
+  { value: "Gamepad", label: "AppStrings.GamepadController", icon: "gamepad2" },
+  { value: "Touch", label: "AppStrings.Touch", icon: "touchpad" },
+  { value: "KeyboardOnly", label: "AppStrings.KeyboardOnly", icon: "keyboard" },
+  { value: "MouseOnly", label: "AppStrings.MouseOnly", icon: "mouse" },
+  { value: "Motion", label: "AppStrings.MotionControls", icon: "move3d" },
+  { value: "VR", label: "AppStrings.VR", icon: "headset" },
+  { value: "Other", label: "AppStrings.Other", icon: "morehorizontal" },
 ];
 
 const INPUT_METHOD_VALUES = new Set<InputMethodType>(
@@ -281,6 +286,7 @@ export default function GameEditingForm({
   game?: GameType | null;
   pageVersion?: PageVersion;
 }) {
+  const uiText = useUiTranslations();
   const isMounted = useHasMounted();
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
@@ -677,7 +683,7 @@ export default function GameEditingForm({
           if (!alreadyHas) {
             const created = await createTeam(); // should return truthy or handle 409
             if (!created) {
-              addToast({ title: "Error while creating team" });
+              addToast({ title: uiText("AppStrings.ErrorWhileCreatingTeam") });
               redirect("/");
               return;
             }
@@ -843,7 +849,7 @@ export default function GameEditingForm({
       });
       const data = await response.json().catch(() => ({}));
       if (response.ok) {
-        addToast({ title: data.message ?? "Uploaded" });
+        addToast({ title: data.message ?? uiText("AppStrings.Uploaded") });
         const uploadedUrl = unwrapItem<string>(data);
         if (!uploadedUrl) return null;
         if (endpoint === "image") return uploadedUrl;
@@ -858,11 +864,11 @@ export default function GameEditingForm({
           loudnessGainDb: loudness.loudnessGainDb ?? null,
         };
       }
-      addToast({ title: data?.message ?? `Failed to upload ${endpoint}` });
+      addToast({ title: data?.message ?? uiText("AppStrings.FailedToUploadValue0", { value0: endpoint }) });
       return null;
     } catch (e) {
       console.error(e);
-      addToast({ title: `Error uploading ${endpoint}` });
+      addToast({ title: uiText("AppStrings.ErrorUploadingValue0", { value0: endpoint }) });
       return null;
     }
   }
@@ -1006,7 +1012,7 @@ export default function GameEditingForm({
             (cleanedPrefix.length < MIN_EMOTE_PREFIX_LENGTH ||
               cleanedPrefix.length > MAX_EMOTE_PREFIX_LENGTH)
           ) {
-            addToast({ title: "Emote prefix must be 4 to 8 characters." });
+            addToast({ title: uiText("AppStrings.EmotePrefixMustBe4To8Characters") });
             return;
           }
           setWaitingPost(true);
@@ -1060,21 +1066,21 @@ export default function GameEditingForm({
             for (const song of payloadSongs) {
               if ((song.credits?.length ?? 0) === 0) {
                 addToast({
-                  title: `${song.name} is missing a credited person`,
+                  title: uiText("AppStrings.Value0IsMissingACreditedPerson", { value0: song.name }),
                 });
                 return;
               }
 
               if (!song.slug) {
                 addToast({
-                  title: `${song.name} is missing a slug`,
+                  title: uiText("AppStrings.Value0IsMissingASlug", { value0: song.name }),
                 });
                 return;
               }
 
               if (!song.name) {
                 addToast({
-                  title: `${song.name} is missing a name`,
+                  title: uiText("AppStrings.Value0IsMissingAName", { value0: song.name }),
                 });
                 return;
               }
@@ -1196,7 +1202,7 @@ export default function GameEditingForm({
                 >
                   {prevSlug
                     ? pageVersion === "POST_JAM"
-                      ? "Edit Post-Jam Page"
+                      ? uiText("AppStrings.EditPostJamPage")
                       : t("CreateGame.Edit.Title")
                     : t("CreateGame.Create.Title")}
                 </h1>
@@ -1212,27 +1218,24 @@ export default function GameEditingForm({
               >
                 {prevSlug
                   ? pageVersion === "POST_JAM"
-                    ? "Edit the post-jam version of your game page."
+                    ? uiText("AppStrings.EditThePostJamVersionOfYourGamePage")
                     : t("CreateGame.Edit.Description")
                   : t("CreateGame.Create.Description")}
               </p>
           </header>
 
           <Tabs className="game-editor-tabs [&>[role=tablist]]:justify-center" style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}>
-            <Tab title="General" icon="cog">
+            <Tab title={uiText("AppStrings.General")} icon="cog">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading relative z-20 overflow-visible">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="cog" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">
-                        General
-                      </Text>
+                      <Icon name="cog" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">
+                         {uiText("AppStrings.General")} </Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">
-                      The main settings to change how your game is viewed on the
-                      site
-                    </Text>
+                    <Text size="sm" color="textFaded">
+                       {uiText("AppStrings.TheMainSettingsToChangeHowYourGame")} </Text>
                   </Vstack>
                 </div>
                 <div className="game-editor-row relative z-30 overflow-visible">
@@ -1267,7 +1270,7 @@ export default function GameEditingForm({
                           CreateGame.Slug.Description
                         </Text>
                         <Text color="textFaded" size="xs">
-                          {`d2jam.com/g/${gameSlug || "your-game-name"}`}
+                          {uiText("AppStrings.D2jamComGValue0", { value0: gameSlug || "your-game-name" })}
                         </Text>
                       </Hstack>
                     </div>
@@ -1292,60 +1295,41 @@ export default function GameEditingForm({
                             CreateGame.Category.Description
                           </Text>
                         </div>
-                        {
-                          <Dropdown portal
-                            disabled={!canSwapCategory}
-                            selectedValue={category}
-                            onSelect={(key) => {
-                              setCategory(
-                                key as
-                                  | "REGULAR"
-                                  | "ODA"
-                                  | "EXTRA"
-                                  | "EXTERNAL",
-                              );
-                            }}
-                          >
-                            <Dropdown.Item
-                              value="REGULAR"
-                              description="GameCategory.Regular.Description"
-                              icon="gamepad2"
-                            >
-                              GameCategory.Regular.Title
-                            </Dropdown.Item>
-
-                            {teams &&
-                            teams.length > 0 &&
-                            teams[currentTeam].users &&
-                            teams[currentTeam].users.length == 1 ? (
-                              <Dropdown.Item
-                                value="ODA"
-                                description="GameCategory.Oda.Description"
-                                icon="swords"
-                              >
-                                GameCategory.Oda.Title
-                              </Dropdown.Item>
-                            ) : (
-                              <></>
-                            )}
-                            <Dropdown.Item
-                              value="EXTRA"
-                              description="GameCategory.Extra.Description"
-                              icon="calendar"
-                            >
-                              GameCategory.Extra.Title
-                            </Dropdown.Item>
-                            {game?.category === "EXTERNAL" && (
-                              <Dropdown.Item
-                                value="EXTERNAL"
-                                description="Imported from an external jam"
-                                icon="externalLink"
-                              >
-                                External
-                              </Dropdown.Item>
-                            )}
-                          </Dropdown>
-                        }
+                        <fieldset
+                          className="game-editor-category-options"
+                          disabled={!canSwapCategory}
+                          aria-label={t("CreateGame.Category.Title")}
+                        >
+                          {([
+                            { value: "REGULAR", title: "GameCategory.Regular.Title", description: "GameCategory.Regular.Description", icon: "gamepad2", eligible: true },
+                            { value: "ODA", title: "GameCategory.Oda.Title", description: "GameCategory.Oda.Description", icon: "swords", eligible: teams?.[currentTeam]?.users?.length === 1 },
+                            { value: "EXTRA", title: "GameCategory.Extra.Title", description: "GameCategory.Extra.Description", icon: "calendar", eligible: true },
+                            { value: "EXTERNAL", title: "AppStrings.External", description: "AppStrings.ImportedFromAnExternalJam", icon: "externalLink", eligible: game?.category === "EXTERNAL" },
+                          ] as const)
+                            .filter((option) => canSwapCategory ? option.eligible || option.value === category : option.value === category)
+                            .map((option) => (
+                              <label key={option.value} className="game-editor-category-option">
+                                <input
+                                  type="radio"
+                                  name="game-category"
+                                  value={option.value}
+                                  checked={category === option.value}
+                                  disabled={!option.eligible}
+                                  onChange={() => {
+                                    if (canSwapCategory && option.eligible) setCategory(option.value);
+                                  }}
+                                />
+                                <span className="game-editor-category-card">
+                                  <span className="game-editor-category-title">
+                                    <Icon name={option.icon} size={16} />
+                                    <span>{t(option.title)}</span>
+                                    <span className="game-editor-category-indicator" aria-hidden="true" />
+                                  </span>
+                                  <span className="game-editor-category-description">{t(option.description)}</span>
+                                </span>
+                              </label>
+                            ))}
+                        </fieldset>
                       </Vstack>
                     </div>
                   </>
@@ -1407,28 +1391,22 @@ export default function GameEditingForm({
                   <Vstack align="start">
                     <div>
                       <Text color="text" size="lg" weight="semibold">
-                        Playable web build
-                      </Text>
+                         {uiText("AppStrings.PlayableWebBuild")} </Text>
                       <Text color="textFaded" size="xs">
-                        Upload a ZIP containing an index.html file and all of the
-                        files your browser game needs. The build runs in a
-                        restricted sandbox when players launch it. Use relative
-                        paths for assets inside the build.
-                      </Text>
+                         {uiText("AppStrings.UploadAZIPContainingAnIndexHtmlFileAndAllOfTheFilesYourBrowserGameNeedsTheBuildRunsIn")} </Text>
                     </div>
 
                     <label className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center" aria-disabled={uploadingWebBuild} style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight } as CSSProperties}>
                       <Icon name="upload" color="text" />
                       <Text color="text" weight="semibold">
                         {uploadingWebBuild
-                          ? "Checking and uploading…"
+                          ? uiText("AppStrings.CheckingAndUploading")
                           : playableBuildUrl
-                            ? "Replace web build ZIP"
-                            : "Choose web build ZIP"}
+                            ? uiText("AppStrings.ReplaceWebBuildZIP")
+                            : uiText("AppStrings.ChooseWebBuildZIP")}
                       </Text>
                       <Text color="textFaded" size="xs">
-                        ZIP only · 95 MB archive · 500 MB expanded · 1,000 files
-                      </Text>
+                         {uiText("AppStrings.ZIPOnly95MBArchive500MBExpanded1000Files")} </Text>
                       <input
                         className="sr-only"
                         type="file"
@@ -1439,7 +1417,7 @@ export default function GameEditingForm({
                           event.currentTarget.value = "";
                           if (!file) return;
                           if (file.size > 95_000_000) {
-                            addToast({ title: "The web build ZIP must be 95 MB or smaller." });
+                            addToast({ title: uiText("AppStrings.TheWebBuildZIPMustBe95MBOrSmaller") });
                             return;
                           }
                           setUploadingWebBuild(true);
@@ -1462,13 +1440,13 @@ export default function GameEditingForm({
                             }
                             setPlayableBuildUrl(uploaded.playableUrl);
                             setPlayableBuildShowFullscreenButton(true);
-                            addToast({ title: "Web build uploaded and checked." });
+                            addToast({ title: uiText("AppStrings.WebBuildUploadedAndChecked") });
                           } catch (error) {
                             addToast({
                               title:
                                 error instanceof Error
                                   ? error.message
-                                  : "The web build could not be uploaded.",
+                                  : uiText("AppStrings.TheWebBuildCouldNotBeUploaded"),
                             });
                           } finally {
                             setUploadingWebBuild(false);
@@ -1480,10 +1458,9 @@ export default function GameEditingForm({
                     {(playableBuildUrl || itchEmbedUrl) && (
                       <>
                         <div>
-                          <Text color="text">Game aspect ratio</Text>
+                          <Text color="text">{uiText("AppStrings.GameAspectRatio")}</Text>
                           <Text color="textFaded" size="xs">
-                            Choose the shape that best matches the game window.
-                          </Text>
+                             {uiText("AppStrings.ChooseTheShapeThatBestMatchesTheGameWindow")} </Text>
                         </div>
                         <Dropdown portal
                           selectedValue={
@@ -1513,10 +1490,9 @@ export default function GameEditingForm({
                               onChange={setPlayableBuildShowFullscreenButton}
                             />
                             <Vstack gap={0} align="start">
-                              <Text color="text">Fullscreen button</Text>
+                              <Text color="text">{uiText("AppStrings.FullscreenButton")}</Text>
                               <Text color="textFaded" size="xs">
-                                Show a fullscreen control in the bottom-right corner.
-                              </Text>
+                                 {uiText("AppStrings.ShowAFullscreenControlInTheBottomRightCorner")} </Text>
                             </Vstack>
                           </Hstack>
                         )}
@@ -1529,7 +1505,7 @@ export default function GameEditingForm({
                             <iframe
                               ref={playableBuildPreviewRef}
                               src={getPlayableBuildUrl(playableBuildUrl)}
-                              title="Playable web build preview"
+                              title={uiText("AppStrings.PlayableWebBuildPreview")}
                               className="h-full w-full border-0"
                               sandbox="allow-scripts allow-pointer-lock"
                               allow="fullscreen; gamepad"
@@ -1538,8 +1514,8 @@ export default function GameEditingForm({
                             {playableBuildShowFullscreenButton && (
                               <button
                                 type="button"
-                                aria-label="Open game preview in fullscreen"
-                                title="Fullscreen"
+                                aria-label={uiText("AppStrings.OpenGamePreviewInFullscreen")}
+                                title={uiText("AppStrings.Fullscreen")}
                                 className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
                                 style={{
                                   backgroundColor: colors.mantle,
@@ -1550,7 +1526,7 @@ export default function GameEditingForm({
                                   void playableBuildPreviewRef.current
                                     ?.requestFullscreen()
                                     .catch(() => {
-                                      addToast({ title: "Fullscreen is unavailable." });
+                                      addToast({ title: uiText("AppStrings.FullscreenIsUnavailable") });
                                     });
                                 }}
                               >
@@ -1562,15 +1538,12 @@ export default function GameEditingForm({
 
                         {itchEmbedUrl && !playableBuildUrl && (
                           <Text color="textFaded" size="xs">
-                            This imported game still uses its legacy itch player.
-                            Upload a ZIP above to replace it with a hosted build.
-                          </Text>
+                             {uiText("AppStrings.ThisImportedGameStillUsesItsLegacyItchPlayerUploadAZIPAboveToReplaceItWithAHostedBuil")} </Text>
                         )}
 
                         {playableBuildUrl && (
                           <Button color="red" onClick={() => setPlayableBuildUrl("")}>
-                            Remove web build
-                          </Button>
+                             {uiText("AppStrings.RemoveWebBuild")} </Button>
                         )}
                       </>
                     )}
@@ -1636,7 +1609,7 @@ export default function GameEditingForm({
                               />
                               <Dropdown portal
                                 className="w-96"
-                                placeholder="Select platform"
+                                placeholder={uiText("AppStrings.SelectPlatform")}
                                 selectedValue={link.platform}
                                 onSelect={(val) => {
                                   const newLinks = [...downloadLinks];
@@ -1646,35 +1619,27 @@ export default function GameEditingForm({
                                 }}
                               >
                                 <Dropdown.Item value="Web" icon="sihtml5">
-                                  Web
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.Web")} </Dropdown.Item>
                                 <Dropdown.Item value="SourceCode" icon="code2">
-                                  Source Code
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.SourceCode")} </Dropdown.Item>
                                 <Dropdown.Item value="Windows" icon="customwindows">
-                                  Windows
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.Windows")} </Dropdown.Item>
                                 <Dropdown.Item value="MacOS" icon="custommacos">
-                                  MacOS
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.MacOS")} </Dropdown.Item>
                                 <Dropdown.Item value="Linux" icon="customlinux">
-                                  Linux
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.Linux")} </Dropdown.Item>
                                 <Dropdown.Item value="iOS" icon="smartphone">
-                                  Apple iOS
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.AppleIos")} </Dropdown.Item>
                                 <Dropdown.Item
                                   value="Android"
                                   icon="smartphone"
                                 >
-                                  Android
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.Android")} </Dropdown.Item>
                                 <Dropdown.Item
                                   value="Other"
                                   icon="morehorizontal"
                                 >
-                                  Other
-                                </Dropdown.Item>
+                                   {uiText("AppStrings.Other")} </Dropdown.Item>
                               </Dropdown>
 
                               <Button
@@ -1694,6 +1659,7 @@ export default function GameEditingForm({
                       </div>
 
                       <Button
+                        className="w-fit self-start"
                         icon="plus"
                         onClick={() => {
                           setDownloadLinks([
@@ -1715,10 +1681,9 @@ export default function GameEditingForm({
                   <div className="game-editor-row relative z-20 overflow-visible">
                     <Vstack align="start">
                       <div>
-                        <Text color="text">Team</Text>
+                        <Text color="text">{uiText("AppStrings.Team")}</Text>
                         <Text color="textFaded" size="xs">
-                          Set the team associated with the game
-                        </Text>
+                           {uiText("AppStrings.SetTheTeamAssociatedWithTheGame")} </Text>
                       </div>
                       <Dropdown portal
                         trigger={
@@ -1726,8 +1691,8 @@ export default function GameEditingForm({
                             {teams && teams[currentTeam]
                               ? teams[currentTeam].name
                                 ? teams[currentTeam].name
-                                : `${teams[currentTeam].owner.name}'s Team`
-                              : "Unknown"}
+                                : uiText("AppStrings.Value0STeam2", { value0: teams[currentTeam].owner.name })
+                              : uiText("AppStrings.Unknown")}
                           </Button>
                         }
                         onSelect={(i) => {
@@ -1738,13 +1703,13 @@ export default function GameEditingForm({
                           <Dropdown.Item
                             key={i}
                             value={i}
-                            description={`${team.users.length} members`}
+                            description={uiText("AppStrings.Value0Members", { value0: team.users.length })}
                           >
                             {teams && teams[i]
                               ? teams[i].name
                                 ? teams[i].name
-                                : `${teams[i].owner.name}'s Team`
-                              : "Unknown"}
+                                : uiText("AppStrings.Value0STeam2", { value0: teams[i].owner.name })
+                              : uiText("AppStrings.Unknown")}
                           </Dropdown.Item>
                         ))}
                       </Dropdown>
@@ -1798,7 +1763,7 @@ export default function GameEditingForm({
                                   {category3.name}
                                 </Text>
                                 <Text color="textFaded" size="xs">
-                                  {category3.description}
+                                  {uiText(category3.description)}
                                 </Text>
                               </Vstack>
                             </Hstack>
@@ -1833,9 +1798,8 @@ export default function GameEditingForm({
                                     }}
                                   />
                                   <Text color="textFaded" size="xs">
-                                    Did you make the majority of the{" "}
-                                    {category3.name.split(".")[1]} content
-                                  </Text>
+                                     {uiText("AppStrings.DidYouMakeTheMajorityOfThe")}{" "}
+                                    {category3.name.split(".")[1]}  {uiText("AppStrings.Content2")} </Text>
                                 </Hstack>
                               )}
                           </div>
@@ -1846,20 +1810,17 @@ export default function GameEditingForm({
                   )}
               </Vstack>
             </Tab>
-            <Tab title="Media" icon="images">
+            <Tab title={uiText("AppStrings.Media")} icon="images">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="images" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">
-                        Media
-                      </Text>
+                      <Icon name="images" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">
+                         {uiText("AppStrings.Media")} </Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">
-                      Spots to upload pictures and music to add to your game
-                      page in various locations
-                    </Text>
+                    <Text size="sm" color="textFaded">
+                       {uiText("AppStrings.SpotsToUploadPicturesAndMusicToAdd")} </Text>
                   </Vstack>
                 </div>
                 <div className="game-editor-row">
@@ -1874,7 +1835,7 @@ export default function GameEditingForm({
                       value={thumbnailUrl}
                       width={360}
                       height={200}
-                      placeholder="Upload thumbnail"
+                      placeholder={uiText("AppStrings.UploadThumbnail")}
                       onSelect={async (file, crop) => {
                         const url = await uploadTo("image", file, crop);
                         if (url) {
@@ -1897,7 +1858,7 @@ export default function GameEditingForm({
                       value={bannerUrl}
                       width={734}
                       height={120}
-                      placeholder="Upload banner"
+                      placeholder={uiText("AppStrings.UploadBanner")}
                       onSelect={async (file, crop) => {
                         const url = await uploadTo("image", file, crop);
                         if (url) {
@@ -1911,11 +1872,9 @@ export default function GameEditingForm({
                 <div className="game-editor-row">
                       <Vstack align="start">
                         <div>
-                          <Text color="text">Screenshots (up to 5)</Text>
+                          <Text color="text">{uiText("AppStrings.ScreenshotsUpTo5")}</Text>
                           <Text color="textFaded" size="xs">
-                            First three will be shown on hover. All will be shown
-                            on game page.
-                          </Text>
+                             {uiText("AppStrings.FirstTwoWillBeShownOnHoverAll")} </Text>
                         </div>
 
                         {screenshots.length > 0 && (
@@ -1932,7 +1891,7 @@ export default function GameEditingForm({
                                   >
                                     <Image
                                       src={src}
-                                      alt={`Screenshot #${i + 1}`}
+                                      alt={uiText("AppStrings.ScreenshotValue0", { value0: i + 1 })}
                                       fill
                                       className="object-cover"
                                     />
@@ -1951,8 +1910,7 @@ export default function GameEditingForm({
                                         )
                                       }
                                     >
-                                      Remove
-                                    </Button>
+                                       {uiText("PostCard.Remove.Title")} </Button>
                                     {i > 0 && (
                                       <Button
                                         size="sm"
@@ -1967,8 +1925,7 @@ export default function GameEditingForm({
                                           })
                                         }
                                       >
-                                        Move Up
-                                      </Button>
+                                         {uiText("AppStrings.MoveUp")} </Button>
                                     )}
                                     {i < screenshots.length - 1 && (
                                       <Button
@@ -1984,8 +1941,7 @@ export default function GameEditingForm({
                                           })
                                         }
                                       >
-                                        Move Down
-                                      </Button>
+                                         {uiText("AppStrings.MoveDown")} </Button>
                                     )}
                                   </Hstack>
                                 </Vstack>
@@ -2001,15 +1957,15 @@ export default function GameEditingForm({
                             aspectRatio="16 / 9"
                             placeholder={
                               screenshots.length >= 5
-                                ? "Max screenshots reached"
-                                : "Add screenshot"
+                                ? uiText("AppStrings.MaxScreenshotsReached")
+                                : uiText("AppStrings.AddScreenshot")
                             }
                             disabled={screenshots.length >= 5}
                             onSelect={async (file, crop) => {
                               if (screenshots.length >= 5) {
                                 addToast({
                                   title:
-                                    "You can only add up to 5 screenshots.",
+                                    uiText("AppStrings.YouCanOnlyAddUpTo5Screenshots"),
                                 });
                                 return;
                               }
@@ -2018,7 +1974,7 @@ export default function GameEditingForm({
                               setScreenshots((prev) =>
                                 [...prev, url].slice(0, 5),
                               );
-                              addToast({ title: "Screenshot added" });
+                              addToast({ title: uiText("AppStrings.ScreenshotAdded") });
                             }}
                           />
                           {screenshots.length > 0 && (
@@ -2027,8 +1983,7 @@ export default function GameEditingForm({
                               color="red"
                               onClick={() => setScreenshots([])}
                             >
-                              Clear All
-                            </Button>
+                               {uiText("AppStrings.ClearAll2")} </Button>
                           )}
                         </Hstack>
                       </Vstack>
@@ -2037,11 +1992,9 @@ export default function GameEditingForm({
                     <div className="game-editor-row">
                       <Vstack align="start">
                         <div>
-                          <Text color="text">Trailer (YouTube)</Text>
+                          <Text color="text">{uiText("AppStrings.TrailerYoutube")}</Text>
                           <Text color="textFaded" size="xs">
-                            Paste a YouTube URL (watch, share link, shorts, or
-                            embed)
-                          </Text>
+                             {uiText("AppStrings.PasteAYoutubeUrlWatchShareLinkShorts")} </Text>
                         </div>
                         <Input
                           placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
@@ -2051,7 +2004,7 @@ export default function GameEditingForm({
                             if (trailerUrl && !extractYouTubeId(trailerUrl)) {
                               addToast({
                                 title:
-                                  "That doesn’t look like a valid YouTube URL.",
+                                  uiText("AppStrings.ThatDoesnTLookLikeAValidYoutube"),
                               });
                             }
                           }}
@@ -2068,7 +2021,7 @@ export default function GameEditingForm({
                               src={`https://www.youtube-nocookie.com/embed/${extractYouTubeId(
                                 trailerUrl,
                               )}`}
-                              title="Trailer"
+                              title={uiText("AppStrings.Trailer")}
                               className="w-full h-full"
                               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                               allowFullScreen
@@ -2078,17 +2031,15 @@ export default function GameEditingForm({
                       </Vstack>
                     </div>
                 <div className="game-editor-block">
-                  <Text color="text" weight="semibold">Game Emotes</Text>
-                  <Text color="textFaded" size="xs">Add emotes related to your game for people to use around the site</Text>
+                  <Text color="text" weight="semibold">{uiText("AppStrings.GameEmotes")}</Text>
+                  <Text color="textFaded" size="xs">{uiText("AppStrings.AddEmotesRelatedToYourGameForPeopleToUseAroundTheSite")}</Text>
                 </div>
                     <div className="game-editor-row">
                       <Vstack align="start">
                         <div>
-                          <Text color="text">Emote Prefix</Text>
+                          <Text color="text">{uiText("AppStrings.EmotePrefix")}</Text>
                           <Text color="textFaded" size="xs">
-                            Choose a 4 to 8 character prefix for this game's
-                            emotes.
-                          </Text>
+                             {uiText("AppStrings.ChooseA4To8CharacterPrefixFor")} </Text>
                         </div>
                         <Input
                           value={emotePrefixInput}
@@ -2101,7 +2052,7 @@ export default function GameEditingForm({
                             )
                           }
                           name="gameEmotePrefix"
-                          placeholder="e.g. jam123"
+                          placeholder={uiText("AppStrings.EGJam123")}
                           maxLength={MAX_EMOTE_PREFIX_LENGTH}
                         />
                       </Vstack>
@@ -2110,39 +2061,39 @@ export default function GameEditingForm({
                     <div className="game-editor-block">
                       <Vstack align="start" className="gap-3">
                         <div>
-                          <Text color="text">Game Emotes</Text>
+                          <Text color="text">{uiText("AppStrings.GameEmotes")}</Text>
                           <Text color="textFaded" size="xs">
-                            Game emotes use the prefix{" "}
+                             {uiText("AppStrings.GameEmotesUseThePrefix")}{" "}
                             <span className="font-semibold">
                               {gameEmotePrefix}
                             </span>
                             .
                           </Text>
                         </div>
-                        <Button icon="plus" disabled={!game?.slug} onClick={() => setAddingGameEmote(true)}>Add Emote</Button>
-                        {!game?.slug && <Text size="xs" color="textFaded">Save your game before adding emotes</Text>}
+                        <Button icon="plus" disabled={!game?.slug} onClick={() => setAddingGameEmote(true)}>{uiText("AppStrings.AddEmote")}</Button>
+                        {!game?.slug && <Text size="xs" color="textFaded">{uiText("AppStrings.SaveYourGameBeforeAddingEmotes2")}</Text>}
                         <Modal isOpen={addingGameEmote} onOpenChange={open => { if (!open && !savingGameEmote) { setAddingGameEmote(false); setGameEmoteArtistOpen(false); } }} size="2xl">
                           <ModalContent>
-                            <ModalHeader className="pr-14 text-lg font-semibold">Add Emote</ModalHeader>
+                            <ModalHeader className="pr-14 text-lg font-semibold">{uiText("AppStrings.AddEmote")}</ModalHeader>
                             <ModalBody className="max-h-[65dvh] overflow-y-auto">
                               <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
-                                {gameEmoteImage ? <img src={gameEmoteImage} alt="Emote preview" className="h-12 w-12 object-contain" /> : <Icon name="smileplus" size={32} />}
-                                <div><Text size="xs" color="textFaded">Preview</Text><Text size="sm">:{gameEmotePrefix}{cleanedGameEmoteSlug || "emote"}:</Text></div>
+                                {gameEmoteImage ? <img src={gameEmoteImage} alt={uiText("AppStrings.EmotePreview")} className="h-12 w-12 object-contain" /> : <Icon name="smileplus" size={32} />}
+                                <div><Text size="xs" color="textFaded">{uiText("AppStrings.Preview")}</Text><Text size="sm">:{gameEmotePrefix}{cleanedGameEmoteSlug || uiText("AppStrings.Emote")}:</Text></div>
                               </div>
                         <Hstack className="items-end flex-wrap">
                           <Input
-                            label="Emote slug"
+                            label={uiText("AppStrings.EmoteSlug")}
                             labelPlacement="outside"
-                            placeholder="victory"
+                            placeholder={uiText("AppStrings.Victory")}
                             value={gameEmoteSlug}
                             onValueChange={setGameEmoteSlug}
                             disabled={!game?.slug}
                           />
                           <div className="relative">
                             <Input
-                              label="Artist user slug"
+                              label={uiText("AppStrings.ArtistUserSlug")}
                               labelPlacement="outside"
-                              placeholder="username"
+                              placeholder={uiText("AppStrings.Username2")}
                               value={gameEmoteArtistSlug}
                               onValueChange={(value) => {
                                 setGameEmoteArtistSlug(value);
@@ -2228,13 +2179,12 @@ export default function GameEditingForm({
                           </div>
                           <Vstack align="start" gap={1}>
                             <Text size="xs" color="textFaded">
-                              Upload image
-                            </Text>
+                               {uiText("AppStrings.UploadImage")} </Text>
                             <ImageInput
                               value={gameEmoteImage}
                               width={80}
                               height={80}
-                              placeholder="Upload"
+                              placeholder={uiText("AppStrings.Upload")}
                               disabled={!game?.slug}
                               onSelect={async (file, crop) => {
                                 const url = await uploadTo("image", file, crop);
@@ -2251,13 +2201,13 @@ export default function GameEditingForm({
                             onClick={async () => {
                               if (!game?.slug) {
                                 addToast({
-                                  title: "Save your game before adding emotes.",
+                                  title: uiText("AppStrings.SaveYourGameBeforeAddingEmotes"),
                                 });
                                 return;
                               }
                               if (!cleanedGameEmoteSlug || !gameEmoteImage) {
                                 addToast({
-                                  title: "Slug and image are required",
+                                  title: uiText("AppStrings.SlugAndImageAreRequired"),
                                 });
                                 return;
                               }
@@ -2275,11 +2225,11 @@ export default function GameEditingForm({
                                 if (!response.ok) {
                                   addToast({
                                     title:
-                                      data?.message ?? "Failed to add emote",
+                                      data?.message ?? uiText("AppStrings.FailedToAddEmote"),
                                   });
                                   return;
                                 }
-                                addToast({ title: "Emote added" });
+                                addToast({ title: uiText("AppStrings.EmoteAdded") });
                                 setAddingGameEmote(false);
                                 setGameEmoteArtistOpen(false);
                                 setGameEmoteSlug("");
@@ -2288,24 +2238,22 @@ export default function GameEditingForm({
                                 await refreshEmojis();
                               } catch (error) {
                                 console.error(error);
-                                addToast({ title: "Failed to add emote" });
+                                addToast({ title: uiText("AppStrings.FailedToAddEmote") });
                               } finally {
                                 setSavingGameEmote(false);
                               }
                             }}
                           >
-                            Add Emote
-                          </Button>
+                             {uiText("AppStrings.AddEmote")} </Button>
                         </Hstack>
                             </ModalBody>
-                            <ModalFooter><Button variant="ghost" disabled={savingGameEmote} onClick={() => { setAddingGameEmote(false); setGameEmoteArtistOpen(false); }}>Cancel</Button></ModalFooter>
+                            <ModalFooter><Button variant="ghost" disabled={savingGameEmote} onClick={() => { setAddingGameEmote(false); setGameEmoteArtistOpen(false); }}>{uiText("AppStrings.Cancel")}</Button></ModalFooter>
                           </ModalContent>
                         </Modal>
 
                         {gameEmotes.length === 0 ? (
                           <Text size="sm" color="textFaded">
-                            No game emotes yet.
-                          </Text>
+                             {uiText("AppStrings.NoGameEmotesYet")} </Text>
                         ) : (
                           <div className="w-full">
                             {gameEmotes.map((emoji) => (
@@ -2316,7 +2264,7 @@ export default function GameEditingForm({
                               >
                                 <img
                                   src={emoji.image}
-                                  alt={`:${emoji.slug}:`}
+                                  alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                                   className="h-6 w-6"
                                   loading="lazy"
                                   decoding="async"
@@ -2337,8 +2285,7 @@ export default function GameEditingForm({
                                     );
                                   }}
                                 >
-                                  Preview & edit
-                                </Button>
+                                   {uiText("AppStrings.PreviewEdit")} </Button>
                                 <Button
                                   size="sm"
                                   color="red"
@@ -2354,18 +2301,17 @@ export default function GameEditingForm({
                                       addToast({
                                         title:
                                           data?.message ??
-                                          "Failed to delete emote",
+                                          uiText("AppStrings.FailedToDeleteEmote"),
                                       });
                                       return;
                                     }
                                     addToast({
-                                      title: data?.message ?? "Emote deleted",
+                                      title: data?.message ?? uiText("AppStrings.EmoteDeleted"),
                                     });
                                     await refreshEmojis();
                                   }}
                                 >
-                                  Remove
-                                </Button>
+                                   {uiText("PostCard.Remove.Title")} </Button>
                               </div>
                             ))}
                           </div>
@@ -2373,26 +2319,26 @@ export default function GameEditingForm({
                         {editingGameEmoteId && (
                           <Modal isOpen onOpenChange={open => { if (!open && !savingEditGameEmote) { setEditingGameEmoteId(null); setEditGameEmoteArtistOpen(false); } }} size="2xl">
                           <ModalContent>
-                          <ModalHeader className="pr-14 text-lg font-semibold">Edit Emote</ModalHeader>
+                          <ModalHeader className="pr-14 text-lg font-semibold">{uiText("AppStrings.EditEmote")}</ModalHeader>
                           <ModalBody className="max-h-[65dvh] overflow-y-auto">
                             <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
-                              {editingGameEmoteImage && <img src={editingGameEmoteImage} alt="Emote preview" className="h-12 w-12 object-contain" />}
-                              <div><Text size="xs" color="textFaded">Preview</Text><Text size="sm">:{gameEmotePrefix}{cleanedEditingGameEmoteSlug || "emote"}:</Text></div>
+                              {editingGameEmoteImage && <img src={editingGameEmoteImage} alt={uiText("AppStrings.EmotePreview")} className="h-12 w-12 object-contain" />}
+                              <div><Text size="xs" color="textFaded">{uiText("AppStrings.Preview")}</Text><Text size="sm">:{gameEmotePrefix}{cleanedEditingGameEmoteSlug || uiText("AppStrings.Emote")}:</Text></div>
                             </div>
                             <Vstack align="start" className="gap-3">
                               <Hstack className="items-end flex-wrap">
                                 <Input
-                                  label="Emote slug"
+                                  label={uiText("AppStrings.EmoteSlug")}
                                   labelPlacement="outside"
-                                  placeholder="victory"
+                                  placeholder={uiText("AppStrings.Victory")}
                                   value={editingGameEmoteSlug}
                                   onValueChange={setEditingGameEmoteSlug}
                                 />
                                 <div className="relative">
                                   <Input
-                                    label="Artist user slug"
+                                    label={uiText("AppStrings.ArtistUserSlug")}
                                     labelPlacement="outside"
-                                    placeholder="username"
+                                    placeholder={uiText("AppStrings.Username2")}
                                     value={editingGameEmoteArtistSlug}
                                     onValueChange={(value) => {
                                       setEditingGameEmoteArtistSlug(value);
@@ -2488,13 +2434,12 @@ export default function GameEditingForm({
                                 </div>
                                 <Vstack align="start" gap={1}>
                                   <Text size="xs" color="textFaded">
-                                    Upload image
-                                  </Text>
+                                     {uiText("AppStrings.UploadImage")} </Text>
                                   <ImageInput
                                     value={editingGameEmoteImage}
                                     width={80}
                                     height={80}
-                                    placeholder="Upload"
+                                    placeholder={uiText("AppStrings.Upload")}
                                     onSelect={async (file, crop) => {
                                       const url = await uploadTo(
                                         "image",
@@ -2517,8 +2462,7 @@ export default function GameEditingForm({
                                       setEditingGameEmoteArtistSlug("");
                                     }}
                                   >
-                                    Cancel
-                                  </Button>
+                                     {uiText("AppStrings.Cancel")} </Button>
                                   <Button
                                     color="blue"
                                     loading={savingEditGameEmote}
@@ -2529,7 +2473,7 @@ export default function GameEditingForm({
                                         !editingGameEmoteImage
                                       ) {
                                         addToast({
-                                          title: "Slug and image are required",
+                                          title: uiText("AppStrings.SlugAndImageAreRequired"),
                                         });
                                         return;
                                       }
@@ -2554,11 +2498,11 @@ export default function GameEditingForm({
                                           addToast({
                                             title:
                                               data?.message ??
-                                              "Failed to update emote",
+                                              uiText("AppStrings.FailedToUpdateEmote"),
                                           });
                                           return;
                                         }
-                                        addToast({ title: "Emote updated" });
+                                        addToast({ title: uiText("AppStrings.EmoteUpdated") });
                                         setEditingGameEmoteId(null);
                                         setEditingGameEmoteSlug("");
                                         setEditingGameEmoteImage(null);
@@ -2567,15 +2511,14 @@ export default function GameEditingForm({
                                       } catch (error) {
                                         console.error(error);
                                         addToast({
-                                          title: "Failed to update emote",
+                                          title: uiText("AppStrings.FailedToUpdateEmote"),
                                         });
                                       } finally {
                                         setSavingEditGameEmote(false);
                                       }
                                     }}
                                   >
-                                    Save
-                                  </Button>
+                                     {uiText("Settings.Save.Title")} </Button>
                                 </Hstack>
                               </Hstack>
                             </Vstack>
@@ -2587,20 +2530,17 @@ export default function GameEditingForm({
                     </div>
               </Vstack>
             </Tab>
-            <Tab title="Metadata" icon="tags">
+            <Tab title={uiText("AppStrings.Metadata")} icon="tags">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="tags" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">
-                        Metadata
-                      </Text>
+                      <Icon name="tags" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">
+                         {uiText("AppStrings.Metadata")} </Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">
-                      Metadata to help people find your game better and to be
-                      able to know more about your game
-                    </Text>
+                    <Text size="sm" color="textFaded">
+                       {uiText("AppStrings.MetadataToHelpPeopleFindYourGameBetter")} </Text>
                   </Vstack>
                 </div>
                 <div className="game-editor-row">
@@ -2651,7 +2591,7 @@ export default function GameEditingForm({
                           id: i,
                           label: (
                             <div className="flex gap-2 items-center">
-                              <p>{tag.name}</p>
+                              <p>{translateSystemLabel(tag.name, uiText)}</p>
                             </div>
                           ),
                         }))}
@@ -2711,16 +2651,15 @@ export default function GameEditingForm({
                 <div className="game-editor-row relative z-40 overflow-visible">
                   <Vstack align="start">
                     <div>
-                      <Text color="text">Input Methods</Text>
+                      <Text color="text">{uiText("AppStrings.InputMethods")}</Text>
                       <Text color="textFaded" size="xs">
-                        Select all input methods that players can use
-                      </Text>
+                         {uiText("AppStrings.SelectAllInputMethodsThatPlayersCanUse")} </Text>
                     </div>
 
                     <Dropdown portal
                       multiple
                       closeOnSelect={false}
-                      placeholder="Select input methods"
+                      placeholder={uiText("AppStrings.SelectInputMethods")}
                       selectedValues={inputMethods}
                       onSelectionChange={(sel) => {
                         setInputMethods(sel as Set<InputMethodType>);
@@ -2733,8 +2672,7 @@ export default function GameEditingForm({
                           setInputMethods(new Set());
                         }}
                       >
-                        Clear all
-                      </Dropdown.Item>
+                         {uiText("AppStrings.ClearAll")} </Dropdown.Item>
 
                       {INPUT_METHOD_OPTIONS.map(({ value, label, icon }) => (
                         <Dropdown.Item key={value} value={value} icon={icon}>
@@ -2748,26 +2686,20 @@ export default function GameEditingForm({
                       <Vstack align="start">
                         <div>
                           <Text color="text">
-                            Time to Complete a Run
-                          </Text>
+                             {uiText("AppStrings.TimeToCompleteARun")} </Text>
                           <Text color="textFaded" size="xs">
-                            If your game features multiple runs (such as a
-                            roguelike), how long a user should expect an average
-                            run of the game to take. If your game has only one
-                            run, leave this unset
-                          </Text>
+                             {uiText("AppStrings.IfYourGameFeaturesMultipleRunsSuchAsARoguelikeHowLongAUserShouldExpectAnAverageRunOfT")} </Text>
                         </div>
 
                         <Dropdown portal
-                          placeholder="Select time interval"
+                          placeholder={uiText("AppStrings.SelectTimeInterval")}
                           selectedValue={estOneRun || null}
                           onSelect={(i) => {
                             setEstOneRun(typeof i === "string" ? i : "");
                           }}
                         >
                           <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
+                             {uiText("AppStrings.ClearSelection")} </Dropdown.Item>
                           {TIME_OPTIONS.map((value) => (
                             <Dropdown.Item key={value} value={value}>
                               {value}
@@ -2780,25 +2712,20 @@ export default function GameEditingForm({
                       <Vstack align="start">
                         <div>
                           <Text color="text">
-                            Time to Beat the Game
-                          </Text>
+                             {uiText("AppStrings.TimeToBeatTheGame")} </Text>
                           <Text color="textFaded" size="xs">
-                            If your game can be beaten, the average amount of a
-                            time a user would spend playing the game until they
-                            do that
-                          </Text>
+                             {uiText("AppStrings.IfYourGameCanBeBeatenTheAverage")} </Text>
                         </div>
 
                         <Dropdown portal
-                          placeholder="Select time interval"
+                          placeholder={uiText("AppStrings.SelectTimeInterval")}
                           selectedValue={estAnyPercent || null}
                           onSelect={(i) => {
                             setEstAnyPercent(typeof i === "string" ? i : "");
                           }}
                         >
                           <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
+                             {uiText("AppStrings.ClearSelection")} </Dropdown.Item>
                           {TIME_OPTIONS.map((value) => (
                             <Dropdown.Item key={value} value={value}>
                               {value}
@@ -2811,18 +2738,13 @@ export default function GameEditingForm({
                       <Vstack align="start">
                         <div>
                           <Text color="text">
-                            Time to 100% the game
-                          </Text>
+                             {uiText("AppStrings.TimeTo100TheGame")} </Text>
                           <Text color="textFaded" size="xs">
-                            The average time it would take for a user to achieve
-                            everything in the game if it has more past just the
-                            regular run (e.g. getting all achievements, getting
-                            all optional collectables, etc.)
-                          </Text>
+                             {uiText("AppStrings.TheAverageTimeItWouldTakeForA")} </Text>
                         </div>
 
                         <Dropdown portal
-                          placeholder="Select time interval"
+                          placeholder={uiText("AppStrings.SelectTimeInterval")}
                           selectedValue={estHundredPercent || null}
                           onSelect={(i) => {
                             setEstHundredPercent(
@@ -2831,8 +2753,7 @@ export default function GameEditingForm({
                           }}
                         >
                           <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
+                             {uiText("AppStrings.ClearSelection")} </Dropdown.Item>
                           {TIME_OPTIONS.map((value) => (
                             <Dropdown.Item key={value} value={value}>
                               {value}
@@ -2843,29 +2764,28 @@ export default function GameEditingForm({
                     </div>
               </Vstack>
             </Tab>
-            <Tab title="Soundtrack" icon="music">
+            <Tab title={uiText("CreateGame.Soundtrack.Title")} icon="music">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="music" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">Soundtrack</Text>
+                      <Icon name="music" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">{uiText("CreateGame.Soundtrack.Title")}</Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">CreateGame.Soundtrack.Description</Text>
+                    <Text size="sm" color="textFaded">CreateGame.Soundtrack.Description</Text>
                   </Vstack>
                 </div>
                     <Vstack align="start" className="pt-4">
                       <div>
-                        <Text color="text">Album Thumbnail</Text>
+                        <Text color="text">{uiText("AppStrings.AlbumThumbnail")}</Text>
                         <Text color="textFaded" size="xs">
-                          Square artwork shown with this game&apos;s music.
-                        </Text>
+                           {uiText("AppStrings.SquareArtworkShownWithThisGameAposSMusic")} </Text>
                       </div>
                       <ImageInput
                         value={soundtrackThumbnailUrl}
                         width={240}
                         height={240}
-                        placeholder="Upload album thumbnail"
+                        placeholder={uiText("AppStrings.UploadAlbumThumbnail")}
                         onSelect={async (file, crop) => {
                           const url = await uploadTo("image", file, crop);
                           if (url) {
@@ -2879,14 +2799,14 @@ export default function GameEditingForm({
                         <Vstack className="w-full gap-3" align="stretch">
                           {songs.map((song) => {
                             return (
-                              <ItemEditor key={song.id} item={song} title={song.name || "Untitled track"}
+                              <ItemEditor key={song.id} item={song} title={song.name || uiText("AppStrings.UntitledTrack")}
       initiallyOpen={newSongId === song.id}
       onClose={() => setNewSongId(null)}
       onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}
       onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
       onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
-      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || "Untitled track"}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length} credits · {song.license || "No license selected"}</p></div></div>}
-      preview={draft => <div><p className="mb-2 font-semibold">{draft.name || "Untitled track"}</p>{draft.url && <audio controls preload="none" src={draft.url} className="w-full" />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
+      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length}  {uiText("AppStrings.Credits2")} {(song.license && translateSystemLabel(song.license, uiText)) || uiText("AppStrings.NoLicenseSelected")}</p></div></div>}
+      preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <audio controls preload="none" src={draft.url} className="w-full" />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
       {(song, setDraft) => {
         const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
         const setDraftSongs: typeof setSongs = next => setDraft(current => (typeof next === "function" ? next([current]) : next)[0] ?? current);
@@ -2894,13 +2814,12 @@ export default function GameEditingForm({
 
 
                                   <div className="w-full">
-                                    <Text color="text">Song Slug</Text>
+                                    <Text color="text">{uiText("AppStrings.SongSlug")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      Used in the url for the song
-                                    </Text>
+                                       {uiText("AppStrings.UsedInTheUrlForTheSong")} </Text>
                                   </div>
                                   <Input
-                                    placeholder="Enter song slug"
+                                    placeholder={uiText("AppStrings.EnterSongSlug")}
                                     value={song.slug}
                                     onValueChange={(val) =>
                                       setDraftSongs((prev) =>
@@ -2913,13 +2832,12 @@ export default function GameEditingForm({
                                     }
                                   />
                                   <div className="w-full">
-                                    <Text color="text">Song Name</Text>
+                                    <Text color="text">{uiText("AppStrings.SongName")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      Shown in the soundtrack list.
-                                    </Text>
+                                       {uiText("AppStrings.ShownInTheSoundtrackList")} </Text>
                                   </div>
                                   <Input
-                                    placeholder="Enter song name"
+                                    placeholder={uiText("AppStrings.EnterSongName")}
                                     value={song.name}
                                     onValueChange={(val) =>
                                       setDraftSongs((prev) =>
@@ -2932,11 +2850,9 @@ export default function GameEditingForm({
                                     }
                                   />
                                   <div className="w-full">
-                                    <Text color="text">Commentary</Text>
+                                    <Text color="text">{uiText("AppStrings.Commentary")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      Notes, context, or production details for
-                                      the track page.
-                                    </Text>
+                                       {uiText("AppStrings.NotesContextOrProductionDetailsForTheTrack")} </Text>
                                   </div>
                                   <Editor
                                     content={song.commentary ?? ""}
@@ -2958,11 +2874,9 @@ export default function GameEditingForm({
                                       className="w-full gap-3"
                                     >
                                       <div className="w-full">
-                                        <Text color="text">Track Tags</Text>
+                                        <Text color="text">{uiText("AppStrings.TrackTags")}</Text>
                                         <Text color="textFaded" size="xs">
-                                          Help listeners find this track by
-                                          genre, mood, use case, and looping.
-                                        </Text>
+                                           {uiText("AppStrings.HelpListenersFindThisTrackByGenreMood")} </Text>
                                       </div>
                                       {trackTagCategories.map(
                                         (categoryName) => {
@@ -2987,15 +2901,13 @@ export default function GameEditingForm({
                                               className="w-full"
                                             >
                                               <Text color="text" size="sm">
-                                                {categoryName}
+                                                {translateSystemLabel(categoryName, uiText)}
                                               </Text>
                                               <Text color="textFaded" size="xs">
-                                                {TRACK_TAG_CATEGORY_HELPERS[
-                                                  categoryName
-                                                ] ??
+                                                {TRACK_TAG_CATEGORY_HELPERS[categoryName] ? uiText(TRACK_TAG_CATEGORY_HELPERS[categoryName]) :
                                                   (isSingleCategory
-                                                    ? "Choose one"
-                                                    : "Choose any that fit")}
+                                                    ? uiText("AppStrings.ChooseOne")
+                                                    : uiText("AppStrings.ChooseAnyThatFit"))}
                                               </Text>
                                               {isMounted &&
                                                 (isSingleCategory ? (
@@ -3059,7 +2971,7 @@ export default function GameEditingForm({
                                                       (tag) => ({
                                                         value: tag.name,
                                                         id: tag.id,
-                                                        label: tag.name,
+                                                        label: translateSystemLabel(tag.name, uiText),
                                                       }),
                                                     )}
                                                   />
@@ -3112,14 +3024,14 @@ export default function GameEditingForm({
                                                       (tag) => ({
                                                         value: tag.name,
                                                         id: tag.id,
-                                                        label: tag.name,
+                                                        label: translateSystemLabel(tag.name, uiText),
                                                       }),
                                                     )}
                                                     options={categoryTags.map(
                                                       (tag) => ({
                                                         value: tag.name,
                                                         id: tag.id,
-                                                        label: tag.name,
+                                                        label: translateSystemLabel(tag.name, uiText),
                                                       }),
                                                     )}
                                                   />
@@ -3132,11 +3044,9 @@ export default function GameEditingForm({
                                   )}
                                   {allTrackFlags.length > 0 && (
                                     <div className="w-full">
-                                      <Text color="text">Track Flags</Text>
+                                      <Text color="text">{uiText("AppStrings.TrackFlags")}</Text>
                                       <Text color="textFaded" size="xs">
-                                        Warnings or special status for this
-                                        track.
-                                      </Text>
+                                         {uiText("AppStrings.WarningsOrSpecialStatusForThisTrack")} </Text>
                                       {isMounted && (
                                         <Select<
                                           {
@@ -3187,10 +3097,9 @@ export default function GameEditingForm({
                                   )}
                                   <div className="grid w-full gap-3 md:grid-cols-2">
                                     <div>
-                                      <Text color="text">BPM</Text>
+                                      <Text color="text">{uiText("AppStrings.BPM2")}</Text>
                                       <Text color="textFaded" size="xs">
-                                        Optional tempo metadata.
-                                      </Text>
+                                         {uiText("AppStrings.OptionalTempoMetadata")} </Text>
                                       <Input
                                         type="number"
                                         value={
@@ -3216,10 +3125,9 @@ export default function GameEditingForm({
                                       />
                                     </div>
                                     <div>
-                                      <Text color="text">Key</Text>
+                                      <Text color="text">{uiText("AppStrings.Key")}</Text>
                                       <Text color="textFaded" size="xs">
-                                        Example: C minor, F# major.
-                                      </Text>
+                                         {uiText("AppStrings.ExampleCMinorFMajor")} </Text>
                                       <Input
                                         value={song.musicalKey ?? ""}
                                         onValueChange={(val) =>
@@ -3231,15 +3139,14 @@ export default function GameEditingForm({
                                             ),
                                           )
                                         }
-                                        placeholder="C minor"
+                                        placeholder={uiText("AppStrings.CMinor")}
                                       />
                                     </div>
                                   </div>
                                   <div className="w-full">
-                                    <Text color="text">Software Used</Text>
+                                    <Text color="text">{uiText("AppStrings.SoftwareUsed")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      Comma-separated tools or DAWs.
-                                    </Text>
+                                       {uiText("AppStrings.CommaSeparatedToolsOrDaws")} </Text>
                                     <Input
                                       value={
                                         softwareUsedDrafts[song.id] ?? song.softwareUsed.join(", ")
@@ -3263,14 +3170,13 @@ export default function GameEditingForm({
                                           ),
                                         );
                                       }}
-                                      placeholder="Ableton Live, Kontakt, Famitracker"
+                                      placeholder={uiText("AppStrings.AbletonLiveKontaktFamitracker")}
                                     />
                                   </div>
                                   <div className="w-full">
-                                    <Text color="text">Links</Text>
+                                    <Text color="text">{uiText("CreateGame.Links.Title")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      External pages for this track.
-                                    </Text>
+                                       {uiText("AppStrings.ExternalPagesForThisTrack")} </Text>
                                     <Vstack
                                       align="start"
                                       className="w-full gap-2"
@@ -3281,7 +3187,7 @@ export default function GameEditingForm({
                                           className="w-full gap-2"
                                         >
                                           <Input
-                                            value={link.label}
+                                            value={uiText(link.label)}
                                             onValueChange={(val) =>
                                               setDraftSongs((prev) =>
                                                 prev.map((s) =>
@@ -3302,7 +3208,7 @@ export default function GameEditingForm({
                                                 ),
                                               )
                                             }
-                                            placeholder="Bandcamp"
+                                            placeholder={uiText("AppStrings.Bandcamp")}
                                           />
                                           <Input
                                             value={link.url}
@@ -3351,6 +3257,7 @@ export default function GameEditingForm({
                                         </Hstack>
                                       ))}
                                       <Button
+                                        className="w-fit self-start"
                                         size="sm"
                                         icon="plus"
                                         onClick={() =>
@@ -3375,15 +3282,13 @@ export default function GameEditingForm({
                                           )
                                         }
                                       >
-                                        Add Link
-                                      </Button>
+                                         {uiText("CreateGame.Links.Add")} </Button>
                                     </Vstack>
                                   </div>
                                   <div className="w-full">
-                                    <Text color="text">License</Text>
+                                    <Text color="text">{uiText("AppStrings.License")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      Choose how others can use this track.
-                                    </Text>
+                                       {uiText("AppStrings.ChooseHowOthersCanUseThisTrack")} </Text>
                                   </div>
                                   <Vstack align="start" className="gap-2">
                                     {(() => {
@@ -3463,22 +3368,19 @@ export default function GameEditingForm({
                                           >
                                             <Dropdown.Item
                                               value="ARR"
-                                              description="No reuse permissions granted."
+                                              description={uiText("AppStrings.NoReusePermissionsGranted")}
                                             >
-                                              All rights reserved
-                                            </Dropdown.Item>
+                                               {uiText("AppStrings.AllRightsReserved")} </Dropdown.Item>
                                             <Dropdown.Item
                                               value="CC0"
-                                              description="Public domain style release with no attribution required."
+                                              description={uiText("AppStrings.PublicDomainStyleReleaseWithNoAttributionRequired")}
                                             >
-                                              CC0
-                                            </Dropdown.Item>
+                                               {uiText("AppStrings.CC0")} </Dropdown.Item>
                                             <Dropdown.Item
                                               value="CC_BY"
-                                              description="Creative Commons with attribution and configurable restrictions."
+                                              description={uiText("AppStrings.CreativeCommonsWithAttributionAndConfigurableRestrictions")}
                                             >
-                                              CC BY-based
-                                            </Dropdown.Item>
+                                               {uiText("AppStrings.CcByBased")} </Dropdown.Item>
                                           </Dropdown>
                                           {licenseModeForFlags({
                                             attribution:
@@ -3497,15 +3399,12 @@ export default function GameEditingForm({
                                                 />
                                                 <Vstack align="start" gap={0}>
                                                   <Text color="text" size="sm">
-                                                    Require attribution
-                                                  </Text>
+                                                     {uiText("AppStrings.RequireAttribution")} </Text>
                                                   <Text
                                                     color="textFaded"
                                                     size="xs"
                                                   >
-                                                    Credit the composer when
-                                                    used.
-                                                  </Text>
+                                                     {uiText("AppStrings.CreditTheComposerWhenUsed")} </Text>
                                                 </Vstack>
                                               </Hstack>
                                               <Hstack className="w-full items-center gap-3">
@@ -3535,15 +3434,12 @@ export default function GameEditingForm({
                                                 />
                                                 <Vstack align="start" gap={0}>
                                                   <Text color="text" size="sm">
-                                                    Allow commercial use
-                                                  </Text>
+                                                     {uiText("AppStrings.AllowCommercialUse")} </Text>
                                                   <Text
                                                     color="textFaded"
                                                     size="xs"
                                                   >
-                                                    Let others use it
-                                                    commercially.
-                                                  </Text>
+                                                     {uiText("AppStrings.LetOthersUseItCommercially")} </Text>
                                                 </Vstack>
                                               </Hstack>
                                               <Hstack className="w-full items-center gap-3">
@@ -3574,15 +3470,12 @@ export default function GameEditingForm({
                                                 />
                                                 <Vstack align="start" gap={0}>
                                                   <Text color="text" size="sm">
-                                                    Allow derivatives
-                                                  </Text>
+                                                     {uiText("AppStrings.AllowDerivatives")} </Text>
                                                   <Text
                                                     color="textFaded"
                                                     size="xs"
                                                   >
-                                                    Allow remixes or
-                                                    adaptations.
-                                                  </Text>
+                                                     {uiText("AppStrings.AllowRemixesOrAdaptations")} </Text>
                                                 </Vstack>
                                               </Hstack>
                                               <Hstack className="w-full items-center gap-3">
@@ -3615,21 +3508,18 @@ export default function GameEditingForm({
                                                 />
                                                 <Vstack align="start" gap={0}>
                                                   <Text color="text" size="sm">
-                                                    Share alike
-                                                  </Text>
+                                                     {uiText("AppStrings.ShareAlike")} </Text>
                                                   <Text
                                                     color="textFaded"
                                                     size="xs"
                                                   >
-                                                    Derivatives must use the
-                                                    same license.
-                                                  </Text>
+                                                     {uiText("AppStrings.DerivativesMustUseTheSameLicense")} </Text>
                                                 </Vstack>
                                               </Hstack>
                                             </>
                                           )}
                                           <Text size="xs" color="textFaded">
-                                            License applied: {song.license}
+                                             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(song.license, uiText)}
                                           </Text>
                                           <Hstack className="w-full items-start gap-3">
                                             <Switch
@@ -3669,17 +3559,9 @@ export default function GameEditingForm({
                                               className="min-w-0 flex-1"
                                             >
                                               <Text color="text" size="sm">
-                                                Allow background use in streams
-                                                and videos
-                                              </Text>
+                                                 {uiText("AppStrings.AllowBackgroundUseInStreamsAndVideos")} </Text>
                                               <Text color="textFaded" size="xs">
-                                                Let people use this track as
-                                                background music in commercial
-                                                videos and streams not related
-                                                to the game (where the music is
-                                                not the main focus) separate
-                                                from the main license.
-                                              </Text>
+                                                 {uiText("AppStrings.LetPeopleUseThisTrackAsBackgroundMusic")} </Text>
                                             </Vstack>
                                           </Hstack>
                                           <Hstack className="w-full items-start gap-3">
@@ -3715,15 +3597,9 @@ export default function GameEditingForm({
                                               className="min-w-0 flex-1"
                                             >
                                               <Text color="text" size="sm">
-                                                Require attribution for stream
-                                                and video background use
-                                              </Text>
+                                                 {uiText("AppStrings.RequireAttributionForStreamAndVideoBackgroundUse")} </Text>
                                               <Text color="textFaded" size="xs">
-                                                When people use this song in the
-                                                background of streams or videos
-                                                they must credit you in some
-                                                way.
-                                              </Text>
+                                                 {uiText("AppStrings.WhenPeopleUseThisSongInTheBackground")} </Text>
                                             </Vstack>
                                           </Hstack>
                                           <Hstack className="w-full items-start gap-3">
@@ -3753,12 +3629,9 @@ export default function GameEditingForm({
                                               className="min-w-0 flex-1"
                                             >
                                               <Text color="text" size="sm">
-                                                Allow downloads
-                                              </Text>
+                                                 {uiText("AppStrings.AllowDownloads")} </Text>
                                               <Text color="textFaded" size="xs">
-                                                Let listeners download this
-                                                track.
-                                              </Text>
+                                                 {uiText("AppStrings.LetListenersDownloadThisTrack")} </Text>
                                             </Vstack>
                                           </Hstack>
                                         </>
@@ -3767,15 +3640,13 @@ export default function GameEditingForm({
                                   </Vstack>
 
                                   <div className="w-full">
-                                    <Text color="text">Credits</Text>
+                                    <Text color="text">{uiText("AppStrings.Credits")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      The people who made this song (linked to
-                                      accounts on the site)
-                                    </Text>
+                                       {uiText("AppStrings.ThePeopleWhoMadeThisSongLinkedTo")} </Text>
                                   </div>
                                   <div className="w-full relative">
                                     <Input
-                                      placeholder="Search users..."
+                                      placeholder={uiText("AppStrings.SearchUsers")}
                                       value={artistQuery[song.id] ?? ""}
                                       onValueChange={(value) => {
                                         setArtistQuery((prev) => ({
@@ -3918,7 +3789,7 @@ export default function GameEditingForm({
                                                   ),
                                                 )
                                               }
-                                              placeholder="Role"
+                                              placeholder={uiText("AppStrings.Role")}
                                             >
                                               {TRACK_CREDIT_ROLE_OPTIONS.map(
                                                 (role) => (
@@ -3926,7 +3797,7 @@ export default function GameEditingForm({
                                                     key={role}
                                                     value={role}
                                                   >
-                                                    {role}
+                                                    {translateSystemLabel(role, uiText)}
                                                   </Dropdown.Item>
                                                 ),
                                               )}
@@ -3956,7 +3827,7 @@ export default function GameEditingForm({
                                           </Hstack>
                                           {!credit.userId && (
                                             <Input
-                                              placeholder="Search users..."
+                                              placeholder={uiText("AppStrings.SearchUsers")}
                                               value={
                                                 artistQuery[credit.id] ?? ""
                                               }
@@ -4073,7 +3944,7 @@ export default function GameEditingForm({
                                               />
                                               <Text size="sm" color="textFaded">
                                                 {credit.user?.name ??
-                                                  `User #${credit.userId}`}
+                                                  uiText("AppStrings.UserValue0", { value0: credit.userId })}
                                               </Text>
                                             </Hstack>
                                           )}
@@ -4082,10 +3953,9 @@ export default function GameEditingForm({
                                     ))}
                                   </Vstack>
                                   <div className="w-full">
-                                    <Text color="text">Song</Text>
+                                    <Text color="text">{uiText("AppStrings.Song")}</Text>
                                     <Text color="textFaded" size="xs">
-                                      The track itself
-                                    </Text>
+                                       {uiText("AppStrings.TheTrackItself")} </Text>
                                   </div>
                                   <Hstack className="items-center gap-2">
                                     <Button
@@ -4128,13 +3998,12 @@ export default function GameEditingForm({
                                                 : s,
                                             ),
                                           );
-                                          addToast({ title: "Song replaced" });
+                                          addToast({ title: uiText("AppStrings.SongReplaced") });
                                         };
                                         input.click();
                                       }}
                                     >
-                                      Replace Audio
-                                    </Button>
+                                       {uiText("AppStrings.ReplaceAudio")} </Button>
                                   </Hstack>
                                 </Vstack>);
       }}
@@ -4192,7 +4061,7 @@ export default function GameEditingForm({
                               [songId]: "",
                             }));
                             setNewSongId(songId);
-                            addToast({ title: "Song uploaded" });
+                            addToast({ title: uiText("AppStrings.SongUploaded") });
                           };
                           input.click();
                         }}
@@ -4202,17 +4071,16 @@ export default function GameEditingForm({
                     </Vstack>
               </Vstack>
             </Tab>
-            <Tab title="Leaderboards" icon="trophy">
+            <Tab title={uiText("CreateGame.Leaderboards.Title")} icon="trophy">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="trophy" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">
-                        Leaderboards
-                      </Text>
+                      <Icon name="trophy" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">
+                         {uiText("CreateGame.Leaderboards.Title")} </Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">
+                    <Text size="sm" color="textFaded">
                       CreateGame.Leaderboards.Description
                     </Text>
                   </Vstack>
@@ -4222,29 +4090,29 @@ export default function GameEditingForm({
                 </div>
               </Vstack>
             </Tab>
-            <Tab title="Achievements" icon="award">
+            <Tab title={uiText("CreateGame.Achievements.Title")} icon="award">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="award" color="textFaded" size={12} />
-                      <Text size="lg" color="text" weight="semibold">Achievements</Text>
+                      <Icon name="award" color="text" size={28} />
+                      <Text size="2xl" color="text" weight="bold">{uiText("CreateGame.Achievements.Title")}</Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">CreateGame.Achievements.Description</Text>
+                    <Text size="sm" color="textFaded">CreateGame.Achievements.Description</Text>
                   </Vstack>
                 </div>
                     <Vstack align="start" className="pt-4">
                       {achievements.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {achievements.map((a, idx) => (
-                            <ItemEditor key={a.id < 0 ? idx : a.id} item={a} title={a.name || "Achievement"}
+                            <ItemEditor key={a.id < 0 ? idx : a.id} item={a} title={a.name || uiText("AppStrings.Achievement")}
       initiallyOpen={newAchievementIndex === idx}
       discardNewOnCancel={newAchievementIndex === idx}
       onClose={() => setNewAchievementIndex(null)}
       onApply={draft => setAchievements(prev => prev.map((item, index) => index === idx ? draft : item))}
       onRemove={() => setAchievements(prev => prev.filter((_, index) => index !== idx))}
-      summary={<div className="flex items-center gap-3">{a.image ? <img src={a.image} alt="" className="h-10 w-10 rounded object-cover" /> : <Icon name="award" />}<div><p className="text-sm font-semibold">{a.name || "Untitled achievement"}</p><p className="line-clamp-2 text-xs" style={{ color: colors.textFaded }}>{a.description || "No description yet"}</p></div></div>}
-      preview={draft => <div className="flex items-center gap-4">{draft.image ? <img src={draft.image} alt="" className="h-16 w-16 rounded object-cover" /> : <Icon name="award" size={40} />}<div><p className="font-semibold">{draft.name || "Untitled achievement"}</p><p className="text-sm" style={{ color: colors.textFaded }}>{draft.description || "Describe how players earn this achievement."}</p></div></div>}>
+      summary={<div className="flex items-center gap-3">{a.image ? <img src={a.image} alt="" className="h-10 w-10 rounded object-cover" /> : <Icon name="award" />}<div><p className="text-sm font-semibold">{a.name || uiText("AppStrings.UntitledAchievement")}</p><p className="line-clamp-2 text-xs" style={{ color: colors.textFaded }}>{a.description || uiText("AppStrings.NoDescriptionYet")}</p></div></div>}
+      preview={draft => <div className="flex items-center gap-4">{draft.image ? <img src={draft.image} alt="" className="h-16 w-16 rounded object-cover" /> : <Icon name="award" size={40} />}<div><p className="font-semibold">{draft.name || uiText("AppStrings.UntitledAchievement")}</p><p className="text-sm" style={{ color: colors.textFaded }}>{draft.description || uiText("AppStrings.DescribeHowPlayersEarnThisAchievement")}</p></div></div>}>
       {(a, setDraft) => {
         const setDraftAchievements: typeof setAchievements = next => setDraft(current => {
           const items = achievements.map((item, index) => index === idx ? current : item);
@@ -4254,13 +4122,12 @@ export default function GameEditingForm({
 
 
                                 <div className="w-full">
-                                  <Text color="text">Name</Text>
+                                  <Text color="text">{uiText("Settings.Name.Title")}</Text>
                                   <Text color="textFaded" size="xs">
-                                    The name of the achievement
-                                  </Text>
+                                     {uiText("AppStrings.TheNameOfTheAchievement")} </Text>
                                 </div>
                                 <Input
-                                  placeholder="Enter achievement name"
+                                  placeholder={uiText("AppStrings.EnterAchievementName")}
                                   value={a.name ?? ""}
                                   onValueChange={(val) =>
                                     setDraftAchievements((prev) => {
@@ -4272,15 +4139,12 @@ export default function GameEditingForm({
                                 />
 
                                 <div className="w-full">
-                                  <Text color="text">Description</Text>
+                                  <Text color="text">{uiText("AppStrings.Description")}</Text>
                                   <Text color="textFaded" size="xs">
-                                    A description of the achievement, what the
-                                    player does to earn it (e.g. find the
-                                    chicken)
-                                  </Text>
+                                     {uiText("AppStrings.ADescriptionOfTheAchievementWhatThePlayer")} </Text>
                                 </div>
                                 <Textarea
-                                  placeholder="Enter description"
+                                  placeholder={uiText("AppStrings.EnterDescription")}
                                   value={a.description ?? ""}
                                   onValueChange={(val) =>
                                     setDraftAchievements((prev) => {
@@ -4295,17 +4159,16 @@ export default function GameEditingForm({
                                 />
 
                                 <div className="w-full">
-                                  <Text color="text">Image</Text>
+                                  <Text color="text">{uiText("Markdown.Image.Title")}</Text>
                                   <Text color="textFaded" size="xs">
-                                    An image corresponding to the achievement
-                                  </Text>
+                                     {uiText("AppStrings.AnImageCorrespondingToTheAchievement")} </Text>
                                 </div>
                                 <Hstack className="items-center gap-3">
                                   <ImageInput
                                     value={a.image}
                                     width={80}
                                     height={80}
-                                    placeholder="Upload image"
+                                    placeholder={uiText("AppStrings.UploadImage")}
                                     onSelect={async (file, crop) => {
                                       const url = await uploadTo(
                                         "image",
@@ -4338,8 +4201,7 @@ export default function GameEditingForm({
                                         })
                                       }
                                     >
-                                      Remove Image
-                                    </Button>
+                                       {uiText("AppStrings.RemoveImage2")} </Button>
                                   )}
                                 </Hstack>
                               </Vstack>);
@@ -4368,13 +4230,11 @@ export default function GameEditingForm({
               </Vstack>
             </Tab>
           </Tabs>
-          <footer className={`game-editor-footer ${hasUnsavedChanges ? "game-editor-footer-floating" : ""}`} style={{ backgroundColor: colors.mantle, borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, color: colors.text }}>
-            <div className="game-editor-footer-content">
-            <div className="game-editor-save-status">
-              <strong>{hasUnsavedChanges ? "Unsaved changes" : game?.published ? "Published game" : "Game draft"}</strong>
-              <span style={{ color: colors.text }}>{waitingPost ? "Saving your game…" : hasUnsavedChanges ? "Save your changes before leaving this page." : game?.published ? "Your game is live. You can keep updating it here." : "Your game is currently not published"}</span>
-            </div>
-          <Hstack wrap justify="end">
+          <EditorFooter
+            floating={hasUnsavedChanges}
+            status={hasUnsavedChanges ? uiText("AppStrings.UnsavedChanges") : game?.published ? uiText("AppStrings.PublishedGame") : uiText("AppStrings.GameDraft")}
+            description={waitingPost ? uiText("AppStrings.SavingYourGame") : hasUnsavedChanges ? uiText("AppStrings.SaveYourChangesBeforeLeavingThisPage") : game?.published ? uiText("AppStrings.YourGameIsLiveYouCanKeepUpdatingItHere") : uiText("AppStrings.YourGameIsCurrentlyNotPublished")}
+          >
             {waitingPost ? (
               <Spinner />
             ) : (
@@ -4420,9 +4280,7 @@ export default function GameEditingForm({
                   CreateGame.Unpublish
                 </Button>
               ))}
-          </Hstack>
-            </div>
-          </footer>
+          </EditorFooter>
         </Vstack>
       </Form>
       <div className="p-2" />

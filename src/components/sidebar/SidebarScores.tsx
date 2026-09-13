@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import {
@@ -28,6 +31,7 @@ function placementColor(placement: number, colors: Record<string, string>) {
 }
 
 export default function SidebarScores() {
+  const uiText = useUiTranslations();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
   const jamId =
     activeJam?.jam &&
@@ -55,8 +59,7 @@ export default function SidebarScores() {
   return (
     <section className="mt-20 flex flex-col items-center gap-2">
       <SidebarSectionTitle>
-        Recent Scores
-      </SidebarSectionTitle>
+         {uiText("AppStrings.RecentScores")} </SidebarSectionTitle>
 
       <div className="flex w-full flex-col gap-2">
         {isError && (
@@ -68,8 +71,7 @@ export default function SidebarScores() {
               color: colors.textFaded,
             }}
           >
-            Recent scores couldn&apos;t be loaded.
-          </div>
+             {uiText("AppStrings.RecentScoresCouldnAposTBeLoaded")} </div>
         )}
         {scores.map((score) => {
           const href = gameHref(score);
@@ -89,7 +91,7 @@ export default function SidebarScores() {
             >
               <div className="relative shrink-0">
                 <GameDataHoverPreview game={score.game} className="rounded-lg">
-                  <Link href={href} aria-label={`Open ${score.game.name}`}>
+                  <Link href={href} aria-label={uiText("AppStrings.OpenValue0", { value0: score.game.name })}>
                     <Image
                       src={score.game.thumbnail || "/images/D2J_Icon.png"}
                       alt={score.game.name}
@@ -103,7 +105,7 @@ export default function SidebarScores() {
                   <UserHoverPreview user={score.user}>
                     <Link
                       href={`/u/${score.user.slug}`}
-                      aria-label={`Open ${score.user.name}'s profile`}
+                      aria-label={uiText("AppStrings.OpenValue0SProfile", { value0: score.user.name })}
                     >
                       <Image
                         src={score.user.profilePicture || "/images/D2J_Icon.png"}
@@ -128,7 +130,7 @@ export default function SidebarScores() {
                       {score.user.name}
                     </Link>
                   </UserHoverPreview>{" "}
-                  scored{" "}
+                   {uiText("AppStrings.Scored")}{" "}
                   {formatDistance(new Date(score.scoredAt), new Date(), {
                     addSuffix: true,
                   })}

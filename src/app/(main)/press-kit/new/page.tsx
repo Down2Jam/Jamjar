@@ -1,11 +1,13 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import DocumentationCreatePage from "@/components/documentation/DocumentationCreatePage";
 
 export default function NewPressKitPage() {
+  const uiText = useUiTranslations();
   return (
     <DocumentationCreatePage
       section="PRESS_KIT"
-      title="New Press Kit Page"
-      description="Write a new press kit document using the same editor style as posts."
+      title={uiText("AppStrings.NewPressKitPage")}
+      description={uiText("AppStrings.WriteANewPressKitDocumentUsingThe")}
       basePath="/press-kit"
       icon="newspaper"
     />

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo } from "react";
 import { useThemes } from "@/hooks/queries";
 import type { ThemeType } from "@/types/ThemeType";
@@ -23,6 +26,7 @@ type ThemeWithScore = ThemeType & {
 };
 
 export default function AdminThemeEliminationResults() {
+  const uiText = useUiTranslations();
   const { data, isLoading: loading } = useThemes(true, true, true);
   const themes: ThemeWithScore[] = data ?? [];
 
@@ -39,18 +43,15 @@ export default function AdminThemeEliminationResults() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Theme Elimination Results
-          </Text>
+             {uiText("AppStrings.ThemeEliminationResults")} </Text>
           <Text size="sm" color="textFaded">
-            Review every theme and score from the elimination round.
-          </Text>
+             {uiText("AppStrings.ReviewEveryThemeAndScoreFromTheEliminationRound")} </Text>
         </Vstack>
         <Hstack wrap>
           <Button href="/theme-elimination" icon="arrowupright">
-            Open Elimination Page
-          </Button>
+             {uiText("AppStrings.OpenEliminationPage")} </Button>
           <Text size="sm" color="textFaded">
-            {rankedThemes.length} themes - top score {topScore}
+            {rankedThemes.length}  {uiText("AppStrings.ThemesTopScore")} {topScore}
           </Text>
         </Hstack>
       </section>
@@ -58,21 +59,19 @@ export default function AdminThemeEliminationResults() {
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            All Elimination Results
-          </Text>
+             {uiText("AppStrings.AllEliminationResults")} </Text>
           {loading ? (
             <Spinner />
           ) : rankedThemes.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No elimination results available yet.
-            </Text>
+               {uiText("AppStrings.NoEliminationResultsAvailableYet")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Rank</TableColumn>
-                <TableColumn>Theme</TableColumn>
-                <TableColumn>Score</TableColumn>
-                <TableColumn>Clarification</TableColumn>
+                <TableColumn>{uiText("AppStrings.Rank")}</TableColumn>
+                <TableColumn>{uiText("RatingCategory.Theme.Title")}</TableColumn>
+                <TableColumn>{uiText("LeaderboardType.Score.Title")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Clarification")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {rankedThemes.map((theme, index) => (
@@ -84,7 +83,7 @@ export default function AdminThemeEliminationResults() {
                     <TableCell>{theme.slaughterScoreSum ?? 0}</TableCell>
                     <TableCell>
                       <Text size="sm" color="textFaded">
-                        {theme.description || "No clarification provided"}
+                        {theme.description || uiText("AppStrings.NoClarificationProvided")}
                       </Text>
                     </TableCell>
                   </TableRow>

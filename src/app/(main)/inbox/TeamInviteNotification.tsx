@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Card } from "bioloom-ui";
 import { Vstack, Hstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -19,6 +22,7 @@ export default function TeamInviteNotification({
   onAccept,
   onReject,
 }: Props) {
+  const uiText = useUiTranslations();
   const invite = notification.teamInvite;
   const teamName =
     invite?.team?.name ||
@@ -34,10 +38,10 @@ export default function TeamInviteNotification({
         <Vstack align="start" gap={0}>
           <Hstack>
             <Icon name="users" color="text" size={16} />
-            <Text size="lg">Team Invite</Text>
+            <Text size="lg">{uiText("AppStrings.TeamInvite")}</Text>
           </Hstack>
           <Text size="xs" color="textFaded">
-            You&apos;ve been invited to {teamName}
+             {uiText("AppStrings.YouAndAposVeBeenInvitedTo")} {teamName}
           </Text>
         </Vstack>
 
@@ -53,15 +57,13 @@ export default function TeamInviteNotification({
             icon="check"
             color="green"
           >
-            Accept
-          </Button>
+             {uiText("AppStrings.Accept")} </Button>
           <Button
             onClick={() => onReject(invite.id, notification.id)}
             icon="x"
             color="red"
           >
-            Reject
-          </Button>
+             {uiText("AppStrings.Reject")} </Button>
         </Hstack>
 
         <Hstack>

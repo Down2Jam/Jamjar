@@ -1,11 +1,13 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import DocumentationCreatePage from "@/components/documentation/DocumentationCreatePage";
 
 export default function NewDocPage() {
+  const uiText = useUiTranslations();
   return (
     <DocumentationCreatePage
       section="DOCS"
-      title="New Documentation Page"
-      description="Write a new documentation document using the same editor style as posts."
+      title={uiText("AppStrings.NewDocumentationPage")}
+      description={uiText("AppStrings.WriteANewDocumentationDocumentUsingTheSame")}
       basePath="/docs"
       icon="bookcopy"
     />

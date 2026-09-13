@@ -1,4 +1,8 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 
 import { Card } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
@@ -77,6 +81,7 @@ export default function SidebarSong({
   playlistIndex,
   showArtist = true,
 }: SidebarSongProps) {
+  const uiText = useUiTranslations();
   const playlist = playlistIndex !== undefined;
   const { current, isPlaying, playItem, toggle } = useMusic();
   const { colors } = useTheme();
@@ -154,7 +159,7 @@ export default function SidebarSong({
                 size="sm"
                 variant="ghost"
                 onClick={togglePlayback}
-                aria-label={`${isCurrent && isPlaying ? "Pause" : "Play"} ${name}`}
+                aria-label={uiText("AppStrings.Value0Value1", { value0: isCurrent && isPlaying ? "Pause" : "Play", value1: name })}
                 className="group/track-play relative !h-7 !w-7 shrink-0 !rounded-md !p-0"
               >
                 <span className={isCurrent ? "hidden" : "text-xs tabular-nums group-hover/track-play:hidden group-focus-visible/track-play:hidden"}>
@@ -177,7 +182,7 @@ export default function SidebarSong({
                       : "z-0 h-16 w-16 shrink-0 rounded-md object-cover"
                     : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
               }
-              alt="Song Thumbnail"
+              alt={uiText("AppStrings.SongThumbnail")}
             />}
             <Vstack className={playlist ? "z-10 min-w-0 flex-1" : "z-10 min-w-0"} align="start" gap={wide ? 1 : 0}>
               <Link
@@ -218,9 +223,9 @@ export default function SidebarSong({
                       {game.name}
                       {game.category !== "EXTERNAL" &&
                         (pageVersion === "POST_JAM"
-                          ? " · Post-Jam"
+                          ? uiText("AppStrings.PostJam")
                           : pageVersion === "JAM"
-                            ? " · Jam"
+                            ? uiText("AppStrings.Jam2")
                             : "")}
                     </Text>
                   </Link>
@@ -269,10 +274,10 @@ export default function SidebarSong({
                     backgroundColor: playlist ? "transparent" : colors["base"],
                     color: colors["textFaded"],
                   }}
-                  title={`${license}${backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}`}
+                  title={uiText("AppStrings.Value0Value13", { value0: translateSystemLabel(license, uiText), value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
                 >
-                  {license}
-                  {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
+                  {translateSystemLabel(license, uiText)}
+                  {backgroundUseLabel ? uiText("AppStrings.Value08", { value0: backgroundUseLabel }) : ""}
                 </span>
               )}
             </Vstack>
@@ -290,7 +295,7 @@ export default function SidebarSong({
               color="default"
               className="!h-9 !w-14 !rounded-md !p-0"
               icon={isCurrent && isPlaying ? "pause" : "play"}
-              aria-label={isCurrent && isPlaying ? "Pause track" : "Play track"}
+              aria-label={isCurrent && isPlaying ? uiText("AppStrings.PauseTrack") : uiText("AppStrings.PlayTrack")}
               onClick={togglePlayback}
             />}
             {allowDownload && (
@@ -301,7 +306,7 @@ export default function SidebarSong({
                 variant={playlist ? "ghost" : undefined}
                 loading={isDownloading}
                 icon="download"
-                aria-label="Download track"
+                aria-label={uiText("AppStrings.DownloadTrack2")}
                 onClick={async () => {
                   if (!slug) return;
 
@@ -310,7 +315,7 @@ export default function SidebarSong({
                     await downloadTrackBySlug(slug, name, pageVersion);
                   } catch (error) {
                     console.error(error);
-                    addToast({ title: "Failed to download track" });
+                    addToast({ title: uiText("AppStrings.FailedToDownloadTrack") });
                   } finally {
                     setIsDownloading(false);
                   }

@@ -1,7 +1,9 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { Card, getNeutralBorderColor } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 
 export default function GamePageLoading() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const borderColor = getNeutralBorderColor(colors);
   const placeholderColor = `color-mix(in srgb, ${colors.text} 6%, ${colors.mantle})`;
@@ -10,7 +12,7 @@ export default function GamePageLoading() {
   );
 
   return (
-    <div role="status" aria-label="Loading game" aria-busy="true">
+    <div role="status" aria-label={uiText("AppStrings.LoadingGame")} aria-busy="true">
       <Card shadow="none" padding={0} className="overflow-hidden !rounded-none !border-0 lg:!rounded-xl lg:!border">
         <div aria-hidden="true" className="motion-safe:animate-pulse">
           <div className="h-60" style={{ backgroundColor: placeholderColor }} />

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button, Hstack, Icon, Input, Text, Vstack, addToast } from "bioloom-ui";
 import { useState } from "react";
 
@@ -46,6 +49,7 @@ async function readResponse<T>(
 }
 
 export default function ItchGameImport() {
+  const uiText = useUiTranslations();
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [jamUrl, setJamUrl] = useState("");
@@ -55,7 +59,7 @@ export default function ItchGameImport() {
 
   const handlePreview = async () => {
     if (!url.trim()) {
-      addToast({ title: "Paste an itch.io game link first." });
+      addToast({ title: uiText("AppStrings.PasteAnItchIoGameLinkFirst") });
       return;
     }
 
@@ -67,7 +71,7 @@ export default function ItchGameImport() {
       const responseBody = await readResponse<ItchGamePreviewResponse>(response);
       if (!response.ok) {
         addToast({
-          title: responseBody.message || "The itch game could not be imported.",
+          title: responseBody.message || uiText("AppStrings.TheItchGameCouldNotBeImported"),
         });
         return;
       }
@@ -76,7 +80,7 @@ export default function ItchGameImport() {
       setPreview(body);
       if (body.jams.length === 1) setJamUrl(body.jams[0].url);
     } catch {
-      addToast({ title: "The itch game could not be imported." });
+      addToast({ title: uiText("AppStrings.TheItchGameCouldNotBeImported") });
     } finally {
       setPreviewing(false);
     }
@@ -84,7 +88,7 @@ export default function ItchGameImport() {
 
   const handleImport = async () => {
     if (!url.trim()) {
-      addToast({ title: "Paste an itch.io game link first." });
+      addToast({ title: uiText("AppStrings.PasteAnItchIoGameLinkFirst") });
       return;
     }
 
@@ -94,20 +98,20 @@ export default function ItchGameImport() {
       const body = await readResponse<ImportedGameResponse>(response);
 
       if (!response.ok) {
-        addToast({ title: body.message || "The itch game could not be imported." });
+        addToast({ title: body.message || uiText("AppStrings.TheItchGameCouldNotBeImported") });
         return;
       }
 
       const slug = body.slug ?? body.data?.slug;
       if (!slug) {
-        addToast({ title: "The game imported, but its edit page could not be opened." });
+        addToast({ title: uiText("AppStrings.TheGameImportedButItsEditPageCouldNotBeOpened") });
         return;
       }
 
-      addToast({ title: "Itch game imported. You can add songs and details now." });
+      addToast({ title: uiText("AppStrings.ItchGameImportedYouCanAddSongsAndDetailsNow") });
       router.push(`/g/${slug}/edit`);
     } catch {
-      addToast({ title: "The itch game could not be imported." });
+      addToast({ title: uiText("AppStrings.TheItchGameCouldNotBeImported") });
     } finally {
       setImporting(false);
     }
@@ -119,19 +123,15 @@ export default function ItchGameImport() {
         <Vstack align="start" gap={3}>
           <Icon name="download" size={34} color="text" />
           <Text size="4xl" color="text" weight="semibold">
-            Import a game
-          </Text>
+             {uiText("AppStrings.ImportAGame")} </Text>
           <Text size="lg" color="textFaded">
-            Import a game from an itch.io jam to be displayed on the site to list
-            the game and its music alongside your d2jam games.
-          </Text>
+             {uiText("AppStrings.ImportAGameFromAnItchIoJamToBeDisplayedOnTheSiteToListTheGameAndItsMusicAlongsideYour")} </Text>
         </Vstack>
 
         <Vstack align="stretch" gap={6}>
           <Vstack align="stretch" gap={2}>
             <Text color="text" weight="semibold">
-              Itch.io game link
-            </Text>
+               {uiText("AppStrings.ItchIoGameLink")} </Text>
             <Input
               placeholder="https://creator.itch.io/game-name"
               value={url}
@@ -148,8 +148,7 @@ export default function ItchGameImport() {
                 loading={previewing}
                 onClick={handlePreview}
               >
-                Import game
-              </Button>
+                 {uiText("AppStrings.ImportGame")} </Button>
             </div>
           </Vstack>
 
@@ -160,7 +159,7 @@ export default function ItchGameImport() {
                   {preview.title}
                 </Text>
                 <Text size="sm" color="textFaded">
-                  Builds: {preview.buildPlatforms.join(", ")}
+                   {uiText("AppStrings.Builds")} {preview.buildPlatforms.join(", ")}
                 </Text>
               </div>
 
@@ -168,11 +167,9 @@ export default function ItchGameImport() {
                 <Vstack align="stretch" gap={3}>
                   <div>
                     <Text color="text" weight="semibold">
-                      Choose the jam to attach
-                    </Text>
+                       {uiText("AppStrings.ChooseTheJamToAttach")} </Text>
                     <Text size="xs" color="textFaded">
-                      This controls which jam archive the game appears under.
-                    </Text>
+                       {uiText("AppStrings.ThisControlsWhichJamArchiveTheGameAppearsUnder")} </Text>
                   </div>
                   <Hstack wrap className="gap-2">
                     {preview.jams.map((jam) => (
@@ -189,8 +186,7 @@ export default function ItchGameImport() {
               ) : preview.jams.length === 1 ? (
                 <Vstack align="stretch" gap={2}>
                   <Text color="text" weight="semibold">
-                    Jam
-                  </Text>
+                     {uiText("AppStrings.Jam")} </Text>
                   <Hstack className="gap-2">
                     <Icon name="calendar" size={16} color="textFaded" />
                     <Text color="text">{preview.jams[0].name}</Text>
@@ -199,11 +195,9 @@ export default function ItchGameImport() {
               ) : (
                 <Vstack align="stretch" gap={2}>
                   <Text color="text" weight="semibold">
-                    Jam page link
-                  </Text>
+                     {uiText("AppStrings.JamPageLink")} </Text>
                   <Text size="xs" color="textFaded">
-                    No jam link was found. Paste the itch.io jam page manually.
-                  </Text>
+                     {uiText("AppStrings.NoJamLinkWasFoundPasteTheItchIoJamPageManually")} </Text>
                   <Input
                     placeholder="https://itch.io/jam/jam-name"
                     value={jamUrl}
@@ -224,8 +218,7 @@ export default function ItchGameImport() {
               disabled={!jamUrl.trim()}
               onClick={handleImport}
             >
-              Add to profile
-            </Button>
+               {uiText("AppStrings.AddToProfile")} </Button>
           )}
         </Hstack>
       </Vstack>

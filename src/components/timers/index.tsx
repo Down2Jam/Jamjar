@@ -1,4 +1,7 @@
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 import Timer from "./Timer";
 import { useTheme } from "@/providers/useSiteTheme";
 import useHasMounted from "@/hooks/useHasMounted";
@@ -9,6 +12,7 @@ export default function Timers({
 }: {
   size?: "xs" | "sm" | "md";
 }) {
+  const uiText = useUiTranslations();
   const { data: activeJamResponse } = useCurrentJam();
   const { siteTheme } = useTheme();
   const hasMounted = useHasMounted();
@@ -51,7 +55,7 @@ export default function Timers({
           }}
         >
           <Timer
-            name="Jam ends in"
+            name={uiText("Countdown.JamEndsIn")}
             size={size}
             targetDate={
               new Date(
@@ -71,7 +75,7 @@ export default function Timers({
           }}
         >
           <Timer
-            name="Submissions ends in"
+            name={uiText("Countdown.SubmissionsEndIn")}
             size={size}
             targetDate={
               new Date(
@@ -92,7 +96,7 @@ export default function Timers({
           }}
         >
           <Timer
-            name="Rating ends in"
+            name={uiText("Countdown.RatingEndsIn")}
             size={size}
             targetDate={
               new Date(
@@ -114,7 +118,7 @@ export default function Timers({
           }}
         >
           <Timer
-            name="Post-jam refinement ends in"
+            name={uiText("Countdown.RefinementEndsIn")}
             size={size}
             targetDate={
               new Date(
@@ -137,7 +141,7 @@ export default function Timers({
           }}
         >
           <Timer
-            name="Post-jam rating ends in"
+            name={uiText("Countdown.PostJamRatingEndsIn")}
             size={size}
             targetDate={
               new Date(
@@ -162,8 +166,7 @@ export default function Timers({
             color: siteTheme.colors["text"],
           }}
         >
-          No upcoming jams
-        </div>
+           {uiText("AppStrings.NoUpcomingJams")} </div>
       );
     }
   }

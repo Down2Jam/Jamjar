@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { hasCookie, getCookie } from "@/helpers/cookie";
 import { usePressKitMedia, useSelf } from "@/hooks/queries";
 import { createPressKitMedia, deletePressKitMedia } from "@/requests/documentation";
@@ -19,6 +22,7 @@ import {
 import { useRef, useState } from "react";
 
 export default function PressKitGallery() {
+  const uiText = useUiTranslations();
   const { data, isLoading } = usePressKitMedia();
   const { data: user } = useSelf(hasCookie("token"));
   const isAdmin = Boolean(user?.admin);
@@ -61,10 +65,10 @@ export default function PressKitGallery() {
       const created = createJson.data as PressKitMediaType;
       setMedia((current) => [created, ...(current.length > 0 ? current : data ?? [])]);
       setAltText("");
-      addToast({ title: "Media uploaded" });
+      addToast({ title: uiText("AppStrings.MediaUploaded") });
     } catch (error) {
       console.error(error);
-      addToast({ title: "Failed to upload media" });
+      addToast({ title: uiText("AppStrings.FailedToUploadMedia") });
     } finally {
       setUploading(false);
       if (inputRef.current) {
@@ -88,12 +92,10 @@ export default function PressKitGallery() {
           <Hstack>
             <Icon name="images" color="blue" />
             <Text size="2xl" weight="bold" color="blue">
-              Press Assets
-            </Text>
+               {uiText("AppStrings.PressAssets")} </Text>
           </Hstack>
           <Text color="textFaded">
-            Browse logos, screenshots, and other visual materials for promotional use.
-          </Text>
+             {uiText("AppStrings.BrowseLogosScreenshotsAndOtherVisualMaterialsFor")} </Text>
         </Vstack>
 
         {isAdmin ? (
@@ -101,7 +103,7 @@ export default function PressKitGallery() {
             <Input
               value={altText}
               onValueChange={setAltText}
-              placeholder="Optional alt text"
+              placeholder={uiText("AppStrings.OptionalAltText")}
             />
             <Hstack wrap>
               <input
@@ -122,14 +124,14 @@ export default function PressKitGallery() {
                 disabled={uploading}
                 onClick={() => inputRef.current?.click()}
               >
-                {uploading ? "Uploading..." : "Upload image"}
+                {uploading ? uiText("AppStrings.Uploading") : uiText("AppStrings.UploadImage")}
               </Button>
             </Hstack>
           </Vstack>
         ) : null}
 
         {items.length === 0 ? (
-          <Text color="textFaded">No press kit media has been uploaded yet.</Text>
+          <Text color="textFaded">{uiText("AppStrings.NoPressKitMediaHasBeenUploadedYet")}</Text>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {items.map((item) => (
@@ -137,7 +139,7 @@ export default function PressKitGallery() {
                 <a href={item.image} target="_blank" rel="noreferrer">
                   <img
                     src={item.image}
-                    alt={item.altText || "Press kit media"}
+                    alt={item.altText || uiText("AppStrings.PressKitMedia")}
                     className="h-56 w-full object-cover"
                     loading="lazy"
                     decoding="async"
@@ -152,7 +154,7 @@ export default function PressKitGallery() {
                         const response = await deletePressKitMedia(item.id);
 
                         if (!response.ok) {
-                          addToast({ title: "Failed to delete media" });
+                          addToast({ title: uiText("AppStrings.FailedToDeleteMedia") });
                           return;
                         }
 
@@ -161,11 +163,10 @@ export default function PressKitGallery() {
                             (mediaItem) => mediaItem.id !== item.id,
                           ),
                         );
-                        addToast({ title: "Media deleted" });
+                        addToast({ title: uiText("AppStrings.MediaDeleted") });
                       }}
                     >
-                      Delete
-                    </Button>
+                       {uiText("ThemeSuggestions.Delete.Title")} </Button>
                   </div>
                 ) : null}
               </Card>

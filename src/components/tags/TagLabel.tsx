@@ -1,3 +1,5 @@
+import { useTranslations } from "next-intl";
+import { translateSystemLabel } from "@/helpers/systemLabels";
 import type { IconType } from "react-icons";
 import {
   GiCargoCrate,
@@ -378,6 +380,8 @@ export default function TagLabel({
   fallback?: TagIconFallback;
   size?: number;
 }) {
+  const uiText = useTranslations();
+  const displayName = translateSystemLabel(label ?? name, uiText);
   const normalizedTag = name.toLowerCase().replace(/[\s_-]+/g, "");
   const hasIcon = Boolean(
     GAME_ICONS[normalizedTag] ||
@@ -391,7 +395,7 @@ export default function TagLabel({
       <span
         className="inline-flex shrink-0 items-center justify-center"
         style={{ width: size, height: size }}
-        aria-label={name}
+        aria-label={displayName}
       >
         {hasIcon ? (
           <TagIcon tag={name} fallback={fallback} size={size} />
@@ -407,7 +411,7 @@ export default function TagLabel({
   return (
     <span className="inline-flex items-center gap-1">
       <TagIcon tag={name} fallback={fallback} size={size} />
-      <span>{label ?? name}</span>
+      <span>{displayName}</span>
     </span>
   );
 }

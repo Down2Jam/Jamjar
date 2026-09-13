@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 /**
  * @file Shows at the top of the screen on PC.
  * Allows the user to navigate around pages on the site.
@@ -47,6 +48,7 @@ type PCbarProps = {
 };
 
 export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
+  const uiText = useUiTranslations();
   const t = useTranslations();
   const { jamPhase, jam, nextJam } = useJam();
   const { isLgUp, isXlUp, isMdUp, isLgDown } = useBreakpoint();
@@ -188,8 +190,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
       <Hotkey
         hotkey={["G", "Y"]}
         href="/themes"
-        title="Browse all themes"
-        description="Browse all community site themes"
+        title={uiText("AppStrings.BrowseAllThemes")}
+        description={uiText("AppStrings.BrowseAllCommunitySiteThemes")}
       />
       {/* Navbar Left */}
       <NavbarContent id={navbarLeftId} justify="start">
@@ -407,7 +409,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 >
                   {t("Navbar.ApiDocs.Title")}
                 </Dropdown.Item>
-              </Dropdown>
+                </Dropdown>
               <Hotkey
                 href="/d2guess"
                 hotkey={["G", "D"]}

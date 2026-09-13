@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
@@ -132,6 +135,7 @@ function formatJamWindow(
 }
 
 export default function Results({ preview = false }: { preview?: boolean }) {
+  const uiText = useUiTranslations();
   const { playItem } = useMusic();
   const searchParams = useSearchParams();
   const [games, setGames] = useState<GameResultType[]>([]);
@@ -237,10 +241,10 @@ export default function Results({ preview = false }: { preview?: boolean }) {
               slug: jam.slug,
               name: jam.name,
               icon: jam.icon,
-              description: `${formatJamWindow(
+              description: uiText("AppStrings.Value06", { value0: formatJamWindow(
                 jam.startTime,
                 jam.jammingHours
-              )}`,
+              ) }),
               startTime: jam.startTime,
             });
           });
@@ -331,20 +335,19 @@ export default function Results({ preview = false }: { preview?: boolean }) {
       }}
     >
       <section className="mb-4">
-        <h1 className="text-3xl mb-4">Results</h1>
+        <h1 className="text-3xl mb-4">{uiText("Navbar.Results.Title")}</h1>
         <p
           className="text-sm"
           style={{
             color: siteTheme.colors["textFaded"],
           }}
         >
-          Here are the overall results from the jam
-        </p>
+           {uiText("AppStrings.HereAreTheOverallResultsFromTheJam")} </p>
       </section>
 
       <Hstack>
         <Dropdown
-          trigger={<Button>{view === "GAMES" ? "Games" : "Music"}</Button>}
+          trigger={<Button>{view === "GAMES" ? uiText("Navbar.Games.Title") : uiText("Navbar.Music.Title")}</Button>}
           onSelect={(key) => {
             const next = key as "GAMES" | "MUSIC";
             setView(next);
@@ -352,11 +355,9 @@ export default function Results({ preview = false }: { preview?: boolean }) {
           }}
         >
           <Dropdown.Item value="GAMES" icon="gamepad2">
-            Games
-          </Dropdown.Item>
+             {uiText("Navbar.Games.Title")} </Dropdown.Item>
           <Dropdown.Item value="MUSIC" icon="music">
-            Music
-          </Dropdown.Item>
+             {uiText("Navbar.Music.Title")} </Dropdown.Item>
         </Dropdown>
 
         <Dropdown
@@ -368,18 +369,16 @@ export default function Results({ preview = false }: { preview?: boolean }) {
         >
           <Dropdown.Item
             value={"REGULAR"}
-            description="The regular jam category"
+            description={uiText("GameCategory.Regular.Description")}
             icon="gamepad2"
           >
-            Regular
-          </Dropdown.Item>
+             {uiText("GameCategory.Regular.Title")} </Dropdown.Item>
           <Dropdown.Item
             value={"ODA"}
-            description="1 Dev, No third party assets"
+            description={uiText("GameCategory.Oda.Description")}
             icon="swords"
           >
-            One Dev Army (O.D.A)
-          </Dropdown.Item>
+             {uiText("GameCategory.Oda.Title")} </Dropdown.Item>
         </Dropdown>
 
         {view === "GAMES" && category === "REGULAR" && (
@@ -392,18 +391,16 @@ export default function Results({ preview = false }: { preview?: boolean }) {
           >
             <Dropdown.Item
               value="MAJORITYCONTENT"
-              description="Majority of art, audio, etc. made in the jam time"
+              description={uiText("AppStrings.MajorityOfArtAudioEtcMadeInThe")}
               icon="sparkles"
             >
-              Majority Content
-            </Dropdown.Item>
+               {uiText("AppStrings.MajorityContent")} </Dropdown.Item>
             <Dropdown.Item
               value="ALL"
-              description="All art, audio regardless of when it was made"
+              description={uiText("AppStrings.AllArtAudioRegardlessOfWhenItWas")}
               icon="layers"
             >
-              All
-            </Dropdown.Item>
+               {uiText("AppStrings.All")} </Dropdown.Item>
           </Dropdown>
         )}
 
@@ -424,24 +421,23 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                 updateQueryParam("sort", key as string);
               }}
             >
-              <Dropdown.Item value="OVERALL">Overall</Dropdown.Item>
-              <Dropdown.Item value="GAMEPLAY">Gameplay</Dropdown.Item>
-            <Dropdown.Item value="AUDIO">Audio</Dropdown.Item>
-            <Dropdown.Item value="GRAPHICS">Graphics</Dropdown.Item>
-            <Dropdown.Item value="CREATIVITY">Creativity</Dropdown.Item>
+              <Dropdown.Item value="OVERALL">{uiText("RatingCategory.Overall.Title")}</Dropdown.Item>
+              <Dropdown.Item value="GAMEPLAY">{uiText("RatingCategory.Gameplay.Title")}</Dropdown.Item>
+            <Dropdown.Item value="AUDIO">{uiText("RatingCategory.Audio.Title")}</Dropdown.Item>
+            <Dropdown.Item value="GRAPHICS">{uiText("RatingCategory.Graphics.Title")}</Dropdown.Item>
+            <Dropdown.Item value="CREATIVITY">{uiText("RatingCategory.Creativity.Title")}</Dropdown.Item>
             <Dropdown.Item value="EMOTIONALDELIVERY">
-              Emotional Delivery
-            </Dropdown.Item>
-            <Dropdown.Item value="THEME">Theme</Dropdown.Item>
+               {uiText("RatingCategory.Emotional.Title")} </Dropdown.Item>
+            <Dropdown.Item value="THEME">{uiText("RatingCategory.Theme.Title")}</Dropdown.Item>
             </Dropdown>
           ) : (
-            <Button icon="music">Overall</Button>
+            <Button icon="music">{uiText("RatingCategory.Overall.Title")}</Button>
           )}
 
           <Dropdown
             trigger={
               <Button>
-                {jamOptions.find((j) => j.id === jamId)?.name || "Select Jam"}
+                {jamOptions.find((j) => j.id === jamId)?.name || uiText("AppStrings.SelectJam2")}
               </Button>
             }
             onSelect={(key) => {
@@ -475,7 +471,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
               <Card key={game.id} className="flex items-center gap-4">
                 <Hstack gap={12}>
                   <img
-                    alt={`${game.name}'s thumbnail`}
+                    alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
                     className="z-0 h-[108px] w-[192px] object-cover"
                     height={108}
                     width={192}
@@ -504,8 +500,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                               style={gradientTextStyle(gradient, first)}
                               className="w-fit"
                             >
-                              {(category.averageScore / 2).toFixed(2)} stars
-                            </span>
+                              {(category.averageScore / 2).toFixed(2)}  {uiText("AppStrings.Stars")} </span>
                             <Text color="textFaded">
                               ({ordinal_suffix_of(category.placement)})
                             </Text>
@@ -573,7 +568,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                   <Card key={track.id} className="flex items-center gap-4">
                     <Hstack gap={12}>
                       <img
-                        alt={`${track.name} art`}
+                        alt={uiText("AppStrings.Value0Art", { value0: track.name })}
                         className="z-0 h-[108px] w-[108px] object-cover"
                         height={108}
                         width={108}
@@ -588,7 +583,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                           <Vstack align="start" gap={1}>
                             <Link href={`/m/${track.slug}`}>{track.name}</Link>
                             <Text size="sm" color="textFaded">
-                              {track.composer.name} for {track.game.name}
+                              {track.composer.name}  {uiText("AppStrings.For")} {track.game.name}
                             </Text>
                           </Vstack>
                           <Button
@@ -610,19 +605,16 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                               })
                             }
                           >
-                            Play
-                          </Button>
+                             {uiText("AppStrings.Play")} </Button>
                         </Hstack>
                         <div className="grid grid-cols-[120px_100px_60px_30px] items-center gap-2">
                           <Text size="sm" color="textFaded">
-                            Overall
-                          </Text>
+                             {uiText("RatingCategory.Overall.Title")} </Text>
                           <span
                             style={gradientTextStyle(gradient, first)}
                             className="w-fit"
                           >
-                            {(overall.averageScore / 2).toFixed(2)} stars
-                          </span>
+                            {(overall.averageScore / 2).toFixed(2)}  {uiText("AppStrings.Stars")} </span>
                           <Text color="textFaded">
                             ({ordinal_suffix_of(overall.placement)})
                           </Text>

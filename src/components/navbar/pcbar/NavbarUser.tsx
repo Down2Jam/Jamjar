@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Avatar, NavbarItem } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import { redirect } from "@/compat/next-navigation";
@@ -21,6 +24,7 @@ export default function NavbarUser({
   showThemesLink,
   coloredOverflowItems,
 }: NavbarUserProps) {
+  const uiText = useUiTranslations();
   return (
     <NavbarItem className="flex items-center">
       {user && (
@@ -40,16 +44,16 @@ export default function NavbarUser({
           <Hotkey
             hotkey={["G", "U"]}
             onPress={() => redirect(`/import-game`)}
-            title="Import Game"
-            description="Import a game from itch.io"
+            title={uiText("AppStrings.ImportGame2")}
+            description={uiText("AppStrings.ImportAGameFromItchIo")}
           />
           <Hotkey
             hotkey={["G", "B"]}
             onPress={() =>
-              redirect("https://github.com/Down2Jam/Jamjar/issues")
+              redirect(`/report-bug?page=${encodeURIComponent(window.location.pathname)}`)
             }
             title="Navbar.ReportBug.Title"
-            description="Navbar.ReportBug.Description"
+            description={uiText("AppStrings.SubmitBugReport")}
           />
         </>
       )}
@@ -94,12 +98,11 @@ export default function NavbarUser({
             <Dropdown.Item
               value="import-game"
               icon="download"
-              description="Import a game from itch.io"
+              description={uiText("AppStrings.ImportAGameFromItchIo")}
               href="/import-game"
               kbd="G U"
             >
-              Import Game
-            </Dropdown.Item>
+               {uiText("AppStrings.ImportGame2")} </Dropdown.Item>
           </>
         ) : (
           <></>
@@ -109,11 +112,10 @@ export default function NavbarUser({
             value="themes"
             icon="palette"
             href="/themes"
-            description="Browse all community site themes"
+            description={uiText("AppStrings.BrowseAllCommunitySiteThemes")}
             kbd="G Y"
           >
-            Browse all themes
-          </Dropdown.Item>
+             {uiText("AppStrings.BrowseAllThemes")} </Dropdown.Item>
         )}
         {coloredOverflowItems}
         {showResponsiveShortcuts ? (
@@ -189,8 +191,8 @@ export default function NavbarUser({
           <Dropdown.Item
             value="bug"
             icon="bug"
-            href="https://github.com/Down2Jam/Jamjar/issues"
-            description="Navbar.ReportBug.Description"
+            href={`/report-bug?page=${encodeURIComponent(window.location.pathname)}`}
+            description={uiText("AppStrings.SubmitBugReport")}
             kbd="G B"
           >
             Navbar.ReportBug.Title

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Extension, InputRule, Node, mergeAttributes } from "@tiptap/core";
 import CharacterCount from "@tiptap/extension-character-count";
 import Document from "@tiptap/extension-document";
@@ -38,12 +41,12 @@ import ImageResize from "tiptap-extension-resize-image";
 import { getCookie } from "@/helpers/cookie";
 import { useTheme } from "@/providers/useSiteTheme";
 import ThemedProse from "../themed-prose";
-import { addToast } from "bioloom-ui";
+import { addToast, getNeutralBorderColor } from "bioloom-ui";
 import { useTranslations } from "@/compat/next-intl";
 import Mentions from "../mentions/Mentions";
 import { useEmojis } from "@/providers/useEmojis";
 import { createEmojiShortcodeExtension } from "../emoji/EmojiShortcodes";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EmojiType } from "@/providers/useEmojis";
 import { BASE_URL } from "@/requests/config";
 import {
@@ -232,6 +235,7 @@ export default function Editor({
   compactStats = false,
   showStats = true,
 }: EditorProps) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const t = useTranslations();
   const { emojiMap, emojis, priorityEmotes } = useEmojis();
@@ -634,8 +638,7 @@ export default function Editor({
             : size == "sm"
             ? "min-h-[150px] max-h-[400px]"
             : "min-h-[100px] max-h-[400px]") +
-          (size == "sm" ? " border-gray-500" : " border-gray-600") +
-          " overflow-y-auto cursor-text rounded-md border px-5 focus-within:outline-none focus-within:border-current/25 !duration-250 !ease-linear !transition-all",
+          " overflow-y-auto cursor-text rounded-md border border-[var(--editor-border-color)] px-5 focus-within:outline-none focus-within:border-[var(--editor-focus-border-color)] !duration-250 !ease-linear !transition-all",
       },
       handleKeyDown: (_view, event) => {
         if (handleMentionKeyDown(event)) return true;
@@ -703,11 +706,11 @@ export default function Editor({
         const uploadFile = async (file: File) => {
           const filesizeMB = file.size / 1024 / 1024;
           if (!allowedTypes.includes(file.type)) {
-            addToast({ title: "Invalid file format" });
+            addToast({ title: t("AppStrings.InvalidFileFormat") });
             return false;
           }
           if (filesizeMB > 8) {
-            addToast({ title: "Image is too big" });
+            addToast({ title: t("AppStrings.ImageIsTooBig") });
             return false;
           }
 
@@ -725,7 +728,7 @@ export default function Editor({
           );
 
           if (!res.ok) {
-            addToast({ title: "Failed to upload image" });
+            addToast({ title: t("AppStrings.FailedToUploadImage") });
             return false;
           }
 
@@ -814,12 +817,12 @@ export default function Editor({
           ];
 
           if (!allowedTypes.includes(file.type)) {
-            addToast({ title: "Invalid file format" });
+            addToast({ title: t("AppStrings.InvalidFileFormat") });
             return false;
           }
 
           if (filesize > 8) {
-            addToast({ title: "Image is too big" });
+            addToast({ title: t("AppStrings.ImageIsTooBig") });
             return false;
           }
 
@@ -845,7 +848,7 @@ export default function Editor({
                   top: event.clientY,
                 });
                 if (!coordinates) {
-                  addToast({ title: "Error getting coordinates" });
+                  addToast({ title: t("AppStrings.ErrorGettingCoordinates") });
                   return;
                 }
 
@@ -859,7 +862,7 @@ export default function Editor({
                   .run();
               });
             } else {
-              addToast({ title: "Failed to upload image" });
+              addToast({ title: t("AppStrings.FailedToUploadImage") });
             }
           });
         }
@@ -924,7 +927,13 @@ export default function Editor({
 
   return (
     <div className="w-full">
-      <div data-editor-surface>
+      <div
+        data-editor-surface
+        style={{
+          "--editor-border-color": getNeutralBorderColor(colors),
+          "--editor-focus-border-color": colors.blue,
+        } as CSSProperties}
+      >
       <EditorMenuBar editor={editor} size={size} />
       <ThemedProse className="[&_.ProseMirror_h1]:my-0 [&_.ProseMirror_h1]:text-inherit [&_.ProseMirror_h1]:leading-inherit [&_.ProseMirror_h2]:my-0 [&_.ProseMirror_h2]:text-inherit [&_.ProseMirror_h2]:leading-inherit [&_.ProseMirror_h3]:my-0 [&_.ProseMirror_h3]:text-inherit [&_.ProseMirror_h3]:leading-inherit [&_.ProseMirror_p]:my-3 [&_.ProseMirror_p:empty]:h-auto [&_.ProseMirror_p:empty]:my-3 [&_.ProseMirror_p>br:only-child]:inline">
         <EditorContent editor={editor} />
@@ -1028,7 +1037,7 @@ export default function Editor({
               >
                 <img
                   src={emoji.image}
-                  alt={`:${emoji.slug}:`}
+                  alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                   className="h-4 w-4"
                   loading="lazy"
                   decoding="async"

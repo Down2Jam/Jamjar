@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useState } from "react";
 import Link from "@/compat/next-link";
 import { useRouter, useSearchParams } from "@/compat/next-navigation";
@@ -28,19 +31,19 @@ const FILTERS: Record<
   { name: string; icon: IconName; description: string }
 > = {
   current: {
-    name: "Happening now",
+    name: "AppStrings.HappeningNow",
     icon: "treedeciduous",
-    description: "Events currently in progress",
+    description: "AppStrings.EventsCurrentlyInProgress",
   },
   upcoming: {
-    name: "Upcoming",
+    name: "AppStrings.Upcoming",
     icon: "clock",
-    description: "Events coming up next",
+    description: "AppStrings.EventsComingUpNext",
   },
   past: {
-    name: "Past",
+    name: "AppStrings.Past",
     icon: "hourglass",
-    description: "Events that have wrapped up",
+    description: "AppStrings.EventsThatHaveWrappedUp",
   },
 };
 
@@ -108,6 +111,7 @@ function EventTiming({ event, filter }: { event: EventType; filter: EventFilter 
 }
 
 function EventCard({ event, filter }: { event: EventType; filter: EventFilter }) {
+  const uiText = useUiTranslations();
   return (
     <Card
       padding={0}
@@ -122,7 +126,7 @@ function EventCard({ event, filter }: { event: EventType; filter: EventFilter })
         >
           <Avatar
             src={event.host?.profilePicture ?? undefined}
-            alt={event.host?.name ?? "Event host"}
+            alt={event.host?.name ?? uiText("AppStrings.EventHost")}
             size={44}
           />
         </Badge>
@@ -139,12 +143,12 @@ function EventCard({ event, filter }: { event: EventType; filter: EventFilter })
             </Text>
           </Link>
           <Text size="sm" color="textFaded">
-            Hosted by{" "}
+             {uiText("AppStrings.HostedBy")}{" "}
             <Link
               href={`/u/${event.host?.slug}`}
               className="font-medium underline decoration-transparent underline-offset-2 transition-colors hover:decoration-current"
             >
-              {event.host?.name ?? "Unknown"}
+              {event.host?.name ?? uiText("AppStrings.Unknown")}
             </Link>
           </Text>
           <Hstack gap={1} className="mt-1 flex-wrap">
@@ -159,8 +163,7 @@ function EventCard({ event, filter }: { event: EventType; filter: EventFilter })
           <EventTiming event={event} filter={filter} />
           <Hstack className="w-full sm:w-auto">
             <Button href={`/e/${event.slug}`} size="sm" color="blue">
-              View event
-            </Button>
+               {uiText("AppStrings.ViewEvent")} </Button>
             {event.link && (
               <Button
                 href={event.link}
@@ -169,8 +172,7 @@ function EventCard({ event, filter }: { event: EventType; filter: EventFilter })
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Event link
-              </Button>
+                 {uiText("AppStrings.EventLink")} </Button>
             )}
           </Hstack>
         </Vstack>
@@ -195,6 +197,7 @@ function EventSkeleton() {
 }
 
 export default function Events() {
+  const uiText = useUiTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { colors, siteTheme } = useTheme();
@@ -211,8 +214,8 @@ export default function Events() {
   const canCreateEvent = Boolean(user?.twitch || user?.mod);
 
   usePageMetadata({
-    title: "Events",
-    description: "Find current and upcoming Down2Jam community events.",
+    title: uiText("Navbar.Events.Title"),
+    description: uiText("AppStrings.FindCurrentAndUpcomingDown2JamCommunityEvents"),
     canonical: "/events",
     image: "/images/D2J_Icon.png",
   });
@@ -240,8 +243,7 @@ export default function Events() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Events
-        </h1>
+           {uiText("Navbar.Events.Title")} </h1>
         <p
           className="mt-1 text-sm"
           style={{
@@ -253,13 +255,11 @@ export default function Events() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          Community streams, tournaments, showcases, and get-togethers.
-        </p>
+           {uiText("AppStrings.CommunityStreamsTournamentsShowcasesAndGetTogethers")} </p>
         {canCreateEvent && (
           <div className="mt-3 flex justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0">
             <Button icon="calendarplus" color="blue" href="/create-event">
-              Create event
-            </Button>
+               {uiText("AppStrings.CreateEvent2")} </Button>
           </div>
         )}
       </header>
@@ -270,7 +270,7 @@ export default function Events() {
           backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 82%, transparent)`,
           borderColor: `color-mix(in srgb, ${colors["text"]} 8%, transparent)`,
         }}
-        aria-label="Event filters"
+        aria-label={uiText("AppStrings.EventFilters")}
       >
         {FILTER_ORDER.map((key) => (
           <Button
@@ -282,7 +282,7 @@ export default function Events() {
             onClick={() => selectFilter(key)}
             aria-pressed={filter === key}
           >
-            {FILTERS[key].name}
+            {uiText(FILTERS[key].name)}
           </Button>
         ))}
       </div>
@@ -290,7 +290,7 @@ export default function Events() {
       <div className="flex items-center justify-between gap-3">
         <Vstack align="start" gap={0}>
           <Text size="lg" weight="semibold" color="text">
-            {FILTERS[filter].name}
+            {uiText(FILTERS[filter].name)}
           </Text>
           <Text size="sm" color="textFaded">
             {FILTERS[filter].description}
@@ -298,7 +298,7 @@ export default function Events() {
         </Vstack>
         {!loading && !isError && (
           <Text size="sm" color="textFaded">
-            {visibleEvents.length} {visibleEvents.length === 1 ? "event" : "events"}
+            {visibleEvents.length} {visibleEvents.length === 1 ? uiText("AppStrings.Event2") : uiText("AppStrings.Events2")}
           </Text>
         )}
       </div>
@@ -309,31 +309,28 @@ export default function Events() {
         ) : isError ? (
           <Card radius="lg">
             <Vstack gap={2} className="py-7 text-center">
-              <Text size="lg" weight="semibold">Events could not be loaded</Text>
+              <Text size="lg" weight="semibold">{uiText("AppStrings.EventsCouldNotBeLoaded")}</Text>
               <Text size="sm" color="textFaded">
-                Something went wrong while fetching the schedule. Please try again.
-              </Text>
+                 {uiText("AppStrings.SomethingWentWrongWhileFetchingTheSchedulePleaseTryAgain")} </Text>
               <Button size="sm" onClick={() => window.location.reload()}>
-                Try again
-              </Button>
+                 {uiText("AppStrings.TryAgain")} </Button>
             </Vstack>
           </Card>
         ) : visibleEvents.length === 0 ? (
           <Card radius="lg">
             <Vstack gap={2} className="py-8 text-center">
               <CalendarDays size={30} style={{ color: colors["textFaded"] }} />
-              <Text size="lg" weight="semibold">No {FILTERS[filter].name.toLowerCase()} events</Text>
+              <Text size="lg" weight="semibold">{uiText("AppStrings.No")} {FILTERS[filter].name.toLowerCase()}  {uiText("AppStrings.Events2")}</Text>
               <Text size="sm" color="textFaded">
                 {filter === "current"
-                  ? "Nothing is live right now. Check what’s coming up next."
+                  ? uiText("AppStrings.NothingIsLiveRightNowCheckWhatSComingUpNext")
                   : filter === "upcoming"
-                    ? "There aren’t any community events on the calendar yet."
-                    : "There are no completed events to show."}
+                    ? uiText("AppStrings.ThereArenTAnyCommunityEventsOnTheCalendarYet")
+                    : uiText("AppStrings.ThereAreNoCompletedEventsToShow")}
               </Text>
               {filter === "current" && (
                 <Button size="sm" color="blue" onClick={() => selectFilter("upcoming")}>
-                  View upcoming events
-                </Button>
+                   {uiText("AppStrings.ViewUpcomingEvents")} </Button>
               )}
             </Vstack>
           </Card>

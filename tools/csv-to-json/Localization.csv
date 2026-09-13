@@ -184,7 +184,7 @@ GameSort.LeastRatings.Description,Shows games that have the least amount of rati
 GameSort.Danger.Title,Danger,,In pericolo,,,Tehlike,Danger,Опасность,,Perigo,,,Meow
 GameSort.Danger.Description,Shows games closest to being able to be ranked,,Mostra i giochi più vicini a poter essere classificati,,,Derecelendirmeye girmeye yakın oyunları göster,"Ipakita ang mga games na hindi pa ranked, pero malapit na, sa ibabaw ng listahan","Показывать игры ближайшие к тому, чтобы попасть в ранк",,Mostra jogos perto de ser ranqueados,,,Meow meow meow meow meow meow meow meow meow
 Games.Title,Games,,Giochi,,,Oyunlar,Games,Игры,,Jogos,,,Meow
-Games.Description,Explore the collection of games uploaded to the site,,Esplora la collezione di giochi caricati sul sito,,,Siteye yüklenmiş oyun koleksiyonunu keşfet,Tignan ang lahat ng games na inupload sa site,Посмотрите коллекцию игр загруженных на сайт,,Explore a coleção de jogos enviados ao site,,,Meow meow meow meow meow meow meow meow meow
+Games.Description,Explore the games made by the community!,,Esplora la collezione di giochi caricati sul sito,,,Siteye yüklenmiş oyun koleksiyonunu keşfet,Tignan ang lahat ng games na inupload sa site,Посмотрите коллекцию игр загруженных на сайт,,Explore a coleção de jogos enviados ao site,,,Meow meow meow meow meow meow meow meow meow
 About.Title,About the event,,Informazioni sull'evento,,,Etkinlik Hakkında,Tungkol sa event,О событии,,Sobre o evento,,,Meow meow meow
 About.Description,"D2Jam is a community centered game jam with a emphasis on supporting things constructed by the community! We wanted a jam which celebrated post-submission events, encouraged discourse and reflection, and provided tools for developers to find and share games.
 
@@ -687,7 +687,7 @@ CreateLeaderboard.Advanced.Description,Toggles to control more functionality on 
 CreateLeaderboard.Highest.Title,Only Highest,,Solo il più alto,,,Sadece En Yüksek,,Только Высочайшие,,Apenas Maiores,,,Meow meow
 CreateLeaderboard.Highest.Description,Only shows each users highest score,,Mostra solo il punteggio migliore di ciascun utente,,,Sadece her oyuncunun en yüksek skorunu gösterir,,Только показывать высший рекорд каждого пользователя,,Demonstra apenas a maior pontuação de cada usuário,,,Meow meow meow meow meow meow
 GameCategory.Regular.Title,Regular,,Regular,,,Normal,,Regular,,Regular,,,Meow
-GameCategory.Regular.Description,The regular jam category,,Categoria standard della jam,,,Normal jam kategorisi,,Обычная категория джема,,A categoria regular do jam,,,Meow meow meow meow
+GameCategory.Regular.Description,The regular jam category. For anywhere from 1 Dev to Infinite,,Categoria standard della jam,,,Normal jam kategorisi,,Обычная категория джема,,A categoria regular do jam,,,Meow meow meow meow
 GameCategory.Oda.Title,One Dev Army (O.D.A),,One Dev Army (O.D.A),,,Tek Geliştirici Ordusu (O.D.A),,One Dev Army (O.D.A),,Exército de Um Desenvolvedor (E.U.D),,,Meow meow meow (meow.meow.meow)
 GameCategory.Oda.Description,"1 Dev, No third party assets",,"1 sviluppatore, nessun asset di terze parti",,,"Tek geliştirici, üçüncü parti assetler yasak",,"1 Разработчик, никаких ассетов от третьих сторон",,"1 Desenvolvedor, Sem assets de terceiros",,,"Meow meow, meow meow meow meow"
 GameCategory.Extra.Title,Extra,,Extra,,,Ekstra,,Extra,,Extra,,,Meow
@@ -718,7 +718,7 @@ General.NoDescription,No description,,Nessuna descrizione,,,Açıklama yok,,Бе
 AppStrings.PleaseComeBackDuringTheSuggestionPhase,. Please come back during the Suggestion phase.,,,,,,,,,,,,
 AppStrings.PleaseComeBackDuringTheThemeEliminationPhase,. Please come back during the Theme Elimination phase.,,,,,,,,,,,,
 AppStrings.PleaseComeBackDuringTheThemeVotingPhase,. Please come back during the Theme Voting phase.,,,,,,,,,,,,
-AppStrings.UseTheEmbedLinkFromItchSettingsAnd,". Use the embed link from Itch (settings -&gt; distribute -&gt; embed game -&gt; direct link), not the normal game page URL. This will show below the game name and above the description as a playable embed.",,,,,,,,,,,,
+AppStrings.UseTheEmbedLinkFromItchSettingsAnd,". Use the embed link from Itch (settings -> distribute -> embed game -> direct link), not the normal game page URL. This will show below the game name and above the description as a playable embed.",,,,,,,,,,,,
 AppStrings.Invited,(invited),,,,,,,,,,,,
 AppStrings.NoActiveJams,(No Active Jams),,,,,,,,,,,,
 AppStrings.PingInAChannelOrDmWithContext,(ping in a channel or dm with context),,,,,,,,,,,,
@@ -836,6 +836,7 @@ AppStrings.CreateEmoji,Create Emoji,,,,,,,,,,,,
 AppStrings.CreateEvent,Create Event,,,,,,,,,,,,
 AppStrings.CreateReply,Create Reply,,,,,,,,,,,,
 AppStrings.CreateTeam,Create Team,,,,,,,,,,,,
+AppStrings.CreateAnotherTeam,Create Another Team,,,,,,,,,,,,
 AppStrings.CreatedScore,Created score,,,,,,,,,,,,
 AppStrings.CreatedTeam,Created team,,,,,,,,,,,,
 AppStrings.CreativeCommonsWithAttributionAndConfigurableRestrictions,Creative Commons with attribution and configurable restrictions.,,,,,,,,,,,,
@@ -863,7 +864,7 @@ AppStrings.DocumentTitle,Document title,,,,,,,,,,,,
 AppStrings.DocumentUpdated,Document updated,,,,,,,,,,,,
 AppStrings.Documentation,Documentation,,,,,,,,,,,,
 AppStrings.DoesNotHaveAdminAccess,does not have admin access.,,,,,,,,,,,,
-AppStrings.DonAndAposTHaveAnAccount,Don&apos;t have an account?,,,,,,,,,,,,
+AppStrings.DonAndAposTHaveAnAccount,Don't have an account?,,,,,,,,,,,,
 AppStrings.DonationPageAndAWayToDonateComing,Donation page and a way to donate coming soon,,,,,,,,,,,,
 AppStrings.Download,Download,,,,,,,,,,,,
 AppStrings.DownloadTrack,Download Track,,,,,,,,,,,,
@@ -973,7 +974,7 @@ AppStrings.FailedToUploadMedia,Failed to upload media,,,,,,,,,,,,
 AppStrings.FailedToVote,Failed to vote,,,,,,,,,,,,
 AppStrings.FeatureComingSoon,Feature coming soon,,,,,,,,,,,,
 AppStrings.FeelFreeToMakeAPostOnThe,Feel free to make a post on the forum introducing yourself!,,,,,,,,,,,,
-AppStrings.FirstTwoWillBeShownOnHoverAll,First two will be shown on hover. All will be shown on game page.,,,,,,,,,,,,
+AppStrings.FirstTwoWillBeShownOnHoverAll,First three will be shown on hover. All will be shown on game page.,,,,,,,,,,,,
 AppStrings.Flags,Flags,,,,,,,,,,,,
 AppStrings.FlipHorizontal,Flip Horizontal,,,,,,,,,,,,
 AppStrings.FlipVertical,Flip Vertical,,,,,,,,,,,,
@@ -1554,16 +1555,16 @@ AppStrings.YouAlreadyGuessedThatGame,You already guessed that game.,,,,,,,,,,,,
 AppStrings.YouAreNotPartOfATeamPlease,"You are not part of a team, please join or create one",,,,,,,,,,,,
 AppStrings.YouCanOnlyAddUpTo5Screenshots,You can only add up to 5 screenshots.,,,,,,,,,,,,
 AppStrings.YouCanVoteOnAsManyThemesAs,You can vote on as many themes as you want and the themes with the most score (Positive votes - Negative Votes) will move to the voting rounds.,,,,,,,,,,,,
-AppStrings.YouCanVoteOnAsManyThemesAs2,You can vote on as many themes as you want. Likes add +1 to the theme&apos;s score while stars (that you can give 2 of) give +3 to a theme&apos;s score.,,,,,,,,,,,,
-AppStrings.YouCanAndAposTRateYourOwn,You can&apos;t rate your own game,,,,,,,,,,,,
-AppStrings.YouCanAndAposTRateYourOwn2,You can&apos;t rate your own track.,,,,,,,,,,,,
+AppStrings.YouCanVoteOnAsManyThemesAs2,You can vote on as many themes as you want. Likes add +1 to the theme's score while stars (that you can give 2 of) give +3 to a theme's score.,,,,,,,,,,,,
+AppStrings.YouCanAndAposTRateYourOwn,You can't rate your own game,,,,,,,,,,,,
+AppStrings.YouCanAndAposTRateYourOwn2,You can't rate your own track.,,,,,,,,,,,,
 AppStrings.YouCannotCreateEvents,You cannot create events,,,,,,,,,,,,
 AppStrings.YouCannotEditTheTeamIfYouAre,You cannot edit the team if you are not the owner,,,,,,,,,,,,
 AppStrings.YouDidNotSelectAUserToInvite,You did not select a user to invite,,,,,,,,,,,,
 AppStrings.YouDoNotHaveAccessToEditingThis,You do not have access to editing this game,,,,,,,,,,,,
 AppStrings.YouDoNotHaveAccessToEditingThis2,You do not have access to editing this track,,,,,,,,,,,,
 AppStrings.YouHaveUnsavedChanges,You have unsaved changes,,,,,,,,,,,,
-AppStrings.YouHavenAndAposTSubmittedAnySuggestions,You haven&apos;t submitted any suggestions yet.,,,,,,,,,,,,
+AppStrings.YouHavenAndAposTSubmittedAnySuggestions,You haven't submitted any suggestions yet.,,,,,,,,,,,,
 AppStrings.YouMustBeAnAdminToCreateDocuments,You must be an admin to create documents here.,,,,,,,,,,,,
 AppStrings.YouMustBeLoggedInToRateGames,You must be logged in to rate games,,,,,,,,,,,,
 AppStrings.YouMustBeLoggedInToRateTracks,You must be logged in to rate tracks.,,,,,,,,,,,,
@@ -1571,9 +1572,9 @@ AppStrings.YouNeedToEnterAName,You need to enter a name,,,,,,,,,,,,
 AppStrings.YouNeedToJoinTheCurrentJamBefore,You need to join the current jam before you can eliminate themes.,,,,,,,,,,,,
 AppStrings.YouNeedToJoinTheCurrentJamBefore2,You need to join the current jam before you can vote for themes.,,,,,,,,,,,,
 AppStrings.YouNeedToSignInBeforeAccessingAdmin,You need to sign in before accessing admin tools.,,,,,,,,,,,,
-AppStrings.YouAndAposVeBeenInvitedTo,You&apos;ve been invited to,,,,,,,,,,,,
-AppStrings.YouAndAposVeReachedYourThemeSuggestion,You&apos;ve reached your theme suggestion limit for this jam!,,,,,,,,,,,,
-AppStrings.YouAndAposVeUnlocked,You&apos;ve unlocked,,,,,,,,,,,,
+AppStrings.YouAndAposVeBeenInvitedTo,You've been invited to,,,,,,,,,,,,
+AppStrings.YouAndAposVeReachedYourThemeSuggestion,You've reached your theme suggestion limit for this jam!,,,,,,,,,,,,
+AppStrings.YouAndAposVeUnlocked,You've unlocked,,,,,,,,,,,,
 AppStrings.YourEmotesUseThePrefix,Your emotes use the prefix,,,,,,,,,,,,
 AppStrings.YourGameWasRecommended,Your game was Recommended,,,,,,,,,,,,
 AppStrings.YourGameFavoritesAndStandoutJamEntries,"Your game, favorites, and standout jam entries",,,,,,,,,,,,
@@ -1583,3 +1584,1486 @@ AppStrings.YourSoundtrackHighlightsAndNotableTracks,Your soundtrack highlights a
 AppStrings.YourTracksTheirStarRatingsAndThePlacements,"Your tracks, their star ratings, and the placements that stood out",,,,,,,,,,,,
 AppStrings.YourVote,Your Vote,,,,,,,,,,,,
 AppStrings.Zoom,Zoom,,,,,,,,,,,,
+
+AppStrings.LeaveAComment,Leave a comment,,,,,,,,,,,,
+AppStrings.LeaveFeedback,Leave feedback,,,,,,,,,,,,
+AppStrings.CloseComment,Close comment,,,,,,,,,,,,
+AppStrings.YourComment,Your comment,,,,,,,,,,,,
+AppStrings.YourFeedback,Your feedback,,,,,,,,,,,,
+AppStrings.FailedToPostCommentPleaseTryAgain,Failed to post comment. Please try again.,,,,,,,,,,,,
+AppStrings.PostComment,Post comment,,,,,,,,,,,,
+AppStrings.SubmitFeedback,Submit Feedback,,,,,,,,,,,,
+AppStrings.PleaseLogInToReply,Please log in to reply,,,,,,,,,,,,
+AppStrings.YourReplyWasPostedRefreshThePageToSeeIt,Your reply was posted. Refresh the page to see it.,,,,,,,,,,,,
+AppStrings.FailedToPostReplyPleaseTryAgain,Failed to post reply. Please try again.,,,,,,,,,,,,
+AppStrings.ReplyTo,Reply to,,,,,,,,,,,,
+AppStrings.CloseReply,Close reply,,,,,,,,,,,,
+AppStrings.YourReply,Your reply,,,,,,,,,,,,
+AppStrings.PostReply,Post reply,,,,,,,,,,,,
+AppStrings.Reply,Reply,,,,,,,,,,,,
+AppStrings.ThisCommentWasRemoved,This comment was removed.,,,,,,,,,,,,
+AppStrings.ThisCommentWasDeleted,This comment was deleted.,,,,,,,,,,,,
+AppStrings.FailedToLoadRepliesPleaseTryAgain,Failed to load replies. Please try again.,,,,,,,,,,,,
+AppStrings.LoadingReplies,Loading replies…,,,,,,,,,,,,
+AppStrings.AddReaction,Add reaction,,,,,,,,,,,,
+AppStrings.EnterLinkURL,Enter link URL:,,,,,,,,,,,,
+AppStrings.HorizontalRule,Horizontal rule,,,,,,,,,,,,
+AppStrings.Blockquote,Blockquote,,,,,,,,,,,,
+AppStrings.CodeBlock,Code block,,,,,,,,,,,,
+AppStrings.AlignRight,Align right,,,,,,,,,,,,
+AppStrings.AlignCenter,Align center,,,,,,,,,,,,
+AppStrings.MoreFormatting,More formatting,,,,,,,,,,,,
+AppStrings.Active2,(active),,,,,,,,,,,,
+AppStrings.AllJams,All Jams,,,,,,,,,,,,
+AppStrings.ExternalJams,External jams,,,,,,,,,,,,
+AppStrings.BrowseEntriesFromImportedJams,Browse entries from imported jams,,,,,,,,,,,,
+AppStrings.Karma,Karma,,,,,,,,,,,,
+AppStrings.RatingBalance,Rating Balance,,,,,,,,,,,,
+AppStrings.BrowseMusicFromEveryJam,Browse music from every jam,,,,,,,,,,,,
+AppStrings.Clear,Clear,,,,,,,,,,,,
+AppStrings.Track,track,,,,,,,,,,,,
+AppStrings.Tracks,tracks,,,,,,,,,,,,
+AppStrings.ReplyToAuthor,Reply to {name},,,,,,,,,,,,
+AppStrings.ClearFilterCount,Clear {count},,,,,,,,,,,,
+AppStrings.TrackCount,{count} track,,,,,,,,,,,,
+AppStrings.TracksCount,{count} tracks,,,,,,,,,,,,
+AppStrings.CurrentJam,Current Jam,,,,,,,,,,,,
+AppStrings.FailedToSaveTrackRating,Failed to save track rating,,,,,,,,,,,,
+Navbar.Down2Guess.Title,Down2Guess,,,,,,,,,,,,
+Navbar.Down2Guess.Description,Guess a Down2Jam game,,,,,,,,,,,,
+Navbar.Events.Title,Events,,,,,,,,,,,,
+Navbar.Events.Description,Browse community events and streams,,,,,,,,,,,,
+Navbar.News.Title,News,,,,,,,,,,,,
+Navbar.News.Description,Read Down2Jam announcements and site updates,,,,,,,,,,,,
+AdminJamGames.Title,Current jam games,,,,,,,,,,,,
+AdminJamGames.CurrentJam,Current jam,,,,,,,,,,,,
+AdminJamGames.Refresh,Refresh,,,,,,,,,,,,
+AdminJamGames.Description,"Inspect all current-jam games, including unpublished drafts.",,,,,,,,,,,,
+AdminJamGames.LoadError,Unable to load games. This section is restricted to the designated inspection account.,,,,,,,,,,,,
+AdminJamGames.NoJam,No current jam.,,,,,,,,,,,,
+AdminJamGames.Summary,{total} games · {published} published · {unpublished} unpublished,,,,,,,,,,,,
+AdminJamGames.Search,Search games or team members,,,,,,,,,,,,
+AdminJamGames.all,All games,,,,,,,,,,,,
+AdminJamGames.published,Published,,,,,,,,,,,,
+AdminJamGames.unpublished,Unpublished,,,,,,,,,,,,
+AdminJamGames.NoGames,No games match these filters.,,,,,,,,,,,,
+AdminJamGames.VisitPage,Visit page,,,,,,,,,,,,
+AdminJamGames.VisitTempPage,Visit temporary page,,,,,,,,,,,,
+AdminJamGames.DescriptionState,Description,,,,,,,,,,,,
+AdminJamGames.Thumbnail,Thumbnail,,,,,,,,,,,,
+AdminJamGames.Build,Build / download,,,,,,,,,,,,
+AdminJamGames.PostJam,Post-jam page,,,,,,,,,,,,
+AdminJamGames.Tracks,Music tracks,,,,,,,,,,,,
+AdminJamGames.Present,Present,,,,,,,,,,,,
+AdminJamGames.Missing,Missing,,,,,,,,,,,,
+
+AppStrings.FailedToLeaveJam,Failed to leave jam,,,,,,,,,,,,
+AppStrings.LeftJam,Left jam,,,,,,,,,,,,
+AppStrings.LeaveJam,Leave Jam,,,,,,,,,,,,
+AppStrings.TagIconsByDelapouiteLorcSkollAndSbedFrom,"Tag icons by Delapouite, Lorc, Skoll, and sbed from",,,,,,,,,,,,
+AppStrings.GameIconsNet,Game-icons.net,,,,,,,,,,,,
+AppStrings.LicensedUnder,", licensed under",,,,,,,,,,,,
+AppStrings.CCBY30,CC BY 3.0,,,,,,,,,,,,
+AppStrings.OpenValue0,Open {value0},,,,,,,,,,,,
+AppStrings.EditValue0,Edit {value0},,,,,,,,,,,,
+AppStrings.RemoveValue0FromCollection,Remove {value0} from collection,,,,,,,,,,,,
+AppStrings.EntryRemoved,Entry removed,,,,,,,,,,,,
+AppStrings.CouldNotRemoveEntry,Could not remove entry,,,,,,,,,,,,
+AppStrings.CouldNotSaveCollectionOrder,Could not save collection order,,,,,,,,,,,,
+AppStrings.Collection,Collection,,,,,,,,,,,,
+AppStrings.EditCollection,Edit Collection,,,,,,,,,,,,
+AppStrings.SavingOrder,Saving order...,,,,,,,,,,,,
+AppStrings.DragEntriesToReorder,Drag entries to reorder.,,,,,,,,,,,,
+AppStrings.LogInToAddAComment,Log in to add a comment.,,,,,,,,,,,,
+AppStrings.ChooseAGame,Choose a game,,,,,,,,,,,,
+AppStrings.ChooseAPost,Choose a post,,,,,,,,,,,,
+AppStrings.ChooseAD2JamTrack,Choose a D2Jam track,,,,,,,,,,,,
+AppStrings.ChooseAD2JamTrackOrAddAYouTubeLink,Choose a D2Jam track or add a YouTube link,,,,,,,,,,,,
+AppStrings.AddedToCollection,Added to collection,,,,,,,,,,,,
+AppStrings.CouldNotAddItem,Could not add item,,,,,,,,,,,,
+AppStrings.D2JamMusic,D2Jam music,,,,,,,,,,,,
+AppStrings.YouTubeURL,YouTube URL,,,,,,,,,,,,
+AppStrings.SearchD2JamMusic,Search D2Jam music,,,,,,,,,,,,
+AppStrings.UnknownGame,Unknown game,,,,,,,,,,,,
+AppStrings.Selected,Selected:,,,,,,,,,,,,
+AppStrings.LoadingMetadata,Loading metadata...,,,,,,,,,,,,
+AppStrings.SearchGames,Search games,,,,,,,,,,,,
+AppStrings.SearchPosts,Search posts,,,,,,,,,,,,
+AppStrings.Post,Post,,,,,,,,,,,,
+AppStrings.Item,Item,,,,,,,,,,,,
+AppStrings.EntryDescription,Entry description,,,,,,,,,,,,
+AppStrings.CollectionTitleIsRequired,Collection title is required,,,,,,,,,,,,
+AppStrings.CollectionUpdated,Collection updated,,,,,,,,,,,,
+AppStrings.CouldNotUpdateCollection,Could not update collection,,,,,,,,,,,,
+AppStrings.CollectionTitle,Collection title,,,,,,,,,,,,
+AppStrings.Visibility,Visibility,,,,,,,,,,,,
+AppStrings.Private,Private,,,,,,,,,,,,
+AppStrings.Unlisted,Unlisted,,,,,,,,,,,,
+AppStrings.Public,Public,,,,,,,,,,,,
+AppStrings.Playback,Playback,,,,,,,,,,,,
+AppStrings.Manual,Manual,,,,,,,,,,,,
+AppStrings.Repeat,Repeat,,,,,,,,,,,,
+AppStrings.EntryUpdated,Entry updated,,,,,,,,,,,,
+AppStrings.CouldNotUpdateEntry,Could not update entry,,,,,,,,,,,,
+AppStrings.EditEntry,Edit Entry,,,,,,,,,,,,
+AppStrings.EntryTitle,Entry title,,,,,,,,,,,,
+AppStrings.RemoveEntry,Remove Entry,,,,,,,,,,,,
+AppStrings.ThisEntry,this entry,,,,,,,,,,,,
+AppStrings.FromThisCollection,from this collection?,,,,,,,,,,,,
+AppStrings.ThisOnlyRemovesTheEntryFromTheCollectionItDoesNotDeleteTheOriginalContent,This only removes the entry from the collection. It does not delete the original content.,,,,,,,,,,,,
+AppStrings.CuratedGamesPostsD2JamMusicAndExternalMusicLinks,"Curated games, posts, D2Jam music, and external music links.",,,,,,,,,,,,
+AppStrings.NewCollection2,New Collection,,,,,,,,,,,,
+AppStrings.NoCollectionsFound,No collections found.,,,,,,,,,,,,
+AppStrings.CreateCollection2,Create Collection,,,,,,,,,,,,
+AppStrings.CollectionSlug,collection-slug,,,,,,,,,,,,
+AppStrings.Type,Type,,,,,,,,,,,,
+AppStrings.AddACommunityEventToTheDown2JamCalendar,Add a community event to the Down2Jam calendar.,,,,,,,,,,,,
+AppStrings.EventCreated,Event created,,,,,,,,,,,,
+AppStrings.CreateAnEvent,Create an event,,,,,,,,,,,,
+AppStrings.AddAStreamTournamentShowcaseOrCommunityGetTogether,"Add a stream, tournament, showcase, or community get-together.",,,,,,,,,,,,
+AppStrings.CheckingEventAccess,Checking event access...,,,,,,,,,,,,
+AppStrings.SignInToCreateAnEvent,Sign in to create an event,,,,,,,,,,,,
+AppStrings.EventCreationIsAvailableToDown2JamCommunityMembersWithAConnectedTwitchAccount,Event creation is available to Down2Jam community members with a connected Twitch account.,,,,,,,,,,,,
+AppStrings.BackToEvents,Back to events,,,,,,,,,,,,
+AppStrings.ConnectTwitchToCreateEvents,Connect Twitch to create events,,,,,,,,,,,,
+AppStrings.ConnectYourTwitchAccountInSettingsSoCommunityMembersKnowWhereToWatchYourEvents,Connect your Twitch account in settings so community members know where to watch your events.,,,,,,,,,,,,
+AppStrings.OpenSettings,Open settings,,,,,,,,,,,,
+AppStrings.EventDetails,Event details,,,,,,,,,,,,
+AppStrings.WhatSHappening,What’s happening?,,,,,,,,,,,,
+AppStrings.EventType,Event type,,,,,,,,,,,,
+AppStrings.StreamOrEventLink,Stream or event link,,,,,,,,,,,,
+AppStrings.Schedule,Schedule,,,,,,,,,,,,
+AppStrings.TimesAreShownInYourLocalTimezone,Times are shown in your local timezone:,,,,,,,,,,,,
+AppStrings.Starts,Starts,,,,,,,,,,,,
+AppStrings.Ends,Ends,,,,,,,,,,,,
+AppStrings.ShareWhatYouLlBeDoingAndAnythingAttendeesShouldKnow,Share what you’ll be doing and anything attendees should know.,,,,,,,,,,,,
+AppStrings.CreateEvent2,Create event,,,,,,,,,,,,
+AppStrings.ModOnly,(Mod Only),,,,,,,,,,,,
+AppStrings.ShareSomethingWithTheCommunity,Share something with the community,,,,,,,,,,,,
+AppStrings.SuggestedFromYourTitleAndContent,Suggested from your title and content,,,,,,,,,,,,
+AppStrings.AddValue0Tag,Add {value0} tag,,,,,,,,,,,,
+AppStrings.Value0SAvatar,{value0}'s avatar,,,,,,,,,,,,
+AppStrings.GuessTheMysteryGameIn10Tries,Guess the mystery game in 10 tries,,,,,,,,,,,,
+AppStrings.Value0OfValue1LivesRemaining,{value0} of {value1} lives remaining,,,,,,,,,,,,
+AppStrings.Life,life,,,,,,,,,,,,
+AppStrings.Lives,lives,,,,,,,,,,,,
+AppStrings.Left,left,,,,,,,,,,,,
+AppStrings.GameName,Game name,,,,,,,,,,,,
+AppStrings.YouGotIt,You got it!,,,,,,,,,,,,
+AppStrings.OutOfLives,Out of lives.,,,,,,,,,,,,
+AppStrings.Guesses,Guesses,,,,,,,,,,,,
+AppStrings.ComparisonLegend,Comparison legend,,,,,,,,,,,,
+AppStrings.ArrowsShowWhetherTheAnswerIsHigherOrLower,Arrows show whether the answer is higher or lower.,,,,,,,,,,,,
+AppStrings.NoGuessesYetChooseAGameAboveToGetStarted,No guesses yet. Choose a game above to get started.,,,,,,,,,,,,
+AppStrings.ViewThisDown2JamCommunityEvent,View this Down2Jam community event.,,,,,,,,,,,,
+AppStrings.EventCouldNotBeLoaded,Event could not be loaded,,,,,,,,,,,,
+AppStrings.TheEventMayNoLongerExistOrTheServerCouldNotBeReached,"The event may no longer exist, or the server could not be reached.",,,,,,,,,,,,
+AppStrings.TryAgain,Try again,,,,,,,,,,,,
+AppStrings.AllEvents,← All events,,,,,,,,,,,,
+AppStrings.HostedBy,Hosted by,,,,,,,,,,,,
+AppStrings.NoEventDescriptionWasProvided,No event description was provided.,,,,,,,,,,,,
+AppStrings.OpenEventLink,Open event link,,,,,,,,,,,,
+AppStrings.AGameSubmittedToDown2Jam,A game submitted to Down2Jam,,,,,,,,,,,,
+AppStrings.Value0SBanner,{value0}'s banner,,,,,,,,,,,,
+AppStrings.Value0STeam,{value0}'s team,,,,,,,,,,,,
+AppStrings.GameInformation,Game information,,,,,,,,,,,,
+AppStrings.Value0PlayableEmbed,{value0} playable embed,,,,,,,,,,,,
+AppStrings.LoadValue0PlayableEmbed,Load {value0} playable embed,,,,,,,,,,,,
+AppStrings.PlayGame,Play game,,,,,,,,,,,,
+AppStrings.OpenGameInFullscreen,Open game in fullscreen,,,,,,,,,,,,
+AppStrings.Fullscreen,Fullscreen,,,,,,,,,,,,
+AppStrings.FullscreenIsUnavailable,Fullscreen is unavailable.,,,,,,,,,,,,
+AppStrings.Controls,Controls,,,,,,,,,,,,
+AppStrings.Playtime,Playtime,,,,,,,,,,,,
+AppStrings.AUTHORS,AUTHORS,,,,,,,,,,,,
+AppStrings.TAGS,TAGS,,,,,,,,,,,,
+AppStrings.FLAGS,FLAGS,,,,,,,,,,,,
+AppStrings.LINKS,LINKS,,,,,,,,,,,,
+AppStrings.CONTROLS,CONTROLS,,,,,,,,,,,,
+AppStrings.PLAYTIME,PLAYTIME,,,,,,,,,,,,
+AppStrings.MEDIA,MEDIA,,,,,,,,,,,,
+AppStrings.Value0Trailer,{value0} trailer,,,,,,,,,,,,
+AppStrings.Value0ScreenshotValue1,{value0} screenshot {value1},,,,,,,,,,,,
+AppStrings.ShowValue0,Show {value0},,,,,,,,,,,,
+AppStrings.Value0Value1,{value0} {value1},,,,,,,,,,,,
+AppStrings.RATINGS,RATINGS,,,,,,,,,,,,
+AppStrings.Stars,stars,,,,,,,,,,,,
+AppStrings.PauseSoundtrack,Pause soundtrack,,,,,,,,,,,,
+AppStrings.ResumeSoundtrack,Resume soundtrack,,,,,,,,,,,,
+AppStrings.PlaySoundtrackFromTheFirstTrack,Play soundtrack from the first track,,,,,,,,,,,,
+AppStrings.Pause,Pause,,,,,,,,,,,,
+AppStrings.FailedToUpdateAchievement,Failed to update achievement,,,,,,,,,,,,
+AppStrings.STATS,STATS,,,,,,,,,,,,
+AppStrings.PreviousScreenshot,Previous screenshot,,,,,,,,,,,,
+AppStrings.NextScreenshot,Next screenshot,,,,,,,,,,,,
+AppStrings.CloseScreenshotViewer,Close screenshot viewer,,,,,,,,,,,,
+AppStrings.Leaderboard2,Leaderboard,,,,,,,,,,,,
+AppStrings.FailedToCreatePostJamVersion,Failed to create post-jam version,,,,,,,,,,,,
+AppStrings.CancelReply,Cancel Reply,,,,,,,,,,,,
+AppStrings.Notification,Notification,,,,,,,,,,,,
+AppStrings.AlertsAboutActivityAcrossTheSite,Alerts about activity across the site.,,,,,,,,,,,,
+AppStrings.NoNotifications,No notifications.,,,,,,,,,,,,
+AppStrings.NewConversation,New conversation,,,,,,,,,,,,
+AppStrings.SearchPeople,Search people,,,,,,,,,,,,
+AppStrings.GroupNameOptional,Group name (optional),,,,,,,,,,,,
+AppStrings.WriteTheOpeningMessage,Write the opening message,,,,,,,,,,,,
+AppStrings.TheOpeningMessageIsDeliveredAsARequest,The opening message is delivered as a request.,,,,,,,,,,,,
+AppStrings.CouldNotSendRequest,Could not send request,,,,,,,,,,,,
+AppStrings.SendRequest,Send request,,,,,,,,,,,,
+AppStrings.MessageRequest,Message request,,,,,,,,,,,,
+AppStrings.RequestSent,Request sent,,,,,,,,,,,,
+AppStrings.NoMessageRequests,No message requests,,,,,,,,,,,,
+AppStrings.NoArchivedConversations,No archived conversations,,,,,,,,,,,,
+AppStrings.NoConversationsYet,No conversations yet,,,,,,,,,,,,
+AppStrings.BackToConversations,Back to conversations,,,,,,,,,,,,
+AppStrings.Value0Members,{value0} members,,,,,,,,,,,,
+AppStrings.Value0,@{value0},,,,,,,,,,,,
+AppStrings.BlockedValue0,Blocked {value0},,,,,,,,,,,,
+AppStrings.AcceptThisRequestToContinue,Accept this request to continue.,,,,,,,,,,,,
+AppStrings.Decline,Decline,,,,,,,,,,,,
+AppStrings.RequestSentYouCanSendMoreMessagesAfterSomeoneAccepts,Request sent. You can send more messages after someone accepts.,,,,,,,,,,,,
+AppStrings.ReplyToAccept,Reply to accept,,,,,,,,,,,,
+AppStrings.WriteAMessage,Write a message,,,,,,,,,,,,
+AppStrings.CouldNotSendMessage,Could not send message,,,,,,,,,,,,
+AppStrings.Value02,({value0}),,,,,,,,,,,,
+AppStrings.Messages,Messages,,,,,,,,,,,,
+AppStrings.Requests,Requests,,,,,,,,,,,,
+AppStrings.MessageRequests,Message requests,,,,,,,,,,,,
+AppStrings.Archived,Archived,,,,,,,,,,,,
+AppStrings.Conversations,Conversations,,,,,,,,,,,,
+AppStrings.Back,Back,,,,,,,,,,,,
+AppStrings.New,New,,,,,,,,,,,,
+AppStrings.Back2,← Back,,,,,,,,,,,,
+AppStrings.SelectAConversation,Select a conversation.,,,,,,,,,,,,
+AppStrings.Languages,Languages,,,,,,,,,,,,
+AppStrings.ChooseYourSiteLanguageHoverOrFocusALanguageToPreviewItUntranslatedTextIsShownInEnglis,Choose your site language. Hover or focus a language to preview it. Untranslated text is shown in English.,,,,,,,,,,,,
+AppStrings.SearchLanguages,Search languages,,,,,,,,,,,,
+AppStrings.SearchLanguages2,Search languages…,,,,,,,,,,,,
+AppStrings.UserCountsAreTemporarilyUnavailableYouCanStillChooseAnyLanguage,User counts are temporarily unavailable. You can still choose any language.,,,,,,,,,,,,
+AppStrings.AvailableLanguages,Available languages,,,,,,,,,,,,
+AppStrings.Selected2,Selected,,,,,,,,,,,,
+AppStrings.UserCountUnavailable,User count unavailable,,,,,,,,,,,,
+AppStrings.Translated,% translated,,,,,,,,,,,,
+AppStrings.NoLanguagesMatchYourSearch,No languages match your search.,,,,,,,,,,,,
+AppStrings.NoDeviceCodeFoundInThisLink,No device code found in this link,,,,,,,,,,,,
+AppStrings.FailedToApproveDevice,Failed to approve device,,,,,,,,,,,,
+AppStrings.FailedToDenyDevice,Failed to deny device,,,,,,,,,,,,
+AppStrings.LinkAGame,Link a Game,,,,,,,,,,,,
+AppStrings.DeviceLinkedThisTabWillCloseAutomaticallyOrYouCanCloseItAndReturnToTheGame,"Device linked. This tab will close automatically, or you can close it and return to the game.",,,,,,,,,,,,
+AppStrings.RequestDeniedThisTabWillCloseAutomaticallyOrYouCanCloseItNow,"Request denied. This tab will close automatically, or you can close it now.",,,,,,,,,,,,
+AppStrings.IsRequestingToLinkToYourAccountAs,is requesting to link to your account as,,,,,,,,,,,,
+AppStrings.ThisWillLetTheGameSubmitScoresAndAchievementsOnYourBehalf,. This will let the game submit scores and achievements on your behalf.,,,,,,,,,,,,
+AppStrings.Code,Code,,,,,,,,,,,,
+AppStrings.ThisLinkIsMissingItsDeviceCodeGoBackToTheGameAndTryAgain,This link is missing its device code. Go back to the game and try again.,,,,,,,,,,,,
+AppStrings.Deny,Deny,,,,,,,,,,,,
+AppStrings.Approve,Approve,,,,,,,,,,,,
+AppStrings.Track2,Track,,,,,,,,,,,,
+AppStrings.FailedToAddTimestampComment,Failed to add timestamp comment,,,,,,,,,,,,
+AppStrings.ACTIONS,ACTIONS,,,,,,,,,,,,
+AppStrings.PEOPLE,PEOPLE,,,,,,,,,,,,
+AppStrings.UserValue0,User #{value0},,,,,,,,,,,,
+AppStrings.RATING,RATING,,,,,,,,,,,,
+AppStrings.YourOverallRating,Your overall rating,,,,,,,,,,,,
+AppStrings.FailedToSaveRating,Failed to save rating,,,,,,,,,,,,
+AppStrings.Ratings,ratings,,,,,,,,,,,,
+AppStrings.DETAILS,DETAILS,,,,,,,,,,,,
+AppStrings.BPM,BPM:,,,,,,,,,,,,
+AppStrings.OfficialDown2JamNewsAnnouncementsAndSiteUpdates,"Official Down2Jam news, announcements, and site updates.",,,,,,,,,,,,
+AppStrings.RSSFeed,RSS feed,,,,,,,,,,,,
+AppStrings.AnnouncementsImprovementsAndChangesFromAcrossDown2Jam,"Announcements, improvements, and changes from across Down2Jam.",,,,,,,,,,,,
+AppStrings.RemovedPost,[Removed Post],,,,,,,,,,,,
+AppStrings.DeletedPost,[Deleted Post],,,,,,,,,,,,
+AppStrings.APostOnDown2Jam,A post on Down2Jam,,,,,,,,,,,,
+AppStrings.ThisPostWasRemoved,This post was removed.,,,,,,,,,,,,
+AppStrings.ThisPostWasDeleted,This post was deleted.,,,,,,,,,,,,
+AppStrings.FilterPostsByValue0,Filter posts by {value0},,,,,,,,,,,,
+AppStrings.CollaborativePixelArtCanvasesBuiltFromCommunitySubmissions,Collaborative pixel art canvases built from community submissions.,,,,,,,,,,,,
+AppStrings.CreateQuilt,Create quilt,,,,,,,,,,,,
+AppStrings.LoadingQuilts,Loading quilts...,,,,,,,,,,,,
+AppStrings.NoQuiltsAreAvailableYet,No quilts are available yet.,,,,,,,,,,,,
+AppStrings.X,x,,,,,,,,,,,,
+AppStrings.Additions,additions,,,,,,,,,,,,
+AppStrings.NameAndSlugAreRequired,Name and slug are required,,,,,,,,,,,,
+AppStrings.QuiltCreated,Quilt created,,,,,,,,,,,,
+AppStrings.CouldNotCreateQuilt,Could not create quilt,,,,,,,,,,,,
+AppStrings.CreateQuilt2,Create Quilt,,,,,,,,,,,,
+AppStrings.QuiltSlug,quilt-slug,,,,,,,,,,,,
+AppStrings.Width,Width,,,,,,,,,,,,
+AppStrings.Height,Height,,,,,,,,,,,,
+AppStrings.ReviewWindowMinutes,Review window minutes,,,,,,,,,,,,
+AppStrings.EndsAt,Ends at,,,,,,,,,,,,
+AppStrings.QuiltChangeUpdated,Quilt change updated,,,,,,,,,,,,
+AppStrings.QuiltChangeSubmitted,Quilt change submitted,,,,,,,,,,,,
+AppStrings.CouldNotSaveQuiltChange,Could not save quilt change,,,,,,,,,,,,
+AppStrings.LoadedPendingChangeForEditing,Loaded pending change for editing,,,,,,,,,,,,
+AppStrings.QuiltCanvasResized,Quilt canvas resized,,,,,,,,,,,,
+AppStrings.CouldNotResizeQuiltCanvas,Could not resize quilt canvas,,,,,,,,,,,,
+AppStrings.LoadingQuilt,Loading quilt...,,,,,,,,,,,,
+AppStrings.QuiltNotFound,Quilt not found.,,,,,,,,,,,,
+AppStrings.PixelsEnds,pixels · Ends,,,,,,,,,,,,
+AppStrings.ViewingHistory," · Viewing history",,,,,,,,,,,,
+AppStrings.PreviewingPendingChange," · Previewing pending change",,,,,,,,,,,,
+AppStrings.OnionSkinningPendingChange," · Onion-skinning pending change",,,,,,,,,,,,
+AppStrings.PreviewingRejectedChange," · Previewing rejected change",,,,,,,,,,,,
+AppStrings.PreviewingRemovedChange," · Previewing removed change",,,,,,,,,,,,
+AppStrings.PreviewingDeletedChange," · Previewing deleted change",,,,,,,,,,,,
+AppStrings.CurrentCanvas,Current canvas,,,,,,,,,,,,
+AppStrings.ClearOnionSkin,Clear onion skin,,,,,,,,,,,,
+AppStrings.ResizeCanvas,Resize canvas,,,,,,,,,,,,
+AppStrings.Brush,Brush,,,,,,,,,,,,
+AppStrings.Bucket,Bucket,,,,,,,,,,,,
+AppStrings.Eraser,Eraser,,,,,,,,,,,,
+AppStrings.Picker,Picker,,,,,,,,,,,,
+AppStrings.TransformLayer,Transform layer,,,,,,,,,,,,
+AppStrings.TransformAll,Transform all,,,,,,,,,,,,
+AppStrings.UndoCtrlZ,Undo (Ctrl+Z),,,,,,,,,,,,
+AppStrings.RedoCtrlY,Redo (Ctrl+Y),,,,,,,,,,,,
+AppStrings.Px,px,,,,,,,,,,,,
+AppStrings.ZoomOut,Zoom out,,,,,,,,,,,,
+AppStrings.ZoomIn,Zoom in,,,,,,,,,,,,
+AppStrings.Value0PendingPixelChangesEditingExistingSubmission,{value0} pending pixel changes · editing existing submission,,,,,,,,,,,,
+AppStrings.Value0PendingPixelChanges,{value0} pending pixel changes,,,,,,,,,,,,
+AppStrings.ClearDraft,Clear draft,,,,,,,,,,,,
+AppStrings.SaveEdit,Save edit,,,,,,,,,,,,
+AppStrings.SubmitChanges,Submit changes,,,,,,,,,,,,
+AppStrings.History,History,,,,,,,,,,,,
+AppStrings.Rejected,Rejected,,,,,,,,,,,,
+AppStrings.Removed,Removed,,,,,,,,,,,,
+AppStrings.DragThePreviewToAlignTheCurrentCanvasInsideTheNewSize,Drag the preview to align the current canvas inside the new size.,,,,,,,,,,,,
+AppStrings.XOffset,X offset,,,,,,,,,,,,
+AppStrings.YOffset,Y offset,,,,,,,,,,,,
+AppStrings.SaveResize,Save resize,,,,,,,,,,,,
+AppStrings.NothingHereYet,Nothing here yet.,,,,,,,,,,,,
+AppStrings.ResizeToValue0XValue1,Resize to {value0} x {value1},,,,,,,,,,,,
+AppStrings.Value0XValue1MovedByValue2Value3Value4,"{value0} x {value1} moved by {value2}, {value3} - {value4}",,,,,,,,,,,,
+AppStrings.Value0PixelsValue1,{value0} pixels - {value1},,,,,,,,,,,,
+AppStrings.LoadMore,Load more,,,,,,,,,,,,
+AppStrings.Pending,Pending,,,,,,,,,,,,
+AppStrings.NoPendingChanges,No pending changes.,,,,,,,,,,,,
+AppStrings.Resolves,Resolves,,,,,,,,,,,,
+AppStrings.Upvote,Upvote,,,,,,,,,,,,
+AppStrings.Downvote,Downvote,,,,,,,,,,,,
+AppStrings.AcceptNow,Accept now,,,,,,,,,,,,
+AppStrings.Pixels,pixels,,,,,,,,,,,,
+AppStrings.By,by,,,,,,,,,,,,
+AppStrings.UnknownComposer,Unknown composer,,,,,,,,,,,,
+AppStrings.RadioBackgroundInAnimationRadioBackgroundIn1200msEaseOutForwardsTransformOriginCenter,"
+        .radio-background-in {
+          animation: radio-background-in 1200ms ease-out forwards;
+          transform-origin: center;
+          will-change: opacity, transform, filter;
+        }
+
+        .radio-background-out {
+          animation: radio-background-out 1200ms ease-out forwards;
+          transform-origin: center;
+          will-change: opacity, transform, filter;
+        }
+
+        @keyframes radio-background-in {
+          from {
+            opacity: 0;
+            filter: blur(10px) saturate(1.15);
+            transform: scale(1.05);
+          }
+          to {
+            opacity: 1;
+            filter: blur(0) saturate(1);
+            transform: scale(1);
+          }
+        }
+
+        @keyframes radio-background-out {
+          from {
+            opacity: 1;
+            filter: blur(0) saturate(1);
+            transform: scale(1);
+          }
+          to {
+            opacity: 0;
+            filter: blur(12px) saturate(0.9);
+            transform: scale(0.98);
+          }
+        }
+      ",,,,,,,,,,,,
+AppStrings.Value03,:{value0}:,,,,,,,,,,,,
+AppStrings.Listening,listening,,,,,,,,,,,,
+AppStrings.RadioBackgroundInAnimationRadioBackgroundIn1200msEaseOutForwardsTransformOriginCenter2,"
+        .radio-background-in {
+          animation: radio-background-in 1200ms ease-out forwards;
+          transform-origin: center;
+          will-change: opacity, transform, filter;
+        }
+
+        .radio-background-out {
+          animation: radio-background-out 1200ms ease-out forwards;
+          transform-origin: center;
+          will-change: opacity, transform, filter;
+        }
+
+        .radio-start-overlay {
+          opacity: 0;
+          animation: radio-start-overlay-in 320ms ease-out forwards;
+          transition: opacity 420ms ease;
+        }
+
+        .radio-start-overlay-fading {
+          animation: none;
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        @keyframes radio-start-overlay-in {
+          from {
+            opacity: 0;
+            backdrop-filter: blur(0);
+          }
+          to {
+            opacity: 1;
+            backdrop-filter: blur(4px);
+          }
+        }
+
+        .radio-volume-slider {
+          appearance: none;
+          background: transparent;
+        }
+
+        .radio-volume-slider::-webkit-slider-runnable-track {
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.28);
+        }
+
+        .radio-volume-slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 12px;
+          height: 12px;
+          margin-top: -4px;
+          border-radius: 999px;
+          background: #ffffff;
+          box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+          transition: transform 160ms ease;
+        }
+
+        .radio-volume-slider:hover::-webkit-slider-thumb {
+          transform: scale(1.18);
+        }
+
+        .radio-volume-slider::-moz-range-track {
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.28);
+        }
+
+        .radio-volume-slider::-moz-range-thumb {
+          width: 12px;
+          height: 12px;
+          border: 0;
+          border-radius: 999px;
+          background: #ffffff;
+          box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+          transition: transform 160ms ease;
+        }
+
+        .radio-volume-slider:hover::-moz-range-thumb {
+          transform: scale(1.18);
+        }
+
+        @keyframes radio-background-in {
+          from {
+            opacity: 0;
+            filter: blur(10px) saturate(1.15);
+            transform: scale(1.05);
+          }
+          to {
+            opacity: 1;
+            filter: blur(0) saturate(1);
+            transform: scale(1);
+          }
+        }
+
+        @keyframes radio-background-out {
+          from {
+            opacity: 1;
+            filter: blur(0) saturate(1);
+            transform: scale(1);
+          }
+          to {
+            opacity: 0;
+            filter: blur(12px) saturate(0.9);
+            transform: scale(0.985);
+          }
+        }
+
+        .radio-track-panel {
+          animation: radio-track-panel-in 720ms cubic-bezier(0.2, 0.9, 0.22, 1)
+            both;
+          transform-origin: left bottom;
+          will-change: transform, opacity;
+        }
+
+        .radio-track-thumb {
+          animation: radio-track-thumb-in 760ms cubic-bezier(0.2, 0.9, 0.22, 1)
+            both;
+          transform-origin: center;
+          will-change: transform, opacity;
+        }
+
+        .radio-track-copy {
+          animation: radio-track-copy-in 820ms 260ms
+            cubic-bezier(0.2, 0.9, 0.22, 1) both;
+          transform-origin: left center;
+          will-change: transform, opacity;
+        }
+
+        .radio-track-panel-finishing .radio-track-copy,
+        .radio-track-copy-finishing {
+          animation: radio-track-copy-finish 900ms
+            cubic-bezier(0.55, 0, 0.25, 1) forwards;
+        }
+
+        .radio-track-panel-finishing .radio-track-thumb,
+        .radio-track-thumb-finishing {
+          animation: radio-track-thumb-finish 760ms 620ms
+            cubic-bezier(0.55, 0, 0.25, 1) forwards;
+        }
+
+        @keyframes radio-track-panel-in {
+          from {
+            opacity: 0;
+            transform: translateY(18px) scale(0.96);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes radio-track-thumb-in {
+          from {
+            opacity: 0;
+            transform: translateX(-160px) rotate(-220deg) scale(1);
+          }
+          68% {
+            opacity: 1;
+            transform: translateX(4px) rotate(4deg) scale(1);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) rotate(0deg) scale(1);
+          }
+        }
+
+        @keyframes radio-track-copy-in {
+          from {
+            opacity: 0;
+            transform: translateX(-72px) scale(0.34);
+          }
+          45% {
+            opacity: 0;
+            transform: translateX(-72px) scale(0.34);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes radio-track-copy-finish {
+          from {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(-72px) scale(0.34);
+          }
+        }
+
+        @keyframes radio-track-thumb-finish {
+          from {
+            opacity: 1;
+            transform: translateX(0) rotate(0deg) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(-160px) rotate(-220deg) scale(1);
+          }
+        }
+
+        @keyframes radio-emote-float {
+          0% {
+            opacity: 0;
+            transform: translate(
+                calc(-50% + var(--radio-start-x)),
+                calc(-50% + var(--radio-start-y))
+              )
+              rotate(0deg) scale(0);
+          }
+          12% {
+            opacity: 1;
+            transform: translate(
+                calc(-50% + var(--radio-start-x)),
+                calc(-50% + var(--radio-start-y) - 18px)
+              )
+              rotate(calc(var(--radio-rotation) * 0.18))
+              scale(calc(var(--radio-scale) * 1.08));
+          }
+          28% {
+            opacity: 1;
+            transform: translate(
+                calc(-50% + var(--radio-step1-x)),
+                calc(-50% + var(--radio-step1-y))
+              )
+              rotate(calc(var(--radio-rotation) * 0.32))
+              scale(calc(var(--radio-scale) * 0.9));
+          }
+          48% {
+            opacity: 0.92;
+            transform: translate(
+                calc(-50% + var(--radio-step2-x)),
+                calc(-50% + var(--radio-step2-y))
+              )
+              rotate(calc(var(--radio-rotation) * 0.58))
+              scale(calc(var(--radio-scale) * 0.74));
+          }
+          72% {
+            opacity: 0.58;
+            transform: translate(
+                calc(-50% + var(--radio-step3-x)),
+                calc(-50% + var(--radio-step3-y))
+              )
+              rotate(calc(var(--radio-rotation) * 0.82))
+              scale(calc(var(--radio-scale) * 0.56));
+          }
+          100% {
+            opacity: 0;
+            transform: translate(
+                calc(-50% + var(--radio-end-x)),
+                calc(-50% + var(--radio-end-y))
+              )
+              rotate(var(--radio-rotation))
+              scale(calc(var(--radio-scale) * 0.34));
+          }
+        }
+
+        .radio-floating-emote {
+          animation: radio-emote-float var(--radio-float-duration) linear
+            forwards;
+          will-change: transform, opacity;
+        }
+
+        .radio-emote-picker {
+          transform-origin: bottom right;
+          will-change: transform, opacity;
+        }
+
+        .radio-emote-picker-open {
+          animation: radio-emote-picker-in 160ms
+            cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .radio-emote-picker-closed {
+          animation: radio-emote-picker-out 140ms ease-in forwards;
+          pointer-events: none;
+        }
+
+        @keyframes radio-emote-picker-in {
+          from {
+            opacity: 0;
+            transform: translateY(8px) scale(0.86);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+
+        @keyframes radio-emote-picker-out {
+          from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(8px) scale(0.88);
+          }
+        }
+      ",,,,,,,,,,,,
+AppStrings.LookingToReportABug,Looking to report a bug?,,,,,,,,,,,,
+AppStrings.ReportSubmitted,Report submitted,,,,,,,,,,,,
+AppStrings.CouldNotSubmitReport,Could not submit report,,,,,,,,,,,,
+AppStrings.RSSFeeds,RSS Feeds,,,,,,,,,,,,
+AppStrings.SubscribeToDown2JamUpdatesWithRSS,Subscribe to Down2Jam updates with RSS.,,,,,,,,,,,,
+AppStrings.RSSFeeds2,RSS feeds,,,,,,,,,,,,
+AppStrings.FollowDown2JamUpdatesInYourPreferredFeedReader,Follow Down2Jam updates in your preferred feed reader.,,,,,,,,,,,,
+AppStrings.Down2JamNews,Down2Jam News,,,,,,,,,,,,
+AppStrings.AnnouncementsAndSiteChangelogs,Announcements and site changelogs.,,,,,,,,,,,,
+AppStrings.OpenFeed,Open feed,,,,,,,,,,,,
+AppStrings.ScreenshotsFromGamesUploadedToTheSite,Screenshots from games uploaded to the site,,,,,,,,,,,,
+AppStrings.Value0Screenshot,{value0} screenshot,,,,,,,,,,,,
+AppStrings.DirectMessageRequests,Direct message requests,,,,,,,,,,,,
+AppStrings.ChooseWhoCanSendYouTheOpeningMessageOfANewConversation,Choose who can send you the opening message of a new conversation.,,,,,,,,,,,,
+AppStrings.Everyone,Everyone,,,,,,,,,,,,
+AppStrings.PeopleIFollow,People I follow,,,,,,,,,,,,
+AppStrings.Nobody,Nobody,,,,,,,,,,,,
+AppStrings.DefaultPfpValue0,Default pfp {value0},,,,,,,,,,,,
+AppStrings.Smile,smile,,,,,,,,,,,,
+AppStrings.Username2,username,,,,,,,,,,,,
+AppStrings.Emote,emote,,,,,,,,,,,,
+AppStrings.FailedToDeleteEmote,Failed to delete emote,,,,,,,,,,,,
+AppStrings.EmoteDeleted,Emote deleted,,,,,,,,,,,,
+AppStrings.Value0SProfileBanner,{value0}'s profile banner,,,,,,,,,,,,
+AppStrings.NoRoles,No Roles,,,,,,,,,,,,
+AppStrings.Value04," ({value0})",,,,,,,,,,,,
+AppStrings.NextEdition,"Next edition: ",,,,,,,,,,,,
+AppStrings.ViewAndManageYourTeamForValue0,View and manage your team for {value0},,,,,,,,,,,,
+AppStrings.TheTeamNameThatDisplaysAsTheGameAuthorAndForYourTeamOnTheTeamFinder,The team name that displays as the game author and for your team on the team finder,,,,,,,,,,,,
+AppStrings.TheTeamNameDisplayedAsTheAuthorOfValue0,The team name displayed as the author of {value0},,,,,,,,,,,,
+AppStrings.SiteThemes,Site themes,,,,,,,,,,,,
+AppStrings.BrowseEveryAvailableThemeHoverOrFocusACardToPreviewItAcrossThePageThenSelectItToSaveT,"Browse every available theme. Hover or focus a card to preview it across the page, then select it to save the choice to your account.",,,,,,,,,,,,
+AppStrings.AvailableSiteThemes,Available site themes,,,,,,,,,,,,
+AppStrings.Value0Value1ThemeValue2,"{value0}, {value1} theme{value2}",,,,,,,,,,,,
+AppStrings.Theme,theme ·,,,,,,,,,,,,
+AppStrings.User2,user,,,,,,,,,,,,
+AppStrings.Users,users,,,,,,,,,,,,
+AppStrings.Value0Palette,{value0} palette,,,,,,,,,,,,
+AppStrings.Value0Value12,{value0}: {value1},,,,,,,,,,,,
+AppStrings.AUserInDown2Jam,A user in Down2Jam,,,,,,,,,,,,
+AppStrings.UnableToLoadThisProfile,Unable to load this profile,,,,,,,,,,,,
+AppStrings.ClickToAddPronouns,Click to add pronouns,,,,,,,,,,,,
+AppStrings.Message,Message,,,,,,,,,,,,
+AppStrings.NoCollectionsYet,No collections yet.,,,,,,,,,,,,
+AppStrings.Unranked,Unranked,,,,,,,,,,,,
+AppStrings.Value05,"{value0} - ",,,,,,,,,,,,
+AppStrings.DefaultBannerValue0,Default banner {value0},,,,,,,,,,,,
+AppStrings.DefaultBackgroundValue0,Default background {value0},,,,,,,,,,,,
+AppStrings.SearchValue0,Search {value0},,,,,,,,,,,,
+AppStrings.PValue0,/p/{value0},,,,,,,,,,,,
+AppStrings.GValue0,/g/{value0},,,,,,,,,,,,
+AppStrings.ReportValue0,Report {value0},,,,,,,,,,,,
+AppStrings.BUG,BUG #,,,,,,,,,,,,
+AppStrings.Status,Status,,,,,,,,,,,,
+AppStrings.Priority,Priority,,,,,,,,,,,,
+AppStrings.ResolutionReviewNotes,Resolution / review notes,,,,,,,,,,,,
+AppStrings.DescribeTheFixInvestigationOrReasonForDismissal,"Describe the fix, investigation, or reason for dismissal.",,,,,,,,,,,,
+AppStrings.ChangesSaved,Changes saved.,,,,,,,,,,,,
+AppStrings.Saving,Saving…,,,,,,,,,,,,
+AppStrings.SaveChanges2,Save changes,,,,,,,,,,,,
+AppStrings.BugReports,Bug reports,,,,,,,,,,,,
+AppStrings.ReviewIssuesTrackProgressAndRecordFixes,"Review issues, track progress, and record fixes.",,,,,,,,,,,,
+AppStrings.AdminOverview,Admin overview,,,,,,,,,,,,
+AppStrings.FilterReportsByStatus,Filter reports by status,,,,,,,,,,,,
+AppStrings.BugReportQueue,Bug report queue,,,,,,,,,,,,
+AppStrings.LoadingReports,Loading reports…,,,,,,,,,,,,
+AppStrings.Bug,bug,,,,,,,,,,,,
+AppStrings.Reports,reports.,,,,,,,,,,,,
+AppStrings.SelectAReportToReviewItsDetails,Select a report to review its details.,,,,,,,,,,,,
+AppStrings.NoActiveJam,No active jam,,,,,,,,,,,,
+AppStrings.PhaseNotAvailable,Phase not available,,,,,,,,,,,,
+AppStrings.NoUpcomingEvents,No upcoming events,,,,,,,,,,,,
+AppStrings.CreateTheNextScheduleBlock,Create the next schedule block.,,,,,,,,,,,,
+AppStrings.ImageUploaded,Image uploaded,,,,,,,,,,,,
+AppStrings.EmojiDeleted,Emoji deleted,,,,,,,,,,,,
+AppStrings.PartyPop,party-pop,,,,,,,,,,,,
+AppStrings.Emoji2,emoji,,,,,,,,,,,,
+AppStrings.EmojiPreview,emoji preview,,,,,,,,,,,,
+AppStrings.Uncredited,Uncredited,,,,,,,,,,,,
+AppStrings.ThisAccount,This account,,,,,,,,,,,,
+AppStrings.H,h,,,,,,,,,,,,
+AppStrings.ReviewEveryThemeAndScoreFromTheEliminationRound,Review every theme and score from the elimination round.,,,,,,,,,,,,
+AppStrings.ThemesTopScore,themes - top score,,,,,,,,,,,,
+AppStrings.AllEliminationResults,All Elimination Results,,,,,,,,,,,,
+AppStrings.NoClarificationProvided,No clarification provided,,,,,,,,,,,,
+AppStrings.ReviewTheShortlistForTheVotingRoundAndTheTotalVotesCast,Review the shortlist for the voting round and the total votes cast.,,,,,,,,,,,,
+AppStrings.TotalVotesCast,total votes cast,,,,,,,,,,,,
+AppStrings.Votes,Votes,,,,,,,,,,,,
+AppStrings.ReportABug,Report a bug,,,,,,,,,,,,
+AppStrings.SomethingNotWorkingHelpUsTrackItDown,Something not working? Help us track it down.,,,,,,,,,,,,
+AppStrings.Report,Report #,,,,,,,,,,,,
+AppStrings.Received,received,,,,,,,,,,,,
+AppStrings.YourReportIsInTheAdminReviewQueueThanksForHelpingImproveTheSite,Your report is in the admin review queue. Thanks for helping improve the site.,,,,,,,,,,,,
+AppStrings.BackToGames,Back to games,,,,,,,,,,,,
+AppStrings.SignInToSubmitABugReport,Sign in to submit a bug report.,,,,,,,,,,,,
+AppStrings.Summary,Summary,,,,,,,,,,,,
+AppStrings.WhatWentWrong,What went wrong?,,,,,,,,,,,,
+AppStrings.AffectedPage,Affected page,,,,,,,,,,,,
+AppStrings.Optional2,(optional),,,,,,,,,,,,
+AppStrings.GamesOrAPageURL,/games or a page URL,,,,,,,,,,,,
+AppStrings.StepsToReproduce,Steps to reproduce,,,,,,,,,,,,
+AppStrings.1OpenThePage102Click,"1. Open the page…
+2. Click…",,,,,,,,,,,,
+AppStrings.WhatDidYouExpect,What did you expect?,,,,,,,,,,,,
+AppStrings.WhatHappenedInstead,What happened instead?,,,,,,,,,,,,
+AppStrings.2000Characters,"/ 2,000 characters",,,,,,,,,,,,
+AppStrings.Submitting,Submitting…,,,,,,,,,,,,
+AppStrings.SubmitBugReport,Submit bug report,,,,,,,,,,,,
+AppStrings.AHelpfulReportIncludes,A helpful report includes,,,,,,,,,,,,
+AppStrings.ThePageWhereItHappened,The page where it happened,,,,,,,,,,,,
+AppStrings.TheStepsThatTriggerTheProblem,The steps that trigger the problem,,,,,,,,,,,,
+AppStrings.WhatYouExpectedAndWhatYouSaw,What you expected and what you saw,,,,,,,,,,,,
+AppStrings.YourBrowserOrDeviceIfRelevant,"Your browser or device, if relevant",,,,,,,,,,,,
+AppStrings.PrivateAdminReview,Private admin review,,,,,,,,,,,,
+AppStrings.ReportsIncludeYourAccountNameAndAreVisibleToSiteStaffDonTIncludePasswordsOrAccessToke,Reports include your account name and are visible to site staff. Don’t include passwords or access tokens.,,,,,,,,,,,,
+AppStrings.ReportingContent,Reporting content?,,,,,,,,,,,,
+AppStrings.UseContentReportsForModerationIssues,Use content reports for moderation issues.,,,,,,,,,,,,
+AppStrings.Icons,icons,,,,,,,,,,,,
+AppStrings.Uploading,Uploading...,,,,,,,,,,,,
+AppStrings.PressKitMedia,Press kit media,,,,,,,,,,,,
+AppStrings.EventHost,Event host,,,,,,,,,,,,
+AppStrings.ViewEvent,View event,,,,,,,,,,,,
+AppStrings.EventLink,Event link,,,,,,,,,,,,
+AppStrings.FindCurrentAndUpcomingDown2JamCommunityEvents,Find current and upcoming Down2Jam community events.,,,,,,,,,,,,
+AppStrings.CommunityStreamsTournamentsShowcasesAndGetTogethers,"Community streams, tournaments, showcases, and get-togethers.",,,,,,,,,,,,
+AppStrings.EventFilters,Event filters,,,,,,,,,,,,
+AppStrings.Event2,event,,,,,,,,,,,,
+AppStrings.Events2,events,,,,,,,,,,,,
+AppStrings.EventsCouldNotBeLoaded,Events could not be loaded,,,,,,,,,,,,
+AppStrings.SomethingWentWrongWhileFetchingTheSchedulePleaseTryAgain,Something went wrong while fetching the schedule. Please try again.,,,,,,,,,,,,
+AppStrings.NothingIsLiveRightNowCheckWhatSComingUpNext,Nothing is live right now. Check what’s coming up next.,,,,,,,,,,,,
+AppStrings.ThereArenTAnyCommunityEventsOnTheCalendarYet,There aren’t any community events on the calendar yet.,,,,,,,,,,,,
+AppStrings.ThereAreNoCompletedEventsToShow,There are no completed events to show.,,,,,,,,,,,,
+AppStrings.ViewUpcomingEvents,View upcoming events,,,,,,,,,,,,
+AppStrings.UnlockedOnValue0,Unlocked on {value0},,,,,,,,,,,,
+AppStrings.Unlocked,Unlocked,,,,,,,,,,,,
+AppStrings.OfPlayersHaveThisAchievement,% of players have this achievement,,,,,,,,,,,,
+AppStrings.ACHIEVEMENTS,ACHIEVEMENTS,,,,,,,,,,,,
+AppStrings.YouVeUnlockedAllAchievements,You've unlocked all achievements!,,,,,,,,,,,,
+AppStrings.YouVeUnlocked,You've unlocked,,,,,,,,,,,,
+AppStrings.Value0AchievementsSignInToTrackYourProgress,{value0} achievements · Sign in to track your progress,,,,,,,,,,,,
+AppStrings.AchievementsUnlocked,Achievements unlocked,,,,,,,,,,,,
+AppStrings.ViewValue0,View {value0},,,,,,,,,,,,
+AppStrings.ViewAllValue0Achievements,View all {value0} achievements,,,,,,,,,,,,
+AppStrings.ViewMyAchievements,View my achievements,,,,,,,,,,,,
+AppStrings.ViewAchievements,View achievements,,,,,,,,,,,,
+AppStrings.Value0OFValue1ACHIEVEMENTSEARNED,{value0} OF {value1} ACHIEVEMENTS EARNED,,,,,,,,,,,,
+AppStrings.Value0ACHIEVEMENTS,{value0} ACHIEVEMENTS,,,,,,,,,,,,
+AppStrings.AchievementsEarned,Achievements earned,,,,,,,,,,,,
+AppStrings.MyAchievements,My achievements,,,,,,,,,,,,
+AppStrings.AllAchievements,All achievements,,,,,,,,,,,,
+AppStrings.SearchAchievements,Search achievements,,,,,,,,,,,,
+AppStrings.SearchAchievements2,Search achievements...,,,,,,,,,,,,
+AppStrings.LOCKEDACHIEVEMENTS,LOCKED ACHIEVEMENTS,,,,,,,,,,,,
+AppStrings.NoAchievementsFound,No achievements found,,,,,,,,,,,,
+AppStrings.Middot,·,,,,,,,,,,,,
+AppStrings.MarkUnachieved,Mark unachieved,,,,,,,,,,,,
+AppStrings.MarkAchieved,Mark achieved,,,,,,,,,,,,
+AppStrings.Uploaded,Uploaded,,,,,,,,,,,,
+AppStrings.FailedToUploadValue0,Failed to upload {value0},,,,,,,,,,,,
+AppStrings.ErrorUploadingValue0,Error uploading {value0},,,,,,,,,,,,
+AppStrings.Value0IsMissingACreditedPerson,{value0} is missing a credited person,,,,,,,,,,,,
+AppStrings.Value0IsMissingASlug,{value0} is missing a slug,,,,,,,,,,,,
+AppStrings.Value0IsMissingAName,{value0} is missing a name,,,,,,,,,,,,
+AppStrings.EditPostJamPage,Edit Post-Jam Page,,,,,,,,,,,,
+AppStrings.EditThePostJamVersionOfYourGamePage,Edit the post-jam version of your game page.,,,,,,,,,,,,
+AppStrings.D2jamComGValue0,d2jam.com/g/{value0},,,,,,,,,,,,
+AppStrings.ImportedFromAnExternalJam,Imported from an external jam,,,,,,,,,,,,
+AppStrings.External,External,,,,,,,,,,,,
+AppStrings.PlayableWebBuild,Playable web build,,,,,,,,,,,,
+AppStrings.UploadAZIPContainingAnIndexHtmlFileAndAllOfTheFilesYourBrowserGameNeedsTheBuildRunsIn,Upload a ZIP containing an index.html file and all of the files your browser game needs. The build runs in a restricted sandbox when players launch it. Use relative paths for assets inside the build.,,,,,,,,,,,,
+AppStrings.CheckingAndUploading,Checking and uploading…,,,,,,,,,,,,
+AppStrings.ReplaceWebBuildZIP,Replace web build ZIP,,,,,,,,,,,,
+AppStrings.ChooseWebBuildZIP,Choose web build ZIP,,,,,,,,,,,,
+AppStrings.ZIPOnly95MBArchive500MBExpanded1000Files,"ZIP only · 95 MB archive · 500 MB expanded · 1,000 files",,,,,,,,,,,,
+AppStrings.TheWebBuildZIPMustBe95MBOrSmaller,The web build ZIP must be 95 MB or smaller.,,,,,,,,,,,,
+AppStrings.WebBuildUploadedAndChecked,Web build uploaded and checked.,,,,,,,,,,,,
+AppStrings.TheWebBuildCouldNotBeUploaded,The web build could not be uploaded.,,,,,,,,,,,,
+AppStrings.GameAspectRatio,Game aspect ratio,,,,,,,,,,,,
+AppStrings.ChooseTheShapeThatBestMatchesTheGameWindow,Choose the shape that best matches the game window.,,,,,,,,,,,,
+AppStrings.FullscreenButton,Fullscreen button,,,,,,,,,,,,
+AppStrings.ShowAFullscreenControlInTheBottomRightCorner,Show a fullscreen control in the bottom-right corner.,,,,,,,,,,,,
+AppStrings.PlayableWebBuildPreview,Playable web build preview,,,,,,,,,,,,
+AppStrings.OpenGamePreviewInFullscreen,Open game preview in fullscreen,,,,,,,,,,,,
+AppStrings.ThisImportedGameStillUsesItsLegacyItchPlayerUploadAZIPAboveToReplaceItWithAHostedBuil,This imported game still uses its legacy itch player. Upload a ZIP above to replace it with a hosted build.,,,,,,,,,,,,
+AppStrings.RemoveWebBuild,Remove web build,,,,,,,,,,,,
+AppStrings.Web,Web,,,,,,,,,,,,
+AppStrings.Windows,Windows,,,,,,,,,,,,
+AppStrings.MacOS,MacOS,,,,,,,,,,,,
+AppStrings.Linux,Linux,,,,,,,,,,,,
+AppStrings.Other,Other,,,,,,,,,,,,
+AppStrings.Value0STeam2,{value0}'s Team,,,,,,,,,,,,
+AppStrings.Content2,content,,,,,,,,,,,,
+AppStrings.ScreenshotValue0,Screenshot #{value0},,,,,,,,,,,,
+AppStrings.MaxScreenshotsReached,Max screenshots reached,,,,,,,,,,,,
+AppStrings.AddScreenshot,Add screenshot,,,,,,,,,,,,
+AppStrings.AddEmotesRelatedToYourGameForPeopleToUseAroundTheSite,Add emotes related to your game for people to use around the site,,,,,,,,,,,,
+AppStrings.SaveYourGameBeforeAddingEmotes2,Save your game before adding emotes,,,,,,,,,,,,
+AppStrings.EmotePreview,Emote preview,,,,,,,,,,,,
+AppStrings.Victory,victory,,,,,,,,,,,,
+AppStrings.PreviewEdit,Preview & edit,,,,,,,,,,,,
+AppStrings.TimeToCompleteARun,Time to Complete a Run,,,,,,,,,,,,
+AppStrings.IfYourGameFeaturesMultipleRunsSuchAsARoguelikeHowLongAUserShouldExpectAnAverageRunOfT,"If your game features multiple runs (such as a roguelike), how long a user should expect an average run of the game to take. If your game has only one run, leave this unset",,,,,,,,,,,,
+AppStrings.TimeToBeatTheGame,Time to Beat the Game,,,,,,,,,,,,
+AppStrings.TimeTo100TheGame,Time to 100% the game,,,,,,,,,,,,
+AppStrings.AlbumThumbnail,Album Thumbnail,,,,,,,,,,,,
+AppStrings.SquareArtworkShownWithThisGameAposSMusic,Square artwork shown with this game's music.,,,,,,,,,,,,
+AppStrings.UploadAlbumThumbnail,Upload album thumbnail,,,,,,,,,,,,
+AppStrings.UntitledTrack,Untitled track,,,,,,,,,,,,
+AppStrings.Credits2,credits ·,,,,,,,,,,,,
+AppStrings.NoLicenseSelected,No license selected,,,,,,,,,,,,
+AppStrings.ChooseOne,Choose one,,,,,,,,,,,,
+AppStrings.ChooseAnyThatFit,Choose any that fit,,,,,,,,,,,,
+AppStrings.BPM2,BPM,,,,,,,,,,,,
+AppStrings.CC0,CC0,,,,,,,,,,,,
+AppStrings.UntitledAchievement,Untitled achievement,,,,,,,,,,,,
+AppStrings.NoDescriptionYet,No description yet,,,,,,,,,,,,
+AppStrings.DescribeHowPlayersEarnThisAchievement,Describe how players earn this achievement.,,,,,,,,,,,,
+AppStrings.UnsavedChanges,Unsaved changes,,,,,,,,,,,,
+AppStrings.PublishedGame,Published game,,,,,,,,,,,,
+AppStrings.GameDraft,Game draft,,,,,,,,,,,,
+AppStrings.SavingYourGame,Saving your game…,,,,,,,,,,,,
+AppStrings.SaveYourChangesBeforeLeavingThisPage,Save your changes before leaving this page.,,,,,,,,,,,,
+AppStrings.YourGameIsLiveYouCanKeepUpdatingItHere,Your game is live. You can keep updating it here.,,,,,,,,,,,,
+AppStrings.YourGameIsCurrentlyNotPublished,Your game is currently not published,,,,,,,,,,,,
+AppStrings.PreviewAndEditValue0,Preview and edit {value0},,,,,,,,,,,,
+AppStrings.ApplyChanges,Apply changes,,,,,,,,,,,,
+AppStrings.UntitledLeaderboard,Untitled leaderboard,,,,,,,,,,,,
+AppStrings.PreviewSampleEntries,Preview · Sample entries,,,,,,,,,,,,
+AppStrings.Player,Player,,,,,,,,,,,,
+AppStrings.Time,Time,,,,,,,,,,,,
+AppStrings.BestEntryPerPlayer,Best entry per player,,,,,,,,,,,,
+AppStrings.AllEntries,All entries,,,,,,,,,,,,
+AppStrings.Leaderboard3,leaderboard,,,,,,,,,,,,
+AppStrings.Leaderboards,leaderboards,,,,,,,,,,,,
+AppStrings.AddLeaderboard,Add leaderboard,,,,,,,,,,,,
+AppStrings.NoLeaderboardsYetAddOneToLetPlayersCompeteForScoresOrTimes,No leaderboards yet. Add one to let players compete for scores or times.,,,,,,,,,,,,
+AppStrings.LeaderboardValue0,Leaderboard {value0},,,,,,,,,,,,
+AppStrings.BestPerPlayer,Best per player,,,,,,,,,,,,
+AppStrings.Entries,entries,,,,,,,,,,,,
+AppStrings.EditLeaderboard,Edit leaderboard,,,,,,,,,,,,
+AppStrings.EGHighestScore,e.g. Highest score,,,,,,,,,,,,
+AppStrings.ScoringType,Scoring type,,,,,,,,,,,,
+AppStrings.OnlyShowEachPlayerSBestEntry,Only show each player’s best entry,,,,,,,,,,,,
+AppStrings.UseAWholeNumberFrom0To3ForDecimalPlaces,Use a whole number from 0 to 3 for decimal places.,,,,,,,,,,,,
+AppStrings.Value0Value13,{value0}{value1},,,,,,,,,,,,
+AppStrings.ViewScoreEvidence,View score evidence,,,,,,,,,,,,
+AppStrings.DeleteScore,Delete score,,,,,,,,,,,,
+AppStrings.LEADERBOARD,LEADERBOARD,,,,,,,,,,,,
+AppStrings.RanksOmitted,Ranks omitted,,,,,,,,,,,,
+AppStrings.MiddotMiddotMiddot,···,,,,,,,,,,,,
+AppStrings.BeTheFirstToSetAScore,Be the first to set a score,,,,,,,,,,,,
+AppStrings.SubmitScore2,Submit score,,,,,,,,,,,,
+AppStrings.ViewLeaderboard,View leaderboard,,,,,,,,,,,,
+AppStrings.NoScoresYet2,No scores yet,,,,,,,,,,,,
+AppStrings.ScoreEvidence,Score evidence,,,,,,,,,,,,
+AppStrings.ScoreEvidenceFromValue0,Score evidence from {value0},,,,,,,,,,,,
+AppStrings.LoadingGame,Loading game,,,,,,,,,,,,
+AppStrings.NoDescriptionProvided,No description provided.,,,,,,,,,,,,
+AppStrings.RATED,RATED,,,,,,,,,,,,
+AppStrings.Value0SThumbnail,{value0}'s thumbnail,,,,,,,,,,,,
+AppStrings.Value06,{value0},,,,,,,,,,,,
+AppStrings.SortedByValue0,Sorted by {value0},,,,,,,,,,,,
+AppStrings.Results,results),,,,,,,,,,,,
+AppStrings.AdvancedSearch,Advanced Search,,,,,,,,,,,,
+AppStrings.BrowseEntriesFromEveryJam,Browse entries from every jam,,,,,,,,,,,,
+AppStrings.ShowAllGameCategories,Show all game categories,,,,,,,,,,,,
+AppStrings.OnlyValue0Entries,Only {value0} entries,,,,,,,,,,,,
+AppStrings.From,From,,,,,,,,,,,,
+AppStrings.OfPlayersEarnedThis,% of players earned this,,,,,,,,,,,,
+AppStrings.TotalScores,total scores,,,,,,,,,,,,
+AppStrings.PasteAnItchIoGameLinkFirst,Paste an itch.io game link first.,,,,,,,,,,,,
+AppStrings.TheItchGameCouldNotBeImported,The itch game could not be imported.,,,,,,,,,,,,
+AppStrings.TheGameImportedButItsEditPageCouldNotBeOpened,"The game imported, but its edit page could not be opened.",,,,,,,,,,,,
+AppStrings.ItchGameImportedYouCanAddSongsAndDetailsNow,Itch game imported. You can add songs and details now.,,,,,,,,,,,,
+AppStrings.ImportAGame,Import a game,,,,,,,,,,,,
+AppStrings.ImportAGameFromAnItchIoJamToBeDisplayedOnTheSiteToListTheGameAndItsMusicAlongsideYour,Import a game from an itch.io jam to be displayed on the site to list the game and its music alongside your d2jam games.,,,,,,,,,,,,
+AppStrings.ItchIoGameLink,Itch.io game link,,,,,,,,,,,,
+AppStrings.ImportGame,Import game,,,,,,,,,,,,
+AppStrings.Builds,Builds:,,,,,,,,,,,,
+AppStrings.ChooseTheJamToAttach,Choose the jam to attach,,,,,,,,,,,,
+AppStrings.ThisControlsWhichJamArchiveTheGameAppearsUnder,This controls which jam archive the game appears under.,,,,,,,,,,,,
+AppStrings.JamPageLink,Jam page link,,,,,,,,,,,,
+AppStrings.NoJamLinkWasFoundPasteTheItchIoJamPageManually,No jam link was found. Paste the itch.io jam page manually.,,,,,,,,,,,,
+AppStrings.AddToProfile,Add to profile,,,,,,,,,,,,
+AppStrings.TheCommunityCenteredJam,The community-centered jam,,,,,,,,,,,,
+AppStrings.JamTimelineDragHorizontallyToViewMorePhases,Jam timeline. Drag horizontally to view more phases.,,,,,,,,,,,,
+AppStrings.UserAvatar,User avatar,,,,,,,,,,,,
+AppStrings.ImportAGameFromItchIo,Import a game from itch.io,,,,,,,,,,,,
+AppStrings.ImportGame2,Import Game,,,,,,,,,,,,
+AppStrings.ViewTheResultsOfTheLastD2Jam,View the results of the last D2Jam,,,,,,,,,,,,
+AppStrings.SubmitPossibleThemesForTheJam,Submit possible themes for the jam,,,,,,,,,,,,
+AppStrings.VoteOnSubmittedJamThemes,Vote on submitted jam themes,,,,,,,,,,,,
+AppStrings.VoteForTheFinalJamTheme,Vote for the final jam theme,,,,,,,,,,,,
+AppStrings.ViewYourTeamForTheJam,View your team for the jam,,,,,,,,,,,,
+AppStrings.FindATeamForTheJam,Find a team for the jam,,,,,,,,,,,,
+AppStrings.MarkThatYouAreParticipatingInTheJam,Mark that you are participating in the jam,,,,,,,,,,,,
+AppStrings.AllSubmittedGamesOnTheWebsite,All submitted games on the website,,,,,,,,,,,,
+AppStrings.ChatWithOtherCommunityMembers,Chat with other community members,,,,,,,,,,,,
+AppStrings.BrowseAllCommunitySiteThemes,Browse all community site themes,,,,,,,,,,,,
+AppStrings.BrowseAllThemes,Browse all themes,,,,,,,,,,,,
+AppStrings.ChooseYourSiteLanguage,Choose your site language,,,,,,,,,,,,
+AppStrings.ViewAllLanguages,View all languages,,,,,,,,,,,,
+AppStrings.GoToARandomGame,Go to a random game,,,,,,,,,,,,
+AppStrings.NewArticles,New articles,,,,,,,,,,,,
+AppStrings.AllSubmittedMusicOnTheWebsite,All submitted music on the website,,,,,,,,,,,,
+AppStrings.GoToTheGitHubRepository,Go to the GitHub repository,,,,,,,,,,,,
+AppStrings.SignUp,Sign Up,,,,,,,,,,,,
+AppStrings.ChooseLanguage,Choose language,,,,,,,,,,,,
+AppStrings.S,S,,,,,,,,,,,,
+AppStrings.AlbumThumbnail2,Album thumbnail,,,,,,,,,,,,
+AppStrings.ThisNewsArticleIsUnavailable,This news article is unavailable.,,,,,,,,,,,,
+AppStrings.ViewTheForumPost,View the forum post,,,,,,,,,,,,
+AppStrings.AllNews,All news,,,,,,,,,,,,
+AppStrings.PublishedValue0,Published {value0},,,,,,,,,,,,
+AppStrings.MinRead,min read,,,,,,,,,,,,
+AppStrings.Comment,comment,,,,,,,,,,,,
+AppStrings.Comments2,comments,,,,,,,,,,,,
+AppStrings.NewsArticleNavigation,News article navigation,,,,,,,,,,,,
+AppStrings.PreviousArticle,Previous article,,,,,,,,,,,,
+AppStrings.NextArticle,Next article,,,,,,,,,,,,
+AppStrings.RelatedNews,Related news,,,,,,,,,,,,
+AppStrings.Discussion,Discussion,,,,,,,,,,,,
+AppStrings.CommentPosted,Comment posted,,,,,,,,,,,,
+AppStrings.CouldNotPostComment,Could not post comment,,,,,,,,,,,,
+AppStrings.LogInToJoinTheDiscussion,Log in to join the discussion,,,,,,,,,,,,
+AppStrings.Latest,Latest,,,,,,,,,,,,
+AppStrings.NewsCouldNotBeLoadedRightNow,News could not be loaded right now.,,,,,,,,,,,,
+AppStrings.ThereIsNoNewsToShareYet,There is no news to share yet.,,,,,,,,,,,,
+AppStrings.FilterNews,Filter news,,,,,,,,,,,,
+AppStrings.Show,Show:,,,,,,,,,,,,
+AppStrings.LatestNews,Latest news,,,,,,,,,,,,
+AppStrings.MoreNews,More news,,,,,,,,,,,,
+AppStrings.Story,story,,,,,,,,,,,,
+AppStrings.Stories,stories,,,,,,,,,,,,
+AppStrings.LoadMoreNews,Load more news,,,,,,,,,,,,
+AppStrings.NewsLinkCopied,News link copied,,,,,,,,,,,,
+AppStrings.Share,Share,,,,,,,,,,,,
+AppStrings.ReleasedAGame,released a game,,,,,,,,,,,,
+AppStrings.TrendingPostsFromTheLast24Hours,Trending posts from the last 24 hours,,,,,,,,,,,,
+AppStrings.MostLikedPostsFromTheLastWeek,Most liked posts from the last week,,,,,,,,,,,,
+AppStrings.MostLikedPostsOfAllTime,Most liked posts of all time,,,,,,,,,,,,
+AppStrings.Value0ActiveTagFilters,{value0} active tag filters,,,,,,,,,,,,
+AppStrings.AllTags,All tags,,,,,,,,,,,,
+AppStrings.Value0Value14,{value0} — {value1},,,,,,,,,,,,
+AppStrings.TagFiltering,Tag filtering,,,,,,,,,,,,
+AppStrings.ChooseWhichTagsShouldAppearInTheFeed,Choose which tags should appear in the feed,,,,,,,,,,,,
+AppStrings.SearchTags,Search tags,,,,,,,,,,,,
+AppStrings.LeftClickToInclude,Left-click to include,,,,,,,,,,,,
+AppStrings.RightClickToExclude,Right-click to exclude,,,,,,,,,,,,
+AppStrings.ClickTheSameChoiceAgainToClearIt,Click the same choice again to clear it,,,,,,,,,,,,
+AppStrings.NoTagsMatch,No tags match “,,,,,,,,,,,,
+AppStrings.CreatePost,Create post,,,,,,,,,,,,
+AppStrings.ReadMore,Read more,,,,,,,,,,,,
+AppStrings.RecapIsNowPublic,Recap is now public,,,,,,,,,,,,
+AppStrings.RecapIsNowPrivate,Recap is now private,,,,,,,,,,,,
+AppStrings.ThisUser,This user,,,,,,,,,,,,
+AppStrings.Value07," • {value0}",,,,,,,,,,,,
+AppStrings.SelectJam,Select jam,,,,,,,,,,,,
+AppStrings.ARecapOfWhatHappenedRelatingToYouThisGameJam,A recap of what happened relating to you this game jam!,,,,,,,,,,,,
+AppStrings.ARecapOfStandoutThingsFromThisGameJam,A recap of standout things from this game jam!,,,,,,,,,,,,
+AppStrings.Person,person,,,,,,,,,,,,
+AppStrings.People,people,,,,,,,,,,,,
+AppStrings.Had,had,,,,,,,,,,,,
+AppStrings.PersonHad,person had,,,,,,,,,,,,
+AppStrings.PeopleHad,people had,,,,,,,,,,,,
+AppStrings.CheckWhatPeopleLikedAndDidnTLikeAboutTheGameAndGoThroughAndMakeImprovementsBasedOnHow,"Check what people liked and didn't like about the game and go through and make improvements based on how you want to improve it! There is now an optional post-jam refinement period you can use to keep working on your game, prepare materials, and get everything ready to be shown outside the jam. After that, there is a separate post-jam rating period to go through and play updated games.",,,,,,,,,,,,
+AppStrings.SelectJam2,Select Jam,,,,,,,,,,,,
+AppStrings.Value0Art,{value0} art,,,,,,,,,,,,
+AppStrings.For,for,,,,,,,,,,,,
+AppStrings.FailedToRevokeGameToken,Failed to revoke game token,,,,,,,,,,,,
+AppStrings.GameTokenRevoked,Game token revoked,,,,,,,,,,,,
+AppStrings.GameTokens,Game Tokens,,,,,,,,,,,,
+AppStrings.DevicesLinkedThroughTheGameClientThatCanSubmitScoresAndAchievementsOnYourBehalfRevoke,Devices linked through the game client that can submit scores and achievements on your behalf. Revoke any you don't recognize.,,,,,,,,,,,,
+AppStrings.LoadingGameTokens,Loading game tokens...,,,,,,,,,,,,
+AppStrings.NoGameTokensLinkedYet,No game tokens linked yet.,,,,,,,,,,,,
+AppStrings.Created,Created,,,,,,,,,,,,
+AppStrings.LastUsedValue0,Last used {value0},,,,,,,,,,,,
+AppStrings.NeverUsed,Never used,,,,,,,,,,,,
+AppStrings.Revoke,Revoke,,,,,,,,,,,,
+AppStrings.SoundtrackTracks,Soundtrack tracks,,,,,,,,,,,,
+AppStrings.RecentAchievements,Recent Achievements,,,,,,,,,,,,
+AppStrings.RecentAchievementsCouldnAposTBeLoaded,Recent achievements couldn't be loaded.,,,,,,,,,,,,
+AppStrings.OpenValue0SProfile,Open {value0}'s profile,,,,,,,,,,,,
+AppStrings.Earned,earned,,,,,,,,,,,,
+AppStrings.D2JamBanner,D2Jam banner,,,,,,,,,,,,
+AppStrings.Discord,Discord,,,,,,,,,,,,
+AppStrings.JoinDown2JamOnDiscord,Join Down2Jam on Discord,,,,,,,,,,,,
+AppStrings.Bluesky,Bluesky,,,,,,,,,,,,
+AppStrings.FollowDown2JamOnBluesky,Follow Down2Jam on Bluesky,,,,,,,,,,,,
+AppStrings.YouTube,YouTube,,,,,,,,,,,,
+AppStrings.WatchDown2JamOnYouTube,Watch Down2Jam on YouTube,,,,,,,,,,,,
+AppStrings.Instagram,Instagram,,,,,,,,,,,,
+AppStrings.FollowDown2JamOnInstagram,Follow Down2Jam on Instagram,,,,,,,,,,,,
+AppStrings.GitHub,GitHub,,,,,,,,,,,,
+AppStrings.ViewDown2JamOnGitHub,View Down2Jam on GitHub,,,,,,,,,,,,
+AppStrings.Forgejo,Forgejo,,,,,,,,,,,,
+AppStrings.ViewDown2JamOnForgejo,View Down2Jam on Forgejo,,,,,,,,,,,,
+AppStrings.LiberaChatDown2jam,Libera.Chat #down2jam,,,,,,,,,,,,
+AppStrings.JoinTheDown2JamChannelOnLiberaChat,Join the Down2Jam channel on Libera.Chat,,,,,,,,,,,,
+AppStrings.RecentScores,Recent Scores,,,,,,,,,,,,
+AppStrings.RecentScoresCouldnAposTBeLoaded,Recent scores couldn't be loaded.,,,,,,,,,,,,
+AppStrings.Scored,scored,,,,,,,,,,,,
+AppStrings.FeaturedScreenshots,Featured Screenshots,,,,,,,,,,,,
+AppStrings.ToScreenshotsPage,To Screenshots Page,,,,,,,,,,,,
+AppStrings.PostJam," · Post-Jam",,,,,,,,,,,,
+AppStrings.Jam2," · Jam",,,,,,,,,,,,
+AppStrings.Value08," {value0}",,,,,,,,,,,,
+AppStrings.PauseTrack,Pause track,,,,,,,,,,,,
+AppStrings.PlayTrack,Play track,,,,,,,,,,,,
+AppStrings.DownloadTrack2,Download track,,,,,,,,,,,,
+AppStrings.FeaturedStreams,Featured Streams,,,,,,,,,,,,
+AppStrings.Value0STwitchStream,{value0}'s Twitch stream,,,,,,,,,,,,
+AppStrings.PreviousStream2,Previous stream,,,,,,,,,,,,
+AppStrings.OpenOnTwitch,Open on Twitch,,,,,,,,,,,,
+AppStrings.NextStream2,Next stream,,,,,,,,,,,,
+AppStrings.WatchValue0STwitchStream,Watch {value0}'s Twitch stream,,,,,,,,,,,,
+AppStrings.FeaturedVideos,Featured Videos,,,,,,,,,,,,
+AppStrings.PreviousVideo,Previous video,,,,,,,,,,,,
+AppStrings.NextVideo,Next video,,,,,,,,,,,,
+AppStrings.WatchValue0OnYouTube,Watch {value0} on YouTube,,,,,,,,,,,,
+AppStrings.MoreOnYouTube,More on YouTube,,,,,,,,,,,,
+AppStrings.CouldNotCreateTheVoteImage,Could not create the vote image,,,,,,,,,,,,
+AppStrings.ShowEliminationVoteProgress,Show elimination vote progress,,,,,,,,,,,,
+AppStrings.VoteProgressValue0YesValue1NoValue2SkippedValue3Remaining,"Vote progress: {value0} yes, {value1} no, {value2} skipped, {value3} remaining",,,,,,,,,,,,
+AppStrings.Yes2,yes,,,,,,,,,,,,
+AppStrings.On,on,,,,,,,,,,,,
+AppStrings.No2,no,,,,,,,,,,,,
+AppStrings.Skip2,skip,,,,,,,,,,,,
+AppStrings.HelpNarrowTheSubmittedThemesDownForTheFinalVotingRound,Help narrow the submitted themes down for the final voting round.,,,,,,,,,,,,
+AppStrings.ShowClarifications2,Show clarifications,,,,,,,,,,,,
+AppStrings.CreatingImage,Creating image…,,,,,,,,,,,,
+AppStrings.ShareVotes,Share votes,,,,,,,,,,,,
+AppStrings.Theme2,theme,,,,,,,,,,,,
+AppStrings.Themes2,themes,,,,,,,,,,,,
+AppStrings.Reviewed,reviewed,,,,,,,,,,,,
+AppStrings.Value0Value15,{value0}. {value1},,,,,,,,,,,,
+AppStrings.SelectATheme,Select a theme,,,,,,,,,,,,
+AppStrings.JoinJamToVote,Join Jam to vote,,,,,,,,,,,,
+AppStrings.SignInToVote,Sign in to vote,,,,,,,,,,,,
+AppStrings.JoinToVote,Join to vote,,,,,,,,,,,,
+AppStrings.PreviousTheme,Previous theme,,,,,,,,,,,,
+AppStrings.NextTheme,Next theme,,,,,,,,,,,,
+AppStrings.VoteValue0,Vote: {value0},,,,,,,,,,,,
+AppStrings.NoThemesWereFound2,No themes were found.,,,,,,,,,,,,
+AppStrings.AnUnexpectedErrorOccurred,An unexpected error occurred.,,,,,,,,,,,,
+AppStrings.SignInAndJoinTheJamToSuggestATheme,Sign in and join the jam to suggest a theme.,,,,,,,,,,,,
+AppStrings.YouCanOptionallyDetailWhyDoYouThinkThisIsAGoodThemeAndOrGiveExamplesOfGamesThatCanBeM,"You can optionally detail why do you think this is a good theme and/or give examples of games that can be made with it. For example, with the theme echoes people might take that as things bouncing, audio repetition, visual repetition, story echoes, previous actions affecting future situations, areas that change over time, etc.",,,,,,,,,,,,
+AppStrings.Submitting2,Submitting...,,,,,,,,,,,,
+AppStrings.SubmitSuggestion,Submit Suggestion,,,,,,,,,,,,
+AppStrings.NoClarification,No clarification,,,,,,,,,,,,
+AppStrings.VoteForTheThemeOfTheJamLikesAdd1AndYourTwoStarsAdd3Each,Vote for the theme of the jam. Likes add +1 and your two stars add +3 each.,,,,,,,,,,,,
+AppStrings.Like1,Like (+1),,,,,,,,,,,,
+AppStrings.Star3,Star (+3),,,,,,,,,,,,
+AppStrings.FailedToUpdateTrack,Failed to update track,,,,,,,,,,,,
+AppStrings.At,at,,,,,,,,,,,,
+AppStrings.CommentAtValue0,Comment at {value0},,,,,,,,,,,,
+
+AppStrings.AMeetupAnnouncementOrOtherGeneralEvent,"A meetup, announcement, or other general event",,,,,,,,,,,,
+AppStrings.DrawingArtForAGameInTheJam,Drawing art for a game in the jam,,,,,,,,,,,,
+AppStrings.BuildingAGameForTheJam,Building a game for the jam,,,,,,,,,,,,
+AppStrings.PlayingOrShowcasingGamesFromTheCommunity,Playing or showcasing games from the community,,,,,,,,,,,,
+AppStrings.ATournamentChallengeOrScoreCompetition,"A tournament, challenge, or score competition",,,,,,,,,,,,
+AppStrings.WorkingOnTheDown2JamSiteOrOtherWebContent,Working on the Down2Jam site or other web content,,,,,,,,,,,,
+AppStrings.VR,VR,,,,,,,,,,,,
+AppStrings.ODA,ODA,,,,,,,,,,,,
+AppStrings.CommunityPostsAnnouncementsAndUpdatesFromDown2Jam,"Community posts, announcements, and updates from Down2Jam.",,,,,,,,,,,,
+AppStrings.LearnAboutDown2JamTheCommunityCenteredGameJam,"Learn about Down2Jam, the community centered game jam.",,,,,,,,,,,,
+AppStrings.BrowseGamesSubmittedToDown2Jam,Browse games submitted to Down2Jam.,,,,,,,,,,,,
+AppStrings.ListenToMusicSubmittedForDown2JamGames,Listen to music submitted for Down2Jam games.,,,,,,,,,,,,
+AppStrings.ExploreDown2JamResultsWinnersRatingsAndRankings,"Explore Down2Jam results, winners, ratings, and rankings.",,,,,,,,,,,,
+AppStrings.ListenToDown2JamMusicRadio,Listen to Down2Jam music radio.,,,,,,,,,,,,
+AppStrings.ImportAnItchIoJamGameAndAddItToTheGameArchive,Import an itch.io jam game and add it to the game archive.,,,,,,,,,,,,
+AppStrings.BrowseScreenshotsFromDown2JamGames,Browse screenshots from Down2Jam games.,,,,,,,,,,,,
+AppStrings.MakeCollaborativePixelArtQuiltsWithTheDown2JamCommunity,Make collaborative pixel art quilts with the Down2Jam community.,,,,,,,,,,,,
+AppStrings.BrowseCuratedCollectionsOfDown2JamGamesMusicAndPosts,"Browse curated collections of Down2Jam games, music, and posts.",,,,,,,,,,,,
+AppStrings.FindTeammatesForTheNextDown2Jam,Find teammates for the next Down2Jam.,,,,,,,,,,,,
+AppStrings.SuggestThemesForAnUpcomingDown2Jam,Suggest themes for an upcoming Down2Jam.,,,,,,,,,,,,
+AppStrings.HelpNarrowDownDown2JamThemeSuggestions,Help narrow down Down2Jam theme suggestions.,,,,,,,,,,,,
+AppStrings.VoteOnThemesForTheNextDown2Jam,Vote on themes for the next Down2Jam.,,,,,,,,,,,,
+AppStrings.SiteThemes2,Site Themes,,,,,,,,,,,,
+AppStrings.BrowseAndPreviewTheAvailableDown2JamSiteThemes,Browse and preview the available Down2Jam site themes.,,,,,,,,,,,,
+AppStrings.BrowseAndChooseYourDown2JamSiteLanguage,Browse and choose your Down2Jam site language.,,,,,,,,,,,,
+AppStrings.ReadDown2JamSiteDocumentationAndGuides,Read Down2Jam site documentation and guides.,,,,,,,,,,,,
+AppStrings.DownloadAndViewDown2JamPressKitMaterials,Download and view Down2Jam press kit materials.,,,,,,,,,,,,
+AppStrings.SupportDown2JamAndItsCommunity,Support Down2Jam and its community.,,,,,,,,,,,,
+AppStrings.WhyDown2Jam,Why Down2Jam,,,,,,,,,,,,
+AppStrings.WhyDown2JamExistsAndHowItSupportsCommunityGameJams,Why Down2Jam exists and how it supports community game jams.,,,,,,,,,,,,
+AppStrings.Socials,Socials,,,,,,,,,,,,
+AppStrings.FindDown2JamCommunityLinksAndSocialChannels,Find Down2Jam community links and social channels.,,,,,,,,,,,,
+AppStrings.TryToGuessWhatRandomGameFromDown2JamTheSiteIsThinkingOf,Try to guess what random game from Down2Jam the site is thinking of!,,,,,,,,,,,,
+AppStrings.ViewDown2JamRecapStatsAndHighlights,View Down2Jam recap stats and highlights.,,,,,,,,,,,,
+AppStrings.EventsCurrentlyInProgress,Events currently in progress,,,,,,,,,,,,
+AppStrings.EventsComingUpNext,Events coming up next,,,,,,,,,,,,
+AppStrings.EventsThatHaveWrappedUp,Events that have wrapped up,,,,,,,,,,,,
+
+AppStrings.CommunityEvent,Community event,,,,,,,,,,,,
+AppStrings.ArtStream,Art stream,,,,,,,,,,,,
+AppStrings.GameDevelopmentStream,Game development stream,,,,,,,,,,,,
+AppStrings.GameShowcaseStream,Game showcase stream,,,,,,,,,,,,
+AppStrings.TournamentStream,Tournament stream,,,,,,,,,,,,
+AppStrings.WebDevelopmentStream,Web development stream,,,,,,,,,,,,
+AppStrings.Details,Details,,,,,,,,,,,,
+AppStrings.Stats,Stats,,,,,,,,,,,,
+AppStrings.Value0CommentedOnValue1,{value0} commented on {value1},,,,,,,,,,,,
+AppStrings.Value0RepliedOnValue1,{value0} replied on {value1},,,,,,,,,,,,
+AppStrings.Value0RepliedToYourComment,{value0} replied to your comment,,,,,,,,,,,,
+AppStrings.Upcoming,Upcoming,,,,,,,,,,,,
+AppStrings.Current,Current,,,,,,,,,,,,
+AppStrings.Past,Past,,,,,,,,,,,,
+AppStrings.HappeningNow,Happening now,,,,,,,,,,,,
+AppStrings.HighestScoreWins,Highest score wins,,,,,,,,,,,,
+AppStrings.LowestScoreWins,Lowest score wins,,,,,,,,,,,,
+AppStrings.FastestTimeWins,Fastest time wins,,,,,,,,,,,,
+AppStrings.LongestTimeWins,Longest time wins,,,,,,,,,,,,
+AppStrings.MacOS2,macOS,,,,,,,,,,,,
+AppStrings.Mobile,Mobile,,,,,,,,,,,,
+AppStrings.AllCategories,All Categories,,,,,,,,,,,,
+AppStrings.HideOwnGame,Hide Own Game,,,,,,,,,,,,
+AppStrings.HideRatedGames,Hide Rated Games,,,,,,,,,,,,
+AppStrings.MoveOwnGameToEnd,Move Own Game To End,,,,,,,,,,,,
+AppStrings.MoveRatedGamesToEnd,Move Rated Games To End,,,,,,,,,,,,
+AppStrings.Hot,Hot,,,,,,,,,,,,
+AppStrings.Value0InValue1,{value0} in {value1},,,,,,,,,,,,
+
+AppStrings.OK,OK,,,,,,,,,,,,
+AppStrings.PreviousTrack,Previous track,,,,,,,,,,,,
+AppStrings.NextTrack,Next track,,,,,,,,,,,,
+AppStrings.ChangeRepeatMode,Change repeat mode,,,,,,,,,,,,
+AppStrings.ExpandPlayer,Expand player,,,,,,,,,,,,
+AppStrings.CollapsePlayer,Collapse player,,,,,,,,,,,,
+AppStrings.Someone,Someone,,,,,,,,,,,,
+Language.Select,Select language,,,,,,,,,,,,
+
+AppStrings.CouldNotSaveChanges,Could not save changes.,,,,,,,,,,,,
+AppStrings.CouldNotLoadReports,Could not load reports.,,,,,,,,,,,,
+AppStrings.PleaseShortenTheReportTo2000Characters,"Please shorten the report to 2,000 characters.",,,,,,,,,,,,
+AppStrings.CouldNotSubmitReport2,Could not submit report.,,,,,,,,,,,,
+AppStrings.FailedToLoadJamRecap,Failed to load jam recap.,,,,,,,,,,,,
+Countdown.JamEndsIn,Jam ends in,,,,,,,,,,,,
+Countdown.SubmissionsEndIn,Submissions end in,,,,,,,,,,,,
+Countdown.RatingEndsIn,Rating ends in,,,,,,,,,,,,
+Countdown.RefinementEndsIn,Post-jam refinement ends in,,,,,,,,,,,,
+Countdown.PostJamRatingEndsIn,Post-jam rating ends in,,,,,,,,,,,,
+Countdown.Ago,{duration} ago,,,,,,,,,,,,
+Countdown.Day,{count} day,,,,,,,,,,,,
+Countdown.Days,{count} days,,,,,,,,,,,,
+Countdown.Hour,{count} hour,,,,,,,,,,,,
+Countdown.Hours,{count} hours,,,,,,,,,,,,
+Countdown.Minute,{count} minute,,,,,,,,,,,,
+Countdown.Minutes,{count} minutes,,,,,,,,,,,,
+Countdown.Second,{count} second,,,,,,,,,,,,
+Countdown.Seconds,{count} seconds,,,,,,,,,,,,
+
+AppStrings.EndsIn,Ends in,,,,,,,,,,,,
+AppStrings.StartsIn,Starts in,,,,,,,,,,,,
+SystemLabels.2d,2d,,,,,,,,,,,,
+SystemLabels.3d,3d,,,,,,,,,,,,
+SystemLabels.3dsmax,3dsMax,,,,,,,,,,,,
+SystemLabels.abletonlive,AbletonLive,,,,,,,,,,,,
+SystemLabels.action,Action,,,,,,,,,,,,
+SystemLabels.adventure,Adventure,,,,,,,,,,,,
+SystemLabels.affinitydesigner,AffinityDesigner,,,,,,,,,,,,
+SystemLabels.allrightsreserved,All rights reserved,,,,,,,,,,,,
+SystemLabels.ambient,Ambient,,,,,,,,,,,,
+SystemLabels.appstore,AppStore,,,,,,,,,,,,
+SystemLabels.ardour,Ardour,,,,,,,,,,,,
+SystemLabels.arranger,Arranger,,,,,,,,,,,,
+SystemLabels.art,Art,,,,,,,,,,,,
+SystemLabels.artsoftware,Art Software,,,,,,,,,,,,
+SystemLabels.aseprite,Aseprite,,,,,,,,,,,,
+SystemLabels.audacity,Audacity,,,,,,,,,,,,
+SystemLabels.battle,Battle,,,,,,,,,,,,
+SystemLabels.battleroyale,Battleroyale,,,,,,,,,,,,
+SystemLabels.beatemup,Beatemup,,,,,,,,,,,,
+SystemLabels.beepbox,BeepBox,,,,,,,,,,,,
+SystemLabels.bevy,Bevy,,,,,,,,,,,,
+SystemLabels.bitsy,Bitsy,,,,,,,,,,,,
+SystemLabels.bitwigstudio,BitwigStudio,,,,,,,,,,,,
+SystemLabels.blender,Blender,,,,,,,,,,,,
+SystemLabels.blockbench,Blockbench,,,,,,,,,,,,
+SystemLabels.boscaceoil,BoscaCeoil,,,,,,,,,,,,
+SystemLabels.boss,Boss,,,,,,,,,,,,
+SystemLabels.bulletheaven,Bulletheaven,,,,,,,,,,,,
+SystemLabels.bullethell,Bullethell,,,,,,,,,,,,
+SystemLabels.cakewalk,Cakewalk,,,,,,,,,,,,
+SystemLabels.calm,Calm,,,,,,,,,,,,
+SystemLabels.cardgame,Cardgame,,,,,,,,,,,,
+SystemLabels.chiptune,Chiptune,,,,,,,,,,,,
+SystemLabels.classical,Classical,,,,,,,,,,,,
+SystemLabels.clickteam,Clickteam,,,,,,,,,,,,
+SystemLabels.clipstudiopaint,ClipStudioPaint,,,,,,,,,,,,
+SystemLabels.cocoscreator,CocosCreator,,,,,,,,,,,,
+SystemLabels.composer,Composer,,,,,,,,,,,,
+SystemLabels.construct3,Construct3,,,,,,,,,,,,
+SystemLabels.credits,Credits,,,,,,,,,,,,
+SystemLabels.cryengine,CryEngine,,,,,,,,,,,,
+SystemLabels.cubase,Cubase,,,,,,,,,,,,
+SystemLabels.cute,Cute,,,,,,,,,,,,
+SystemLabels.cutscene,Cutscene,,,,,,,,,,,,
+SystemLabels.d2jam,D2Jam,,,,,,,,,,,,
+SystemLabels.dark,Dark,,,,,,,,,,,,
+SystemLabels.defold,Defold,,,,,,,,,,,,
+SystemLabels.development,Development,,,,,,,,,,,,
+SystemLabels.devlog,Devlog,,,,,,,,,,,,
+SystemLabels.digitalart,DigitalArt,,,,,,,,,,,,
+SystemLabels.dreamy,Dreamy,,,,,,,,,,,,
+SystemLabels.electronic,Electronic,,,,,,,,,,,,
+SystemLabels.energetic,Energetic,,,,,,,,,,,,
+SystemLabels.epicgamesstore,EpicGamesStore,,,,,,,,,,,,
+SystemLabels.experimental,Experimental,,,,,,,,,,,,
+SystemLabels.exploration,Exploration,,,,,,,,,,,,
+SystemLabels.flstudio,FLStudio,,,,,,,,,,,,
+SystemLabels.famistudio,FamiStudio,,,,,,,,,,,,
+SystemLabels.fighting,Fighting,,,,,,,,,,,,
+SystemLabels.flaxengine,FlaxEngine,,,,,,,,,,,,
+SystemLabels.flickgame,Flickgame,,,,,,,,,,,,
+SystemLabels.folk,Folk,,,,,,,,,,,,
+SystemLabels.furnacetracker,FurnaceTracker,,,,,,,,,,,,
+SystemLabels.gbstudio,GBStudio,,,,,,,,,,,,
+SystemLabels.gdevelop,GDevelop,,,,,,,,,,,,
+SystemLabels.gimp,GIMP,,,,,,,,,,,,
+SystemLabels.glsl,GLSL,,,,,,,,,,,,
+SystemLabels.gog,GOG,,,,,,,,,,,,
+SystemLabels.gameenginesframeworks,Game Engines / Frameworks,,,,,,,,,,,,
+SystemLabels.gameassets,GameAssets,,,,,,,,,,,,
+SystemLabels.gamedesign,GameDesign,,,,,,,,,,,,
+SystemLabels.gamejolt,GameJolt,,,,,,,,,,,,
+SystemLabels.gamemaker,GameMaker,,,,,,,,,,,,
+SystemLabels.gamedev,Gamedev,,,,,,,,,,,,
+SystemLabels.gamejam,Gamejam,,,,,,,,,,,,
+SystemLabels.gameover,Gameover,,,,,,,,,,,,
+SystemLabels.garageband,GarageBand,,,,,,,,,,,,
+SystemLabels.general,General,,,,,,,,,,,,
+SystemLabels.genre,Genre,,,,,,,,,,,,
+SystemLabels.godot,Godot,,,,,,,,,,,,
+SystemLabels.googleplay,GooglePlay,,,,,,,,,,,,
+SystemLabels.happy,Happy,,,,,,,,,,,,
+SystemLabels.haxe,Haxe,,,,,,,,,,,,
+SystemLabels.haxeflixel,HaxeFlixel,,,,,,,,,,,,
+SystemLabels.hiphop,Hiphop,,,,,,,,,,,,
+SystemLabels.horror,Horror,,,,,,,,,,,,
+SystemLabels.humblebundle,HumbleBundle,,,,,,,,,,,,
+SystemLabels.idle,Idle,,,,,,,,,,,,
+SystemLabels.illustrator,Illustrator,,,,,,,,,,,,
+SystemLabels.imin,ImIn,,,,,,,,,,,,
+SystemLabels.incremental,Incremental,,,,,,,,,,,,
+SystemLabels.inkscape,Inkscape,,,,,,,,,,,,
+SystemLabels.instrumentalist,Instrumentalist,,,,,,,,,,,,
+SystemLabels.introduction,Introduction,,,,,,,,,,,,
+SystemLabels.itch,Itch,,,,,,,,,,,,
+SystemLabels.jazz,Jazz,,,,,,,,,,,,
+SystemLabels.krita,Krita,,,,,,,,,,,,
+SystemLabels.lmms,LMMS,,,,,,,,,,,,
+SystemLabels.libresprite,LibreSprite,,,,,,,,,,,,
+SystemLabels.lofi,Lofi,,,,,,,,,,,,
+SystemLabels.logicpro,LogicPro,,,,,,,,,,,,
+SystemLabels.loop,Loop,,,,,,,,,,,,
+SystemLabels.looping,Looping,,,,,,,,,,,,
+SystemLabels.love2d,Love2D,,,,,,,,,,,,
+SystemLabels.lowpoly,LowPoly,,,,,,,,,,,,
+SystemLabels.lyricist,Lyricist,,,,,,,,,,,,
+SystemLabels.magicavoxel,MagicaVoxel,,,,,,,,,,,,
+SystemLabels.mastering,Mastering,,,,,,,,,,,,
+SystemLabels.maya,Maya,,,,,,,,,,,,
+SystemLabels.memes,Memes,,,,,,,,,,,,
+SystemLabels.menu,Menu,,,,,,,,,,,,
+SystemLabels.metal,Metal,,,,,,,,,,,,
+SystemLabels.microsoftstore,MicrosoftStore,,,,,,,,,,,,
+SystemLabels.mischevious,Mischevious,,,,,,,,,,,,
+SystemLabels.mixing,Mixing,,,,,,,,,,,,
+SystemLabels.mmo,Mmo,,,,,,,,,,,,
+SystemLabels.monogame,MonoGame,,,,,,,,,,,,
+SystemLabels.mood,Mood,,,,,,,,,,,,
+SystemLabels.multiplayer,Multiplayer,,,,,,,,,,,,
+SystemLabels.musescore,MuseScore,,,,,,,,,,,,
+SystemLabels.music,Music,,,,,,,,,,,,
+SystemLabels.musicsoftware,Music Software,,,,,,,,,,,,
+SystemLabels.mysterious,Mysterious,,,,,,,,,,,,
+SystemLabels.mystery,Mystery,,,,,,,,,,,,
+SystemLabels.newgrounds,Newgrounds,,,,,,,,,,,,
+SystemLabels.nintendoeshop,NintendoEShop,,,,,,,,,,,,
+SystemLabels.o3de,O3DE,,,,,,,,,,,,
+SystemLabels.oneshot,One-shot,,,,,,,,,,,,
+SystemLabels.openmpt,OpenMPT,,,,,,,,,,,,
+SystemLabels.orchestral,Orchestral,,,,,,,,,,,,
+SystemLabels.phaser,Phaser,,,,,,,,,,,,
+SystemLabels.photoshop,Photoshop,,,,,,,,,,,,
+SystemLabels.pico8,Pico8,,,,,,,,,,,,
+SystemLabels.pixelart,PixelArt,,,,,,,,,,,,
+SystemLabels.pixelorama,Pixelorama,,,,,,,,,,,,
+SystemLabels.platformer,Platformer,,,,,,,,,,,,
+SystemLabels.playcanvas,PlayCanvas,,,,,,,,,,,,
+SystemLabels.playstationstore,PlayStationStore,,,,,,,,,,,,
+SystemLabels.pointandclick,Pointandclick,,,,,,,,,,,,
+SystemLabels.pop,Pop,,,,,,,,,,,,
+SystemLabels.postmortem,PostMortem,,,,,,,,,,,,
+SystemLabels.protools,ProTools,,,,,,,,,,,,
+SystemLabels.procreate,Procreate,,,,,,,,,,,,
+SystemLabels.producer,Producer,,,,,,,,,,,,
+SystemLabels.puzzle,Puzzle,,,,,,,,,,,,
+SystemLabels.puzzlescript,PuzzleScript,,,,,,,,,,,,
+SystemLabels.pygame,Pygame,,,,,,,,,,,,
+SystemLabels.rpgmaker,RPGMaker,,,,,,,,,,,,
+SystemLabels.racing,Racing,,,,,,,,,,,,
+SystemLabels.reaper,Reaper,,,,,,,,,,,,
+SystemLabels.reason,Reason,,,,,,,,,,,,
+SystemLabels.relaxing,Relaxing,,,,,,,,,,,,
+SystemLabels.renoise,Renoise,,,,,,,,,,,,
+SystemLabels.renpy,Renpy,,,,,,,,,,,,
+SystemLabels.retro,Retro,,,,,,,,,,,,
+SystemLabels.rhythm,Rhythm,,,,,,,,,,,,
+SystemLabels.rock,Rock,,,,,,,,,,,,
+SystemLabels.roguelike,Roguelike,,,,,,,,,,,,
+SystemLabels.roguelite,Roguelite,,,,,,,,,,,,
+SystemLabels.rpg,Rpg,,,,,,,,,,,,
+SystemLabels.rts,Rts,,,,,,,,,,,,
+SystemLabels.rust,Rust,,,,,,,,,,,,
+SystemLabels.sad,Sad,,,,,,,,,,,,
+SystemLabels.sandbox,Sandbox,,,,,,,,,,,,
+SystemLabels.scratch,Scratch,,,,,,,,,,,,
+SystemLabels.screenshotsaturday,ScreenshotSaturday,,,,,,,,,,,,
+SystemLabels.seamlessloop,Seamless Loop,,,,,,,,,,,,
+SystemLabels.shaders,Shaders,,,,,,,,,,,,
+SystemLabels.shooter,Shooter,,,,,,,,,,,,
+SystemLabels.simulation,Simulation,,,,,,,,,,,,
+SystemLabels.siteannouncement,SiteAnnouncement,,,,,,,,,,,,
+SystemLabels.sitechangelog,SiteChangelog,,,,,,,,,,,,
+SystemLabels.solar2d,Solar2D,,,,,,,,,,,,
+SystemLabels.sound,Sound,,,,,,,,,,,,
+SystemLabels.sounddesigner,Sound Designer,,,,,,,,,,,,
+SystemLabels.sports,Sports,,,,,,,,,,,,
+SystemLabels.steam,Steam,,,,,,,,,,,,
+SystemLabels.stencyl,Stencyl,,,,,,,,,,,,
+SystemLabels.stinger,Stinger,,,,,,,,,,,,
+SystemLabels.storefronts,Storefronts,,,,,,,,,,,,
+SystemLabels.strategy,Strategy,,,,,,,,,,,,
+SystemLabels.stream,Stream,,,,,,,,,,,,
+SystemLabels.stride,Stride,,,,,,,,,,,,
+SystemLabels.studioone,StudioOne,,,,,,,,,,,,
+SystemLabels.substancepainter,SubstancePainter,,,,,,,,,,,,
+SystemLabels.sunvox,SunVox,,,,,,,,,,,,
+SystemLabels.survival,Survival,,,,,,,,,,,,
+SystemLabels.tic80,TIC80,,,,,,,,,,,,
+SystemLabels.tbs,Tbs,,,,,,,,,,,,
+SystemLabels.teamup,Teamup,,,,,,,,,,,,
+SystemLabels.tense,Tense,,,,,,,,,,,,
+SystemLabels.textbased,Textbased,,,,,,,,,,,,
+SystemLabels.themevote,ThemeVote,,,,,,,,,,,,
+SystemLabels.town,Town,,,,,,,,,,,,
+SystemLabels.triumphant,Triumphant,,,,,,,,,,,,
+SystemLabels.twine,Twine,,,,,,,,,,,,
+SystemLabels.tyranobuilder,TyranoBuilder,,,,,,,,,,,,
+SystemLabels.unity,Unity,,,,,,,,,,,,
+SystemLabels.unrealengine,UnrealEngine,,,,,,,,,,,,
+SystemLabels.uplifting,Uplifting,,,,,,,,,,,,
+SystemLabels.usecase,Use Case,,,,,,,,,,,,
+SystemLabels.victory,Victory,,,,,,,,,,,,
+SystemLabels.visualnovel,Visualnovel,,,,,,,,,,,,
+SystemLabels.vocalist,Vocalist,,,,,,,,,,,,
+SystemLabels.xboxstore,XboxStore,,,,,,,,,,,,
+SystemLabels.zbrush,ZBrush,,,,,,,,,,,,
+SystemLabels.geng,geng,,,,,,,,,,,,
+SystemLabels.libgdx,libGDX,,,,,,,,,,,,
+SystemLabels.raylib,raylib,,,,,,,,,,,,
+SystemLabels.trackCategoryHelp1,"What kind of music this is stylistically, like chiptune, orchestral, or electronic.",,,,,,,,,,,,
+SystemLabels.trackCategoryHelp2,"How the track feels emotionally, like calm, tense, triumphant, or dreamy.",,,,,,,,,,,,
+SystemLabels.trackCategoryHelp4,"What part of a game this best fits, like menu, battle, boss, town, or credits.",,,,,,,,,,,,
+SystemLabels.trackCategoryHelp5,"Whether this track is meant to loop cleanly, play through once, or act as a short stinger.",,,,,,,,,,,,
+AppStrings.Streams,Streams,,,,,,,,,,,,
+AppStrings.Tokens,Tokens,,,,,,,,,,,,
+Settings.TabDescriptions.General,"Manage your profile, account details, and preferences.",,,,,,,,,,,,
+Settings.TabDescriptions.Streams,Manage your connected channel and rating visibility while streaming.,,,,,,,,,,,,
+Settings.TabDescriptions.Emotes,Customize your emote prefix and manage your personal emotes.,,,,,,,,,,,,
+Settings.TabDescriptions.Tokens,Review and revoke game access linked to your account.,,,,,,,,,,,,
+AppStrings.Members,Members,,,,,,,,,,,,

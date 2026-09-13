@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { getNextJamForHome } from "@/helpers/jamDisplay";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { joinJam } from "@/helpers/jam";
@@ -12,6 +15,7 @@ import { useTheme } from "@/providers/useSiteTheme";
 import useBreakpoint from "@/hooks/useBreakpoint";
 
 export default function SidebarNextJam() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { width, isXlUp } = useBreakpoint();
   const textSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
@@ -71,7 +75,7 @@ export default function SidebarNextJam() {
       <Vstack>
         <Hstack>
           <Icon name="calendarplus" color="textFaded" size={iconSize} />
-          <Text size={textSize}>Next Jam</Text>
+          <Text size={textSize}>{uiText("AppStrings.NextJam")}</Text>
           <Text size={textSize} color="blue">{nextJam.name}</Text>
         </Hstack>
         <Timer
@@ -94,7 +98,7 @@ export default function SidebarNextJam() {
         {musicCount !== 0 && (
           <Hstack>
             <Icon name="music" color="textFaded" size={iconSize} />
-            <Text size={textSize}>Music</Text>
+            <Text size={textSize}>{uiText("Navbar.Music.Title")}</Text>
             <Text size={textSize} color="blue">{musicCount}</Text>
           </Hstack>
         )}
@@ -108,8 +112,7 @@ export default function SidebarNextJam() {
         <Hstack wrap className="pt-2">
           {!user ? (
             <Button href="/signup" icon="login" color="green" size={buttonSize}>
-              Join Jam
-            </Button>
+               {uiText("Navbar.JoinJam.Title")} </Button>
           ) : !hasJoinedNextJam ? (
             <Button
               icon="calendarplus"
@@ -118,27 +121,23 @@ export default function SidebarNextJam() {
               onClick={async () => {
                 if (await joinJam(nextJam.id)) {
                   setJoinedOverride(true);
-                  addToast({ title: "Joined jam" });
+                  addToast({ title: uiText("AppStrings.JoinedJam") });
                   return;
                 }
 
-                addToast({ title: "Failed to join jam" });
+                addToast({ title: uiText("AppStrings.FailedToJoinJam") });
               }}
             >
-              Join Jam
-            </Button>
+               {uiText("Navbar.JoinJam.Title")} </Button>
           ) : hasTeamInNextJam ? (
             <Button href="/team" icon="users" color="green" size={buttonSize}>
-              My Team
-            </Button>
+               {uiText("Navbar.MyTeam.Title")} </Button>
           ) : (
             <Button href="/team-finder" icon="users" color="green" size={buttonSize}>
-              Team Finder
-            </Button>
+               {uiText("Navbar.TeamFinder.Title")} </Button>
           )}
           <Button href="/about" icon="info" size={buttonSize}>
-            About
-          </Button>
+             {uiText("Splash.About")} </Button>
         </Hstack>
       </Vstack>
     </Card>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import TrackEditingForm from "@/components/track-editing-form/TrackEditingForm";
 import { getTrack } from "@/requests/track";
 import { getSelf } from "@/requests/user";
@@ -17,6 +20,7 @@ export default function ClientTrackEditPage({
   params: Promise<{ trackSlug: string }>;
   searchParams: Promise<{ pageVersion?: PageVersion }>;
 }) {
+  const uiText = useUiTranslations();
   const resolvedParams = use(params);
   const resolvedSearchParams = use(searchParams);
   const trackSlug = resolvedParams.trackSlug;
@@ -70,9 +74,9 @@ export default function ClientTrackEditPage({
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">{uiText("AppStrings.Loading")}</Text>
             </Hstack>
-            <Text color="textFaded">Loading track edit page...</Text>
+            <Text color="textFaded">{uiText("AppStrings.LoadingTrackEditPage")}</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -85,7 +89,7 @@ export default function ClientTrackEditPage({
         <Card className="max-w-96">
           <Hstack>
             <Icon name="x" />
-            <Text size="xl">Track not found</Text>
+            <Text size="xl">{uiText("AppStrings.TrackNotFound")}</Text>
           </Hstack>
         </Card>
       </Vstack>
@@ -103,11 +107,10 @@ export default function ClientTrackEditPage({
           <Vstack>
             <Hstack>
               <Icon name="x" />
-              <Text size="xl">Invalid Permissions</Text>
+              <Text size="xl">{uiText("AppStrings.InvalidPermissions")}</Text>
             </Hstack>
             <Text color="textFaded">
-              You do not have access to editing this track
-            </Text>
+               {uiText("AppStrings.YouDoNotHaveAccessToEditingThis2")} </Text>
           </Vstack>
         </Card>
       </Vstack>

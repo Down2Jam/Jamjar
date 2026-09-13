@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Card } from "bioloom-ui";
 import { Vstack, Hstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -43,7 +46,8 @@ function resolveCommentTarget(comment: NotificationType["comment"] | undefined |
   };
 }
 
-function getDescriptor(n: NotificationType) {
+function getDescriptor(n: NotificationType, t: ReturnType<typeof useUiTranslations>) {
+  const uiText = t;
   const c = n.comment;
   const type = n.type;
   const resolvedTarget = resolveCommentTarget(c);
@@ -53,11 +57,9 @@ function getDescriptor(n: NotificationType) {
 
   if (type === "GAME_COMMENT" && game?.slug) {
     return {
-      title: "New comment on your game",
+      title: "AppStrings.NewCommentOnYourGame",
       icon: "messagecircle",
-      subtitle: `${c?.author?.name ?? "Someone"} commented on ${
-        game.name ?? "your game"
-      }`,
+      subtitle: uiText("AppStrings.Value0CommentedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: game.name ?? "your game" }),
       href: c
         ? `/g/${game.slug}?comment=${c.id}#comment-${c.id}`
         : `/g/${game.slug}`,
@@ -66,11 +68,9 @@ function getDescriptor(n: NotificationType) {
 
   if (type === "TRACK_COMMENT" && track?.slug) {
     return {
-      title: "New comment on your track",
+      title: "AppStrings.NewCommentOnYourTrack",
       icon: "music",
-      subtitle: `${c?.author?.name ?? "Someone"} commented on ${
-        track.name ?? "your track"
-      }`,
+      subtitle: uiText("AppStrings.Value0CommentedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: track.name ?? "your track" }),
       href: c
         ? `/m/${track.slug}?comment=${c.id}#comment-${c.id}`
         : `/m/${track.slug}`,
@@ -79,9 +79,9 @@ function getDescriptor(n: NotificationType) {
 
   if (type === "POST_COMMENT" && post?.slug) {
     return {
-      title: "New comment on your post",
+      title: "AppStrings.NewCommentOnYourPost",
       icon: "messagecircle",
-      subtitle: `${c?.author?.name ?? "Someone"} commented on ${post.title}`,
+      subtitle: uiText("AppStrings.Value0CommentedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: post.title }),
       href: c
         ? `/p/${post.slug}?comment=${c.id}#comment-${c.id}`
         : `/p/${post.slug}`,
@@ -91,11 +91,9 @@ function getDescriptor(n: NotificationType) {
   if (type === "COMMENT_REPLY") {
     if (track?.slug) {
       return {
-        title: "New reply to your comment",
+        title: "AppStrings.NewReplyToYourComment",
         icon: "reply",
-        subtitle: `${c?.author?.name ?? "Someone"} replied on ${
-          track.name ?? "your track"
-        }`,
+        subtitle: uiText("AppStrings.Value0RepliedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: track.name ?? "your track" }),
         href: c
           ? `/m/${track.slug}?comment=${c.id}#comment-${c.id}`
           : `/m/${track.slug}`,
@@ -104,11 +102,9 @@ function getDescriptor(n: NotificationType) {
 
     if (game?.slug) {
       return {
-        title: "New reply to your comment",
+        title: "AppStrings.NewReplyToYourComment",
         icon: "reply",
-        subtitle: `${c?.author?.name ?? "Someone"} replied on ${
-          game.name ?? "your game"
-        }`,
+        subtitle: uiText("AppStrings.Value0RepliedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: game.name ?? "your game" }),
         href: c
           ? `/g/${game.slug}?comment=${c.id}#comment-${c.id}`
           : `/g/${game.slug}`,
@@ -117,9 +113,9 @@ function getDescriptor(n: NotificationType) {
 
     if (post?.slug) {
       return {
-        title: "New reply to your comment",
+        title: "AppStrings.NewReplyToYourComment",
         icon: "reply",
-        subtitle: `${c?.author?.name ?? "Someone"} replied on ${post.title}`,
+        subtitle: uiText("AppStrings.Value0RepliedOnValue1", { value0: c?.author?.name ?? uiText("AppStrings.Someone"), value1: post.title }),
         href: c
           ? `/p/${post.slug}?comment=${c.id}#comment-${c.id}`
           : `/p/${post.slug}`,
@@ -128,9 +124,9 @@ function getDescriptor(n: NotificationType) {
   }
 
   return {
-    title: "New comment activity",
+    title: "AppStrings.NewCommentActivity",
     icon: "messagecircle",
-    subtitle: `${c?.author?.name ?? "Someone"} replied to your comment`,
+    subtitle: uiText("AppStrings.Value0RepliedToYourComment", { value0: c?.author?.name ?? uiText("AppStrings.Someone") }),
     href:
       n.link ??
       (c ? `?comment=${c.id}#comment-${c.id}` : "/"),
@@ -141,6 +137,7 @@ export default function CommentNotification({
   notification,
   onMarkRead,
 }: Props) {
+  const uiText = useUiTranslations();
   const [replyOpen, setReplyOpen] = useState(false);
   const [content, setContent] = useState("");
   const [posting, setPosting] = useState(false);
@@ -149,7 +146,7 @@ export default function CommentNotification({
 
   if (!c) return null;
 
-  const { title, icon, subtitle, href } = getDescriptor(notification);
+  const { title, icon, subtitle, href } = getDescriptor(notification, uiText);
 
   return (
     <Card className="min-w-96">
@@ -178,11 +175,11 @@ export default function CommentNotification({
 
         <Hstack wrap>
           <Button icon="reply" onClick={() => setReplyOpen((o) => !o)}>
-            {replyOpen ? "Cancel Reply" : "Reply"}
+            {replyOpen ? uiText("AppStrings.CancelReply") : uiText("AppStrings.Reply")}
           </Button>
 
           <Link href={href}>
-            <Button icon="arrowright">Go to comment</Button>
+            <Button icon="arrowright">{uiText("AppStrings.GoToComment")}</Button>
           </Link>
 
           <Button
@@ -190,8 +187,7 @@ export default function CommentNotification({
             color="green"
             onClick={() => onMarkRead(notification.id)}
           >
-            Mark as read
-          </Button>
+             {uiText("AppStrings.MarkAsRead")} </Button>
         </Hstack>
 
         {replyOpen && (
@@ -205,11 +201,11 @@ export default function CommentNotification({
               <Button
                 onClick={async () => {
                   if (!content) {
-                    addToast({ title: "Please enter valid content" });
+                    addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
                     return;
                   }
                   if (!hasCookie("token")) {
-                    addToast({ title: "You are not logged in" });
+                    addToast({ title: uiText("CreateGame.NotLogged") });
                     return;
                   }
                   try {
@@ -218,21 +214,21 @@ export default function CommentNotification({
                     setPosting(false);
 
                     if (res.ok) {
-                      addToast({ title: "Reply posted" });
+                      addToast({ title: uiText("AppStrings.ReplyPosted") });
                       setReplyOpen(false);
                       setContent("");
                       onMarkRead(notification.id);
                     } else {
-                      addToast({ title: "Failed to post reply" });
+                      addToast({ title: uiText("AppStrings.FailedToPostReply") });
                     }
                   } catch (e) {
                     setPosting(false);
-                    addToast({ title: "An error occurred" });
+                    addToast({ title: uiText("AppStrings.AnErrorOccurred") });
                     console.error(e);
                   }
                 }}
               >
-                {posting ? <Spinner /> : "Post reply"}
+                {posting ? <Spinner /> : uiText("AppStrings.PostReply")}
               </Button>
             </Hstack>
           </Vstack>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import {
   addCollectionComment,
   addCollectionItem,
@@ -243,6 +246,7 @@ function MusicDiscItem({
   onEdit?: (item: CollectionItem) => void;
   onDelete?: (item: CollectionItem) => void;
 }) {
+  const uiText = useUiTranslations();
   const link = primaryMusicLink(item);
   const platform = musicLinks(item)[0]?.platform ?? inferPlatform(link);
   const isExternal = !link.startsWith("/");
@@ -259,7 +263,7 @@ function MusicDiscItem({
         target={isExternal ? "_blank" : undefined}
         rel={isExternal ? "noreferrer" : undefined}
         className="group block"
-        aria-label={`Open ${itemTitle(item)}`}
+        aria-label={uiText("AppStrings.OpenValue0", { value0: itemTitle(item) })}
         draggable={false}
       >
         <div className="relative aspect-square w-full max-w-56 overflow-hidden rounded-full bg-white/5 shadow-lg shadow-black/25 transition-transform group-hover:-translate-y-0.5">
@@ -291,7 +295,7 @@ function MusicDiscItem({
                 variant="ghost"
                 icon="pencil"
                 className="opacity-70 transition-opacity hover:opacity-100"
-                aria-label={`Edit ${itemTitle(item)}`}
+                aria-label={uiText("AppStrings.EditValue0", { value0: itemTitle(item) })}
                 onClick={() => onEdit?.(item)}
               />
               <Button
@@ -299,7 +303,7 @@ function MusicDiscItem({
                 variant="ghost"
                 icon="trash"
                 className="opacity-70 transition-opacity hover:opacity-100"
-                aria-label={`Remove ${itemTitle(item)} from collection`}
+                aria-label={uiText("AppStrings.RemoveValue0FromCollection", { value0: itemTitle(item) })}
                 onClick={() => onDelete?.(item)}
               />
             </Hstack>
@@ -381,6 +385,7 @@ function CollectionItemRow({
   onEdit?: (item: CollectionItem) => void;
   onDelete?: (item: CollectionItem) => void;
 }) {
+  const uiText = useUiTranslations();
   if (item.itemType === "track" || item.itemType === "youtube_track") {
     return (
       <MusicDiscItem
@@ -425,21 +430,20 @@ function CollectionItemRow({
                 size="sm"
                 variant="ghost"
                 icon="pencil"
-                aria-label={`Edit ${itemTitle(item)}`}
+                aria-label={uiText("AppStrings.EditValue0", { value0: itemTitle(item) })}
                 onClick={() => onEdit?.(item)}
               />
               <Button
                 size="sm"
                 variant="ghost"
                 icon="trash"
-                aria-label={`Remove ${itemTitle(item)} from collection`}
+                aria-label={uiText("AppStrings.RemoveValue0FromCollection", { value0: itemTitle(item) })}
                 onClick={() => onDelete?.(item)}
               />
             </>
           )}
           <Button size="sm" href={`/g/${item.game.slug}`}>
-            Open
-          </Button>
+             {uiText("AppStrings.Open")} </Button>
         </Hstack>
       </div>
     );
@@ -451,7 +455,7 @@ function CollectionItemRow({
         <Vstack align="start" gap={0}>
           <Text weight="semibold">{itemTitle(item)}</Text>
           <Text size="sm" color="textFaded">
-            {item.post.author?.name ?? "Unknown"}
+            {item.post.author?.name ?? uiText("AppStrings.Unknown")}
           </Text>
           {itemDescription(item) && (
             <Text size="sm" color="textFaded" className="line-clamp-2">
@@ -466,22 +470,21 @@ function CollectionItemRow({
                 size="sm"
                 variant="ghost"
                 icon="pencil"
-                aria-label={`Edit ${itemTitle(item)}`}
+                aria-label={uiText("AppStrings.EditValue0", { value0: itemTitle(item) })}
                 onClick={() => onEdit?.(item)}
               />
               <Button
                 size="sm"
                 variant="ghost"
                 icon="trash"
-                aria-label={`Remove ${itemTitle(item)} from collection`}
+                aria-label={uiText("AppStrings.RemoveValue0FromCollection", { value0: itemTitle(item) })}
                 onClick={() => onDelete?.(item)}
               />
             </>
           )}
           {item.post.slug && (
             <Button size="sm" href={`/p/${item.post.slug}`}>
-              Open
-            </Button>
+               {uiText("AppStrings.Open")} </Button>
           )}
         </Hstack>
       </div>
@@ -496,6 +499,7 @@ export default function CollectionPage({
 }: {
   params: Promise<{ collectionId: string }>;
 }) {
+  const uiText = useUiTranslations();
   const { collectionId } = use(params);
   const [collection, setCollection] = useState<CollectionDetails | null>(null);
   const [comments, setComments] = useState<CollectionComment[]>([]);
@@ -591,11 +595,11 @@ export default function CollectionPage({
       const response = await removeCollectionItem(collection.id, deletingItem.id);
       if (response.ok) {
         setDeletingItem(null);
-        addToast({ title: "Entry removed" });
+        addToast({ title: uiText("AppStrings.EntryRemoved") });
         onClose();
         await load();
       } else {
-        addToast({ title: "Could not remove entry" });
+        addToast({ title: uiText("AppStrings.CouldNotRemoveEntry") });
       }
     } finally {
       setItemDeleteLoading(false);
@@ -617,7 +621,7 @@ export default function CollectionPage({
             ),
           );
         } catch {
-          addToast({ title: "Could not save collection order" });
+          addToast({ title: uiText("AppStrings.CouldNotSaveCollectionOrder") });
         }
       }
     } finally {
@@ -764,7 +768,7 @@ export default function CollectionPage({
       : "A curated Down2Jam collection.");
 
   usePageMetadata({
-    title: collection?.title ?? "Collection",
+    title: collection?.title ?? uiText("AppStrings.Collection"),
     description: metadataDescription,
     image: collectionMetadataImage(collection),
     canonical: collection ? `/c/${collection.slug}` : `/c/${collectionId}`,
@@ -871,7 +875,7 @@ export default function CollectionPage({
                 {collection.title}
               </Text>
               <Text size="sm" color="textFaded">
-                {collection.owner?.name ?? "Unknown"} - {collection.visibility}
+                {collection.owner?.name ?? uiText("AppStrings.Unknown")} - {collection.visibility}
               </Text>
               <Text size="sm" color="textFaded">
                 {relevantCountLabel}
@@ -884,8 +888,7 @@ export default function CollectionPage({
               <Hstack className="mt-3 flex-wrap gap-2">
                 {isOwner && (
                   <Button icon="pencil" variant="ghost" onClick={openEdit}>
-                    Edit Collection
-                  </Button>
+                     {uiText("AppStrings.EditCollection")} </Button>
                 )}
                 {isOwner && (
                   <Button icon="plus" color="blue" onClick={openAdd}>
@@ -901,11 +904,10 @@ export default function CollectionPage({
           <Hstack justify="between" className="mb-2 w-full">
             <Vstack align="start" gap={0}>
               <Text size="lg" weight="semibold" color="text">
-                Items
-              </Text>
+                 {uiText("AppStrings.Items")} </Text>
               {isOwner && (
                 <Text size="sm" color="textFaded">
-                  {reorderLoading ? "Saving order..." : "Drag entries to reorder."}
+                  {reorderLoading ? uiText("AppStrings.SavingOrder") : uiText("AppStrings.DragEntriesToReorder")}
                 </Text>
               )}
             </Vstack>
@@ -913,7 +915,7 @@ export default function CollectionPage({
           </Hstack>
           {(collection.items ?? []).length === 0 ? (
             <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6">
-              <Text color="textFaded">No items yet.</Text>
+              <Text color="textFaded">{uiText("AppStrings.NoItemsYet")}</Text>
             </div>
           ) : collectionType === "music" ? (
             <div className="grid gap-x-7 gap-y-9 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
@@ -947,8 +949,7 @@ export default function CollectionPage({
         <section>
           <Hstack justify="between" className="w-full">
             <Text size="lg" weight="semibold" color="text">
-              Comments
-            </Text>
+               {uiText("AppStrings.Comments")} </Text>
             {isLoggedIn && (
               <Button
                 size="sm"
@@ -956,14 +957,13 @@ export default function CollectionPage({
                 variant={showCommentComposer ? "ghost" : undefined}
                 onClick={() => setShowCommentComposer((current) => !current)}
               >
-                {showCommentComposer ? "Cancel" : "Add Comment"}
+                {showCommentComposer ? uiText("AppStrings.Cancel") : uiText("AppStrings.AddComment")}
               </Button>
             )}
           </Hstack>
           {!isLoggedIn && (
             <Text size="sm" color="textFaded" className="mt-2">
-              Log in to add a comment.
-            </Text>
+               {uiText("AppStrings.LogInToAddAComment")} </Text>
           )}
           {showCommentComposer && (
             <div className="mt-2">
@@ -982,11 +982,11 @@ export default function CollectionPage({
                   icon="plus"
                   onClick={async () => {
                     if (!comment.trim()) {
-                      addToast({ title: "Please enter valid content" });
+                      addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
                       return;
                     }
                     if (!hasCookie("token")) {
-                      addToast({ title: "You are not logged in" });
+                      addToast({ title: uiText("CreateGame.NotLogged") });
                       return;
                     }
                     setCommentLoading(true);
@@ -996,19 +996,18 @@ export default function CollectionPage({
                         setComment("");
                         setShowCommentComposer(false);
                         await load();
-                        addToast({ title: "Successfully created comment" });
+                        addToast({ title: uiText("AppStrings.SuccessfullyCreatedComment") });
                       } else if (response.status === 401) {
-                        addToast({ title: "Invalid User" });
+                        addToast({ title: uiText("AppStrings.InvalidUser2") });
                       } else {
-                        addToast({ title: "An error occurred" });
+                        addToast({ title: uiText("AppStrings.AnErrorOccurred") });
                       }
                     } finally {
                       setCommentLoading(false);
                     }
                   }}
                 >
-                  Create Comment
-                </Button>
+                   {uiText("AppStrings.CreateComment")} </Button>
               )}
             </div>
           )}
@@ -1035,19 +1034,19 @@ export default function CollectionPage({
                 ].filter(Boolean) as CollectionPlatformLink[]);
 
                 if (collectionType === "game" && !selectedGame) {
-                  addToast({ title: "Choose a game" });
+                  addToast({ title: uiText("AppStrings.ChooseAGame") });
                   return;
                 }
                 if (collectionType === "post" && !selectedPost) {
-                  addToast({ title: "Choose a post" });
+                  addToast({ title: uiText("AppStrings.ChooseAPost") });
                   return;
                 }
                 if (collectionType === "music" && musicSource === "d2jam" && !selectedTrack) {
-                  addToast({ title: "Choose a D2Jam track" });
+                  addToast({ title: uiText("AppStrings.ChooseAD2JamTrack") });
                   return;
                 }
                 if (collectionType === "music" && musicSource === "youtube" && links.length === 0) {
-                  addToast({ title: "Choose a D2Jam track or add a YouTube link" });
+                  addToast({ title: uiText("AppStrings.ChooseAD2JamTrackOrAddAYouTubeLink") });
                   return;
                 }
 
@@ -1086,10 +1085,10 @@ export default function CollectionPage({
                     setGameResults([]);
                     setPostResults([]);
                     await load();
-                    addToast({ title: "Added to collection" });
+                    addToast({ title: uiText("AppStrings.AddedToCollection") });
                     onClose();
                   } else {
-                    addToast({ title: "Could not add item" });
+                    addToast({ title: uiText("AppStrings.CouldNotAddItem") });
                   }
                 } finally {
                   setAddLoading(false);
@@ -1111,8 +1110,7 @@ export default function CollectionPage({
                           }`}
                           onClick={() => setMusicSource("d2jam")}
                         >
-                          D2Jam music
-                        </button>
+                           {uiText("AppStrings.D2JamMusic")} </button>
                         <button
                           type="button"
                           className={`rounded px-3 py-2 text-sm font-semibold transition ${
@@ -1122,15 +1120,14 @@ export default function CollectionPage({
                           }`}
                           onClick={() => setMusicSource("youtube")}
                         >
-                          YouTube URL
-                        </button>
+                           {uiText("AppStrings.YouTubeURL")} </button>
                       </div>
                       {musicSource === "d2jam" ? (
                         <>
                           <Input
                             value={trackQuery}
                             onValueChange={setTrackQuery}
-                            placeholder="Search D2Jam music"
+                            placeholder={uiText("AppStrings.SearchD2JamMusic")}
                           />
                           {trackResults.length > 0 && (
                             <div className="rounded-md border border-white/10 bg-white/[0.03]">
@@ -1149,20 +1146,19 @@ export default function CollectionPage({
                                       {track.name}
                                     </span>
                                     <span className="block text-xs text-white/60">
-                                      {track.game?.name ?? "Unknown game"}
+                                      {track.game?.name ?? uiText("AppStrings.UnknownGame")}
                                     </span>
                                   </span>
-                                  <span className="text-xs text-white/50">Select</span>
+                                  <span className="text-xs text-white/50">{uiText("Navbar.Language.Select")}</span>
                                 </button>
                               ))}
                             </div>
                           )}
                           {selectedTrack && (
                             <Hstack justify="between" className="rounded-md bg-white/5 px-3 py-2">
-                              <Text size="sm">Selected: {selectedTrack.name}</Text>
+                              <Text size="sm">{uiText("AppStrings.Selected")} {selectedTrack.name}</Text>
                               <Button size="sm" variant="ghost" onClick={() => setSelectedTrack(null)}>
-                                Clear
-                              </Button>
+                                 {uiText("AppStrings.Clear")} </Button>
                             </Hstack>
                           )}
                         </>
@@ -1171,14 +1167,13 @@ export default function CollectionPage({
                           <Input
                             value={youtubeUrl}
                             onValueChange={setYoutubeUrl}
-                            placeholder="YouTube URL"
+                            placeholder={uiText("AppStrings.YouTubeURL")}
                           />
                           {(metadataLoading || metadata) && (
                             <div className="rounded-md border border-white/10 bg-white/[0.03] p-3">
                               {metadataLoading ? (
                                 <Text size="sm" color="textFaded">
-                                  Loading metadata...
-                                </Text>
+                                   {uiText("AppStrings.LoadingMetadata")} </Text>
                               ) : metadata ? (
                                 <Hstack>
                                   {metadata.thumbnailUrl && (
@@ -1210,7 +1205,7 @@ export default function CollectionPage({
                       <Input
                         value={contentQuery}
                         onValueChange={setContentQuery}
-                        placeholder={collectionType === "game" ? "Search games" : "Search posts"}
+                        placeholder={collectionType === "game" ? uiText("AppStrings.SearchGames") : uiText("AppStrings.SearchPosts")}
                       />
                       {(collectionType === "game" ? gameResults : postResults).length > 0 && (
                         <div className="rounded-md border border-white/10 bg-white/[0.03]">
@@ -1231,7 +1226,7 @@ export default function CollectionPage({
                                       <span className="block text-xs text-white/60">{game.short}</span>
                                     )}
                                   </span>
-                                  <span className="text-xs text-white/50">Select</span>
+                                  <span className="text-xs text-white/50">{uiText("Navbar.Language.Select")}</span>
                                 </button>
                               ))
                             : postResults.map((post) => (
@@ -1246,13 +1241,13 @@ export default function CollectionPage({
                                 >
                                   <span>
                                     <span className="block text-sm font-semibold text-white">
-                                      {post.title ?? "Post"}
+                                      {post.title ?? uiText("AppStrings.Post")}
                                     </span>
                                     <span className="block text-xs text-white/60">
-                                      {post.author?.name ?? "Unknown"}
+                                      {post.author?.name ?? uiText("AppStrings.Unknown")}
                                     </span>
                                   </span>
-                                  <span className="text-xs text-white/50">Select</span>
+                                  <span className="text-xs text-white/50">{uiText("Navbar.Language.Select")}</span>
                                 </button>
                               ))}
                         </div>
@@ -1260,7 +1255,7 @@ export default function CollectionPage({
                       {(selectedGame || selectedPost) && (
                         <Hstack justify="between" className="rounded-md bg-white/5 px-3 py-2">
                           <Text size="sm">
-                            Selected: {selectedGame?.name ?? selectedPost?.title ?? "Item"}
+                             {uiText("AppStrings.Selected")} {selectedGame?.name ?? selectedPost?.title ?? uiText("AppStrings.Item")}
                           </Text>
                           <Button
                             size="sm"
@@ -1270,8 +1265,7 @@ export default function CollectionPage({
                               setSelectedPost(null);
                             }}
                           >
-                            Clear
-                          </Button>
+                             {uiText("AppStrings.Clear")} </Button>
                         </Hstack>
                       )}
                     </>
@@ -1279,14 +1273,13 @@ export default function CollectionPage({
                   <Textarea
                     value={itemNote}
                     onValueChange={setItemNote}
-                    placeholder="Entry description"
+                    placeholder={uiText("AppStrings.EntryDescription")}
                   />
                 </Vstack>
               </ModalBody>
               <ModalFooter>
                 <Button variant="ghost" onClick={onClose}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button type="submit" icon="plus" color="blue" disabled={addLoading}>
                   {addLabel}
                 </Button>
@@ -1303,7 +1296,7 @@ export default function CollectionPage({
               onSubmit={async (event) => {
                 event.preventDefault();
                 if (!editTitle.trim()) {
-                  addToast({ title: "Collection title is required" });
+                  addToast({ title: uiText("AppStrings.CollectionTitleIsRequired") });
                   return;
                 }
                 setEditLoading(true);
@@ -1316,33 +1309,32 @@ export default function CollectionPage({
                   });
                   if (response.ok) {
                     setCollection(await readItem<CollectionDetails>(response));
-                    addToast({ title: "Collection updated" });
+                    addToast({ title: uiText("AppStrings.CollectionUpdated") });
                     onClose();
                   } else {
-                    addToast({ title: "Could not update collection" });
+                    addToast({ title: uiText("AppStrings.CouldNotUpdateCollection") });
                   }
                 } finally {
                   setEditLoading(false);
                 }
               }}
             >
-              <ModalHeader>Edit Collection</ModalHeader>
+              <ModalHeader>{uiText("AppStrings.EditCollection")}</ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={3}>
                   <Input
                     value={editTitle}
                     onValueChange={setEditTitle}
-                    placeholder="Collection title"
+                    placeholder={uiText("AppStrings.CollectionTitle")}
                   />
                   <Textarea
                     value={editDescription}
                     onValueChange={setEditDescription}
-                    placeholder="Description"
+                    placeholder={uiText("AppStrings.Description")}
                   />
                   <Vstack align="stretch" gap={1}>
                     <Text size="sm" color="textFaded">
-                      Visibility
-                    </Text>
+                       {uiText("AppStrings.Visibility")} </Text>
                     <select
                       value={editVisibility}
                       onChange={(event) =>
@@ -1350,16 +1342,15 @@ export default function CollectionPage({
                       }
                       className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/25"
                     >
-                      <option value="private">Private</option>
-                      <option value="unlisted">Unlisted</option>
-                      <option value="public">Public</option>
+                      <option value="private">{uiText("AppStrings.Private")}</option>
+                      <option value="unlisted">{uiText("AppStrings.Unlisted")}</option>
+                      <option value="public">{uiText("AppStrings.Public")}</option>
                     </select>
                   </Vstack>
                   {collectionType === "music" && (
                     <Vstack align="stretch" gap={1}>
                       <Text size="sm" color="textFaded">
-                        Playback
-                      </Text>
+                         {uiText("AppStrings.Playback")} </Text>
                       <select
                         value={editPlaybackMode}
                         onChange={(event) =>
@@ -1367,9 +1358,9 @@ export default function CollectionPage({
                         }
                         className="rounded-md border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none focus:border-white/25"
                       >
-                        <option value="manual">Manual</option>
-                        <option value="shuffle">Shuffle</option>
-                        <option value="repeat">Repeat</option>
+                        <option value="manual">{uiText("AppStrings.Manual")}</option>
+                        <option value="shuffle">{uiText("AppStrings.Shuffle")}</option>
+                        <option value="repeat">{uiText("AppStrings.Repeat")}</option>
                       </select>
                     </Vstack>
                   )}
@@ -1377,11 +1368,9 @@ export default function CollectionPage({
               </ModalBody>
               <ModalFooter>
                 <Button variant="ghost" onClick={onClose}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button type="submit" icon="save" color="blue" disabled={editLoading}>
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </form>
           )}
@@ -1406,28 +1395,28 @@ export default function CollectionPage({
                     setEditingItem(null);
                     setEditingItemTitle("");
                     setEditingItemNote("");
-                    addToast({ title: "Entry updated" });
+                    addToast({ title: uiText("AppStrings.EntryUpdated") });
                     onClose();
                   } else {
-                    addToast({ title: "Could not update entry" });
+                    addToast({ title: uiText("AppStrings.CouldNotUpdateEntry") });
                   }
                 } finally {
                   setItemEditLoading(false);
                 }
               }}
             >
-              <ModalHeader>Edit Entry</ModalHeader>
+              <ModalHeader>{uiText("AppStrings.EditEntry")}</ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={3}>
                   <Input
                     value={editingItemTitle}
                     onValueChange={setEditingItemTitle}
-                    placeholder="Entry title"
+                    placeholder={uiText("AppStrings.EntryTitle")}
                   />
                   <Textarea
                     value={editingItemNote}
                     onValueChange={setEditingItemNote}
-                    placeholder="Entry description"
+                    placeholder={uiText("AppStrings.EntryDescription")}
                   />
                 </Vstack>
               </ModalBody>
@@ -1441,11 +1430,9 @@ export default function CollectionPage({
                     onClose();
                   }}
                 >
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button type="submit" icon="save" color="blue" disabled={itemEditLoading}>
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </form>
           )}
@@ -1456,15 +1443,13 @@ export default function CollectionPage({
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader>Remove Entry</ModalHeader>
+              <ModalHeader>{uiText("AppStrings.RemoveEntry")}</ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={2}>
                   <Text color="text">
-                    Remove {deletingItem ? itemTitle(deletingItem) : "this entry"} from this collection?
-                  </Text>
+                     {uiText("PostCard.Remove.Title")} {deletingItem ? itemTitle(deletingItem) : uiText("AppStrings.ThisEntry")}  {uiText("AppStrings.FromThisCollection")} </Text>
                   <Text size="sm" color="textFaded">
-                    This only removes the entry from the collection. It does not delete the original content.
-                  </Text>
+                     {uiText("AppStrings.ThisOnlyRemovesTheEntryFromTheCollectionItDoesNotDeleteTheOriginalContent")} </Text>
                 </Vstack>
               </ModalBody>
               <ModalFooter>
@@ -1475,16 +1460,14 @@ export default function CollectionPage({
                     onClose();
                   }}
                 >
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   icon="trash"
                   color="red"
                   disabled={itemDeleteLoading}
                   onClick={() => deleteItem(onClose)}
                 >
-                  Remove
-                </Button>
+                   {uiText("PostCard.Remove.Title")} </Button>
               </ModalFooter>
             </>
           )}

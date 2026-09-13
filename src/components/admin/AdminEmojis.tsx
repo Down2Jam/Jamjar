@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addToast,
@@ -34,6 +37,7 @@ const sanitizeSlug = (value: string) =>
     .slice(0, 50);
 
 export default function AdminEmojis() {
+  const uiText = useUiTranslations();
   const { emojis, loading, refresh } = useEmojis();
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState("");
@@ -89,14 +93,14 @@ export default function AdminEmojis() {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        addToast({ title: data?.message ?? "Failed to upload image" });
+        addToast({ title: data?.message ?? uiText("AppStrings.FailedToUploadImage") });
         return;
       }
       onUploaded(data?.data ?? "");
-      addToast({ title: data?.message ?? "Image uploaded" });
+      addToast({ title: data?.message ?? uiText("AppStrings.ImageUploaded") });
     } catch (error) {
       console.error("Failed to upload image", error);
-      addToast({ title: "Failed to upload image" });
+      addToast({ title: uiText("AppStrings.FailedToUploadImage") });
     } finally {
       setUploading(false);
     }
@@ -155,7 +159,7 @@ export default function AdminEmojis() {
 
   const handleCreate = async () => {
     if (!slug.trim() || !image.trim()) {
-      addToast({ title: "Slug and image are required" });
+      addToast({ title: uiText("AppStrings.SlugAndImageAreRequired") });
       return;
     }
 
@@ -170,18 +174,18 @@ export default function AdminEmojis() {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        addToast({ title: data?.message ?? "Failed to create emoji" });
+        addToast({ title: data?.message ?? uiText("AppStrings.FailedToCreateEmoji") });
         return;
       }
 
-      addToast({ title: "Emoji created" });
+      addToast({ title: uiText("AppStrings.EmojiCreated") });
       setSlug("");
       setImage("");
       setArtistSlug("");
       await refresh();
     } catch (error) {
       console.error("Failed to create emoji", error);
-      addToast({ title: "Failed to create emoji" });
+      addToast({ title: uiText("AppStrings.FailedToCreateEmoji") });
     } finally {
       setSaving(false);
     }
@@ -204,7 +208,7 @@ export default function AdminEmojis() {
   const handleUpdate = async () => {
     if (!editing) return;
     if (!editSlug.trim() || !editImage.trim()) {
-      addToast({ title: "Slug and image are required" });
+      addToast({ title: uiText("AppStrings.SlugAndImageAreRequired") });
       return;
     }
 
@@ -218,15 +222,15 @@ export default function AdminEmojis() {
       });
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        addToast({ title: data?.message ?? "Failed to update emoji" });
+        addToast({ title: data?.message ?? uiText("AppStrings.FailedToUpdateEmoji") });
         return;
       }
-      addToast({ title: "Emoji updated" });
+      addToast({ title: uiText("AppStrings.EmojiUpdated") });
       cancelEdit();
       await refresh();
     } catch (error) {
       console.error("Failed to update emoji", error);
-      addToast({ title: "Failed to update emoji" });
+      addToast({ title: uiText("AppStrings.FailedToUpdateEmoji") });
     } finally {
       setEditSaving(false);
     }
@@ -240,14 +244,14 @@ export default function AdminEmojis() {
       const response = await deleteEmoji(emojiId);
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        addToast({ title: data?.message ?? "Failed to delete emoji" });
+        addToast({ title: data?.message ?? uiText("AppStrings.FailedToDeleteEmoji") });
         return;
       }
-      addToast({ title: data?.message ?? "Emoji deleted" });
+      addToast({ title: data?.message ?? uiText("AppStrings.EmojiDeleted") });
       await refresh();
     } catch (error) {
       console.error("Failed to delete emoji", error);
-      addToast({ title: "Failed to delete emoji" });
+      addToast({ title: uiText("AppStrings.FailedToDeleteEmoji") });
     }
   };
 
@@ -256,30 +260,26 @@ export default function AdminEmojis() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Emoji Control
-          </Text>
+             {uiText("AppStrings.EmojiControl")} </Text>
           <Text size="sm" color="textFaded">
-            Add custom emoji packs that can be used in posts, comments, and
-            reactions.
-          </Text>
+             {uiText("AppStrings.AddCustomEmojiPacksThatCanBeUsed")} </Text>
         </Vstack>
       </section>
 
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            Add Emoji
-          </Text>
+             {uiText("AppStrings.AddEmoji")} </Text>
           <Hstack wrap>
             <Input
-              label="Slug"
+              label={uiText("AppStrings.Slug")}
               labelPlacement="outside"
-              placeholder="party-pop"
+              placeholder={uiText("AppStrings.PartyPop")}
               value={slug}
               onValueChange={setSlug}
             />
             <Input
-              label="Image URL"
+              label={uiText("AppStrings.ImageUrl")}
               labelPlacement="outside"
               placeholder="https://..."
               value={image}
@@ -287,22 +287,21 @@ export default function AdminEmojis() {
             />
             <div className="flex flex-col gap-2">
               <Text size="sm" color="textFaded">
-                Upload image
-              </Text>
+                 {uiText("AppStrings.UploadImage")} </Text>
               <ImageInput
                 value={image}
                 onSelect={(file, crop) => uploadImage(file, crop, setImage)}
                 disabled={uploading}
                 width={80}
                 height={80}
-                placeholder="Upload"
+                placeholder={uiText("AppStrings.Upload")}
               />
             </div>
             <div className="relative">
               <Input
-              label="Artist user slug (optional)"
+              label={uiText("AppStrings.ArtistUserSlugOptional")}
               labelPlacement="outside"
-              placeholder="username"
+              placeholder={uiText("AppStrings.Username2")}
               value={artistSlug}
               onValueChange={(value) => {
                 setArtistSlug(value);
@@ -375,29 +374,26 @@ export default function AdminEmojis() {
           <Hstack justify="between" wrap>
             <Vstack align="start" gap={1}>
               <Text size="xs" color="textFaded">
-                Shortcode preview
-              </Text>
+                 {uiText("AppStrings.ShortcodePreview")} </Text>
               <Text size="sm">
-                :{cleanedSlug || "emoji"}:
+                :{cleanedSlug || uiText("AppStrings.Emoji2")}:
               </Text>
             </Vstack>
             {image.trim() && (
               <Hstack>
                 <img
                   src={image}
-                  alt={cleanedSlug ? `:${cleanedSlug}:` : "emoji preview"}
+                  alt={cleanedSlug ? uiText("AppStrings.Value03", { value0: cleanedSlug }) : uiText("AppStrings.EmojiPreview")}
                   className="h-10 w-10"
                   loading="lazy"
                   decoding="async"
                 />
                 <Text size="sm" color="textFaded">
-                  Preview
-                </Text>
+                   {uiText("AppStrings.Preview")} </Text>
               </Hstack>
             )}
             <Button color="blue" loading={saving} onClick={handleCreate}>
-              Create Emoji
-            </Button>
+               {uiText("AppStrings.CreateEmoji")} </Button>
           </Hstack>
         </Vstack>
       </Card>
@@ -407,25 +403,23 @@ export default function AdminEmojis() {
           {editing && (
             <Vstack align="stretch" gap={3}>
               <Text size="lg" weight="semibold">
-                Edit Emoji
-              </Text>
+                 {uiText("AppStrings.EditEmoji")} </Text>
               <Hstack wrap>
                 <Input
-                  label="Slug"
+                  label={uiText("AppStrings.Slug")}
                   labelPlacement="outside"
                   value={editSlug}
                   onValueChange={setEditSlug}
                 />
                 <Input
-                  label="Image URL"
+                  label={uiText("AppStrings.ImageUrl")}
                   labelPlacement="outside"
                   value={editImage}
                   onValueChange={setEditImage}
                 />
                 <div className="flex flex-col gap-2">
                   <Text size="sm" color="textFaded">
-                    Upload image
-                  </Text>
+                     {uiText("AppStrings.UploadImage")} </Text>
                   <ImageInput
                     value={editImage}
                     onSelect={(file, crop) =>
@@ -434,12 +428,12 @@ export default function AdminEmojis() {
                     disabled={uploading}
                     width={80}
                     height={80}
-                    placeholder="Upload"
+                    placeholder={uiText("AppStrings.Upload")}
                   />
                 </div>
                 <div className="relative">
                   <Input
-                  label="Artist user slug (optional)"
+                  label={uiText("AppStrings.ArtistUserSlugOptional")}
                   labelPlacement="outside"
                   value={editArtistSlug}
                   onValueChange={(value) => {
@@ -512,7 +506,7 @@ export default function AdminEmojis() {
               </Hstack>
               <Hstack justify="between" wrap>
                 <Text size="xs" color="textFaded">
-                  Updates apply to :{sanitizeSlug(editSlug) || "emoji"}:
+                   {uiText("AppStrings.UpdatesApplyTo")}{sanitizeSlug(editSlug) || uiText("AppStrings.Emoji2")}:
                 </Text>
                 <Hstack>
                   <Button
@@ -521,37 +515,32 @@ export default function AdminEmojis() {
                     onClick={cancelEdit}
                     disabled={editSaving}
                   >
-                    Cancel
-                  </Button>
+                     {uiText("AppStrings.Cancel")} </Button>
                   <Button color="blue" loading={editSaving} onClick={handleUpdate}>
-                    Save Changes
-                  </Button>
+                     {uiText("AppStrings.SaveChanges")} </Button>
                 </Hstack>
               </Hstack>
             </Vstack>
           )}
           <Hstack justify="between">
             <Text size="lg" weight="semibold">
-              Emoji Library
-            </Text>
+               {uiText("AppStrings.EmojiLibrary")} </Text>
             <Button size="sm" icon="rotateccw" onClick={refresh}>
-              Refresh
-            </Button>
+               {uiText("AppStrings.Refresh")} </Button>
           </Hstack>
           {loading ? (
             <Spinner />
           ) : sortedEmojis.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No emojis have been added yet.
-            </Text>
+               {uiText("AppStrings.NoEmojisHaveBeenAddedYet")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Emoji</TableColumn>
-                <TableColumn>Slug</TableColumn>
-                <TableColumn>Artist</TableColumn>
-                <TableColumn>Preview</TableColumn>
-                <TableColumn>Uploader</TableColumn>
+                <TableColumn>{uiText("AppStrings.Emoji")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Slug")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Artist")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Preview")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Uploader")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {sortedEmojis.map((emoji) => (
@@ -559,7 +548,7 @@ export default function AdminEmojis() {
                     <TableCell>
                       <img
                         src={emoji.image}
-                        alt={`:${emoji.slug}:`}
+                        alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                         className="h-8 w-8"
                         loading="lazy"
                         decoding="async"
@@ -587,7 +576,7 @@ export default function AdminEmojis() {
                         </a>
                       ) : (
                         <Text size="sm" color="textFaded">
-                          {emoji.artist || "Uncredited"}
+                          {emoji.artist || uiText("AppStrings.Uncredited")}
                         </Text>
                       )}
                     </TableCell>
@@ -599,19 +588,16 @@ export default function AdminEmojis() {
                           href={emoji.image}
                           icon="arrowupright"
                         >
-                          View
-                        </Button>
+                           {uiText("AppStrings.View")} </Button>
                         <Button size="sm" variant="ghost" onClick={() => startEdit(emoji)}>
-                          Edit
-                        </Button>
+                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
                         <Button
                           size="sm"
                           variant="ghost"
                           color="red"
                           onClick={() => handleDelete(emoji.id)}
                         >
-                          Delete
-                        </Button>
+                           {uiText("ThemeSuggestions.Delete.Title")} </Button>
                       </Hstack>
                     </TableCell>
                     <TableCell>
@@ -633,8 +619,7 @@ export default function AdminEmojis() {
                         </a>
                       ) : (
                         <Text size="sm" color="textFaded">
-                          Unknown
-                        </Text>
+                           {uiText("AppStrings.Unknown")} </Text>
                       )}
                     </TableCell>
                   </TableRow>

@@ -1,0 +1,26 @@
+[
+  {
+    "file": "src/components/sidebar/SidebarEvents.tsx",
+    "line": 76,
+    "text": "Ends in",
+    "editable": true
+  },
+  {
+    "file": "src/components/sidebar/SidebarEvents.tsx",
+    "line": 89,
+    "text": "Ends in",
+    "editable": true
+  },
+  {
+    "file": "src/components/sidebar/SidebarEvents.tsx",
+    "line": 121,
+    "text": "Starts in",
+    "editable": true
+  },
+  {
+    "file": "src/components/sidebar/SidebarEvents.tsx",
+    "line": 133,
+    "text": "Starts in",
+    "editable": true
+  }
+]

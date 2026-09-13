@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useDelayedHover } from "@/hooks/useDelayedHover";
 
 import {
@@ -631,6 +634,7 @@ function MentionChip({
   href?: string;
   colors: Record<string, string>;
 }) {
+  const uiText = useUiTranslations();
   const latestCacheKeyRef = useRef("");
   const [mentionHovered, setMentionHovered] = useDelayedHover(false);
   const hostname = (() => {
@@ -688,7 +692,7 @@ function MentionChip({
     <>
       <img
         src={image}
-        alt={type === "user" ? "User avatar" : "Game thumbnail"}
+        alt={type === "user" ? uiText("AppStrings.UserAvatar") : uiText("AppStrings.GameThumbnail")}
         width={18}
         height={18}
         style={{

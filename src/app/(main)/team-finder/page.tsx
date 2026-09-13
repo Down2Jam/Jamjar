@@ -1,10 +1,14 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import TeamFinder from "@/components/team-finder";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Suspense } from "react";
 
 export default function GamesPage() {
+  const uiText = useUiTranslations();
   const { siteTheme, colors } = useTheme();
   const headerColor = colors["text"];
 
@@ -21,8 +25,7 @@ export default function GamesPage() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Team Finder
-        </p>
+           {uiText("Navbar.TeamFinder.Title")} </p>
         <p
           className="mt-1 text-sm"
           style={{
@@ -34,11 +37,10 @@ export default function GamesPage() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          This is a spot to find teammates to make games with for the jam!
-        </p>
+           {uiText("AppStrings.ThisIsASpotToFindTeammatesTo")} </p>
       </header>
 
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div>{uiText("ThemeSuggestions.Loading.Title")}</div>}>
         <TeamFinder />
       </Suspense>
     </>

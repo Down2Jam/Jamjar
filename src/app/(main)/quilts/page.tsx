@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useState } from "react";
 import Link from "@/compat/next-link";
 import {
@@ -70,6 +73,7 @@ function defaultEndsAt() {
 }
 
 export default function QuiltsPage() {
+  const uiText = useUiTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const [quilts, setQuilts] = useState<QuiltSummary[]>([]);
@@ -118,8 +122,7 @@ export default function QuiltsPage() {
                     : "0 1px 5px rgba(0, 0, 0, 0.75)",
               }}
             >
-              Quilts
-            </p>
+               {uiText("Navbar.Quilts.Title")} </p>
             <p
               className="mt-1 text-sm"
               style={{
@@ -131,28 +134,25 @@ export default function QuiltsPage() {
                     : "0 1px 4px rgba(0, 0, 0, 0.8)",
               }}
             >
-              Collaborative pixel art canvases built from community submissions.
-            </p>
+               {uiText("AppStrings.CollaborativePixelArtCanvasesBuiltFromCommunitySubmissions")} </p>
             <Hstack className="mt-3 justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0" wrap>
               {isModerator && (
                 <Button size="sm" icon="plus" color="blue" onClick={onOpen}>
-                  Create quilt
-                </Button>
+                   {uiText("AppStrings.CreateQuilt")} </Button>
               )}
               <Button size="sm" icon="rotateccw" onClick={loadQuilts}>
-                Refresh
-              </Button>
+                 {uiText("AppStrings.Refresh")} </Button>
             </Hstack>
           </header>
 
           {loading ? (
             <Hstack className="justify-center py-16">
               <Spinner />
-              <Text color="textFaded">Loading quilts...</Text>
+              <Text color="textFaded">{uiText("AppStrings.LoadingQuilts")}</Text>
             </Hstack>
           ) : quilts.length === 0 ? (
             <Card>
-              <Text color="textFaded">No quilts are available yet.</Text>
+              <Text color="textFaded">{uiText("AppStrings.NoQuiltsAreAvailableYet")}</Text>
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -170,9 +170,9 @@ export default function QuiltsPage() {
                         </Text>
                       )}
                       <div className="mt-auto grid w-full grid-cols-2 gap-2 text-sm text-zinc-400">
-                        <span>{quilt.width} x {quilt.height}</span>
-                        <span className="text-right">{quilt.acceptedCount} additions</span>
-                        <span className="col-span-2">Ends {formatTime(quilt.endsAt)}</span>
+                        <span>{quilt.width}  {uiText("AppStrings.X")} {quilt.height}</span>
+                        <span className="text-right">{quilt.acceptedCount}  {uiText("AppStrings.Additions")}</span>
+                        <span className="col-span-2">{uiText("AppStrings.Ends")} {formatTime(quilt.endsAt)}</span>
                       </div>
                     </Vstack>
                   </Card>
@@ -190,7 +190,7 @@ export default function QuiltsPage() {
               onSubmit={async (event) => {
                 event.preventDefault();
                 if (!name.trim() || !slug.trim()) {
-                  addToast({ title: "Name and slug are required" });
+                  addToast({ title: uiText("AppStrings.NameAndSlugAreRequired") });
                   return;
                 }
                 setCreateLoading(true);
@@ -213,18 +213,18 @@ export default function QuiltsPage() {
                     setHeight("36");
                     setReviewWindowMinutes("60");
                     setEndsAt(defaultEndsAt());
-                    addToast({ title: "Quilt created" });
+                    addToast({ title: uiText("AppStrings.QuiltCreated") });
                     onClose();
                     await loadQuilts();
                   } else {
-                    addToast({ title: "Could not create quilt" });
+                    addToast({ title: uiText("AppStrings.CouldNotCreateQuilt") });
                   }
                 } finally {
                   setCreateLoading(false);
                 }
               }}
             >
-              <ModalHeader>Create Quilt</ModalHeader>
+              <ModalHeader>{uiText("AppStrings.CreateQuilt2")}</ModalHeader>
               <ModalBody>
                 <Vstack align="stretch" gap={3}>
                   <Input
@@ -233,7 +233,7 @@ export default function QuiltsPage() {
                       setName(value);
                       if (!slugEdited) setSlug(toKebabSlug(value));
                     }}
-                    placeholder="Name"
+                    placeholder={uiText("Settings.Name.Title")}
                   />
                   <Input
                     value={slug}
@@ -241,12 +241,12 @@ export default function QuiltsPage() {
                       setSlugEdited(true);
                       setSlug(toKebabSlug(value));
                     }}
-                    placeholder="quilt-slug"
+                    placeholder={uiText("AppStrings.QuiltSlug")}
                   />
                   <Textarea
                     value={description}
                     onValueChange={setDescription}
-                    placeholder="Description"
+                    placeholder={uiText("AppStrings.Description")}
                   />
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Input
@@ -255,7 +255,7 @@ export default function QuiltsPage() {
                       max={512}
                       value={width}
                       onValueChange={setWidth}
-                      placeholder="Width"
+                      placeholder={uiText("AppStrings.Width")}
                     />
                     <Input
                       type="number"
@@ -263,7 +263,7 @@ export default function QuiltsPage() {
                       max={512}
                       value={height}
                       onValueChange={setHeight}
-                      placeholder="Height"
+                      placeholder={uiText("AppStrings.Height")}
                     />
                   </div>
                   <Input
@@ -271,23 +271,21 @@ export default function QuiltsPage() {
                     min={0}
                     value={reviewWindowMinutes}
                     onValueChange={setReviewWindowMinutes}
-                    placeholder="Review window minutes"
+                    placeholder={uiText("AppStrings.ReviewWindowMinutes")}
                   />
                   <Input
                     type="datetime-local"
                     value={endsAt}
                     onValueChange={setEndsAt}
-                    placeholder="Ends at"
+                    placeholder={uiText("AppStrings.EndsAt")}
                   />
                 </Vstack>
               </ModalBody>
               <ModalFooter>
                 <Button variant="ghost" onClick={onClose}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button type="submit" icon="plus" color="blue" disabled={createLoading}>
-                  Create
-                </Button>
+                   {uiText("CreateGame.Create.Title")} </Button>
               </ModalFooter>
             </form>
           )}

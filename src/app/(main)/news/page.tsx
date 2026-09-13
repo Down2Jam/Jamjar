@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import NewsFeed from "@/components/news/NewsFeed";
 import NewsSurface from "@/components/news/NewsSurface";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
@@ -5,12 +6,13 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { Button } from "bioloom-ui";
 
 export default function NewsPage() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const backgroundTextColor = colors["text"];
 
   usePageMetadata({
-    title: "News",
-    description: "Official Down2Jam news, announcements, and site updates.",
+    title: uiText("Navbar.News.Title"),
+    description: uiText("AppStrings.OfficialDown2JamNewsAnnouncementsAndSiteUpdates"),
     canonical: "/news",
     feed: "/news/rss.xml",
   });
@@ -27,8 +29,7 @@ export default function NewsPage() {
               className="text-4xl font-semibold leading-tight sm:text-6xl"
               style={{ color: backgroundTextColor }}
             >
-              News
-            </h1>
+               {uiText("Navbar.News.Title")} </h1>
           </div>
           <Button
             href="/news/rss.xml"
@@ -37,15 +38,13 @@ export default function NewsPage() {
             size="sm"
             style={{ color: backgroundTextColor }}
           >
-            RSS feed
-          </Button>
+             {uiText("AppStrings.RSSFeed")} </Button>
         </div>
         <p
           className="mt-3 max-w-2xl text-base leading-relaxed"
           style={{ color: backgroundTextColor, opacity: 0.82 }}
         >
-          Announcements, improvements, and changes from across Down2Jam.
-        </p>
+           {uiText("AppStrings.AnnouncementsImprovementsAndChangesFromAcrossDown2Jam")} </p>
       </header>
       <NewsFeed />
     </NewsSurface>

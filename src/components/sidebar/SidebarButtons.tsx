@@ -1,6 +1,8 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { Button } from "bioloom-ui";
 
 export default function SidebarButtons({ className = "" }: { className?: string }) {
+  const uiText = useUiTranslations();
   return (
     <div className={`flex w-full justify-center ${className}`}>
       <div className="flex w-full max-w-[400px] flex-wrap items-center justify-center gap-2">
@@ -10,8 +12,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://discord.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="Discord"
-          aria-label="Join Down2Jam on Discord"
+          tooltip={uiText("AppStrings.Discord")}
+          aria-label={uiText("AppStrings.JoinDown2JamOnDiscord")}
         />
         <Button
           size="lg"
@@ -19,8 +21,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://bluesky.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="Bluesky"
-          aria-label="Follow Down2Jam on Bluesky"
+          tooltip={uiText("AppStrings.Bluesky")}
+          aria-label={uiText("AppStrings.FollowDown2JamOnBluesky")}
         />
         <Button
           size="lg"
@@ -28,8 +30,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://youtube.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="YouTube"
-          aria-label="Watch Down2Jam on YouTube"
+          tooltip={uiText("AppStrings.YouTube")}
+          aria-label={uiText("AppStrings.WatchDown2JamOnYouTube")}
         />
         <Button
           size="lg"
@@ -37,8 +39,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://instagram.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="Instagram"
-          aria-label="Follow Down2Jam on Instagram"
+          tooltip={uiText("AppStrings.Instagram")}
+          aria-label={uiText("AppStrings.FollowDown2JamOnInstagram")}
         />
         <Button
           size="lg"
@@ -46,8 +48,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://github.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="GitHub"
-          aria-label="View Down2Jam on GitHub"
+          tooltip={uiText("AppStrings.GitHub")}
+          aria-label={uiText("AppStrings.ViewDown2JamOnGitHub")}
         />
         <Button
           size="lg"
@@ -55,8 +57,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://forgejo.d2jam.com"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="Forgejo"
-          aria-label="View Down2Jam on Forgejo"
+          tooltip={uiText("AppStrings.Forgejo")}
+          aria-label={uiText("AppStrings.ViewDown2JamOnForgejo")}
         />
         <Button
           size="lg"
@@ -64,8 +66,8 @@ export default function SidebarButtons({ className = "" }: { className?: string 
           href="https://web.libera.chat/#down2jam"
           target="_blank"
           rel="noopener noreferrer"
-          tooltip="Libera.Chat #down2jam"
-          aria-label="Join the Down2Jam channel on Libera.Chat"
+          tooltip={uiText("AppStrings.LiberaChatDown2jam")}
+          aria-label={uiText("AppStrings.JoinTheDown2JamChannelOnLiberaChat")}
         />
       </div>
     </div>

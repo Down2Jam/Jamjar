@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { getCookie } from "@/helpers/cookie";
 import { redirect } from "@/compat/next-navigation";
 import { useEffect, useState } from "react";
@@ -19,6 +22,7 @@ export default function LikeButton({
   parentId: number;
   isComment?: boolean;
 }) {
+  const uiText = useUiTranslations();
   const [likeEffect, setLikeEffect] = useState<boolean>(false);
   const [updatedLikes, setUpdatedLikes] = useState<number>(likes);
   const [updatedLiked, setUpdatedLiked] = useState<boolean>(liked);
@@ -86,7 +90,7 @@ export default function LikeButton({
           } else {
             setUpdatedLiked(!updatedLiked);
             addToast({
-              title: "An error occurred",
+              title: uiText("AppStrings.AnErrorOccurred"),
             });
             return;
           }

@@ -2,13 +2,13 @@ export const SINGLE_TRACK_TAG_CATEGORIES = new Set(["Looping"]);
 
 export const TRACK_TAG_CATEGORY_HELPERS: Record<string, string> = {
   Genre:
-    "What kind of music this is stylistically, like chiptune, orchestral, or electronic.",
+    "SystemLabels.trackCategoryHelp1",
   Mood:
-    "How the track feels emotionally, like calm, tense, triumphant, or dreamy.",
+    "SystemLabels.trackCategoryHelp2",
   "Use Case":
-    "What part of a game this best fits, like menu, battle, boss, town, or credits.",
+    "SystemLabels.trackCategoryHelp4",
   Looping:
-    "Whether this track is meant to loop cleanly, play through once, or act as a short stinger.",
+    "SystemLabels.trackCategoryHelp5",
 };
 
 export const TRACK_CREDIT_ROLE_OPTIONS = [

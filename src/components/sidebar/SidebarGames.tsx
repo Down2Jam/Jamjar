@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { GameType } from "@/types/GameType";
 import { useTheme } from "@/providers/useSiteTheme";
 import Image from "@/compat/next-image";
@@ -13,6 +16,7 @@ import { GameHoverPreview } from "@/components/gamecard";
 import SidebarSectionTitle from "./SidebarSectionTitle";
 
 export default function SidebarGames() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
 
@@ -96,7 +100,7 @@ export default function SidebarGames() {
                   } as CSSProperties}
                 >
                   <Image
-                    alt={`${game.name}'s thumbnail`}
+                    alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
                     className="z-0 h-full w-full object-cover"
                     height={119}
                     width={212}
@@ -122,7 +126,7 @@ export default function SidebarGames() {
                   } as CSSProperties}
                 >
                   <Image
-                    alt={`${game.name}'s thumbnail`}
+                    alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
                     className="z-0 w-full h-full object-cover"
                     height={77}
                     width={136}
@@ -149,7 +153,7 @@ export default function SidebarGames() {
                     } as CSSProperties}
                   >
                     <Image
-                      alt={`${game.name}'s thumbnail`}
+                      alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
                       className="z-0 w-full h-full object-cover"
                       height={59}
                       width={104}

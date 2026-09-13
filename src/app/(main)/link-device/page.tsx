@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useState } from "react";
 import {
   addToast,
@@ -29,6 +32,7 @@ function gameDisplayName(game: GameType | undefined, fallbackSlug: string) {
 }
 
 export default function LinkDevicePage() {
+  const uiText = useUiTranslations();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<UserType>();
   const userCode = (searchParams.get("code") ?? "").trim().toUpperCase();
@@ -74,7 +78,7 @@ export default function LinkDevicePage() {
 
   async function handleApprove() {
     if (!userCode) {
-      addToast({ title: "No device code found in this link" });
+      addToast({ title: uiText("AppStrings.NoDeviceCodeFoundInThisLink") });
       return;
     }
     setStatus("approving");
@@ -82,21 +86,21 @@ export default function LinkDevicePage() {
       const response = await approveDeviceCode(userCode);
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        addToast({ title: data?.error?.message ?? "Failed to approve device" });
+        addToast({ title: data?.error?.message ?? uiText("AppStrings.FailedToApproveDevice") });
         setStatus("idle");
         return;
       }
       setStatus("approved");
     } catch (error) {
       console.error(error);
-      addToast({ title: "Failed to approve device" });
+      addToast({ title: uiText("AppStrings.FailedToApproveDevice") });
       setStatus("idle");
     }
   }
 
   async function handleDeny() {
     if (!userCode) {
-      addToast({ title: "No device code found in this link" });
+      addToast({ title: uiText("AppStrings.NoDeviceCodeFoundInThisLink") });
       return;
     }
     setStatus("denying");
@@ -104,14 +108,14 @@ export default function LinkDevicePage() {
       const response = await denyDeviceCode(userCode);
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        addToast({ title: data?.error?.message ?? "Failed to deny device" });
+        addToast({ title: data?.error?.message ?? uiText("AppStrings.FailedToDenyDevice") });
         setStatus("idle");
         return;
       }
       setStatus("denied");
     } catch (error) {
       console.error(error);
-      addToast({ title: "Failed to deny device" });
+      addToast({ title: uiText("AppStrings.FailedToDenyDevice") });
       setStatus("idle");
     }
   }
@@ -122,7 +126,7 @@ export default function LinkDevicePage() {
         <Card className="max-w-96">
           <Hstack>
             <Spinner />
-            <Text size="xl">Loading</Text>
+            <Text size="xl">{uiText("AppStrings.Loading")}</Text>
           </Hstack>
         </Card>
       </Vstack>
@@ -136,44 +140,34 @@ export default function LinkDevicePage() {
           <Hstack>
             <Icon name="gamepad2" />
             <Text size="xl" weight="semibold" color="text">
-              Link a Game
-            </Text>
+               {uiText("AppStrings.LinkAGame")} </Text>
           </Hstack>
 
           {status === "approved" ? (
             <Text color="textFaded">
-              Device linked. This tab will close automatically, or you can
-              close it and return to the game.
-            </Text>
+               {uiText("AppStrings.DeviceLinkedThisTabWillCloseAutomaticallyOrYouCanCloseItAndReturnToTheGame")} </Text>
           ) : status === "denied" ? (
             <Text color="textFaded">
-              Request denied. This tab will close automatically, or you can
-              close it now.
-            </Text>
+               {uiText("AppStrings.RequestDeniedThisTabWillCloseAutomaticallyOrYouCanCloseItNow")} </Text>
           ) : (
             <>
               <Text size="sm" color="textFaded">
                 <span className="font-semibold">
                   {gameDisplayName(game, gameSlug || "A game")}
                 </span>{" "}
-                is requesting to link to your account as{" "}
-                <span className="font-semibold">{user.name}</span>. This will
-                let the game submit scores and achievements on your behalf.
-              </Text>
+                 {uiText("AppStrings.IsRequestingToLinkToYourAccountAs")}{" "}
+                <span className="font-semibold">{user.name}</span>{uiText("AppStrings.ThisWillLetTheGameSubmitScoresAndAchievementsOnYourBehalf")} </Text>
               {userCode ? (
                 <Vstack align="start" gap={1}>
                   <Text size="xs" color="textFaded">
-                    Code
-                  </Text>
+                     {uiText("AppStrings.Code")} </Text>
                   <Text size="lg" weight="semibold" color="text">
                     {userCode}
                   </Text>
                 </Vstack>
               ) : (
                 <Text size="sm" color="textFaded">
-                  This link is missing its device code. Go back to the game
-                  and try again.
-                </Text>
+                   {uiText("AppStrings.ThisLinkIsMissingItsDeviceCodeGoBackToTheGameAndTryAgain")} </Text>
               )}
               <Hstack>
                 <Button
@@ -183,16 +177,14 @@ export default function LinkDevicePage() {
                   disabled={!userCode}
                   onClick={handleDeny}
                 >
-                  Deny
-                </Button>
+                   {uiText("AppStrings.Deny")} </Button>
                 <Button
                   color="blue"
                   loading={status === "approving"}
                   disabled={!userCode}
                   onClick={handleApprove}
                 >
-                  Approve
-                </Button>
+                   {uiText("AppStrings.Approve")} </Button>
               </Hstack>
             </>
           )}

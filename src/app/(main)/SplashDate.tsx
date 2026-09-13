@@ -1,10 +1,14 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Text } from "bioloom-ui";
 import { useCurrentJam } from "@/hooks/queries";
 import { isPostJamPhase } from "@/helpers/jamDisplay";
 
 export default function SplashDate() {
+  const uiText = useUiTranslations();
   const { data: activeJamResponse } = useCurrentJam();
   const currentJam = activeJamResponse?.jam ?? null;
   const nextJam = activeJamResponse?.nextJam ?? null;
@@ -72,11 +76,11 @@ export default function SplashDate() {
   return (
     <Text color="textLight" className="mx-auto sm:mx-0">
       {formatJamRange(currentJam.startTime, currentJam.jammingHours)}
-      {postJamLabel ? ` (${postJamLabel})` : null}
+      {postJamLabel ? uiText("AppStrings.Value04", { value0: postJamLabel }) : null}
       {isPostJamPhase(activeJamResponse?.phase) && nextJam && (
         <>
           <br />
-          {`Next edition: `}
+          {uiText("AppStrings.NextEdition")}
           {formatJamRange(nextJam.startTime, nextJam.jammingHours)}
         </>
       )}

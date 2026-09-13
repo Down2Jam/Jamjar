@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useDelayedHover } from "@/hooks/useDelayedHover";
 import { GameHoverPreview, type GameCardGame } from "@/components/gamecard";
 import { useGame, useUser } from "@/hooks/queries";
@@ -173,6 +176,7 @@ export function AchievementHoverPreview({
   children: ReactNode;
   className?: string;
 }) {
+  const uiText = useUiTranslations();
   const [hovered, setHovered] = useDelayedHover(false);
   const { colors } = useTheme();
   const accent = colors[achievementTierColor[entry.tier]];
@@ -246,11 +250,10 @@ export function AchievementHoverPreview({
             />
             <div className="min-w-0 flex-1">
               <div className="truncate text-xs font-semibold">
-                From {entry.game.name}
+                 {uiText("AppStrings.From")} {entry.game.name}
               </div>
               <div className="text-[11px]" style={{ color: colors.textFaded }}>
-                {earnedPercent.toFixed(1)}% of players earned this
-              </div>
+                {earnedPercent.toFixed(1)}{uiText("AppStrings.OfPlayersEarnedThis")} </div>
             </div>
           </div>
         </div>
@@ -268,6 +271,7 @@ export function ScoreHoverPreview({
   children: ReactNode;
   className?: string;
 }) {
+  const uiText = useUiTranslations();
   const [hovered, setHovered] = useDelayedHover(false);
   const { colors } = useTheme();
   const accent =
@@ -333,11 +337,10 @@ export function ScoreHoverPreview({
             />
             <div className="min-w-0 flex-1">
               <div className="truncate text-xs font-semibold">
-                From {score.game.name}
+                 {uiText("AppStrings.From")} {score.game.name}
               </div>
               <div className="truncate text-[11px]" style={{ color: colors.textFaded }}>
-                {score.user.name} · {score.totalScores.toLocaleString()} total scores
-              </div>
+                {score.user.name} · {score.totalScores.toLocaleString()}  {uiText("AppStrings.TotalScores")} </div>
             </div>
           </div>
         </div>

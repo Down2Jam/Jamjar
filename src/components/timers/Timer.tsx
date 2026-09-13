@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "@/compat/next-intl";
 import { Text } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { TimerIcon } from "lucide-react";
@@ -16,6 +17,7 @@ export default function Timer({
   reverse?: boolean;
   size?: "xs" | "sm" | "md";
 }) {
+  const t = useTranslations();
   const [timeLeft, setTimeLeft] = useState(targetDate.getTime() - Date.now());
   const [mounted, setMounted] = useState<boolean>(false);
   const { siteTheme } = useTheme();
@@ -50,23 +52,24 @@ export default function Timer({
     const parts: string[] = [];
 
     if (days !== 0) {
-      parts.push(`${days} day${days === 1 ? "" : "s"}`);
+      parts.push(t(days === 1 ? "Countdown.Day" : "Countdown.Days", { count: days }));
       if (hours !== 0) {
-        parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+        parts.push(t(hours === 1 ? "Countdown.Hour" : "Countdown.Hours", { count: hours }));
       } else if (minutes !== 0) {
-        parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+        parts.push(t(minutes === 1 ? "Countdown.Minute" : "Countdown.Minutes", { count: minutes }));
       }
     } else if (hours !== 0) {
-      parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
-      parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+      parts.push(t(hours === 1 ? "Countdown.Hour" : "Countdown.Hours", { count: hours }));
+      parts.push(t(minutes === 1 ? "Countdown.Minute" : "Countdown.Minutes", { count: minutes }));
     } else if (minutes !== 0) {
-      parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
-      parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+      parts.push(t(minutes === 1 ? "Countdown.Minute" : "Countdown.Minutes", { count: minutes }));
+      parts.push(t(seconds === 1 ? "Countdown.Second" : "Countdown.Seconds", { count: seconds }));
     } else {
-      parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+      parts.push(t(seconds === 1 ? "Countdown.Second" : "Countdown.Seconds", { count: seconds }));
     }
 
-    return `${parts.join(" ")}${reverse ? " ago" : ""}`;
+    const duration = parts.join(" ");
+    return reverse ? t("Countdown.Ago", { duration }) : duration;
   };
 
   if (!mounted) {

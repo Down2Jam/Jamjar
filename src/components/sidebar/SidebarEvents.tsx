@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Avatar, Badge } from "bioloom-ui";
 import { useEvents } from "@/hooks/queries";
 import { EventType } from "@/types/EventType";
@@ -17,6 +20,7 @@ import { SidebarCardSkeleton } from "@/components/skeletons";
 import useBreakpoint from "@/hooks/useBreakpoint";
 
 export default function SidebarEvents() {
+  const uiText = useUiTranslations();
   const { width, isXlUp } = useBreakpoint();
   const timerSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
   const buttonSize = isXlUp ? "md" : "sm";
@@ -53,8 +57,7 @@ export default function SidebarEvents() {
         {activeEvents.length > 0 && (
           <div className="flex flex-col gap-2 items-center">
             <SidebarSectionTitle>
-              Active Events
-            </SidebarSectionTitle>
+               {uiText("SidebarEvents.Active.Title")} </SidebarSectionTitle>
             <div className="flex w-full flex-col gap-2">
               {activeEvents.map((event) => (
                   <Card key={event.id}>
@@ -70,7 +73,7 @@ export default function SidebarEvents() {
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>
                         {isXlUp && (
                           <Timer
-                            name="Ends in"
+                            name={uiText("AppStrings.EndsIn")}
                             targetDate={new Date(event.endTime)}
                           />
                         )}
@@ -83,7 +86,7 @@ export default function SidebarEvents() {
                     {!isXlUp && (
                       <div className="mt-2">
                         <Timer
-                          name="Ends in"
+                          name={uiText("AppStrings.EndsIn")}
                           targetDate={new Date(event.endTime)}
                           size={timerSize}
                         />
@@ -93,15 +96,13 @@ export default function SidebarEvents() {
                 ))}
             </div>
             <Button icon="moveupright" href="/events?filter=current" size={buttonSize}>
-              To Events Page
-            </Button>
+               {uiText("SidebarEvents.Link")} </Button>
           </div>
         )}
         {upcomingEventList.length > 0 && (
           <div className="flex flex-col gap-2 items-center">
             <SidebarSectionTitle>
-              Upcoming Events
-            </SidebarSectionTitle>
+               {uiText("SidebarEvents.Upcoming.Title")} </SidebarSectionTitle>
             <div className="flex w-full flex-col gap-2">
               {upcomingEventList.map((event) => (
                   <Card key={event.id}>
@@ -117,7 +118,7 @@ export default function SidebarEvents() {
                         <Link href={`/e/${event.slug}`}>{event.name}</Link>
                         {isXlUp && (
                           <Timer
-                            name="Starts in"
+                            name={uiText("AppStrings.StartsIn")}
                             targetDate={new Date(event.startTime)}
                           />
                         )}
@@ -129,7 +130,7 @@ export default function SidebarEvents() {
                     {!isXlUp && (
                       <div className="mt-2">
                         <Timer
-                          name="Starts in"
+                          name={uiText("AppStrings.StartsIn")}
                           targetDate={new Date(event.startTime)}
                           size={timerSize}
                         />
@@ -139,8 +140,7 @@ export default function SidebarEvents() {
                 ))}
             </div>
             <Button icon="moveupright" href="/events?filter=upcoming" size={buttonSize}>
-              To Events Page
-            </Button>
+               {uiText("SidebarEvents.Link")} </Button>
           </div>
         )}
       </div>

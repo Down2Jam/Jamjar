@@ -1,3 +1,5 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { Card } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
@@ -97,6 +99,7 @@ function GamePreview({
   position: PreviewPosition;
   previewRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const screenshots = (game.screenshots ?? []).filter(Boolean).slice(0, 3);
   const tags = (game.tags ?? []).slice(0, 3);
@@ -205,7 +208,7 @@ function GamePreview({
             <p className="truncate text-lg font-semibold leading-tight">{game.name}</p>
             {creatorName && (
               <p className="mt-1 truncate text-xs" style={{ color: colors.textFaded }}>
-                By {creatorName}
+                 {uiText("PostCard.By")} {creatorName}
               </p>
             )}
           </div>
@@ -221,7 +224,7 @@ function GamePreview({
           className="mt-3 line-clamp-3 text-sm leading-relaxed"
           style={{ color: colors.textFaded }}
         >
-          {game.short || "No description provided."}
+          {game.short || uiText("AppStrings.NoDescriptionProvided")}
         </p>
 
         {(tags.length > 0 || (game.inputMethods?.length ?? 0) > 0) && (
@@ -232,7 +235,7 @@ function GamePreview({
                 className="post-tag-chip rounded text-[11px]"
                 style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
               >
-                {tag.name}
+                {translateSystemLabel(tag.name, uiText)}
               </span>
             ))}
             {(game.inputMethods ?? []).slice(0, Math.max(0, 3 - tags.length)).map((input) => (
@@ -402,6 +405,7 @@ export function GameCard({
   game: GameCardGame;
   rated?: boolean;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const jamColor = game.jam?.color || "green";
   const jamName = game.jam?.name || "Game Jam";
@@ -421,7 +425,7 @@ export function GameCard({
       >
         {rated && (
           <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
-            <p className="opacity-50">RATED</p>
+            <p className="opacity-50">{uiText("AppStrings.RATED")}</p>
           </div>
         )}
         <div className="absolute top-0 left-0 z-10 m-2 flex flex-col items-start gap-1">
@@ -482,26 +486,25 @@ export function GameCard({
         >
           {game.category}
         </div>
-        <div className="shadow-[inset_0_0_20px_rgba(0, 0, 0, 0.7)]">
+        <div className="relative aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
           <Image
-            alt={`${game.name}'s thumbnail`}
-            height={200}
-            width={360}
-            className="max-w-90 max-h-[200px] object-cover shadow-inner"
+            alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
+            fill
+            className="object-cover shadow-inner"
             src={game.thumbnail ?? "/images/D2J_Icon.png"}
           />
         </div>
         <div
-          className="absolute blur-md opacity-50 [mask-image:linear-gradient(to_top,#000000cc,#00000033,#00000011,transparent)] [mask-repeat:no-repeat] [mask-size:100%_30%] [mask-position:bottom] [-webkit-mask-image:linear-gradient(to_top,#00000044,transparent)]"
+          aria-hidden="true"
+          className="pointer-events-none absolute aspect-[9/5] w-full blur-md opacity-50 [mask-image:linear-gradient(to_top,#000000cc,#00000033,#00000011,transparent)] [mask-repeat:no-repeat] [mask-size:100%_30%] [mask-position:bottom] [-webkit-mask-image:linear-gradient(to_top,#00000044,transparent)]"
           style={{
             transform: "scale(1, -1)",
           }}
         >
           <Image
-            alt={`${game.name}'s thumbnail`}
-            height={200}
-            width={360}
-            className="max-w-90 max-h-[200px] object-cover shadow-inner"
+            alt=""
+            fill
+            className="object-cover shadow-inner"
             src={game.thumbnail ?? "/images/D2J_Icon.png"}
           />
         </div>
@@ -509,8 +512,8 @@ export function GameCard({
           justify="between"
           className="border-t-1 w-full p-2 pb-4 px-4"
           style={{
-            borderColor: colors["text"] + "66",
-            backgroundColor: colors["base"],
+            borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+            backgroundColor: colors["mantle"],
           }}
         >
           <Vstack gap={0} align="start" className="min-w-0 flex-1">
@@ -531,7 +534,7 @@ export function GameCard({
 
             {creatorName && (
               <Text size="xs" color="textFaded" className="line-clamp-1">
-                By {creatorName}
+                 {uiText("PostCard.By")} {creatorName}
               </Text>
             )}
           </Vstack>

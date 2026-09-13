@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo, useState } from "react";
 import { Button, Spinner } from "bioloom-ui";
 import { isGameReleaseFeedItem, type PostType } from "@/types/PostType";
@@ -11,6 +14,7 @@ import { useTheme } from "@/providers/useSiteTheme";
 type NewsFilter = "all" | "announcement" | "changelog";
 
 export default function NewsFeed() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const backgroundTextColor = colors["text"];
   const [filter, setFilter] = useState<NewsFilter>("all");
@@ -53,17 +57,17 @@ export default function NewsFeed() {
   }
 
   if (tagsError || postsError) {
-    return <p style={{ color: backgroundTextColor }}>News could not be loaded right now.</p>;
+    return <p style={{ color: backgroundTextColor }}>{uiText("AppStrings.NewsCouldNotBeLoadedRightNow")}</p>;
   }
 
   if (!hasNewsTags || posts.length === 0) {
-    return <p style={{ color: backgroundTextColor }}>There is no news to share yet.</p>;
+    return <p style={{ color: backgroundTextColor }}>{uiText("AppStrings.ThereIsNoNewsToShareYet")}</p>;
   }
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center gap-2" aria-label="Filter news">
-        <span className="text-sm" style={{ color: backgroundTextColor }}>Show:</span>
+      <div className="mb-4 flex flex-wrap items-center gap-2" aria-label={uiText("AppStrings.FilterNews")}>
+        <span className="text-sm" style={{ color: backgroundTextColor }}>{uiText("AppStrings.Show")}</span>
         {([
           ["all", "All news"],
           ["announcement", "Announcements"],
@@ -82,7 +86,7 @@ export default function NewsFeed() {
         ))}
       </div>
       <section aria-labelledby="latest-news-title">
-        <h2 id="latest-news-title" className="sr-only">Latest news</h2>
+        <h2 id="latest-news-title" className="sr-only">{uiText("AppStrings.LatestNews")}</h2>
         <NewsArticlePreview post={posts[0]} featured />
       </section>
       {posts.length > 1 && (
@@ -93,15 +97,16 @@ export default function NewsFeed() {
               className="text-2xl font-semibold"
               style={{ color: backgroundTextColor }}
             >
-              More news
-            </h2>
+               {uiText("AppStrings.MoreNews")} </h2>
             <span className="text-sm" style={{ color: backgroundTextColor }}>
-              {posts.length - 1} {posts.length === 2 ? "story" : "stories"}
+              {posts.length - 1} {posts.length === 2 ? uiText("AppStrings.Story") : uiText("AppStrings.Stories")}
             </span>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            {posts.slice(1).map((post) => (
-              <NewsArticlePreview key={post.id} post={post} />
+            {posts.slice(1).map((post, index) => (
+              <div key={post.id} className={index >= 2 ? "md:col-span-2" : undefined}>
+                <NewsArticlePreview post={post} />
+              </div>
             ))}
           </div>
         </section>
@@ -112,8 +117,7 @@ export default function NewsFeed() {
             loading={isFetchingNextPage}
             onClick={() => fetchNextPage()}
           >
-            Load more news
-          </Button>
+             {uiText("AppStrings.LoadMoreNews")} </Button>
         </div>
       )}
     </>

@@ -1,4 +1,7 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations } from "@/compat/next-intl";
 
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { postTrackRating } from "@/requests/rating";
@@ -7,24 +10,20 @@ import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { TrackType } from "@/types/TrackType";
-import type { JamType } from "@/types/JamType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter } from "@/compat/next-navigation";
-import { getJams } from "@/requests/jam";
-import { useCurrentJam } from "@/hooks/queries";
+import { useCurrentJam, useJams, useSelf, useTracks } from "@/hooks/queries";
+import { ListingSkeleton, TrackCountSkeleton } from "@/components/listing-loading";
 import { IconName } from "bioloom-ui";
 import {
   getTrackRatingCategories,
   getTrackTags,
-  getTracks,
 } from "@/requests/track";
 import { TrackTagType } from "@/types/TrackTagType";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
-import { getSelf } from "@/requests/user";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
-import { UserType } from "@/types/UserType";
 import { addToast } from "bioloom-ui";
 import { navigateToSearchIfChanged } from "@/helpers/navigation";
 import {
@@ -37,7 +36,7 @@ import {
 } from "@/helpers/listingPageVersion";
 import { shouldShowJamInContentListings } from "@/helpers/jamListingOptions";
 import TagLabel from "@/components/tags/TagLabel";
-import { readArray, readItem } from "@/requests/helpers";
+import { readArray } from "@/requests/helpers";
 import { getJamUrlValue, resolveJamUrlValue } from "@/helpers/jamUrl";
 import {
   FaCopyright,
@@ -234,11 +233,13 @@ function getDefaultMusicMoreFilters(
 }
 
 export default function MusicPage() {
+  const t = useTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const headerTextColor = "text";
   const router = useRouter();
-  const { data: currentJamData } = useCurrentJam();
+  const { data: currentJamData, isPending: currentJamPending } = useCurrentJam();
+  const { data: allJams } = useJams();
   const restrictedSorts = useMemo(
     () =>
       new Set<GameSort>([
@@ -251,8 +252,7 @@ export default function MusicPage() {
     [],
   );
 
-  const [music, setMusic] = useState<TrackType[]>([]);
-  const [user, setUser] = useState<UserType | null>(null);
+  const { data: user } = useSelf();
   const [allTrackTags, setAllTrackTags] = useState<TrackTagType[]>([]);
   const [trackSelectedStars, setTrackSelectedStars] = useState<
     Record<number, number>
@@ -260,11 +260,41 @@ export default function MusicPage() {
   const [trackOverallCategory, setTrackOverallCategory] =
     useState<TrackRatingCategoryType | null>(null);
   const effectiveHideRatings = useEffectiveHideRatings(user);
-  const [jamOptions, setJamOptions] = useState<JamOption[]>([]);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
-  const [currentJamId, setCurrentJamId] = useState<string | null>(null);
-  const [currentJamValue, setCurrentJamValue] = useState<string | null>(null);
-  const [activeJamPhase, setActiveJamPhase] = useState<string | null>(null);
+  const currentJamId = currentJamData?.jam?.id?.toString() ?? null;
+  const currentJamValue = getJamUrlValue(currentJamData?.jam) || null;
+  const activeJamPhase = currentJamData?.phase ?? null;
+  const jamOptions = useMemo<JamOption[]>(() => {
+    const options: JamOption[] = [{ id: "all", name: t("AppStrings.AllJams") }];
+    let hasExternalJams = false;
+    const jams = [currentJamData?.jam, ...(allJams ?? [])];
+    jams.forEach((jam) => {
+      if (!jam) return;
+      if (jam.sourcePlatform) {
+        hasExternalJams = true;
+        return;
+      }
+      const value = getJamUrlValue(jam);
+      if (!value || !shouldShowJamInContentListings(jam, activeJamPhase, currentJamId) ||
+          options.some((option) => option.id === value)) return;
+      options.push({
+        id: value,
+        slug: jam.slug,
+        name: jam.name || t("AppStrings.CurrentJam"),
+        icon: jam.icon,
+        description: formatJamWindow(jam.startTime, jam.jammingHours),
+      });
+    });
+    if (hasExternalJams) {
+      options.push({
+        id: "external",
+        name: t("AppStrings.ExternalJams"),
+        icon: "globe",
+        description: t("AppStrings.BrowseEntriesFromImportedJams"),
+      });
+    }
+    return options;
+  }, [currentJamData, allJams, activeJamPhase, currentJamId, t]);
 
   const hasAppliedDefault = useRef(false);
   const hasUserSelected = useRef(false);
@@ -428,132 +458,33 @@ export default function MusicPage() {
   }, [router]);
 
   useEffect(() => {
-    if (jamDetecting || jamId === "all") return;
+    if (jamDetecting || !allJams || jamId === "all") return;
     if (jamOptions.some((option) => option.id === jamId)) return;
 
     const resolved = resolveJamUrlValue(jamId, jamOptions);
     setJamId(resolved);
     updateQueryParam("jam", resolved);
-  }, [jamDetecting, jamId, jamOptions, updateQueryParam]);
+  }, [jamDetecting, allJams, jamId, jamOptions, updateQueryParam]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      setJamDetecting(true);
-      const options: JamOption[] = [{ id: "all", name: "All Jams" }];
-
-      let ratingDefault: string | null = null;
-      const res = currentJamData;
-      const detectedJamId = res?.jam?.id?.toString();
-      const detectedJamValue = getJamUrlValue(res?.jam);
-      const currentJamHasContentListing = shouldShowJamInContentListings(
-        res?.jam,
-        res?.phase,
-        detectedJamId,
-      );
-      {
-        const isCurrentJamDefaultPhase =
-          res?.phase === "Rating" ||
-          res?.phase === "Submission" ||
-          res?.phase === "Jamming" ||
-          res?.phase === "Post-Jam Refinement" ||
-          res?.phase === "Post-Jam Rating";
-        const currentJamName = res?.jam?.name || "Current Jam";
-
-        if (detectedJamId) {
-          setCurrentJamId(detectedJamId);
-          setCurrentJamValue(detectedJamValue || detectedJamId);
-          if (currentJamHasContentListing) {
-            options.push({
-              id: detectedJamValue || detectedJamId,
-              slug: res?.jam?.slug,
-              name: currentJamName,
-              icon: res?.jam?.icon,
-              description: formatJamWindow(
-                res?.jam?.startTime,
-                res?.jam?.jammingHours,
-              ),
-            });
-          }
-        }
-
-        if (
-          currentJamHasContentListing &&
-          isCurrentJamDefaultPhase &&
-          (initialJamParam === "all" || !initialJamParam)
-        ) {
-          ratingDefault = detectedJamValue || detectedJamId || null;
-        }
-
-        setActiveJamPhase(res?.phase ?? null);
-      }
-
-      try {
-        if (typeof getJams === "function") {
-          const jr = await getJams();
-          const js = await readArray<JamType>(jr);
-          let hasExternalJams = false;
-          if (Array.isArray(js)) {
-            js.forEach((j) => {
-              if (j.sourcePlatform) {
-                hasExternalJams = true;
-                return;
-              }
-              const id = String(j?.id ?? "");
-              const value = getJamUrlValue(j);
-              if (
-                id &&
-                value &&
-                j?.name &&
-                shouldShowJamInContentListings(j, res?.phase, detectedJamId) &&
-                !options.find((o) => o.id === value || o.id === id || o.slug === j.slug)
-              ) {
-                options.push({
-                  id: value,
-                  slug: j.slug,
-                  name: j.name,
-                  icon: j.icon,
-                  description: formatJamWindow(j.startTime, j.jammingHours),
-                });
-              }
-            });
-          }
-          if (hasExternalJams) {
-            options.push({
-              id: "external",
-              name: "External jams",
-              icon: "globe",
-              description: "Browse entries from imported jams",
-            });
-          }
-        }
-      } catch {}
-
-      if (cancelled) return;
-
-      setJamOptions(options);
-
-      if (
-        !hasAppliedDefault.current &&
-        !hasUserSelected.current &&
-        ratingDefault
-      ) {
-        hasAppliedDefault.current = true;
-        setJamId(ratingDefault);
-
-        const params = new URLSearchParams(window.location.search);
-        params.set("jam", ratingDefault);
-        navigateToSearchIfChanged(router, params, "replace");
-      }
-
-      setJamDetecting(false);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [router, initialJamParam, currentJamData]);
+    if (currentJamPending) return;
+    const isCurrentJamDefaultPhase = [
+      "Rating", "Submission", "Jamming", "Post-Jam Refinement", "Post-Jam Rating",
+    ].includes(activeJamPhase ?? "");
+    if (
+      !hasAppliedDefault.current && !hasUserSelected.current &&
+      isCurrentJamDefaultPhase && currentJamValue &&
+      shouldShowJamInContentListings(currentJamData?.jam, activeJamPhase, currentJamId) &&
+      (initialJamParam === "all" || !initialJamParam)
+    ) {
+      hasAppliedDefault.current = true;
+      setJamId(currentJamValue);
+      const params = new URLSearchParams(window.location.search);
+      params.set("jam", currentJamValue);
+      navigateToSearchIfChanged(router, params, "replace");
+    }
+    setJamDetecting(false);
+  }, [router, initialJamParam, currentJamData, currentJamPending, activeJamPhase, currentJamId, currentJamValue]);
 
   useEffect(() => {
     if (jamDetecting || jamOptions.length === 0) return;
@@ -582,42 +513,42 @@ export default function MusicPage() {
     { name: string; icon: IconName; description: string }
   > = {
     score: {
-      name: "Score",
+      name: t("LeaderboardType.Score.Title"),
       icon: "star",
       description:
-        "Sorts by overall star score, pulling low-rating-count entries toward the middle",
+        t("AppStrings.SortsByOverallStarScorePullingLowRating"),
     },
     recommended: {
-      name: "Recommended",
+      name: t("AppStrings.Recommended"),
       icon: "thumbsup",
       description:
-        "Like Karma, but gives a small boost to tracks people enjoy as well",
+        t("AppStrings.LikeKarmaButGivesASmallBoostTo2"),
     },
     karma: {
-      name: "Karma",
+      name: t("AppStrings.Karma"),
       icon: "sparkles",
       description:
-        "Shows tracks from people who are rating and giving good feedback on music pages",
+        t("AppStrings.ShowsTracksFromPeopleWhoAreRatingAnd"),
     },
     random: {
-      name: "Random",
+      name: t("GameSort.Random.Title"),
       icon: "dice3",
-      description: "Randomizes the track list",
+      description: t("AppStrings.RandomizesTheTrackList"),
     },
     leastratings: {
-      name: "Least Ratings",
+      name: t("GameSort.LeastRatings.Title"),
       icon: "chevronsdown",
-      description: "Shows tracks with the fewest ratings first",
+      description: t("AppStrings.ShowsTracksWithTheFewestRatingsFirst"),
     },
     danger: {
-      name: "Danger",
+      name: t("GameSort.Danger.Title"),
       icon: "circlealert",
-      description: "Shows tracks that still need more ratings to be ranked",
+      description: t("AppStrings.ShowsTracksThatStillNeedMoreRatingsTo"),
     },
     ratingbalance: {
-      name: "Rating Balance",
+      name: t("AppStrings.RatingBalance"),
       icon: "scale",
-      description: "Sorts by ratings given minus ratings gotten",
+      description: t("AppStrings.SortsByRatingsGivenMinusRatingsGotten"),
     },
   };
 
@@ -688,54 +619,29 @@ export default function MusicPage() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const [tagResponse, categoryResponse, userResponse] = await Promise.all([
-        getTrackTags(),
-        getTrackRatingCategories().catch(() => null),
-        getSelf().catch(() => null),
-      ]);
-      const payload = tagResponse.ok
-        ? await readArray<TrackTagType>(tagResponse)
-        : [];
-      if (cancelled) return;
-      setAllTrackTags(payload);
-
-      if (categoryResponse?.ok) {
-        const categoryPayload =
-          await readArray<TrackRatingCategoryType>(categoryResponse);
-        if (cancelled) return;
-        const overall =
-          categoryPayload.find(
-            (category: TrackRatingCategoryType) => category.name === "Overall",
-          ) ?? null;
-        setTrackOverallCategory(overall);
+    // Each section can appear as soon as its own request completes.
+    void getTrackTags().then(async (response) => {
+      if (!response.ok) return;
+      const tags = await readArray<TrackTagType>(response);
+      if (!cancelled) setAllTrackTags(tags);
+    }).catch(() => {});
+    void getTrackRatingCategories().then(async (response) => {
+      if (!response.ok) return;
+      const categories = await readArray<TrackRatingCategoryType>(response);
+      if (!cancelled) {
+        setTrackOverallCategory(categories.find((category) => category.name === "Overall") ?? null);
       }
-
-      if (userResponse?.ok) {
-        const userPayload = await readItem<UserType>(userResponse);
-        if (cancelled) return;
-        setUser(userPayload);
-        const ratings = (userPayload?.trackRatings ?? []).reduce(
-          (
-            acc: Record<number, number>,
-            rating: { trackId: number; value: number; categoryId: number },
-          ) => {
-            acc[rating.trackId] = rating.value;
-            return acc;
-          },
-          {},
-        );
-        setTrackSelectedStars(ratings);
-      } else {
-        setUser(null);
-        setTrackSelectedStars({});
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    }).catch(() => {});
+    return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const ratings: Record<number, number> = {};
+    user?.trackRatings?.forEach((rating) => {
+      ratings[rating.trackId] = rating.value;
+    });
+    setTrackSelectedStars(ratings);
+  }, [user]);
 
   useEffect(() => {
     return subscribeToTrackRatingSync(({ trackId, value }) => {
@@ -746,22 +652,11 @@ export default function MusicPage() {
     });
   }, []);
 
-  useEffect(() => {
-    if (jamDetecting) return;
-
-    let cancelled = false;
-    (async () => {
-      const res = await getTracks(sort, jamId, pageVersion);
-      const json = await res.json();
-      if (cancelled) return;
-
-      setMusic(Array.isArray(json?.data) ? json.data : []);
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [jamId, jamDetecting, pageVersion, sort]);
+  const { data: loadedMusic, isLoading: musicLoading, isError: musicError, refetch: refetchMusic } = useTracks(
+    sort, jamId, pageVersion, !jamDetecting,
+  );
+  const music = useMemo(() => loadedMusic ?? [], [loadedMusic]);
+  const initialLoading = !loadedMusic && (jamDetecting || musicLoading);
 
   const tagsByCategory = useMemo(() => {
     const grouped = new Map<string, TrackTagType[]>();
@@ -955,8 +850,7 @@ export default function MusicPage() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Music
-        </p>
+           {t("Navbar.Music.Title")} </p>
         <p
           className="mt-1 text-sm"
           style={{
@@ -968,8 +862,7 @@ export default function MusicPage() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          All the music uploaded to the site
-        </p>
+           {t("AppStrings.AllTheMusicUploadedToTheSite")} </p>
       </header>
 
       {/* Controls */}
@@ -1019,9 +912,9 @@ export default function MusicPage() {
               key={option.value}
               value={option.value}
               icon={option.icon}
-              description={option.description}
+              description={t({ ALL: "AppStrings.ShowThePostJamVersionOfTheGame", JAM: "AppStrings.OnlyShowJamVersionsOfGames", POST_JAM: "AppStrings.OnlyShowPostJamVersionsOfGames" }[option.value])}
             >
-              {option.label}
+              {t({ ALL: "AppStrings.AllVersions", JAM: "AppStrings.JamVersions", POST_JAM: "AppStrings.PostJamVersions" }[option.value])}
             </Dropdown.Item>
           ))}
         </Dropdown>
@@ -1079,7 +972,7 @@ export default function MusicPage() {
               icon={j.icon || "gamepad2"}
               description={
                 j.description ??
-                (j.id === "all" ? "Browse music from every jam" : undefined)
+                (j.id === "all" ? t("AppStrings.BrowseMusicFromEveryJam") : undefined)
               }
             >
               {j.name}
@@ -1098,7 +991,7 @@ export default function MusicPage() {
               setSelectedGenres(next);
               updateMultiQueryParam("genres", next);
             }}
-            placeholder="Genres"
+            placeholder={t("AppStrings.Genres")}
           >
             {visibleTagsByCategory.get("Genre")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
@@ -1119,7 +1012,7 @@ export default function MusicPage() {
               setSelectedMoods(next);
               updateMultiQueryParam("moods", next);
             }}
-            placeholder="Moods"
+            placeholder={t("AppStrings.Moods")}
           >
             {visibleTagsByCategory.get("Mood")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
@@ -1140,7 +1033,7 @@ export default function MusicPage() {
               setSelectedUseCases(next);
               updateMultiQueryParam("useCases", next);
             }}
-            placeholder="Use Cases"
+            placeholder={t("AppStrings.UseCases")}
           >
             {visibleTagsByCategory.get("Use Case")!.map((tag) => (
               <Dropdown.Item key={tag.id} value={String(tag.id)}>
@@ -1160,8 +1053,7 @@ export default function MusicPage() {
             }}
           >
             <Dropdown.Item value="all" icon="infinity">
-              All Looping
-            </Dropdown.Item>
+               {t("AppStrings.AllLooping")} </Dropdown.Item>
             {visibleTagsByCategory.get("Looping")!.map((tag) => (
               <Dropdown.Item
                 key={tag.id}
@@ -1185,13 +1077,13 @@ export default function MusicPage() {
               setSelectedLicenses(next);
               updateMultiQueryParam("licenses", next);
             }}
-            placeholder="Licenses"
+            placeholder={t("AppStrings.Licenses")}
           >
             {availableLicenses.map((license) => (
               <Dropdown.Item key={license} value={license}>
                 <span className="flex items-center gap-2">
                   <LicenseMark license={license} />
-                  <span>{license}</span>
+                  <span>{translateSystemLabel(license, t)}</span>
                 </span>
               </Dropdown.Item>
             ))}
@@ -1206,50 +1098,44 @@ export default function MusicPage() {
             setSelectedMoreFilters(next);
             updateMoreQueryParam(next);
           }}
-          trigger={<Button icon="morehorizontal">More</Button>}
+          trigger={<Button icon="morehorizontal">{t("AppStrings.More")}</Button>}
         >
           <Dropdown.Item
             value={MORE_FILTERS.downloadable}
             icon="download"
-            description="Only show tracks that can be downloaded"
+            description={t("AppStrings.OnlyShowTracksThatCanBeDownloaded")}
           >
-            Downloadable
-          </Dropdown.Item>
+             {t("AppStrings.Downloadable")} </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.backgroundSafe}
             icon="shield"
-            description="Only show tracks marked safe for background use in streams and videos"
+            description={t("AppStrings.OnlyShowTracksMarkedSafeForBackgroundUse")}
           >
-            Stream / Video Safe
-          </Dropdown.Item>
+             {t("AppStrings.StreamVideoSafe")} </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.hideOwnMusic}
             icon="userx"
-            description="Hide tracks from teams you are on"
+            description={t("AppStrings.HideTracksFromTeamsYouAreOn")}
           >
-            Hide Own Music
-          </Dropdown.Item>
+             {t("AppStrings.HideOwnMusic")} </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.hideRatedMusic}
             icon="staroff"
-            description="Hide tracks you have already rated"
+            description={t("AppStrings.HideTracksYouHaveAlreadyRated")}
           >
-            Hide Rated Music
-          </Dropdown.Item>
+             {t("AppStrings.HideRatedMusic")} </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.moveOwnMusicToEnd}
             icon="user"
-            description="Show your own tracks after other tracks"
+            description={t("AppStrings.ShowYourOwnTracksAfterOtherTracks")}
           >
-            Move Own Music To End
-          </Dropdown.Item>
+             {t("AppStrings.MoveOwnMusicToEnd")} </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.moveRatedMusicToEnd}
             icon="star"
-            description="Show unrated tracks first and keep rated tracks at the end"
+            description={t("AppStrings.ShowUnratedTracksFirstAndKeepRatedTracks")}
           >
-            Move Rated Music To End
-          </Dropdown.Item>
+             {t("AppStrings.MoveRatedMusicToEnd")} </Dropdown.Item>
         </Dropdown>
       </Hstack>
       {activeFilterCount > 0 && (
@@ -1260,14 +1146,14 @@ export default function MusicPage() {
             icon="x"
             onClick={clearContentFilters}
           >
-            Clear {activeFilterCount}
+            {t("AppStrings.ClearFilterCount", { count: activeFilterCount })}
           </Button>
         </Hstack>
       )}
 
       {/* List */}
-      <div className="relative z-0 flex items-center justify-center px-1 text-center">
-        <Text
+      {!musicError && <div className="relative z-0 flex min-h-5 items-center justify-center px-1 text-center" aria-busy={initialLoading}>
+        {initialLoading ? <TrackCountSkeleton /> : <Text
           size="sm"
           color={headerTextColor}
           weight="semibold"
@@ -1278,15 +1164,16 @@ export default function MusicPage() {
                 : "0 1px 4px rgba(0, 0, 0, 0.9)",
           }}
         >
-          {displayedMusic.length}{" "}
-          {displayedMusic.length === 1 ? "track" : "tracks"}
-        </Text>
-      </div>
+          {t(displayedMusic.length === 1 ? "AppStrings.TrackCount" : "AppStrings.TracksCount", { count: displayedMusic.length })}
+        </Text>}
+      </div>}
       <Vstack
         align="stretch"
         gap={2}
         className="relative z-0 w-full max-w-4xl self-center"
       >
+        {initialLoading && <ListingSkeleton kind="music" />}
+        {musicError && <Button onClick={() => void refetchMusic()}>{t("AppStrings.Retry")}</Button>}
         {displayedMusic.map((track, index) => (
           (() => {
             const ratingTrackId = track.sourceTrackId ?? track.id;
@@ -1360,7 +1247,7 @@ export default function MusicPage() {
                   if (!response.ok) {
                     const payload = await response.json().catch(() => null);
                     addToast({
-                      title: payload?.message ?? "Failed to save track rating",
+                      title: payload?.message ?? t("AppStrings.FailedToSaveTrackRating"),
                     });
                     emitTrackRatingSync({
                       trackId: ratingTrackId,
@@ -1377,8 +1264,8 @@ export default function MusicPage() {
             );
           })()
         ))}
-        {displayedMusic.length === 0 && !jamDetecting && (
-          <Text color="textFaded">No tracks found.</Text>
+        {displayedMusic.length === 0 && !initialLoading && !musicError && (
+          <Text color="textFaded">{t("AppStrings.NoTracksFound")}</Text>
         )}
       </Vstack>
     </Vstack>

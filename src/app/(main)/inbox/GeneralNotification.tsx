@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Card } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -18,6 +21,7 @@ export default function GeneralNotification({
   notification,
   onMarkRead,
 }: Props) {
+  const uiText = useUiTranslations();
   const viewLink = getNotificationLink(notification);
 
   return (
@@ -26,7 +30,7 @@ export default function GeneralNotification({
         <Vstack align="start" gap={0}>
           <Hstack>
             <Icon name="bell" color="text" size={16} />
-            <Text size="lg">{notification.title || "Notification"}</Text>
+            <Text size="lg">{notification.title || uiText("AppStrings.Notification")}</Text>
           </Hstack>
         </Vstack>
 
@@ -45,8 +49,7 @@ export default function GeneralNotification({
               }}
             >
               <Button color="default" icon="arrowright">
-                View
-              </Button>
+                 {uiText("AppStrings.View")} </Button>
             </Link>
           )}
           <Button
@@ -54,8 +57,7 @@ export default function GeneralNotification({
             icon="check"
             onClick={() => onMarkRead(notification.id)}
           >
-            Mark as Read
-          </Button>
+             {uiText("AppStrings.MarkAsRead2")} </Button>
         </Hstack>
 
         <Hstack>

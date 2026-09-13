@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useDelayedHover } from "@/hooks/useDelayedHover";
 
 import { useMusic } from "bioloom-miniplayer";
@@ -76,6 +79,7 @@ export default function TrackWaveformPlayer({
   canComment: boolean;
   onSubmitTimestampComment: (content: string, timestamp: number) => Promise<void>;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { emojis, priorityEmotes } = useEmojis();
   const { audioEl, current, isPlaying, playItem, seek, shown, setShown } =
@@ -394,7 +398,7 @@ export default function TrackWaveformPlayer({
                   }}
                 >
                   <Text size="xs" color="textFaded">
-                    {comment.author.name} at {formatTime(comment.timestamp)}
+                    {comment.author.name}  {uiText("AppStrings.At")} {formatTime(comment.timestamp)}
                   </Text>
                   <div className="text-sm">
                     <MentionedContent content={truncateComment(comment.content)} />
@@ -455,17 +459,16 @@ export default function TrackWaveformPlayer({
                 setContextMenu(null);
               }}
             >
-              Add Comment
-            </Button>
+               {uiText("AppStrings.AddComment")} </Button>
           </div>
         )}
       </div>
 
       <Hstack className="w-full items-center gap-3">
         <Button
-          aria-label={isCurrentTrack && isPlaying ? "Pause" : "Play"}
+          aria-label={isCurrentTrack && isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
           icon={isCurrentTrack && isPlaying ? "pause" : "play"}
-          tooltip={isCurrentTrack && isPlaying ? "Pause" : "Play"}
+          tooltip={isCurrentTrack && isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
           onClick={async () => {
             if (isCurrentTrack && audioEl) {
               if (audioEl.paused) {
@@ -511,14 +514,14 @@ export default function TrackWaveformPlayer({
         }}
       >
         <ModalContent>
-          <ModalHeader>Add Comment at {formatTime(commentTimestamp)}</ModalHeader>
+          <ModalHeader>{uiText("AppStrings.AddCommentAt")} {formatTime(commentTimestamp)}</ModalHeader>
           <ModalBody>
             <Vstack align="stretch" className="gap-3">
               <Hstack className="items-end gap-2">
                 <Input
                   value={commentDraft}
                   onValueChange={setCommentDraft}
-                  placeholder={`Comment at ${formatTime(commentTimestamp)}`}
+                  placeholder={uiText("AppStrings.CommentAtValue0", { value0: formatTime(commentTimestamp) })}
                 />
                 {emojis.length > 0 && (
                   <div ref={pickerRef} className="relative">
@@ -541,7 +544,7 @@ export default function TrackWaveformPlayer({
                         <Input
                           value={emojiQuery}
                           onValueChange={setEmojiQuery}
-                          placeholder="Search emoji"
+                          placeholder={uiText("AppStrings.SearchEmoji")}
                           size="sm"
                           fullWidth
                           style={{
@@ -552,8 +555,7 @@ export default function TrackWaveformPlayer({
                         />
                         {filteredEmojis.length === 0 ? (
                           <Text size="xs" color="textFaded">
-                            No emojis found.
-                          </Text>
+                             {uiText("AppStrings.NoEmojisFound")} </Text>
                         ) : (
                           <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
                             {filteredEmojis.map((emoji) => (
@@ -565,13 +567,13 @@ export default function TrackWaveformPlayer({
                                 leftSlot={
                                   <img
                                     src={emoji.image}
-                                    alt={`:${emoji.slug}:`}
+                                    alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                                     className="h-5 w-5"
                                     loading="lazy"
                                     decoding="async"
                                   />
                                 }
-                                tooltip={`:${emoji.slug.toUpperCase()}:`}
+                                tooltip={uiText("AppStrings.Value03", { value0: emoji.slug.toUpperCase() })}
                                 onClick={() => {
                                   setCommentDraft((current) =>
                                     current
@@ -601,13 +603,12 @@ export default function TrackWaveformPlayer({
                 setEmojiQuery("");
               }}
             >
-              Cancel
-            </Button>
+               {uiText("AppStrings.Cancel")} </Button>
             <Button
               loading={savingComment}
               onClick={async () => {
                 if (!commentDraft.trim()) {
-                  addToast({ title: "Enter a timestamp comment" });
+                  addToast({ title: uiText("AppStrings.EnterATimestampComment") });
                   return;
                 }
                 try {
@@ -625,8 +626,7 @@ export default function TrackWaveformPlayer({
                 }
               }}
             >
-              Add Comment
-            </Button>
+               {uiText("AppStrings.AddComment")} </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -1,5 +1,10 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
+import { useTranslations } from "@/compat/next-intl";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { addToast, Button, Input, Popover, Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
@@ -27,6 +32,8 @@ export default function CommentReactions({
   className,
   onOverlayChange,
 }: CommentReactionsProps) {
+  const uiText = useUiTranslations();
+  const t = useTranslations();
   const { emojis, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [current, setCurrent] = useState<ReactionSummaryType[]>(
@@ -119,7 +126,7 @@ export default function CommentReactions({
         if (response.status === 409) {
           return;
         }
-        let message = "Failed to update reaction";
+        let message = t("AppStrings.FailedToUpdateReaction");
         try {
           const data = await response.json();
           if (typeof data?.message === "string" && data.message) {
@@ -134,7 +141,7 @@ export default function CommentReactions({
       setReactionEffectId(wasReacted ? null : emoji.id);
     } catch (error) {
       console.error("Failed to update reaction", error);
-      addToast({ title: "Failed to update reaction" });
+      addToast({ title: t("AppStrings.FailedToUpdateReaction") });
     } finally {
       setUpdating(null);
     }
@@ -188,7 +195,7 @@ export default function CommentReactions({
               >
                 <img
                   src={entry.reaction.image}
-                  alt={`:${entry.reaction.slug}:`}
+                  alt={uiText("AppStrings.Value03", { value0: entry.reaction.slug })}
                   className="h-5 w-5"
                   loading="eager"
                   decoding="auto"
@@ -229,7 +236,7 @@ export default function CommentReactions({
                 <span>:{entry.reaction.slug}:</span>
               </div>
               {(entry.users ?? []).length === 0 ? (
-                <div className="text-sm opacity-70">No reactions yet.</div>
+                <div className="text-sm opacity-70">{t("AppStrings.NoReactionsYet")}</div>
               ) : (
                 <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
                   {(entry.users ?? []).map((user) => (
@@ -265,7 +272,7 @@ export default function CommentReactions({
             variant="ghost"
             icon="smileplus"
             onClick={() => setPickerOpen((open) => !open)}
-            aria-label="Add reaction"
+            aria-label={t("AppStrings.AddReaction")}
             aria-expanded={pickerOpen}
           />
           <Popover
@@ -281,7 +288,7 @@ export default function CommentReactions({
               <Input
                 value={emojiQuery}
                 onValueChange={setEmojiQuery}
-                placeholder="Search emoji"
+                placeholder={t("AppStrings.SearchEmoji")}
                 size="sm"
                 fullWidth
                 style={{
@@ -292,8 +299,7 @@ export default function CommentReactions({
               />
               {filteredEmojis.length === 0 ? (
                 <Text size="xs" color="textFaded">
-                  No emojis found.
-                </Text>
+                   {t("AppStrings.NoEmojisFound")} </Text>
               ) : (
                 <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
                   {filteredEmojis.map((emoji) => (
@@ -305,13 +311,13 @@ export default function CommentReactions({
                       leftSlot={
                         <img
                           src={emoji.image}
-                          alt={`:${emoji.slug}:`}
+                          alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                           className="h-5 w-5"
                           loading="lazy"
                           decoding="async"
                         />
                       }
-                      tooltip={`:${emoji.slug.toUpperCase()}:`}
+                      tooltip={uiText("AppStrings.Value03", { value0: emoji.slug.toUpperCase() })}
                       onClick={() => {
                         void handleToggle(emoji);
                         setPickerOpen(false);

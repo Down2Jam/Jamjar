@@ -1,18 +1,22 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
+import TwitchConnection from "@/components/twitch-connection";
 import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
-import { addToast, Avatar, Form, ImageCropData, ImageInput } from "bioloom-ui";
+import { addToast, Form, ImageCropData, ImageInput, Tabs, Tab, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Icon } from "bioloom-ui";
 import { redirect, usePathname } from "@/compat/next-navigation";
-import { useEffect, useRef, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { getSelf, updateUser } from "@/requests/user";
 import { getTeamRoles } from "@/requests/team";
 import { RoleType } from "@/types/RoleType";
 import { Input } from "bioloom-ui";
 import { Button } from "bioloom-ui";
-import { Text } from "bioloom-ui";
-import { Hstack, Stack, Vstack } from "bioloom-ui";
+import { Chip, Text } from "bioloom-ui";
+import { Hstack, Vstack } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
@@ -23,7 +27,11 @@ import { useEmojis } from "@/providers/useEmojis";
 import { createUserEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 import { readArray, readItem, unwrapArray } from "@/requests/helpers";
 import { BASE_URL } from "@/requests/config";
+import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import GameTokensSection from "@/components/settings/GameTokensSection";
+
+import "@/components/game-editing-form/game-editor.css";
+import "@/components/form-editor.css";
 
 const PREFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 const MIN_EMOTE_PREFIX_LENGTH = 4;
@@ -58,6 +66,7 @@ function buildDefaultEmotePrefix(source?: string | null) {
 }
 
 export default function UserPage() {
+  const uiText = useUiTranslations();
   const [user, setUser] = useState<UserType>();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -84,6 +93,7 @@ export default function UserPage() {
   const [emoteSlug, setEmoteSlug] = useState("");
   const [emoteImage, setEmoteImage] = useState<string | null>(null);
   const [savingEmote, setSavingEmote] = useState(false);
+  const [addingEmote, setAddingEmote] = useState(false);
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
   const [emoteArtistSlug, setEmoteArtistSlug] = useState("");
   const [editingEmoteId, setEditingEmoteId] = useState<number | null>(null);
@@ -148,7 +158,7 @@ export default function UserPage() {
             Boolean(data.autoHideRatingsWhileStreaming),
           );
           setMessageRequestPolicy(data.messageRequestPolicy ?? "EVERYONE");
-          setEmotePrefixInput(data.emotePrefix ?? "");
+          setEmotePrefixInput(data.emotePrefix || buildDefaultEmotePrefix(data.name));
           const loadedPrimaryRoles = Array.isArray(data.primaryRoles)
             ? data.primaryRoles
             : [];
@@ -196,9 +206,9 @@ export default function UserPage() {
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">{uiText("AppStrings.Loading")}</Text>
             </Hstack>
-            <Text color="textFaded">Loading settings...</Text>
+            <Text color="textFaded">{uiText("AppStrings.LoadingSettings")}</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -256,7 +266,7 @@ export default function UserPage() {
     setSecondaryRoles(
       new Set(userSecondaryRoles.map((role) => role.slug)),
     );
-    setEmotePrefixInput(user.emotePrefix ?? "");
+    setEmotePrefixInput(user.emotePrefix || buildDefaultEmotePrefix(user.name));
   };
 
   const hasUnsavedChanges =
@@ -269,7 +279,7 @@ export default function UserPage() {
     autoHideRatingsWhileStreaming !==
       Boolean(user.autoHideRatingsWhileStreaming) ||
     messageRequestPolicy !== (user.messageRequestPolicy ?? "EVERYONE") ||
-    cleanedPrefixInput !== (user.emotePrefix ?? "") ||
+    cleanedPrefixInput !== (user.emotePrefix || buildDefaultEmotePrefix(user.name)) ||
     !setsEqual(
       primaryRoles,
       new Set(userPrimaryRoles.map((role) => role.slug)),
@@ -384,8 +394,9 @@ export default function UserPage() {
     <div className="flex items-center justify-center">
       <Form
         className={`w-full max-w-6xl flex flex-col gap-4 ${
-          hasUnsavedChanges ? "pb-28" : ""
+          hasUnsavedChanges ? "pb-48 sm:pb-32" : ""
         }`}
+        style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
         validationErrors={errors}
         onReset={resetSettingsForm}
         onSubmit={async (e) => {
@@ -393,7 +404,7 @@ export default function UserPage() {
 
           if (!name) {
             addToast({
-              title: "You need to enter a name",
+              title: uiText("AppStrings.YouNeedToEnterAName"),
             });
             return;
           }
@@ -403,7 +414,7 @@ export default function UserPage() {
             (cleanedPrefixInput.length < MIN_EMOTE_PREFIX_LENGTH ||
               cleanedPrefixInput.length > MAX_EMOTE_PREFIX_LENGTH)
           ) {
-            addToast({ title: "Emote prefix must be 4 to 8 characters." });
+            addToast({ title: uiText("AppStrings.EmotePrefixMustBe4To8Characters") });
             return;
           }
 
@@ -434,12 +445,17 @@ export default function UserPage() {
           );
 
           if (response.ok) {
-            addToast({ title: "Changed settings" });
+            addToast({ title: uiText("AppStrings.ChangedSettings") });
             const updatedUser = await readItem<UserType>(response);
-            if (updatedUser) setUser(updatedUser);
+            if (updatedUser) {
+              setUser(updatedUser);
+              setEmotePrefixInput(
+                updatedUser.emotePrefix || buildDefaultEmotePrefix(updatedUser.name),
+              );
+            }
             setWaitingSave(false);
           } else {
-            addToast({ title: "Failed to update settings" });
+            addToast({ title: uiText("AppStrings.FailedToUpdateSettings") });
             setWaitingSave(false);
           }
         }}
@@ -455,8 +471,7 @@ export default function UserPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Settings
-          </h1>
+             {uiText("Navbar.Settings.Title")} </h1>
           <p
             className="mt-1 text-sm"
             style={{
@@ -468,12 +483,28 @@ export default function UserPage() {
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Manage your preferences
-          </p>
+             {uiText("Navbar.Settings.Description")} </p>
         </header>
 
-        <Stack align="stretch" direction="flex-col lg:flex-row">
-          <Card>
+        <Tabs defaultIndex={new URLSearchParams(window.location.search).get("tab") === "streams" ? 1 : 0} className="[&>[role=tablist]]:justify-center">
+          <Tab title={uiText("AppStrings.General")} icon="cog">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack>
+                    <Icon name="cog" color="text" size={28} />
+                    <Text size="2xl" color="text" weight="bold">
+                      {uiText("AppStrings.General")}
+                    </Text>
+                  </Hstack>
+                  <Text size="sm" color="textFaded">
+                    {uiText("Settings.TabDescriptions.General")}
+                  </Text>
+                </Vstack>
+              </div>
+
+        <>
+          <div className="game-editor-row">
             <Vstack align="start">
               <div>
                 <Text color="text">Settings.Name.Title</Text>
@@ -485,13 +516,13 @@ export default function UserPage() {
                 value={name}
                 onValueChange={setName}
                 name="name"
-                placeholder="Enter a name"
+                placeholder={uiText("CreateLeaderboard.Name.Placeholder")}
                 type="text"
               />
             </Vstack>
-          </Card>
+          </div>
 
-          <Card>
+          <div className="game-editor-row">
             <Vstack align="start">
               <div>
                 <Text color="text">Settings.Email.Title</Text>
@@ -499,103 +530,46 @@ export default function UserPage() {
                   Settings.Email.Description
                 </Text>
               </div>
-              {showEmail && (
-                <Input
-                  value={email}
-                  onValueChange={setEmail}
-                  name="email"
-                  placeholder="Enter an email"
-                  type="text"
-                />
-              )}
-              <Button size="sm" onClick={() => setShowEmail(!showEmail)}>
-                {showEmail ? "Settings.Email.Hide" : "Settings.Email.Show"}
-              </Button>
-            </Vstack>
-          </Card>
-        </Stack>
-
-        <Stack align="stretch" direction="flex-col lg:flex-row">
-          <Card className="flex-1">
-            <Vstack align="start" className="gap-3">
-              <div>
-                <Text color="text">Connected Twitch Channel</Text>
-                <Text color="textFaded" size="xs">
-                  If you want your Twitch account connected, contact Ategon on
-                  Discord.
-                </Text>
-              </div>
-              <Input
-                value={user.twitch ?? ""}
-                disabled
-                name="twitch"
-                placeholder="No Twitch channel connected"
-                type="text"
-              />
-            </Vstack>
-          </Card>
-
-          <Card className="flex-1">
-            <Vstack align="start" className="gap-4">
-              <Hstack align="start" className="w-full gap-3">
-                <Switch
-                  checked={hideRatings}
-                  onChange={setHideRatings}
-                  className="shrink-0 mt-1"
-                />
-                <Vstack align="start" gap={0} className="min-w-0 flex-1">
-                  <Text color="text">Hide ratings behind buttons</Text>
-                  <Text color="textFaded" size="xs">
-                    Keep ratings hidden until you press a button to reveal them
-                    on game, track, music, and player views.
-                  </Text>
-                </Vstack>
-              </Hstack>
-
-              <Hstack align="start" className="w-full gap-3">
-                <Switch
-                  checked={autoHideRatingsWhileStreaming}
-                  onChange={setAutoHideRatingsWhileStreaming}
-                  disabled={!user.twitch}
-                  className="shrink-0 mt-1"
-                />
-                <Vstack align="start" gap={0} className="min-w-0 flex-1">
-                  <Text color="text">Auto-hide while streaming</Text>
-                  <Text color="textFaded" size="xs">
-                    If your connected Twitch channel is live with the `d2jam`
-                    tag, ratings hide automatically until the stream goes
-                    offline.
-                  </Text>
-                </Vstack>
+              <Hstack gap={3} className="w-full min-w-0">
+                <Button size="sm" className="shrink-0" onClick={() => setShowEmail(!showEmail)}>
+                  {showEmail ? "Settings.Email.Hide" : "Settings.Email.Show"}
+                </Button>
+                {showEmail && (
+                  <div className="min-w-0 flex-1">
+                    <Input
+                      value={email}
+                      onValueChange={setEmail}
+                      name="email"
+                      placeholder={uiText("AppStrings.EnterAnEmail")}
+                      type="text"
+                      fullWidth
+                    />
+                  </div>
+                )}
               </Hstack>
             </Vstack>
-          </Card>
-        </Stack>
-
-        <GameTokensSection />
-
-        <Card>
+          </div>
+        </>
+        <div className="game-editor-row">
           <Vstack align="start" className="gap-3">
             <div>
-              <Text color="text">Direct message requests</Text>
+              <Text color="text">{uiText("AppStrings.DirectMessageRequests")}</Text>
               <Text color="textFaded" size="xs">
-                Choose who can send you the opening message of a new conversation.
-              </Text>
+                 {uiText("AppStrings.ChooseWhoCanSendYouTheOpeningMessageOfANewConversation")} </Text>
             </div>
-            <select
-              value={messageRequestPolicy}
-              onChange={(event) => setMessageRequestPolicy(event.target.value as typeof messageRequestPolicy)}
-              className="rounded-lg border border-white/15 bg-transparent px-3 py-2 text-sm"
-              style={{ color: colors.text, backgroundColor: colors.mantle }}
+            <Dropdown
+              selectedValue={messageRequestPolicy}
+              onSelect={(value) => setMessageRequestPolicy(value as typeof messageRequestPolicy)}
+              triggerSize="sm"
             >
-              <option value="EVERYONE">Everyone</option>
-              <option value="FOLLOWING">People I follow</option>
-              <option value="NOBODY">Nobody</option>
-            </select>
+              <Dropdown.Item value="EVERYONE">{uiText("AppStrings.Everyone")}</Dropdown.Item>
+              <Dropdown.Item value="FOLLOWING">{uiText("AppStrings.PeopleIFollow")}</Dropdown.Item>
+              <Dropdown.Item value="NOBODY">{uiText("AppStrings.Nobody")}</Dropdown.Item>
+            </Dropdown>
           </Vstack>
-        </Card>
+        </div>
 
-        <Card>
+        <div className="game-editor-row">
           <Vstack align="start">
             <div>
               <Text color="text">Settings.Bio.Title</Text>
@@ -605,9 +579,9 @@ export default function UserPage() {
             </div>
             <Editor content={bio} setContent={setBio} format="markdown" />
           </Vstack>
-        </Card>
+        </div>
 
-        <Card>
+        <div className="game-editor-row">
           <Vstack align="start">
             <div>
               <Text color="text">Settings.Short.Title</Text>
@@ -619,14 +593,14 @@ export default function UserPage() {
               value={short}
               onValueChange={setShort}
               name="short"
-              placeholder="Enter a short bio"
+              placeholder={uiText("AppStrings.EnterAShortBio")}
               maxLength={155}
             />
           </Vstack>
-        </Card>
+        </div>
 
-        <Card>
-          <Hstack>
+        <div className="game-editor-block">
+          <Hstack className="flex-wrap md:flex-nowrap">
             <Vstack align="start">
               <div>
                 <Text color="text">Settings.ProfilePicture.Title</Text>
@@ -638,7 +612,7 @@ export default function UserPage() {
                 value={profilePicture}
                 width={120}
                 height={120}
-                placeholder="Upload"
+                placeholder={uiText("AppStrings.Upload")}
                 onSelect={async (file, crop) => {
                   try {
                     const data = await uploadImage(file, crop);
@@ -649,14 +623,13 @@ export default function UserPage() {
                   } catch (error) {
                     console.error(error);
                     addToast({
-                      title: "Error uploading image",
+                      title: uiText("AppStrings.ErrorUploadingImage"),
                     });
                   }
                 }}
               />
               <Text size="sm" color="textFaded">
-                Or choose a default profile picture:
-              </Text>
+                 {uiText("AppStrings.OrChooseADefaultProfilePicture")} </Text>
               <div className="flex flex-wrap gap-2">
                 {defaultPfps.map((src, index) => (
                   <button
@@ -671,7 +644,7 @@ export default function UserPage() {
                   >
                     <img
                       src={src}
-                      alt={`Default pfp ${index + 1}`}
+                      alt={uiText("AppStrings.DefaultPfpValue0", { value0: index + 1 })}
                       className="h-full w-full rounded-full object-cover"
                       loading="lazy"
                       decoding="async"
@@ -680,31 +653,212 @@ export default function UserPage() {
                 ))}
               </div>
             </Vstack>
-            {profilePicture && (
-              <Vstack>
-                <Avatar src={profilePicture} />
-              </Vstack>
-            )}
           </Hstack>
-        </Card>
+        </div>
 
-        <Card>
-          <Vstack align="start" className="gap-3">
-            <div>
-              <Text color="text">User Emotes</Text>
-              <Text color="textFaded" size="xs">
-                Your emotes use the prefix{" "}
-                <span className="font-semibold">{emotePrefix}</span>.
-              </Text>
-              <Text color="textFaded" size="sm">
-                Only upload emotes you have the license to use! Any emotes you
-                don't own will be removed from the site.
-              </Text>
-            </div>
+        <div className="game-editor-block">
+          <Hstack className="flex-wrap md:flex-nowrap">
             <Vstack align="start">
-              <Text color="textFaded" size="xs">
-                Emote Prefix
-              </Text>
+              <div>
+                <Text color="text">Settings.BannerPicture.Title</Text>
+                <Text color="textFaded" size="xs">
+                  Settings.BannerPicture.Description
+                </Text>
+              </div>
+              <ImageInput
+                value={bannerPicture}
+                width={880}
+                height={80}
+                className="settings-banner-input"
+                placeholder={uiText("AppStrings.Upload")}
+                onSelect={async (file, crop) => {
+                  try {
+                    const data = await uploadImage(file, crop);
+                    setBannerPicture(data.data);
+                    addToast({
+                      title: data.message,
+                    });
+                  } catch (error) {
+                    console.error(error);
+                    addToast({
+                      title: uiText("AppStrings.ErrorUploadingImage"),
+                    });
+                  }
+                }}
+              />
+            </Vstack>
+
+          </Hstack>
+        </div>
+        <>
+          <div className="game-editor-row">
+            <Vstack align="start">
+              <div>
+                <Text color="text">Settings.PrimaryRoles.Title</Text>
+                <Text color="textFaded" size="xs">
+                  Settings.PrimaryRoles.Description
+                </Text>
+              </div>
+              <Dropdown
+                multiple
+                selectedValues={primaryRoles}
+                onSelectionChange={(selection) => {
+                  setPrimaryRoles(selection as Set<string>);
+                }}
+                position="top"
+                trigger={
+                  <Button size="sm">
+                    {primaryRoles.size > 0
+                      ? Array.from(primaryRoles)
+                          .map(
+                            (role) =>
+                              roles.find((findrole) => findrole.slug == role)
+                                ?.name || "Unknown",
+                          )
+                          .join(", ")
+                      : uiText("AppStrings.NoRoles")}
+                  </Button>
+                }
+              >
+                {roles.map((primaryRole) => (
+                  <Dropdown.Item
+                    key={primaryRole.slug}
+                    value={primaryRole.slug}
+                    description={primaryRole.description}
+                  >
+                    {primaryRole.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+            </Vstack>
+          </div>
+
+          <div className="game-editor-row">
+            <Vstack align="start">
+              <div>
+                <Text color="text">Settings.SecondaryRoles.Title</Text>
+                <Text color="textFaded" size="xs">
+                  Settings.SecondaryRoles.Description
+                </Text>
+              </div>
+              <Dropdown
+                position="top"
+                multiple
+                selectedValues={secondaryRoles}
+                onSelectionChange={(selection) => {
+                  setSecondaryRoles(selection as Set<string>);
+                }}
+                trigger={
+                  <Button size="sm">
+                    {secondaryRoles.size > 0
+                      ? Array.from(secondaryRoles)
+                          .map(
+                            (role) =>
+                              roles.find((findrole) => findrole.slug == role)
+                                ?.name || "Unknown",
+                          )
+                          .join(", ")
+                      : uiText("AppStrings.NoRoles")}
+                  </Button>
+                }
+              >
+                {roles.map((secondaryRole) => (
+                  <Dropdown.Item
+                    key={secondaryRole.slug}
+                    value={secondaryRole.slug}
+                    description={secondaryRole.description}
+                  >
+                    {secondaryRole.name}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown>
+            </Vstack>
+          </div>
+        </>
+
+            </div>
+          </Tab>
+          <Tab title={uiText("AppStrings.Streams")} icon="sitwitch">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack>
+                    <Icon name="sitwitch" color="text" size={28} />
+                    <Text size="2xl" color="text" weight="bold">
+                      {uiText("AppStrings.Streams")}
+                    </Text>
+                  </Hstack>
+                  <Text size="sm" color="textFaded">
+                    {uiText("Settings.TabDescriptions.Streams")}
+                  </Text>
+                </Vstack>
+              </div>
+
+        <>
+          <div className="game-editor-row">
+            <TwitchConnection username={user.twitch} onDisconnected={() => {
+              setUser((current) => current ? { ...current, twitch: "" } : current);
+              setAutoHideRatingsWhileStreaming(false);
+            }} />
+          </div>
+
+          <div className="game-editor-block">
+            <Vstack align="start" className="gap-4">
+              <Hstack align="start" className="w-full gap-3">
+                <Switch
+                  checked={hideRatings}
+                  onChange={setHideRatings}
+                  className="shrink-0 mt-1"
+                />
+                <Vstack align="start" gap={0} className="min-w-0 flex-1">
+                  <Text color="text">{uiText("AppStrings.HideRatingsBehindButtons")}</Text>
+                  <Text color="textFaded" size="xs">
+                     {uiText("AppStrings.KeepRatingsHiddenUntilYouPressAButton")} </Text>
+                </Vstack>
+              </Hstack>
+
+              <Hstack align="start" className="w-full gap-3">
+                <Switch
+                  checked={autoHideRatingsWhileStreaming}
+                  onChange={setAutoHideRatingsWhileStreaming}
+                  disabled={!user.twitch}
+                  className="shrink-0 mt-1"
+                />
+                <Vstack align="start" gap={0} className="min-w-0 flex-1">
+                  <Text color="text">{uiText("AppStrings.AutoHideWhileStreaming")}</Text>
+                  <Text color="textFaded" size="xs">
+                    {uiText("AppStrings.IfYourConnectedTwitchChannelIsLiveWith")
+                      .split(/(`d2jam`)/g)
+                      .map((part, index) => part === "`d2jam`" ? (
+                        <Chip key={index} className="post-tag-chip">d2jam</Chip>
+                      ) : part)}
+                  </Text>
+                </Vstack>
+              </Hstack>
+            </Vstack>
+          </div>
+        </>
+
+            </div>
+          </Tab>
+          <Tab title={uiText("AppStrings.Emotes")} icon="smileplus">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack>
+                    <Icon name="smileplus" color="text" size={28} />
+                    <Text size="2xl" color="text" weight="bold">
+                      {uiText("AppStrings.Emotes")}
+                    </Text>
+                  </Hstack>
+                  <Text size="sm" color="textFaded">
+                    {uiText("Settings.TabDescriptions.Emotes")}
+                  </Text>
+                </Vstack>
+              </div>
+        <div className="game-editor-row">
+            <Vstack align="start">
+              <div><Text color="text">{uiText("AppStrings.EmotePrefix")}</Text></div>
               <Input
                 value={emotePrefixInput}
                 onValueChange={(value) =>
@@ -716,23 +870,45 @@ export default function UserPage() {
                   )
                 }
                 name="emotePrefix"
-                placeholder="e.g. abc123"
+                placeholder={uiText("AppStrings.EGAbc123")}
                 maxLength={MAX_EMOTE_PREFIX_LENGTH}
               />
             </Vstack>
+        </div>
+        <div className="game-editor-block">
+          <Vstack align="start" className="gap-3">
+            <div>
+              <Text color="text">{uiText("AppStrings.UserEmotes")}</Text>
+              <Text color="textFaded" size="xs">
+                 {uiText("AppStrings.YourEmotesUseThePrefix")}{" "}
+                <span className="font-semibold">{emotePrefix}</span>.
+              </Text>
+              <Text color="textFaded" size="sm">
+                 {uiText("AppStrings.OnlyUploadEmotesYouHaveTheLicenseTo")} </Text>
+            </div>
+
+            <Button icon="plus" onClick={() => setAddingEmote(true)}>{uiText("AppStrings.AddEmote")}</Button>
+            <Modal isOpen={addingEmote} onOpenChange={open => { if (!open && !savingEmote) { setAddingEmote(false); setEmoteArtistOpen(false); } }} size="2xl">
+              <ModalContent>
+                <ModalHeader className="pr-14 text-lg font-semibold">{uiText("AppStrings.AddEmote")}</ModalHeader>
+                <ModalBody className="max-h-[65dvh] overflow-y-auto">
+                  <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
+                    {emoteImage ? <img src={emoteImage} alt={uiText("AppStrings.EmotePreview")} className="h-12 w-12 object-contain" /> : <Icon name="smileplus" size={32} />}
+                    <div><Text size="xs" color="textFaded">{uiText("AppStrings.Preview")}</Text><Text size="sm">:{emotePrefix}{cleanedEmoteSlug || uiText("AppStrings.Emote")}:</Text></div>
+                  </div>
             <Hstack className="items-end flex-wrap">
               <Input
-                label="Emote slug"
+                label={uiText("AppStrings.EmoteSlug")}
                 labelPlacement="outside"
-                placeholder="smile"
+                placeholder={uiText("AppStrings.Smile")}
                 value={emoteSlug}
                 onValueChange={setEmoteSlug}
               />
               <div className="relative">
                 <Input
-                  label="Artist user slug"
+                  label={uiText("AppStrings.ArtistUserSlug")}
                   labelPlacement="outside"
-                  placeholder="username"
+                  placeholder={uiText("AppStrings.Username2")}
                   value={emoteArtistSlug}
                   onValueChange={(value) => {
                     setEmoteArtistSlug(value);
@@ -803,13 +979,12 @@ export default function UserPage() {
               </div>
               <Vstack align="start" gap={1}>
                 <Text size="xs" color="textFaded">
-                  Upload image
-                </Text>
+                   {uiText("AppStrings.UploadImage")} </Text>
                 <ImageInput
                   value={emoteImage}
                   width={80}
                   height={80}
-                  placeholder="Upload"
+                  placeholder={uiText("AppStrings.Upload")}
                   onSelect={async (file, crop) => {
                     try {
                       const data = await uploadImage(file, crop);
@@ -817,26 +992,21 @@ export default function UserPage() {
                       addToast({ title: data.message });
                     } catch (error) {
                       console.error(error);
-                      addToast({ title: "Error uploading image" });
+                      addToast({ title: uiText("AppStrings.ErrorUploadingImage") });
                     }
                   }}
                 />
               </Vstack>
-              <Vstack align="start" gap={1}>
-                <Text size="xs" color="textFaded">
-                  Preview
-                </Text>
-                <Text size="sm">
-                  :{emotePrefix}
-                  {cleanedEmoteSlug || "emote"}:
-                </Text>
-              </Vstack>
+            </Hstack>
+                </ModalBody>
+                <ModalFooter>
+                  <Button variant="ghost" disabled={savingEmote} onClick={() => { setAddingEmote(false); setEmoteArtistOpen(false); }}>{uiText("AppStrings.Cancel")}</Button>
               <Button
                 color="blue"
                 loading={savingEmote}
                 onClick={async () => {
                   if (!cleanedEmoteSlug || !emoteImage) {
-                    addToast({ title: "Slug and image are required" });
+                    addToast({ title: uiText("AppStrings.SlugAndImageAreRequired") });
                     return;
                   }
                   setSavingEmote(true);
@@ -849,49 +1019,53 @@ export default function UserPage() {
                     const data = await response.json().catch(() => null);
                     if (!response.ok) {
                       addToast({
-                        title: data?.message ?? "Failed to add emote",
+                        title: data?.message ?? uiText("AppStrings.FailedToAddEmote"),
                       });
                       return;
                     }
-                    addToast({ title: "Emote added" });
+                    addToast({ title: uiText("AppStrings.EmoteAdded") });
                     setEmoteSlug("");
                     setEmoteImage(null);
                     setEmoteArtistSlug("");
+                    setAddingEmote(false);
+                    setEmoteArtistOpen(false);
                     await refreshEmojis();
                   } catch (error) {
                     console.error(error);
-                    addToast({ title: "Failed to add emote" });
+                    addToast({ title: uiText("AppStrings.FailedToAddEmote") });
                   } finally {
                     setSavingEmote(false);
                   }
                 }}
               >
-                Add Emote
-              </Button>
-            </Hstack>
+                 {uiText("AppStrings.AddEmote")} </Button>
+                </ModalFooter>
+              </ModalContent>
+            </Modal>
 
             {userEmotes.length === 0 ? (
               <Text size="sm" color="textFaded">
-                No user emotes yet.
-              </Text>
+                 {uiText("AppStrings.NoUserEmotesYet")} </Text>
             ) : (
-              <div className="flex flex-wrap gap-3">
+              <div className="w-full">
                 {userEmotes.map((emoji) => (
                   <div
                     key={emoji.id}
-                    className="flex items-center gap-2 rounded-lg border border-gray-700 px-3 py-2"
+                    className="flex flex-wrap items-center gap-3 border-b py-4 last:border-b-0"
+                    style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}
                   >
                     <img
                       src={emoji.image}
-                      alt={`:${emoji.slug}:`}
+                      alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                       className="h-6 w-6"
                       loading="lazy"
                       decoding="async"
                     />
-                    <Text size="sm">:{emoji.slug}:</Text>
+                    <div className="min-w-0 flex-1"><Text size="sm">:{emoji.slug}:</Text>{emoji.artistUser && <Text size="xs" color="textFaded">{emoji.artistUser.name || emoji.artistUser.slug}</Text>}</div>
                     <Button
                       size="sm"
                       variant="ghost"
+                      icon="pencil"
                       onClick={() => {
                         setEditingEmoteId(emoji.id);
                         setEditingEmoteSlug(
@@ -901,8 +1075,7 @@ export default function UserPage() {
                         setEditingEmoteArtistSlug(emoji.artistUser?.slug ?? "");
                       }}
                     >
-                      Edit
-                    </Button>
+                       {uiText("AppStrings.PreviewEdit")} </Button>
                     <Button
                       size="sm"
                       color="red"
@@ -912,39 +1085,42 @@ export default function UserPage() {
                         const data = await response.json().catch(() => null);
                         if (!response.ok) {
                           addToast({
-                            title: data?.message ?? "Failed to delete emote",
+                            title: data?.message ?? uiText("AppStrings.FailedToDeleteEmote"),
                           });
                           return;
                         }
-                        addToast({ title: data?.message ?? "Emote deleted" });
+                        addToast({ title: data?.message ?? uiText("AppStrings.EmoteDeleted") });
                         await refreshEmojis();
                       }}
                     >
-                      Remove
-                    </Button>
+                       {uiText("PostCard.Remove.Title")} </Button>
                   </div>
                 ))}
               </div>
             )}
             {editingEmoteId && (
-              <Card className="w-full">
-                <Vstack align="start" className="gap-3">
-                  <Text color="text" weight="semibold">
-                    Edit Emote
-                  </Text>
+              <Modal isOpen onOpenChange={open => { if (!open && !savingEditEmote) { setEditingEmoteId(null); setEditEmoteArtistOpen(false); } }} size="2xl">
+                <ModalContent>
+                  <ModalHeader className="pr-14 text-lg font-semibold">{uiText("AppStrings.EditEmote")}</ModalHeader>
+                  <ModalBody className="max-h-[65dvh] overflow-y-auto">
+                  <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
+                    {editingEmoteImage ? <img src={editingEmoteImage} alt={uiText("AppStrings.EmotePreview")} className="h-12 w-12 object-contain" /> : <Icon name="smileplus" size={32} />}
+                    <div><Text size="xs" color="textFaded">{uiText("AppStrings.Preview")}</Text><Text size="sm">:{emotePrefix}{cleanedEditingEmoteSlug || uiText("AppStrings.Emote")}:</Text></div>
+                  </div>
+
                   <Hstack className="items-end flex-wrap">
                     <Input
-                      label="Emote slug"
+                      label={uiText("AppStrings.EmoteSlug")}
                       labelPlacement="outside"
-                      placeholder="smile"
+                      placeholder={uiText("AppStrings.Smile")}
                       value={editingEmoteSlug}
                       onValueChange={setEditingEmoteSlug}
                     />
                     <div className="relative">
                       <Input
-                        label="Artist user slug"
+                        label={uiText("AppStrings.ArtistUserSlug")}
                         labelPlacement="outside"
-                        placeholder="username"
+                        placeholder={uiText("AppStrings.Username2")}
                         value={editingEmoteArtistSlug}
                         onValueChange={(value) => {
                           setEditingEmoteArtistSlug(value);
@@ -1027,13 +1203,12 @@ export default function UserPage() {
                     </div>
                     <Vstack align="start" gap={1}>
                       <Text size="xs" color="textFaded">
-                        Upload image
-                      </Text>
+                         {uiText("AppStrings.UploadImage")} </Text>
                       <ImageInput
                         value={editingEmoteImage}
                         width={80}
                         height={80}
-                        placeholder="Upload"
+                        placeholder={uiText("AppStrings.Upload")}
                         onSelect={async (file, crop) => {
                           try {
                             const data = await uploadImage(file, crop);
@@ -1041,23 +1216,17 @@ export default function UserPage() {
                             addToast({ title: data.message });
                           } catch (error) {
                             console.error(error);
-                            addToast({ title: "Error uploading image" });
+                            addToast({ title: uiText("AppStrings.ErrorUploadingImage") });
                           }
                         }}
                       />
                     </Vstack>
-                    <Vstack align="start" gap={1}>
-                      <Text size="xs" color="textFaded">
-                        Preview
-                      </Text>
-                      <Text size="sm">
-                        :{emotePrefix}
-                        {cleanedEditingEmoteSlug || "emote"}:
-                      </Text>
-                    </Vstack>
-                    <Hstack>
+                  </Hstack>
+                  </ModalBody>
+                  <ModalFooter>
                       <Button
                         variant="ghost"
+                        disabled={savingEditEmote}
                         onClick={() => {
                           setEditingEmoteId(null);
                           setEditingEmoteSlug("");
@@ -1065,15 +1234,14 @@ export default function UserPage() {
                           setEditingEmoteArtistSlug("");
                         }}
                       >
-                        Cancel
-                      </Button>
+                         {uiText("AppStrings.Cancel")} </Button>
                       <Button
                         color="blue"
                         loading={savingEditEmote}
                         onClick={async () => {
                           if (!editingEmoteId) return;
                           if (!cleanedEditingEmoteSlug || !editingEmoteImage) {
-                            addToast({ title: "Slug and image are required" });
+                            addToast({ title: uiText("AppStrings.SlugAndImageAreRequired") });
                             return;
                           }
                           setSavingEditEmote(true);
@@ -1091,11 +1259,11 @@ export default function UserPage() {
                             if (!response.ok) {
                               addToast({
                                 title:
-                                  data?.message ?? "Failed to update emote",
+                                  data?.message ?? uiText("AppStrings.FailedToUpdateEmote"),
                               });
                               return;
                             }
-                            addToast({ title: "Emote updated" });
+                            addToast({ title: uiText("AppStrings.EmoteUpdated") });
                             setEditingEmoteId(null);
                             setEditingEmoteSlug("");
                             setEditingEmoteImage(null);
@@ -1103,178 +1271,61 @@ export default function UserPage() {
                             await refreshEmojis();
                           } catch (error) {
                             console.error(error);
-                            addToast({ title: "Failed to update emote" });
+                            addToast({ title: uiText("AppStrings.FailedToUpdateEmote") });
                           } finally {
                             setSavingEditEmote(false);
                           }
                         }}
                       >
-                        Save
-                      </Button>
-                    </Hstack>
-                  </Hstack>
-                </Vstack>
-              </Card>
+                         {uiText("Settings.Save.Title")} </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
             )}
           </Vstack>
-        </Card>
+        </div>
 
-        <Card>
-          <Hstack>
-            <Vstack align="start">
-              <div>
-                <Text color="text">Settings.BannerPicture.Title</Text>
-                <Text color="textFaded" size="xs">
-                  Settings.BannerPicture.Description
-                </Text>
+            </div>
+          </Tab>
+          <Tab title={uiText("AppStrings.Tokens")} icon="monitor">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack>
+                    <Icon name="monitor" color="text" size={28} />
+                    <Text size="2xl" color="text" weight="bold">
+                      {uiText("AppStrings.Tokens")}
+                    </Text>
+                  </Hstack>
+                  <Text size="sm" color="textFaded">
+                    {uiText("Settings.TabDescriptions.Tokens")}
+                  </Text>
+                </Vstack>
               </div>
-              <ImageInput
-                value={bannerPicture}
-                width={440}
-                height={40}
-                placeholder="Upload"
-                onSelect={async (file, crop) => {
-                  try {
-                    const data = await uploadImage(file, crop);
-                    setBannerPicture(data.data);
-                    addToast({
-                      title: data.message,
-                    });
-                  } catch (error) {
-                    console.error(error);
-                    addToast({
-                      title: "Error uploading image",
-                    });
-                  }
-                }}
-              />
-            </Vstack>
-
-            {bannerPicture && (
-              <Vstack>
-                <div className="bg-[#222222] w-full aspect-[11/1] relative mb-3">
-                  <img
-                    src={bannerPicture}
-                    alt={`${user.name}'s profile banner`}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-              </Vstack>
-            )}
-          </Hstack>
-        </Card>
-        <Hstack>
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">Settings.PrimaryRoles.Title</Text>
-                <Text color="textFaded" size="xs">
-                  Settings.PrimaryRoles.Description
-                </Text>
-              </div>
-              <Dropdown
-                multiple
-                selectedValues={primaryRoles}
-                onSelectionChange={(selection) => {
-                  setPrimaryRoles(selection as Set<string>);
-                }}
-                position="top"
-                trigger={
-                  <Button size="sm">
-                    {primaryRoles.size > 0
-                      ? Array.from(primaryRoles)
-                          .map(
-                            (role) =>
-                              roles.find((findrole) => findrole.slug == role)
-                                ?.name || "Unknown",
-                          )
-                          .join(", ")
-                      : "No Roles"}
-                  </Button>
-                }
-              >
-                {roles.map((primaryRole) => (
-                  <Dropdown.Item
-                    key={primaryRole.slug}
-                    value={primaryRole.slug}
-                    description={primaryRole.description}
-                  >
-                    {primaryRole.name}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown>
-            </Vstack>
-          </Card>
-
-          <Card>
-            <Vstack align="start">
-              <div>
-                <Text color="text">Settings.SecondaryRoles.Title</Text>
-                <Text color="textFaded" size="xs">
-                  Settings.SecondaryRoles.Description
-                </Text>
-              </div>
-              <Dropdown
-                position="top"
-                multiple
-                selectedValues={secondaryRoles}
-                onSelectionChange={(selection) => {
-                  setSecondaryRoles(selection as Set<string>);
-                }}
-                trigger={
-                  <Button size="sm">
-                    {secondaryRoles.size > 0
-                      ? Array.from(secondaryRoles)
-                          .map(
-                            (role) =>
-                              roles.find((findrole) => findrole.slug == role)
-                                ?.name || "Unknown",
-                          )
-                          .join(", ")
-                      : "No Roles"}
-                  </Button>
-                }
-              >
-                {roles.map((secondaryRole) => (
-                  <Dropdown.Item
-                    key={secondaryRole.slug}
-                    value={secondaryRole.slug}
-                    description={secondaryRole.description}
-                  >
-                    {secondaryRole.name}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown>
-            </Vstack>
-          </Card>
-        </Hstack>
+              <GameTokensSection flat />
+            </div>
+          </Tab>
+        </Tabs>
 
         {hasUnsavedChanges && (
-          <div className="fixed bottom-4 left-1/2 z-50 w-[min(48rem,calc(100%-2rem))] -translate-x-1/2">
-            <Card>
-              <Hstack justify="between" className="gap-3 flex-wrap">
-                <Text color="text" weight="semibold">
-                  You have unsaved changes
-                </Text>
-                <Hstack className="gap-2">
-                  {waitingSave ? (
-                    <Spinner />
-                  ) : (
-                    <>
-                      <Button type="submit" color="blue" icon="save">
-                        Save
-                      </Button>
-                      <Button type="reset" icon="rotateccw">
-                        Cancel
-                      </Button>
-                    </>
-                  )}
-                </Hstack>
-              </Hstack>
-            </Card>
-          </div>
+          <EditorFooter
+            floating={hasUnsavedChanges}
+            status={uiText("AppStrings.UnsavedChanges")}
+            description={waitingSave ? uiText("AppStrings.Saving") : uiText("AppStrings.SaveYourChangesBeforeLeavingThisPage")}
+          >
+            {waitingSave ? (
+              <Spinner />
+            ) : (
+              <>
+                <Button type="submit" variant="ghost" size="sm" icon="save" style={{ color: colors.blue }} disabled={!hasUnsavedChanges}>
+                  {uiText("Settings.Save.Title")}
+                </Button>
+                <Button type="reset" variant="ghost" size="sm" icon="rotateccw" disabled={!hasUnsavedChanges}>
+                  {uiText("AppStrings.Cancel")}
+                </Button>
+              </>
+            )}
+          </EditorFooter>
         )}
       </Form>
     </div>

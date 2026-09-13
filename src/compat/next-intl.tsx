@@ -4,6 +4,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import englishMessages from "@/messages/en.json";
 
 export type AbstractIntlMessages = Record<string, unknown>;
 
@@ -61,7 +62,7 @@ export function createTranslator(
 ) {
   return (key: string, values?: Record<string, unknown>) => {
     const fullKey = namespace ? `${namespace}.${key}` : key;
-    const value = readPath(messages, fullKey);
+    const value = readPath(messages, fullKey) ?? readPath(englishMessages, fullKey);
     return typeof value === "string" ? interpolate(value, values) : key;
   };
 }

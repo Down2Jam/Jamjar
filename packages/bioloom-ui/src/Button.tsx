@@ -35,6 +35,7 @@ export function Button(props: ButtonProps) {
     leftSlot,
     rightSlot,
     tooltip,
+    title,
     glass = false,
     ...rest
   } = props;
@@ -290,8 +291,15 @@ export function Button(props: ButtonProps) {
   };
 
   const resolvedLeft = !loading
-    ? leftSlot ?? (icon && <Icon size={16} name={icon} />)
+    ? leftSlot ?? (icon && <Icon size={16} name={icon} decorative={!!(tooltip || props["aria-label"] || props["aria-labelledby"] || props.children)} />)
     : null;
+
+  const accessibleLabel = props["aria-label"] ??
+    (isIconOnly && !props["aria-labelledby"] ? tooltip : undefined);
+  const labelProps = {
+    title: tooltip ? "" : title,
+    "aria-label": accessibleLabel,
+  };
 
   const hasLabel = props.children !== undefined && props.children !== null;
   const content = (
@@ -330,6 +338,7 @@ export function Button(props: ButtonProps) {
           target={target}
           rel={resolvedRel}
           {...linkProps}
+          {...labelProps}
         >
           {content}
           {externalIcon && <ExternalLink size={16} className="ml-2 shrink-0" />}
@@ -346,6 +355,7 @@ export function Button(props: ButtonProps) {
           target={target}
           rel={resolvedRel}
           {...linkProps}
+          {...labelProps}
         >
           {content}
         </Link>
@@ -363,6 +373,7 @@ export function Button(props: ButtonProps) {
         disabled={disabled || loading}
         type={type}
         {...buttonProps}
+        {...labelProps}
       >
         {content}
       </button>

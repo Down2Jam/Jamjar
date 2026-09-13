@@ -1,11 +1,13 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import DocumentationSectionPage from "@/components/documentation/DocumentationSectionPage";
 
 export default function PressKitPage() {
+  const uiText = useUiTranslations();
   return (
     <DocumentationSectionPage
       section="PRESS_KIT"
-      title="Press Kit"
-      description="A collection of materials for promotional use."
+      title={uiText("Navbar.PressKit.Title")}
+      description={uiText("AppStrings.ACollectionOfMaterialsForPromotionalUse")}
       basePath="/press-kit"
       icon="newspaper"
       selectedSlug={undefined}

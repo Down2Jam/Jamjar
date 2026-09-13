@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "@/compat/next-image";
 import { usePathname, useRouter, useSearchParams } from "@/compat/next-navigation";
@@ -566,6 +569,7 @@ function WordCloud({
     return null;
   }
 
+  const uiText = useUiTranslations();
   const highestCount = Math.max(...words.map((entry) => entry.count), 1);
   const palette = [
     colors.yellow,
@@ -604,7 +608,7 @@ function WordCloud({
               {entry.image ? (
                 <Image
                   src={entry.image}
-                  alt={entry.label}
+                  alt={uiText(entry.label)}
                   width={imageSize}
                   height={imageSize}
                   className="object-contain"
@@ -631,6 +635,7 @@ function ScoreCategoryCard({
   note?: string | null;
   accent: string;
 }) {
+  const uiText = useUiTranslations();
   return (
     <Card
       className="p-5 md:p-6"
@@ -654,8 +659,7 @@ function ScoreCategoryCard({
           <span>{stars.toFixed(2)}</span>
         </Text>
         <Text size="sm" color="textFaded">
-          stars
-        </Text>
+           {uiText("AppStrings.Stars")} </Text>
         {note ? (
           <div
             className="rounded-full px-3 py-1 text-sm font-semibold"
@@ -731,11 +735,12 @@ function getTopPlacementsFromTrack(
   track: TrackResultType,
   t: ReturnType<typeof useTranslations>,
 ) {
+  const uiText = t;
   return (track.categoryAverages ?? [])
     .filter((entry) => entry.placement >= 1 && entry.placement <= 3)
     .map((entry) => ({
       placement: entry.placement,
-      label: `${ordinal(entry.placement)} in ${formatScoreCategoryName(entry.categoryName, t)}`,
+      label: uiText("AppStrings.Value0InValue1", { value0: ordinal(entry.placement), value1: formatScoreCategoryName(entry.categoryName, t) }),
     }))
     .sort(
       (a, b) => a.placement - b.placement || a.label.localeCompare(b.label),
@@ -791,6 +796,7 @@ function HighlightGameCard({
   placements: Array<{ placement: number; label: string }>;
   colors: Record<string, string>;
 }) {
+  const uiText = useUiTranslations();
   return (
     <a href={`/g/${game.slug}`} className="block">
       <Card padding={0} className="overflow-hidden relative h-full">
@@ -802,11 +808,11 @@ function HighlightGameCard({
             borderColor: colors[game.jam?.color || "green"],
           }}
         >
-          {game.jam?.name || "Game Jam"}
+          {game.jam?.name || uiText("Phases.GameJam.Title")}
         </div>
         <div className="shadow-[inset_0_0_20px_rgba(0, 0, 0, 0.7)]">
           <Image
-            alt={`${game.name}'s thumbnail`}
+            alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
             height={200}
             width={360}
             className="w-full h-[180px] object-cover shadow-inner"
@@ -833,14 +839,14 @@ function HighlightGameCard({
           <Vstack align="start" gap={2} className="w-full mt-2">
             {placements.slice(0, 3).map((placement) => (
               <div
-                key={`${game.id}-${placement.label}`}
+                key={`${game.id}-${uiText(placement.label)}`}
                 className="rounded-full px-3 py-1 text-sm font-semibold"
                 style={{
                   backgroundColor: `${colors.yellow}14`,
                   color: colors.yellow,
                 }}
               >
-                {placement.label}
+                {uiText(placement.label)}
               </div>
             ))}
           </Vstack>
@@ -859,6 +865,7 @@ function HighlightTrackCard({
   placements: Array<{ placement: number; label: string }>;
   colors: Record<string, string>;
 }) {
+  const uiText = useUiTranslations();
   const { playItem } = useMusic();
 
   return (
@@ -874,17 +881,17 @@ function HighlightTrackCard({
             width={64}
             height={64}
             className="h-16 w-16 shrink-0 rounded object-cover"
-            alt="Song Thumbnail"
+            alt={uiText("AppStrings.SongThumbnail")}
           />
           <Vstack align="start" gap={0}>
             <a href={`/m/${track.slug}`}>
               <Text weight="bold">{track.name}</Text>
             </a>
             <Text size="sm" color="textFaded">
-              {track.game?.name ?? "Unknown game"}
+              {track.game?.name ?? uiText("AppStrings.UnknownGame")}
             </Text>
             <Text size="sm" color="textFaded">
-              {track.composer?.name || track.composer?.slug || "Unknown"}
+              {track.composer?.name || track.composer?.slug || uiText("AppStrings.Unknown")}
             </Text>
           </Vstack>
         </Hstack>
@@ -910,24 +917,22 @@ function HighlightTrackCard({
               })
             }
           >
-            Play
-          </Button>
+             {uiText("AppStrings.Play")} </Button>
           <Button href={`/m/${track.slug}`} icon="music">
-            Open track page
-          </Button>
+             {uiText("AppStrings.OpenTrackPage")} </Button>
         </Hstack>
 
         <Vstack align="start" gap={2} className="w-full">
           {placements.slice(0, 3).map((placement) => (
             <div
-              key={`${track.id}-${placement.label}`}
+              key={`${track.id}-${uiText(placement.label)}`}
               className="rounded-full px-3 py-1 text-sm font-semibold"
               style={{
                 backgroundColor: `${colors.purple}14`,
                 color: colors.purple,
               }}
             >
-              {placement.label}
+              {uiText(placement.label)}
             </div>
           ))}
         </Vstack>
@@ -950,6 +955,7 @@ function TrackScoreCard({
   notableChips: Array<{ key: string; label: string; detail: string }>;
   colors: Record<string, string>;
 }) {
+  const uiText = useUiTranslations();
   const { playItem } = useMusic();
   const { gradient, first } = getResultsGradient(
     displayEntry.placement,
@@ -970,17 +976,17 @@ function TrackScoreCard({
             width={64}
             height={64}
             className="h-16 w-16 shrink-0 rounded object-cover"
-            alt="Song Thumbnail"
+            alt={uiText("AppStrings.SongThumbnail")}
           />
           <Vstack align="start" gap={0} className="min-w-0">
             <a href={`/m/${track.slug}`}>
               <Text weight="bold">{track.name}</Text>
             </a>
             <Text size="sm" color="textFaded">
-              {track.game?.name ?? "Unknown game"}
+              {track.game?.name ?? uiText("AppStrings.UnknownGame")}
             </Text>
             <Text size="sm" color="textFaded">
-              {track.composer?.name || track.composer?.slug || "Unknown"}
+              {track.composer?.name || track.composer?.slug || uiText("AppStrings.Unknown")}
             </Text>
           </Vstack>
         </Hstack>
@@ -992,7 +998,7 @@ function TrackScoreCard({
           >
             {(displayEntry.averageScore / 2).toFixed(2)}
           </span>
-          <Text color="textFaded">stars</Text>
+          <Text color="textFaded">{uiText("AppStrings.Stars")}</Text>
         </Vstack>
 
         <Hstack wrap className="gap-2">
@@ -1017,18 +1023,16 @@ function TrackScoreCard({
               })
             }
           >
-            Play
-          </Button>
+             {uiText("AppStrings.Play")} </Button>
           <Button href={`/m/${track.slug}`} icon="music">
-            Open track page
-          </Button>
+             {uiText("AppStrings.OpenTrackPage")} </Button>
         </Hstack>
 
         {notableChips.length > 0 ? (
           <div className="flex flex-wrap gap-2 w-full">
             {notableChips.map((chip) => (
               <Chip key={`${track.id}-${chip.key}`}>
-                <span style={{ color: colors.blue }}>{chip.label}</span>{" "}
+                <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>{" "}
                 <span style={{ color: colors.textFaded }}>{chip.detail}</span>
               </Chip>
             ))}
@@ -1040,6 +1044,7 @@ function TrackScoreCard({
 }
 
 export default function Recap({ targetUserSlug }: RecapProps) {
+  const uiText = useUiTranslations();
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
@@ -1206,7 +1211,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       } catch (loadError) {
         console.error(loadError);
         if (!active) return;
-        setError("Failed to load jam recap.");
+        setError(uiText("AppStrings.FailedToLoadJamRecap"));
       } finally {
         if (active) {
           setLoadingData(false);
@@ -1293,7 +1298,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             `:${reaction.slug.toLowerCase()}:`,
             {
               image: reaction.image,
-              label: `:${reaction.slug}:`,
+              label: uiText("AppStrings.Value03", { value0: reaction.slug }),
             },
           ]),
       ),
@@ -1619,25 +1624,25 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         {
           key: "commentsOnGame",
           icon: <Gamepad2 size={18} color={colors.yellow} />,
-          label: "Games commented on",
+          label: uiText("AppStrings.GamesCommentedOn"),
           value: recapStats.commentsOnGame,
         },
         {
           key: "commentsOnMusic",
           icon: <Headphones size={18} color={colors.blue} />,
-          label: "Music commented on",
+          label: uiText("AppStrings.MusicCommentedOn"),
           value: recapStats.commentsOnMusic,
         },
         {
           key: "gamesRated",
           icon: <Star size={18} color={colors.green} />,
-          label: "Games rated",
+          label: uiText("AppStrings.GamesRated"),
           value: recapStats.gamesRated,
         },
         {
           key: "tracksRated",
           icon: <Sparkle size={18} color={colors.purple} />,
-          label: "Tracks rated",
+          label: uiText("AppStrings.TracksRated"),
           value: recapStats.tracksRated,
         },
       ].filter((stat) => stat.value > 0),
@@ -1664,16 +1669,16 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       const json = await response.json();
       if (!response.ok) {
         addToast({
-          title: json.message ?? "Failed to update recap visibility",
+          title: json.message ?? uiText("AppStrings.FailedToUpdateRecapVisibility"),
         });
         return;
       }
       setVisibility(json.data ?? null);
       addToast({
-        title: nextValue ? "Recap is now public" : "Recap is now private",
+        title: nextValue ? uiText("AppStrings.RecapIsNowPublic") : uiText("AppStrings.RecapIsNowPrivate"),
       });
     } catch {
-      addToast({ title: "Failed to update recap visibility" });
+      addToast({ title: uiText("AppStrings.FailedToUpdateRecapVisibility") });
     } finally {
       setSavingVisibility(false);
     }
@@ -1684,19 +1689,19 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     await navigator.clipboard.writeText(
       `${window.location.origin}${visibility.sharePath}`,
     );
-    addToast({ title: "Recap link copied" });
+    addToast({ title: uiText("AppStrings.RecapLinkCopied") });
   };
 
   if (userLoading || !selectedJamId) {
-    return <div>Loading recap...</div>;
+    return <div>{uiText("AppStrings.LoadingRecap")}</div>;
   }
 
   if (targetUserSlug && !user) {
-    return <div>Could not load user recap.</div>;
+    return <div>{uiText("AppStrings.CouldNotLoadUserRecap")}</div>;
   }
 
   if (targetUserSlug && !isOwner && loadingVisibility) {
-    return <div>Loading recap...</div>;
+    return <div>{uiText("AppStrings.LoadingRecap")}</div>;
   }
 
   if (targetUserSlug && !isOwner && !visibility?.isPublic) {
@@ -1704,11 +1709,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       <Card className="p-6">
         <Vstack align="start" gap={2}>
           <Text size="2xl" weight="bold">
-            This recap is private
-          </Text>
+             {uiText("AppStrings.ThisRecapIsPrivate")} </Text>
           <Text color="textFaded">
-            {user?.name ?? "This user"} has not shared this jam recap publicly.
-          </Text>
+            {user?.name ?? uiText("AppStrings.ThisUser")}  {uiText("AppStrings.HasNotSharedThisJamRecapPublicly")} </Text>
         </Vstack>
       </Card>
     );
@@ -1727,11 +1730,10 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             <Hstack wrap className="justify-between gap-3 w-full">
               <Vstack align="start" gap={2}>
                 <Text size="4xl" weight="bold">
-                  Jam Recap
-                </Text>
+                   {uiText("AppStrings.JamRecap")} </Text>
                 <Text color="textFaded">
-                  {user?.name ?? "D2Jam"}
-                  {selectedJam ? ` • ${selectedJam.name}` : ""}
+                  {user?.name ?? uiText("Navbar.Brand.Name")}
+                  {selectedJam ? uiText("AppStrings.Value07", { value0: selectedJam.name }) : ""}
                 </Text>
               </Vstack>
               <Hstack wrap className="gap-2">
@@ -1739,7 +1741,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   onSelect={(key) => handleJamChange(String(key))}
                   trigger={
                     <Button size="sm" icon="calendar">
-                      {selectedJam?.name ?? "Select jam"}
+                      {selectedJam?.name ?? uiText("AppStrings.SelectJam")}
                     </Button>
                   }
                 >
@@ -1754,15 +1756,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   href={`/results?jam=${getJamUrlValue(selectedJam) || selectedJamId}`}
                   icon="trophy"
                 >
-                  View Full Results
-                </Button>
+                   {uiText("AppStrings.ViewFullResults")} </Button>
               </Hstack>
             </Hstack>
 
             <Text color="textFaded">
               {user
-                ? "A recap of what happened relating to you this game jam!"
-                : "A recap of standout things from this game jam!"}
+                ? uiText("AppStrings.ARecapOfWhatHappenedRelatingToYouThisGameJam")
+                : uiText("AppStrings.ARecapOfStandoutThingsFromThisGameJam")}
             </Text>
 
             {visibleStatCards.length > 0 ? (
@@ -1771,7 +1772,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   <StatCard
                     key={stat.key}
                     icon={stat.icon}
-                    label={stat.label}
+                    label={uiText(stat.label)}
                     value={String(stat.value)}
                   />
                 ))}
@@ -1787,28 +1788,28 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         </Card>
       ) : null}
 
-      {loadingData ? <div>Loading recap data...</div> : null}
+      {loadingData ? <div>{uiText("AppStrings.LoadingRecapData")}</div> : null}
 
       {!loadingData ? (
         <>
           {hasGamesSection ? (
             <SectionHeaderCard
-              title="Games"
-              subtitle="Your game, favorites, and standout jam entries"
+              title={uiText("Navbar.Games.Title")}
+              subtitle={uiText("AppStrings.YourGameFavoritesAndStandoutJamEntries")}
             />
           ) : null}
 
           {recapData.gameDetail && gameScoreEntries.length > 0 ? (
             <Section
-              title="How Your Game Landed"
-              subtitle="The star rating of various aspects of your game!"
+              title={uiText("AppStrings.HowYourGameLanded")}
+              subtitle={uiText("AppStrings.TheStarRatingOfVariousAspectsOfYour")}
             >
               <Vstack align="start" gap={6} className="w-full">
                 {notableGameScoreChips.length > 0 ? (
                   <div className="flex flex-wrap gap-2 w-full">
                     {notableGameScoreChips.map((chip) => (
                       <Chip key={chip.key}>
-                        <span style={{ color: colors.blue }}>{chip.label}</span>{" "}
+                        <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>{" "}
                         <span style={{ color: colors.textFaded }}>
                           {chip.detail}
                         </span>
@@ -1829,14 +1830,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                       return (
                         <Card key={entry.key} className="p-5 md:p-6">
                           <Vstack align="start" gap={3} className="w-full">
-                            <Text color="textFaded">{entry.label}</Text>
+                            <Text color="textFaded">{uiText(entry.label)}</Text>
                             <span
                               className="text-3xl font-bold leading-none"
                               style={gradientTextStyle(gradient, first)}
                             >
                               {(entry.averageScore / 2).toFixed(2)}
                             </span>
-                            <Text color="textFaded">stars</Text>
+                            <Text color="textFaded">{uiText("AppStrings.Stars")}</Text>
                           </Vstack>
                         </Card>
                       );
@@ -1887,8 +1888,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           <div className={gameCommentWords.length > 0 ? "" : "hidden"}>
             <Section
-              title="Words People Used"
-              subtitle="The most common words in your game comments"
+              title={uiText("AppStrings.WordsPeopleUsed")}
+              subtitle={uiText("AppStrings.TheMostCommonWordsInYourGameComments")}
             >
               <WordCloud words={gameCommentWords} colors={colors} />
             </Section>
@@ -1896,8 +1897,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recommendedGamesForJam.length > 0 ? (
             <Section
-              title="Games You Enjoyed Most"
-              subtitle="The games that ended up in your favorites for this jam"
+              title={uiText("AppStrings.GamesYouEnjoyedMost")}
+              subtitle={uiText("AppStrings.TheGamesThatEndedUpInYourFavorites")}
             >
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                 {recommendedGamesForJam.map((game) => (
@@ -1909,20 +1910,19 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {ownerGame && ownerGameFavoriteCount > 1 ? (
             <Section
-              title="Your game was Recommended"
-              subtitle="People really enjoyed your game and had it as one of their favorites in the jam!"
+              title={uiText("AppStrings.YourGameWasRecommended")}
+              subtitle={uiText("AppStrings.PeopleReallyEnjoyedYourGameAndHadIt")}
             >
               <Vstack align="center" gap={4} className="w-full text-center">
                 <Vstack align="center" gap={1}>
                   <Text size="xl" weight="bold">
                     {ownerGameFavoriteCount}{" "}
-                    {ownerGameFavoriteCount === 1 ? "person" : "people"}
+                    {ownerGameFavoriteCount === 1 ? uiText("AppStrings.Person") : uiText("AppStrings.People")}
                   </Text>
                   <Text color="textFaded" size="sm">
-                    had{" "}
+                     {uiText("AppStrings.Had")}{" "}
                     <span style={{ color: colors.text }}>{ownerGame.name}</span>{" "}
-                    in their favorites.
-                  </Text>
+                     {uiText("AppStrings.InTheirFavorites")} </Text>
                 </Vstack>
                 <FavoriteFacepile users={ownerGameFavoriteUsers} />
               </Vstack>
@@ -1931,8 +1931,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {topGamesInJam.length > 0 ? (
             <Section
-              title="Top Games In The Jam"
-              subtitle="Games that placed top 3 in at least one category across regular and ODA"
+              title={uiText("AppStrings.TopGamesInTheJam")}
+              subtitle={uiText("AppStrings.GamesThatPlacedTop3InAtLeast")}
             >
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
                 {topGamesInJam.map(({ game, placements }) => (
@@ -1949,15 +1949,15 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {hasMusicSection ? (
             <SectionHeaderCard
-              title="Music"
-              subtitle="Your soundtrack highlights and notable tracks"
+              title={uiText("Navbar.Music.Title")}
+              subtitle={uiText("AppStrings.YourSoundtrackHighlightsAndNotableTracks")}
             />
           ) : null}
 
           {trackScoreSummaries.length > 0 ? (
             <Section
-              title="How Your Music Landed"
-              subtitle="Your tracks, their star ratings, and the placements that stood out"
+              title={uiText("AppStrings.HowYourMusicLanded")}
+              subtitle={uiText("AppStrings.YourTracksTheirStarRatingsAndThePlacements")}
             >
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {trackScoreSummaries.map(
@@ -1977,8 +1977,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recapData.trackDetails.length > 0 && musicCommentWords.length > 0 ? (
             <Section
-              title="Words People Used For Your Music"
-              subtitle="The most commons words in your music comments"
+              title={uiText("AppStrings.WordsPeopleUsedForYourMusic")}
+              subtitle={uiText("AppStrings.TheMostCommonsWordsInYourMusicComments")}
             >
               <WordCloud words={musicCommentWords} colors={colors} />
             </Section>
@@ -1986,8 +1986,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recommendedTracksForJam.length > 0 ? (
             <Section
-              title="Music You Enjoyed Most"
-              subtitle="The tracks that ended up in your favorites for this jam"
+              title={uiText("AppStrings.MusicYouEnjoyedMost")}
+              subtitle={uiText("AppStrings.TheTracksThatEndedUpInYourFavorites")}
             >
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {recommendedTracksForJam.map((track) => (
@@ -2026,8 +2026,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {favoriteTracksForJam.length > 0 ? (
             <Section
-              title="People Had Your Music In Their Favorites"
-              subtitle="Tracks from your game that other players recommended"
+              title={uiText("AppStrings.PeopleHadYourMusicInTheirFavorites")}
+              subtitle={uiText("AppStrings.TracksFromYourGameThatOtherPlayersRecommended")}
             >
               <div className="flex flex-wrap justify-center gap-4 w-full">
                 {favoriteTracksForJam.map(({ track, count, users }) => (
@@ -2043,9 +2043,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                       <Vstack align="center" gap={1}>
                         <Text weight="bold">{track.name}</Text>
                         <Text color="textFaded">
-                          {count} {count === 1 ? "person had" : "people had"}{" "}
-                          this track in their favorites.
-                        </Text>
+                          {count} {count === 1 ? uiText("AppStrings.PersonHad") : uiText("AppStrings.PeopleHad")}{" "}
+                           {uiText("AppStrings.ThisTrackInTheirFavorites")} </Text>
                       </Vstack>
                       <FavoriteFacepile users={users} />
                       <Button
@@ -2053,8 +2052,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                         variant="ghost"
                         icon="music"
                       >
-                        Open track page
-                      </Button>
+                         {uiText("AppStrings.OpenTrackPage")} </Button>
                     </Vstack>
                   </Card>
                 ))}
@@ -2064,8 +2062,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {topTracksInJam.length > 0 ? (
             <Section
-              title="Top Music In The Jam"
-              subtitle="Tracks that placed top 3 in at least one category across regular and ODA"
+              title={uiText("AppStrings.TopMusicInTheJam")}
+              subtitle={uiText("AppStrings.TracksThatPlacedTop3InAtLeast")}
             >
               <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
                 {topTracksInJam.map(({ track, placements }) => (
@@ -2082,15 +2080,15 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {hasScoresSection ? (
             <SectionHeaderCard
-              title="Scores & Achievements"
-              subtitle="Things you achieved in games this jam!"
+              title={uiText("AppStrings.ScoresAndAchievements")}
+              subtitle={uiText("AppStrings.ThingsYouAchievedInGamesThisJam")}
             />
           ) : null}
 
           {earnedAchievements.length > 0 ? (
             <Section
-              title="Achievements You Earned"
-              subtitle="The achievements you unlocked during this jam"
+              title={uiText("AppStrings.AchievementsYouEarned")}
+              subtitle={uiText("AppStrings.TheAchievementsYouUnlockedDuringThisJam")}
             >
               <div className="flex w-full justify-center">
                 <div className="flex flex-wrap justify-center gap-3 max-w-5xl">
@@ -2121,13 +2119,13 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                   }
                                   width={48}
                                   height={48}
-                                  alt="Achievement"
+                                  alt={uiText("AppStrings.Achievement")}
                                   className="rounded-xl w-12 h-12 object-cover"
                                 />
                                 <Vstack align="start" gap={0}>
                                   <Text color="text">{achievement.name}</Text>
                                   <Text color="textFaded" size="xs">
-                                    {achievement.description}
+                                    {uiText(achievement.description)}
                                   </Text>
                                   <Hstack>
                                     <Image
@@ -2135,7 +2133,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                         achievement.game?.thumbnail ||
                                         "/images/D2J_Icon.png"
                                       }
-                                      alt="Game thumbnail"
+                                      alt={uiText("AppStrings.GameThumbnail")}
                                       width={18}
                                       height={10}
                                       className="rounded-lg w-[18px] h-[10px] object-cover"
@@ -2145,10 +2143,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                     </Text>
                                   </Hstack>
                                   <Text size="xs" style={{ color: style.text }}>
-                                    {tier === "Default" ? "" : `${tier} - `}
-                                    <span>{pct.toFixed(1)}</span>% of users
-                                    achieved
-                                  </Text>
+                                    {tier === "Default" ? "" : uiText("AppStrings.Value05", { value0: tier })}
+                                    <span>{pct.toFixed(1)}</span>{uiText("AppStrings.OfUsersAchieved")} </Text>
                                 </Vstack>
                               </Hstack>
                             </Vstack>
@@ -2173,7 +2169,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                 }
                                 width={48}
                                 height={48}
-                                alt="Achievement"
+                                alt={uiText("AppStrings.Achievement")}
                                 className="rounded-lg w-12 h-12 object-cover"
                               />
                             </div>
@@ -2202,12 +2198,12 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {isOwner ? (
             <Section
-              title="Share Your Recap"
-              subtitle="Make this page public so other people can open and share it"
+              title={uiText("AppStrings.ShareYourRecap")}
+              subtitle={uiText("AppStrings.MakeThisPagePublicSoOtherPeopleCan")}
             >
               <Hstack wrap className="justify-between gap-4 w-full">
                 <Vstack align="start" gap={1}>
-                  <Text weight="bold">Public recap</Text>
+                  <Text weight="bold">{uiText("AppStrings.PublicRecap")}</Text>
                 </Vstack>
                 <Switch
                   checked={Boolean(visibility?.isPublic)}
@@ -2221,12 +2217,10 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   onClick={handleCopyShareLink}
                   disabled={!visibility?.isPublic}
                 >
-                  Copy share link
-                </Button>
+                   {uiText("AppStrings.CopyShareLink")} </Button>
                 {!recapData.gameDetail ? (
                   <Text size="sm" color="textFaded">
-                    Publish a game in this jam to enable public recap sharing.
-                  </Text>
+                     {uiText("AppStrings.PublishAGameInThisJamToEnable")} </Text>
                 ) : null}
               </Hstack>
             </Section>
@@ -2238,23 +2232,12 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                 <>
                   <Hstack wrap className="gap-2">
                     <Text size="xl" weight="bold">
-                      Post-jam refinement starts now
-                    </Text>
+                       {uiText("AppStrings.PostJamRefinementStartsNow")} </Text>
                   </Hstack>
                   <Text color="textFaded">
-                    Check what people liked and didn't like about the game and
-                    go through and make improvements based on how you want to
-                    improve it! There is now an optional post-jam refinement
-                    period you can use to keep working on your game, prepare
-                    materials, and get everything ready to be shown outside the
-                    jam. After that, there is a separate post-jam rating period
-                    to go through and play updated games.
-                  </Text>
+                     {uiText("AppStrings.CheckWhatPeopleLikedAndDidnTLikeAboutTheGameAndGoThroughAndMakeImprovementsBasedOnHow")} </Text>
                   <Text color="textFaded">
-                    The site will be updated to help provide marketing, and
-                    outside the jam help in terms of where to post things
-                    during that post-jam window.
-                  </Text>
+                     {uiText("AppStrings.TheSiteWillBeUpdatedToHelpProvide")} </Text>
                 </>
               ) : null}
               <Hstack wrap>
@@ -2262,8 +2245,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   href={`/results?jam=${getJamUrlValue(selectedJam) || selectedJamId}`}
                   icon="trophy"
                 >
-                  View Full Results
-                </Button>
+                   {uiText("AppStrings.ViewFullResults")} </Button>
               </Hstack>
             </Vstack>
           </Card>

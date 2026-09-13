@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { GameType } from "@/types/GameType";
 import { addToast, Button, Card } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
@@ -15,6 +18,7 @@ import { useState } from "react";
 import useBreakpoint from "@/hooks/useBreakpoint";
 
 export default function SidebarStats() {
+  const uiText = useUiTranslations();
   const { width, isXlUp } = useBreakpoint();
   const textSize = isXlUp ? "md" : width >= 1024 ? "sm" : "xs";
   const iconSize = isXlUp ? 24 : width >= 1024 ? 20 : 18;
@@ -71,7 +75,7 @@ export default function SidebarStats() {
         {theme?.suggestion && (
           <Hstack>
             <Icon name="image" color="textFaded" size={iconSize} />
-            <Text size={textSize}>Theme</Text>
+            <Text size={textSize}>{uiText("RatingCategory.Theme.Title")}</Text>
             <Text size={textSize} color="blue" className="min-w-0 break-words">
               {theme.suggestion}
             </Text>
@@ -93,7 +97,7 @@ export default function SidebarStats() {
         {music != 0 && (
           <Hstack>
             <Icon name="music" color="textFaded" size={iconSize} />
-            <Text size={textSize}>Music</Text>
+            <Text size={textSize}>{uiText("Navbar.Music.Title")}</Text>
             <Text size={textSize} color="blue">{music}</Text>
           </Hstack>
         )}
@@ -108,8 +112,7 @@ export default function SidebarStats() {
           <Hstack wrap className="pt-2">
             {!user ? (
               <Button href="/signup" icon="login" color="green" size={buttonSize}>
-                Join Jam
-              </Button>
+                 {uiText("Navbar.JoinJam.Title")} </Button>
             ) : !hasJoinedCurrentJam ? (
               <Button
                 icon="calendarplus"
@@ -118,27 +121,23 @@ export default function SidebarStats() {
                 onClick={async () => {
                   if (await joinJam(currentJam.id)) {
                     setJoinedOverride(true);
-                    addToast({ title: "Joined jam" });
+                    addToast({ title: uiText("AppStrings.JoinedJam") });
                     return;
                   }
 
-                  addToast({ title: "Failed to join jam" });
+                  addToast({ title: uiText("AppStrings.FailedToJoinJam") });
                 }}
               >
-                Join Jam
-              </Button>
+                 {uiText("Navbar.JoinJam.Title")} </Button>
             ) : hasTeamInCurrentJam ? (
               <Button href="/team" icon="users" color="green" size={buttonSize}>
-                My Team
-              </Button>
+                 {uiText("Navbar.MyTeam.Title")} </Button>
             ) : (
               <Button href="/team-finder" icon="users" color="green" size={buttonSize}>
-                Team Finder
-              </Button>
+                 {uiText("Navbar.TeamFinder.Title")} </Button>
             )}
             <Button href="/about" icon="info" size={buttonSize}>
-              About
-            </Button>
+               {uiText("Splash.About")} </Button>
           </Hstack>
         )}
       </Vstack>

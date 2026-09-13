@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import Icon, { IconName } from "./Icon";
 import { useTheme } from "./theme";
@@ -94,6 +97,7 @@ export default function ImageInput({
   maxOutputHeight,
   showClearButton = true,
 }: ImageInputProps) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [hovered, setHovered] = useState(false);
@@ -355,7 +359,7 @@ export default function ImageInput({
         {Boolean(value) && showClearButton && onClear && (
           <button
             type="button"
-            aria-label="Remove image"
+            aria-label={uiText("AppStrings.RemoveImage")}
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -456,11 +460,9 @@ export default function ImageInput({
           <ModalHeader>
             <Vstack align="start">
               <Text size="xl" color="text">
-                Crop image
-              </Text>
+                 {uiText("AppStrings.CropImage")} </Text>
               <Text size="sm" color="textFaded">
-                Drag to position and zoom to fit
-              </Text>
+                 {uiText("AppStrings.DragToPositionAndZoomToFit")} </Text>
             </Vstack>
           </ModalHeader>
           <ModalBody>
@@ -500,7 +502,7 @@ export default function ImageInput({
                 {cropSrc && (
                   <img
                     src={cropSrc}
-                    alt="Crop preview"
+                    alt={uiText("AppStrings.CropPreview")}
                     className="absolute left-1/2 top-1/2"
                     style={cropImageStyle}
                   />
@@ -518,8 +520,7 @@ export default function ImageInput({
               </div>
               <Vstack align="stretch" className="w-full gap-2">
                 <Text size="xs" color="textFaded">
-                  Zoom
-                </Text>
+                   {uiText("AppStrings.Zoom")} </Text>
                 <input
                   type="range"
                   min={1}
@@ -538,15 +539,13 @@ export default function ImageInput({
                     color={flipX ? "blue" : "default"}
                     onClick={() => setFlipX((prev) => !prev)}
                   >
-                    Flip Horizontal
-                  </Button>
+                     {uiText("AppStrings.FlipHorizontal")} </Button>
                   <Button
                     size="sm"
                     color={flipY ? "blue" : "default"}
                     onClick={() => setFlipY((prev) => !prev)}
                   >
-                    Flip Vertical
-                  </Button>
+                     {uiText("AppStrings.FlipVertical")} </Button>
                   <Button
                     size="sm"
                     color="default"
@@ -556,8 +555,7 @@ export default function ImageInput({
                       setOffset((prev) => clampOffset(prev, zoom, next));
                     }}
                   >
-                    Rotate Left
-                  </Button>
+                     {uiText("AppStrings.RotateLeft")} </Button>
                   <Button
                     size="sm"
                     color="default"
@@ -567,19 +565,16 @@ export default function ImageInput({
                       setOffset((prev) => clampOffset(prev, zoom, next));
                     }}
                   >
-                    Rotate Right
-                  </Button>
+                     {uiText("AppStrings.RotateRight")} </Button>
                 </div>
               </Vstack>
             </Vstack>
           </ModalBody>
           <ModalFooter>
             <Button onClick={handleCloseCrop} disabled={saving}>
-              Cancel
-            </Button>
+               {uiText("AppStrings.Cancel")} </Button>
             <Button color="blue" onClick={handleConfirmCrop} disabled={saving}>
-              Save
-            </Button>
+               {uiText("Settings.Save.Title")} </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import type { GameReleaseFeedItemType } from "@/types/PostType";
@@ -15,6 +18,7 @@ export default function GameReleaseCard({
   release: GameReleaseFeedItemType;
   style: PostStyle;
 }) {
+  const uiText = useUiTranslations();
   const creatorNames = release.creators.map((creator) => creator.name);
   const creatorLabel =
     creatorNames.length > 2
@@ -63,7 +67,7 @@ export default function GameReleaseCard({
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex min-w-0 items-center gap-2 text-xs text-default-500">
               {creatorAvatars(20)}
-              <span className="truncate">{creatorLabel} released a game</span>
+              <span className="truncate">{creatorLabel}  {uiText("AppStrings.ReleasedAGame")}</span>
               <span aria-hidden="true" className="shrink-0 opacity-50">·</span>
               <Text size="xs" color="textFaded" className="shrink-0">
                 {releaseTime}
@@ -106,7 +110,7 @@ export default function GameReleaseCard({
           <div className="min-w-0 flex-1">
             <div className="mb-1 flex min-w-0 items-center gap-2 text-xs text-default-500">
               {creatorAvatars(18)}
-              <span className="truncate">{creatorLabel} released a game</span>
+              <span className="truncate">{creatorLabel}  {uiText("AppStrings.ReleasedAGame")}</span>
               <span aria-hidden="true" className="shrink-0 opacity-50">·</span>
               <Text size="xs" color="textFaded" className="shrink-0">
                 {releaseTime}
@@ -149,8 +153,7 @@ export default function GameReleaseCard({
           <div className="mb-2 flex items-center gap-2">
             {creatorAvatars(24)}
             <Text size="sm" color="textFaded">
-              {creatorLabel} released a game
-            </Text>
+              {creatorLabel}  {uiText("AppStrings.ReleasedAGame")} </Text>
           </div>
 
           <Link href={`/g/${release.game.slug}`}>

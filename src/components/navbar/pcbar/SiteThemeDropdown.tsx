@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { ChevronDown, PaintBucket } from "lucide-react";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
@@ -13,6 +16,7 @@ const THEME_TRANSITION_DURATION = 250;
 const THEME_SWATCHES = ["crust", "base", "text", "blue"] as const;
 
 export default function SiteThemeDropdown() {
+  const uiText = useUiTranslations();
   const navigate = useNavigate();
   const { siteTheme, allSiteThemes, setSiteTheme, setPreviewedSiteTheme } =
     useTheme();
@@ -136,7 +140,7 @@ export default function SiteThemeDropdown() {
   return (
     <>
       <Popover shown={!!previewedKey} showArrow={false}>
-        Previewing {previewedKey}
+         {uiText("AppStrings.Previewing")} {previewedKey}
       </Popover>
       <Dropdown
         openOn="click"
@@ -238,8 +242,7 @@ export default function SiteThemeDropdown() {
               className="!min-h-10 !px-3 !py-2 focus-visible:!ring-2 focus-visible:!ring-current"
               onClick={handleBrowseAllThemes}
             >
-              Browse all themes
-            </Dropdown.Item>
+               {uiText("AppStrings.BrowseAllThemes")} </Dropdown.Item>
           </div>
         </div>
       </Dropdown>

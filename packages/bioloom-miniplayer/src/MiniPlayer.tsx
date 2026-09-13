@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
 import { useCurrentJam, useSelf, useTracks } from "@/hooks/queries";
@@ -24,6 +27,7 @@ function formatPlaybackTime(value: number) {
 }
 
 export default function MiniPlayer() {
+  const uiText = useUiTranslations();
   const {
     current,
     isPlaying,
@@ -537,7 +541,7 @@ export default function MiniPlayer() {
                       size={minimized ? 18 : 20}
                     />
                   }
-                  aria-label="Previous track"
+                  aria-label={uiText("AppStrings.PreviousTrack")}
                 />
                 <Button
                   onClick={() => {
@@ -554,7 +558,7 @@ export default function MiniPlayer() {
                       size={minimized ? 18 : 20}
                     />
                   }
-                  aria-label={isPlaying ? "Pause" : "Play"}
+                  aria-label={isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
                 />
                 <Button
                   onClick={next}
@@ -563,7 +567,7 @@ export default function MiniPlayer() {
                   leftSlot={
                     <Icon name="skipforward" size={minimized ? 18 : 20} />
                   }
-                  aria-label="Next track"
+                  aria-label={uiText("AppStrings.NextTrack")}
                 />
               </div>
             </div>
@@ -630,7 +634,7 @@ export default function MiniPlayer() {
                       step={0.01}
                       value={volume}
                       onChange={(e) => setVolume(parseFloat(e.target.value))}
-                      aria-label="Volume"
+                      aria-label={uiText("AppStrings.Volume")}
                       style={{
                         width: "100%",
                         WebkitAppearance: "none",
@@ -663,8 +667,7 @@ export default function MiniPlayer() {
                         }}
                       >
                         <Text color="text" size="xs">
-                          Rate
-                        </Text>
+                           {uiText("AppStrings.Rate")} </Text>
                         <div
                           data-no-drag="true"
                           style={{ display: "flex", gap: 4 }}
@@ -719,7 +722,7 @@ export default function MiniPlayer() {
                                     addToast({
                                       title:
                                         payload?.message ??
-                                        "Failed to save track rating",
+                                        uiText("AppStrings.FailedToSaveTrackRating"),
                                     });
                                     emitTrackRatingSync({
                                       trackId,
@@ -808,7 +811,7 @@ export default function MiniPlayer() {
                                       addToast({
                                         title:
                                           payload?.message ??
-                                          "Failed to save track rating",
+                                          uiText("AppStrings.FailedToSaveTrackRating"),
                                       });
                                       emitTrackRatingSync({
                                         trackId,
@@ -870,7 +873,7 @@ export default function MiniPlayer() {
                                       addToast({
                                         title:
                                           payload?.message ??
-                                          "Failed to save track rating",
+                                          uiText("AppStrings.FailedToSaveTrackRating"),
                                       });
                                       emitTrackRatingSync({
                                         trackId,
@@ -925,7 +928,7 @@ export default function MiniPlayer() {
                     size={20}
                   />
                 }
-                aria-label="Change repeat mode"
+                aria-label={uiText("AppStrings.ChangeRepeatMode")}
               />
             )}
             <Button
@@ -938,7 +941,7 @@ export default function MiniPlayer() {
                   size={minimized ? 18 : 20}
                 />
               }
-              aria-label={minimized ? "Expand player" : "Collapse player"}
+              aria-label={minimized ? uiText("AppStrings.ExpandPlayer") : uiText("AppStrings.CollapsePlayer")}
             />
           </div>
         </div>

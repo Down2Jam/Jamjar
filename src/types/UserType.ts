@@ -23,6 +23,7 @@ export interface UserType {
   autoHideRatingsWhileStreaming?: boolean;
   messageRequestPolicy?: "EVERYONE" | "FOLLOWING" | "NOBODY";
   siteTheme?: string | null;
+  locale?: string | null;
   createdAt: Date;
   mod: boolean;
   admin: boolean;

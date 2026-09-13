@@ -1,3 +1,5 @@
+import ListingPageLoading from "@/components/listing-loading";
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { lazy, Suspense, type ComponentType } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router";
 import { useLocation } from "react-router";
@@ -5,6 +7,7 @@ import MainLayout from "@/routes/MainLayout";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 import AdminGate from "@/components/admin/AdminGate";
 
+const TwitchCallback = lazy(() => import("@/components/twitch-connection/TwitchCallback"));
 const SplashRoute = lazy(() => import("@/routes/SplashRoute"));
 const AboutPage = lazy(() => import("@/app/(main)/about/page"));
 const AdminPage = lazy(() => import("@/app/(main)/admin/page"));
@@ -12,6 +15,7 @@ const AdminEmojisPage = lazy(() => import("@/app/(main)/admin/emojis/page"));
 const AdminEventsPage = lazy(() => import("@/app/(main)/admin/events/page"));
 const AdminImagesPage = lazy(() => import("@/app/(main)/admin/images/page"));
 const AdminJamsPage = lazy(() => import("@/app/(main)/admin/jams/page"));
+const AdminJamGamesPage = lazy(() => import("@/components/admin/AdminJamGames"));
 const AdminResultsPage = lazy(() => import("@/app/(main)/admin/results/page"));
 const AdminThemeEliminationPage = lazy(
   () => import("@/app/(main)/admin/themes/elimination/page"),
@@ -52,6 +56,8 @@ const QuiltDetailPage = lazy(() => import("@/app/(main)/quilts/[quiltSlug]/page"
 const QuiltsPage = lazy(() => import("@/app/(main)/quilts/page"));
 const RadioPage = lazy(() => import("@/app/(main)/radio/page"));
 const RecapPage = lazy(() => import("@/app/(main)/recap/page"));
+const BugReportPage = lazy(() => import("@/components/bug-reports/BugReportPage"));
+const AdminBugReports = lazy(() => import("@/components/admin/AdminBugReports"));
 const ReportsPage = lazy(() => import("@/app/(main)/reports/page"));
 const ResultsPage = lazy(() => import("@/app/(main)/results/page"));
 const RssPage = lazy(() => import("@/app/(main)/rss/page"));
@@ -69,6 +75,7 @@ const ThemeSuggestionsPage = lazy(
 );
 const ThemeVotingPage = lazy(() => import("@/app/(main)/theme-voting/page"));
 const ThemesPage = lazy(() => import("@/app/(main)/themes/page"));
+const LanguagesPage = lazy(() => import("@/app/(main)/languages/page"));
 const WhyPage = lazy(() => import("@/app/(main)/why/page"));
 
 const lazyRoute = <T extends ComponentType>(
@@ -134,134 +141,139 @@ function AdminRouteLayout() {
 const indexedRouteMetadata = [
   {
     pattern: /^\/$/,
-    title: "Down2Jam",
-    description: "The community centered game jam",
+    title: "Splash.Title",
+    description: "Splash.Description",
   },
   {
     pattern: /^\/home\/?$/,
-    title: "Forum",
-    description: "Community posts, announcements, and updates from Down2Jam.",
+    title: "Navbar.Forum.Title",
+    description: "AppStrings.CommunityPostsAnnouncementsAndUpdatesFromDown2Jam",
   },
   {
     pattern: /^\/about\/?$/,
-    title: "About",
-    description: "Learn about Down2Jam, the community centered game jam.",
+    title: "Splash.About",
+    description: "AppStrings.LearnAboutDown2JamTheCommunityCenteredGameJam",
   },
   {
     pattern: /^\/games\/?$/,
-    title: "Games",
-    description: "Browse games submitted to Down2Jam.",
+    title: "Navbar.Games.Title",
+    description: "AppStrings.BrowseGamesSubmittedToDown2Jam",
   },
   {
     pattern: /^\/music\/?$/,
-    title: "Music",
-    description: "Listen to music submitted for Down2Jam games.",
+    title: "Navbar.Music.Title",
+    description: "AppStrings.ListenToMusicSubmittedForDown2JamGames",
   },
   {
     pattern: /^\/results\/?$/,
-    title: "Results",
-    description: "Explore Down2Jam results, winners, ratings, and rankings.",
+    title: "Navbar.Results.Title",
+    description: "AppStrings.ExploreDown2JamResultsWinnersRatingsAndRankings",
   },
   {
     pattern: /^\/radio(?:\/[^/]+)?\/?$/,
-    title: "Radio",
-    description: "Listen to Down2Jam music radio.",
+    title: "Navbar.Radio.Title",
+    description: "AppStrings.ListenToDown2JamMusicRadio",
   },
   {
     pattern: /^\/import-game\/?$/,
-    title: "Import a game",
-    description: "Import an itch.io jam game and add it to the game archive.",
+    title: "AppStrings.ImportAGame",
+    description: "AppStrings.ImportAnItchIoJamGameAndAddItToTheGameArchive",
   },
   {
     pattern: /^\/rss\/?$/,
-    title: "RSS Feeds",
-    description: "Subscribe to Down2Jam updates with RSS.",
+    title: "AppStrings.RSSFeeds",
+    description: "AppStrings.SubscribeToDown2JamUpdatesWithRSS",
   },
   {
     pattern: /^\/screenshots\/?$/,
-    title: "Screenshots",
-    description: "Browse screenshots from Down2Jam games.",
+    title: "Navbar.Screenshots.Title",
+    description: "AppStrings.BrowseScreenshotsFromDown2JamGames",
   },
   {
     pattern: /^\/quilts(?:\/[^/]+)?\/?$/,
-    title: "Quilts",
-    description: "Make collaborative pixel art quilts with the Down2Jam community.",
+    title: "Navbar.Quilts.Title",
+    description: "AppStrings.MakeCollaborativePixelArtQuiltsWithTheDown2JamCommunity",
   },
   {
     pattern: /^\/events\/?$/,
-    title: "Events",
-    description: "Find current and upcoming Down2Jam community events.",
+    title: "Navbar.Events.Title",
+    description: "AppStrings.FindCurrentAndUpcomingDown2JamCommunityEvents",
   },
   {
     pattern: /^\/collections(?:\/[^/]+)?\/?$/,
-    title: "Collections",
-    description: "Browse curated collections of Down2Jam games, music, and posts.",
+    title: "Navbar.Collections.Title",
+    description: "AppStrings.BrowseCuratedCollectionsOfDown2JamGamesMusicAndPosts",
   },
   {
     pattern: /^\/team-finder\/?$/,
-    title: "Team Finder",
-    description: "Find teammates for the next Down2Jam.",
+    title: "Navbar.TeamFinder.Title",
+    description: "AppStrings.FindTeammatesForTheNextDown2Jam",
   },
   {
     pattern: /^\/theme-suggestions\/?$/,
-    title: "Theme Suggestions",
-    description: "Suggest themes for an upcoming Down2Jam.",
+    title: "Navbar.ThemeSuggestions.Title",
+    description: "AppStrings.SuggestThemesForAnUpcomingDown2Jam",
   },
   {
     pattern: /^\/theme-elimination\/?$/,
-    title: "Theme Elimination",
-    description: "Help narrow down Down2Jam theme suggestions.",
+    title: "Navbar.ThemeElimination.Title",
+    description: "AppStrings.HelpNarrowDownDown2JamThemeSuggestions",
   },
   {
     pattern: /^\/theme-voting\/?$/,
-    title: "Theme Voting",
-    description: "Vote on themes for the next Down2Jam.",
+    title: "Navbar.ThemeVoting.Title",
+    description: "AppStrings.VoteOnThemesForTheNextDown2Jam",
   },
   {
     pattern: /^\/themes\/?$/,
-    title: "Site Themes",
-    description: "Browse and preview the available Down2Jam site themes.",
+    title: "AppStrings.SiteThemes2",
+    description: "AppStrings.BrowseAndPreviewTheAvailableDown2JamSiteThemes",
+  },
+  {
+    pattern: /^\/languages\/?$/,
+    title: "AppStrings.Languages",
+    description: "AppStrings.BrowseAndChooseYourDown2JamSiteLanguage",
   },
   {
     pattern: /^\/docs(?:\/[^/]+)?\/?$/,
-    title: "Documentation",
-    description: "Read Down2Jam site documentation and guides.",
+    title: "AppStrings.Documentation",
+    description: "AppStrings.ReadDown2JamSiteDocumentationAndGuides",
   },
   {
     pattern: /^\/news(?:\/[^/]+)?\/?$/,
-    title: "News",
-    description: "Official Down2Jam news, announcements, and site updates.",
+    title: "Navbar.News.Title",
+    description: "AppStrings.OfficialDown2JamNewsAnnouncementsAndSiteUpdates",
   },
   {
     pattern: /^\/press-kit(?:\/[^/]+)?\/?$/,
-    title: "Press Kit",
-    description: "Download and view Down2Jam press kit materials.",
+    title: "Navbar.PressKit.Title",
+    description: "AppStrings.DownloadAndViewDown2JamPressKitMaterials",
   },
   {
     pattern: /^\/donate\/?$/,
-    title: "Donate",
-    description: "Support Down2Jam and its community.",
+    title: "Navbar.Donate.Title",
+    description: "AppStrings.SupportDown2JamAndItsCommunity",
   },
   {
     pattern: /^\/why\/?$/,
-    title: "Why Down2Jam",
-    description: "Why Down2Jam exists and how it supports community game jams.",
+    title: "AppStrings.WhyDown2Jam",
+    description: "AppStrings.WhyDown2JamExistsAndHowItSupportsCommunityGameJams",
   },
   {
     pattern: /^\/socials\/?$/,
-    title: "Socials",
-    description: "Find Down2Jam community links and social channels.",
+    title: "AppStrings.Socials",
+    description: "AppStrings.FindDown2JamCommunityLinksAndSocialChannels",
   },
   {
     pattern: /^\/d2guess\/?$/,
-    title: "Down2Guess",
+    title: "Navbar.Down2Guess.Title",
     description:
-      "Try to guess what random game from Down2Jam the site is thinking of!",
+      "AppStrings.TryToGuessWhatRandomGameFromDown2JamTheSiteIsThinkingOf",
   },
   {
     pattern: /^\/recap(?:\/[^/]+)?\/?$/,
-    title: "Jam Recap",
-    description: "View Down2Jam recap stats and highlights.",
+    title: "AppStrings.JamRecap",
+    description: "AppStrings.ViewDown2JamRecapStatsAndHighlights",
   },
 ];
 
@@ -276,7 +288,8 @@ const noindexRoutePatterns = [
   /^\/logout\/?$/,
   /^\/lucky\/?$/,
   /^\/reports\/?$/,
-  /^\/settings\/?$/,
+  /^\/report-bug\/?$/,
+  /^\/settings(?:\/|$)/,
   /^\/signup\/?$/,
   /^\/team\/?$/,
   /^\/g\/[^/]+\/edit\/?$/,
@@ -285,6 +298,7 @@ const noindexRoutePatterns = [
 ];
 
 function DefaultMetadata() {
+  const uiText = useUiTranslations();
   const location = useLocation();
   const routeMetadata = indexedRouteMetadata.find((entry) =>
     entry.pattern.test(location.pathname),
@@ -293,9 +307,9 @@ function DefaultMetadata() {
     pattern.test(location.pathname),
   );
   usePageMetadata({
-    title: routeMetadata?.title ?? "Down2Jam",
+    title: uiText(routeMetadata?.title ?? "Splash.Title"),
     description:
-      routeMetadata?.description ?? "The community centered game jam",
+      uiText(routeMetadata?.description ?? "Splash.Description"),
     image: "/images/D2J_Icon.png",
     icon: "/images/D2J_Icon.svg",
     canonical: `${location.pathname}${location.search}`,
@@ -309,15 +323,18 @@ export default function App() {
     <Suspense fallback={<RouteFallback />}>
       <DefaultMetadata />
       <Routes>
+        <Route path="/settings/twitch-callback" element={<TwitchCallback />} />
         <Route element={<MainLayout />}>
           <Route index element={<SplashRoute />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="admin" element={<AdminRouteLayout />}>
             <Route index element={<AdminPage />} />
+            <Route path="bugs" element={<AdminBugReports />} />
             <Route path="emojis" element={<AdminEmojisPage />} />
             <Route path="events" element={<AdminEventsPage />} />
             <Route path="images" element={<AdminImagesPage />} />
             <Route path="jams" element={<AdminJamsPage />} />
+            <Route path="jam-games" element={<AdminJamGamesPage />} />
             <Route path="results" element={<AdminResultsPage />} />
             <Route
               path="themes/elimination"
@@ -346,7 +363,7 @@ export default function App() {
           <Route path="d2guess" element={<Down2GuessPage />} />
           <Route path="down2guess" element={<Navigate to="/d2guess" replace />} />
           <Route path="gamedle" element={<Navigate to="/d2guess" replace />} />
-          <Route path="games" element={<GamesPage />} />
+          <Route path="games" element={<Suspense fallback={<ListingPageLoading kind="games" />}><GamesPage /></Suspense>} />
           <Route path="import-game" element={<ImportGamePage />} />
           <Route path="home" element={<HomePage />} />
           <Route path="inbox/*" element={<InboxPage />} />
@@ -356,7 +373,7 @@ export default function App() {
           <Route path="lucky" element={<LuckyRoute />} />
           <Route path="m/:trackSlug" element={<TrackRoute />} />
           <Route path="m/:trackSlug/edit" element={<TrackEditRoute />} />
-          <Route path="music" element={<MusicPage />} />
+          <Route path="music" element={<Suspense fallback={<ListingPageLoading kind="music" />}><MusicPage /></Suspense>} />
           <Route path="news" element={<NewsPage />} />
           <Route path="news/:slug" element={<NewsArticlePage />} />
           <Route path="p/:slug" element={<PostPage />} />
@@ -369,6 +386,7 @@ export default function App() {
           <Route path="radio/:station" element={<RadioStationRoute />} />
           <Route path="recap" element={<RecapPage />} />
           <Route path="recap/:userSlug" element={<RecapUserRoute />} />
+          <Route path="report-bug" element={<BugReportPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="results" element={<ResultsPage />} />
           <Route path="rss" element={<RssPage />} />
@@ -382,6 +400,7 @@ export default function App() {
           <Route path="theme-suggestions" element={<ThemeSuggestionsPage />} />
           <Route path="theme-voting" element={<ThemeVotingPage />} />
           <Route path="themes" element={<ThemesPage />} />
+          <Route path="languages" element={<LanguagesPage />} />
           <Route path="u/:slug" element={<UserRoute />} />
           <Route path="why" element={<WhyPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />

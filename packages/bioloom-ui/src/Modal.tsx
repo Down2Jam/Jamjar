@@ -1,5 +1,7 @@
 "use client";
 
+
+
 import {
   createContext,
   useContext,
@@ -88,8 +90,8 @@ function FormModal({
   fields,
   title,
   icon,
-  confirm = { icon: "check", label: "Confirm" },
-  cancel = { icon: "x", label: "Cancel" },
+  confirm = { icon: "check", label: "AppStrings.Confirm" },
+  cancel = { icon: "x", label: "AppStrings.Cancel" },
 }: FormModalProps) {
   const initialState = useMemo(() => {
     const seed: Record<string, string> = {};

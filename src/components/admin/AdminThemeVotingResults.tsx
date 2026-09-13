@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo } from "react";
 import { useThemes } from "@/hooks/queries";
 import type { ThemeType } from "@/types/ThemeType";
@@ -41,6 +44,7 @@ function summarizeVotes(votes2?: ThemeType["votes2"]) {
 }
 
 export default function AdminThemeVotingResults() {
+  const uiText = useUiTranslations();
   const { data, isLoading: loading } = useThemes(true, true, true);
   const themes = data ?? [];
 
@@ -71,41 +75,35 @@ export default function AdminThemeVotingResults() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Theme Voting Preview
-          </Text>
+             {uiText("AppStrings.ThemeVotingPreview")} </Text>
           <Text size="sm" color="textFaded">
-            Review the shortlist for the voting round and the total votes cast.
-          </Text>
+             {uiText("AppStrings.ReviewTheShortlistForTheVotingRoundAndTheTotalVotesCast")} </Text>
         </Vstack>
         <Hstack wrap>
           <Button href="/theme-voting" icon="arrowupright">
-            Open Voting Page
-          </Button>
+             {uiText("AppStrings.OpenVotingPage")} </Button>
           <Text size="sm" color="textFaded">
-            {rankedThemes.length} themes - {totalVotes} total votes cast
-          </Text>
+            {rankedThemes.length}  {uiText("AppStrings.Themes")} {totalVotes}  {uiText("AppStrings.TotalVotesCast")} </Text>
         </Hstack>
       </section>
 
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            Voting Shortlist
-          </Text>
+             {uiText("AppStrings.VotingShortlist")} </Text>
           {loading ? (
             <Spinner />
           ) : rankedThemes.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No voting data available yet.
-            </Text>
+               {uiText("AppStrings.NoVotingDataAvailableYet")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Rank</TableColumn>
-                <TableColumn>Theme</TableColumn>
-                <TableColumn>Score</TableColumn>
-                <TableColumn>Seed Score</TableColumn>
-                <TableColumn>Votes</TableColumn>
+                <TableColumn>{uiText("AppStrings.Rank")}</TableColumn>
+                <TableColumn>{uiText("RatingCategory.Theme.Title")}</TableColumn>
+                <TableColumn>{uiText("LeaderboardType.Score.Title")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.SeedScore")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Votes")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {rankedThemes.map((theme, index) => (

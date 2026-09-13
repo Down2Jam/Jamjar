@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import type { PageVersion } from "@/types/GameType";
@@ -26,12 +27,13 @@ export function CollectionRoute() {
 }
 
 export function DocsDetailRoute() {
+  const uiText = useUiTranslations();
   const { slug = "" } = useParams();
   return (
     <DocumentationSectionPage
       section="DOCS"
-      title="Documentation"
-      description="Site documentation and guides."
+      title={uiText("AppStrings.Documentation")}
+      description={uiText("AppStrings.SiteDocumentationAndGuides")}
       basePath="/docs"
       icon="bookcopy"
       selectedSlug={slug}
@@ -50,12 +52,13 @@ export function GameEditRoute() {
 }
 
 export function PressKitDetailRoute() {
+  const uiText = useUiTranslations();
   const { slug = "" } = useParams();
   return (
     <DocumentationSectionPage
       section="PRESS_KIT"
-      title="Press Kit"
-      description="A collection of materials for promotional use."
+      title={uiText("Navbar.PressKit.Title")}
+      description={uiText("AppStrings.ACollectionOfMaterialsForPromotionalUse")}
       basePath="/press-kit"
       icon="newspaper"
       selectedSlug={slug}

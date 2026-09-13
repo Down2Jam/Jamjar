@@ -27,7 +27,7 @@ export default function Tooltip({
   content,
   children,
   position = "bottom",
-  delay = 500,
+  delay = 1000,
   hideDelay = 100,
   compact = false,
   showArrow = true,

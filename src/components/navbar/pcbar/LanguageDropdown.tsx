@@ -1,184 +1,112 @@
-/**
- * @file Allows the user to change the language of the site.
- * Shows in the PC navbar.
- *
- * @author Ategon
- * @created 2025-7-22
- */
 "use client";
 
-import Cookies from "js-cookie";
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { ChevronDown, Languages } from "lucide-react";
-import ProgressCircle from "./ProgressCircle";
-import { useRef, useState } from "react";
-import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
-import rawCoverage from "../../../messages/coverage.json";
+import { useEffect, useState, type MouseEvent } from "react";
+import { useNavigate } from "react-router";
 import { useTheme } from "@/providers/useSiteTheme";
-import { Button, Dropdown, Popover } from "bioloom-ui";
-import { LanguageInfo } from "@/types/LanguageInfoType";
+import { Button, Dropdown } from "bioloom-ui";
+import type { LanguageInfo } from "@/types/LanguageInfoType";
+import { useLanguages } from "@/hooks/useLanguages";
+import { useLanguageSelection } from "@/hooks/useLanguageSelection";
+import ProgressCircle from "./ProgressCircle";
 
-type CoverageMap = {
-  [key: string]: number;
-};
-
-const coverage = rawCoverage as CoverageMap;
-
-function waveText(label: string, shouldAnimate: boolean) {
-  return (
-    <div className="flex">
-      {label.split("").map((char, i) => (
-        <span
-          key={i}
-          className={`inline-block transition-transform ${
-            shouldAnimate ? "animate-smallwave" : ""
-          }`}
-          style={shouldAnimate ? { animationDelay: `${i * 60}ms` } : {}}
-        >
-          {char}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-export default function LanguageDropdown({
-  languages,
-}: {
-  languages: LanguageInfo[];
-}) {
+export default function LanguageDropdown({ languages }: { languages: LanguageInfo[] }) {
+  const uiText = useUiTranslations();
+  const navigate = useNavigate();
+  const { colors } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [hoveredKey, setHoveredKey] = useState<string | null>(null);
-  const { setPreviewLocale, previewLocale } = useLanguagePreview();
-  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { siteTheme } = useTheme();
+  const { languages: rankedLanguages } = useLanguages(languages);
+  const { mutate, isPending, error, selectedLocale, setPreviewLocale } = useLanguageSelection();
 
-  function handleChange(key: string) {
-    Cookies.set("locale", String(key), { expires: 36500 });
-    window.location.reload();
+  useEffect(() => () => setPreviewLocale(null), [setPreviewLocale]);
+
+  function clearPreview() {
+    setHoveredKey(null);
+    setPreviewLocale(null);
+  }
+
+  function browseAll(event: MouseEvent) {
+    clearPreview();
+    if (event.button !== 0 || event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    setIsOpen(false);
+    navigate("/languages");
   }
 
   return (
-    <div>
-      <Popover shown={!!previewLocale} showArrow={false}>
-        Previewing {previewLocale}
-      </Popover>
-      <Dropdown
-        onOpenChange={(open) => {
-          setIsOpen(open);
-          if (!open) {
-            setHoveredKey(null);
-            setPreviewLocale(null);
-          }
-        }}
-        openOn="click"
-        trigger={
-          <Button
-            size="sm"
-            variant="ghost"
-            leftSlot={
-              <Languages
-                size={16}
-                className={`transition-transform duration-500 ${
-                  isOpen ? "rotate-[360deg]" : "rotate-0"
-                }`}
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
+    <Dropdown
+      openOn="click"
+      isOpen={isOpen}
+      onOpenChange={(open) => { setIsOpen(open); if (!open) clearPreview(); }}
+      className="min-w-[15rem]"
+      menuStyle={{ maxHeight: "min(24rem, calc(100dvh - 32px))" }}
+      trigger={
+        <Button
+          size="sm"
+          variant="ghost"
+          aria-label={uiText("AppStrings.ChooseLanguage")}
+          leftSlot={<Languages size={16} className={`transition-transform duration-500 ${isOpen ? "rotate-[360deg]" : "rotate-0"}`} />}
+          rightSlot={<ChevronDown size={16} className={`transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"}`} />}
+          style={{ color: colors.text }}
+        />
+      }
+    >
+      <div className="flex flex-col gap-1">
+        {rankedLanguages.slice(0, 7).map((language) => (
+          <button
+            key={language.key}
+            type="button"
+            role="menuitemradio"
+            aria-checked={selectedLocale === language.key}
+            disabled={isPending}
+            className="flex min-h-10 w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-current disabled:opacity-50"
+            style={{ color: colors.text, backgroundColor: hoveredKey === language.key ? colors.base : "transparent" }}
+            onClick={() => mutate(language.key, { onSuccess: () => { clearPreview(); setIsOpen(false); } })}
+            onMouseEnter={() => { setHoveredKey(language.key); setPreviewLocale(language.key); }}
+            onMouseLeave={clearPreview}
+            onFocus={() => { setHoveredKey(language.key); setPreviewLocale(language.key); }}
+            onBlur={clearPreview}
+          >
+            <span className="relative size-2.5 shrink-0">
+              <span
+                className={`absolute inline-flex size-full rounded-full opacity-75 ${hoveredKey === language.key ? "animate-[ping_1.2s_infinite]" : ""}`}
+                style={{ backgroundColor: colors[language.colorPrimary] }}
               />
-            }
-            rightSlot={
-              <ChevronDown
-                size={16}
-                className={`transform transition-transform duration-200 ${
-                  isOpen ? "rotate-180" : "rotate-0"
-                }`}
-                style={{
-                  color: siteTheme.colors["text"],
-                }}
-              />
-            }
-          />
-        }
-      >
-        {languages.map(
-          ({ key, label, colorPrimary, colorSecondary, colorBg }) => {
-            const isHovered = hoveredKey === key;
-            const percent = coverage[key] ?? 0; // default to 0 if missing
-
-            return (
-              <div
-                key={key}
-                className={`w-full transition-all duration-200 cursor-pointer`}
-                style={{
-                  backgroundColor: isHovered ? colorBg : undefined,
-                }}
-                onClick={() => handleChange(key)}
-                onMouseEnter={() => {
-                  if (hoverTimeoutRef.current)
-                    clearTimeout(hoverTimeoutRef.current);
-                  setHoveredKey(key);
-                  setPreviewLocale(key);
-                }}
-                onMouseLeave={() => {
-                  hoverTimeoutRef.current = setTimeout(() => {
-                    // Only reset if still on the same key
-                    if (hoveredKey === key) {
-                      setHoveredKey(null);
-                      setPreviewLocale(null);
-                    }
-                  }, 300); // Adjust delay as needed
-                }}
-              >
-                <div
-                  className="w-full flex items-center justify-between gap-2 p-2 rounded-lg"
+              <span className="relative block size-full rounded-full" style={{ backgroundColor: colors[language.colorPrimary] }} />
+            </span>
+            <span lang={language.key} className="min-w-0 flex-1 text-sm font-medium" aria-label={language.label}>
+              {Array.from(language.label).map((char, index) => (
+                <span
+                  key={index}
+                  aria-hidden="true"
+                  className={`inline-block whitespace-pre bg-clip-text text-transparent transition-transform ${hoveredKey === language.key ? "animate-smallwave" : ""}`}
                   style={{
-                    backgroundColor:
-                      hoveredKey === key
-                        ? siteTheme.colors["mantle"]
-                        : undefined,
+                    backgroundImage: `linear-gradient(to right, ${colors[language.colorPrimary]}, ${colors[language.colorSecondary]})`,
+                    animationDelay: `${index * 60}ms`,
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <span
-                        className={`
-                          absolute inline-flex h-full w-full rounded-full opacity-75
-                          
-                          ${isHovered ? "animate-[ping_1.2s_infinite]" : ""}
-                        `}
-                        style={{
-                          backgroundColor: siteTheme.colors[colorPrimary],
-                        }}
-                      />
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full relative z-10`}
-                        style={{
-                          backgroundColor: siteTheme.colors[colorPrimary],
-                        }}
-                      />
-                    </div>
-                    <span
-                      className="text-transparent bg-clip-text"
-                      style={{
-                        backgroundImage: `linear-gradient(to right, ${siteTheme.colors[colorPrimary]}, ${siteTheme.colors[colorSecondary]})`,
-                        fontSize: key === "pt-br" ? "0.65rem" : undefined,
-                      }}
-                    >
-                      {waveText(label, hoveredKey === key)}
-                    </span>
-                  </div>
-                  <ProgressCircle
-                    percent={percent}
-                    hovered={isHovered}
-                    hoverPrimary={siteTheme.colors[colorPrimary]}
-                    hoverSecondary={siteTheme.colors[colorSecondary]}
-                  />
-                </div>
-              </div>
-            );
-          },
-        )}
-      </Dropdown>
-    </div>
+                  {char}
+                </span>
+              ))}
+            </span>
+            <ProgressCircle
+              percent={language.coverage}
+              hovered={hoveredKey === language.key}
+              hoverPrimary={colors[language.colorPrimary]}
+              hoverSecondary={colors[language.colorSecondary]}
+            />
+          </button>
+        ))}
+        {error && <p role="alert" className="px-3 py-2 text-sm" style={{ color: colors.red }}>{error.message}</p>}
+        <div className="mt-1 border-t pt-1" style={{ borderColor: `color-mix(in srgb, ${colors.text} 12%, transparent)` }}>
+          <Dropdown.Item value="view-all-languages" href="/languages" className="!min-h-10 !px-3 !py-2 focus-visible:!ring-2 focus-visible:!ring-current" onClick={browseAll}>
+             {uiText("AppStrings.ViewAllLanguages")} </Dropdown.Item>
+        </div>
+      </div>
+    </Dropdown>
   );
 }

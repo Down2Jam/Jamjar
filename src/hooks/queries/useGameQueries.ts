@@ -115,7 +115,8 @@ export function useGames(
           cursor,
           limit: pageLimit,
         });
-        const json = (await res.json()) as PaginatedGamesResponse | GameType[];
+        if (!res.ok) throw new Error("Failed to load games");
+      const json = (await res.json()) as PaginatedGamesResponse | GameType[];
         const { games: pageGames, pageInfo } = readGamesPage(json);
 
         pageGames.forEach((game) => {
@@ -165,6 +166,7 @@ export function useGamesInfinite(
         cursor: pageParam ?? null,
         limit: pageLimit,
       });
+      if (!res.ok) throw new Error("Failed to load games");
       const json = (await res.json()) as PaginatedGamesResponse | GameType[];
       const { games, pageInfo } = readGamesPage(json);
       return {

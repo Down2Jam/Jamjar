@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button, Card, Spinner, Hstack, Vstack, Text, Icon } from "bioloom-ui";
 import { createPostJamVersion, getGame } from "@/requests/game";
 import { GameType, PageVersion } from "@/types/GameType";
@@ -16,6 +19,7 @@ export default function ClientGameEditPage({
 }: {
   params: Promise<{ gameSlug: string }>;
 }) {
+  const uiText = useUiTranslations();
   const resolvedParams = use(params);
   const gameSlug = resolvedParams.gameSlug;
   const [loading, setLoading] = useState<boolean>(true);
@@ -73,9 +77,9 @@ export default function ClientGameEditPage({
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">{uiText("AppStrings.Loading")}</Text>
             </Hstack>
-            <Text color="textFaded">Loading edit page...</Text>
+            <Text color="textFaded">{uiText("AppStrings.LoadingEditPage")}</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -89,11 +93,10 @@ export default function ClientGameEditPage({
           <Vstack>
             <Hstack>
               <Icon name="x" />
-              <Text size="xl">Invalid Permissions</Text>
+              <Text size="xl">{uiText("AppStrings.InvalidPermissions")}</Text>
             </Hstack>
             <Text color="textFaded">
-              You do not have access to editing this game
-            </Text>
+               {uiText("AppStrings.YouDoNotHaveAccessToEditingThis")} </Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -123,15 +126,14 @@ export default function ClientGameEditPage({
                   addToast({
                     title:
                       (await response.text()) ||
-                      "Failed to create post-jam version",
+                      uiText("AppStrings.FailedToCreatePostJamVersion"),
                   });
                 }
 
                 setCreatingPostJamVersion(false);
               }}
             >
-              Create a post jam version of the page
-            </Button>
+               {uiText("AppStrings.CreateAPostJamVersionOfThePage")} </Button>
           ) : (
             <PageVersionToggle
               value={selectedVersion}

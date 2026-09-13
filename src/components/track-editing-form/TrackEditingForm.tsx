@@ -1,4 +1,8 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 
 import Editor from "@/components/editor";
 import {
@@ -53,6 +57,7 @@ type LinkDraft = {
 };
 
 export default function TrackEditingForm({ track }: { track: TrackType }) {
+  const uiText = useUiTranslations();
   const router = useRouter();
   const { colors } = useTheme();
   const menuPortalTarget =
@@ -233,29 +238,25 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
       <Card>
         <Vstack align="start" className="gap-2">
           <Text size="xl" color="text" weight="semibold">
-            Edit Track
-          </Text>
+             {uiText("AppStrings.EditTrack")} </Text>
           <Text size="sm" color="textFaded">
-            Update the track page metadata, credits, and discovery info.
-          </Text>
+             {uiText("AppStrings.UpdateTheTrackPageMetadataCreditsAndDiscovery")} </Text>
         </Vstack>
       </Card>
 
       <Card>
         <Vstack align="start" className="gap-3">
           <div className="w-full">
-            <Text color="text">Track Name</Text>
+            <Text color="text">{uiText("AppStrings.TrackName")}</Text>
             <Text color="textFaded" size="xs">
-              The displayed name for this track.
-            </Text>
+               {uiText("AppStrings.TheDisplayedNameForThisTrack")} </Text>
           </div>
           <Input value={name} onValueChange={setName} />
 
           <div className="w-full">
-            <Text color="text">Commentary</Text>
+            <Text color="text">{uiText("AppStrings.Commentary")}</Text>
             <Text color="textFaded" size="xs">
-              Notes, context, or production details for the track page.
-            </Text>
+               {uiText("AppStrings.NotesContextOrProductionDetailsForTheTrack")} </Text>
           </div>
           <Editor
             content={commentary}
@@ -266,40 +267,36 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           <Hstack className="w-full items-start gap-3">
             <Vstack align="start" className="w-full gap-2">
               <div className="w-full">
-                <Text color="text">BPM</Text>
+                <Text color="text">{uiText("AppStrings.BPM2")}</Text>
                 <Text color="textFaded" size="xs">
-                  Optional tempo metadata.
-                </Text>
+                   {uiText("AppStrings.OptionalTempoMetadata")} </Text>
               </div>
               <Input value={bpm} onValueChange={setBpm} type="number" />
             </Vstack>
             <Vstack align="start" className="w-full gap-2">
               <div className="w-full">
-                <Text color="text">Key</Text>
+                <Text color="text">{uiText("AppStrings.Key")}</Text>
                 <Text color="textFaded" size="xs">
-                  Optional musical key.
-                </Text>
+                   {uiText("AppStrings.OptionalMusicalKey")} </Text>
               </div>
               <Input value={musicalKey} onValueChange={setMusicalKey} />
             </Vstack>
           </Hstack>
 
           <div className="w-full">
-            <Text color="text">Software Used</Text>
+            <Text color="text">{uiText("AppStrings.SoftwareUsed")}</Text>
             <Text color="textFaded" size="xs">
-              Comma-separated list, e.g. Ableton, Famitracker.
-            </Text>
+               {uiText("AppStrings.CommaSeparatedListEGAbletonFamitracker")} </Text>
           </div>
           <Input value={softwareUsed} onValueChange={setSoftwareUsed} />
 
           <div className="w-full">
-            <Text color="text">Credits</Text>
+            <Text color="text">{uiText("AppStrings.Credits")}</Text>
             <Text color="textFaded" size="xs">
-              The people who made this song (linked to accounts on the site)
-            </Text>
+               {uiText("AppStrings.ThePeopleWhoMadeThisSongLinkedTo")} </Text>
           </div>
           <Input
-            placeholder="Search users..."
+            placeholder={uiText("AppStrings.SearchUsers")}
             value={creditQuery}
             onValueChange={handleCreditSearch}
           />
@@ -376,11 +373,11 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                         ),
                       )
                     }
-                    placeholder="Role"
+                    placeholder={uiText("AppStrings.Role")}
                   >
                     {TRACK_CREDIT_ROLE_OPTIONS.map((role) => (
                       <Dropdown.Item key={role} value={role}>
-                        {role}
+                        {translateSystemLabel(role, uiText)}
                       </Dropdown.Item>
                     ))}
                   </Dropdown>
@@ -390,11 +387,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           </Vstack>
 
           <div className="w-full">
-            <Text color="text">Track Tags</Text>
+            <Text color="text">{uiText("AppStrings.TrackTags")}</Text>
             <Text color="textFaded" size="xs">
-              Help listeners find this track by genre, mood, use case, and
-              looping.
-            </Text>
+               {uiText("AppStrings.HelpListenersFindThisTrackByGenreMood")} </Text>
           </div>
           <Vstack align="stretch" className="w-full gap-3">
             {trackTagCategories.map((categoryName) => {
@@ -408,11 +403,11 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               return (
                 <div key={categoryName} className="w-full">
                   <Text color="text" size="sm">
-                    {categoryName}
+                    {translateSystemLabel(categoryName, uiText)}
                   </Text>
                   <Text color="textFaded" size="xs">
-                    {TRACK_TAG_CATEGORY_HELPERS[categoryName] ??
-                      (isSingleCategory ? "Choose one" : "Choose any that fit")}
+                    {TRACK_TAG_CATEGORY_HELPERS[categoryName] ? uiText(TRACK_TAG_CATEGORY_HELPERS[categoryName]) :
+                      (isSingleCategory ? uiText("AppStrings.ChooseOne") : uiText("AppStrings.ChooseAnyThatFit"))}
                   </Text>
                   {isSingleCategory ? (
                     <Select<
@@ -449,7 +444,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       options={categoryTags.map((tag) => ({
                         value: tag.name,
                         id: tag.id,
-                        label: tag.name,
+                        label: translateSystemLabel(tag.name, uiText),
                       }))}
                     />
                   ) : (
@@ -478,12 +473,12 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       value={selectedCategoryTags.map((tag) => ({
                         value: tag.name,
                         id: tag.id,
-                        label: tag.name,
+                        label: translateSystemLabel(tag.name, uiText),
                       }))}
                       options={categoryTags.map((tag) => ({
                         value: tag.name,
                         id: tag.id,
-                        label: tag.name,
+                        label: translateSystemLabel(tag.name, uiText),
                       }))}
                     />
                   )}
@@ -495,10 +490,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           {trackFlags.length > 0 && (
             <>
               <div className="w-full">
-                <Text color="text">Flags</Text>
+                <Text color="text">{uiText("AppStrings.Flags")}</Text>
                 <Text color="textFaded" size="xs">
-                  Additional listener warnings or notes.
-                </Text>
+                   {uiText("AppStrings.AdditionalListenerWarningsOrNotes")} </Text>
               </div>
               <Select<
                 { value: string; id: number; label: string },
@@ -529,10 +523,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           )}
 
           <div className="w-full">
-            <Text color="text">Links</Text>
+            <Text color="text">{uiText("CreateGame.Links.Title")}</Text>
             <Text color="textFaded" size="xs">
-              External links related to this track.
-            </Text>
+               {uiText("AppStrings.ExternalLinksRelatedToThisTrack")} </Text>
           </div>
           <Vstack align="stretch" className="w-full gap-3">
             {links.map((link) => (
@@ -547,7 +540,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                         ),
                       )
                     }
-                    placeholder="Label"
+                    placeholder={uiText("AppStrings.Label")}
                   />
                   <Input
                     value={link.url}
@@ -570,12 +563,12 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       )
                     }
                   >
-                    Remove Link
-                  </Button>
+                     {uiText("AppStrings.RemoveLink")} </Button>
                 </Vstack>
               </Card>
             ))}
             <Button
+              className="w-fit self-start"
               size="sm"
               icon="plus"
               onClick={() =>
@@ -585,15 +578,13 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 ])
               }
             >
-              Add Link
-            </Button>
+               {uiText("CreateGame.Links.Add")} </Button>
           </Vstack>
 
           <div className="w-full">
-            <Text color="text">License</Text>
+            <Text color="text">{uiText("AppStrings.License")}</Text>
             <Text color="textFaded" size="xs">
-              Choose how others can use this track.
-            </Text>
+               {uiText("AppStrings.ChooseHowOthersCanUseThisTrack")} </Text>
           </div>
           <Dropdown
             selectedValue={licenseMode}
@@ -666,22 +657,19 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
           >
             <Dropdown.Item
               value="ARR"
-              description="No reuse permissions granted."
+              description={uiText("AppStrings.NoReusePermissionsGranted")}
             >
-              All rights reserved
-            </Dropdown.Item>
+               {uiText("AppStrings.AllRightsReserved")} </Dropdown.Item>
             <Dropdown.Item
               value="CC0"
-              description="Public domain style release with no attribution required."
+              description={uiText("AppStrings.PublicDomainStyleReleaseWithNoAttributionRequired")}
             >
-              CC0
-            </Dropdown.Item>
+               {uiText("AppStrings.CC0")} </Dropdown.Item>
             <Dropdown.Item
               value="CC_BY"
-              description="Creative Commons with attribution and configurable restrictions."
+              description={uiText("AppStrings.CreativeCommonsWithAttributionAndConfigurableRestrictions")}
             >
-              CC BY-based
-            </Dropdown.Item>
+               {uiText("AppStrings.CcByBased")} </Dropdown.Item>
           </Dropdown>
           {licenseMode === "CC_BY" && (
             <>
@@ -689,11 +677,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 <Switch checked disabled onChange={() => {}} />
                 <Vstack align="start" gap={0}>
                   <Text color="text" size="sm">
-                    Require attribution
-                  </Text>
+                     {uiText("AppStrings.RequireAttribution")} </Text>
                   <Text color="textFaded" size="xs">
-                    Credit the composer when used.
-                  </Text>
+                     {uiText("AppStrings.CreditTheComposerWhenUsed")} </Text>
                 </Vstack>
               </Hstack>
               <Hstack className="w-full items-center gap-3">
@@ -709,11 +695,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 />
                 <Vstack align="start" gap={0}>
                   <Text color="text" size="sm">
-                    Allow commercial use
-                  </Text>
+                     {uiText("AppStrings.AllowCommercialUse")} </Text>
                   <Text color="textFaded" size="xs">
-                    Let others use it commercially.
-                  </Text>
+                     {uiText("AppStrings.LetOthersUseItCommercially")} </Text>
                 </Vstack>
               </Hstack>
               <Hstack className="w-full items-center gap-3">
@@ -730,11 +714,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 />
                 <Vstack align="start" gap={0}>
                   <Text color="text" size="sm">
-                    Allow derivatives
-                  </Text>
+                     {uiText("AppStrings.AllowDerivatives")} </Text>
                   <Text color="textFaded" size="xs">
-                    Allow remixes or adaptations.
-                  </Text>
+                     {uiText("AppStrings.AllowRemixesOrAdaptations")} </Text>
                 </Vstack>
               </Hstack>
               <Hstack className="w-full items-center gap-3">
@@ -751,17 +733,15 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 />
                 <Vstack align="start" gap={0}>
                   <Text color="text" size="sm">
-                    Share alike
-                  </Text>
+                     {uiText("AppStrings.ShareAlike")} </Text>
                   <Text color="textFaded" size="xs">
-                    Derivatives must use the same license.
-                  </Text>
+                     {uiText("AppStrings.DerivativesMustUseTheSameLicense")} </Text>
                 </Vstack>
               </Hstack>
             </>
           )}
           <Text size="xs" color="textFaded">
-            License applied: {licenseFlagsToLabel(licenseFlags)}
+             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(licenseFlagsToLabel(licenseFlags), uiText)}
           </Text>
 
           <Hstack className="w-full items-start gap-3">
@@ -780,12 +760,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               disabled={backgroundUsageRequired}
             />
             <Vstack align="start" gap={0} className="min-w-0 flex-1">
-              <Text size="sm">Allow background use in streams and videos</Text>
+              <Text size="sm">{uiText("AppStrings.AllowBackgroundUseInStreamsAndVideos")}</Text>
               <Text size="xs" color="textFaded">
-                Let people use this track as background music in commercial
-                videos and streams not related to the game (where the music is
-                not the main focus) separate from the main license.
-              </Text>
+                 {uiText("AppStrings.LetPeopleUseThisTrackAsBackgroundMusic")} </Text>
             </Vstack>
           </Hstack>
 
@@ -799,12 +776,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             />
             <Vstack align="start" gap={0} className="min-w-0 flex-1">
               <Text size="sm">
-                Require attribution for stream and video background use
-              </Text>
+                 {uiText("AppStrings.RequireAttributionForStreamAndVideoBackgroundUse")} </Text>
               <Text size="xs" color="textFaded">
-                When people use this song in the background of streams or videos
-                they must credit you in some way.
-              </Text>
+                 {uiText("AppStrings.WhenPeopleUseThisSongInTheBackground")} </Text>
             </Vstack>
           </Hstack>
 
@@ -815,10 +789,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               disabled={downloadRequired}
             />
             <Vstack align="start" gap={0} className="min-w-0 flex-1">
-              <Text size="sm">Allow downloads</Text>
+              <Text size="sm">{uiText("AppStrings.AllowDownloads")}</Text>
               <Text size="xs" color="textFaded">
-                Let listeners download this track.
-              </Text>
+                 {uiText("AppStrings.LetListenersDownloadThisTrack")} </Text>
             </Vstack>
           </Hstack>
 
@@ -827,18 +800,17 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               href={`/m/${track.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
               variant="ghost"
             >
-              Cancel
-            </Button>
+               {uiText("AppStrings.Cancel")} </Button>
             <Button
               color="green"
               loading={saving}
               onClick={async () => {
                 if (!name.trim()) {
-                  addToast({ title: "Track name is required" });
+                  addToast({ title: uiText("AppStrings.TrackNameIsRequired") });
                   return;
                 }
                 if (credits.length === 0) {
-                  addToast({ title: "Add at least one credited person" });
+                  addToast({ title: uiText("AppStrings.AddAtLeastOneCreditedPerson") });
                   return;
                 }
                 try {
@@ -876,7 +848,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                   const payload = await response.json().catch(() => null);
                   if (!response.ok) {
                     addToast({
-                      title: payload?.message ?? "Failed to update track",
+                      title: payload?.message ?? uiText("AppStrings.FailedToUpdateTrack"),
                     });
                     return;
                   }
@@ -888,8 +860,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 }
               }}
             >
-              Save Track
-            </Button>
+               {uiText("AppStrings.SaveTrack")} </Button>
           </Hstack>
         </Vstack>
       </Card>

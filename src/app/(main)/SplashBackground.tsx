@@ -1,9 +1,13 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import usePrefersReducedMotion from "@/hooks/usePrefersReducedMotion";
 import Image from "@/compat/next-image";
 
 export default function HomeBackground() {
+  const uiText = useUiTranslations();
   const prefersReducedMotion = usePrefersReducedMotion();
   const posterUrl = "/images/mountain_beautypath_render.png";
 
@@ -24,7 +28,7 @@ export default function HomeBackground() {
       {prefersReducedMotion ? (
         <Image
           src={posterUrl}
-          alt="Background still frame"
+          alt={uiText("AppStrings.BackgroundStillFrame")}
           fill
           priority
           style={{

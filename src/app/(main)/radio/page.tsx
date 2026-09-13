@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import {
   getRadioEventsUrl,
   getRadioState,
@@ -154,6 +157,7 @@ function RadioLandingChoice({
   description: string;
   state: RadioState | null;
 }) {
+  const uiText = useUiTranslations();
   const background = getTrackBackground(state?.current?.track);
   const [activeBackground, setActiveBackground] = useState(background);
   const [previousBackground, setPreviousBackground] = useState<string | null>(
@@ -219,8 +223,8 @@ function RadioLandingChoice({
         <Text color="textLightFaded">{description}</Text>
         {state?.current?.track && (
           <Text size="sm" color="textLightFaded">
-            Playing {state.current.track.name} by{" "}
-            {state.current.track.composer?.name ?? "Unknown composer"}
+             {uiText("AppStrings.Playing")} {state.current.track.name}  {uiText("AppStrings.By")}{" "}
+            {state.current.track.composer?.name ?? uiText("AppStrings.UnknownComposer")}
           </Text>
         )}
       </div>
@@ -229,6 +233,7 @@ function RadioLandingChoice({
 }
 
 export default function RadioLandingPage() {
+  const uiText = useUiTranslations();
   const [states, setStates] = useState<Record<RadioStation, RadioState | null>>(
     {
       all: null,
@@ -265,60 +270,23 @@ export default function RadioLandingPage() {
     <main className="fixed inset-x-0 bottom-0 top-12 flex flex-col overflow-hidden md:flex-row">
       <RadioLandingChoice
         station="all"
-        title="Radio"
-        description="All available jam music."
+        title={uiText("Navbar.Radio.Title")}
+        description={uiText("AppStrings.AllAvailableJamMusic")}
         state={states.all}
       />
       <RadioLandingChoice
         station="safe"
-        title="Stream Safe Radio"
-        description="Only music marked for background use. Give attribution for the playing track in your stream."
+        title={uiText("AppStrings.StreamSafeRadio")}
+        description={uiText("AppStrings.OnlyMusicMarkedForBackgroundUseGiveAttribution")}
         state={states.safe}
       />
-      <style>{`
-        .radio-background-in {
-          animation: radio-background-in 1200ms ease-out forwards;
-          transform-origin: center;
-          will-change: opacity, transform, filter;
-        }
-
-        .radio-background-out {
-          animation: radio-background-out 1200ms ease-out forwards;
-          transform-origin: center;
-          will-change: opacity, transform, filter;
-        }
-
-        @keyframes radio-background-in {
-          from {
-            opacity: 0;
-            filter: blur(10px) saturate(1.15);
-            transform: scale(1.05);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0) saturate(1);
-            transform: scale(1);
-          }
-        }
-
-        @keyframes radio-background-out {
-          from {
-            opacity: 1;
-            filter: blur(0) saturate(1);
-            transform: scale(1);
-          }
-          to {
-            opacity: 0;
-            filter: blur(12px) saturate(0.9);
-            transform: scale(0.98);
-          }
-        }
-      `}</style>
+      <style>{uiText("AppStrings.RadioBackgroundInAnimationRadioBackgroundIn1200msEaseOutForwardsTransformOriginCenter")}</style>
     </main>
   );
 }
 
 export function RadioStationPage({ station }: { station: RadioStation }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { emojis, emojiMap, loading: emojisLoading } = useEmojis();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -523,7 +491,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       .catch((error) => {
         console.error(error);
         if (!cancelled) {
-          addToast({ title: "Failed to load radio" });
+          addToast({ title: uiText("AppStrings.FailedToLoadRadio") });
         }
       })
       .finally(() => {
@@ -923,13 +891,13 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       if (response.status === 401) {
         setState(previousState);
         setLocalVoteTrackId(previousLocalVoteTrackId);
-        addToast({ title: "Log in to vote for the next track" });
+        addToast({ title: uiText("AppStrings.LogInToVoteForTheNextTrack") });
         return;
       }
       if (!response.ok) {
         setState(previousState);
         setLocalVoteTrackId(previousLocalVoteTrackId);
-        addToast({ title: "Failed to vote" });
+        addToast({ title: uiText("AppStrings.FailedToVote") });
         return;
       }
       const nextState = await readItem<RadioState>(response);
@@ -957,11 +925,11 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       const pickerCloseStartedAt = performance.now();
       const response = await sendRadioEmote(emote, position, station);
       if (response.status === 401) {
-        addToast({ title: "Log in to send radio emotes" });
+        addToast({ title: uiText("AppStrings.LogInToSendRadioEmotes") });
         return;
       }
       if (!response.ok) {
-        addToast({ title: "Failed to send emote" });
+        addToast({ title: uiText("AppStrings.FailedToSendEmote") });
         return;
       }
       const sentEmote = (await response
@@ -1011,10 +979,10 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/40" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">
           <Vstack align="start" className="gap-3 text-white">
-            <Text size="5xl">Radio</Text>
+            <Text size="5xl">{uiText("Navbar.Radio.Title")}</Text>
             <Hstack className="items-center gap-1.5 opacity-70">
               <Icon name="users" size={14} color="text" />
-              <Text size="sm">Loading listeners</Text>
+              <Text size="sm">{uiText("AppStrings.LoadingListeners")}</Text>
             </Hstack>
             <Hstack className="items-center gap-2 opacity-70">
               <Icon name="volume2" size={15} color="text" />
@@ -1026,10 +994,9 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
         <div className="fixed right-4 top-16 z-30 w-[18rem] max-w-[calc(100vw-32px)] text-white drop-shadow-lg sm:right-6 sm:top-20">
           <Vstack align="stretch" className="gap-2 opacity-75">
             <Vstack align="start" className="gap-1">
-              <Text>Next Up</Text>
+              <Text>{uiText("AppStrings.NextUp")}</Text>
               <Text color="textFaded" size="xs">
-                Vote for what plays after this track.
-              </Text>
+                 {uiText("AppStrings.VoteForWhatPlaysAfterThisTrack")} </Text>
             </Vstack>
             <Vstack align="stretch" className="gap-1">
               {[0, 1, 2].map((item) => (
@@ -1072,10 +1039,9 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
         <Card>
           <Vstack align="start" className="gap-2">
-            <Text size="2xl">Radio</Text>
+            <Text size="2xl">{uiText("Navbar.Radio.Title")}</Text>
             <Text color="textFaded">
-              The music radio is not active right now.
-            </Text>
+               {uiText("AppStrings.TheMusicRadioIsNotActiveRightNow")} </Text>
           </Vstack>
         </Card>
       </main>
@@ -1110,7 +1076,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
           <img
             key={emote.key}
             src={emoji.image}
-            alt={`:${emote.emote}:`}
+            alt={uiText("AppStrings.Value03", { value0: emote.emote })}
             className="radio-floating-emote pointer-events-none fixed z-50 h-12 w-12"
             style={
               {
@@ -1138,15 +1104,15 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">
         <Hstack justify="between" className="items-start gap-4">
           <Vstack align="start" className="gap-3 text-white">
-            <Text size="5xl">Radio</Text>
+            <Text size="5xl">{uiText("Navbar.Radio.Title")}</Text>
             <Hstack className="items-center gap-1.5">
               <Icon name="users" size={14} color="text" />
-              <Text size="sm">{state.listenerCount} listening</Text>
+              <Text size="sm">{state.listenerCount}  {uiText("AppStrings.Listening")}</Text>
             </Hstack>
             <Hstack className="items-center gap-2 text-white">
               <Icon name="volume2" size={15} color="text" />
               <input
-                aria-label="Radio volume"
+                aria-label={uiText("AppStrings.RadioVolume")}
                 type="range"
                 min={0}
                 max={100}
@@ -1178,7 +1144,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
             onClick={() => void startListening()}
           >
             <Icon name="play" size={22} color="text" />
-            <span>Start listening</span>
+            <span>{uiText("AppStrings.StartListening")}</span>
           </button>
         </div>
       )}
@@ -1186,10 +1152,9 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       <div className="fixed right-4 top-16 z-30 w-[18rem] max-w-[calc(100vw-32px)] text-white drop-shadow-lg sm:right-6 sm:top-20">
         <Vstack align="stretch" className="gap-2">
           <Vstack align="start" className="gap-1">
-            <Text>Next Up</Text>
+            <Text>{uiText("AppStrings.NextUp")}</Text>
             <Text color="textFaded" size="xs">
-              Vote for what plays after this track.
-            </Text>
+               {uiText("AppStrings.VoteForWhatPlaysAfterThisTrack")} </Text>
           </Vstack>
 
           <Vstack align="stretch" className="gap-1">
@@ -1321,13 +1286,13 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
                   key={emoji.id}
                   type="button"
                   className="flex aspect-square w-full cursor-pointer items-center justify-center transition-transform hover:scale-110 disabled:cursor-not-allowed"
-                  title={`:${emoji.slug}:`}
+                  title={uiText("AppStrings.Value03", { value0: emoji.slug })}
                   disabled={sendingEmote === emoji.slug}
                   onClick={() => void sendEmote(emoji.slug)}
                 >
                   <img
                     src={emoji.image}
-                    alt={`:${emoji.slug}:`}
+                    alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                     className="h-8 w-8 object-contain"
                     loading="lazy"
                     decoding="async"
@@ -1338,7 +1303,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
             <button
               type="button"
               className="flex aspect-square w-full cursor-pointer items-center justify-center text-white drop-shadow-lg transition-transform hover:scale-110"
-              title="Search emotes"
+              title={uiText("AppStrings.SearchEmotes")}
               onClick={() => setEmoteSearchOpen((open) => !open)}
             >
               <Icon name="search" />
@@ -1352,21 +1317,21 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
               size="sm"
               value={emoteSearch}
               onValueChange={setEmoteSearch}
-              placeholder="Search emotes"
+              placeholder={uiText("AppStrings.SearchEmotes")}
             />
-            <div className="grid max-h-56 grid-cols-6 gap-2 overflow-y-auto">
+            <div className="grid max-h-56 grid-cols-6 gap-2 overflow-x-hidden overflow-y-auto p-1">
               {filteredSearchEmojis.map((emoji) => (
                 <button
                   key={emoji.id}
                   type="button"
                   className="flex aspect-square w-full cursor-pointer items-center justify-center transition-transform hover:scale-110 disabled:cursor-not-allowed"
-                  title={`:${emoji.slug}:`}
+                  title={uiText("AppStrings.Value03", { value0: emoji.slug })}
                   disabled={sendingEmote === emoji.slug}
                   onClick={() => void sendEmote(emoji.slug)}
                 >
                   <img
                     src={emoji.image}
-                    alt={`:${emoji.slug}:`}
+                    alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                     className="h-7 w-7 object-contain"
                     loading="lazy"
                     decoding="async"
@@ -1380,316 +1345,14 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
           ref={reactButtonRef}
           type="button"
           className="flex h-10 w-10 cursor-pointer items-center justify-center text-white drop-shadow-lg transition-transform hover:scale-110"
-          title="React"
+          title={uiText("AppStrings.React")}
           onClick={handleReactButtonClick}
         >
           <Icon name="smileplus" />
         </button>
       </div>
 
-      <style>{`
-        .radio-background-in {
-          animation: radio-background-in 1200ms ease-out forwards;
-          transform-origin: center;
-          will-change: opacity, transform, filter;
-        }
-
-        .radio-background-out {
-          animation: radio-background-out 1200ms ease-out forwards;
-          transform-origin: center;
-          will-change: opacity, transform, filter;
-        }
-
-        .radio-start-overlay {
-          opacity: 0;
-          animation: radio-start-overlay-in 320ms ease-out forwards;
-          transition: opacity 420ms ease;
-        }
-
-        .radio-start-overlay-fading {
-          animation: none;
-          opacity: 0;
-          pointer-events: none;
-        }
-
-        @keyframes radio-start-overlay-in {
-          from {
-            opacity: 0;
-            backdrop-filter: blur(0);
-          }
-          to {
-            opacity: 1;
-            backdrop-filter: blur(4px);
-          }
-        }
-
-        .radio-volume-slider {
-          appearance: none;
-          background: transparent;
-        }
-
-        .radio-volume-slider::-webkit-slider-runnable-track {
-          height: 4px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.28);
-        }
-
-        .radio-volume-slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 12px;
-          height: 12px;
-          margin-top: -4px;
-          border-radius: 999px;
-          background: #ffffff;
-          box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
-          transition: transform 160ms ease;
-        }
-
-        .radio-volume-slider:hover::-webkit-slider-thumb {
-          transform: scale(1.18);
-        }
-
-        .radio-volume-slider::-moz-range-track {
-          height: 4px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.28);
-        }
-
-        .radio-volume-slider::-moz-range-thumb {
-          width: 12px;
-          height: 12px;
-          border: 0;
-          border-radius: 999px;
-          background: #ffffff;
-          box-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
-          transition: transform 160ms ease;
-        }
-
-        .radio-volume-slider:hover::-moz-range-thumb {
-          transform: scale(1.18);
-        }
-
-        @keyframes radio-background-in {
-          from {
-            opacity: 0;
-            filter: blur(10px) saturate(1.15);
-            transform: scale(1.05);
-          }
-          to {
-            opacity: 1;
-            filter: blur(0) saturate(1);
-            transform: scale(1);
-          }
-        }
-
-        @keyframes radio-background-out {
-          from {
-            opacity: 1;
-            filter: blur(0) saturate(1);
-            transform: scale(1);
-          }
-          to {
-            opacity: 0;
-            filter: blur(12px) saturate(0.9);
-            transform: scale(0.985);
-          }
-        }
-
-        .radio-track-panel {
-          animation: radio-track-panel-in 720ms cubic-bezier(0.2, 0.9, 0.22, 1)
-            both;
-          transform-origin: left bottom;
-          will-change: transform, opacity;
-        }
-
-        .radio-track-thumb {
-          animation: radio-track-thumb-in 760ms cubic-bezier(0.2, 0.9, 0.22, 1)
-            both;
-          transform-origin: center;
-          will-change: transform, opacity;
-        }
-
-        .radio-track-copy {
-          animation: radio-track-copy-in 820ms 260ms
-            cubic-bezier(0.2, 0.9, 0.22, 1) both;
-          transform-origin: left center;
-          will-change: transform, opacity;
-        }
-
-        .radio-track-panel-finishing .radio-track-copy,
-        .radio-track-copy-finishing {
-          animation: radio-track-copy-finish 900ms
-            cubic-bezier(0.55, 0, 0.25, 1) forwards;
-        }
-
-        .radio-track-panel-finishing .radio-track-thumb,
-        .radio-track-thumb-finishing {
-          animation: radio-track-thumb-finish 760ms 620ms
-            cubic-bezier(0.55, 0, 0.25, 1) forwards;
-        }
-
-        @keyframes radio-track-panel-in {
-          from {
-            opacity: 0;
-            transform: translateY(18px) scale(0.96);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes radio-track-thumb-in {
-          from {
-            opacity: 0;
-            transform: translateX(-160px) rotate(-220deg) scale(1);
-          }
-          68% {
-            opacity: 1;
-            transform: translateX(4px) rotate(4deg) scale(1);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) rotate(0deg) scale(1);
-          }
-        }
-
-        @keyframes radio-track-copy-in {
-          from {
-            opacity: 0;
-            transform: translateX(-72px) scale(0.34);
-          }
-          45% {
-            opacity: 0;
-            transform: translateX(-72px) scale(0.34);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-        }
-
-        @keyframes radio-track-copy-finish {
-          from {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-          to {
-            opacity: 0;
-            transform: translateX(-72px) scale(0.34);
-          }
-        }
-
-        @keyframes radio-track-thumb-finish {
-          from {
-            opacity: 1;
-            transform: translateX(0) rotate(0deg) scale(1);
-          }
-          to {
-            opacity: 0;
-            transform: translateX(-160px) rotate(-220deg) scale(1);
-          }
-        }
-
-        @keyframes radio-emote-float {
-          0% {
-            opacity: 0;
-            transform: translate(
-                calc(-50% + var(--radio-start-x)),
-                calc(-50% + var(--radio-start-y))
-              )
-              rotate(0deg) scale(0);
-          }
-          12% {
-            opacity: 1;
-            transform: translate(
-                calc(-50% + var(--radio-start-x)),
-                calc(-50% + var(--radio-start-y) - 18px)
-              )
-              rotate(calc(var(--radio-rotation) * 0.18))
-              scale(calc(var(--radio-scale) * 1.08));
-          }
-          28% {
-            opacity: 1;
-            transform: translate(
-                calc(-50% + var(--radio-step1-x)),
-                calc(-50% + var(--radio-step1-y))
-              )
-              rotate(calc(var(--radio-rotation) * 0.32))
-              scale(calc(var(--radio-scale) * 0.9));
-          }
-          48% {
-            opacity: 0.92;
-            transform: translate(
-                calc(-50% + var(--radio-step2-x)),
-                calc(-50% + var(--radio-step2-y))
-              )
-              rotate(calc(var(--radio-rotation) * 0.58))
-              scale(calc(var(--radio-scale) * 0.74));
-          }
-          72% {
-            opacity: 0.58;
-            transform: translate(
-                calc(-50% + var(--radio-step3-x)),
-                calc(-50% + var(--radio-step3-y))
-              )
-              rotate(calc(var(--radio-rotation) * 0.82))
-              scale(calc(var(--radio-scale) * 0.56));
-          }
-          100% {
-            opacity: 0;
-            transform: translate(
-                calc(-50% + var(--radio-end-x)),
-                calc(-50% + var(--radio-end-y))
-              )
-              rotate(var(--radio-rotation))
-              scale(calc(var(--radio-scale) * 0.34));
-          }
-        }
-
-        .radio-floating-emote {
-          animation: radio-emote-float var(--radio-float-duration) linear
-            forwards;
-          will-change: transform, opacity;
-        }
-
-        .radio-emote-picker {
-          transform-origin: bottom right;
-          will-change: transform, opacity;
-        }
-
-        .radio-emote-picker-open {
-          animation: radio-emote-picker-in 160ms
-            cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        .radio-emote-picker-closed {
-          animation: radio-emote-picker-out 140ms ease-in forwards;
-          pointer-events: none;
-        }
-
-        @keyframes radio-emote-picker-in {
-          from {
-            opacity: 0;
-            transform: translateY(8px) scale(0.86);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        @keyframes radio-emote-picker-out {
-          from {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          to {
-            opacity: 0;
-            transform: translateY(8px) scale(0.88);
-          }
-        }
-      `}</style>
+      <style>{uiText("AppStrings.RadioBackgroundInAnimationRadioBackgroundIn1200msEaseOutForwardsTransformOriginCenter2")}</style>
     </main>
   );
 }

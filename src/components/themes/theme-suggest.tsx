@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useState, useEffect, useRef } from "react";
 import { getCookie } from "@/helpers/cookie";
 import {
@@ -112,6 +115,7 @@ const bannedThemes = [
 ];
 
 export default function ThemeSuggestions() {
+  const uiText = useUiTranslations();
   const [suggestion, setSuggestion] = useState("");
   const [examples, setExamples] = useState("");
   const [loading, setLoading] = useState(false);
@@ -159,7 +163,7 @@ export default function ThemeSuggestions() {
     setLoading(true);
 
     if (!suggestion.trim()) {
-      addToast({ title: "Suggestion cannot be empty" });
+      addToast({ title: uiText("AppStrings.SuggestionCannotBeEmpty") });
       setLoading(false);
       return;
     }
@@ -167,7 +171,7 @@ export default function ThemeSuggestions() {
     if (bannedThemes.includes(suggestion.toLowerCase().replaceAll(/\W/g, ""))) {
       addToast({
         title:
-          "That suggestion cannot be used (it likely has been used recently for another jam)",
+          uiText("AppStrings.ThatSuggestionCannotBeUsedItLikelyHas"),
       });
       setLoading(false);
       return;
@@ -193,7 +197,7 @@ export default function ThemeSuggestions() {
         throw new Error(errorMessage || "Failed to submit suggestion.");
       }
 
-      addToast({ title: "Suggestion added successfully!" });
+      addToast({ title: uiText("ThemeSuggestions.Added") });
       setSuggestion("");
       setExamples(""); // clear examples too
       fetchSuggestions();
@@ -202,7 +206,7 @@ export default function ThemeSuggestions() {
         title:
           error instanceof Error
             ? error.message
-            : "An unexpected error occurred.",
+            : uiText("AppStrings.AnUnexpectedErrorOccurred"),
       });
     } finally {
       setLoading(false);
@@ -214,7 +218,7 @@ export default function ThemeSuggestions() {
       const response = await deleteThemeSuggestion(t.id);
       if (!response.ok) throw new Error("Failed to delete suggestion.");
 
-      addToast({ title: "Suggestion removed and populated input" });
+      addToast({ title: uiText("AppStrings.SuggestionRemovedAndPopulatedInput") });
 
       setSuggestion(t.suggestion);
       setExamples(t.description || "");
@@ -231,7 +235,7 @@ export default function ThemeSuggestions() {
       fetchSuggestions();
     } catch (error) {
       console.error("Error editing suggestion:", error);
-      addToast({ title: "Error deleting suggestion for edit" });
+      addToast({ title: uiText("AppStrings.ErrorDeletingSuggestionForEdit") });
     }
   };
 
@@ -244,7 +248,7 @@ export default function ThemeSuggestions() {
       }
 
       addToast({
-        title: "Deleted theme suggestion",
+        title: uiText("AppStrings.DeletedThemeSuggestion"),
       });
       fetchSuggestions(); // Refresh suggestions list
     } catch (error) {
@@ -327,13 +331,11 @@ export default function ThemeSuggestions() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="x" />
-                <Text size="xl">Not in Suggestion Phase</Text>
+                <Text size="xl">{uiText("AppStrings.NotInSuggestionPhase")}</Text>
               </Hstack>
               <Text color="textFaded">
-                The current phase is{" "}
-                <strong>{activeJamResponse?.phase || "Unknown"}</strong>. Please
-                come back during the Suggestion phase.
-              </Text>
+                 {uiText("AppStrings.TheCurrentPhaseIs")}{" "}
+                <strong>{activeJamResponse?.phase || uiText("AppStrings.Unknown")}</strong>{uiText("AppStrings.PleaseComeBackDuringTheSuggestionPhase")} </Text>
             </Vstack>
           </Vstack>
         </Card>
@@ -346,7 +348,7 @@ export default function ThemeSuggestions() {
       {!token && (
         <Hstack>
           <Icon name="userx" />
-          <Text color="textFaded">Sign in and join the jam to suggest a theme.</Text>
+          <Text color="textFaded">{uiText("AppStrings.SignInAndJoinTheJamToSuggestATheme")}</Text>
           <Button href="/login" color="pink" icon="login">
             Themes.Login
           </Button>
@@ -365,14 +367,13 @@ export default function ThemeSuggestions() {
           </Vstack>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Vstack gap={0} align="start">
-              <Text color="text">Theme</Text>
+              <Text color="text">{uiText("RatingCategory.Theme.Title")}</Text>
               <Text color="textFaded" size="xs">
-                The theme idea that people would build their games around
-              </Text>
+                 {uiText("AppStrings.TheThemeIdeaThatPeopleWouldBuildTheir")} </Text>
             </Vstack>
             <Input
               className="w-full"
-              placeholder="Enter your theme suggestion..."
+              placeholder={uiText("AppStrings.EnterYourThemeSuggestion")}
               required
               disabled={!token || userSuggestions.length >= themeLimit}
               value={suggestion}
@@ -384,19 +385,13 @@ export default function ThemeSuggestions() {
               maxLength={64}
             ></Input>
             <Vstack gap={0} align="start">
-              <Text color="text">Clarification</Text>
+              <Text color="text">{uiText("AppStrings.Clarification")}</Text>
               <Text color="textFaded" size="xs" className="max-w-96">
-                You can optionally detail why do you think this is a good theme
-                and/or give examples of games that can be made with it. For
-                example, with the theme echoes people might take that as things
-                bouncing, audio repetition, visual repetition, story echoes,
-                previous actions affecting future situations, areas that change
-                over time, etc.
-              </Text>
+                 {uiText("AppStrings.YouCanOptionallyDetailWhyDoYouThinkThisIsAGoodThemeAndOrGiveExamplesOfGamesThatCanBeM")} </Text>
             </Vstack>
             <Input
               className="w-full"
-              placeholder="Enter clarification... (optional)"
+              placeholder={uiText("AppStrings.EnterClarificationOptional")}
               disabled={!token || userSuggestions.length >= themeLimit}
               value={examples}
               onChange={(e) => {
@@ -410,28 +405,23 @@ export default function ThemeSuggestions() {
               color={userSuggestions.length >= themeLimit ? "yellow" : "blue"}
               icon="send"
             >
-              {loading ? "Submitting..." : "Submit Suggestion"}
+              {loading ? uiText("AppStrings.Submitting2") : uiText("AppStrings.SubmitSuggestion")}
             </Button>
           </form>
 
           {userSuggestions.length >= themeLimit && (
             <Vstack>
               <Text color="yellow" size="sm">
-                You&apos;ve reached your theme suggestion limit for this jam!
-              </Text>
+                 {uiText("AppStrings.YouAndAposVeReachedYourThemeSuggestion")} </Text>
               <Text color="textFaded" size="sm">
-                Theme voting will start once the theme submission phase ends.
-              </Text>
+                 {uiText("AppStrings.ThemeVotingWillStartOnceTheThemeSubmission")} </Text>
               <Text color="textFaded" size="sm">
-                Feel free to make a post on the forum introducing yourself!
-              </Text>
+                 {uiText("AppStrings.FeelFreeToMakeAPostOnThe")} </Text>
               <Hstack>
                 <Button icon="messagessquare" href="/home">
-                  To Forum
-                </Button>
+                   {uiText("AppStrings.ToForum")} </Button>
                 <Button icon="squarepen" href="/create-post">
-                  Create Post
-                </Button>
+                   {uiText("Navbar.CreatePost.Title")} </Button>
               </Hstack>
             </Vstack>
           )}
@@ -440,7 +430,7 @@ export default function ThemeSuggestions() {
       {token && <Card>
         {/* List of user's suggestions */}
         <Vstack align="center">
-          <Text size="xl">Your Suggestions</Text>
+          <Text size="xl">{uiText("ThemeSuggestions.YourSuggestions.Title")}</Text>
           {userSuggestions.length > 0 ? (
             <Vstack className="w-full">
               {userSuggestions.map((suggestion) => (
@@ -454,7 +444,7 @@ export default function ThemeSuggestions() {
                         <Text size="xs" color="textFaded" className="max-w-96">
                           {suggestion.description
                             ? suggestion.description
-                            : "No clarification"}
+                            : uiText("AppStrings.NoClarification")}
                         </Text>
                       </Vstack>
                     </Hstack>
@@ -463,15 +453,13 @@ export default function ThemeSuggestions() {
                         onClick={() => handleEdit(suggestion)}
                         icon="pencil"
                       >
-                        Edit
-                      </Button>
+                         {uiText("ThemeSuggestions.Edit.Title")} </Button>
                       <Button
                         onClick={() => handleDelete(suggestion.id)}
                         color="red"
                         icon="trash"
                       >
-                        Delete
-                      </Button>
+                         {uiText("ThemeSuggestions.Delete.Title")} </Button>
                     </Hstack>
                   </Hstack>
                 </Card>
@@ -479,8 +467,7 @@ export default function ThemeSuggestions() {
             </Vstack>
           ) : (
             <Text color="textFaded">
-              You haven&apos;t submitted any suggestions yet.
-            </Text>
+               {uiText("AppStrings.YouHavenAndAposTSubmittedAnySuggestions")} </Text>
           )}
         </Vstack>
       </Card>}

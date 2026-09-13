@@ -1,5 +1,7 @@
 "use client";
 
+
+
 import { ReactNode } from "react";
 import Popover from "./Popover";
 import { Vstack, Hstack } from "./Stack";
@@ -21,8 +23,8 @@ export function Dialog({
   onClose,
   onConfirm,
   children,
-  confirm = { icon: "check", label: "OK" },
-  cancel = { icon: "x", label: "Close" },
+  confirm = { icon: "check", label: "AppStrings.OK" },
+  cancel = { icon: "x", label: "AppStrings.Close" },
 }: DialogProps) {
   return (
     <Popover

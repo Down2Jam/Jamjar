@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useThemes } from "@/hooks/queries";
 import type { ThemeType } from "@/types/ThemeType";
 import {
@@ -18,6 +21,7 @@ import {
 } from "bioloom-ui";
 
 export default function AdminThemeSuggestions() {
+  const uiText = useUiTranslations();
   const { data, isLoading: loading } = useThemes(false);
   const themes: ThemeType[] = data ?? [];
 
@@ -26,38 +30,32 @@ export default function AdminThemeSuggestions() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Theme Suggestions
-          </Text>
+             {uiText("Navbar.ThemeSuggestions.Title")} </Text>
           <Text size="sm" color="textFaded">
-            Review new theme ideas and keep tabs on incoming suggestions.
-          </Text>
+             {uiText("AppStrings.ReviewNewThemeIdeasAndKeepTabsOn")} </Text>
         </Vstack>
         <Hstack wrap>
           <Button href="/theme-suggestions" icon="arrowupright">
-            Open Suggestions Page
-          </Button>
+             {uiText("AppStrings.OpenSuggestionsPage")} </Button>
           <Text size="sm" color="textFaded">
-            {themes.length} suggestions loaded
-          </Text>
+            {themes.length}  {uiText("AppStrings.SuggestionsLoaded")} </Text>
         </Hstack>
       </section>
 
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            Suggestions
-          </Text>
+             {uiText("AppStrings.Suggestions")} </Text>
           {loading ? (
             <Spinner />
           ) : themes.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No suggestions found yet.
-            </Text>
+               {uiText("AppStrings.NoSuggestionsFoundYet")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Theme</TableColumn>
-                <TableColumn>Clarification</TableColumn>
+                <TableColumn>{uiText("RatingCategory.Theme.Title")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Clarification")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {themes.map((theme) => (
@@ -67,7 +65,7 @@ export default function AdminThemeSuggestions() {
                     </TableCell>
                     <TableCell>
                       <Text size="sm" color="textFaded">
-                        {theme.description || "No clarification provided"}
+                        {theme.description || uiText("AppStrings.NoClarificationProvided")}
                       </Text>
                     </TableCell>
                   </TableRow>

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { addToast, Button, Input, Popover, Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
@@ -29,6 +32,7 @@ export default function PostReactions({
   onOverlayChange,
   pickerPosition = "top",
 }: PostReactionsProps) {
+  const uiText = useUiTranslations();
   const { emojis, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [current, setCurrent] = useState<ReactionSummaryType[]>(
@@ -138,7 +142,7 @@ export default function PostReactions({
       setReactionEffectId(wasReacted ? null : emoji.id);
     } catch (error) {
       console.error("Failed to update reaction", error);
-      addToast({ title: "Failed to update reaction" });
+      addToast({ title: uiText("AppStrings.FailedToUpdateReaction") });
     } finally {
       setUpdating(null);
     }
@@ -192,7 +196,7 @@ export default function PostReactions({
               >
                 <img
                   src={entry.reaction.image}
-                  alt={`:${entry.reaction.slug}:`}
+                  alt={uiText("AppStrings.Value03", { value0: entry.reaction.slug })}
                   className="h-5 w-5"
                   loading="eager"
                   decoding="auto"
@@ -233,7 +237,7 @@ export default function PostReactions({
                 <span>:{entry.reaction.slug}:</span>
               </div>
               {(entry.users ?? []).length === 0 ? (
-                <div className="text-sm opacity-70">No reactions yet.</div>
+                <div className="text-sm opacity-70">{uiText("AppStrings.NoReactionsYet")}</div>
               ) : (
                 <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
                   {(entry.users ?? []).map((user) => (
@@ -269,7 +273,7 @@ export default function PostReactions({
             variant="ghost"
             icon="smileplus"
             onClick={() => setPickerOpen((open) => !open)}
-            aria-label="Add reaction"
+            aria-label={uiText("AppStrings.AddReaction")}
             aria-expanded={pickerOpen}
           />
           <Popover
@@ -285,7 +289,7 @@ export default function PostReactions({
               <Input
                 value={emojiQuery}
                 onValueChange={setEmojiQuery}
-                placeholder="Search emoji"
+                placeholder={uiText("AppStrings.SearchEmoji")}
                 size="sm"
                 fullWidth
                 style={{
@@ -296,8 +300,7 @@ export default function PostReactions({
               />
               {filteredEmojis.length === 0 ? (
                 <Text size="xs" color="textFaded">
-                  No emojis found.
-                </Text>
+                   {uiText("AppStrings.NoEmojisFound")} </Text>
               ) : (
                 <div className="grid max-h-40 grid-cols-6 gap-2 overflow-y-auto">
                   {filteredEmojis.map((emoji) => {
@@ -310,13 +313,13 @@ export default function PostReactions({
                         leftSlot={
                           <img
                             src={emoji.image}
-                            alt={`:${emoji.slug}:`}
+                            alt={uiText("AppStrings.Value03", { value0: emoji.slug })}
                             className="h-5 w-5"
                             loading="lazy"
                             decoding="async"
                           />
                         }
-                        tooltip={`:${emoji.slug.toUpperCase()}:`}
+                        tooltip={uiText("AppStrings.Value03", { value0: emoji.slug.toUpperCase() })}
                         onClick={() => {
                           handleToggle(emoji);
                           setPickerOpen(false);

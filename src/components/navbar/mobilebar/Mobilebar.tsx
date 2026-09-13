@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { Button, Navbar, NavbarItem } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -29,6 +32,7 @@ type MobilebarProps = {
 };
 
 export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
+  const uiText = useUiTranslations();
   const direction = useScrollDirection();
   const hidden = direction === "down";
   const { colors } = useTheme();
@@ -97,40 +101,36 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             value="profile"
             icon="user"
             href={`/u/${user.slug}`}
-            description="View your profile page"
+            description={uiText("Navbar.Profile.Description")}
           >
-            Profile
-          </Dropdown.Item>
+             {uiText("Navbar.Profile.Title")} </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item
             value="settings"
             icon="settings"
             href="/settings"
-            description="Manage your preferences"
+            description={uiText("Navbar.Settings.Description")}
           >
-            Settings
-          </Dropdown.Item>
+             {uiText("Navbar.Settings.Title")} </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item
             value="import-game"
             icon="download"
             href="/import-game"
-            description="Import a game from itch.io"
+            description={uiText("AppStrings.ImportAGameFromItchIo")}
           >
-            Import Game
-          </Dropdown.Item>
+             {uiText("AppStrings.ImportGame2")} </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item
             value="create-post"
             icon="squarepen"
             href="/create-post"
-            description="Create a post in the forum"
+            description={uiText("Navbar.CreatePost.Description")}
           >
-            Create Post
-          </Dropdown.Item>
+             {uiText("Navbar.CreatePost.Title")} </Dropdown.Item>
         )}
         {(jamPhase === "Upcoming Jam" ||
           jamPhase === "Post-Jam Refinement" ||
@@ -139,40 +139,36 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             value="results"
             icon="trophy"
             href="/recap"
-            description="View the results of the last D2Jam"
+            description={uiText("AppStrings.ViewTheResultsOfTheLastD2Jam")}
           >
-            Results
-          </Dropdown.Item>
+             {uiText("Navbar.Results.Title")} </Dropdown.Item>
         )}
         {jamPhase === "Suggestion" && (
           <Dropdown.Item
             value="theme-suggestions"
             icon="sparkles"
             href="/theme-suggestions"
-            description="Submit possible themes for the jam"
+            description={uiText("AppStrings.SubmitPossibleThemesForTheJam")}
           >
-            Theme Suggestions
-          </Dropdown.Item>
+             {uiText("Navbar.ThemeSuggestions.Title")} </Dropdown.Item>
         )}
         {jamPhase === "Elimination" && (
           <Dropdown.Item
             value="theme-elimination"
             icon="swords"
             href="/theme-elimination"
-            description="Vote on submitted jam themes"
+            description={uiText("AppStrings.VoteOnSubmittedJamThemes")}
           >
-            Theme Elimination
-          </Dropdown.Item>
+             {uiText("Navbar.ThemeElimination.Title")} </Dropdown.Item>
         )}
         {isThemeVotingOpen(jamPhase, jam) && (
           <Dropdown.Item
             value="theme-voting"
             icon="vote"
             href="/theme-voting"
-            description="Vote for the final jam theme"
+            description={uiText("AppStrings.VoteForTheFinalJamTheme")}
           >
-            Theme Voting
-          </Dropdown.Item>
+             {uiText("Navbar.ThemeVoting.Title")} </Dropdown.Item>
         )}
         {user &&
           jam &&
@@ -187,11 +183,11 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
               href={currentJamGame ? `/g/${currentJamGame.slug}` : "/create-game"}
               description={
                 currentJamGame
-                  ? "View the page for your game"
-                  : "Create a site page for your game"
+                  ? uiText("Navbar.MyGame.Description")
+                  : uiText("Navbar.CreateGame.Description")
               }
             >
-              {currentJamGame ? "My Game" : "Create Game"}
+              {currentJamGame ? uiText("Navbar.MyGame.Title") : uiText("Navbar.CreateGame.Title")}
             </Dropdown.Item>
           )}
         {user && jam && computedIsInJam && (
@@ -201,18 +197,18 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             href={currentJamTeam ? "/team" : "/team-finder"}
             description={
               currentJamTeam
-                ? "View your team for the jam"
-                : "Find a team for the jam"
+                ? uiText("AppStrings.ViewYourTeamForTheJam")
+                : uiText("AppStrings.FindATeamForTheJam")
             }
           >
-            {currentJamTeam ? "My Team" : "Team Finder"}
+            {currentJamTeam ? uiText("Navbar.MyTeam.Title") : uiText("Navbar.TeamFinder.Title")}
           </Dropdown.Item>
         )}
         {user && joinableJam && !computedIsInJam && (
           <Dropdown.Item
             value="join-jam"
             icon="calendarplus"
-            description="Mark that you are participating in the jam"
+            description={uiText("AppStrings.MarkThatYouAreParticipatingInTheJam")}
             onClick={() => {
               void joinJam(joinableJam.id).then((joined) => {
                 if (joined) {
@@ -224,86 +220,78 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
               });
             }}
           >
-            Join Jam
-          </Dropdown.Item>
+             {uiText("Navbar.JoinJam.Title")} </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item
             value="inbox"
             icon="bell"
             href="/inbox/messages"
-            description="View your notifications"
+            description={uiText("Navbar.Inbox.Description")}
           >
-            Inbox
-          </Dropdown.Item>
+             {uiText("Navbar.Inbox.Title")} </Dropdown.Item>
         )}
         <Dropdown.Item
           value="about"
           icon="info"
           href="/about"
-          description="Information about the game jam"
+          description={uiText("Navbar.About.Description")}
         >
-          About
-        </Dropdown.Item>
+           {uiText("Splash.About")} </Dropdown.Item>
         <Dropdown.Item
           value="games"
           icon="gamepad"
           href="/games"
-          description="All submitted games on the website"
+          description={uiText("AppStrings.AllSubmittedGamesOnTheWebsite")}
         >
-          Games
-        </Dropdown.Item>
+           {uiText("Navbar.Games.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="forum"
           icon="messagecircle"
           href="/home"
-          description="Chat with other community members"
+          description={uiText("AppStrings.ChatWithOtherCommunityMembers")}
         >
-          Forum
-        </Dropdown.Item>
+           {uiText("Navbar.Forum.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="themes"
           icon="palette"
           href="/themes"
-          description="Browse all community site themes"
+          description={uiText("AppStrings.BrowseAllCommunitySiteThemes")}
         >
-          Browse all themes
-        </Dropdown.Item>
+           {uiText("AppStrings.BrowseAllThemes")} </Dropdown.Item>
+        <Dropdown.Item value="languages" href="/languages" description={uiText("AppStrings.ChooseYourSiteLanguage")}>
+           {uiText("AppStrings.ViewAllLanguages")} </Dropdown.Item>
         <Dropdown.Item
           value="screenshots"
           icon="images"
           href="/screenshots"
-          description="Browse random game screenshots"
+          description={uiText("Navbar.Screenshots.Description")}
         >
-          Screenshots
-        </Dropdown.Item>
+           {uiText("Navbar.Screenshots.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="radio"
           icon="broadcast"
           href="/radio"
-          description="Listen to the Down2Jam music radio"
+          description={uiText("Navbar.Radio.Description")}
         >
-          Radio
-        </Dropdown.Item>
+           {uiText("Navbar.Radio.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="lucky"
           icon="dice3"
           href="/lucky"
-          description="Go to a random game"
+          description={uiText("AppStrings.GoToARandomGame")}
         >
-          I'm Feeling Lucky
-        </Dropdown.Item>
+           {uiText("Navbar.Lucky.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="news"
           icon="megaphone"
           href="/news"
-          description="Read Down2Jam announcements and site updates"
+          description={uiText("Navbar.News.Description")}
         >
           <span className="inline-flex items-center gap-2">
-            News
-            {hasUnreadNews && (
+             {uiText("Navbar.News.Title")} {hasUnreadNews && (
               <span
-                aria-label="New articles"
+                aria-label={uiText("AppStrings.NewArticles")}
                 className="h-2 w-2 rounded-full"
                 style={{ backgroundColor: colors["red"] }}
               />
@@ -314,105 +302,91 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           value="music"
           icon="music"
           href="/music"
-          description="All submitted music on the website"
+          description={uiText("AppStrings.AllSubmittedMusicOnTheWebsite")}
         >
-          Music
-        </Dropdown.Item>
+           {uiText("Navbar.Music.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="donate"
           icon="heart"
           href="/donate"
-          description="View the donation and support page"
+          description={uiText("Navbar.Donate.Description")}
         >
-          Donate
-        </Dropdown.Item>
+           {uiText("Navbar.Donate.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="rss"
           icon="rss"
           href="/rss"
-          description="View available RSS feeds"
+          description={uiText("Navbar.RSS.Description")}
         >
-          RSS
-        </Dropdown.Item>
+           {uiText("Navbar.RSS.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="down2guess"
           icon="gamepad2"
           href="/d2guess"
-          description="Guess a Down2Jam game"
+          description={uiText("Navbar.Down2Guess.Description")}
         >
-          Down2Guess
-        </Dropdown.Item>
+           {uiText("Navbar.Down2Guess.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="collections"
           icon="layers"
           href="/collections"
-          description="Browse saved game and music collections"
+          description={uiText("Navbar.Collections.Description")}
         >
-          Collections
-        </Dropdown.Item>
+           {uiText("Navbar.Collections.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="quilts"
           icon="paintbrush"
           href="/quilts"
-          description="Make collaborative pixel art together"
+          description={uiText("Navbar.Quilts.Description")}
         >
-          Quilts
-        </Dropdown.Item>
+           {uiText("Navbar.Quilts.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="events"
           icon="calendar"
           href="/events"
-          description="Browse community events and streams"
+          description={uiText("Navbar.Events.Description")}
         >
-          Events
-        </Dropdown.Item>
+           {uiText("Navbar.Events.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="docs"
           icon="bookcopy"
           href="/docs"
-          description="Read the site documentation"
+          description={uiText("Navbar.Docs.Description")}
         >
-          Docs
-        </Dropdown.Item>
+           {uiText("Navbar.Docs.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="press-kit"
           icon="newspaper"
           href="/press-kit"
-          description="View press kit materials"
+          description={uiText("Navbar.PressKit.Description")}
         >
-          Press Kit
-        </Dropdown.Item>
+           {uiText("Navbar.PressKit.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="api-docs"
           icon="code"
           href={API_DOCS_URL}
           target="_blank"
           rel="noopener noreferrer"
-          description="Open the Jamcore API documentation"
+          description={uiText("Navbar.ApiDocs.Description")}
         >
-          API Docs
-        </Dropdown.Item>
+           {uiText("Navbar.ApiDocs.Title")} </Dropdown.Item>
         <Dropdown.Item
           value="bug"
           icon="bug"
-          href="https://github.com/Down2Jam/Jamjar/issues"
-          target="_blank"
-          rel="noopener noreferrer"
-          description="Go to the GitHub repository"
+          href={`/report-bug?page=${encodeURIComponent(window.location.pathname)}`}
+          description={uiText("AppStrings.SubmitBugReport")}
         >
-          Report Bug
-        </Dropdown.Item>
+           {uiText("Navbar.ReportBug.Title")} </Dropdown.Item>
         {user ? (
           <Dropdown.Item value="logout" icon="logout" href="/logout">
-            Logout
-          </Dropdown.Item>
+             {uiText("Navbar.Logout.Title")} </Dropdown.Item>
         ) : (
           <Dropdown.Item
             value="join"
             icon="login"
             href={isLoggedIn ? "/login" : "/signup"}
           >
-            {isLoggedIn ? "Login" : "Sign Up"}
+            {isLoggedIn ? uiText("Navbar.Login.Title") : uiText("AppStrings.SignUp")}
           </Dropdown.Item>
         )}
       </Dropdown>

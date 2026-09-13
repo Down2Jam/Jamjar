@@ -1,4 +1,8 @@
+import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -135,6 +139,7 @@ export default function ClientTrackPage({
   params: Promise<{ trackSlug: string }>;
   searchParams: Promise<{ pageVersion?: PageVersion }>;
 }) {
+  const uiText = useUiTranslations();
   const router = useRouter();
   const { colors } = useTheme();
   const [trackSlug, setTrackSlug] = useState<string>("");
@@ -165,7 +170,7 @@ export default function ClientTrackPage({
   const metadataImage =
     track?.game?.banner || track?.game?.thumbnail || "/images/D2J_Icon.png";
   usePageMetadata({
-    title: (track?.name ?? trackSlug) || "Track",
+    title: (track?.name ?? trackSlug) || uiText("AppStrings.Track2"),
     description: metadataDescription,
     image: metadataImage,
     icon:
@@ -288,7 +293,7 @@ export default function ClientTrackPage({
     return (
       <Vstack className="p-6">
         <Card className="max-w-96">
-          <Text size="xl">Track not found</Text>
+          <Text size="xl">{uiText("AppStrings.TrackNotFound")}</Text>
         </Card>
       </Vstack>
     );
@@ -394,7 +399,7 @@ export default function ClientTrackPage({
                 {track.name}
               </Text>
               <Hstack className="flex-wrap gap-3">
-                <Text color="textFaded">By</Text>
+                <Text color="textFaded">{uiText("PostCard.By")}</Text>
                 <Link href={`/u/${primaryArtist.slug}`}>
                   <Text color="text">
                     {primaryArtist.name || primaryArtist.slug}
@@ -426,7 +431,7 @@ export default function ClientTrackPage({
                     if (!response.ok) {
                       addToast({
                         title:
-                          payload?.message ?? "Failed to add timestamp comment",
+                          payload?.message ?? uiText("AppStrings.FailedToAddTimestampComment"),
                       });
                       return;
                     }
@@ -463,7 +468,7 @@ export default function ClientTrackPage({
                 <MentionedContent content={track.commentary} />
               </ThemedProse>
             ) : (
-              <Text color="textFaded">No commentary yet.</Text>
+              <Text color="textFaded">{uiText("AppStrings.NoCommentaryYet")}</Text>
             )}
           </div>
 
@@ -473,15 +478,13 @@ export default function ClientTrackPage({
                 {(isTeamMember || hasVersionToggle) && (
                   <>
                     <Text size="xs" color="textFaded">
-                      ACTIONS
-                    </Text>
+                       {uiText("AppStrings.ACTIONS")} </Text>
                     {isTeamMember && (
                       <Button
                         icon="squarepen"
                         href={`/m/${track.slug}/edit${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
                       >
-                        Edit Track
-                      </Button>
+                         {uiText("AppStrings.EditTrack")} </Button>
                     )}
                     {hasVersionToggle && (
                       <PageVersionToggle
@@ -492,8 +495,7 @@ export default function ClientTrackPage({
                   </>
                 )}
                 <Text size="xs" color="textFaded">
-                  TAGS
-                </Text>
+                   {uiText("AppStrings.TAGS")} </Text>
                 <div className="flex flex-wrap gap-2">
                   {track.tags && track.tags.length > 0 ? (
                     track.tags.map((tag) => (
@@ -501,13 +503,11 @@ export default function ClientTrackPage({
                     ))
                   ) : (
                     <Text size="sm" color="textFaded">
-                      No tags yet.
-                    </Text>
+                       {uiText("AppStrings.NoTagsYet")} </Text>
                   )}
                 </div>
                 <Text size="xs" color="textFaded">
-                  PEOPLE
-                </Text>
+                   {uiText("AppStrings.PEOPLE")} </Text>
                 <div className="flex flex-wrap gap-2">
                   {credits.map((credit) => (
                     <Chip className="post-tag-chip"
@@ -515,8 +515,8 @@ export default function ClientTrackPage({
                       avatarSrc={credit.user?.profilePicture}
                       href={credit.user ? `/u/${credit.user.slug}` : undefined}
                     >
-                      {credit.user?.name ?? `User #${credit.userId}`}{" "}
-                      <span className="opacity-70">({credit.role})</span>
+                      {credit.user?.name ?? uiText("AppStrings.UserValue0", { value0: credit.userId })}{" "}
+                      <span className="opacity-70">({translateSystemLabel(credit.role, uiText)})</span>
                     </Chip>
                   ))}
                 </div>
@@ -527,8 +527,7 @@ export default function ClientTrackPage({
               <Card className="w-full">
                 <Vstack align="start" className="gap-3">
                   <Text size="xs" color="textFaded">
-                    FLAGS
-                  </Text>
+                     {uiText("AppStrings.FLAGS")} </Text>
                   <div className="flex flex-wrap gap-2">
                     {visibleFlags.map((flag) => (
                       <Chip className="post-tag-chip" key={flag.id}>{flag.name}</Chip>
@@ -541,8 +540,7 @@ export default function ClientTrackPage({
             <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
-                  RATING
-                </Text>
+                   {uiText("AppStrings.RATING")} </Text>
                 <RatingVisibilityGate
                   hiddenByPreference={effectiveHideRatings}
                   hiddenText="Ratings are hidden by your settings."
@@ -551,8 +549,7 @@ export default function ClientTrackPage({
                     {canShowResults && overallScore ? (
                       <div className="grid grid-cols-[120px_100px_30px] items-center gap-2">
                         <Text size="sm" color="textFaded">
-                          Overall
-                        </Text>
+                           {uiText("RatingCategory.Overall.Title")} </Text>
                         {overallScore.placement !== -1 ? (
                           <Tooltip
                             content={ordinalSuffixOf(overallScore.placement)}
@@ -565,8 +562,7 @@ export default function ClientTrackPage({
                               )}
                               className="w-fit"
                             >
-                              {(overallScore.averageScore / 2).toFixed(2)} stars
-                            </span>
+                              {(overallScore.averageScore / 2).toFixed(2)}  {uiText("AppStrings.Stars")} </span>
                           </Tooltip>
                         ) : (
                           <span
@@ -576,8 +572,7 @@ export default function ClientTrackPage({
                             )}
                             className="w-fit"
                           >
-                            {(overallScore.averageScore / 2).toFixed(2)} stars
-                          </span>
+                            {(overallScore.averageScore / 2).toFixed(2)}  {uiText("AppStrings.Stars")} </span>
                         )}
                         <span className="flex items-center justify-center">
                           {getResultsIcon(
@@ -594,7 +589,7 @@ export default function ClientTrackPage({
                           categoryId={overallCategory.id}
                           name="Overall"
                           description={
-                            overallCategory.description || "Your overall rating"
+                            overallCategory.description || uiText("AppStrings.YourOverallRating")
                           }
                           disabled={savingRating || isTeamMember}
                           hoverStars={hoverStars}
@@ -624,7 +619,7 @@ export default function ClientTrackPage({
                                   .catch(() => null);
                                 addToast({
                                   title:
-                                    payload?.message ?? "Failed to save rating",
+                                    payload?.message ?? uiText("AppStrings.FailedToSaveRating"),
                                 });
                                 emitTrackRatingSync({
                                   trackId: track.id,
@@ -660,18 +655,15 @@ export default function ClientTrackPage({
                     {canShowResults && overallScore && (
                       <Text size="sm" color="textFaded">
                         {(overallScore.averageUnrankedScore / 2).toFixed(2)}{" "}
-                        public average from {overallScore.ratingCount} ratings
-                      </Text>
+                         {uiText("AppStrings.PublicAverageFrom")} {overallScore.ratingCount}  {uiText("AppStrings.Ratings")} </Text>
                     )}
                     {isTeamMember && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
-                        You can&apos;t rate your own track.
-                      </Text>
+                         {uiText("AppStrings.YouCanAndAposTRateYourOwn2")} </Text>
                     )}
                     {!user && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
-                        You must be logged in to rate tracks.
-                      </Text>
+                         {uiText("AppStrings.YouMustBeLoggedInToRateTracks")} </Text>
                     )}
                     {user &&
                       !isTeamMember &&
@@ -679,16 +671,14 @@ export default function ClientTrackPage({
                       !isRatingOpenPhase &&
                       !canShowResults && (
                         <Text size="xs" color="textFaded">
-                          It is not the rating period.
-                        </Text>
+                           {uiText("AppStrings.ItIsNotTheRatingPeriod2")} </Text>
                       )}
                     {user &&
                       !isTeamMember &&
                       isCurrentJamTrack &&
                       canRateCurrentVersion && (
                         <Text size="xs" color="textFaded">
-                          Ratings are automatically saved.
-                        </Text>
+                           {uiText("AppStrings.RatingsAreAutomaticallySaved2")} </Text>
                       )}
                     {user &&
                       !isTeamMember &&
@@ -696,9 +686,7 @@ export default function ClientTrackPage({
                       canRateCurrentVersion &&
                       !raterHasPublishedGame && (
                         <Text size="xs" color="textFaded">
-                          Your ratings will not count towards the rankings as
-                          you did not submit a game.
-                        </Text>
+                           {uiText("AppStrings.YourRatingsWillNotCountTowardsTheRankings2")} </Text>
                       )}
                   </Vstack>
                 </RatingVisibilityGate>
@@ -709,8 +697,7 @@ export default function ClientTrackPage({
               <Card className="w-full">
                 <Vstack align="start" className="gap-3">
                   <Text size="xs" color="textFaded">
-                    LINKS
-                  </Text>
+                     {uiText("AppStrings.LINKS")} </Text>
                   {track.allowDownload && (
                     <Button
                       loading={isDownloading}
@@ -725,14 +712,13 @@ export default function ClientTrackPage({
                           );
                         } catch (error) {
                           console.error(error);
-                          addToast({ title: "Failed to download track" });
+                          addToast({ title: uiText("AppStrings.FailedToDownloadTrack") });
                         } finally {
                           setIsDownloading(false);
                         }
                       }}
                     >
-                      Download Track
-                    </Button>
+                       {uiText("AppStrings.DownloadTrack")} </Button>
                   )}
                   {(track.links ?? []).map((link) => (
                     <UiLink key={link.id} href={link.url}>
@@ -751,19 +737,17 @@ export default function ClientTrackPage({
               <Card className="w-full">
                 <Vstack align="start" className="gap-3">
                   <Text size="xs" color="textFaded">
-                    DETAILS
-                  </Text>
-                  {track.bpm && <Chip className="post-tag-chip">BPM: {track.bpm}</Chip>}
-                  {track.musicalKey && <Chip className="post-tag-chip">Key: {track.musicalKey}</Chip>}
-                  {track.license && <Chip className="post-tag-chip">License: {track.license}</Chip>}
+                     {uiText("AppStrings.DETAILS")} </Text>
+                  {track.bpm && <Chip className="post-tag-chip">{uiText("AppStrings.BPM")} {track.bpm}</Chip>}
+                  {track.musicalKey && <Chip className="post-tag-chip">{uiText("AppStrings.Key2")} {track.musicalKey}</Chip>}
+                  {track.license && <Chip className="post-tag-chip">{uiText("AppStrings.License2")} {translateSystemLabel(track.license, uiText)}</Chip>}
                   {track.allowBackgroundUse && (
-                    <Chip className="post-tag-chip">Background use in streams/videos allowed</Chip>
+                    <Chip className="post-tag-chip">{uiText("AppStrings.BackgroundUseInStreamsVideosAllowed")}</Chip>
                   )}
                   {(track.softwareUsed?.length ?? 0) > 0 && (
                     <>
                       <Text size="sm" color="textFaded">
-                        Software Used
-                      </Text>
+                         {uiText("AppStrings.SoftwareUsed")} </Text>
                       <div className="flex flex-wrap gap-2">
                         {(track.softwareUsed ?? []).map((tool) => (
                           <Chip className="post-tag-chip" key={tool}>{tool}</Chip>
@@ -778,13 +762,12 @@ export default function ClientTrackPage({
             <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
-                  STATS
-                </Text>
+                   {uiText("AppStrings.STATS")} </Text>
                 <Vstack align="start" className="gap-3">
-                  <Chip className="post-tag-chip">Ratings Received: {track.ratings?.length ?? 0}</Chip>
+                  <Chip className="post-tag-chip">{uiText("AppStrings.RatingsReceived")} {track.ratings?.length ?? 0}</Chip>
                   <Hstack>
                     <Chip className="post-tag-chip">
-                      Ratings Given:{" "}
+                       {uiText("AppStrings.RatingsGiven2")}{" "}
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
                     {track.game.category !== "EXTRA" &&

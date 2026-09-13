@@ -1,10 +1,13 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { hasCookie } from "@/helpers/cookie";
 import { addToast, Form } from "bioloom-ui";
 import { redirect } from "@/compat/next-navigation";
 import dynamic from "@/compat/next-dynamic";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { CSSProperties, ReactNode, useEffect, useMemo, useState } from "react";
 import type { MultiValue, StylesConfig } from "react-select";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
@@ -13,8 +16,6 @@ import { postPost } from "@/requests/post";
 import { Input } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
-import { Icon } from "bioloom-ui";
-import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Switch } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
@@ -28,7 +29,9 @@ import {
 } from "@/helpers/shareToPost";
 import { useTheme } from "@/providers/useSiteTheme";
 
-const theme = "dark";
+import "@/components/game-editing-form/game-editor.css";
+import "@/components/form-editor.css";
+import EditorFooter from "@/components/game-editing-form/EditorFooter";
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
   loading: () => <div className="min-h-[100px] rounded-md border border-gray-600" />,
@@ -53,6 +56,7 @@ export default function CreatePostPage({
   embedded = false,
   onCreated,
 }: CreatePostPageProps = {}) {
+  const uiText = useUiTranslations();
   const [sharedDraft] = useState(() =>
     embedded ? null : readSharedPostDraft()
   );
@@ -70,6 +74,8 @@ export default function CreatePostPage({
   const [sticky, setSticky] = useState(false);
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
+  const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || sticky);
+  const floatingFooter = !embedded && hasUnsavedChanges;
 
   useEffect(() => {
     if (!embedded && sharedDraft) {
@@ -169,7 +175,7 @@ export default function CreatePostPage({
               label: (
                 <div className="flex gap-2 items-center">
                   <TagLabel name={tag.name} />
-                  {tag.modOnly ? <span>(Mod Only)</span> : null}
+                  {tag.modOnly ? <span>{uiText("AppStrings.ModOnly")}</span> : null}
                 </div>
               ),
               isFixed: tag.alwaysAdded,
@@ -202,71 +208,42 @@ export default function CreatePostPage({
     TagOption,
     true
   > = {
-    multiValue: (base, state) => {
-      return {
-        ...base,
-        backgroundColor: state.data.isFixed
-          ? theme == "dark"
-            ? "#222"
-            : "#ddd"
-          : theme == "dark"
-          ? "#444"
-          : "#eee",
-      };
-    },
-    multiValueLabel: (base, state) => {
-      return {
-        ...base,
-        color: state.data.isFixed
-          ? theme == "dark"
-            ? "#ddd"
-            : "#222"
-          : theme == "dark"
-          ? "#fff"
-          : "#444",
-        fontWeight: state.data.isFixed ? "normal" : "bold",
-        paddingRight: state.data.isFixed ? "8px" : "2px",
-      };
-    },
-    multiValueRemove: (base, state) => {
-      return {
-        ...base,
-        display: state.data.isFixed ? "none" : "flex",
-        color: theme == "dark" ? "#ddd" : "#222",
-      };
-    },
-    control: (styles) => ({
-      ...styles,
-      backgroundColor: theme == "dark" ? "#181818" : "#fff",
-      minWidth: "300px",
+    multiValue: (base) => ({ ...base, backgroundColor: colors.base, borderRadius: 6 }),
+    multiValueLabel: (base) => ({ ...base, color: colors.text }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: colors.textFaded,
+      ":hover": { backgroundColor: colors.grayDark, color: colors.text },
     }),
-    menu: (styles) => ({
-      ...styles,
-      backgroundColor: theme == "dark" ? "#181818" : "#fff",
-      color: theme == "dark" ? "#fff" : "#444",
+    control: (base, { isFocused }) => ({
+      ...base,
+      backgroundColor: colors.base,
+      borderColor: isFocused ? colors.blue : `color-mix(in srgb, ${colors.text} 10%, ${colors.mantle})`,
+      boxShadow: isFocused ? `0 0 0 1px ${colors.blue}` : "none",
+      borderRadius: 8,
+      minWidth: 0,
+      ":hover": { borderColor: colors.blue },
     }),
-    menuPortal: (styles) => ({
-      ...styles,
-      zIndex: 100,
-    }),
-    option: (styles, { isFocused }) => ({
-      ...styles,
-      backgroundColor: isFocused
-        ? theme == "dark"
-          ? "#333"
-          : "#ddd"
-        : undefined,
+    input: (base) => ({ ...base, color: colors.text }),
+    placeholder: (base) => ({ ...base, color: colors.textFaded }),
+    menu: (base) => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
+    menuPortal: (base) => ({ ...base, zIndex: 100 }),
+    option: (base, { isFocused }) => ({
+      ...base,
+      backgroundColor: isFocused ? colors.base : "transparent",
+      color: colors.text,
     }),
   };
 
   return (
     <Vstack
       align="stretch"
-      className={embedded ? "w-full" : "mx-auto w-full max-w-7xl gap-4"}
+      className={embedded ? "w-full" : "mx-auto w-full max-w-6xl gap-4"}
+      style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
     >
       {!embedded && (
         <header className="py-2 text-center">
-          <p
+          <h1
             className="text-3xl font-semibold"
             style={{
               color: headerColor,
@@ -276,8 +253,7 @@ export default function CreatePostPage({
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Create Post
-          </p>
+             {uiText("Navbar.CreatePost.Title")} </h1>
           <p
             className="mt-1 text-sm"
             style={{
@@ -289,28 +265,11 @@ export default function CreatePostPage({
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Share something with the community
-          </p>
+             {uiText("AppStrings.ShareSomethingWithTheCommunity")} </p>
         </header>
       )}
-      <Card
-        className={embedded ? "w-full" : "mx-auto w-full max-w-6xl"}
-        padding={embedded ? 0 : 1}
-        shadow={embedded ? "none" : "sm"}
-        radius={embedded ? "none" : "md"}
-        style={
-          embedded
-            ? {
-                backgroundColor: "transparent",
-                borderColor: "transparent",
-                boxShadow: "none",
-              }
-            : undefined
-        }
-      >
-        <Vstack>
           <Form
-            className="w-full flex flex-col gap-4 text-[#333] dark:text-white"
+            className={`post-editor-form w-full flex flex-col ${floatingFooter ? "pb-48 sm:pb-32" : ""}`}
             onSubmit={async (e) => {
               e.preventDefault();
               const submittedContent = content
@@ -321,28 +280,28 @@ export default function CreatePostPage({
 
               if (!title && !submittedContent) {
                 addToast({
-                  title: "Please enter valid content and a valid title",
+                  title: uiText("AppStrings.PleaseEnterValidContentAndAValidTitle"),
                 });
                 return;
               }
 
               if (!title) {
                 addToast({
-                  title: "Please enter a valid title",
+                  title: uiText("CreateGame.Name.Error"),
                 });
                 return;
               }
 
               if (!submittedContent) {
                 addToast({
-                  title: "Please enter valid content",
+                  title: uiText("AppStrings.PleaseEnterValidContent"),
                 });
                 return;
               }
 
               if (!hasCookie("token")) {
                 addToast({
-                  title: "You are not logged in",
+                  title: uiText("CreateGame.NotLogged"),
                 });
                 return;
               }
@@ -358,7 +317,7 @@ export default function CreatePostPage({
 
               if (response.status == 401) {
                 addToast({
-                  title: "Invalid user",
+                  title: uiText("AppStrings.InvalidUser"),
                 });
                 setWaitingPost(false);
                 return;
@@ -366,7 +325,7 @@ export default function CreatePostPage({
 
               if (response.ok) {
                 addToast({
-                  title: "Successfully created post",
+                  title: uiText("AppStrings.SuccessfullyCreatedPost"),
                 });
                 setWaitingPost(false);
                 if (onCreated) {
@@ -380,32 +339,34 @@ export default function CreatePostPage({
                 }
               } else {
                 addToast({
-                  title: "An error occurred",
+                  title: uiText("AppStrings.AnErrorOccurred"),
                 });
                 setWaitingPost(false);
               }
             }}
           >
+            <div className={embedded ? "post-editor-embedded" : "form-editor-panel"}>
+            <div className="game-editor-row"><Vstack align="stretch">
             <div>
-              <Text color="text">Title</Text>
+              <Text color="text">{uiText("AppStrings.Title")}</Text>
               <Text color="textFaded" size="xs">
-                The post title
-              </Text>
+                 {uiText("AppStrings.ThePostTitle")} </Text>
             </div>
             <Input
               required
               name="title"
-              placeholder="Enter a title"
+              placeholder={uiText("AppStrings.EnterATitle")}
               type="text"
               value={title}
               onValueChange={setTitle}
             />
 
+            </Vstack></div>
+            <div className="game-editor-row"><Vstack align="stretch">
             <div>
-              <Text color="text">Content</Text>
+              <Text color="text">{uiText("AppStrings.Content")}</Text>
               <Text color="textFaded" size="xs">
-                The post content
-              </Text>
+                 {uiText("AppStrings.ThePostContent")} </Text>
             </div>
             <Editor
               content={content}
@@ -413,11 +374,12 @@ export default function CreatePostPage({
               format="markdown"
             />
 
-            <div className="mt-2">
-              <Text color="text">Tags</Text>
+            </Vstack></div>
+            <div className="game-editor-row"><Vstack align="stretch">
+            <div>
+              <Text color="text">{uiText("CreateGame.Tags.Title")}</Text>
               <Text color="textFaded" size="xs">
-                Tags attached to the post to mark what type of content it is
-              </Text>
+                 {uiText("AppStrings.TagsAttachedToThePostToMarkWhat")} </Text>
             </div>
             {mounted && (
               <Select<TagOption, true>
@@ -438,8 +400,7 @@ export default function CreatePostPage({
             {suggestedTags.length > 0 && (
               <div className="flex flex-col gap-2" aria-live="polite">
                 <Text color="textFaded" size="xs">
-                  Suggested from your title and content
-                </Text>
+                   {uiText("AppStrings.SuggestedFromYourTitleAndContent")} </Text>
                 <div className="flex flex-wrap gap-2">
                   {suggestedTags.map((tag) => (
                     <Chip
@@ -448,7 +409,7 @@ export default function CreatePostPage({
                       className="post-tag-chip cursor-pointer hover:scale-105 hover:brightness-125"
                       role="button"
                       tabIndex={0}
-                      aria-label={`Add ${tag.name} tag`}
+                      aria-label={uiText("AppStrings.AddValue0Tag", { value0: tag.name })}
                       onClick={() => addSuggestedTag(tag)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
@@ -464,34 +425,37 @@ export default function CreatePostPage({
               </div>
             )}
 
+            </Vstack></div>
+
             {user && user.mod && (
-              <Hstack>
+              <Hstack className="game-editor-block">
                 <Switch checked={sticky} onChange={setSticky} />
                 <Vstack align="start" gap={0}>
                   <Text color="text" size="sm">
-                    Sticky
-                  </Text>
+                     {uiText("PostCard.Sticky.Title")} </Text>
                   <Text color="textFaded" size="xs">
-                    make the post appear at the top of the post feed
-                  </Text>
+                     {uiText("AppStrings.MakeThePostAppearAtTheTopOf")} </Text>
                 </Vstack>
               </Hstack>
             )}
 
-            <div className="flex gap-2">
-              {waitingPost ? (
-                <Spinner />
-              ) : (
-                <>
-                  <Button color="blue" type="submit" icon="plus">
-                    Create
-                  </Button>
-                </>
-              )}
             </div>
+            {hasUnsavedChanges && (
+              <EditorFooter
+                floating={floatingFooter}
+                status={uiText("AppStrings.UnsavedChanges")}
+                description={waitingPost ? uiText("AppStrings.Saving") : uiText("AppStrings.ShareSomethingWithTheCommunity")}
+              >
+                {waitingPost ? (
+                  <Spinner />
+                ) : (
+                  <Button variant="ghost" size="sm" style={{ color: colors.blue }} type="submit" icon="save">
+                    {uiText("CreateGame.Create.Title")}
+                  </Button>
+                )}
+              </EditorFooter>
+            )}
           </Form>
-        </Vstack>
-      </Card>
     </Vstack>
   );
 }

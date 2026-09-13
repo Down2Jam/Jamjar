@@ -63,6 +63,7 @@ export function useTracks(
     queryKey: queryKeys.track.list(sort, jamId ?? "all", pageVersion, limit),
     queryFn: async () => {
       const res = await getTracks(sort, jamId, pageVersion, limit);
+      if (!res.ok) throw new Error("Failed to load tracks");
       const json = await res.json();
       return unwrapArray<TrackType>(json);
     },

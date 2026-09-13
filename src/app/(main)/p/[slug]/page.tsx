@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import LikeButton from "@/components/posts/LikeButton";
 import { hasCookie } from "@/helpers/cookie";
 import { PostType } from "@/types/PostType";
@@ -43,6 +46,7 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { postTagFilterHref } from "@/helpers/postTagFilter";
 
 export default function PostPage() {
+  const uiText = useUiTranslations();
   const [post, setPost] = useState<PostType>();
   const { slug } = useParams();
   const router = useRouter();
@@ -111,16 +115,16 @@ export default function PostPage() {
     title: post
       ? isModerated
         ? post.removedAt
-          ? "[Removed Post]"
-          : "[Deleted Post]"
+          ? uiText("AppStrings.RemovedPost")
+          : uiText("AppStrings.DeletedPost")
         : post.title
       : slug
         ? String(slug)
-        : "Post",
+        : uiText("AppStrings.Post"),
     description:
       post && !isModerated
         ? stripHtmlForMetadata(post.content)
-        : "A post on Down2Jam",
+        : uiText("AppStrings.APostOnDown2Jam"),
     image: post?.author?.profilePicture || "/images/D2J_Icon.png",
     icon: post?.author?.profilePicture || "/images/D2J_Icon.svg",
     canonical: `/p/${post?.slug ?? slug}`,
@@ -129,7 +133,7 @@ export default function PostPage() {
   if (!loading && !post) {
     return (
       <Card>
-        <Text color="textFaded">This post is unavailable.</Text>
+        <Text color="textFaded">{uiText("AppStrings.ThisPostIsUnavailable")}</Text>
       </Card>
     );
   }
@@ -167,8 +171,8 @@ export default function PostPage() {
                     <p className="text-[1.375rem] font-semibold leading-tight">
                       {isModerated
                         ? post.removedAt
-                          ? "[Removed Post]"
-                          : "[Deleted Post]"
+                          ? uiText("AppStrings.RemovedPost")
+                          : uiText("AppStrings.DeletedPost")
                         : post.title}
                     </p>
                   </Link>
@@ -200,7 +204,7 @@ export default function PostPage() {
                       <Input
                         value={draftTitle}
                         onChange={(event) => setDraftTitle(event.target.value)}
-                        placeholder="Post title"
+                        placeholder={uiText("AppStrings.PostTitle")}
                       />
                       <Editor
                         content={draftContent}
@@ -218,7 +222,7 @@ export default function PostPage() {
 
                             if (!response.ok) {
                               addToast({
-                                title: "Failed to update post",
+                                title: uiText("AppStrings.FailedToUpdatePost"),
                               });
                               return;
                             }
@@ -238,11 +242,10 @@ export default function PostPage() {
                             );
                             setEditing(false);
                             router.replace(`/p/${post.slug}`, { scroll: false });
-                            addToast({ title: "Post updated" });
+                            addToast({ title: uiText("AppStrings.PostUpdated") });
                           }}
                         >
-                          Save
-                        </Button>
+                           {uiText("Settings.Save.Title")} </Button>
                         <Button
                           onClick={() => {
                             setDraftTitle(post.title);
@@ -251,15 +254,14 @@ export default function PostPage() {
                             router.replace(`/p/${post.slug}`, { scroll: false });
                           }}
                         >
-                          Cancel
-                        </Button>
+                           {uiText("AppStrings.Cancel")} </Button>
                       </div>
                     </div>
                   ) : isModerated ? (
                     <Text color="textFaded" size="sm">
                       {post.removedAt
-                        ? "This post was removed."
-                        : "This post was deleted."}
+                        ? uiText("AppStrings.ThisPostWasRemoved")
+                        : uiText("AppStrings.ThisPostWasDeleted")}
                     </Text>
                   ) : (
                     <ThemedProse className="[&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
@@ -277,7 +279,7 @@ export default function PostPage() {
                           key={tag.id}
                           href={postTagFilterHref(tag.id)}
                           className="post-tag-link inline-flex"
-                          aria-label={`Filter posts by ${tag.name}`}
+                          aria-label={uiText("AppStrings.FilterPostsByValue0", { value0: tag.name })}
                         >
                           <Chip className="post-tag-chip cursor-pointer hover:brightness-110">
                             <TagLabel name={tag.name} />
@@ -335,7 +337,7 @@ export default function PostPage() {
                         <Dropdown.Item
                           key="edit"
                           icon="squarepen"
-                          description="Edit your post"
+                          description={uiText("AppStrings.EditYourPost")}
                           onClick={() => {
                             setEditing(true);
                             router.replace(`/p/${post.slug}?edit=1`, {
@@ -343,8 +345,7 @@ export default function PostPage() {
                             });
                           }}
                         >
-                          Edit
-                        </Dropdown.Item>
+                           {uiText("ThemeSuggestions.Edit.Title")} </Dropdown.Item>
                       ) : null}
                       {isAuthor ? (
                         <Dropdown.Item
@@ -592,7 +593,7 @@ export default function PostPage() {
               <Card>
                 <Hstack>
                   <Spinner />
-                  <Text>Loading...</Text>
+                  <Text>{uiText("ThemeSuggestions.Loading.Title")}</Text>
                 </Hstack>
               </Card>
             ) : (
@@ -606,7 +607,7 @@ export default function PostPage() {
                 <Button
                   onClick={async () => {
                     if (!content) {
-                      addToast({ title: "Please enter valid content" });
+                      addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
                       return;
                     }
 
@@ -615,23 +616,22 @@ export default function PostPage() {
                     const response = await postComment(content, post!.id);
 
                     if (response.status == 401) {
-                      addToast({ title: "Invalid user" });
+                      addToast({ title: uiText("AppStrings.InvalidUser") });
                       setWaitingPost(false);
                       return;
                     }
 
                     if (response.ok) {
-                      addToast({ title: "Successfully created comment" });
+                      addToast({ title: uiText("AppStrings.SuccessfullyCreatedComment") });
                       //setWaitingPost(false);
                       window.location.reload();
                     } else {
-                      addToast({ title: "An error occured" });
+                      addToast({ title: uiText("AppStrings.AnErrorOccured") });
                       setWaitingPost(false);
                     }
                   }}
                 >
-                  Create Comment
-                </Button>
+                   {uiText("AppStrings.CreateComment")} </Button>
               </>
             ))}
 

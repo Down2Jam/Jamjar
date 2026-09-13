@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import { Skeleton } from "@/components/skeletons";
@@ -16,6 +19,7 @@ import SidebarSectionTitle from "./SidebarSectionTitle";
 const MAX_FEATURED_SCREENSHOTS = 20;
 
 export default function SidebarScreenshots() {
+  const uiText = useUiTranslations();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
   const { jamId, pageVersion } = useMemo(() => {
     const phase = activeJam?.phase;
@@ -103,8 +107,7 @@ export default function SidebarScreenshots() {
   return (
     <div className="mt-12 flex flex-col items-center gap-2">
       <SidebarSectionTitle>
-        Featured Screenshots
-      </SidebarSectionTitle>
+         {uiText("AppStrings.FeaturedScreenshots")} </SidebarSectionTitle>
 
       <div className="grid w-full grid-cols-2 gap-2">
         {screenshots.map(({ game, src }) => (
@@ -112,11 +115,11 @@ export default function SidebarScreenshots() {
             key={`${game.id}:${game.pageVersion ?? "JAM"}:${src}`}
             href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
             className="group post-card-shadow relative aspect-video overflow-hidden rounded-xl bg-black/30"
-            aria-label={`Open ${game.name}`}
+            aria-label={uiText("AppStrings.OpenValue0", { value0: game.name })}
           >
             <Image
               src={src}
-              alt={`${game.name} screenshot`}
+              alt={uiText("AppStrings.Value0Screenshot", { value0: game.name })}
               width={240}
               height={135}
               className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03] group-hover:brightness-75"
@@ -131,8 +134,7 @@ export default function SidebarScreenshots() {
       </div>
 
       <Button icon="moveupright" href="/screenshots">
-        To Screenshots Page
-      </Button>
+         {uiText("AppStrings.ToScreenshotsPage")} </Button>
     </div>
   );
 }

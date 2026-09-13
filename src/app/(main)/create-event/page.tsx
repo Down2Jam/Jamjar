@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useState, type ReactNode } from "react";
 import {
   fromDate,
@@ -43,33 +46,33 @@ const EVENT_TYPES: Record<
   { name: string; description: string; icon: ReactNode }
 > = {
   calendar: {
-    name: "Community event",
-    description: "A meetup, announcement, or other general event",
+    name: "AppStrings.CommunityEvent",
+    description: "AppStrings.AMeetupAnnouncementOrOtherGeneralEvent",
     icon: <Calendar size={18} />,
   },
   palette: {
-    name: "Art stream",
-    description: "Drawing art for a game in the jam",
+    name: "AppStrings.ArtStream",
+    description: "AppStrings.DrawingArtForAGameInTheJam",
     icon: <Palette size={18} />,
   },
   code: {
-    name: "Game development stream",
-    description: "Building a game for the jam",
+    name: "AppStrings.GameDevelopmentStream",
+    description: "AppStrings.BuildingAGameForTheJam",
     icon: <Code size={18} />,
   },
   gamepad2: {
-    name: "Game showcase stream",
-    description: "Playing or showcasing games from the community",
+    name: "AppStrings.GameShowcaseStream",
+    description: "AppStrings.PlayingOrShowcasingGamesFromTheCommunity",
     icon: <Gamepad2 size={18} />,
   },
   trophy: {
-    name: "Tournament stream",
-    description: "A tournament, challenge, or score competition",
+    name: "AppStrings.TournamentStream",
+    description: "AppStrings.ATournamentChallengeOrScoreCompetition",
     icon: <Trophy size={18} />,
   },
   filecode: {
-    name: "Web development stream",
-    description: "Working on the Down2Jam site or other web content",
+    name: "AppStrings.WebDevelopmentStream",
+    description: "AppStrings.WorkingOnTheDown2JamSiteOrOtherWebContent",
     icon: <FileCode size={18} />,
   },
 };
@@ -107,6 +110,7 @@ function FieldLabel({ children, hint }: { children: ReactNode; hint?: string }) 
 }
 
 export default function CreateEventPage() {
+  const uiText = useUiTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const hasToken = hasCookie("token");
@@ -122,8 +126,8 @@ export default function CreateEventPage() {
   const [submitting, setSubmitting] = useState(false);
 
   usePageMetadata({
-    title: "Create Event",
-    description: "Add a community event to the Down2Jam calendar.",
+    title: uiText("AppStrings.CreateEvent"),
+    description: uiText("AppStrings.AddACommunityEventToTheDown2JamCalendar"),
     canonical: "/create-event",
     robots: "noindex,nofollow",
   });
@@ -176,7 +180,7 @@ export default function CreateEventPage() {
       );
 
       if (response.ok) {
-        addToast({ title: "Event created" });
+        addToast({ title: uiText("AppStrings.EventCreated") });
         redirect("/events");
         return;
       }
@@ -208,8 +212,7 @@ export default function CreateEventPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Create an event
-          </h1>
+             {uiText("AppStrings.CreateAnEvent")} </h1>
           <p
             className="mt-1 text-sm"
             style={{
@@ -221,12 +224,10 @@ export default function CreateEventPage() {
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Add a stream, tournament, showcase, or community get-together.
-          </p>
+             {uiText("AppStrings.AddAStreamTournamentShowcaseOrCommunityGetTogether")} </p>
           <div className="mt-3 flex justify-center sm:absolute sm:left-0 sm:top-2 sm:mt-0">
             <Button href="/events" icon="arrowleft" variant="ghost">
-              Events
-            </Button>
+               {uiText("Navbar.Events.Title")} </Button>
           </div>
         </header>
 
@@ -234,20 +235,19 @@ export default function CreateEventPage() {
           <Card radius="lg">
             <Hstack justify="center" className="py-14">
               <Spinner />
-              <Text color="textFaded">Checking event access...</Text>
+              <Text color="textFaded">{uiText("AppStrings.CheckingEventAccess")}</Text>
             </Hstack>
           </Card>
         ) : !hasToken ? (
           <Card radius="lg">
             <Vstack gap={3} className="py-10 text-center">
               <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
-              <Text size="xl" weight="semibold">Sign in to create an event</Text>
+              <Text size="xl" weight="semibold">{uiText("AppStrings.SignInToCreateAnEvent")}</Text>
               <Text color="textFaded" className="max-w-md">
-                Event creation is available to Down2Jam community members with a connected Twitch account.
-              </Text>
+                 {uiText("AppStrings.EventCreationIsAvailableToDown2JamCommunityMembersWithAConnectedTwitchAccount")} </Text>
               <Hstack>
-                <Button href="/login" color="blue">Sign in</Button>
-                <Button href="/events" variant="ghost">Back to events</Button>
+                <Button href="/login" color="blue">{uiText("AppStrings.SignIn")}</Button>
+                <Button href="/events" variant="ghost">{uiText("AppStrings.BackToEvents")}</Button>
               </Hstack>
             </Vstack>
           </Card>
@@ -255,13 +255,12 @@ export default function CreateEventPage() {
           <Card radius="lg">
             <Vstack gap={3} className="py-10 text-center">
               <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
-              <Text size="xl" weight="semibold">Connect Twitch to create events</Text>
+              <Text size="xl" weight="semibold">{uiText("AppStrings.ConnectTwitchToCreateEvents")}</Text>
               <Text color="textFaded" className="max-w-md">
-                Connect your Twitch account in settings so community members know where to watch your events.
-              </Text>
+                 {uiText("AppStrings.ConnectYourTwitchAccountInSettingsSoCommunityMembersKnowWhereToWatchYourEvents")} </Text>
               <Hstack>
-                <Button href="/settings" color="blue">Open settings</Button>
-                <Button href="/events" variant="ghost">Back to events</Button>
+                <Button href="/settings" color="blue">{uiText("AppStrings.OpenSettings")}</Button>
+                <Button href="/events" variant="ghost">{uiText("AppStrings.BackToEvents")}</Button>
               </Hstack>
             </Vstack>
           </Card>
@@ -271,16 +270,16 @@ export default function CreateEventPage() {
               <Vstack align="stretch" gap={0}>
                 <section className="space-y-5 p-5 sm:p-7">
                   <Vstack align="start" gap={0}>
-                    <Text size="xl" weight="semibold">Event details</Text>
+                    <Text size="xl" weight="semibold">{uiText("AppStrings.EventDetails")}</Text>
                   </Vstack>
 
                   <Vstack align="stretch" gap={2}>
-                    <FieldLabel>Title</FieldLabel>
+                    <FieldLabel>{uiText("AppStrings.Title")}</FieldLabel>
                     <Input
                       required
                       fullWidth
                       name="title"
-                      placeholder="What’s happening?"
+                      placeholder={uiText("AppStrings.WhatSHappening")}
                       value={title}
                       onValueChange={setTitle}
                       disabled={submitting}
@@ -290,7 +289,7 @@ export default function CreateEventPage() {
 
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Vstack align="stretch" gap={2}>
-                      <FieldLabel>Event type</FieldLabel>
+                      <FieldLabel>{uiText("AppStrings.EventType")}</FieldLabel>
                       <Dropdown
                         backdrop
                         onSelect={(key) => setIcon(key as EventIcon)}
@@ -301,7 +300,7 @@ export default function CreateEventPage() {
                             className="justify-start"
                             disabled={submitting}
                           >
-                            {selectedType.name}
+                            {uiText(selectedType.name)}
                           </Button>
                         }
                       >
@@ -310,16 +309,16 @@ export default function CreateEventPage() {
                             key={key}
                             value={key}
                             icon={key as IconName}
-                            description={type.description}
+                            description={uiText(type.description)}
                           >
-                            {type.name}
+                            {uiText(type.name)}
                           </Dropdown.Item>
                         ))}
                       </Dropdown>
                     </Vstack>
 
                     <Vstack align="stretch" gap={2}>
-                      <FieldLabel hint="Optional">Stream or event link</FieldLabel>
+                      <FieldLabel hint="Optional">{uiText("AppStrings.StreamOrEventLink")}</FieldLabel>
                       <Input
                         fullWidth
                         name="link"
@@ -339,16 +338,16 @@ export default function CreateEventPage() {
                   style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 7%, transparent)` }}
                 >
                   <Vstack align="start" gap={0}>
-                    <Text size="xl" weight="semibold">Schedule</Text>
+                    <Text size="xl" weight="semibold">{uiText("AppStrings.Schedule")}</Text>
                     <Text size="sm" color="textFaded">
-                      Times are shown in your local timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}.
+                       {uiText("AppStrings.TimesAreShownInYourLocalTimezone")} {Intl.DateTimeFormat().resolvedOptions().timeZone}.
                     </Text>
                   </Vstack>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Input
                       required
                       fullWidth
-                      label="Starts"
+                      label={uiText("AppStrings.Starts")}
                       labelPlacement="outside"
                       type="datetime-local"
                       value={start}
@@ -358,7 +357,7 @@ export default function CreateEventPage() {
                     <Input
                       required
                       fullWidth
-                      label="Ends"
+                      label={uiText("AppStrings.Ends")}
                       labelPlacement="outside"
                       type="datetime-local"
                       min={start}
@@ -371,10 +370,9 @@ export default function CreateEventPage() {
 
                 <section className="space-y-3 p-5 sm:p-7">
                   <Vstack align="start" gap={0}>
-                    <Text size="xl" weight="semibold">About the event</Text>
+                    <Text size="xl" weight="semibold">{uiText("About.Title")}</Text>
                     <Text size="sm" color="textFaded">
-                      Share what you’ll be doing and anything attendees should know.
-                    </Text>
+                       {uiText("AppStrings.ShareWhatYouLlBeDoingAndAnythingAttendeesShouldKnow")} </Text>
                   </Vstack>
                   <Editor content={content} setContent={setContent} />
                 </section>
@@ -392,11 +390,9 @@ export default function CreateEventPage() {
                   </div>
                   <Hstack className="justify-end">
                     <Button href="/events" variant="ghost" disabled={submitting}>
-                      Cancel
-                    </Button>
+                       {uiText("AppStrings.Cancel")} </Button>
                     <Button type="submit" icon="calendarplus" color="blue" loading={submitting}>
-                      Create event
-                    </Button>
+                       {uiText("AppStrings.CreateEvent2")} </Button>
                   </Hstack>
                 </footer>
               </Vstack>

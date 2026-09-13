@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { createReport } from "@/requests/api";
 import { addToast, Button, Card, Hstack, Input, Text, Vstack } from "bioloom-ui";
 import { useState } from "react";
@@ -7,6 +10,7 @@ import { useState } from "react";
 const targetTypes = ["user", "post", "comment", "game", "collection_comment"] as const;
 
 export default function ReportsPage() {
+  const uiText = useUiTranslations();
   const [targetType, setTargetType] =
     useState<(typeof targetTypes)[number]>("post");
   const [targetId, setTargetId] = useState("");
@@ -16,16 +20,15 @@ export default function ReportsPage() {
 
   return (
     <Vstack align="stretch">
+      <Button href="/report-bug" icon="bug" variant="ghost">{uiText("AppStrings.LookingToReportABug")}</Button>
       <Card>
         <Vstack align="start">
           <Hstack>
             <Text size="xl" weight="semibold" color="text">
-              Report content
-            </Text>
+               {uiText("AppStrings.ReportContent")} </Text>
           </Hstack>
           <Text size="sm" color="textFaded">
-            Send a report to the moderation queue.
-          </Text>
+             {uiText("AppStrings.SendAReportToTheModerationQueue")} </Text>
         </Vstack>
       </Card>
 
@@ -45,7 +48,7 @@ export default function ReportsPage() {
             });
             setSubmitting(false);
             addToast({
-              title: response.ok ? "Report submitted" : "Could not submit report",
+              title: response.ok ? uiText("AppStrings.ReportSubmitted") : uiText("AppStrings.CouldNotSubmitReport"),
             });
             if (response.ok) {
               setTargetId("");
@@ -55,7 +58,7 @@ export default function ReportsPage() {
           }}
         >
           <label className="flex flex-col gap-1">
-            <Text color="text">Target type</Text>
+            <Text color="text">{uiText("AppStrings.TargetType")}</Text>
             <select
               className="rounded-md border border-white/10 bg-black/30 p-2 text-white"
               value={targetType}
@@ -72,31 +75,30 @@ export default function ReportsPage() {
           </label>
 
           <label className="flex flex-col gap-1">
-            <Text color="text">Target ID</Text>
+            <Text color="text">{uiText("AppStrings.TargetId")}</Text>
             <Input
               value={targetId}
               onValueChange={setTargetId}
-              placeholder="ID of the user, post, comment, game, or collection comment"
+              placeholder={uiText("AppStrings.IdOfTheUserPostCommentGameOr")}
               required
             />
           </label>
           <label className="flex flex-col gap-1">
-            <Text color="text">Reason</Text>
+            <Text color="text">{uiText("AppStrings.Reason")}</Text>
             <Input
               value={reason}
               onValueChange={setReason}
-              placeholder="Short reason"
+              placeholder={uiText("AppStrings.ShortReason")}
             />
           </label>
           <textarea
             className="min-h-32 rounded-md border border-white/10 bg-black/30 p-3 text-white"
             value={details}
             onChange={(event) => setDetails(event.target.value)}
-            placeholder="Extra details"
+            placeholder={uiText("AppStrings.ExtraDetails")}
           />
           <Button color="red" icon="shieldalert" type="submit" disabled={submitting}>
-            Submit report
-          </Button>
+             {uiText("AppStrings.SubmitReport")} </Button>
         </form>
       </Card>
     </Vstack>

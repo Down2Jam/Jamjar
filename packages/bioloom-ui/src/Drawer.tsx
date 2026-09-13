@@ -1,4 +1,7 @@
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 import { getNeutralBorderColor } from "./borders";
 
 import { ReactNode, useEffect } from "react";
@@ -24,6 +27,7 @@ export default function Drawer({
   footer,
   hideClose = false,
 }: DrawerProps) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
 
   useEffect(() => {
@@ -80,8 +84,7 @@ export default function Drawer({
                 {header}
                 {!hideClose && (
                   <Button icon="x" size="sm" onClick={onClose}>
-                    Close
-                  </Button>
+                     {uiText("AppStrings.Close")} </Button>
                 )}
               </div>
             )}

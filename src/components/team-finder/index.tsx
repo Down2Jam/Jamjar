@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useState } from "react";
 import { TeamType } from "@/types/TeamType";
 import { getTeams } from "@/requests/team";
@@ -69,6 +72,7 @@ async function loadAllTeams() {
 }
 
 export default function TeamFinder() {
+  const uiText = useUiTranslations();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<TeamType[]>();
   const [teamType, setTeamType] = useState<"Open to Applications" | "All">(
@@ -81,7 +85,9 @@ export default function TeamFinder() {
   const [selectedTeam, setSelectedTeam] = useState<number>();
   const [sortSet, setSortSet] = useState<boolean>(false);
   const { data: currentJamData } = useCurrentJam();
-  const jam = getNextJamForHome(currentJamData);
+  const jam = currentJamData?.phase === "Jamming"
+    ? currentJamData.jam
+    : getNextJamForHome(currentJamData);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const targetJamId = useMemo(() => jam?.id ?? null, [jam?.id]);
 
@@ -107,7 +113,9 @@ export default function TeamFinder() {
       if (!user || !currentJamData) return;
 
       try {
-        let teams = await loadAllTeams();
+        let teams = targetJamId == null
+          ? []
+          : (await loadAllTeams()).filter((team) => team.jamId === targetJamId);
         if (teamType == "Open to Applications") {
           teams = teams.filter((team: TeamType) => team.applicationsOpen);
         }
@@ -154,11 +162,7 @@ export default function TeamFinder() {
 
         teams = [...teams, ...noRoleTeams];
 
-        setTeams(
-          targetJamId == null
-            ? teams
-            : teams.filter((team: TeamType) => team.jamId == targetJamId),
-        );
+        setTeams(teams);
       } catch (error) {
         console.error(error);
       } finally {
@@ -177,25 +181,26 @@ export default function TeamFinder() {
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">{uiText("AppStrings.Loading")}</Text>
             </Hstack>
-            <Text color="textFaded">Loading team finder...</Text>
+            <Text color="textFaded">{uiText("AppStrings.LoadingTeamFinder")}</Text>
           </Vstack>
         </Card>
       </Vstack>
     );
   }
 
-  if (!user) return <p>You are not logged in</p>;
+  if (!user) return <p>{uiText("CreateGame.NotLogged")}</p>;
+
+  const hasTeam = user.teams.some((team) => team.jamId == jam?.id);
 
   return (
     <>
       <section className="mt-4 mb-4 flex flex-col gap-3">
         <div className="flex flex-wrap justify-center gap-3">
-          {user.teams.filter((team) => team.jamId == jam?.id).length > 0 && (
+          {hasTeam && (
             <Button icon="users2" href="/team">
-              My Team
-            </Button>
+               {uiText("Navbar.MyTeam.Title")} </Button>
           )}
           <Button
             icon="userplus"
@@ -206,7 +211,7 @@ export default function TeamFinder() {
               }
             }}
           >
-            Create Team
+            {uiText(hasTeam ? "AppStrings.CreateAnotherTeam" : "AppStrings.CreateTeam")}
           </Button>
         </div>
         <div className="flex flex-wrap justify-center gap-2">
@@ -217,11 +222,9 @@ export default function TeamFinder() {
             }}
           >
             <Dropdown.Item value="Open to Applications" icon="clipboard">
-              Open to Applications
-            </Dropdown.Item>
+               {uiText("AppStrings.OpenToApplications")} </Dropdown.Item>
             <Dropdown.Item value="All" icon="star">
-              All
-            </Dropdown.Item>
+               {uiText("AppStrings.All")} </Dropdown.Item>
           </Dropdown>
           {teamType !== "All" && (
             <Dropdown
@@ -233,14 +236,11 @@ export default function TeamFinder() {
               }}
             >
               <Dropdown.Item value="Primary Role" icon="settings2">
-                Primary Role
-              </Dropdown.Item>
+                 {uiText("AppStrings.PrimaryRole")} </Dropdown.Item>
               <Dropdown.Item value="Primary or Secondary Role" icon="settings">
-                Primary or Secondary Role
-              </Dropdown.Item>
+                 {uiText("AppStrings.PrimaryOrSecondaryRole")} </Dropdown.Item>
               <Dropdown.Item value="All" icon="star">
-                All
-              </Dropdown.Item>
+                 {uiText("AppStrings.All")} </Dropdown.Item>
             </Dropdown>
           )}
         </div>
@@ -259,7 +259,7 @@ export default function TeamFinder() {
                       </Tooltip>
                     ))}
                   </div>
-                  {team.name ? team.name : `${team.owner.name}'s Team`}
+                  {team.name ? team.name : uiText("AppStrings.Value0STeam2", { value0: team.owner.name })}
                 </Hstack>
                 <div>
                   {team.applicationsOpen &&
@@ -271,15 +271,14 @@ export default function TeamFinder() {
                           setIsOpen(true);
                         }}
                       >
-                        Apply
-                      </Button>
+                         {uiText("AppStrings.Apply")} </Button>
                     )}
                 </div>
               </div>
               {team.description && <p>{team.description}</p>}
               {team.rolesWanted.length > 0 && (
                 <div className="flex items-center gap-3">
-                  <p>Roles Wanted:</p>
+                  <p>{uiText("AppStrings.RolesWanted")}</p>
                   {team.rolesWanted.map((role) => (
                     <Chip
                       // startContent={getIcon(role.icon, 16)}
@@ -294,8 +293,7 @@ export default function TeamFinder() {
           ))
         ) : (
           <Text color="textFaded">
-            No teams were found with the given filters
-          </Text>
+             {uiText("AppStrings.NoTeamsWereFoundWithTheGivenFilters")} </Text>
         )}
       </section>
       <Modal
@@ -310,9 +308,9 @@ export default function TeamFinder() {
         fields={[
           {
             name: "content",
-            label: "Application Content",
+            label: uiText("AppStrings.ApplicationContent"),
             description:
-              "The text shown to the team owner when they are choosing to accept or deny your application",
+              uiText("AppStrings.TheTextShownToTheTeamOwnerWhen"),
             type: "textarea",
           },
         ]}

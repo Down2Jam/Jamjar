@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useState } from "react";
 
 const HOME_BANNERS = [
@@ -9,6 +12,7 @@ const HOME_BANNERS = [
 ] as const;
 
 export default function SidebarBanner() {
+  const uiText = useUiTranslations();
   const [banner] = useState(
     () =>
       HOME_BANNERS[Math.floor(Math.random() * HOME_BANNERS.length)] ??
@@ -19,7 +23,7 @@ export default function SidebarBanner() {
     <a href="/about">
       <img
         src={banner}
-        alt="D2Jam banner"
+        alt={uiText("AppStrings.D2JamBanner")}
         width={480}
         height={160}
         className="h-auto w-full rounded-xl shadow-2xl"

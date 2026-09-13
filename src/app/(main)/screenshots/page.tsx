@@ -1,8 +1,11 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "@/compat/next-link";
-import { Button, Hstack, Spinner, Text, Vstack } from "bioloom-ui";
+import { Button, Hstack, Text, Vstack } from "bioloom-ui";
 import { getGamesPage } from "@/requests/game";
 import { unwrapArray } from "@/requests/helpers";
 import type { GameType } from "@/types/GameType";
@@ -36,11 +39,11 @@ const categoryOptions: Array<{
   id: "ALL" | GameType["category"];
   label: string;
 }> = [
-  { id: "ALL", label: "All" },
-  { id: "REGULAR", label: "Regular" },
-  { id: "ODA", label: "ODA" },
-  { id: "EXTRA", label: "Extra" },
-  { id: "EXTERNAL", label: "External" },
+  { id: "ALL", label: "AppStrings.All" },
+  { id: "REGULAR", label: "GameCategory.Regular.Title" },
+  { id: "ODA", label: "AppStrings.ODA" },
+  { id: "EXTRA", label: "GameCategory.Extra.Title" },
+  { id: "EXTERNAL", label: "AppStrings.External" },
 ];
 
 function hashString(value: string) {
@@ -92,6 +95,7 @@ const GAME_PAGE_LIMIT = 50;
 const MAX_SCREENSHOTS_PER_GAME = 4;
 
 export default function ScreenshotsPage() {
+  const uiText = useUiTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const [category, setCategory] =
@@ -177,8 +181,7 @@ export default function ScreenshotsPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Screenshots
-          </p>
+             {uiText("Navbar.Screenshots.Title")} </p>
           <p
             className="mt-1 text-sm"
             style={{
@@ -190,8 +193,7 @@ export default function ScreenshotsPage() {
                   : "0 1px 4px rgba(0, 0, 0, 0.8)",
             }}
           >
-            Screenshots from games uploaded to the site
-          </p>
+             {uiText("AppStrings.ScreenshotsFromGamesUploadedToTheSite")} </p>
         </header>
 
         <Hstack justify="between" className="flex-wrap gap-3">
@@ -204,7 +206,7 @@ export default function ScreenshotsPage() {
                 variant={category === option.id ? undefined : "ghost"}
                 onClick={() => setCategory(option.id)}
               >
-                {option.label}
+                {uiText(option.label)}
               </Button>
             ))}
           </Hstack>
@@ -217,18 +219,30 @@ export default function ScreenshotsPage() {
               await loadGames();
             }}
           >
-            Shuffle
-          </Button>
+             {uiText("AppStrings.Shuffle")} </Button>
         </Hstack>
 
         {isLoading ? (
-          <Hstack className="justify-center py-16">
-            <Spinner />
-            <Text color="textFaded">Loading screenshots...</Text>
-          </Hstack>
+          <div
+            role="status"
+            aria-label={uiText("AppStrings.LoadingScreenshots")}
+            aria-busy="true"
+            className="columns-1 gap-2 sm:columns-2 lg:columns-3 2xl:columns-4"
+          >
+            {Array.from({ length: 16 }, (_, index) => (
+              <div
+                key={index}
+                aria-hidden="true"
+                className="relative mb-2 w-full break-inside-avoid overflow-hidden bg-black/30 motion-safe:animate-pulse"
+                style={{ aspectRatio: getTileAspectRatio(`placeholder:${index}`) }}
+              >
+                <div className="absolute inset-0 bg-white/[0.03]" />
+              </div>
+            ))}
+          </div>
         ) : visibleTiles.length === 0 ? (
           <Vstack className="py-16">
-            <Text color="textFaded">No screenshots found.</Text>
+            <Text color="textFaded">{uiText("AppStrings.NoScreenshotsFound")}</Text>
           </Vstack>
         ) : (
           <div className="columns-1 gap-2 sm:columns-2 lg:columns-3 2xl:columns-4">
@@ -243,6 +257,7 @@ export default function ScreenshotsPage() {
 }
 
 function ScreenshotCard({ tile }: { tile: ScreenshotTile }) {
+  const uiText = useUiTranslations();
   const [loaded, setLoaded] = useState(false);
 
   return (
@@ -250,12 +265,12 @@ function ScreenshotCard({ tile }: { tile: ScreenshotTile }) {
       href={`/g/${tile.gameSlug}`}
       className="group relative mb-2 block w-full break-inside-avoid overflow-hidden bg-black/30"
       style={{ aspectRatio: tile.aspectRatio }}
-      aria-label={`Open ${tile.gameName}`}
+      aria-label={uiText("AppStrings.OpenValue0", { value0: tile.gameName })}
     >
       <div className="absolute inset-0 bg-white/[0.03]" />
       <img
         src={tile.src}
-        alt={`${tile.gameName} screenshot`}
+        alt={uiText("AppStrings.Value0Screenshot", { value0: tile.gameName })}
         className={`absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-[1.02] group-hover:brightness-75 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}

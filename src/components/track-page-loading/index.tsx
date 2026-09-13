@@ -1,7 +1,9 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { Card } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 
 export default function TrackPageLoading() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const placeholderColor = `color-mix(in srgb, ${colors.text} 6%, ${colors.mantle})`;
   const placeholder = (className: string) => (
@@ -9,7 +11,7 @@ export default function TrackPageLoading() {
   );
 
   return (
-    <div role="status" aria-label="Loading track" aria-busy="true">
+    <div role="status" aria-label={uiText("AppStrings.LoadingTrack")} aria-busy="true">
       <Card shadow="none" padding={0} className="mb-6 overflow-hidden !rounded-none !border-0 lg:!rounded-xl lg:!border">
         <div aria-hidden="true" className="motion-safe:animate-pulse p-4 md:p-6">
               {placeholder("h-3 w-24")}

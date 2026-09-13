@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
@@ -15,6 +18,7 @@ import Cookies from "js-cookie";
 const SESSION_DURATION_DAYS = 14;
 
 export default function UserPage() {
+  const uiText = useUiTranslations();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   return (
@@ -30,21 +34,21 @@ export default function UserPage() {
 
           if (!username && !password) {
             addToast({
-              title: "Please enter a valid username and password",
+              title: uiText("AppStrings.PleaseEnterAValidUsernameAndPassword"),
             });
             return;
           }
 
           if (!username) {
             addToast({
-              title: "Please enter a valid username",
+              title: uiText("AppStrings.PleaseEnterAValidUsername"),
             });
             return;
           }
 
           if (!password) {
             addToast({
-              title: "Please enter a valid password",
+              title: uiText("AppStrings.PleaseEnterAValidPassword"),
             });
             return;
           }
@@ -53,7 +57,7 @@ export default function UserPage() {
 
           if (response.status == 401) {
             addToast({
-              title: "Invalid username or password",
+              title: uiText("AppStrings.InvalidUsernameOrPassword"),
             });
             setPassword("");
             return;
@@ -66,7 +70,7 @@ export default function UserPage() {
 
           if (!token || !user?.slug) {
             addToast({
-              title: "Failed to retrieve login session",
+              title: uiText("AppStrings.FailedToRetrieveLoginSession"),
             });
             setPassword("");
             return;
@@ -80,7 +84,7 @@ export default function UserPage() {
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
 
           addToast({
-            title: "Successfully logged in",
+            title: uiText("AppStrings.SuccessfullyLoggedIn"),
           });
 
           window.location.replace("/");
@@ -91,22 +95,20 @@ export default function UserPage() {
             <Hstack>
               <Icon name="login" />
               <Text size="xl" weight="semibold" color="text">
-                Log In
-              </Text>
+                 {uiText("AppStrings.LogIn")} </Text>
             </Hstack>
             <Text size="sm" color="textFaded">
-              Log into an existing account on the site
-            </Text>
+               {uiText("AppStrings.LogIntoAnExistingAccountOnTheSite")} </Text>
           </Vstack>
         </Card>
         <Card>
           <Vstack align="start">
             <Input
               required
-              label="Username"
+              label={uiText("AppStrings.Username")}
               labelPlacement="outside"
               name="username"
-              placeholder="Enter your username"
+              placeholder={uiText("AppStrings.EnterYourUsername")}
               type="text"
               value={username}
               onValueChange={setUsername}
@@ -114,10 +116,10 @@ export default function UserPage() {
 
             <Input
               required
-              label="Password"
+              label={uiText("AppStrings.Password")}
               labelPlacement="outside"
               name="password"
-              placeholder="Enter your password"
+              placeholder={uiText("AppStrings.EnterYourPassword")}
               type="password"
               value={password}
               onValueChange={setPassword}
@@ -125,21 +127,19 @@ export default function UserPage() {
 
             <div className="flex gap-2">
               <Button color="blue" type="submit" icon="login">
-                Submit
-              </Button>
+                 {uiText("AppStrings.Submit")} </Button>
               <Button type="reset" icon="rotateccw">
-                Reset
-              </Button>
+                 {uiText("Settings.Reset.Title")} </Button>
             </div>
           </Vstack>
         </Card>
         <Card>
           <Text color="text">
-            Don&apos;t have an account? <Link href="/signup">Sign up</Link>
+             {uiText("AppStrings.DonAndAposTHaveAnAccount")} <Link href="/signup">{uiText("Themes.Signup")}</Link>
           </Text>
         </Card>
         <Card>
-          <Link href="/forgot-password">Forgot Password?</Link>
+          <Link href="/forgot-password">{uiText("AppStrings.ForgotPassword2")}</Link>
         </Card>
       </Form>
     </div>

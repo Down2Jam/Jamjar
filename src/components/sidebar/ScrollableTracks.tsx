@@ -1,6 +1,8 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 export default function ScrollableTracks({ children, activeIndex }: { children: ReactNode; activeIndex: number }) {
+  const uiText = useUiTranslations();
   const ref = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>();
   useLayoutEffect(() => {
@@ -23,5 +25,5 @@ export default function ScrollableTracks({ children, activeIndex }: { children: 
       : rowRect.bottom > listRect.bottom ? rowRect.bottom - listRect.bottom : 0;
     if (delta) list.scrollTo({ top: list.scrollTop + delta, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }, [activeIndex, height]);
-  return <div ref={ref} role="region" aria-label="Soundtrack tracks" tabIndex={height ? 0 : undefined} className="w-full overflow-y-auto overscroll-contain focus-visible:outline focus-visible:outline-2" style={{ maxHeight: height, scrollbarGutter: height ? "stable" : undefined }}>{children}</div>;
+  return <div ref={ref} role="region" aria-label={uiText("AppStrings.SoundtrackTracks")} tabIndex={height ? 0 : undefined} className="w-full overflow-y-auto overscroll-contain focus-visible:outline focus-visible:outline-2" style={{ maxHeight: height, scrollbarGutter: height ? "stable" : undefined }}>{children}</div>;
 }

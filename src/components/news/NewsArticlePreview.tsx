@@ -1,3 +1,4 @@
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import Link from "@/compat/next-link";
 import type { PostType } from "@/types/PostType";
 import { Avatar, Button } from "bioloom-ui";
@@ -25,6 +26,7 @@ export default function NewsArticlePreview({
   post: PostType;
   featured?: boolean;
 }) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const excerpt = newsExcerpt(post.content);
   const newsTags = post.tags.filter(isNewsTag);
@@ -56,8 +58,7 @@ export default function NewsArticlePreview({
       >
         {featured && (
           <span className="font-semibold uppercase tracking-wider" style={{ color: colors["red"] }}>
-            Latest
-          </span>
+             {uiText("AppStrings.Latest")} </span>
         )}
         {newsTags.map((tag) => (
           <TagLabel key={tag.id} name={tag.name} label={newsTagLabel(tag.name)} />
@@ -95,14 +96,14 @@ export default function NewsArticlePreview({
                 dateTime={latestAt.toISOString()}
                 title={
                   wasEdited
-                    ? `Published ${format(publishedAt, "MMMM d, yyyy")}`
+                    ? uiText("AppStrings.PublishedValue0", { value0: format(publishedAt, "MMMM d, yyyy") })
                     : undefined
                 }
               >
                 {format(latestAt, "MMMM d, yyyy")}
               </time>
               <span aria-hidden="true" className="opacity-50">·</span>
-              <span>{readingMinutes} min read</span>
+              <span>{readingMinutes}  {uiText("AppStrings.MinRead")}</span>
             </span>
           </span>
         </Link>

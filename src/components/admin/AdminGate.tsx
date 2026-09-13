@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { hasCookie } from "@/helpers/cookie";
@@ -15,6 +18,7 @@ export default function AdminGate({
 }: {
   children: ReactNode;
 }) {
+  const uiText = useUiTranslations();
   const [status, setStatus] = useState<GateStatus | "ready">("loading");
   const [user, setUser] = useState<UserType | null>(null);
 
@@ -59,11 +63,10 @@ export default function AdminGate({
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Checking admin access</Text>
+              <Text size="xl">{uiText("AppStrings.CheckingAdminAccess")}</Text>
             </Hstack>
             <Text color="textFaded">
-              Verifying your account permissions.
-            </Text>
+               {uiText("AppStrings.VerifyingYourAccountPermissions")} </Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -78,19 +81,16 @@ export default function AdminGate({
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="userx" />
-                <Text size="xl">Sign in required</Text>
+                <Text size="xl">{uiText("AppStrings.SignInRequired")}</Text>
               </Hstack>
               <Text color="textFaded">
-                You need to sign in before accessing admin tools.
-              </Text>
+                 {uiText("AppStrings.YouNeedToSignInBeforeAccessingAdmin")} </Text>
             </Vstack>
             <Hstack>
               <Button href="/login" color="blue" icon="login">
-                Sign in
-              </Button>
+                 {uiText("AppStrings.SignIn")} </Button>
               <Button href="/signup" icon="userplus">
-                Create account
-              </Button>
+                 {uiText("AppStrings.CreateAccount")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -106,15 +106,13 @@ export default function AdminGate({
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="shieldx" />
-                <Text size="xl">Admin only</Text>
+                <Text size="xl">{uiText("AppStrings.AdminOnly")}</Text>
               </Hstack>
               <Text color="textFaded">
-                {user?.name || "This account"} does not have admin access.
-              </Text>
+                {user?.name || uiText("AppStrings.ThisAccount")}  {uiText("AppStrings.DoesNotHaveAdminAccess")} </Text>
             </Vstack>
             <Button href="/home" icon="arrowleft">
-              Return home
-            </Button>
+               {uiText("AppStrings.ReturnHome")} </Button>
           </Vstack>
         </Card>
       </Vstack>
@@ -128,11 +126,10 @@ export default function AdminGate({
           <Vstack gap={0}>
             <Hstack>
                 <Icon name="circlealert" />
-              <Text size="xl">Access check failed</Text>
+              <Text size="xl">{uiText("AppStrings.AccessCheckFailed")}</Text>
             </Hstack>
             <Text color="textFaded">
-              Something went wrong while checking your admin session.
-            </Text>
+               {uiText("AppStrings.SomethingWentWrongWhileCheckingYourAdminSession")} </Text>
           </Vstack>
           <Button
             onClick={() => {
@@ -140,8 +137,7 @@ export default function AdminGate({
             }}
             icon="rotateccw"
           >
-            Retry
-          </Button>
+             {uiText("AppStrings.Retry")} </Button>
         </Vstack>
       </Card>
     </Vstack>

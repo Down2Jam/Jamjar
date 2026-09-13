@@ -1,3 +1,4 @@
+import { useTranslations } from "@/compat/next-intl";
 import { CommentType } from "@/types/CommentType";
 import { MoreVertical } from "lucide-react";
 import Link from "@/compat/next-link";
@@ -41,6 +42,7 @@ export default function CommentCard({
   user?: UserType | null;
   onOverlayChange?: (open: boolean) => void;
 }) {
+  const t = useTranslations();
   const [currentComment, setCurrentComment] = useState<CommentType>(comment);
   const [creatingReply, setCreatingReply] = useState<boolean>(false);
   const [loadingReplies, setLoadingReplies] = useState(false);
@@ -160,7 +162,7 @@ export default function CommentCard({
                 onClick={async () => {
                   const response = await updateComment(currentComment.id, draftContent);
                   if (!response.ok) {
-                    addToast({ title: "Failed to update comment" });
+                    addToast({ title: t("AppStrings.FailedToUpdateComment") });
                     return;
                   }
                   const json = await response.json();
@@ -168,24 +170,22 @@ export default function CommentCard({
                   setEditing(false);
                 }}
               >
-                Save
-              </Button>
+                 {t("Settings.Save.Title")} </Button>
               <Button
                 onClick={() => {
                   setDraftContent(currentComment.content);
                   setEditing(false);
                 }}
               >
-                Cancel
-              </Button>
+                 {t("AppStrings.Cancel")} </Button>
             </div>
           </div>
         ) : isModerated ? (
           <div className="p-4">
             <Text color="textFaded" size="sm">
               {currentComment.removedAt
-                ? "This comment was removed."
-                : "This comment was deleted."}
+                ? t("AppStrings.ThisCommentWasRemoved")
+                : t("AppStrings.ThisCommentWasDeleted")}
             </Text>
           </div>
         ) : (
@@ -239,8 +239,7 @@ export default function CommentCard({
                   icon="squarepen"
                   onClick={() => setEditing(true)}
                 >
-                  Edit
-                </Dropdown.Item>
+                   {t("ThemeSuggestions.Edit.Title")} </Dropdown.Item>
               ) : null}
               {isAuthor ? (
                 <Dropdown.Item
@@ -248,7 +247,7 @@ export default function CommentCard({
                   onClick={async () => {
                     const response = await deleteComment(currentComment.id);
                     if (!response.ok) {
-                      addToast({ title: "Failed to delete comment" });
+                      addToast({ title: t("AppStrings.FailedToDeleteComment") });
                       return;
                     }
                     setCurrentComment((prev) => ({
@@ -257,8 +256,7 @@ export default function CommentCard({
                     }));
                   }}
                 >
-                  Delete
-                </Dropdown.Item>
+                   {t("ThemeSuggestions.Delete.Title")} </Dropdown.Item>
               ) : null}
               {user?.mod || user?.admin ? (
                 <Dropdown.Item
@@ -266,7 +264,7 @@ export default function CommentCard({
                   onClick={async () => {
                     const response = await deleteComment(currentComment.id, "remove");
                     if (!response.ok) {
-                      addToast({ title: "Failed to remove comment" });
+                      addToast({ title: t("AppStrings.FailedToRemoveComment") });
                       return;
                     }
                     setCurrentComment((prev) => ({
@@ -275,8 +273,7 @@ export default function CommentCard({
                     }));
                   }}
                 >
-                  Remove
-                </Dropdown.Item>
+                   {t("PostCard.Remove.Title")} </Dropdown.Item>
               ) : null}
               </Dropdown>
             </div>
@@ -312,13 +309,13 @@ export default function CommentCard({
                     ? { ...previous, children: data }
                     : previous);
                 } catch {
-                  addToast({ title: "Failed to load replies. Please try again." });
+                  addToast({ title: t("AppStrings.FailedToLoadRepliesPleaseTryAgain") });
                 } finally {
                   setLoadingReplies(false);
                 }
               }}
             >
-              {loadingReplies ? "Loading replies…" : "Load replies"}
+              {loadingReplies ? t("AppStrings.LoadingReplies") : t("AppStrings.LoadReplies")}
             </Button>
           ))}
       </div>

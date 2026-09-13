@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useState } from "react";
 import { addToast } from "bioloom-ui";
 import {
@@ -38,15 +41,15 @@ import { useTheme } from "@/providers/useSiteTheme";
 const MAX_LIVES = 10;
 
 const CATEGORY_LABELS = [
-  { key: "name", label: "Name" },
-  { key: "platforms", label: "Platforms" },
-  { key: "tags", label: "Tags" },
-  { key: "flags", label: "Flags" },
-  { key: "category", label: "Category" },
-  { key: "releaseYear", label: "Release Year" },
-  { key: "engine", label: "Game Engine" },
-  { key: "developers", label: "Developers" },
-  { key: "overallRating", label: "Overall Rating" },
+  { key: "name", label: "Settings.Name.Title" },
+  { key: "platforms", label: "AppStrings.Platforms" },
+  { key: "tags", label: "CreateGame.Tags.Title" },
+  { key: "flags", label: "AppStrings.Flags" },
+  { key: "category", label: "AppStrings.Category" },
+  { key: "releaseYear", label: "AppStrings.ReleaseYear" },
+  { key: "engine", label: "AppStrings.GameEngine" },
+  { key: "developers", label: "AppStrings.Developers" },
+  { key: "overallRating", label: "AppStrings.OverallRating" },
 ] as const;
 
 type CategoryKey = (typeof CATEGORY_LABELS)[number]["key"];
@@ -415,6 +418,7 @@ function getGuessRows(
 }
 
 export default function Down2GuessPage() {
+  const uiText = useUiTranslations();
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
   const [dataLoading, setDataLoading] = useState(true);
@@ -536,7 +540,7 @@ export default function Down2GuessPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          addToast({ title: "Failed to load game data." });
+          addToast({ title: uiText("AppStrings.FailedToLoadGameData") });
         }
       }
       setDataLoading(false);
@@ -572,7 +576,7 @@ export default function Down2GuessPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          addToast({ title: "Failed to load a random game." });
+          addToast({ title: uiText("AppStrings.FailedToLoadARandomGame") });
           setAnswer(null);
         }
       }
@@ -609,7 +613,7 @@ export default function Down2GuessPage() {
       }
       setAnswer(gamePayload);
     } catch (error) {
-      addToast({ title: "Failed to start a new round." });
+      addToast({ title: uiText("AppStrings.FailedToStartANewRound") });
     } finally {
       setGameLoading(false);
     }
@@ -628,12 +632,12 @@ export default function Down2GuessPage() {
     );
 
     if (!match) {
-      addToast({ title: "Pick a game from the list." });
+      addToast({ title: uiText("AppStrings.PickAGameFromTheList") });
       return;
     }
 
     if (guesses.some((guess) => guess.slug === match.slug)) {
-      addToast({ title: "You already guessed that game." });
+      addToast({ title: uiText("AppStrings.YouAlreadyGuessedThatGame") });
       return;
     }
 
@@ -651,7 +655,7 @@ export default function Down2GuessPage() {
       setGuessInput("");
       setGuessOptionsOpen(false);
     } catch (error) {
-      addToast({ title: "Failed to fetch that game." });
+      addToast({ title: uiText("AppStrings.FailedToFetchThatGame") });
     }
   };
 
@@ -792,7 +796,7 @@ export default function Down2GuessPage() {
             >
               <Avatar
                 src={developer.profilePicture}
-                alt={`${developer.name}'s avatar`}
+                alt={uiText("AppStrings.Value0SAvatar", { value0: developer.name })}
                 fallback={developer.name}
                 size={20}
               />
@@ -844,8 +848,7 @@ export default function Down2GuessPage() {
                 : "0 1px 5px rgba(0, 0, 0, 0.75)",
           }}
         >
-          Down2Guess
-        </p>
+           {uiText("Navbar.Down2Guess.Title")} </p>
         <p
           className="mt-1 text-sm"
           style={{
@@ -857,12 +860,11 @@ export default function Down2GuessPage() {
                 : "0 1px 4px rgba(0, 0, 0, 0.8)",
           }}
         >
-          Guess the mystery game in 10 tries
-        </p>
+           {uiText("AppStrings.GuessTheMysteryGameIn10Tries")} </p>
         <Vstack align="center" gap={1} className="mt-3">
           <Hstack
             className="gap-1"
-            aria-label={`${livesLeft} of ${MAX_LIVES} lives remaining`}
+            aria-label={uiText("AppStrings.Value0OfValue1LivesRemaining", { value0: livesLeft, value1: MAX_LIVES })}
           >
             {Array.from({ length: MAX_LIVES }).map((_, index) => (
               <Icon
@@ -877,8 +879,7 @@ export default function Down2GuessPage() {
             ))}
           </Hstack>
           <Text size="xs" color="textFaded">
-            {livesLeft} {livesLeft === 1 ? "life" : "lives"} left
-          </Text>
+            {livesLeft} {livesLeft === 1 ? uiText("AppStrings.Life") : uiText("AppStrings.Lives")}  {uiText("AppStrings.Left")} </Text>
         </Vstack>
       </header>
 
@@ -911,11 +912,11 @@ export default function Down2GuessPage() {
                     setGuessOptionsOpen(Boolean(value.trim()));
                   }}
                   placeholder={
-                    loading ? "Loading games..." : "Type a game name..."
+                    loading ? uiText("AppStrings.LoadingGames") : uiText("AppStrings.TypeAGameName")
                   }
                   fullWidth
                   disabled={loading || hasWon || hasLost}
-                  aria-label="Game name"
+                  aria-label={uiText("AppStrings.GameName")}
                   aria-autocomplete="list"
                   aria-expanded={guessOptionsOpen && guessOptions.length > 0}
                   aria-controls="down2guess-options"
@@ -961,17 +962,14 @@ export default function Down2GuessPage() {
             onClick={handleGuess}
             disabled={loading || hasWon || hasLost}
           >
-            Guess
-          </Button>
+             {uiText("AppStrings.Guess")} </Button>
           {showHintButton && (
             <Button icon="lightbulb" color="yellow" onClick={handleHint}>
-              Hint (-1 life)
-            </Button>
+               {uiText("AppStrings.Hint1Life")} </Button>
           )}
           {(hasWon || hasLost) && (
             <Button icon="rotateccw" onClick={resetGame}>
-              New Game
-            </Button>
+               {uiText("AppStrings.NewGame")} </Button>
           )}
         </Hstack>
         {!loading && answer && (hasWon || hasLost) && (
@@ -981,18 +979,18 @@ export default function Down2GuessPage() {
             color={hasWon ? "green" : "red"}
             align="center"
           >
-            {hasWon ? "You got it!" : "Out of lives."} The game was{" "}
+            {hasWon ? uiText("AppStrings.YouGotIt") : uiText("AppStrings.OutOfLives")}  {uiText("AppStrings.TheGameWas")}{" "}
             <Link href={`/g/${answer.slug}`}>
-              {answerDisplay?.name ?? answer.name ?? "Unknown game"}
+              {answerDisplay?.name ?? answer.name ?? uiText("AppStrings.UnknownGame")}
             </Link>
             .
           </Text>
         )}
       </Vstack>
 
-      <section aria-label="Guesses">
+      <section aria-label={uiText("AppStrings.Guesses")}>
           <Vstack align="center" gap={2} className="mb-3 text-center">
-            <Hstack className="flex-wrap gap-3" aria-label="Comparison legend">
+            <Hstack className="flex-wrap gap-3" aria-label={uiText("AppStrings.ComparisonLegend")}>
               {([
                 ["green", "Match"],
                 ["yellow", "Close"],
@@ -1010,8 +1008,7 @@ export default function Down2GuessPage() {
               ))}
             </Hstack>
             <Text size="xs" color="textFaded">
-              Arrows show whether the answer is higher or lower.
-            </Text>
+               {uiText("AppStrings.ArrowsShowWhetherTheAnswerIsHigherOrLower")} </Text>
           </Vstack>
           <Table
             classNames={{
@@ -1039,7 +1036,7 @@ export default function Down2GuessPage() {
                         : {}),
                     }}
                   >
-                    {item.label}
+                    {uiText(item.label)}
                   </TableColumn>
                 );
               })}
@@ -1049,8 +1046,7 @@ export default function Down2GuessPage() {
                 <TableRow style={{ borderBottom: columnDivider }}>
                   <TableCell colSpan={CATEGORY_LABELS.length}>
                     <Text size="sm" color="textFaded" className="py-4">
-                      No guesses yet. Choose a game above to get started.
-                    </Text>
+                       {uiText("AppStrings.NoGuessesYetChooseAGameAboveToGetStarted")} </Text>
                   </TableCell>
                 </TableRow>
               )}

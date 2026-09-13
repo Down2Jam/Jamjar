@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo } from "react";
 import { useAdminImages } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -45,6 +48,7 @@ const formatBytes = (value: number) => {
 };
 
 export default function AdminImages() {
+  const uiText = useUiTranslations();
   const { data, isLoading: loading, isError } = useAdminImages();
   const typedData = data as AdminImagesResponse | undefined;
   const { colors } = useTheme();
@@ -63,11 +67,9 @@ export default function AdminImages() {
         <Hstack justify="between" className="flex-wrap gap-2">
           <Vstack align="start" gap={1}>
             <Text size="2xl" weight="bold">
-              Image Library
-            </Text>
+               {uiText("AppStrings.ImageLibrary")} </Text>
             <Text size="sm" color="textFaded">
-              Uploaded images with usage counts and cleanup status.
-            </Text>
+               {uiText("AppStrings.UploadedImagesWithUsageCountsAndCleanupStatus")} </Text>
           </Vstack>
           <Button
             icon="rotateccw"
@@ -77,8 +79,7 @@ export default function AdminImages() {
               })
             }
           >
-            Refresh
-          </Button>
+             {uiText("AppStrings.Refresh")} </Button>
         </Hstack>
       </Card>
 
@@ -86,8 +87,7 @@ export default function AdminImages() {
         <Card>
           <Vstack align="start" gap={1}>
             <Text size="sm" color="textFaded">
-              Total Files
-            </Text>
+               {uiText("AppStrings.TotalFiles")} </Text>
             <Text size="2xl" weight="bold">
               {typedData?.totalFiles ?? 0}
             </Text>
@@ -96,8 +96,7 @@ export default function AdminImages() {
         <Card>
           <Vstack align="start" gap={1}>
             <Text size="sm" color="textFaded">
-              Total Size
-            </Text>
+               {uiText("AppStrings.TotalSize")} </Text>
             <Text size="2xl" weight="bold">
               {formatBytes(typedData?.totalSize ?? 0)}
             </Text>
@@ -106,14 +105,12 @@ export default function AdminImages() {
         <Card>
           <Vstack align="start" gap={1}>
             <Text size="sm" color="textFaded">
-              Unused Files
-            </Text>
+               {uiText("AppStrings.UnusedFiles")} </Text>
             <Text size="2xl" weight="bold">
               {unusedCount}
             </Text>
             <Text size="xs" color="textFaded">
-              Auto-deleted after 7 days unused.
-            </Text>
+               {uiText("AppStrings.AutoDeletedAfter7DaysUnused")} </Text>
           </Vstack>
         </Card>
       </section>
@@ -128,18 +125,17 @@ export default function AdminImages() {
             bottomContent={
               typedData?.deletedCount ? (
                 <Text size="xs" color="textFaded">
-                  Deleted {typedData.deletedCount} stale files (
-                  {formatBytes(typedData.deletedSize)}).
+                   {uiText("AppStrings.Deleted")} {typedData.deletedCount}  {uiText("AppStrings.StaleFiles")} {formatBytes(typedData.deletedSize)}).
                 </Text>
               ) : null
             }
           >
             <TableHeader>
-              <TableColumn>Preview</TableColumn>
-              <TableColumn>Name</TableColumn>
-              <TableColumn>Size</TableColumn>
-              <TableColumn>Usage</TableColumn>
-              <TableColumn>Last Modified</TableColumn>
+              <TableColumn>{uiText("AppStrings.Preview")}</TableColumn>
+              <TableColumn>{uiText("Settings.Name.Title")}</TableColumn>
+              <TableColumn>{uiText("AppStrings.Size")}</TableColumn>
+              <TableColumn>{uiText("AppStrings.Usage")}</TableColumn>
+              <TableColumn>{uiText("AppStrings.LastModified")}</TableColumn>
             </TableHeader>
             <TableBody>
               {typedData?.files?.length ? (
@@ -179,8 +175,7 @@ export default function AdminImages() {
                 <TableRow>
                   <TableCell colSpan={5}>
                     <Text size="sm" color="textFaded">
-                      No images found.
-                    </Text>
+                       {uiText("AppStrings.NoImagesFound")} </Text>
                   </TableCell>
                 </TableRow>
               )}

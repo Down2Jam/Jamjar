@@ -14,6 +14,7 @@ import {
   Bell,
   Book,
   BookCopy,
+  BookUser,
   Bug,
   Calendar,
   Calendar1,
@@ -224,6 +225,7 @@ const iconMap = {
   bell: Bell,
   book: Book,
   bookcopy: BookCopy,
+  bookuser: BookUser,
   broadcast: Tv,
   bug: Bug,
   calendar: Calendar,
@@ -401,10 +403,11 @@ export interface IconProps extends Omit<LucideProps, "color" | "size"> {
   name?: IconName;
   size?: number;
   color?: Color;
+  decorative?: boolean;
 }
 
 const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
-  { name = "circlehelp", size = 24, color, ...rest },
+  { name = "circlehelp", size = 24, color, decorative = false, ...rest },
   ref,
 ) {
   const { colors } = useTheme();
@@ -418,6 +421,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
       color={color ? colors[color] : undefined}
       {...(name === "play" ? { fill: "currentColor" } : {})}
       {...rest}
+      {...(decorative ? { title: "", "aria-hidden": true as const, focusable: false as const } : {})}
     />
   );
 });

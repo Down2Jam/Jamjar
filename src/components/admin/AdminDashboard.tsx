@@ -1,6 +1,11 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useEffect, useMemo, useState } from "react";
+import { useSelf } from "@/hooks/queries";
+import { useTranslations } from "@/compat/next-intl";
 import { getCurrentJam, getJams } from "@/helpers/jam";
 import type { ActiveJamResponse } from "@/helpers/jam";
 import { getEvents } from "@/requests/event";
@@ -23,6 +28,9 @@ function formatEventTime(value: string | Date) {
 }
 
 export default function AdminDashboard() {
+  const uiText = useUiTranslations();
+  const { data: user } = useSelf();
+  const t = useTranslations();
   const [activeJam, setActiveJam] = useState<ActiveJamResponse | null>(null);
   const [jams, setJams] = useState<JamType[]>([]);
   const [events, setEvents] = useState<EventType[]>([]);
@@ -84,23 +92,17 @@ export default function AdminDashboard() {
           <Vstack align="stretch" gap={3}>
             <Vstack gap={1} align="stretch">
               <Text size="3xl" weight="bold">
-                Admin Dashboard
-              </Text>
+                 {uiText("AppStrings.AdminDashboard")} </Text>
               <Text size="sm" color="textFaded">
-                Keep jams, events, results, and theme rounds organized in one
-                place.
-              </Text>
+                 {uiText("AppStrings.KeepJamsEventsResultsAndThemeRoundsOrganized")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="blue" href="/admin/jams" icon="calendar">
-                Manage Jams
-              </Button>
+                 {uiText("AppStrings.ManageJams")} </Button>
               <Button color="green" href="/admin/events" icon="calendarplus">
-                Manage Events
-              </Button>
+                 {uiText("AppStrings.ManageEvents")} </Button>
               <Button color="yellow" href="/admin/results" icon="trophy">
-                Results Preview
-              </Button>
+                 {uiText("AppStrings.ResultsPreview")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -108,34 +110,31 @@ export default function AdminDashboard() {
         <Card>
           <Vstack align="stretch" gap={3}>
             <Text size="lg" weight="semibold">
-              Live Overview
-            </Text>
+               {uiText("AppStrings.LiveOverview")} </Text>
             {loading ? (
               <Spinner />
             ) : (
               <Vstack align="stretch" gap={2}>
                 <Vstack gap={0} align="stretch">
                   <Text size="sm" color="textFaded">
-                    Active Jam
-                  </Text>
+                     {uiText("AppStrings.ActiveJam2")} </Text>
                   <Text size="lg" weight="semibold">
-                    {activeJam?.jam?.name || latestJam?.name || "No active jam"}
+                    {activeJam?.jam?.name || latestJam?.name || uiText("AppStrings.NoActiveJam")}
                   </Text>
                   <Text size="xs" color="textFaded">
-                    {activeJam?.phase || "Phase not available"}
+                    {activeJam?.phase || uiText("AppStrings.PhaseNotAvailable")}
                   </Text>
                 </Vstack>
                 <Vstack gap={0} align="stretch">
                   <Text size="sm" color="textFaded">
-                    Upcoming Event
-                  </Text>
+                     {uiText("AppStrings.UpcomingEvent")} </Text>
                   <Text size="lg" weight="semibold">
-                    {nextEvent?.name || "No upcoming events"}
+                    {nextEvent?.name || uiText("AppStrings.NoUpcomingEvents")}
                   </Text>
                   <Text size="xs" color="textFaded">
                     {nextEvent
                       ? formatEventTime(nextEvent.startTime)
-                      : "Create the next schedule block."}
+                      : uiText("AppStrings.CreateTheNextScheduleBlock")}
                   </Text>
                 </Vstack>
               </Vstack>
@@ -148,20 +147,42 @@ export default function AdminDashboard() {
         <Card className="h-full">
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
+              <Text size="lg" weight="semibold">{uiText("AppStrings.BugReports")}</Text>
+              <Text size="sm" color="textFaded">{uiText("AppStrings.ReviewIssuesTrackProgressAndRecordFixes")}</Text>
+            </Vstack>
+            <Hstack wrap>
+              <Button color="blue" href="/admin/bugs" icon="bug">{uiText("AppStrings.BugReports")}</Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+
+        {user?.admin && user.slug === "ategon" && (
+          <Card className="h-full">
+            <Vstack align="stretch">
+              <Vstack gap={1} align="stretch">
+                <Text size="lg" weight="semibold">{t("AdminJamGames.Title")}</Text>
+                <Text size="sm" color="textFaded">{t("AdminJamGames.Description")}</Text>
+              </Vstack>
+              <Hstack wrap>
+                <Button color="green" href="/admin/jam-games" icon="gamepad2">{t("AdminJamGames.Title")}</Button>
+              </Hstack>
+            </Vstack>
+          </Card>
+        )}
+
+        <Card className="h-full">
+          <Vstack align="stretch">
+            <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Events
-              </Text>
+                 {uiText("Navbar.Events.Title")} </Text>
               <Text size="sm" color="textFaded">
-                Build the schedule and keep streams in sync.
-              </Text>
+                 {uiText("AppStrings.BuildTheScheduleAndKeepStreamsInSync")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="blue" href="/create-event" icon="calendarplus">
-                Create Event
-              </Button>
+                 {uiText("AppStrings.CreateEvent")} </Button>
               <Button href="/admin/events" icon="calendar">
-                Manage Events
-              </Button>
+                 {uiText("AppStrings.ManageEvents")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -170,19 +191,15 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Jams
-              </Text>
+                 {uiText("AppStrings.Jams")} </Text>
               <Text size="sm" color="textFaded">
-                Review jam timelines and phase durations.
-              </Text>
+                 {uiText("AppStrings.ReviewJamTimelinesAndPhaseDurations")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="green" href="/admin/jams" icon="calendarcog">
-                Jam Overview
-              </Button>
+                 {uiText("AppStrings.JamOverview")} </Button>
               <Button href="/about" icon="info">
-                Public Jam Page
-              </Button>
+                 {uiText("AppStrings.PublicJamPage")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -191,19 +208,15 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Game Results
-              </Text>
+                 {uiText("AppStrings.GameResults")} </Text>
               <Text size="sm" color="textFaded">
-                Preview leaderboards before publishing them.
-              </Text>
+                 {uiText("AppStrings.PreviewLeaderboardsBeforePublishingThem")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="yellow" href="/admin/results" icon="trophy">
-                Results Preview
-              </Button>
+                 {uiText("AppStrings.ResultsPreview")} </Button>
               <Button href="/results" icon="arrowupright">
-                Public Results
-              </Button>
+                 {uiText("AppStrings.PublicResults")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -212,11 +225,9 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Theme Suggestions
-              </Text>
+                 {uiText("Navbar.ThemeSuggestions.Title")} </Text>
               <Text size="sm" color="textFaded">
-                Review ideas coming in for the next jam.
-              </Text>
+                 {uiText("AppStrings.ReviewIdeasComingInForTheNextJam")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button
@@ -224,11 +235,9 @@ export default function AdminDashboard() {
                 href="/admin/themes/suggestions"
                 icon="sparkles"
               >
-                Suggestion Results
-              </Button>
+                 {uiText("AppStrings.SuggestionResults")} </Button>
               <Button href="/theme-suggestions" icon="arrowupright">
-                Suggestion Page
-              </Button>
+                 {uiText("AppStrings.SuggestionPage")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -237,11 +246,9 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Theme Elimination
-              </Text>
+                 {uiText("Navbar.ThemeElimination.Title")} </Text>
               <Text size="sm" color="textFaded">
-                Track elimination scores and shortlists.
-              </Text>
+                 {uiText("AppStrings.TrackEliminationScoresAndShortlists")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button
@@ -249,11 +256,9 @@ export default function AdminDashboard() {
                 href="/admin/themes/elimination"
                 icon="swords"
               >
-                Elimination Results
-              </Button>
+                 {uiText("AppStrings.EliminationResults")} </Button>
               <Button href="/theme-elimination" icon="arrowupright">
-                Elimination Page
-              </Button>
+                 {uiText("AppStrings.EliminationPage")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -262,19 +267,15 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Theme Voting
-              </Text>
+                 {uiText("Navbar.ThemeVoting.Title")} </Text>
               <Text size="sm" color="textFaded">
-                Monitor the voting round and its shortlist.
-              </Text>
+                 {uiText("AppStrings.MonitorTheVotingRoundAndItsShortlist")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="yellow" href="/admin/themes/voting" icon="vote">
-                Voting Results
-              </Button>
+                 {uiText("AppStrings.VotingResults")} </Button>
               <Button href="/theme-voting" icon="arrowupright">
-                Voting Page
-              </Button>
+                 {uiText("AppStrings.VotingPage")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -283,16 +284,13 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Emoji Library
-              </Text>
+                 {uiText("AppStrings.EmojiLibrary")} </Text>
               <Text size="sm" color="textFaded">
-                Add custom emoji for posts, comments, and reactions.
-              </Text>
+                 {uiText("AppStrings.AddCustomEmojiForPostsCommentsAndReactions")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="blue" href="/admin/emojis" icon="sparkles">
-                Manage Emojis
-              </Button>
+                 {uiText("AppStrings.ManageEmojis")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -301,16 +299,13 @@ export default function AdminDashboard() {
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
-                Image Library
-              </Text>
+                 {uiText("AppStrings.ImageLibrary")} </Text>
               <Text size="sm" color="textFaded">
-                Track uploaded images and unused files.
-              </Text>
+                 {uiText("AppStrings.TrackUploadedImagesAndUnusedFiles")} </Text>
             </Vstack>
             <Hstack wrap>
               <Button color="blue" href="/admin/images" icon="images">
-                View Images
-              </Button>
+                 {uiText("AppStrings.ViewImages")} </Button>
             </Hstack>
           </Vstack>
         </Card>

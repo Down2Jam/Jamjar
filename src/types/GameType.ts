@@ -29,6 +29,7 @@ export type GameEmbedAspectRatio =
   | "10 / 16";
 
 export interface GameType {
+  canViewUnpublished?: boolean;
   id: number;
   pageVersion?: PageVersion;
   slug: string;

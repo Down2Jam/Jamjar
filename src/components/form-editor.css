@@ -1,0 +1,99 @@
+.form-editor-panel,
+.post-editor-embedded {
+  --editor-border: color-mix(in srgb, var(--editor-text) 5%, var(--editor-surface));
+  width: 100%;
+  min-width: 0;
+  color: var(--editor-text);
+}
+
+.form-editor-panel {
+  background: var(--editor-surface);
+  border: 1px solid var(--editor-border);
+  border-radius: 12px;
+  padding: 0 24px 12px;
+}
+
+.post-editor-form {
+  gap: 0;
+}
+
+.settings-editor-panel > :last-child {
+  border-bottom: 0;
+}
+
+.settings-editor-panel > .game-editor-block > div {
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .form-editor-panel {
+    padding-inline: 16px;
+  }
+}
+
+/* The feed composer remains stacked even on wide screens. */
+.post-editor-embedded .game-editor-row > div {
+  display: flex;
+  gap: 12px !important;
+}
+
+.settings-editor-panel .game-editor-block > div > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.settings-editor-panel {
+  padding: 8px 32px 16px;
+}
+
+.settings-editor-panel > .game-editor-panel-heading {
+  margin: -8px -32px 0;
+  padding: 28px 32px;
+}
+
+.settings-editor-panel > :is(.game-editor-row, .game-editor-block) {
+  padding-block: 28px;
+}
+
+.settings-editor-panel > .game-editor-block > div {
+  gap: 24px !important;
+}
+
+/* Compact actions should not stretch to fill a field's grid column. */
+.settings-editor-panel > .game-editor-row > div > :is(button, select, .relative.inline-block) {
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .settings-editor-panel > .game-editor-row > div {
+    grid-template-columns: 220px minmax(0, 1fr);
+    column-gap: 40px !important;
+    row-gap: 16px !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .settings-banner-input button > div {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .settings-editor-panel {
+    padding: 4px 20px 12px;
+  }
+
+  .settings-editor-panel > .game-editor-panel-heading {
+    margin: -4px -20px 0;
+    padding: 24px 20px;
+  }
+
+  .settings-editor-panel > :is(.game-editor-row, .game-editor-block) {
+    padding-block: 24px;
+  }
+
+  .settings-editor-panel > .game-editor-row > div {
+    gap: 16px !important;
+  }
+}

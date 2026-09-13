@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import MentionedContent from "@/components/mentions/MentionedContent";
 import ThemedProse from "@/components/themed-prose";
 import { useParams } from "@/compat/next-navigation";
@@ -31,15 +34,16 @@ function eventStatus(startTime: Date, endTime: Date) {
 }
 
 export default function EventPage() {
+  const uiText = useUiTranslations();
   const { slug } = useParams();
   const { data: event, isLoading, isError, refetch } = useEvent(`${slug}`);
   const { colors } = useTheme();
 
   usePageMetadata({
-    title: event?.name ?? "Event",
+    title: event?.name ?? uiText("AppStrings.Event"),
     description: event?.content
       ? event.content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
-      : "View this Down2Jam community event.",
+      : uiText("AppStrings.ViewThisDown2JamCommunityEvent"),
     canonical: `/e/${slug}`,
     image: "/images/D2J_Icon.png",
   });
@@ -56,9 +60,9 @@ export default function EventPage() {
     return (
       <Card className="mx-auto max-w-xl">
         <Vstack gap={3} className="py-8 text-center">
-          <Text size="xl" weight="semibold">Event could not be loaded</Text>
-          <Text color="textFaded">The event may no longer exist, or the server could not be reached.</Text>
-          <Button onClick={() => void refetch()}>Try again</Button>
+          <Text size="xl" weight="semibold">{uiText("AppStrings.EventCouldNotBeLoaded")}</Text>
+          <Text color="textFaded">{uiText("AppStrings.TheEventMayNoLongerExistOrTheServerCouldNotBeReached")}</Text>
+          <Button onClick={() => void refetch()}>{uiText("AppStrings.TryAgain")}</Button>
         </Vstack>
       </Card>
     );
@@ -72,8 +76,7 @@ export default function EventPage() {
   return (
     <main className="mx-auto w-full max-w-5xl pb-10">
       <Button href="/events" variant="ghost" size="sm" className="mb-4">
-        ← All events
-      </Button>
+         {uiText("AppStrings.AllEvents")} </Button>
 
       <Card padding={0} radius="md" className="overflow-hidden">
         <header
@@ -101,7 +104,7 @@ export default function EventPage() {
             {event.host && (
               <a href={`/u/${event.host.slug}`} className="mt-4 inline-flex items-center gap-2 hover:opacity-80">
                 <Avatar size={28} src={event.host.profilePicture ?? undefined} alt={event.host.name} />
-                <Text size="sm" color="textFaded">Hosted by {event.host.name}</Text>
+                <Text size="sm" color="textFaded">{uiText("AppStrings.HostedBy")} {event.host.name}</Text>
               </a>
             )}
           </div>
@@ -109,12 +112,12 @@ export default function EventPage() {
 
         <div className="grid gap-8 px-5 py-7 sm:px-8 sm:py-9 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <section>
-            <Text size="xl" weight="semibold">About the event</Text>
+            <Text size="xl" weight="semibold">{uiText("About.Title")}</Text>
             <ThemedProse className="mt-3 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0">
               {event.content ? (
                 <MentionedContent html={event.content} className="break-words" />
               ) : (
-                <Text color="textFaded">No event description was provided.</Text>
+                <Text color="textFaded">{uiText("AppStrings.NoEventDescriptionWasProvided")}</Text>
               )}
             </ThemedProse>
           </section>
@@ -127,14 +130,14 @@ export default function EventPage() {
               <div className="flex gap-3">
                 <CalendarDays size={18} className="mt-0.5 shrink-0" style={{ color: colors["blue"] }} />
                 <div>
-                  <Text size="xs" color="textFaded">Starts</Text>
+                  <Text size="xs" color="textFaded">{uiText("AppStrings.Starts")}</Text>
                   <Text size="sm" weight="semibold">{eventDateTimeFormat.format(start)}</Text>
                 </div>
               </div>
               <div className="mt-4 flex gap-3 border-t pt-4" style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 8%, transparent)` }}>
                 <Clock3 size={18} className="mt-0.5 shrink-0" style={{ color: colors["blue"] }} />
                 <div>
-                  <Text size="xs" color="textFaded">Ends</Text>
+                  <Text size="xs" color="textFaded">{uiText("AppStrings.Ends")}</Text>
                   <Text size="sm" weight="semibold">{eventDateTimeFormat.format(end)}</Text>
                 </div>
               </div>
@@ -149,8 +152,7 @@ export default function EventPage() {
                 className="w-full justify-center"
                 leftSlot={<ExternalLink size={16} aria-hidden="true" />}
               >
-                Open event link
-              </Button>
+                 {uiText("AppStrings.OpenEventLink")} </Button>
             )}
           </aside>
         </div>

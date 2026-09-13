@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo, useState } from "react";
 import { FeaturedStreamerType } from "@/types/FeaturedStreamerType";
 import NextImage from "@/compat/next-image";
@@ -40,6 +43,7 @@ function hasD2JamTag(streamer: FeaturedStreamerType) {
 }
 
 export default function SidebarStreams() {
+  const uiText = useUiTranslations();
   const { data: rawStreamers = [] as FeaturedStreamerType[], isLoading } =
     useStreamers();
   const [currentIndex, setCurrentIndex] = useState(0); // State to track the currently displayed streamer
@@ -109,8 +113,7 @@ export default function SidebarStreams() {
   return (
     <div className="mt-12 flex w-full flex-col items-center gap-2">
       <SidebarSectionTitle>
-        Featured Streams
-      </SidebarSectionTitle>
+         {uiText("AppStrings.FeaturedStreams")} </SidebarSectionTitle>
 
       <Modal
         isOpen={viewerOpen}
@@ -131,7 +134,7 @@ export default function SidebarStreams() {
             <iframe
               key={currentStreamer.userName}
               src={twitchEmbedUrl}
-              title={`${currentStreamer.userName}'s Twitch stream`}
+              title={uiText("AppStrings.Value0STwitchStream", { value0: currentStreamer.userName })}
               className="h-full w-full"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
@@ -143,7 +146,7 @@ export default function SidebarStreams() {
               <Button
                 onClick={handlePrev}
                 icon="chevronleft"
-                aria-label="Previous stream"
+                aria-label={uiText("AppStrings.PreviousStream2")}
                 variant="ghost"
               />
             </Tooltip>
@@ -155,14 +158,13 @@ export default function SidebarStreams() {
                 size="sm"
                 variant="ghost"
               >
-                Open on Twitch
-              </Button>
+                 {uiText("AppStrings.OpenOnTwitch")} </Button>
             </div>
             <Tooltip content="Next Stream" position="top">
               <Button
                 onClick={handleNext}
                 icon="chevronright"
-                aria-label="Next stream"
+                aria-label={uiText("AppStrings.NextStream2")}
                 variant="ghost"
               />
             </Tooltip>
@@ -175,7 +177,7 @@ export default function SidebarStreams() {
         tabIndex={0}
         aria-haspopup="dialog"
         aria-expanded={viewerOpen}
-        aria-label={`Watch ${currentStreamer.userName}'s Twitch stream`}
+        aria-label={uiText("AppStrings.WatchValue0STwitchStream", { value0: currentStreamer.userName })}
         onClick={() => setViewerOpen(true)}
         onKeyDown={(event) => {
           if (event.key === "Enter" || event.key === " ") {
@@ -190,7 +192,7 @@ export default function SidebarStreams() {
             src={currentStreamer.thumbnailUrl}
             width={480}
             height={270}
-            alt={`${currentStreamer.userName}'s thumbnail`}
+            alt={uiText("AppStrings.Value0SThumbnail", { value0: currentStreamer.userName })}
             className="aspect-video h-auto w-full rounded-2xl object-cover brightness-75"
           />
         </div>
@@ -232,9 +234,7 @@ export default function SidebarStreams() {
               }
               width={120}
               height={68}
-              alt={`${
-                streamers[0 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
-              }'s thumbnail`}
+              alt={uiText("AppStrings.Value0SThumbnail", { value0: streamers[0 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName })}
               className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 0 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
@@ -263,9 +263,7 @@ export default function SidebarStreams() {
               }
               width={120}
               height={68}
-              alt={`${
-                streamers[1 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
-              }'s thumbnail`}
+              alt={uiText("AppStrings.Value0SThumbnail", { value0: streamers[1 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName })}
               className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 1 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"
@@ -294,9 +292,7 @@ export default function SidebarStreams() {
               }
               width={120}
               height={68}
-              alt={`${
-                streamers[2 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName
-              }'s thumbnail`}
+              alt={uiText("AppStrings.Value0SThumbnail", { value0: streamers[2 + 3 * Math.floor(safeCurrentIndex / 3.0)].userName })}
               className={`h-auto w-1/4 max-w-[120px] rounded-xl hover:cursor-pointer inset-shadow-sm inset-shadow-black ${
                 safeCurrentIndex === 2 + 3 * Math.floor(safeCurrentIndex / 3.0)
                   ? "brightness-100 hover:brightness-[1.25]"

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { hasCookie } from "@/helpers/cookie";
 import {
   deleteDocumentationDocument,
@@ -51,6 +54,7 @@ export default function DocumentationSectionPage({
   defaultToFirstDocument = true,
   showPressKitGallery = false,
 }: Props) {
+  const uiText = useUiTranslations();
   const { data, isLoading } = useDocumentationDocuments(section);
   const { data: user } = useSelf(hasCookie("token"));
   const searchParams = useSearchParams();
@@ -126,7 +130,7 @@ export default function DocumentationSectionPage({
 
     if (!firstResponse.ok || !secondResponse.ok) {
       setDocuments(previousDocuments);
-      addToast({ title: "Failed to reorder documents" });
+      addToast({ title: uiText("AppStrings.FailedToReorderDocuments") });
       return;
     }
   }
@@ -173,8 +177,7 @@ export default function DocumentationSectionPage({
                   color="blue"
                   className="w-full justify-start"
                 >
-                  New document
-                </Button>
+                   {uiText("AppStrings.NewDocument")} </Button>
               ) : null}
             </div>
 
@@ -243,8 +246,7 @@ export default function DocumentationSectionPage({
                 })}
                 {documents.length === 0 ? (
                   <Text color="textFaded" size="sm">
-                    No documents have been added here yet.
-                  </Text>
+                     {uiText("AppStrings.NoDocumentsHaveBeenAddedHereYet")} </Text>
                 ) : null}
               </Vstack>
             </div>
@@ -258,7 +260,7 @@ export default function DocumentationSectionPage({
             <PressKitGallery />
           ) : (
             <Card>
-              <Text color="textFaded">No document selected.</Text>
+              <Text color="textFaded">{uiText("AppStrings.NoDocumentSelected")}</Text>
             </Card>
           )
         ) : (
@@ -269,7 +271,7 @@ export default function DocumentationSectionPage({
                   <Input
                     value={draftTitle}
                     onChange={(event) => setDraftTitle(event.target.value)}
-                    placeholder="Document title"
+                    placeholder={uiText("AppStrings.DocumentTitle")}
                   />
                   <DocumentationIconPicker
                     value={draftIcon}
@@ -288,7 +290,7 @@ export default function DocumentationSectionPage({
                       onClick={async () => {
                         if (!draftTitle.trim() || !draftContent.trim()) {
                           addToast({
-                            title: "Please enter a title and content",
+                            title: uiText("AppStrings.PleaseEnterATitleAndContent"),
                           });
                           return;
                         }
@@ -304,7 +306,7 @@ export default function DocumentationSectionPage({
                         );
 
                         if (!response.ok) {
-                          addToast({ title: "Failed to update document" });
+                          addToast({ title: uiText("AppStrings.FailedToUpdateDocument") });
                           setSaving(false);
                           return;
                         }
@@ -316,15 +318,14 @@ export default function DocumentationSectionPage({
                             document.id === updated.id ? updated : document,
                           ),
                         );
-                        addToast({ title: "Document updated" });
+                        addToast({ title: uiText("AppStrings.DocumentUpdated") });
                         setSaving(false);
                         router.replace(`${basePath}/${updated.slug}`, {
                           scroll: false,
                         });
                       }}
                     >
-                      Save
-                    </Button>
+                       {uiText("Settings.Save.Title")} </Button>
                     <Button
                       onClick={() => {
                         setDraftTitle(activeDocument.title);
@@ -335,8 +336,7 @@ export default function DocumentationSectionPage({
                         });
                       }}
                     >
-                      Cancel
-                    </Button>
+                       {uiText("AppStrings.Cancel")} </Button>
                   </Hstack>
                 </>
               ) : (
@@ -365,8 +365,7 @@ export default function DocumentationSectionPage({
                             );
                           }}
                         >
-                          Edit
-                        </Button>
+                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
                         <Button
                           color="red"
                           icon="trash"
@@ -376,7 +375,7 @@ export default function DocumentationSectionPage({
                             );
 
                             if (!response.ok) {
-                              addToast({ title: "Failed to delete document" });
+                              addToast({ title: uiText("AppStrings.FailedToDeleteDocument") });
                               return;
                             }
 
@@ -384,7 +383,7 @@ export default function DocumentationSectionPage({
                               (document) => document.id !== activeDocument.id,
                             );
                             setDocuments(remainingDocuments);
-                            addToast({ title: "Document deleted" });
+                            addToast({ title: uiText("AppStrings.DocumentDeleted") });
                             router.push(
                               remainingDocuments[0]
                                 ? `${basePath}/${remainingDocuments[0].slug}`
@@ -392,8 +391,7 @@ export default function DocumentationSectionPage({
                             );
                           }}
                         >
-                          Delete
-                        </Button>
+                           {uiText("ThemeSuggestions.Delete.Title")} </Button>
                       </Hstack>
                     ) : null}
                   </Vstack>

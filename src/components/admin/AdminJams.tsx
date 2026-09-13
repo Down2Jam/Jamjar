@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useMemo } from "react";
 import { useCurrentJam, useJams } from "@/hooks/queries";
 import type { JamType } from "@/types/JamType";
@@ -61,6 +64,7 @@ function formatPhaseHours(jam: JamType) {
 }
 
 export default function AdminJams() {
+  const uiText = useUiTranslations();
   const { data: activeJam, isLoading: activeJamLoading } = useCurrentJam();
   const { data: rawJams, isLoading: jamsLoading } = useJams();
 
@@ -83,19 +87,16 @@ export default function AdminJams() {
       <section className="flex flex-col gap-3">
         <Vstack align="stretch" gap={1}>
           <Text size="3xl" weight="bold">
-            Jam Overview
-          </Text>
+             {uiText("AppStrings.JamOverview")} </Text>
           <Text size="sm" color="textFaded">
-            Keep track of jam timelines, phases, and durations.
-          </Text>
+             {uiText("AppStrings.KeepTrackOfJamTimelinesPhasesAndDurations")} </Text>
         </Vstack>
         <Hstack wrap>
           <Chip color="blue" icon="calendar">
-            {totalJamCount} tracked jams
-          </Chip>
+            {totalJamCount}  {uiText("AppStrings.TrackedJams")} </Chip>
           {activeJam?.jam && (
             <Chip color="green" icon="sparkles">
-              Active: {activeJam.jam.name} ({activeJam.phase})
+               {uiText("AppStrings.Active")} {activeJam.jam.name} ({activeJam.phase})
             </Chip>
           )}
         </Hstack>
@@ -104,22 +105,20 @@ export default function AdminJams() {
       <Card>
         <Vstack align="stretch" gap={3}>
           <Text size="lg" weight="semibold">
-            Jam Timeline
-          </Text>
+             {uiText("AppStrings.JamTimeline")} </Text>
           {loading ? (
             <Spinner />
           ) : jams.length === 0 ? (
             <Text size="sm" color="textFaded">
-              No jams available yet.
-            </Text>
+               {uiText("AppStrings.NoJamsAvailableYet")} </Text>
           ) : (
             <Table>
               <TableHeader>
-                <TableColumn>Jam</TableColumn>
-                <TableColumn>Start</TableColumn>
-                <TableColumn>Phases</TableColumn>
-                <TableColumn>Total</TableColumn>
-                <TableColumn>Actions</TableColumn>
+                <TableColumn>{uiText("AppStrings.Jam")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Start")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Phases")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Total")}</TableColumn>
+                <TableColumn>{uiText("AppStrings.Actions")}</TableColumn>
               </TableHeader>
               <TableBody>
                 {jams.map((jam) => {
@@ -141,8 +140,7 @@ export default function AdminJams() {
                             <Text size="sm">{jam.name}</Text>
                             {isActive && (
                               <Text size="xs" color="textFaded">
-                                Active jam
-                              </Text>
+                                 {uiText("AppStrings.ActiveJam")} </Text>
                             )}
                           </Vstack>
                         </Hstack>
@@ -156,7 +154,7 @@ export default function AdminJams() {
                         </Text>
                       </TableCell>
                       <TableCell>
-                        <Text size="sm">{totalHours(jam)}h</Text>
+                        <Text size="sm">{totalHours(jam)}{uiText("AppStrings.H")}</Text>
                       </TableCell>
                       <TableCell>
                         <Button
@@ -164,8 +162,7 @@ export default function AdminJams() {
                           href={`/admin/results?jam=${getJamUrlValue(jam) || jam.id}`}
                           icon="trophy"
                         >
-                          Results
-                        </Button>
+                           {uiText("Navbar.Results.Title")} </Button>
                       </TableCell>
                     </TableRow>
                   );

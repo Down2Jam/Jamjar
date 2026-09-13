@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Skeleton } from "@/components/skeletons";
 import { featuredVideos } from "@/data/featuredVideos";
 import { isJamPhase, isPostJamPhase } from "@/helpers/listingPageVersion";
@@ -60,6 +63,7 @@ function extractYouTubeId(value?: string | null) {
 }
 
 export default function SidebarVideos() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
   const jamId =
@@ -114,7 +118,7 @@ export default function SidebarVideos() {
       selected.push({
         id,
         url: gameVideo.trailerUrl,
-        title: `${gameVideo.gameName} trailer`,
+        title: uiText("AppStrings.Value0Trailer", { value0: gameVideo.gameName }),
       });
     }
 
@@ -168,8 +172,7 @@ export default function SidebarVideos() {
   return (
     <div className="mt-12 flex flex-col items-center gap-2">
       <SidebarSectionTitle>
-        Featured Videos
-      </SidebarSectionTitle>
+         {uiText("AppStrings.FeaturedVideos")} </SidebarSectionTitle>
 
       <Modal
         isOpen={viewerOpen}
@@ -204,7 +207,7 @@ export default function SidebarVideos() {
                   setCurrentIndex((safeCurrentIndex - 1 + videos.length) % videos.length)
                 }
                 icon="chevronleft"
-                aria-label="Previous video"
+                aria-label={uiText("AppStrings.PreviousVideo")}
                 variant="ghost"
               />
             </Tooltip>
@@ -217,7 +220,7 @@ export default function SidebarVideos() {
                   setCurrentIndex((safeCurrentIndex + 1) % videos.length)
                 }
                 icon="chevronright"
-                aria-label="Next video"
+                aria-label={uiText("AppStrings.NextVideo")}
                 variant="ghost"
               />
             </Tooltip>
@@ -241,7 +244,7 @@ export default function SidebarVideos() {
               onClick={() => showVideo(index)}
               aria-haspopup="dialog"
               className="group post-card-shadow relative aspect-video cursor-pointer overflow-hidden rounded-xl bg-black/30 text-left"
-              aria-label={`Watch ${displayTitle} on YouTube`}
+              aria-label={uiText("AppStrings.WatchValue0OnYouTube", { value0: displayTitle })}
             >
               <img
                 src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
@@ -271,8 +274,7 @@ export default function SidebarVideos() {
       </div>
 
       <Button icon="siyoutube" href="https://youtube.d2jam.com">
-        More on YouTube
-      </Button>
+         {uiText("AppStrings.MoreOnYouTube")} </Button>
     </div>
   );
 }

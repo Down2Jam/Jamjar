@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "@/compat/next-navigation";
 import {
@@ -282,6 +285,7 @@ function getSubmissionStackAtOriginalTime(
 }
 
 export default function QuiltDetailPage() {
+  const uiText = useUiTranslations();
   const params = useParams<{ quiltSlug: string }>();
   const quiltSlug = params.quiltSlug;
   const [quilt, setQuilt] = useState<QuiltDetail | null>(null);
@@ -804,11 +808,11 @@ export default function QuiltDetailPage() {
       clearDraftHistory();
       addToast({
         title: editingSubmissionId
-          ? "Quilt change updated"
-          : "Quilt change submitted",
+          ? uiText("AppStrings.QuiltChangeUpdated")
+          : uiText("AppStrings.QuiltChangeSubmitted"),
       });
     } else {
-      addToast({ title: "Could not save quilt change", color: "danger" });
+      addToast({ title: uiText("AppStrings.CouldNotSaveQuiltChange"), color: "danger" });
     }
   }
 
@@ -825,7 +829,7 @@ export default function QuiltDetailPage() {
     setPreview({ type: "pending", id: submission.id });
     setSelection(null);
     clearDraftHistory();
-    addToast({ title: "Loaded pending change for editing" });
+    addToast({ title: uiText("AppStrings.LoadedPendingChangeForEditing") });
   }
 
   async function vote(id: number, value: 1 | -1) {
@@ -856,9 +860,9 @@ export default function QuiltDetailPage() {
       setResizeDialogOpen(false);
       setPreview({ type: "current" });
       setSelection(null);
-      addToast({ title: "Quilt canvas resized" });
+      addToast({ title: uiText("AppStrings.QuiltCanvasResized") });
     } else {
-      addToast({ title: "Could not resize quilt canvas", color: "danger" });
+      addToast({ title: uiText("AppStrings.CouldNotResizeQuiltCanvas"), color: "danger" });
     }
   }
 
@@ -866,7 +870,7 @@ export default function QuiltDetailPage() {
     return (
       <main className="flex min-h-[50vh] items-center justify-center gap-3">
         <Spinner />
-        <Text color="textFaded">Loading quilt...</Text>
+        <Text color="textFaded">{uiText("AppStrings.LoadingQuilt")}</Text>
       </main>
     );
   }
@@ -875,7 +879,7 @@ export default function QuiltDetailPage() {
     return (
       <main className="mx-auto max-w-5xl px-4">
         <Card>
-          <Text color="textFaded">Quilt not found.</Text>
+          <Text color="textFaded">{uiText("AppStrings.QuiltNotFound")}</Text>
         </Card>
       </main>
     );
@@ -891,13 +895,13 @@ export default function QuiltDetailPage() {
                 {quilt.name}
               </Text>
               <Text color="textFaded">
-                {quilt.width} x {quilt.height} pixels · Ends {formatTime(quilt.endsAt)}
-                {activePreview.type === "history" && " · Viewing history"}
-                {activePreview.type === "pending" && " · Previewing pending change"}
-                {onionSkinSubmission && " · Onion-skinning pending change"}
-                {activePreview.type === "rejected" && " · Previewing rejected change"}
-                {activePreview.type === "removed" && " · Previewing removed change"}
-                {activePreview.type === "deleted" && " · Previewing deleted change"}
+                {quilt.width}  {uiText("AppStrings.X")} {quilt.height}  {uiText("AppStrings.PixelsEnds")} {formatTime(quilt.endsAt)}
+                {activePreview.type === "history" && uiText("AppStrings.ViewingHistory")}
+                {activePreview.type === "pending" && uiText("AppStrings.PreviewingPendingChange")}
+                {onionSkinSubmission && uiText("AppStrings.OnionSkinningPendingChange")}
+                {activePreview.type === "rejected" && uiText("AppStrings.PreviewingRejectedChange")}
+                {activePreview.type === "removed" && uiText("AppStrings.PreviewingRemovedChange")}
+                {activePreview.type === "deleted" && uiText("AppStrings.PreviewingDeletedChange")}
               </Text>
             </Vstack>
             <Hstack>
@@ -907,8 +911,7 @@ export default function QuiltDetailPage() {
                   variant="ghost"
                   onClick={() => setPreview({ type: "current" })}
                 >
-                  Current canvas
-                </Button>
+                   {uiText("AppStrings.CurrentCanvas")} </Button>
               )}
               {onionSkinSubmission && (
                 <Button
@@ -916,8 +919,7 @@ export default function QuiltDetailPage() {
                   variant="ghost"
                   onClick={() => setPreview({ type: "current" })}
                 >
-                  Clear onion skin
-                </Button>
+                   {uiText("AppStrings.ClearOnionSkin")} </Button>
               )}
               {isModerator && (
                 <Button
@@ -925,12 +927,10 @@ export default function QuiltDetailPage() {
                   variant="ghost"
                   onClick={() => setResizeDialogOpen(true)}
                 >
-                  Resize canvas
-                </Button>
+                   {uiText("AppStrings.ResizeCanvas")} </Button>
               )}
               <Button size="sm" icon="rotateccw" onClick={loadQuilt}>
-                Refresh
-              </Button>
+                 {uiText("AppStrings.Refresh")} </Button>
             </Hstack>
           </Hstack>
 
@@ -960,12 +960,12 @@ export default function QuiltDetailPage() {
 
               <Hstack className="flex-wrap gap-2">
                 {[
-                  { key: "brush" as Tool, label: "Brush" },
-                  { key: "bucket" as Tool, label: "Bucket" },
-                  { key: "eraser" as Tool, label: "Eraser" },
-                  { key: "picker" as Tool, label: "Picker" },
-                  { key: "layerTransform" as Tool, label: "Transform layer" },
-                  { key: "transform" as Tool, label: "Transform all" },
+                  { key: "brush" as Tool, label: uiText("AppStrings.Brush") },
+                  { key: "bucket" as Tool, label: uiText("AppStrings.Bucket") },
+                  { key: "eraser" as Tool, label: uiText("AppStrings.Eraser") },
+                  { key: "picker" as Tool, label: uiText("AppStrings.Picker") },
+                  { key: "layerTransform" as Tool, label: uiText("AppStrings.TransformLayer") },
+                  { key: "transform" as Tool, label: uiText("AppStrings.TransformAll") },
                 ].map((item) => (
                   <Button
                     key={item.key}
@@ -979,7 +979,7 @@ export default function QuiltDetailPage() {
                 ))}
                 <button
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-zinc-300"
-                  title="Undo (Ctrl+Z)"
+                  title={uiText("AppStrings.UndoCtrlZ")}
                   disabled={!canUndo}
                   onClick={undoDraft}
                 >
@@ -987,15 +987,14 @@ export default function QuiltDetailPage() {
                 </button>
                 <button
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-zinc-300"
-                  title="Redo (Ctrl+Y)"
+                  title={uiText("AppStrings.RedoCtrlY")}
                   disabled={!canRedo}
                   onClick={redoDraft}
                 >
                   <Redo2 size={16} />
                 </button>
                 <label className="ml-auto flex items-center gap-2 text-sm text-zinc-400">
-                  Brush
-                  <input
+                   {uiText("AppStrings.Brush")} <input
                     className="w-20"
                     type="range"
                     min={1}
@@ -1003,17 +1002,15 @@ export default function QuiltDetailPage() {
                     value={brushSize}
                     onChange={(event) => setBrushSize(Number(event.target.value))}
                   />
-                  {brushSize}px
-                </label>
+                  {brushSize}{uiText("AppStrings.Px")} </label>
               </Hstack>
 
               <Hstack className="flex-wrap gap-2">
                 <Text color="textFaded" size="sm">
-                  Zoom
-                </Text>
+                   {uiText("AppStrings.Zoom")} </Text>
                 <button
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                  title="Zoom out"
+                  title={uiText("AppStrings.ZoomOut")}
                   onClick={() => setZoom((value) => Math.max(2, value - 2))}
                 >
                   <Minus size={16} />
@@ -1029,17 +1026,15 @@ export default function QuiltDetailPage() {
                 />
                 <button
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                  title="Zoom in"
+                  title={uiText("AppStrings.ZoomIn")}
                   onClick={() => setZoom((value) => clamp(value + 2, 2, 32))}
                 >
                   <Plus size={16} />
                 </button>
                 <Text color="textFaded" size="sm">
-                  {zoom}x
-                </Text>
+                  {zoom}{uiText("AppStrings.X")} </Text>
                 <Button size="sm" variant="ghost" onClick={() => setZoomLevel(10)}>
-                  Reset
-                </Button>
+                   {uiText("Settings.Reset.Title")} </Button>
               </Hstack>
 
               <div
@@ -1067,8 +1062,8 @@ export default function QuiltDetailPage() {
               <Hstack justify="between" className="flex-wrap gap-2">
                 <Text color="textFaded">
                   {editingSubmissionId
-                    ? `${draft.size} pending pixel changes · editing existing submission`
-                    : `${draft.size} pending pixel changes`}
+                    ? uiText("AppStrings.Value0PendingPixelChangesEditingExistingSubmission", { value0: draft.size })
+                    : uiText("AppStrings.Value0PendingPixelChanges", { value0: draft.size })}
                 </Text>
                 <Hstack>
                   <Button
@@ -1080,8 +1075,7 @@ export default function QuiltDetailPage() {
                       clearDraftHistory();
                     }}
                   >
-                    Clear draft
-                  </Button>
+                     {uiText("AppStrings.ClearDraft")} </Button>
                   <Button
                     size="sm"
                     icon="send"
@@ -1093,7 +1087,7 @@ export default function QuiltDetailPage() {
                     }
                     onClick={submitDraft}
                   >
-                    {editingSubmissionId ? "Save edit" : "Submit changes"}
+                    {editingSubmissionId ? uiText("AppStrings.SaveEdit") : uiText("AppStrings.SubmitChanges")}
                   </Button>
                 </Hstack>
               </Hstack>
@@ -1103,7 +1097,7 @@ export default function QuiltDetailPage() {
 
         <Vstack align="stretch" className="gap-4">
           <HistoryPanel
-            title="History"
+            title={uiText("AppStrings.History")}
             submissions={quilt.history}
             selectedId={activePreview.type === "history" ? activePreview.id : null}
             previewDisabled={isEditing}
@@ -1153,7 +1147,7 @@ export default function QuiltDetailPage() {
             />
           )}
           <HistoryPanel
-            title="Rejected"
+            title={uiText("AppStrings.Rejected")}
             submissions={quilt.rejected}
             selectedId={activePreview.type === "rejected" ? activePreview.id : null}
             previewDisabled={isEditing}
@@ -1168,7 +1162,7 @@ export default function QuiltDetailPage() {
           />
           {quilt.removed.length > 0 && (
             <HistoryPanel
-              title="Removed"
+              title={uiText("AppStrings.Removed")}
               submissions={quilt.removed}
               selectedId={activePreview.type === "removed" ? activePreview.id : null}
               previewDisabled={isEditing}
@@ -1209,6 +1203,7 @@ function ResizeCanvasDialog({
     offsetY: number;
   }) => void;
 }) {
+  const uiText = useUiTranslations();
   const [width, setWidth] = useState(quilt.width);
   const [height, setHeight] = useState(quilt.height);
   const [offsetX, setOffsetX] = useState(0);
@@ -1277,11 +1272,9 @@ function ResizeCanvasDialog({
         <Vstack align="stretch" className="gap-4">
           <Vstack align="start" gap={0}>
             <Text size="xl" weight="bold" color="text">
-              Resize canvas
-            </Text>
+               {uiText("AppStrings.ResizeCanvas")} </Text>
             <Text color="textFaded" size="sm">
-              Drag the preview to align the current canvas inside the new size.
-            </Text>
+               {uiText("AppStrings.DragThePreviewToAlignTheCurrentCanvasInsideTheNewSize")} </Text>
           </Vstack>
 
           <div className="grid gap-4 md:grid-cols-[1fr_280px]">
@@ -1302,8 +1295,7 @@ function ResizeCanvasDialog({
             </div>
             <Vstack align="stretch" className="gap-3">
               <label className="grid gap-1 text-sm text-zinc-300">
-                Width
-                <input
+                 {uiText("AppStrings.Width")} <input
                   className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
                   type="number"
                   min={8}
@@ -1313,8 +1305,7 @@ function ResizeCanvasDialog({
                 />
               </label>
               <label className="grid gap-1 text-sm text-zinc-300">
-                Height
-                <input
+                 {uiText("AppStrings.Height")} <input
                   className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
                   type="number"
                   min={8}
@@ -1324,8 +1315,7 @@ function ResizeCanvasDialog({
                 />
               </label>
               <label className="grid gap-1 text-sm text-zinc-300">
-                X offset
-                <input
+                 {uiText("AppStrings.XOffset")} <input
                   className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
                   type="number"
                   value={offsetX}
@@ -1333,8 +1323,7 @@ function ResizeCanvasDialog({
                 />
               </label>
               <label className="grid gap-1 text-sm text-zinc-300">
-                Y offset
-                <input
+                 {uiText("AppStrings.YOffset")} <input
                   className="rounded border border-white/10 bg-black/40 px-3 py-2 text-white"
                   type="number"
                   value={offsetY}
@@ -1346,15 +1335,13 @@ function ResizeCanvasDialog({
 
           <Hstack justify="end" className="gap-2">
             <Button size="sm" variant="ghost" onClick={onClose}>
-              Cancel
-            </Button>
+               {uiText("AppStrings.Cancel")} </Button>
             <Button
               size="sm"
               color="blue"
               onClick={() => onSubmit({ width, height, offsetX, offsetY })}
             >
-              Save resize
-            </Button>
+               {uiText("AppStrings.SaveResize")} </Button>
           </Hstack>
         </Vstack>
       </Card>
@@ -1379,6 +1366,7 @@ function HistoryPanel({
   onSelect?: (id: number) => void;
   onRemove?: (id: number) => void;
 }) {
+  const uiText = useUiTranslations();
   const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
   const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
   const hasMore = visibleCount < submissions.length;
@@ -1395,8 +1383,7 @@ function HistoryPanel({
         </Text>
         {submissions.length === 0 ? (
           <Text color="textFaded" size="sm">
-            Nothing here yet.
-          </Text>
+             {uiText("AppStrings.NothingHereYet")} </Text>
         ) : (
           <>
             {visibleSubmissions.map((submission) => (
@@ -1415,19 +1402,19 @@ function HistoryPanel({
                   <Vstack align="start" gap={0} className="min-w-0 flex-1">
                     <Text color="text" weight="semibold">
                       {submission.kind === "RESIZE"
-                        ? `Resize to ${submission.canvasWidth} x ${submission.canvasHeight}`
+                        ? uiText("AppStrings.ResizeToValue0XValue1", { value0: submission.canvasWidth, value1: submission.canvasHeight })
                         : submission.author.name}
                     </Text>
                     <Text color="textFaded" size="xs">
                       {submission.kind === "RESIZE"
-                        ? `${submission.resizeFromWidth} x ${submission.resizeFromHeight} moved by ${submission.resizeOffsetX ?? 0}, ${submission.resizeOffsetY ?? 0} - ${formatTime(submission.createdAt)}`
-                        : `${submission.pixels.length} pixels - ${formatTime(submission.createdAt)}`}
+                        ? uiText("AppStrings.Value0XValue1MovedByValue2Value3Value4", { value0: submission.resizeFromWidth, value1: submission.resizeFromHeight, value2: submission.resizeOffsetX ?? 0, value3: submission.resizeOffsetY ?? 0, value4: formatTime(submission.createdAt) })
+                        : uiText("AppStrings.Value0PixelsValue1", { value0: submission.pixels.length, value1: formatTime(submission.createdAt) })}
                     </Text>
                   </Vstack>
                   {isModerator && submission.status === "ACCEPTED" && submission.kind !== "RESIZE" && (
                     <button
                       className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                      title="Remove"
+                      title={uiText("PostCard.Remove.Title")}
                       onClick={(event) => {
                         event.stopPropagation();
                         onRemove?.(submission.id);
@@ -1445,8 +1432,7 @@ function HistoryPanel({
                 variant="ghost"
                 onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
               >
-                Load more
-              </Button>
+                 {uiText("AppStrings.LoadMore")} </Button>
             )}
           </>
         )}
@@ -1478,6 +1464,7 @@ function PendingPanel({
   onAccept: (id: number) => void;
   onRemove: (id: number) => void;
 }) {
+  const uiText = useUiTranslations();
   const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
   const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
   const hasMore = visibleCount < submissions.length;
@@ -1490,12 +1477,10 @@ function PendingPanel({
     <Card>
       <Vstack align="stretch" className="gap-3">
         <Text size="lg" weight="semibold" color="text">
-          Pending
-        </Text>
+           {uiText("AppStrings.Pending")} </Text>
         {submissions.length === 0 ? (
           <Text color="textFaded" size="sm">
-            No pending changes.
-          </Text>
+             {uiText("AppStrings.NoPendingChanges")} </Text>
         ) : (
           <>
             {visibleSubmissions.map((submission) => (
@@ -1516,14 +1501,14 @@ function PendingPanel({
                       {submission.author.name}
                     </Text>
                     <Text color="textFaded" size="xs">
-                      Resolves {formatTime(submission.resolvesAt)}
+                       {uiText("AppStrings.Resolves")} {formatTime(submission.resolvesAt)}
                     </Text>
                   </Vstack>
                   <Hstack className="shrink-0 flex-wrap justify-end gap-1">
                     {currentUserId === submission.author.id && (
                       <button
                         className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                        title="Edit"
+                        title={uiText("ThemeSuggestions.Edit.Title")}
                         onClick={(event) => {
                           event.stopPropagation();
                           onEdit(submission);
@@ -1538,7 +1523,7 @@ function PendingPanel({
                           ? "text-cyan-300"
                           : "text-zinc-300 hover:text-white"
                       }`}
-                      title="Upvote"
+                      title={uiText("AppStrings.Upvote")}
                       onClick={(event) => {
                         event.stopPropagation();
                         onVote(submission.id, 1);
@@ -1555,7 +1540,7 @@ function PendingPanel({
                           ? "text-red-300"
                           : "text-zinc-300 hover:text-white"
                       }`}
-                      title="Downvote"
+                      title={uiText("AppStrings.Downvote")}
                       onClick={(event) => {
                         event.stopPropagation();
                         onVote(submission.id, -1);
@@ -1567,7 +1552,7 @@ function PendingPanel({
                       <>
                         <button
                           className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                          title="Accept now"
+                          title={uiText("AppStrings.AcceptNow")}
                           onClick={(event) => {
                             event.stopPropagation();
                             onAccept(submission.id);
@@ -1577,7 +1562,7 @@ function PendingPanel({
                         </button>
                         <button
                           className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                          title="Remove"
+                          title={uiText("PostCard.Remove.Title")}
                           onClick={(event) => {
                             event.stopPropagation();
                             onRemove(submission.id);
@@ -1590,7 +1575,7 @@ function PendingPanel({
                     {!isModerator && currentUserId === submission.author.id && (
                       <button
                         className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                        title="Delete"
+                        title={uiText("ThemeSuggestions.Delete.Title")}
                         onClick={(event) => {
                           event.stopPropagation();
                           onRemove(submission.id);
@@ -1609,8 +1594,7 @@ function PendingPanel({
                 variant="ghost"
                 onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
               >
-                Load more
-              </Button>
+                 {uiText("AppStrings.LoadMore")} </Button>
             )}
           </>
         )}
@@ -1632,6 +1616,7 @@ function DeletedPanel({
   onSelect: (id: number) => void;
   onEdit: (submission: QuiltSubmission) => void;
 }) {
+  const uiText = useUiTranslations();
   const [visibleCount, setVisibleCount] = useState(PANEL_PAGE_SIZE);
   const visibleSubmissions = submissions.slice().reverse().slice(0, visibleCount);
   const hasMore = visibleCount < submissions.length;
@@ -1644,8 +1629,7 @@ function DeletedPanel({
     <Card>
       <Vstack align="stretch" className="gap-3">
         <Text size="lg" weight="semibold" color="text">
-          Deleted
-        </Text>
+           {uiText("AppStrings.Deleted")} </Text>
         {visibleSubmissions.map((submission) => (
             <button
               key={submission.id}
@@ -1661,15 +1645,14 @@ function DeletedPanel({
               <Hstack justify="between" className="gap-3">
                 <Vstack align="start" gap={0}>
                   <Text color="text" weight="semibold">
-                    {submission.pixels.length} pixels
-                  </Text>
+                    {submission.pixels.length}  {uiText("AppStrings.Pixels")} </Text>
                   <Text color="textFaded" size="xs">
-                    Deleted {submission.removedAt ? formatTime(submission.removedAt) : formatTime(submission.createdAt)}
+                     {uiText("AppStrings.Deleted")} {submission.removedAt ? formatTime(submission.removedAt) : formatTime(submission.createdAt)}
                   </Text>
                 </Vstack>
                 <button
                   className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded text-zinc-300 transition-colors hover:bg-white/10 hover:text-white"
-                  title="Edit"
+                  title={uiText("ThemeSuggestions.Edit.Title")}
                   onClick={(event) => {
                     event.stopPropagation();
                     onEdit(submission);
@@ -1686,8 +1669,7 @@ function DeletedPanel({
             variant="ghost"
             onClick={() => setVisibleCount((count) => count + PANEL_PAGE_SIZE)}
           >
-            Load more
-          </Button>
+             {uiText("AppStrings.LoadMore")} </Button>
         )}
       </Vstack>
     </Card>

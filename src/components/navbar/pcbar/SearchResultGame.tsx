@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Badge } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Icon } from "bioloom-ui";
@@ -15,6 +18,7 @@ export default function SearchResultGame({
   game: GameType;
   onPress: () => void;
 }) {
+  const uiText = useUiTranslations();
   return (
     <Card
       key={game.id}
@@ -30,7 +34,7 @@ export default function SearchResultGame({
         >
           <Image
             src={game.thumbnail ?? "/images/D2J_Icon.png"}
-            alt="Game thumbnail"
+            alt={uiText("AppStrings.GameThumbnail")}
             width={45}
             height={25}
             className="rounded-lg"

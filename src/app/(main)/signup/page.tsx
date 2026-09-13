@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button } from "bioloom-ui";
 import { Input } from "bioloom-ui";
 import { Link } from "bioloom-ui";
@@ -12,6 +15,7 @@ import Cookies from "js-cookie";
 const SESSION_DURATION_DAYS = 14;
 
 export default function UserPage() {
+  const uiText = useUiTranslations();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -100,7 +104,7 @@ export default function UserPage() {
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
 
           addToast({
-            title: "Successfully signed up",
+            title: uiText("AppStrings.SuccessfullySignedUp"),
           });
 
           window.location.replace("/");
@@ -108,20 +112,20 @@ export default function UserPage() {
       >
         <Input
           required
-          label="Username"
+          label={uiText("AppStrings.Username")}
           labelPlacement="outside"
           name="username"
-          placeholder="Enter your username"
+          placeholder={uiText("AppStrings.EnterYourUsername")}
           type="text"
           value={username}
           onValueChange={setUsername}
         />
 
         <Input
-          label="Email"
+          label={uiText("Settings.Email.Title")}
           labelPlacement="outside"
           name="email"
-          placeholder="Optional"
+          placeholder={uiText("AppStrings.Optional")}
           type="text"
           value={email}
           onValueChange={setEmail}
@@ -129,10 +133,10 @@ export default function UserPage() {
 
         <Input
           required
-          label="Password"
+          label={uiText("AppStrings.Password")}
           labelPlacement="outside"
           name="password"
-          placeholder="Enter your password"
+          placeholder={uiText("AppStrings.EnterYourPassword")}
           type="password"
           value={password}
           onValueChange={setPassword}
@@ -140,10 +144,10 @@ export default function UserPage() {
         />
         <Input
           required
-          label="Password Confirmation"
+          label={uiText("AppStrings.PasswordConfirmation")}
           labelPlacement="outside"
           name="password2"
-          placeholder="Reenter your password"
+          placeholder={uiText("AppStrings.ReenterYourPassword")}
           type="password"
           value={password2}
           onValueChange={setPassword2}
@@ -151,9 +155,8 @@ export default function UserPage() {
         />
         <div className="flex gap-2">
           <Button type="submit" color="blue">
-            Submit
-          </Button>
-          <Button type="reset">Reset</Button>
+             {uiText("AppStrings.Submit")} </Button>
+          <Button type="reset">{uiText("Settings.Reset.Title")}</Button>
         </div>
         <p
           className="transition-color duration-250"
@@ -161,7 +164,7 @@ export default function UserPage() {
             color: siteTheme.colors["text"],
           }}
         >
-          Already have an account? <Link href="/login">Log In</Link>
+           {uiText("AppStrings.AlreadyHaveAnAccount")} <Link href="/login">{uiText("AppStrings.LogIn")}</Link>
         </p>
       </Form>
     </div>

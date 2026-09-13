@@ -1,4 +1,7 @@
 "use client";
+
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
 import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
@@ -70,6 +73,7 @@ export function Pagination({
   className = "",
   ...rest
 }: PaginationProps) {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const canPrev = page > 1;
   const canNext = page < total;
@@ -95,7 +99,7 @@ export function Pagination({
   return (
     <nav
       className={["flex items-center gap-2", className].join(" ")}
-      aria-label="Pagination"
+      aria-label={uiText("AppStrings.Pagination")}
       {...rest}
     >
       {showControls && showFirstLast && (

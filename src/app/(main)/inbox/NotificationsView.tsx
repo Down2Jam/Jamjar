@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { Button, Hstack, Text, Vstack } from "bioloom-ui";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -14,6 +17,7 @@ import TeamApplicationNotification from "./TeamApplicationNotification";
 import TeamInviteNotification from "./TeamInviteNotification";
 
 export default function NotificationsView() {
+  const uiText = useUiTranslations();
   const { data: user } = useSelf();
   const queryClient = useQueryClient();
   const notifications = user?.receivedNotifications ?? [];
@@ -22,15 +26,15 @@ export default function NotificationsView() {
   return (
     <Vstack align="stretch" className="gap-3">
       <Hstack justify="between" className="flex-wrap gap-2">
-        <Text size="sm" color="textFaded">Alerts about activity across the site.</Text>
+        <Text size="sm" color="textFaded">{uiText("AppStrings.AlertsAboutActivityAcrossTheSite")}</Text>
         <Hstack>
           <Button size="sm" icon="check" onClick={async () => {
             if ((await markAllNotificationsRead()).ok) await refresh();
-          }}>Mark all read</Button>
-          <Button size="sm" icon="rotateccw" onClick={refresh}>Refresh</Button>
+          }}>{uiText("AppStrings.MarkAllRead")}</Button>
+          <Button size="sm" icon="rotateccw" onClick={refresh}>{uiText("AppStrings.Refresh")}</Button>
         </Hstack>
       </Hstack>
-      {!notifications.length && <div className="py-16 text-center"><Text color="textFaded">No notifications.</Text></div>}
+      {!notifications.length && <div className="py-16 text-center"><Text color="textFaded">{uiText("AppStrings.NoNotifications")}</Text></div>}
       {notifications.map((notification) => {
         const markRead = async (id: number) => {
           if ((await updateNotification(id, { read: true })).ok) await refresh();

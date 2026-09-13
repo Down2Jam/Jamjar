@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import Link from "@/compat/next-link";
 import { useParams } from "@/compat/next-navigation";
 import MentionedContent from "@/components/mentions/MentionedContent";
@@ -34,6 +37,7 @@ import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
 
 export default function NewsArticle() {
+  const uiText = useUiTranslations();
   const { colors } = useTheme();
   const backgroundTextColor = colors["text"];
   const { slug = "" } = useParams();
@@ -101,10 +105,10 @@ export default function NewsArticle() {
   }, [currentIndex, fetchNextPage, hasNextPage, isFetchingNextPage, post]);
 
   usePageMetadata({
-    title: isNews ? post?.title : "News",
+    title: isNews ? post?.title : uiText("Navbar.News.Title"),
     description: isNews
       ? stripHtmlForMetadata(post?.content)
-      : "Official Down2Jam news, announcements, and site updates.",
+      : uiText("AppStrings.OfficialDown2JamNewsAnnouncementsAndSiteUpdates"),
     image: isNews ? `/og/news/${encodeURIComponent(post?.slug ?? String(slug))}.png` : "/images/D2J_Icon.png",
     icon: isNews ? post?.author.profilePicture : "/images/D2J_Icon.svg",
     canonical: isNews && post ? newsPostPath(post.slug) : `/news/${slug}`,
@@ -122,11 +126,10 @@ export default function NewsArticle() {
   if (isError || !post || !isNews) {
     return (
       <NewsSurface>
-        <Text size="2xl">This news article is unavailable.</Text>
+        <Text size="2xl">{uiText("AppStrings.ThisNewsArticleIsUnavailable")}</Text>
         {post && (
           <Button className="mt-4" href={`/p/${post.slug}`}>
-            View the forum post
-          </Button>
+             {uiText("AppStrings.ViewTheForumPost")} </Button>
         )}
       </NewsSurface>
     );
@@ -149,8 +152,7 @@ export default function NewsArticle() {
         leftSlot={<ArrowLeft aria-hidden="true" size={16} />}
         style={{ color: backgroundTextColor }}
       >
-        All news
-      </Button>
+         {uiText("AppStrings.AllNews")} </Button>
       <article
         className="post-card-shell px-5 py-6 sm:px-12 sm:py-12"
         style={{
@@ -189,14 +191,14 @@ export default function NewsArticle() {
                   dateTime={latestAt.toISOString()}
                   title={
                     wasEdited
-                      ? `Published ${format(publishedAt, "MMMM d, yyyy")}`
+                      ? uiText("AppStrings.PublishedValue0", { value0: format(publishedAt, "MMMM d, yyyy") })
                       : undefined
                   }
                 >
                   {format(latestAt, "MMMM d, yyyy")}
                 </time>
                 <span aria-hidden="true" className="opacity-50">·</span>
-                <span>{readingMinutes} min read</span>
+                <span>{readingMinutes}  {uiText("AppStrings.MinRead")}</span>
               </span>
             </span>
           </Link>
@@ -228,7 +230,7 @@ export default function NewsArticle() {
           size="sm"
           leftSlot={<MessageCircle aria-hidden="true" size={16} />}
         >
-          {commentCount} {commentCount === 1 ? "comment" : "comments"}
+          {commentCount} {commentCount === 1 ? uiText("AppStrings.Comment") : uiText("AppStrings.Comments2")}
         </Button>
         <div className="ml-auto">
           <ShareNewsPost slug={post.slug} />
@@ -238,7 +240,7 @@ export default function NewsArticle() {
 
         {(olderPost || newerPost) && (
           <nav
-            aria-label="News article navigation"
+            aria-label={uiText("AppStrings.NewsArticleNavigation")}
             className="mt-6 grid gap-3 sm:grid-cols-2"
             style={{ color: colors["text"] }}
           >
@@ -254,8 +256,7 @@ export default function NewsArticle() {
                   <ArrowLeft className="mt-1 shrink-0" size={16} />
                   <span>
                     <span className="block text-xs" style={{ color: colors["textFaded"] }}>
-                      Previous article
-                    </span>
+                       {uiText("AppStrings.PreviousArticle")} </span>
                     <span className="font-medium">{olderPost.title}</span>
                   </span>
                 </Link>
@@ -272,8 +273,7 @@ export default function NewsArticle() {
                 >
                   <span>
                     <span className="block text-xs" style={{ color: colors["textFaded"] }}>
-                      Next article
-                    </span>
+                       {uiText("AppStrings.NextArticle")} </span>
                     <span className="font-medium">{newerPost.title}</span>
                   </span>
                   <ArrowRight className="mt-1 shrink-0" size={16} />
@@ -290,8 +290,7 @@ export default function NewsArticle() {
             style={{ color: backgroundTextColor }}
           >
             <h2 id="related-news-title" className="text-2xl font-semibold">
-              Related news
-            </h2>
+               {uiText("AppStrings.RelatedNews")} </h2>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               {relatedNews.map((item) => (
                 <Link
@@ -328,10 +327,9 @@ export default function NewsArticle() {
         >
           <div className="flex items-center justify-between gap-3">
             <h2 id="news-comments-title" className="text-2xl font-semibold">
-              Discussion
-            </h2>
+               {uiText("AppStrings.Discussion")} </h2>
             <span className="text-sm">
-              {commentCount} {commentCount === 1 ? "comment" : "comments"}
+              {commentCount} {commentCount === 1 ? uiText("AppStrings.Comment") : uiText("AppStrings.Comments2")}
             </span>
           </div>
 
@@ -348,27 +346,25 @@ export default function NewsArticle() {
                 loading={postingComment}
                 onClick={async () => {
                   if (!commentContent.trim()) {
-                    addToast({ title: "Please enter valid content" });
+                    addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
                     return;
                   }
                   setPostingComment(true);
                   const response = await postComment(commentContent, post.id);
                   if (response.ok) {
-                    addToast({ title: "Comment posted" });
+                    addToast({ title: uiText("AppStrings.CommentPosted") });
                     window.location.reload();
                     return;
                   }
-                  addToast({ title: "Could not post comment" });
+                  addToast({ title: uiText("AppStrings.CouldNotPostComment") });
                   setPostingComment(false);
                 }}
               >
-                Post comment
-              </Button>
+                 {uiText("AppStrings.PostComment")} </Button>
             </div>
           ) : (
             <Button className="mt-5" href="/login" variant="ghost">
-              Log in to join the discussion
-            </Button>
+               {uiText("AppStrings.LogInToJoinTheDiscussion")} </Button>
           )}
 
           <div className="mt-8 flex flex-col gap-3">

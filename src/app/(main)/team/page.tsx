@@ -1,9 +1,14 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { hasCookie } from "@/helpers/cookie";
 import {
   addToast,
   Form,
+  Tabs,
+  Tab,
   Modal,
   ModalBody,
   ModalContent,
@@ -12,7 +17,7 @@ import {
   useDisclosure,
 } from "bioloom-ui";
 import { redirect, useSearchParams } from "@/compat/next-navigation";
-import { useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 import { getSelf, searchUsers } from "@/requests/user";
 import { RoleType } from "@/types/RoleType";
@@ -41,7 +46,11 @@ import { Avatar } from "bioloom-ui";
 import { readArray, readItem } from "@/requests/helpers";
 import { Chip } from "bioloom-ui";
 
+import EditorFooter from "@/components/game-editing-form/EditorFooter";
+import "@/components/form-editor.css";
+
 export default function EditTeamPage() {
+  const uiText = useUiTranslations();
   const searchParams = useSearchParams();
   const requestedTeamId = searchParams.get("teamId");
   const [wantedRoles, setWantedRoles] = useState<Set<string>>(new Set());
@@ -166,9 +175,9 @@ export default function EditTeamPage() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="userx" />
-                <Text size="xl">User not found</Text>
+                <Text size="xl">{uiText("AppStrings.UserNotFound")}</Text>
               </Hstack>
-              <Text color="textFaded">Please sign in to view your team</Text>
+              <Text color="textFaded">{uiText("AppStrings.PleaseSignInToViewYourTeam")}</Text>
             </Vstack>
             <Hstack>
               <Button href="/signup" color="blue" icon="userplus">
@@ -190,9 +199,9 @@ export default function EditTeamPage() {
           <Vstack>
             <Hstack>
               <Spinner />
-              <Text size="xl">Loading</Text>
+              <Text size="xl">{uiText("AppStrings.Loading")}</Text>
             </Hstack>
-            <Text color="textFaded">Loading team page...</Text>
+            <Text color="textFaded">{uiText("AppStrings.LoadingTeamPage")}</Text>
           </Vstack>
         </Card>
       </Vstack>
@@ -207,16 +216,14 @@ export default function EditTeamPage() {
             <Vstack gap={0}>
               <Hstack>
                 <Icon name="userx" />
-                <Text size="xl">No Team Found</Text>
+                <Text size="xl">{uiText("AppStrings.NoTeamFound")}</Text>
               </Hstack>
               <Text color="textFaded">
-                You are not part of a team, please join or create one
-              </Text>
+                 {uiText("AppStrings.YouAreNotPartOfATeamPlease")} </Text>
             </Vstack>
             <Hstack>
               <Button href="/team-finder" color="green" icon="users">
-                Go to Team Finder
-              </Button>
+                 {uiText("AppStrings.GoToTeamFinder")} </Button>
               <Button
                 onClick={async () => {
                   const successful = await createTeam();
@@ -227,8 +234,7 @@ export default function EditTeamPage() {
                 color="yellow"
                 icon="userplus"
               >
-                Create Team
-              </Button>
+                 {uiText("AppStrings.CreateTeam")} </Button>
             </Hstack>
           </Vstack>
         </Card>
@@ -239,11 +245,21 @@ export default function EditTeamPage() {
   const isCurrentJamTeam =
     selectedTeamData.jamId === activeJamResponse?.jam?.id;
   const teamGameName = selectedTeamData.game?.name;
+  const sameIds = (a: { id: number }[], b: { id: number }[]) =>
+    a.length === b.length && a.every(item => b.some(other => item.id === other.id));
+  const hasUnsavedChanges = selectedTeamData.ownerId === user.id && (
+    name !== selectedTeamData.name || description !== selectedTeamData.description ||
+    applicationsOpen !== selectedTeamData.applicationsOpen ||
+    !sameIds(users, selectedTeamData.users) || !sameIds(invitations, selectedTeamData.invites) ||
+    wantedRoles.size !== selectedTeamData.rolesWanted.length ||
+    selectedTeamData.rolesWanted.some(role => !wantedRoles.has(role.slug))
+  );
 
   return (
     <div className="flex items-center justify-center">
       <Form
-        className="w-full max-w-6xl flex flex-col gap-4"
+        className={`w-full max-w-6xl flex flex-col gap-4 ${hasUnsavedChanges ? "pb-48 sm:pb-32" : ""}`}
+        style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);
@@ -272,20 +288,24 @@ export default function EditTeamPage() {
           );
 
           if (response.ok) {
+            setTeams(current => current?.map(team => team.id === selectedTeamData.id ? {
+              ...team, name, description, applicationsOpen, users, invites: invitations,
+              rolesWanted: roles.filter(role => wantedRoles.has(role.slug)),
+            } : team));
             addToast({
-              title: "Changed settings",
+              title: uiText("AppStrings.ChangedSettings"),
             });
             setWaitingSave(false);
           } else {
             addToast({
-              title: "Failed to update settings",
+              title: uiText("AppStrings.FailedToUpdateSettings"),
             });
             setWaitingSave(false);
           }
         }}
       >
         <header className="py-2 text-center">
-          <p
+          <h1
             className="text-3xl font-semibold"
             style={{
               color: headerColor,
@@ -295,8 +315,7 @@ export default function EditTeamPage() {
                   : "0 1px 5px rgba(0, 0, 0, 0.75)",
             }}
           >
-            Team
-          </p>
+             {uiText("AppStrings.Team")} </h1>
           <p
             className="mt-1 text-sm"
             style={{
@@ -309,12 +328,12 @@ export default function EditTeamPage() {
             }}
           >
             {isCurrentJamTeam || !teamGameName
-              ? "View and manage your team for the jam"
-              : `View and manage your team for ${teamGameName}`}
+              ? uiText("AppStrings.ViewAndManageYourTeamForTheJam")
+              : uiText("AppStrings.ViewAndManageYourTeamForValue0", { value0: teamGameName })}
           </p>
         </header>
         {teams[selectedTeam].ownerId != user.id && (
-          <p>You cannot edit the team if you are not the owner</p>
+          <p>{uiText("AppStrings.YouCannotEditTheTeamIfYouAre")}</p>
         )}
         {teams.length > 1 && (
           <div className="flex gap-2">
@@ -325,8 +344,7 @@ export default function EditTeamPage() {
               }}
               disabled={selectedTeam == 0}
             >
-              Previous Team
-            </Button>
+               {uiText("AppStrings.PreviousTeam")} </Button>
             <Button
               icon="arrowright"
               onClick={() => {
@@ -334,58 +352,176 @@ export default function EditTeamPage() {
               }}
               disabled={selectedTeam == teams.length - 1}
             >
-              Next Team
-            </Button>
+               {uiText("AppStrings.NextTeam")} </Button>
           </div>
         )}
+        <Tabs className="[&>[role=tablist]]:justify-center">
+          <Tab title={uiText("AppStrings.General")} icon="cog">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack><Icon name="cog" size={28} /><Text size="2xl" color="text" weight="bold">{uiText("AppStrings.General")}</Text></Hstack>
+                  <Text size="sm" color="textFaded">{isCurrentJamTeam || !teamGameName ? uiText("AppStrings.ViewAndManageYourTeamForTheJam") : uiText("AppStrings.ViewAndManageYourTeamForValue0", { value0: teamGameName })}</Text>
+                </Vstack>
+              </div>
+        <div className="game-editor-row">
+          <Vstack align="start">
+            <div>
+              <Text color="text">{uiText("AppStrings.TeamName")}</Text>
+              <Text color="textFaded" size="xs">
+                {isCurrentJamTeam || !teamGameName
+                  ? uiText("AppStrings.TheTeamNameThatDisplaysAsTheGameAuthorAndForYourTeamOnTheTeamFinder")
+                  : uiText("AppStrings.TheTeamNameDisplayedAsTheAuthorOfValue0", { value0: teamGameName })}
+              </Text>
+            </div>
+            <Input
+              placeholder={uiText("AppStrings.EnterATeamNameOptional")}
+              disabled={teams[selectedTeam].ownerId != user.id}
+              onValueChange={setName}
+              value={name || ""}
+            />
+          </Vstack>
+        </div>
+              {teams[selectedTeam].ownerId == user.id &&
+                activeJamResponse?.jam?.id == teams[selectedTeam].jamId &&
+                activeJamResponse.phase != "Rating" && (
+                  <div className="game-editor-block">
+                    <Button
+                      variant="ghost"
+                      color="red"
+                      size="sm"
+                      icon="trash"
+                      onClick={async () => {
+                        const successful = await deleteTeam(teams[selectedTeam].id);
+                        if (successful) {
+                          redirect("/team-finder");
+                        }
+                      }}
+                    >
+                      {uiText("AppStrings.DeleteTeam")}
+                    </Button>
+                  </div>
+                )}
+            </div>
+          </Tab>
+          {isCurrentJamTeam && (
+            <Tab title={uiText("Navbar.TeamFinder.Title")} icon="search">
+              <div className="form-editor-panel settings-editor-panel">
+                <div className="game-editor-panel-heading">
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="search" size={28} />
+                      <Text size="2xl" color="text" weight="bold">{uiText("Navbar.TeamFinder.Title")}</Text>
+                    </Hstack>
+                  </Vstack>
+                </div>
+            <div className="game-editor-row">
+              <Vstack align="start">
+                <div>
+                  <Text color="text">{uiText("AppStrings.Description")}</Text>
+                  <Text color="textFaded" size="xs">
+                     {uiText("AppStrings.ADescriptionOfTheTeamAndAWay")} </Text>
+                </div>
+                <Textarea
+                  placeholder={uiText("AppStrings.EnterADescriptionOptional")}
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                  onValueChange={setDescription}
+                  value={description || ""}
+                  fullWidth={true}
+                />
+              </Vstack>
+            </div>
+            <div className="game-editor-block">
+              <Hstack align="start" className="gap-3">
+                <Switch
+                  checked={applicationsOpen}
+                  onChange={setApplicationsOpen}
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                />
+                <Vstack align="start" gap={0}>
+                  <Text color="text">{uiText("AppStrings.OpenApplications")}</Text>
+                  <Text color="textFaded" size="xs">
+                     {uiText("AppStrings.LetsPeopleApplyForYourTeamOnThe")} </Text>
+                </Vstack>
+              </Hstack>
+            </div>
+            <div className="game-editor-row">
+              <Vstack align="start">
+                <div>
+                  <Text color="text">{uiText("AppStrings.WantedRoles")}</Text>
+                  <Text color="textFaded" size="xs">
+                     {uiText("AppStrings.RolesThatTheTeamFinderShowsThatYou")} </Text>
+                </div>
+                <Dropdown
+                  position="top"
+                  multiple
+                  disabled={teams[selectedTeam].ownerId != user.id}
+                  selectedValues={wantedRoles}
+                  onSelectionChange={(selection) => {
+                    setWantedRoles(selection as Set<string>);
+                  }}
+                >
+                  {roles.map((secondaryRole) => (
+                    <Dropdown.Item
+                      key={secondaryRole.slug}
+                      value={secondaryRole.slug}
+                      description={secondaryRole.description}
+                    >
+                      {secondaryRole.name}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown>
+              </Vstack>
+            </div>
+              </div>
+            </Tab>
+          )}
+          <Tab title={uiText("AppStrings.Members")} icon="users">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack><Icon name="users" size={28} /><Text size="2xl" color="text" weight="bold">{uiText("AppStrings.Members")}</Text></Hstack>
+                  <Text size="sm" color="textFaded">{uiText("AppStrings.InviteAUserToYourJamTeam")}</Text>
+                </Vstack>
+              </div>
         {(!teams[selectedTeam].game ||
           teams[selectedTeam].game.category != "ODA") && (
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="game-editor-block flex flex-wrap gap-2">
             <Button
               icon="user"
               onClick={onOpen}
               disabled={teams[selectedTeam].ownerId != user.id}
             >
-              Invite User
-            </Button>
+               {uiText("AppStrings.InviteUser")} </Button>
             {isCurrentJamTeam && (
               <Button icon="users" href="/team-finder">
-                Go to Team Finder
-              </Button>
+                 {uiText("AppStrings.GoToTeamFinder")} </Button>
             )}
           </div>
         )}
         {users?.map((user2) => (
-          <Card key={user2.id} className="min-w-96" href={`/u/${user2.slug}`}>
-            <Hstack justify="between">
-              <Hstack>
-                <Avatar src={user2.profilePicture} />
-                <Text>{user2.name}</Text>
-              </Hstack>
+          <div key={user2.id} className="game-editor-block">
+            <Hstack justify="between" className="gap-3">
+              <a href={`/u/${user2.slug}`} className="flex min-w-0 items-center gap-3"><Avatar src={user2.profilePicture} /><Text className="break-words">{user2.name}</Text></a>
               {teams[selectedTeam].ownerId == user.id &&
                 teams[selectedTeam].ownerId != user2.id && (
                   <Button
                     onClick={() =>
                       setUsers(users.filter((a) => a.id !== user2.id))
                     }
-                    icon="x"
+                    variant="ghost"
+                    size="sm"
+                    aria-label={uiText("PostCard.Remove.Title")}
+                  icon="x"
                   />
                 )}
             </Hstack>
-          </Card>
+          </div>
         ))}
         {invitations?.map((invite) => (
-          <Card
-            key={invite.user.id}
-            className="min-w-96"
-            href={`/u/${invite.user.slug}`}
-          >
-            <Hstack justify="between">
-              <Hstack>
-                <Avatar src={invite.user.profilePicture} />
-                <Text>{invite.user.name}</Text>
-                <Text>(invited)</Text>
-              </Hstack>
+          <div key={invite.user.id} className="game-editor-block">
+            <Hstack justify="between" className="gap-3">
+              <a href={`/u/${invite.user.slug}`} className="flex min-w-0 flex-wrap items-center gap-3"><Avatar src={invite.user.profilePicture} /><Text className="break-words">{invite.user.name}</Text><Text size="xs" color="textFaded">{uiText("AppStrings.Invited")}</Text></a>
               {teams[selectedTeam].ownerId == user.id && (
                 <Button
                   onClick={(e) => {
@@ -395,12 +531,18 @@ export default function EditTeamPage() {
                       invitations.filter((a) => a.id !== invite.id)
                     );
                   }}
+                  variant="ghost"
+                  size="sm"
+                  aria-label={uiText("PostCard.Remove.Title")}
                   icon="x"
                 />
               )}
             </Hstack>
-          </Card>
+          </div>
         ))}
+            </div>
+          </Tab>
+        </Tabs>
         <Modal
           isOpen={isOpen}
           onOpenChange={() => {
@@ -418,16 +560,14 @@ export default function EditTeamPage() {
                 <ModalHeader>
                   <Vstack align="start">
                     <Text size="xl" color="text">
-                      Invitation
-                    </Text>
+                       {uiText("AppStrings.Invitation")} </Text>
                     <Text size="sm" color="textFaded">
-                      Invite a user to your jam team
-                    </Text>
+                       {uiText("AppStrings.InviteAUserToYourJamTeam")} </Text>
                   </Vstack>
                 </ModalHeader>
                 <ModalBody>
                   <Input
-                    placeholder="Search users..."
+                    placeholder={uiText("AppStrings.SearchUsers")}
                     value={authorSearch}
                     onValueChange={(value) => {
                       setAuthorSearch(value);
@@ -479,19 +619,18 @@ export default function EditTeamPage() {
                   <Textarea
                     value={body}
                     onValueChange={setBody}
-                    placeholder="Enter invite content"
+                    placeholder={uiText("AppStrings.EnterInviteContent")}
                   />
                 </ModalBody>
                 <ModalFooter>
                   <Button color="red" onClick={onClose}>
-                    Close
-                  </Button>
+                     {uiText("AppStrings.Close")} </Button>
                   <Button
                     color="blue"
                     onClick={async () => {
                       if (!selectedAuthor) {
                         addToast({
-                          title: "You did not select a user to invite",
+                          title: uiText("AppStrings.YouDidNotSelectAUserToInvite"),
                         });
                         return;
                       }
@@ -504,135 +643,33 @@ export default function EditTeamPage() {
                       );
 
                       if (data) {
-                        setInvitations([...invitations, data]);
+                        setInvitations(current => [...current, data]);
+                        setTeams(current => current?.map(team => team.id === selectedTeamData.id
+                          ? { ...team, invites: [...team.invites, data] }
+                          : team));
                       }
                     }}
                   >
-                    Invite
-                  </Button>
+                     {uiText("AppStrings.Invite")} </Button>
                 </ModalFooter>
               </>
             )}
           </ModalContent>
         </Modal>
-        <Card>
-          <Vstack align="start">
-            <div>
-              <Text color="text">Team Name</Text>
-              <Text color="textFaded" size="xs">
-                {isCurrentJamTeam || !teamGameName
-                  ? "The team name that displays as the game author and for your team on the team finder"
-                  : `The team name displayed as the author of ${teamGameName}`}
-              </Text>
-            </div>
-            <Input
-              placeholder="Enter a team name... (optional)"
-              disabled={teams[selectedTeam].ownerId != user.id}
-              onValueChange={setName}
-              value={name || ""}
-            />
-          </Vstack>
-        </Card>
-        {isCurrentJamTeam && (
-          <>
-            <Card>
-              <Vstack align="start">
-                <div>
-                  <Text color="text">Description</Text>
-                  <Text color="textFaded" size="xs">
-                    A description of the team (and a way to contact you if
-                    needed) that shows in the team finder
-                  </Text>
-                </div>
-                <Textarea
-                  placeholder="Enter a description... (optional)"
-                  disabled={teams[selectedTeam].ownerId != user.id}
-                  onValueChange={setDescription}
-                  value={description || ""}
-                  fullWidth={true}
-                />
-              </Vstack>
-            </Card>
-            <Card>
-              <Hstack>
-                <Switch
-                  checked={applicationsOpen}
-                  onChange={setApplicationsOpen}
-                  disabled={teams[selectedTeam].ownerId != user.id}
-                />
-                <Vstack align="start" gap={0}>
-                  <Text color="text">Open Applications</Text>
-                  <Text color="textFaded" size="xs">
-                    Lets people apply for your team on the team finder
-                  </Text>
-                </Vstack>
-              </Hstack>
-            </Card>
-            <Card>
-              <Vstack align="start">
-                <div>
-                  <Text color="text">Wanted Roles</Text>
-                  <Text color="textFaded" size="xs">
-                    Roles that the team finder shows that you need
-                  </Text>
-                </div>
-                <Dropdown
-                  position="top"
-                  multiple
-                  disabled={teams[selectedTeam].ownerId != user.id}
-                  selectedValues={wantedRoles}
-                  onSelectionChange={(selection) => {
-                    setWantedRoles(selection as Set<string>);
-                  }}
-                >
-                  {roles.map((secondaryRole) => (
-                    <Dropdown.Item
-                      key={secondaryRole.slug}
-                      value={secondaryRole.slug}
-                      description={secondaryRole.description}
-                    >
-                      {secondaryRole.name}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown>
-              </Vstack>
-            </Card>
-          </>
+        {hasUnsavedChanges && (
+          <EditorFooter floating status={uiText("AppStrings.UnsavedChanges")} description={waitingSave ? uiText("AppStrings.Saving") : uiText("AppStrings.SaveYourChangesBeforeLeavingThisPage")}>
+            {waitingSave ? <Spinner /> : <>
+              <Button variant="ghost" size="sm" style={{ color: colors.blue }} type="submit" icon="save">{uiText("Settings.Save.Title")}</Button>
+              <Button variant="ghost" size="sm" type="reset" icon="rotateccw">{uiText("Settings.Reset.Title")}</Button>
+            </>}
+          </EditorFooter>
         )}
-        {teams[selectedTeam].ownerId == user.id && (
-          <div className="flex gap-2">
-            {waitingSave ? (
-              <Spinner />
-            ) : (
-              <>
-                <Button color="blue" type="submit" icon="save">
-                  Save
-                </Button>
-                <Button type="reset" icon="rotateccw">
-                  Reset
-                </Button>
-              </>
-            )}
-          </div>
-        )}
-        <div className="flex gap-2 mt-1">
-          {teams[selectedTeam].ownerId == user.id &&
-            activeJamResponse?.jam?.id == teams[selectedTeam].jamId &&
-            activeJamResponse.phase != "Rating" && (
-              <Button
-                icon="trash"
-                onClick={async () => {
-                  const successful = await deleteTeam(teams[selectedTeam].id);
-                  if (successful) {
-                    redirect("/team-finder");
-                  }
-                }}
-              >
-                Delete Team
-              </Button>
-            )}
+        <div className="flex flex-wrap gap-2 mt-1">
           {teams[selectedTeam].ownerId != user.id && (
             <Button
+              variant="ghost"
+              color="red"
+              size="sm"
               icon="logout"
               onClick={async () => {
                 const successful = await leaveTeam(teams[selectedTeam].id);
@@ -641,8 +678,7 @@ export default function EditTeamPage() {
                 }
               }}
             >
-              Leave Team
-            </Button>
+               {uiText("AppStrings.LeaveTeam")} </Button>
           )}
         </div>
       </Form>

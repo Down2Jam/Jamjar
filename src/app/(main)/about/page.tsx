@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { format } from "date-fns";
 import { Users } from "lucide-react";
 import { toZonedTime } from "date-fns-tz";
@@ -23,6 +26,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 export default function AboutPage() {
+  const uiText = useUiTranslations();
   const { data: jamResponse } = useCurrentJam();
   const jam = getDisplayJamForPublicView(jamResponse);
   const jamSlug = jam?.slug;
@@ -42,13 +46,13 @@ export default function AboutPage() {
     setIsJoining(false);
 
     if (!ok) {
-      addToast({ title: "Failed to join jam", color: "danger" });
+      addToast({ title: uiText("AppStrings.FailedToJoinJam"), color: "danger" });
       return;
     }
 
     queryClient.setQueryData(queryKeys.jam.participation(jamSlug), true);
     await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
-    addToast({ title: "Joined jam" });
+    addToast({ title: uiText("AppStrings.JoinedJam") });
   };
 
   const handleLeaveJam = async () => {
@@ -59,7 +63,7 @@ export default function AboutPage() {
     setIsLeaving(false);
 
     if (!ok) {
-      addToast({ title: "Failed to leave jam", color: "danger" });
+      addToast({ title: uiText("AppStrings.FailedToLeaveJam"), color: "danger" });
       return;
     }
 
@@ -68,7 +72,7 @@ export default function AboutPage() {
       false,
     );
     await queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
-    addToast({ title: "Left jam" });
+    addToast({ title: uiText("AppStrings.LeftJam") });
   };
 
   return (
@@ -91,8 +95,7 @@ export default function AboutPage() {
                   loading={isLeaving}
                   onClick={handleLeaveJam}
                 >
-                  Leave Jam
-                </Button>
+                   {uiText("AppStrings.LeaveJam")} </Button>
               ) : user ? (
                 <Button
                   className="mt-2"
@@ -101,8 +104,7 @@ export default function AboutPage() {
                   loading={isJoining}
                   onClick={handleJoinJam}
                 >
-                  Join Jam
-                </Button>
+                   {uiText("Navbar.JoinJam.Title")} </Button>
               ) : (
                 <Button
                   className="mt-2"
@@ -110,8 +112,7 @@ export default function AboutPage() {
                   icon="calendarplus"
                   href="/signup"
                 >
-                  Join Jam
-                </Button>
+                   {uiText("Navbar.JoinJam.Title")} </Button>
               ))}
             <div className="mt-2 flex flex-col gap-3">
               <div className="flex gap-3 items-center">
@@ -188,16 +189,14 @@ export default function AboutPage() {
                       color: colors["text"],
                     }}
                   >
-                    Entrants
-                  </p>
+                     {uiText("Stats.Entrants")} </p>
                   <p
                     className="text-small"
                     style={{
                       color: colors["textFaded"],
                     }}
                   >
-                    {jam?.users.length ?? "..."} and counting
-                  </p>
+                    {jam?.users.length ?? "..."}  {uiText("AppStrings.AndCounting")} </p>
                 </div>
               </div>
             </div>
@@ -208,7 +207,7 @@ export default function AboutPage() {
           <Vstack align="start">
             <Hstack>
               <Icon name="circlehelp" />
-              <Text size="xl">About the event</Text>
+              <Text size="xl">{uiText("About.Title")}</Text>
             </Hstack>
             <Text color="textFaded" size="sm">
               About.Description
@@ -543,24 +542,22 @@ export default function AboutPage() {
         </Vstack>
       </Card>
       <Text color="textFaded" size="xs" className="pb-4 text-center">
-        Tag icons by Delapouite, Lorc, Skoll, and sbed from{" "}
+         {uiText("AppStrings.TagIconsByDelapouiteLorcSkollAndSbedFrom")}{" "}
         <a
           href="https://game-icons.net"
           target="_blank"
           rel="noreferrer"
           className="underline"
         >
-          Game-icons.net
-        </a>
-        , licensed under{" "}
+           {uiText("AppStrings.GameIconsNet")} </a>
+         {uiText("AppStrings.LicensedUnder")}{" "}
         <a
           href="https://creativecommons.org/licenses/by/3.0/"
           target="_blank"
           rel="noreferrer"
           className="underline"
         >
-          CC BY 3.0
-        </a>
+           {uiText("AppStrings.CCBY30")} </a>
         .
       </Text>
     </Vstack>

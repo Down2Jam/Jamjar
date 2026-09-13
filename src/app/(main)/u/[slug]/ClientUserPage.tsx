@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { GameCard } from "@/components/gamecard";
 import PostCard from "@/components/posts/PostCard";
 import CommentCard from "@/components/posts/CommentCard";
@@ -322,6 +325,7 @@ export default function ClientUserPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  const uiText = useUiTranslations();
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
   const [user, setUser] = useState<UserType>();
@@ -464,7 +468,7 @@ export default function ClientUserPage({
   usePageMetadata({
     title: user?.name ?? slug,
     description:
-      user?.short || stripHtmlForMetadata(user?.bio) || "A user in Down2Jam",
+      user?.short || stripHtmlForMetadata(user?.bio) || uiText("AppStrings.AUserInDown2Jam"),
     image:
       user?.profilePicture || user?.bannerPicture || "/images/D2J_Icon.png",
     icon: user?.profilePicture || "/images/D2J_Icon.svg",
@@ -690,10 +694,10 @@ export default function ClientUserPage({
     );
 
     if (response.ok) {
-      addToast({ title: "Recommendations updated" });
+      addToast({ title: uiText("AppStrings.RecommendationsUpdated") });
       await refreshUser();
     } else {
-      addToast({ title: "Failed to update recommendations" });
+      addToast({ title: uiText("AppStrings.FailedToUpdateRecommendations") });
     }
     setSavingProfile(false);
   };
@@ -772,10 +776,10 @@ export default function ClientUserPage({
     );
 
     if (response.ok) {
-      addToast({ title: "Profile updated" });
+      addToast({ title: uiText("AppStrings.ProfileUpdated") });
       await refreshUser();
     } else {
-      addToast({ title: "Failed to update profile" });
+      addToast({ title: uiText("AppStrings.FailedToUpdateProfile") });
     }
 
     setSavingProfile(false);
@@ -1020,10 +1024,9 @@ export default function ClientUserPage({
         <Card className="mx-auto max-w-lg">
           <Vstack align="center" gap={3} className="py-4 text-center">
             <Text size="lg" weight="semibold">
-              Unable to load this profile
-            </Text>
+               {uiText("AppStrings.UnableToLoadThisProfile")} </Text>
             <Text color="textFaded">{profileLoadError}</Text>
-            <Button onClick={() => void refreshUser()}>Try again</Button>
+            <Button onClick={() => void refreshUser()}>{uiText("AppStrings.TryAgain")}</Button>
           </Vstack>
         </Card>
       );
@@ -1056,7 +1059,7 @@ export default function ClientUserPage({
             {bannerSrc ? (
               <img
                 src={bannerSrc}
-                alt={`${user.name}'s profile banner`}
+                alt={uiText("AppStrings.Value0SProfileBanner", { value0: user.name })}
                 className="absolute inset-0 h-full w-full object-cover"
                 loading="lazy"
                 decoding="async"
@@ -1070,8 +1073,7 @@ export default function ClientUserPage({
                   <Hstack className="items-center gap-2">
                     <Icon name="images" color="textFaded" size={18} />
                     <Text color="textFaded" size="sm">
-                      Click to upload banner
-                    </Text>
+                       {uiText("AppStrings.ClickToUploadBanner")} </Text>
                   </Hstack>
                 </div>
               )
@@ -1086,7 +1088,7 @@ export default function ClientUserPage({
                   className="items-center justify-center text-center"
                 >
                   <Icon name="images" color="text" />
-                  <Text color="text">Change banner</Text>
+                  <Text color="text">{uiText("AppStrings.ChangeBanner")}</Text>
                 </Vstack>
               </div>
             )}
@@ -1134,8 +1136,7 @@ export default function ClientUserPage({
                   >
                     <Icon name="images" color="text" size={18} />
                     <Text color="text" size="xs">
-                      Change
-                    </Text>
+                       {uiText("AppStrings.Change")} </Text>
                   </Vstack>
                 </div>
               )}
@@ -1248,8 +1249,7 @@ export default function ClientUserPage({
                           user.primaryRoles.length === 0 &&
                           user.secondaryRoles.length === 0 && (
                             <Text color="textFaded" size="sm">
-                              Click to add roles
-                            </Text>
+                               {uiText("AppStrings.ClickToAddRoles")} </Text>
                           )}
                       </Hstack>
                       {isOwner && (
@@ -1278,7 +1278,7 @@ export default function ClientUserPage({
                       }`}
                     >
                       <Text color="textFaded" size="sm">
-                        {user.pronouns || "Click to add pronouns"}
+                        {user.pronouns || uiText("AppStrings.ClickToAddPronouns")}
                       </Text>
                       {isOwner && (
                         <div
@@ -1301,8 +1301,7 @@ export default function ClientUserPage({
                     icon="messagecircle"
                     href={`/inbox/messages?to=${encodeURIComponent(user.slug)}`}
                   >
-                    Message
-                  </Button>
+                     {uiText("AppStrings.Message")} </Button>
                 )}
                 {self && !isOwner && (
                   <Button
@@ -1321,65 +1320,65 @@ export default function ClientUserPage({
                       if (response.ok) {
                         setFollowing(nextFollowing);
                       } else {
-                        addToast({ title: "Could not update follow" });
+                        addToast({ title: uiText("AppStrings.CouldNotUpdateFollow") });
                       }
                     }}
                   >
-                    {following ? "Following" : "Follow"}
+                    {following ? uiText("AppStrings.Following") : uiText("AppStrings.Follow")}
                   </Button>
                 )}
                 {[
                   {
                     key: "recommendations" as ProfileSection,
-                    label: "Recommended",
+                    label: uiText("AppStrings.Recommended"),
                     icon: "star" as const,
                     count: recommendationsCount,
                   },
                   {
                     key: "games" as ProfileSection,
-                    label: "Games",
+                    label: uiText("Navbar.Games.Title"),
                     icon: "gamepad2" as const,
                     count: publishedGames.length,
                   },
                   {
                     key: "music" as ProfileSection,
-                    label: "Music",
+                    label: uiText("Navbar.Music.Title"),
                     icon: "music" as const,
                     count: musicCount,
                   },
                   {
                     key: "collections" as ProfileSection,
-                    label: "Collections",
+                    label: uiText("Navbar.Collections.Title"),
                     icon: "layers" as const,
                     count: collectionsCount,
                   },
                   {
                     key: "posts" as ProfileSection,
-                    label: "Posts",
+                    label: uiText("AppStrings.Posts"),
                     icon: "newspaper" as const,
                     count: postsCount,
                   },
                   {
                     key: "comments" as ProfileSection,
-                    label: "Comments",
+                    label: uiText("AppStrings.Comments"),
                     icon: "messagecircle" as const,
                     count: commentsCount,
                   },
                   {
                     key: "achievements" as ProfileSection,
-                    label: "Achievements",
+                    label: uiText("CreateGame.Achievements.Title"),
                     icon: "trophy" as const,
                     count: achievementsCount,
                   },
                   {
                     key: "scores" as ProfileSection,
-                    label: "Scores",
+                    label: uiText("AppStrings.Scores"),
                     icon: "linechart" as const,
                     count: scoresCount,
                   },
                   {
                     key: "emotes" as ProfileSection,
-                    label: "Emotes",
+                    label: uiText("AppStrings.Emotes"),
                     icon: "smileplus" as const,
                     count: user.userEmotes?.length,
                   },
@@ -1459,7 +1458,7 @@ export default function ClientUserPage({
                   <Vstack className="w-full" align="stretch" gap={5}>
                     <Hstack className="items-center gap-2">
                       <Icon name="link" color="text" size={16} />
-                      <Text weight="semibold">Links</Text>
+                      <Text weight="semibold">{uiText("CreateGame.Links.Title")}</Text>
                     </Hstack>
                     <Vstack className="w-full gap-2" align="stretch">
                       {user.links?.length ? (
@@ -1500,8 +1499,7 @@ export default function ClientUserPage({
                         })
                       ) : (
                         <Text color="textFaded" size="sm">
-                          Click to add links
-                        </Text>
+                           {uiText("AppStrings.ClickToAddLinks")} </Text>
                       )}
                     </Vstack>
                   </Vstack>
@@ -1539,8 +1537,8 @@ export default function ClientUserPage({
                   >
                     <Vstack align="start" className="gap-2 w-full">
                       <Hstack className="items-center gap-2">
-                        <Icon name="info" color="text" size={16} />
-                        <Text weight="semibold">Bio</Text>
+                        <Icon name="bookuser" color="text" size={16} />
+                        <Text weight="semibold">{uiText("Settings.Bio.Title")}</Text>
                       </Hstack>
                       <ThemedProse>
                         <MentionedContent
@@ -1560,6 +1558,13 @@ export default function ClientUserPage({
                       />
                     )}
                   </div>
+                  {isOwner && (
+                    <div className="mt-2 px-2 pb-2">
+                      <Button href="/settings" icon="cog">
+                        {uiText("Settings.Title")}
+                      </Button>
+                    </div>
+                  )}
                 </Card>
               </div>
             )}
@@ -1572,16 +1577,14 @@ export default function ClientUserPage({
                   <Vstack align="stretch" gap={3}>
                     <Hstack justify="between" className="flex-wrap gap-2">
                       <Text size="lg" weight="semibold" color="text">
-                        Recommended Games
-                      </Text>
+                         {uiText("AppStrings.RecommendedGames")} </Text>
                       {isOwner && canShowRecommendedGames && (
                         <Button
                           size="sm"
                           icon="pencil"
                           onClick={() => openRecommendations("games")}
                         >
-                          Edit
-                        </Button>
+                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
                       )}
                     </Hstack>
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1595,16 +1598,14 @@ export default function ClientUserPage({
                   <Vstack align="stretch" gap={3}>
                     <Hstack justify="between" className="flex-wrap gap-2">
                       <Text size="lg" weight="semibold">
-                        Recommended Music
-                      </Text>
+                         {uiText("AppStrings.RecommendedMusic")} </Text>
                       {isOwner && canShowRecommendedTracks && (
                         <Button
                           size="sm"
                           icon="pencil"
                           onClick={() => openRecommendations("tracks")}
                         >
-                          Edit
-                        </Button>
+                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
                       )}
                     </Hstack>
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1724,8 +1725,7 @@ export default function ClientUserPage({
                 ) : collections.length === 0 ? (
                   <div className="rounded-lg border border-white/10 bg-white/[0.03] p-6 sm:col-span-2 lg:col-span-3 xl:col-span-4">
                     <Text size="sm" color="textFaded">
-                      No collections yet.
-                    </Text>
+                       {uiText("AppStrings.NoCollectionsYet")} </Text>
                   </div>
                 ) : (
                   collections.map((collection) => {
@@ -1791,8 +1791,7 @@ export default function ClientUserPage({
             {profileSection === "posts" &&
               (visiblePosts.length === 0 ? (
                 <Text size="sm" color="textFaded">
-                  No posts yet.
-                </Text>
+                   {uiText("AppStrings.NoPostsYet")} </Text>
               ) : (
                 <section className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
                   {visiblePosts
@@ -1824,8 +1823,7 @@ export default function ClientUserPage({
             {profileSection === "scores" &&
               (bestScores.length === 0 ? (
                 <Text size="sm" color="textFaded">
-                  No scores yet.
-                </Text>
+                   {uiText("AppStrings.NoScoresYet")} </Text>
               ) : (
                 <section className="grid grid-cols-1 gap-3 lg:grid-cols-2">
                   {bestScores
@@ -1863,7 +1861,7 @@ export default function ClientUserPage({
                                   color="textFaded"
                                   className="max-w-full truncate"
                                 >
-                                  {score.leaderboard.name || "Leaderboard"}
+                                  {score.leaderboard.name || uiText("AppStrings.Leaderboard2")}
                                 </Text>
                               </Vstack>
                             </Hstack>
@@ -1881,7 +1879,7 @@ export default function ClientUserPage({
                                 className="tabular-nums"
                                 style={{ color }}
                               >
-                                {placement ? ordinal(placement) : "Unranked"}
+                                {placement ? ordinal(placement) : uiText("AppStrings.Unranked")}
                               </Text>
                             </Vstack>
                           </Hstack>
@@ -1894,12 +1892,10 @@ export default function ClientUserPage({
               <Card>
                 <Vstack align="stretch" gap={3}>
                   <Text size="lg" weight="semibold">
-                    Achievements
-                  </Text>
+                     {uiText("CreateGame.Achievements.Title")} </Text>
                   {user.achievements.length === 0 ? (
                     <Text size="sm" color="textFaded">
-                      No achievements yet.
-                    </Text>
+                       {uiText("AppStrings.NoAchievementsYet")} </Text>
                   ) : (
                     <Hstack wrap>
                       {user.achievements
@@ -1934,7 +1930,7 @@ export default function ClientUserPage({
                                         }
                                         width={48}
                                         height={48}
-                                        alt="Achievement"
+                                        alt={uiText("AppStrings.Achievement")}
                                         className="rounded-xl w-12 h-12 object-cover"
                                       />
                                       <Vstack align="start" gap={0}>
@@ -1950,7 +1946,7 @@ export default function ClientUserPage({
                                               achievement.game.thumbnail ||
                                               "/images/D2J_Icon.png"
                                             }
-                                            alt="Game thumbnail"
+                                            alt={uiText("AppStrings.GameThumbnail")}
                                             width={18}
                                             height={10}
                                             className="rounded-lg w-[18px] h-[10px] object-cover"
@@ -1965,9 +1961,8 @@ export default function ClientUserPage({
                                         >
                                           {tier === "Default"
                                             ? ""
-                                            : `${tier} - `}
-                                          {pct.toFixed(1)}% of users achieved
-                                        </Text>
+                                            : uiText("AppStrings.Value05", { value0: tier })}
+                                          {pct.toFixed(1)}{uiText("AppStrings.OfUsersAchieved")} </Text>
                                       </Vstack>
                                     </Hstack>
                                   </Vstack>
@@ -1992,7 +1987,7 @@ export default function ClientUserPage({
                                       }
                                       width={48}
                                       height={48}
-                                      alt="Achievement"
+                                      alt={uiText("AppStrings.Achievement")}
                                       className="rounded-lg w-12 h-12 object-cover"
                                     />
                                   </div>
@@ -2038,11 +2033,9 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Profile picture
-                  </Text>
+                     {uiText("AppStrings.ProfilePicture")} </Text>
                   <Text size="sm" color="textFaded">
-                    Upload a new avatar or pick a default one
-                  </Text>
+                     {uiText("AppStrings.UploadANewAvatarOrPickADefault")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2051,20 +2044,19 @@ export default function ClientUserPage({
                     value={avatarDraft}
                     width={120}
                     height={120}
-                    placeholder="Upload"
+                    placeholder={uiText("AppStrings.Upload")}
                     onSelect={async (file, crop) => {
                       try {
                         const url = await uploadImage(file, crop);
                         setAvatarDraft(url);
                       } catch (error) {
                         console.error(error);
-                        addToast({ title: "Failed to upload avatar" });
+                        addToast({ title: uiText("AppStrings.FailedToUploadAvatar") });
                       }
                     }}
                   />
                   <Text size="sm" color="textFaded">
-                    Or choose a default profile picture:
-                  </Text>
+                     {uiText("AppStrings.OrChooseADefaultProfilePicture")} </Text>
                   <div className="flex flex-wrap gap-2">
                     {defaultPfps.map((src, index) => (
                       <button
@@ -2081,7 +2073,7 @@ export default function ClientUserPage({
                       >
                         <img
                           src={src}
-                          alt={`Default pfp ${index + 1}`}
+                          alt={uiText("AppStrings.DefaultPfpValue0", { value0: index + 1 })}
                           className="h-full w-full rounded-full object-cover"
                           loading="lazy"
                           decoding="async"
@@ -2093,8 +2085,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={avatarDraft !== avatarSrc ? "blue" : "default"}
                   onClick={async () => {
@@ -2103,8 +2094,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile || avatarDraft === avatarSrc}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2126,11 +2116,9 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Banner
-                  </Text>
+                     {uiText("CreateGame.Banner.Title")} </Text>
                   <Text size="sm" color="textFaded">
-                    Upload a 3:1 banner or pick a default
-                  </Text>
+                     {uiText("AppStrings.UploadA31BannerOrPickA")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2139,20 +2127,19 @@ export default function ClientUserPage({
                     value={bannerDraft}
                     width={440}
                     height={40}
-                    placeholder="Upload"
+                    placeholder={uiText("AppStrings.Upload")}
                     onSelect={async (file, crop) => {
                       try {
                         const url = await uploadImage(file, crop);
                         setBannerDraft(url);
                       } catch (error) {
                         console.error(error);
-                        addToast({ title: "Failed to upload banner" });
+                        addToast({ title: uiText("AppStrings.FailedToUploadBanner") });
                       }
                     }}
                   />
                   <Text size="sm" color="textFaded">
-                    Or choose a default banner:
-                  </Text>
+                     {uiText("AppStrings.OrChooseADefaultBanner")} </Text>
                   <div className="flex flex-wrap gap-2">
                     {defaultBanners.map((src, index) => (
                       <button
@@ -2169,7 +2156,7 @@ export default function ClientUserPage({
                       >
                         <img
                           src={src}
-                          alt={`Default banner ${index + 1}`}
+                          alt={uiText("AppStrings.DefaultBannerValue0", { value0: index + 1 })}
                           className="h-full w-full object-cover"
                           loading="lazy"
                           decoding="async"
@@ -2181,8 +2168,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={bannerDraft !== bannerSrc ? "blue" : "default"}
                   onClick={async () => {
@@ -2191,8 +2177,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile || bannerDraft === bannerSrc}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2214,11 +2199,9 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Background
-                  </Text>
+                     {uiText("AppStrings.Background")} </Text>
                   <Text size="sm" color="textFaded">
-                    Upload a 16:9 background or pick a default
-                  </Text>
+                     {uiText("AppStrings.UploadA169BackgroundOrPickA")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2227,20 +2210,19 @@ export default function ClientUserPage({
                     value={backgroundDraft}
                     width={320}
                     height={180}
-                    placeholder="Upload"
+                    placeholder={uiText("AppStrings.Upload")}
                     onSelect={async (file, crop) => {
                       try {
                         const url = await uploadImage(file, crop);
                         setBackgroundDraft(url);
                       } catch (error) {
                         console.error(error);
-                        addToast({ title: "Failed to upload background" });
+                        addToast({ title: uiText("AppStrings.FailedToUploadBackground") });
                       }
                     }}
                   />
                   <Text size="sm" color="textFaded">
-                    Or choose a default background:
-                  </Text>
+                     {uiText("AppStrings.OrChooseADefaultBackground")} </Text>
                   <div className="flex flex-wrap gap-2">
                     {defaultBackgrounds.map((src, index) => (
                       <button
@@ -2257,7 +2239,7 @@ export default function ClientUserPage({
                       >
                         <img
                           src={src}
-                          alt={`Default background ${index + 1}`}
+                          alt={uiText("AppStrings.DefaultBackgroundValue0", { value0: index + 1 })}
                           className="h-full w-full object-cover"
                           loading="lazy"
                           decoding="async"
@@ -2269,8 +2251,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={backgroundDraft !== backgroundSrc ? "blue" : "default"}
                   onClick={async () => {
@@ -2279,8 +2260,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile || backgroundDraft === backgroundSrc}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2302,24 +2282,21 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Display name
-                  </Text>
+                     {uiText("AppStrings.DisplayName")} </Text>
                   <Text size="sm" color="textFaded">
-                    Update how your name appears on your profile
-                  </Text>
+                     {uiText("AppStrings.UpdateHowYourNameAppearsOnYourProfile")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
                 <Input
                   value={nameDraft}
                   onValueChange={setNameDraft}
-                  placeholder="Display name"
+                  placeholder={uiText("AppStrings.DisplayName")}
                 />
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={
                     nameDraft.trim() !== (user.name ?? "").trim()
@@ -2335,8 +2312,7 @@ export default function ClientUserPage({
                     nameDraft.trim() === (user.name ?? "").trim()
                   }
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2358,11 +2334,9 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Edit bio
-                  </Text>
+                     {uiText("AppStrings.EditBio")} </Text>
                   <Text size="sm" color="textFaded">
-                    Update your profile bio
-                  </Text>
+                     {uiText("AppStrings.UpdateYourProfileBio")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2378,8 +2352,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={bioDraft !== (user.bio ?? "") ? "blue" : "default"}
                   onClick={async () => {
@@ -2388,8 +2361,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile || bioDraft === (user.bio ?? "")}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2411,19 +2383,16 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Pronouns
-                  </Text>
+                     {uiText("AppStrings.Pronouns")} </Text>
                   <Text size="sm" color="textFaded">
-                    Add pronouns to your profile
-                  </Text>
+                     {uiText("AppStrings.AddPronounsToYourProfile")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
                 <Vstack align="start" gap={3}>
                   <Vstack align="start" gap={2}>
                     <Text color="textFaded" size="xs">
-                      Presets
-                    </Text>
+                       {uiText("AppStrings.Presets")} </Text>
                     <Hstack wrap className="gap-2">
                       {[
                         "she/her",
@@ -2452,10 +2421,9 @@ export default function ClientUserPage({
                   </Vstack>
                   <Vstack align="start" gap={2}>
                     <Text color="textFaded" size="xs">
-                      Custom
-                    </Text>
+                       {uiText("AppStrings.Custom")} </Text>
                     <Input
-                      placeholder="Type your pronouns"
+                      placeholder={uiText("AppStrings.TypeYourPronouns")}
                       value={pronounsDraft}
                       onValueChange={setPronounsDraft}
                     />
@@ -2464,8 +2432,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={
                     (pronounsDraft.trim() || "") !==
@@ -2483,8 +2450,7 @@ export default function ClientUserPage({
                       ((user.pronouns ?? "").trim() || "")
                   }
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2506,11 +2472,9 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Links
-                  </Text>
+                     {uiText("CreateGame.Links.Title")} </Text>
                   <Text size="sm" color="textFaded">
-                    Add links to your profile
-                  </Text>
+                     {uiText("AppStrings.AddLinksToYourProfile")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2526,7 +2490,7 @@ export default function ClientUserPage({
                             return next;
                           });
                         }}
-                        placeholder="Label"
+                        placeholder={uiText("AppStrings.Label")}
                         className="max-w-[160px]"
                       />
                       <Input
@@ -2553,20 +2517,19 @@ export default function ClientUserPage({
                     </Hstack>
                   ))}
                   <Button
+                    className="w-fit self-start"
                     size="sm"
                     icon="plus"
                     onClick={() =>
                       setLinksDraft((prev) => [...prev, { url: "", label: "" }])
                     }
                   >
-                    Add link
-                  </Button>
+                     {uiText("AppStrings.AddLink")} </Button>
                 </Vstack>
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={linksChanged ? "blue" : "default"}
                   onClick={async () => {
@@ -2575,8 +2538,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile || !linksChanged}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2598,8 +2560,7 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Edit recommendations
-                  </Text>
+                     {uiText("AppStrings.EditRecommendations")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
@@ -2607,12 +2568,10 @@ export default function ClientUserPage({
                   {recType !== "posts" && (
                     <Vstack align="stretch" gap={2}>
                       <Text size="sm" color="textFaded">
-                        Currently shown
-                      </Text>
+                         {uiText("AppStrings.CurrentlyShown")} </Text>
                       {recPreviewItems.length === 0 ? (
                         <Text size="sm" color="textFaded">
-                          No recommendations will be shown.
-                        </Text>
+                           {uiText("AppStrings.NoRecommendationsWillBeShown")} </Text>
                       ) : (
                         recPreviewItems.map((item) => (
                           <Card key={`preview-${item.id}`}>
@@ -2640,8 +2599,7 @@ export default function ClientUserPage({
                                     );
                                   }}
                                 >
-                                  Hide
-                                </Button>
+                                   {uiText("AppStrings.Hide")} </Button>
                               )}
                             </Hstack>
                           </Card>
@@ -2652,9 +2610,9 @@ export default function ClientUserPage({
                   <Input
                     value={recSearch}
                     onValueChange={setRecSearch}
-                    placeholder={`Search ${recType}`}
+                    placeholder={uiText("AppStrings.SearchValue0", { value0: recType })}
                   />
-                  {recLoading && <Text size="sm">Loading...</Text>}
+                  {recLoading && <Text size="sm">{uiText("ThemeSuggestions.Loading.Title")}</Text>}
                   <Vstack align="stretch" gap={2}>
                     {(recType === "games"
                       ? recResults.games
@@ -2674,8 +2632,8 @@ export default function ClientUserPage({
                               {"slug" in item && (
                                 <Text size="xs" color="textFaded">
                                   {"title" in item
-                                    ? `/p/${item.slug}`
-                                    : `/g/${item.slug}`}
+                                    ? uiText("AppStrings.PValue0", { value0: item.slug })
+                                    : uiText("AppStrings.GValue0", { value0: item.slug })}
                                 </Text>
                               )}
                             </Vstack>
@@ -2699,8 +2657,7 @@ export default function ClientUserPage({
                                 );
                               }}
                             >
-                              Add
-                            </Button>
+                               {uiText("AppStrings.Add")} </Button>
                           </Hstack>
                         </Card>
                       ))}
@@ -2708,13 +2665,12 @@ export default function ClientUserPage({
 
                   <Vstack align="stretch" gap={2}>
                     <Text size="sm" color="textFaded">
-                      Manual overrides ({recSelected.length}/
+                       {uiText("AppStrings.ManualOverrides")}{recSelected.length}/
                       {recommendationLimit})
                     </Text>
                     {recSelectedItems.length === 0 ? (
                       <Text size="sm" color="textFaded">
-                        No manual overrides.
-                      </Text>
+                         {uiText("AppStrings.NoManualOverrides")} </Text>
                     ) : (
                       recSelectedItems.map((item) => (
                         <Card key={`selected-${item.id}`}>
@@ -2726,8 +2682,8 @@ export default function ClientUserPage({
                               {"slug" in item && (
                                 <Text size="xs" color="textFaded">
                                   {"title" in item
-                                    ? `/p/${item.slug}`
-                                    : `/g/${item.slug}`}
+                                    ? uiText("AppStrings.PValue0", { value0: item.slug })
+                                    : uiText("AppStrings.GValue0", { value0: item.slug })}
                                 </Text>
                               )}
                             </Vstack>
@@ -2740,8 +2696,7 @@ export default function ClientUserPage({
                                 )
                               }
                             >
-                              Remove
-                            </Button>
+                               {uiText("PostCard.Remove.Title")} </Button>
                           </Hstack>
                         </Card>
                       ))
@@ -2751,12 +2706,11 @@ export default function ClientUserPage({
                   {recType !== "posts" && (
                     <Vstack align="stretch" gap={2}>
                       <Text size="sm" color="textFaded">
-                        Hidden recommendations ({recHiddenItems.length})
+                         {uiText("AppStrings.HiddenRecommendations")}{recHiddenItems.length})
                       </Text>
                       {recHiddenItems.length === 0 ? (
                         <Text size="sm" color="textFaded">
-                          No hidden recommendations.
-                        </Text>
+                           {uiText("AppStrings.NoHiddenRecommendations")} </Text>
                       ) : (
                         <div className="max-h-40 overflow-y-auto pr-1">
                           <Vstack align="stretch" gap={2}>
@@ -2770,8 +2724,8 @@ export default function ClientUserPage({
                                     {"slug" in item && (
                                       <Text size="xs" color="textFaded">
                                         {"title" in item
-                                          ? `/p/${item.slug}`
-                                          : `/g/${item.slug}`}
+                                          ? uiText("AppStrings.PValue0", { value0: item.slug })
+                                          : uiText("AppStrings.GValue0", { value0: item.slug })}
                                       </Text>
                                     )}
                                   </Vstack>
@@ -2786,8 +2740,7 @@ export default function ClientUserPage({
                                       )
                                     }
                                   >
-                                    Unhide
-                                  </Button>
+                                     {uiText("AppStrings.Unhide")} </Button>
                                 </Hstack>
                               </Card>
                             ))}
@@ -2800,8 +2753,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color="blue"
                   onClick={async () => {
@@ -2810,8 +2762,7 @@ export default function ClientUserPage({
                   }}
                   disabled={savingProfile}
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}
@@ -2833,17 +2784,15 @@ export default function ClientUserPage({
               <ModalHeader>
                 <Vstack align="start">
                   <Text size="xl" color="text">
-                    Roles
-                  </Text>
+                     {uiText("AppStrings.Roles")} </Text>
                   <Text size="sm" color="textFaded">
-                    Update your profile roles
-                  </Text>
+                     {uiText("AppStrings.UpdateYourProfileRoles")} </Text>
                 </Vstack>
               </ModalHeader>
               <ModalBody>
                 <Vstack align="start" gap={4}>
                   <Vstack align="start">
-                    <Text color="text">Primary roles</Text>
+                    <Text color="text">{uiText("AppStrings.PrimaryRoles")}</Text>
                     <Dropdown
                       multiple
                       selectedValues={primaryRoles}
@@ -2862,7 +2811,7 @@ export default function ClientUserPage({
                                     )?.name || "Unknown",
                                 )
                                 .join(", ")
-                            : "No Roles"}
+                            : uiText("AppStrings.NoRoles")}
                         </Button>
                       }
                     >
@@ -2878,7 +2827,7 @@ export default function ClientUserPage({
                     </Dropdown>
                   </Vstack>
                   <Vstack align="start">
-                    <Text color="text">Secondary roles</Text>
+                    <Text color="text">{uiText("AppStrings.SecondaryRoles")}</Text>
                     <Dropdown
                       multiple
                       selectedValues={secondaryRoles}
@@ -2897,7 +2846,7 @@ export default function ClientUserPage({
                                     )?.name || "Unknown",
                                 )
                                 .join(", ")
-                            : "No Roles"}
+                            : uiText("AppStrings.NoRoles")}
                         </Button>
                       }
                     >
@@ -2916,8 +2865,7 @@ export default function ClientUserPage({
               </ModalBody>
               <ModalFooter>
                 <Button onClick={onClose} disabled={savingProfile}>
-                  Cancel
-                </Button>
+                   {uiText("AppStrings.Cancel")} </Button>
                 <Button
                   color={
                     primaryRoles.size !== user.primaryRoles.length ||
@@ -2951,8 +2899,7 @@ export default function ClientUserPage({
                       ))
                   }
                 >
-                  Save
-                </Button>
+                   {uiText("Settings.Save.Title")} </Button>
               </ModalFooter>
             </>
           )}

@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import Image from "@/compat/next-image";
 import Link from "@/compat/next-link";
 import {
@@ -29,6 +32,7 @@ function gameHref(slug: string, pageVersion: "JAM" | "POST_JAM") {
 }
 
 export default function SidebarAchievements() {
+  const uiText = useUiTranslations();
   const { data: activeJam, isLoading: jamLoading } = useCurrentJam();
   const jamId =
     activeJam?.jam &&
@@ -60,8 +64,7 @@ export default function SidebarAchievements() {
   return (
     <section className="mt-12 flex flex-col items-center gap-2">
       <SidebarSectionTitle>
-        Recent Achievements
-      </SidebarSectionTitle>
+         {uiText("AppStrings.RecentAchievements")} </SidebarSectionTitle>
 
       <div className="flex w-full flex-col gap-2">
         {isError && (
@@ -73,8 +76,7 @@ export default function SidebarAchievements() {
               color: colors.textFaded,
             }}
           >
-            Recent achievements couldn&apos;t be loaded.
-          </div>
+             {uiText("AppStrings.RecentAchievementsCouldnAposTBeLoaded")} </div>
         )}
         {achievements.map((entry) => {
           const accent = colors[tierColor[entry.tier]];
@@ -93,7 +95,7 @@ export default function SidebarAchievements() {
             >
               <div className="relative shrink-0">
                 <AchievementHoverPreview entry={entry}>
-                  <Link href={href} aria-label={`Open ${entry.game.name}`}>
+                  <Link href={href} aria-label={uiText("AppStrings.OpenValue0", { value0: entry.game.name })}>
                     <Image
                       src={
                         entry.achievement.image ||
@@ -111,7 +113,7 @@ export default function SidebarAchievements() {
                   <UserHoverPreview user={entry.user}>
                     <Link
                       href={`/u/${entry.user.slug}`}
-                      aria-label={`Open ${entry.user.name}'s profile`}
+                      aria-label={uiText("AppStrings.OpenValue0SProfile", { value0: entry.user.name })}
                     >
                       <Image
                         src={entry.user.profilePicture || "/images/D2J_Icon.png"}
@@ -136,7 +138,7 @@ export default function SidebarAchievements() {
                       {entry.user.name}
                     </Link>
                   </UserHoverPreview>{" "}
-                  earned{" "}
+                   {uiText("AppStrings.Earned")}{" "}
                   {formatDistance(new Date(entry.earnedAt), new Date(), {
                     addSuffix: true,
                   })}

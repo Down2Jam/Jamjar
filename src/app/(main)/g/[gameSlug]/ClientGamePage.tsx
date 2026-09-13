@@ -1,5 +1,8 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { use, useCallback, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
@@ -97,14 +100,14 @@ const platformOrder: Record<string, number> = {
 };
 
 const inputMethodMeta: Record<string, { label: string; icon?: IconName }> = {
-  KeyboardMouse: { label: "Keyboard + Mouse", icon: "keyboard" },
-  Gamepad: { label: "Gamepad / Controller", icon: "gamepad2" },
-  Touch: { label: "Touch", icon: "touchpad" },
-  KeyboardOnly: { label: "Keyboard Only", icon: "keyboard" },
-  MouseOnly: { label: "Mouse Only", icon: "mouse" },
-  Motion: { label: "Motion Controls", icon: "move3d" },
-  VR: { label: "VR", icon: "headset" },
-  Other: { label: "Other", icon: "morehorizontal" },
+  KeyboardMouse: { label: "AppStrings.KeyboardMouse", icon: "keyboard" },
+  Gamepad: { label: "AppStrings.GamepadController", icon: "gamepad2" },
+  Touch: { label: "AppStrings.Touch", icon: "touchpad" },
+  KeyboardOnly: { label: "AppStrings.KeyboardOnly", icon: "keyboard" },
+  MouseOnly: { label: "AppStrings.MouseOnly", icon: "mouse" },
+  Motion: { label: "AppStrings.MotionControls", icon: "move3d" },
+  VR: { label: "AppStrings.VR", icon: "headset" },
+  Other: { label: "AppStrings.Other", icon: "morehorizontal" },
 };
 
 function getPlatformIcon(platform: string): IconName | undefined {
@@ -336,6 +339,7 @@ export default function ClientGamePage({
 }: {
   params: Promise<{ gameSlug: string }>;
 }) {
+  const uiText = useUiTranslations();
   const resolvedParams = use(params);
   const gameSlug = resolvedParams.gameSlug;
   const searchParams = useSearchParams();
@@ -407,7 +411,7 @@ export default function ClientGamePage({
   usePageMetadata({
     title: displayGame?.name ?? game?.name ?? gameSlug,
     description:
-      displayGame?.short || game?.short || "A game submitted to Down2Jam",
+      displayGame?.short || game?.short || uiText("AppStrings.AGameSubmittedToDown2Jam"),
     image:
       displayGame?.thumbnail ||
       displayGame?.banner ||
@@ -606,7 +610,7 @@ export default function ClientGamePage({
     });
 
     if (!res.ok) {
-      addToast({ title: "Failed to upload image" });
+      addToast({ title: uiText("AppStrings.FailedToUploadImage") });
       throw new Error("Upload failed");
     }
     const json = await res.json();
@@ -684,8 +688,8 @@ export default function ClientGamePage({
     .map((method) => inputMethodMeta[method])
     .filter(Boolean);
   const playtimeDetails = [
-    { label: "Per run", value: displayGame?.estOneRun },
-    { label: "To beat", value: displayGame?.estAnyPercent },
+    { label: uiText("AppStrings.PerRun"), value: displayGame?.estOneRun },
+    { label: uiText("AppStrings.ToBeat"), value: displayGame?.estAnyPercent },
     { label: "100%", value: displayGame?.estHundredPercent },
   ].filter((entry) => entry.value);
   const gameEmotes = displayGame?.gameEmotes ?? [];
@@ -835,8 +839,8 @@ export default function ClientGamePage({
   const canRateDisplayedTrack = Boolean(user) && !isEditable && selectedVersion === "JAM" &&
     activeJamResponse?.jam?.id === displayGame.jamId && isJamRatingOpenPhase && Boolean(trackOverallCategory);
 
-  if (!displayGame.published && !isEditable) {
-    return <p>This game has not been published</p>;
+  if (!displayGame.published && !isEditable && !game?.canViewUnpublished) {
+    return <p>{uiText("AppStrings.ThisGameHasNotBeenPublished")}</p>;
   }
 
   const categoryAccent = colors[
@@ -858,13 +862,13 @@ export default function ClientGamePage({
         <div
           className="relative h-60 overflow-hidden lg:rounded-t-[11px]"
           style={{
-            backgroundColor: colors["mantle"],
+            backgroundColor: colors["base"],
           }}
         >
           {(displayGame.thumbnail || displayGame.banner) && (
             <Image
               src={displayGame.banner || displayGame.thumbnail || ""}
-              alt={`${displayGame.name}'s banner`}
+              alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
               className="object-cover"
               fill
             />
@@ -885,11 +889,11 @@ export default function ClientGamePage({
                     color: colors["textFaded"],
                   }}
                 >
-                  By{" "}
+                   {uiText("PostCard.By")}{" "}
                   {displayGame.team.name ||
                     (displayGame.team.users.length == 1
                       ? displayGame.team.owner.name
-                      : `${displayGame.team.owner.name}'s team`)}{" "}
+                      : uiText("AppStrings.Value0STeam", { value0: displayGame.team.owner.name }))}{" "}
                 </p>
                 <Chip
                   style={{
@@ -905,15 +909,15 @@ export default function ClientGamePage({
                 </Chip>
               </Hstack>
             </div>
-            <div className="flex flex-wrap gap-2 lg:hidden" aria-label="Game information">
+            <div className="flex flex-wrap gap-2 lg:hidden" aria-label={uiText("AppStrings.GameInformation")}>
               {[
-                { name: "Details", icon: "info", show: true },
-                { name: "Media", icon: "image", show: hasMedia },
-                { name: "Ratings", icon: "star", show: showRatingSection },
-                { name: "Soundtrack", icon: "music", show: soundtrackQueue.length > 0 },
-                { name: "Leaderboards", icon: "trophy", show: !!displayGame.leaderboards?.length },
-                { name: "Achievements", icon: "award", show: !!displayGame.achievements?.length },
-                { name: "Stats", icon: "linechart", show: displayGame.category !== "EXTERNAL" },
+                { name: uiText("AppStrings.Details"), icon: "info", show: true },
+                { name: uiText("AppStrings.Media"), icon: "image", show: hasMedia },
+                { name: uiText("Stats.Ratings"), icon: "star", show: showRatingSection },
+                { name: uiText("CreateGame.Soundtrack.Title"), icon: "music", show: soundtrackQueue.length > 0 },
+                { name: uiText("CreateGame.Leaderboards.Title"), icon: "trophy", show: !!displayGame.leaderboards?.length },
+                { name: uiText("CreateGame.Achievements.Title"), icon: "award", show: !!displayGame.achievements?.length },
+                { name: uiText("AppStrings.Stats"), icon: "linechart", show: displayGame.category !== "EXTERNAL" },
               ].filter((section) => section.show).map((section) => <Button key={section.name} size="sm" variant="ghost" icon={section.icon as IconName} onClick={() => setMobileSection(section.name)}>{section.name}</Button>)}
             </div>
             {playableEmbedUrl && (
@@ -932,7 +936,7 @@ export default function ClientGamePage({
                     ref={playableEmbedRef}
                     key={playableEmbedUrl}
                     src={playableEmbedUrl}
-                    title={`${displayGame.name} playable embed`}
+                    title={uiText("AppStrings.Value0PlayableEmbed", { value0: displayGame.name })}
                     className="w-full h-full"
                     style={{ border: 0 }}
                     sandbox={
@@ -955,14 +959,13 @@ export default function ClientGamePage({
                         "rgba(0, 0, 0, 0.72)",
                       color: colors["text"],
                     }}
-                    aria-label={`Load ${displayGame.name} playable embed`}
+                    aria-label={uiText("AppStrings.LoadValue0PlayableEmbed", { value0: displayGame.name })}
                   >
                     <span
                       className="flex items-center gap-3 text-base font-semibold transition-transform hover:scale-105"
                     >
                       <Play size={20} fill="currentColor" />
-                      Play game
-                    </span>
+                       {uiText("AppStrings.PlayGame")} </span>
                   </button>
                 )}
                 {playableBuildUrl &&
@@ -970,8 +973,8 @@ export default function ClientGamePage({
                   isItchEmbedActive && (
                     <button
                       type="button"
-                      aria-label="Open game in fullscreen"
-                      title="Fullscreen"
+                      aria-label={uiText("AppStrings.OpenGameInFullscreen")}
+                      title={uiText("AppStrings.Fullscreen")}
                       className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-lg shadow-lg"
                       style={{
                         backgroundColor: colors["mantle"],
@@ -982,7 +985,7 @@ export default function ClientGamePage({
                         void playableEmbedRef.current
                           ?.requestFullscreen()
                           .catch(() => {
-                            addToast({ title: "Fullscreen is unavailable." });
+                            addToast({ title: uiText("AppStrings.FullscreenIsUnavailable") });
                           });
                       }}
                     >
@@ -1052,20 +1055,20 @@ export default function ClientGamePage({
                 {hasGameplayDetails && (
                   <div className="absolute right-0 top-0 z-20 hidden items-center gap-1 lg:flex">
                     {gameplayDetails.length > 0 && (
-                      <GameInfoButton label="Controls" icon="gamepad2">
+                      <GameInfoButton label={uiText("AppStrings.Controls")} icon="gamepad2">
                         <div className="flex flex-wrap gap-2">
                           {gameplayDetails.map((method) => (
-                            <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{method.label}</Chip>
+                            <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{uiText(method.label)}</Chip>
                           ))}
                         </div>
                       </GameInfoButton>
                     )}
                     {playtimeDetails.length > 0 && (
-                      <GameInfoButton label="Playtime" icon="clock">
+                      <GameInfoButton label={uiText("AppStrings.Playtime")} icon="clock">
                         <dl className="flex flex-col gap-2 text-sm">
                           {playtimeDetails.map((entry) => (
                             <div key={entry.label} className="flex items-start justify-between gap-4">
-                              <dt style={{ color: colors.textFaded }}>{entry.label}</dt>
+                              <dt style={{ color: colors.textFaded }}>{uiText(entry.label)}</dt>
                               <dd className="text-right">{entry.value}</dd>
                             </div>
                           ))}
@@ -1083,8 +1086,7 @@ export default function ClientGamePage({
                         href={`/g/${displayGame.slug}/edit`}
                         style={{ boxShadow: "none" }}
                       >
-                        Edit
-                      </Button>
+                         {uiText("ThemeSuggestions.Edit.Title")} </Button>
                     </div>
                     {displayGame.category != "ODA" && (
                       <div>
@@ -1093,8 +1095,7 @@ export default function ClientGamePage({
                           href={`/team?teamId=${displayGame.teamId}`}
                           style={{ boxShadow: "none" }}
                         >
-                          Edit Team
-                        </Button>
+                           {uiText("AppStrings.EditTeam")} </Button>
                       </div>
                     )}
                   </Hstack>
@@ -1116,8 +1117,7 @@ export default function ClientGamePage({
                       color: colors["textFaded"],
                     }}
                   >
-                    AUTHORS
-                  </p>
+                     {uiText("AppStrings.AUTHORS")} </p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {displayGame.team.users.map((user) => (
@@ -1141,8 +1141,7 @@ export default function ClientGamePage({
                         color: colors["textFaded"],
                       }}
                     >
-                      TAGS
-                    </p>
+                       {uiText("AppStrings.TAGS")} </p>
                     <div className="flex flex-wrap gap-2">
                       {displayGame.tags.map((tag) => (
                         <Chip style={{ borderColor: interactiveOutlineColor }} key={tag.id} className="post-tag-chip">
@@ -1160,8 +1159,7 @@ export default function ClientGamePage({
                         color: colors["textFaded"],
                       }}
                     >
-                      FLAGS
-                    </p>
+                       {uiText("AppStrings.FLAGS")} </p>
                     <div className="flex flex-wrap gap-2">
                       {displayGame.flags.map((flag) => (
                         <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} key={flag.id}>{flag.name}</Chip>
@@ -1178,8 +1176,7 @@ export default function ClientGamePage({
                           color: colors["textFaded"],
                         }}
                       >
-                        LINKS
-                      </p>
+                         {uiText("AppStrings.LINKS")} </p>
                       <div className="flex flex-col gap-2 items-start">
                         {displayGame.downloadLinks.map((link) => (
                           <Link key={link.id} href={link.url}>
@@ -1196,16 +1193,16 @@ export default function ClientGamePage({
                     </div>
                   )}
                 {gameplayDetails.length > 0 && <div className="flex flex-col gap-2 lg:hidden">
-                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>CONTROLS</p>
+                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>{uiText("AppStrings.CONTROLS")}</p>
                   <div className="flex flex-wrap gap-2">
-                    {gameplayDetails.map((method) => <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{method.label}</Chip>)}
+                    {gameplayDetails.map((method) => <Chip key={method.label} className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} icon={method.icon}>{uiText(method.label)}</Chip>)}
                   </div>
                 </div>}
                 {playtimeDetails.length > 0 && <div className="flex flex-col gap-2 lg:hidden">
-                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>PLAYTIME</p>
+                  <p className="text-xs leading-4" style={{ color: colors.textFaded }}>{uiText("AppStrings.PLAYTIME")}</p>
                   <dl className="flex flex-col gap-2 text-sm">
                     {playtimeDetails.map((entry) => <div key={entry.label} className="flex items-start justify-between gap-4">
-                      <dt style={{ color: colors.textFaded }}>{entry.label}</dt>
+                      <dt style={{ color: colors.textFaded }}>{uiText(entry.label)}</dt>
                       <dd className="text-right">{entry.value}</dd>
                     </div>)}
                   </dl>
@@ -1223,8 +1220,7 @@ export default function ClientGamePage({
                       color: colors["textFaded"],
                     }}
                   >
-                    MEDIA
-                  </p>
+                     {uiText("AppStrings.MEDIA")} </p>
                   {selectedMedia && (
                     <>
                       <div
@@ -1244,7 +1240,7 @@ export default function ClientGamePage({
                                 ? BASE_URL
                                 : window.location.origin,
                             )}`}
-                            title={`${displayGame.name} trailer`}
+                            title={uiText("AppStrings.Value0Trailer", { value0: displayGame.name })}
                             className="h-full w-full"
                             style={{ border: 0 }}
                             onLoad={subscribeToTrailerEvents}
@@ -1259,7 +1255,7 @@ export default function ClientGamePage({
                           >
                             <img
                               src={selectedMedia.src}
-                              alt={`${displayGame.name} screenshot ${selectedMedia.index + 1}`}
+                              alt={uiText("AppStrings.Value0ScreenshotValue1", { value0: displayGame.name, value1: selectedMedia.index + 1 })}
                               className="block h-full w-full object-cover"
                               loading="lazy"
                               decoding="async"
@@ -1277,7 +1273,7 @@ export default function ClientGamePage({
                                 color: colors["text"],
                                 border: `1px solid ${colors["surface0"]}`,
                               }}
-                              aria-label="Show previous media"
+                              aria-label={uiText("AppStrings.ShowPreviousMedia")}
                             >
                               <ChevronLeft size={18} />
                             </button>
@@ -1290,7 +1286,7 @@ export default function ClientGamePage({
                                 color: colors["text"],
                                 border: `1px solid ${colors["surface0"]}`,
                               }}
-                              aria-label="Show next media"
+                              aria-label={uiText("AppStrings.ShowNextMedia")}
                             >
                               <ChevronRight size={18} />
                             </button>
@@ -1327,11 +1323,11 @@ export default function ClientGamePage({
                                   : "none",
                                 backgroundColor: colors["base"],
                               }}
-                              aria-label={`Show ${label.toLowerCase()}`}
+                              aria-label={uiText("AppStrings.ShowValue0", { value0: label.toLowerCase() })}
                             >
                               <img
                                 src={thumbnailSrc}
-                                alt={`${displayGame.name} ${label.toLowerCase()}`}
+                                alt={uiText("AppStrings.Value0Value1", { value0: displayGame.name, value1: label.toLowerCase() })}
                                 className={`h-full w-full object-cover transition ${
                                   isSelected
                                     ? "brightness-100"
@@ -1376,8 +1372,7 @@ export default function ClientGamePage({
                     color: colors["textFaded"],
                   }}
                 >
-                  RATINGS
-                </p>
+                   {uiText("AppStrings.RATINGS")} </p>
                 {showScoreResults && (
                     <>
                       {currentScoreKeys
@@ -1422,8 +1417,7 @@ export default function ClientGamePage({
                                     {(
                                       currentScores[score].averageScore / 2
                                     ).toFixed(2)}{" "}
-                                    stars
-                                  </span>
+                                     {uiText("AppStrings.Stars")} </span>
                                 </Tooltip>
                               ) : (
                                 <span
@@ -1433,8 +1427,7 @@ export default function ClientGamePage({
                                   {(
                                     currentScores[score].averageScore / 2
                                   ).toFixed(2)}{" "}
-                                  stars
-                                </span>
+                                   {uiText("AppStrings.Stars")} </span>
                               )}
                               <span className="flex items-center justify-center">
                                 {getResultsIcon(
@@ -1494,13 +1487,11 @@ export default function ClientGamePage({
                   )}
                 {isEditable && isCurrentJamGame && isRatingOpenPhase && (
                   <Text size="xs" color="textFaded">
-                    You can&apos;t rate your own game
-                  </Text>
+                     {uiText("AppStrings.YouCanAndAposTRateYourOwn")} </Text>
                 )}
                 {!user && isCurrentJamGame && isRatingOpenPhase && (
                   <Text size="xs" color="textFaded">
-                    You must be logged in to rate games
-                  </Text>
+                     {uiText("AppStrings.YouMustBeLoggedInToRateGames")} </Text>
                 )}
                 {!isEditable &&
                   user?.teams.filter((team) => team.game && team.game.published)
@@ -1509,8 +1500,7 @@ export default function ClientGamePage({
                   !isRatingOpenPhase &&
                   !shouldShowCurrentJamResults && (
                     <Text size="xs" color="textFaded">
-                      It is not the rating period
-                    </Text>
+                       {uiText("AppStrings.ItIsNotTheRatingPeriod")} </Text>
                   )}
                 {!isEditable &&
                   user?.teams.filter((team) => team.game && team.game.published)
@@ -1518,9 +1508,7 @@ export default function ClientGamePage({
                   isCurrentJamGame &&
                   isRatingOpenPhase && (
                     <Text size="xs" color="textFaded">
-                      Your ratings will not count towards the rankings as you
-                      did not submit a game
-                    </Text>
+                       {uiText("AppStrings.YourRatingsWillNotCountTowardsTheRankings")} </Text>
                   )}
                 <div>
                   {user &&
@@ -1534,8 +1522,7 @@ export default function ClientGamePage({
                         >
                           <Vstack align="start">
                             <Text size="xs" color="textFaded">
-                              Ratings are automatically saved
-                            </Text>
+                               {uiText("AppStrings.RatingsAreAutomaticallySaved")} </Text>
                             {[
                               ...displayGame.ratingCategories,
                               ...ratingCategories,
@@ -1572,10 +1559,7 @@ export default function ClientGamePage({
                           </Vstack>
                         </RatingVisibilityGate>
                         <Text size="sm" color="textFaded">
-                          Leave some feedback for the creators - what did you
-                          like, what could be improved? (shows below the game
-                          page)
-                        </Text>
+                           {uiText("AppStrings.LeaveSomeFeedbackForTheCreatorsWhatDid")} </Text>
                         <CreateComment
                           gamePageId={selectedPage?.id}
                           size="xs"
@@ -1599,16 +1583,16 @@ export default function ClientGamePage({
                       className="h-14 w-14 shrink-0 rounded-md object-cover"
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold">Soundtrack</p>
+                      <p className="font-semibold">{uiText("CreateGame.Soundtrack.Title")}</p>
                       <p className="text-xs leading-4" style={{ color: colors.textFaded }}>
-                        {soundtrackQueue.length} {soundtrackQueue.length === 1 ? "track" : "tracks"}
+                        {soundtrackQueue.length} {soundtrackQueue.length === 1 ? uiText("AppStrings.Track") : uiText("AppStrings.Tracks")}
                       </p>
                     </div>
                     <Button
                       size="sm"
                       variant="ghost"
                       icon={isSoundtrackCurrent && isPlaying ? "pause" : "play"}
-                      aria-label={isSoundtrackCurrent && isPlaying ? "Pause soundtrack" : isSoundtrackCurrent ? "Resume soundtrack" : "Play soundtrack from the first track"}
+                      aria-label={isSoundtrackCurrent && isPlaying ? uiText("AppStrings.PauseSoundtrack") : isSoundtrackCurrent ? uiText("AppStrings.ResumeSoundtrack") : uiText("AppStrings.PlaySoundtrackFromTheFirstTrack")}
                       className="shrink-0"
                       onClick={() => {
                         if (isSoundtrackCurrent) {
@@ -1628,7 +1612,7 @@ export default function ClientGamePage({
                         }, soundtrackQueue);
                       }}
                     >
-                      {isSoundtrackCurrent && isPlaying ? "Pause" : "Play"}
+                      {isSoundtrackCurrent && isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
                     </Button>
                   </div>
                   <ScrollableTracks activeIndex={soundtrackQueue.findIndex((track) => current?.slug === track.slug || current?.song === track.url)}>
@@ -1663,7 +1647,7 @@ export default function ClientGamePage({
                         const response = await postTrackRating(track.id, trackOverallCategory.id, value);
                         if (!response.ok) {
                           const payload = await response.json().catch(() => null);
-                          addToast({ title: payload?.message ?? "Failed to save track rating" });
+                          addToast({ title: payload?.message ?? uiText("AppStrings.FailedToSaveTrackRating") });
                           emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value: previous });
                           setTrackSelectedStars((prev) => ({ ...prev, [track.id]: previous }));
                         }
@@ -1761,7 +1745,7 @@ export default function ClientGamePage({
                                       addToast({
                                         title:
                                           payload?.message ??
-                                          "Failed to update achievement",
+                                          uiText("AppStrings.FailedToUpdateAchievement"),
                                       });
                                     }
 }} />
@@ -1777,11 +1761,10 @@ export default function ClientGamePage({
                     color: colors["textFaded"],
                   }}
                 >
-                  STATS
-                </p>
+                   {uiText("AppStrings.STATS")} </p>
                 <Vstack align="start" gap={1.5}>
                   <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
-                    Ratings Received:{" "}
+                     {uiText("AppStrings.RatingsReceived")}{" "}
                     {Math.round(
                       (game?.ratings ?? []).filter(
                         (rating) =>
@@ -1795,7 +1778,7 @@ export default function ClientGamePage({
                     selectedVersion !== "POST_JAM" && (
                     <Hstack>
                       <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
-                        Ranked Ratings Received:{" "}
+                         {uiText("AppStrings.RankedRatingsReceived")}{" "}
                         {Math.round(
                           (game?.ratings ?? []).filter(
                             (rating) =>
@@ -1835,14 +1818,14 @@ export default function ClientGamePage({
                           content="This game needs 5 ratings received in order to be ranked after the rating period"
                           position="top"
                         >
-                          <AlertTriangle size={16} className="text-red-500" />
+                          <AlertTriangle size={16} style={{ color: colors["red"] }} />
                         </Tooltip>
                       )}
                     </Hstack>
                   )}
                   <Hstack>
                     <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
-                      Ratings Given:{" "}
+                       {uiText("AppStrings.RatingsGiven2")}{" "}
                       {Math.round(
                         displayGame.team.users.reduce(
                           (prev, cur) =>
@@ -1918,14 +1901,14 @@ export default function ClientGamePage({
                 <div className="relative flex max-h-[90vh] max-w-[92vw] flex-col items-center gap-3 p-4">
                   <img
                     src={selectedMedia.src}
-                    alt={`${displayGame.name} screenshot ${selectedMedia.index + 1}`}
+                    alt={uiText("AppStrings.Value0ScreenshotValue1", { value0: displayGame.name, value1: selectedMedia.index + 1 })}
                     className="max-h-[min(720px,76vh)] max-w-[min(1280px,calc(92vw-32px))] object-contain"
                   />
                   <div className="flex items-center gap-3 rounded-lg border p-2" style={{ backgroundColor: colors.mantle, borderColor: interactiveOutlineColor }}>
-                    <Button icon="chevronleft" variant="ghost" aria-label="Previous screenshot" disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(-1)} />
+                    <Button icon="chevronleft" variant="ghost" aria-label={uiText("AppStrings.PreviousScreenshot")} disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(-1)} />
                     <span className="text-sm tabular-nums" aria-live="polite">{screenshotIndices.indexOf(currentMediaIndex) + 1} / {screenshotIndices.length}</span>
-                    <Button icon="chevronright" variant="ghost" aria-label="Next screenshot" disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(1)} />
-                    <Button icon="x" variant="ghost" aria-label="Close screenshot viewer" onClick={() => setIsScreenshotViewerOpen(false)} />
+                    <Button icon="chevronright" variant="ghost" aria-label={uiText("AppStrings.NextScreenshot")} disabled={screenshotIndices.length < 2} onClick={() => navigateScreenshot(1)} />
+                    <Button icon="x" variant="ghost" aria-label={uiText("AppStrings.CloseScreenshotViewer")} onClick={() => setIsScreenshotViewerOpen(false)} />
                   </div>
                 </div>
               )}
@@ -1943,7 +1926,7 @@ export default function ClientGamePage({
               <div className="w-[300px] h-[300px]">
                 <Image
                   src={selectedScore}
-                  alt="Evidence image"
+                  alt={uiText("AppStrings.EvidenceImage")}
                   fill
                   objectFit="contain"
                 />
@@ -1963,16 +1946,16 @@ export default function ClientGamePage({
                       ? "rabbit"
                       : "turtle"
               }
-              title={selectedLeaderboard?.name || "Leaderboard"}
+              title={selectedLeaderboard?.name || uiText("AppStrings.Leaderboard2")}
               onSubmit={async (form) => {
                 // Validate evidence
                 const evidenceUrl = form["evidence"];
                 if (!evidenceUrl) {
-                  addToast({ title: "No evidence image provided" });
+                  addToast({ title: uiText("AppStrings.NoEvidenceImageProvided") });
                   return;
                 }
                 if (!selectedLeaderboard) {
-                  addToast({ title: "No leaderboard selected" });
+                  addToast({ title: uiText("AppStrings.NoLeaderboardSelected") });
                   return;
                 }
 
@@ -1997,7 +1980,7 @@ export default function ClientGamePage({
                 }
 
                 if (finalScore == null || Number.isNaN(finalScore)) {
-                  addToast({ title: "Please enter a valid score/time." });
+                  addToast({ title: uiText("AppStrings.PleaseEnterAValidScoreTime") });
                   return;
                 }
 
@@ -2018,8 +2001,8 @@ export default function ClientGamePage({
                       {
                         type: "number",
                         name: "hours",
-                        label: "Hours",
-                        description: "Enter hours",
+                        label: uiText("AppStrings.Hours"),
+                        description: uiText("AppStrings.EnterHours"),
                         min: 0,
                         max: 24,
                         defaultValue: "0",
@@ -2027,8 +2010,8 @@ export default function ClientGamePage({
                       {
                         type: "number",
                         name: "minutes",
-                        label: "Minutes",
-                        description: "Enter minutes",
+                        label: uiText("AppStrings.Minutes"),
+                        description: uiText("AppStrings.EnterMinutes"),
                         min: 0,
                         max: 59,
                         defaultValue: "0",
@@ -2036,8 +2019,8 @@ export default function ClientGamePage({
                       {
                         type: "number",
                         name: "seconds",
-                        label: "Seconds",
-                        description: "Enter seconds",
+                        label: uiText("AppStrings.Seconds"),
+                        description: uiText("AppStrings.EnterSeconds"),
                         min: 0,
                         max: 59,
                         defaultValue: "0",
@@ -2045,9 +2028,9 @@ export default function ClientGamePage({
                       {
                         type: "number",
                         name: "milliseconds",
-                        label: "Milliseconds",
+                        label: uiText("AppStrings.Milliseconds"),
                         description:
-                          "Enter milliseconds (enter all 3 digits, .43 -> 430)",
+                          uiText("AppStrings.EnterMillisecondsEnterAll3Digits43430"),
                         min: 0,
                         max: 999,
                         defaultValue: "0",
@@ -2060,8 +2043,8 @@ export default function ClientGamePage({
                       {
                         type: "number",
                         name: "score",
-                        label: "Score",
-                        description: "Enter your score",
+                        label: uiText("LeaderboardType.Score.Title"),
+                        description: uiText("AppStrings.EnterYourScore"),
                         required: true,
                       },
                     ] as const)
@@ -2069,9 +2052,9 @@ export default function ClientGamePage({
                 {
                   type: "imageUpload",
                   name: "evidence",
-                  label: "Evidence Picture",
+                  label: uiText("AppStrings.EvidencePicture"),
                   description:
-                    "Upload a screenshot/photo to verify your result.",
+                    uiText("AppStrings.UploadAScreenshotPhotoToVerifyYourResult"),
                   upload: uploadEvidence,
                   accept: "image/*",
                   previewHeight: 240,
@@ -2129,6 +2112,7 @@ function StarRow({
   gamePageId: number;
   pageVersion: PageVersion;
 }) {
+  const uiText = useUiTranslations();
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
   const { colors } = useTheme();
   const themeJustification = text?.trim();
@@ -2172,7 +2156,7 @@ function StarRow({
         <Tooltip
           content={
             <div className="max-w-80 whitespace-normal">
-              <p className="text-lg font-bold">Theme Justification</p>
+              <p className="text-lg font-bold">{uiText("CreateGame.Theme.Title")}</p>
               <p>{themeJustification}</p>
             </div>
           }
@@ -2180,7 +2164,7 @@ function StarRow({
         >
           <span
             className="inline-flex items-center"
-            aria-label="Theme justification"
+            aria-label={uiText("AppStrings.ThemeJustification")}
           >
             <MessageCircleMore
               size={16}

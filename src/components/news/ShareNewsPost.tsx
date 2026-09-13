@@ -1,10 +1,14 @@
 "use client";
 
+import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+
+
 import { addToast, Button } from "bioloom-ui";
 import { Share2 } from "lucide-react";
 import { newsPostPath } from "./news";
 
 export default function ShareNewsPost({ slug }: { slug: string }) {
+  const uiText = useUiTranslations();
   const path = newsPostPath(slug);
   const url =
     typeof window === "undefined"
@@ -12,7 +16,7 @@ export default function ShareNewsPost({ slug }: { slug: string }) {
       : new URL(path, window.location.origin).toString();
   const copyLink = async () => {
     await navigator.clipboard.writeText(url);
-    addToast({ title: "News link copied" });
+    addToast({ title: uiText("AppStrings.NewsLinkCopied") });
   };
 
   return (
@@ -23,7 +27,6 @@ export default function ShareNewsPost({ slug }: { slug: string }) {
       leftSlot={<Share2 aria-hidden="true" size={16} />}
       onClick={copyLink}
     >
-      Share
-    </Button>
+       {uiText("AppStrings.Share")} </Button>
   );
 }
