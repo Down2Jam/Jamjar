@@ -398,6 +398,8 @@ export default function GameEditingForm({
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
   const [playableBuildUrl, setPlayableBuildUrl] = useState<string>("");
+  const [isPlayableBuildPreviewActive, setIsPlayableBuildPreviewActive] =
+    useState(false);
   const [uploadingWebBuild, setUploadingWebBuild] = useState(false);
   const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
     useState<GameEmbedAspectRatio>("16 / 9");
@@ -407,6 +409,10 @@ export default function GameEditingForm({
     useState(true);
   const playableBuildPreviewRef = useRef<HTMLIFrameElement>(null);
   const [emotePrefixInput, setEmotePrefixInput] = useState("");
+
+  useEffect(() => {
+    setIsPlayableBuildPreviewActive(false);
+  }, [playableBuildUrl]);
 
   const [inputMethods, setInputMethods] = useState<Set<InputMethodType>>(
     new Set(),
@@ -1506,16 +1512,34 @@ export default function GameEditingForm({
                             className="relative w-full overflow-hidden rounded-xl bg-black"
                             style={{ aspectRatio: playableBuildAspectRatio }}
                           >
-                            <iframe
-                              ref={playableBuildPreviewRef}
-                              src={getPlayableBuildUrl(playableBuildUrl)}
-                              title={uiText("AppStrings.PlayableWebBuildPreview")}
-                              className="h-full w-full border-0"
-                              sandbox="allow-scripts allow-pointer-lock"
-                              allow="fullscreen; gamepad"
-                              allowFullScreen
-                            />
-                            {playableBuildShowFullscreenButton && (
+                            {isPlayableBuildPreviewActive ? (
+                              <iframe
+                                ref={playableBuildPreviewRef}
+                                src={getPlayableBuildUrl(playableBuildUrl)}
+                                title={uiText("AppStrings.PlayableWebBuildPreview")}
+                                className="h-full w-full border-0"
+                                sandbox="allow-scripts allow-pointer-lock"
+                                allow="fullscreen; gamepad"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setIsPlayableBuildPreviewActive(true)}
+                                className="absolute inset-0 flex cursor-pointer items-center justify-center"
+                                style={{
+                                  backgroundColor: colors.mantle,
+                                  color: colors.text,
+                                }}
+                                aria-label={uiText("AppStrings.LoadValue0PlayableEmbed", { value0: title })}
+                              >
+                                <span className="flex items-center gap-3 text-base font-semibold transition-transform hover:scale-105">
+                                  <Icon name="play" size={20} />
+                                  {uiText("AppStrings.PlayGame")}
+                                </span>
+                              </button>
+                            )}
+                            {playableBuildShowFullscreenButton && isPlayableBuildPreviewActive && (
                               <button
                                 type="button"
                                 aria-label={uiText("AppStrings.OpenGamePreviewInFullscreen")}
