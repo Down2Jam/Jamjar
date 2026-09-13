@@ -36,6 +36,10 @@ import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
 import { postRating, postTrackRating } from "@/requests/rating";
+import SidebarSong from "@/components/sidebar/SidebarSong";
+import { getTrackRatingCategories } from "@/requests/track";
+import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
+import { emitTrackRatingSync, subscribeToTrackRatingSync } from "@/helpers/trackRatingSync";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { useCurrentJam } from "@/hooks/queries";
@@ -59,7 +63,8 @@ import { useTranslations } from "@/compat/next-intl";
 import { useSearchParams } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
-import SidebarSong from "@/components/sidebar/SidebarSong";
+import GamePageLoading from "@/components/game-page-loading";
+import { useMusic } from "bioloom-miniplayer";
 import { BASE_URL } from "@/requests/config";
 import { getPlayableBuildUrl } from "@/requests/config";
 import { Popover } from "bioloom-ui";
@@ -71,12 +76,6 @@ import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { readArray, readItem } from "@/requests/helpers";
 import { Card } from "bioloom-ui";
 import { Avatar } from "bioloom-ui";
-import { getTrackRatingCategories } from "@/requests/track";
-import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
-import {
-  emitTrackRatingSync,
-  subscribeToTrackRatingSync,
-} from "@/helpers/trackRatingSync";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
@@ -350,12 +349,12 @@ export default function ClientGamePage({
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
   >([]);
-  const [trackSelectedStars, setTrackSelectedStars] = useState<
-    Record<number, number>
-  >({});
-  const [trackOverallCategory, setTrackOverallCategory] =
-    useState<TrackRatingCategoryType | null>(null);
   const effectiveHideRatings = useEffectiveHideRatings(user);
+  const [trackSelectedStars, setTrackSelectedStars] = useState<Record<number, number>>({});
+  const [trackOverallCategory, setTrackOverallCategory] = useState<TrackRatingCategoryType | null>(null);
+  useEffect(() => subscribeToTrackRatingSync(({ trackId, value }) => {
+    setTrackSelectedStars((prev) => ({ ...prev, [trackId]: value }));
+  }), []);
   const { data: activeJamResponse } = useCurrentJam();
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const [isScreenshotViewerOpen, setIsScreenshotViewerOpen] = useState(false);
@@ -365,6 +364,7 @@ export default function ClientGamePage({
   const requestedPageVersion = searchParams.get("pageVersion");
 
   const { siteTheme, colors } = useTheme();
+  const { playItem } = useMusic();
   const interactiveOutlineColor = `color-mix(in srgb, ${colors["text"]} 5%, ${colors["mantle"]})`;
   const t = useTranslations();
   const selectedPage = useMemo(() => {
@@ -556,17 +556,10 @@ export default function ClientGamePage({
 
       const ratingResponse = await getRatingCategories(true);
       setRatingCategories(await readArray(ratingResponse));
-
       const trackRatingResponse = await getTrackRatingCategories();
       if (trackRatingResponse.ok) {
-        const payload = await readArray<TrackRatingCategoryType>(
-          trackRatingResponse,
-        );
-        const overall =
-          payload.find(
-            (category: TrackRatingCategoryType) => category.name === "Overall",
-          ) ?? null;
-        setTrackOverallCategory(overall);
+        const categories = await readArray<TrackRatingCategoryType>(trackRatingResponse);
+        setTrackOverallCategory(categories.find((category) => category.name === "Overall") ?? null);
       }
 
       // Fetch the logged-in user data
@@ -593,23 +586,8 @@ export default function ClientGamePage({
               });
 
               setSelectedStars(ratings);
+              setTrackSelectedStars(Object.fromEntries((userData.trackRatings ?? []).map((rating) => [rating.trackId, rating.value])));
 
-              const trackRatings = (userData.trackRatings ?? []).reduce(
-                (
-                  acc: Record<number, number>,
-                  rating: {
-                    trackId: number;
-                    value: number;
-                    categoryId: number;
-                  },
-                ) => {
-                  acc[rating.trackId] = rating.value;
-                  return acc;
-                },
-                {},
-              );
-
-              setTrackSelectedStars(trackRatings);
             }
           }
         } catch (error) {
@@ -639,14 +617,6 @@ export default function ClientGamePage({
     setCurrentMediaIndex(0);
   }, [gameSlug]);
 
-  useEffect(() => {
-    return subscribeToTrackRatingSync(({ trackId, value }) => {
-      setTrackSelectedStars((prev) => ({
-        ...prev,
-        [trackId]: value,
-      }));
-    });
-  }, []);
 
   function ordinal_suffix_of(i: number) {
     const j = i % 10,
@@ -873,7 +843,7 @@ export default function ClientGamePage({
     );
   };
 
-  if (!displayGame) return <div>Loading...</div>;
+  if (!displayGame) return <GamePageLoading />;
 
   // Check if the logged-in user is the creator or a contributor
   const isEditable =
@@ -881,32 +851,34 @@ export default function ClientGamePage({
     displayGame.team.users.some(
       (contributor: UserType) => contributor.id === user.id,
     );
-  const canRateDisplayedTrack =
-    Boolean(user) &&
-    !isEditable &&
-    selectedVersion === "JAM" &&
-    activeJamResponse?.jam?.id === displayGame?.jamId &&
-    isJamRatingOpenPhase &&
-    Boolean(trackOverallCategory);
+
+  const canRateDisplayedTrack = Boolean(user) && !isEditable && selectedVersion === "JAM" &&
+    activeJamResponse?.jam?.id === displayGame.jamId && isJamRatingOpenPhase && Boolean(trackOverallCategory);
 
   if (!displayGame.published && !isEditable) {
     return <p>This game has not been published</p>;
   }
+
+  const categoryAccent = colors[
+    displayGame.category === "REGULAR" ? "blue"
+      : displayGame.category === "ODA" ? "purple"
+        : displayGame.category === "EXTERNAL" ? "orange" : "pink"
+  ];
 
   return (
     <>
       <div
         style={{
           backgroundColor: siteTheme.colors["mantle"],
-          borderColor: siteTheme.colors["base"],
+          borderColor: interactiveOutlineColor,
           color: siteTheme.colors["text"],
         }}
-        className="border-2 relative rounded-xl overflow-visible"
+        className="border relative rounded-xl overflow-visible"
       >
         <div
-          className="relative h-60 overflow-hidden rounded-t-[10px]"
+          className="relative h-60 overflow-hidden rounded-t-[11px]"
           style={{
-            backgroundColor: colors["base"],
+            backgroundColor: colors["mantle"],
           }}
         >
           {(displayGame.thumbnail || displayGame.banner) && (
@@ -919,9 +891,9 @@ export default function ClientGamePage({
           )}
         </div>
         <div
-          className="flex -mt-1 backdrop-blur-md border-t-1"
+          className="flex border-t"
           style={{
-            borderColor: colors["crust"],
+            borderColor: interactiveOutlineColor,
           }}
         >
           <div className="w-2/3 p-4 flex flex-col gap-4">
@@ -940,16 +912,13 @@ export default function ClientGamePage({
                       : `${displayGame.team.owner.name}'s team`)}{" "}
                 </p>
                 <Chip
-                  className="opacity-50"
-                  color={
-                    displayGame.category == "REGULAR"
-                      ? "blue"
-                      : displayGame.category == "ODA"
-                        ? "purple"
-                        : displayGame.category == "EXTERNAL"
-                          ? "orange"
-                        : "pink"
-                  }
+                  style={{
+                    backgroundColor: `color-mix(in srgb, ${categoryAccent} 10%, ${colors.mantle})`,
+                    borderColor: `color-mix(in srgb, ${categoryAccent} 30%, ${colors.mantle})`,
+                    color: siteTheme.type === "Light"
+                      ? `color-mix(in srgb, ${categoryAccent} 55%, ${colors.text})`
+                      : categoryAccent,
+                  }}
                   key={displayGame.category}
                 >
                   {displayGame.category}
@@ -963,7 +932,7 @@ export default function ClientGamePage({
                   aspectRatio: playableBuildUrl
                     ? playableBuildAspectRatio
                     : itchEmbedAspectRatio,
-                  backgroundColor: colors["base"],
+                  backgroundColor: colors["mantle"],
                   border: `1px solid ${interactiveOutlineColor}`,
                 }}
               >
@@ -1066,14 +1035,17 @@ export default function ClientGamePage({
                 })}
               </div>
             )}
-            <ThemedProse>
+            <ThemedProse className="[&>div>:last-child]:!mb-0 [&>div>:last-child>:last-child]:!mb-0">
               <MentionedContent
                 html={displayGame?.description || t("General.NoDescription")}
               />
             </ThemedProse>
-            <Hstack>
+            <Hstack wrap className="mt-auto">
               {sortedDownloadLinks.map((downloadLink) => (
                 <Button
+                  className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
+                  externalIcon={false}
+                  style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
                   icon={getPlatformIcon(downloadLink.platform)}
                   key={downloadLink.id}
                   href={downloadLink.url}
@@ -1084,7 +1056,7 @@ export default function ClientGamePage({
             </Hstack>
           </div>
           <div className="flex flex-col w-1/3 gap-4 p-4">
-            <Card className="order-40">
+            <Card shadow="none" className="order-40">
               <Vstack align="stretch">
                 {isEditable && (
                   <Hstack>
@@ -1092,6 +1064,7 @@ export default function ClientGamePage({
                       <Button
                         icon="squarepen"
                         href={`/g/${displayGame.slug}/edit`}
+                        style={{ boxShadow: "none" }}
                       >
                         Edit
                       </Button>
@@ -1101,6 +1074,7 @@ export default function ClientGamePage({
                         <Button
                           icon="users"
                           href={`/team?teamId=${displayGame.teamId}`}
+                          style={{ boxShadow: "none" }}
                         >
                           Edit Team
                         </Button>
@@ -1111,6 +1085,7 @@ export default function ClientGamePage({
                 {game?.postJamPage && (
                   <div className="flex">
                     <PageVersionToggle
+                      borderColor={interactiveOutlineColor}
                       value={selectedVersion}
                       onChange={setSelectedVersion}
                     />
@@ -1127,13 +1102,14 @@ export default function ClientGamePage({
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {displayGame.team.users.map((user) => (
-                      <Chip
-                        key={user.id}
+                      <UserHoverPreview key={user.id} user={user} portal>
+                      <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}
                         avatarSrc={user.profilePicture}
                         href={`/u/${user.slug}`}
                       >
                         {user.name}
                       </Chip>
+                      </UserHoverPreview>
                     ))}
                   </div>
                 </>
@@ -1150,7 +1126,7 @@ export default function ClientGamePage({
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {displayGame.tags.map((tag) => (
-                        <Chip key={tag.id} className="post-tag-chip">
+                        <Chip style={{ borderColor: interactiveOutlineColor }} key={tag.id} className="post-tag-chip">
                           {tag.name}
                         </Chip>
                       ))}
@@ -1169,7 +1145,7 @@ export default function ClientGamePage({
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {displayGame.flags.map((flag) => (
-                        <Chip key={flag.id}>{flag.name}</Chip>
+                        <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} key={flag.id}>{flag.name}</Chip>
                       ))}
                     </div>
                   </>
@@ -1201,9 +1177,11 @@ export default function ClientGamePage({
                     </>
                   )}
               </Vstack>
+
+
             </Card>
             {hasMedia && (
-              <Card className="order-20">
+              <Card shadow="none" className="order-20">
                 <Vstack align="stretch" gap={3}>
                   <p
                     className="text-xs"
@@ -1352,8 +1330,9 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
+
             {hasGameplayDetails && (
-              <Card className="order-25">
+              <Card shadow="none" className="order-25">
                 <Vstack align="stretch" gap={3}>
                   {gameplayDetails.length > 0 && (
                     <>
@@ -1367,7 +1346,7 @@ export default function ClientGamePage({
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {gameplayDetails.map((method) => (
-                          <Chip key={method.label} icon={method.icon}>
+                          <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }} key={method.label} icon={method.icon}>
                             {method.label}
                           </Chip>
                         ))}
@@ -1410,7 +1389,7 @@ export default function ClientGamePage({
               </Card>
             )}
             {showRatingSection && (
-            <Card>
+            <Card shadow="none">
               <Vstack align="start">
                 <p
                   className="text-xs"
@@ -1630,7 +1609,7 @@ export default function ClientGamePage({
             )}
             {displayGame.achievements &&
               displayGame.achievements.length > 0 && (
-                <Card className="order-30">
+                <Card shadow="none" className="order-30">
                   <Vstack align="start">
                     <p
                       className="text-xs"
@@ -1856,7 +1835,7 @@ export default function ClientGamePage({
               )}
             {displayGame.leaderboards &&
               displayGame.leaderboards.length > 0 && (
-                <Card className="order-10">
+                <Card shadow="none" className="order-10">
                   <Vstack align="start">
                     <p
                       className="text-xs"
@@ -2097,6 +2076,7 @@ export default function ClientGamePage({
                           <div className="mt-2">
                             <Button
                               icon="plus"
+                              style={{ boxShadow: "none" }}
                               onClick={() => {
                                 setSelectedLeaderboard(leaderboard);
                                 setIsOpen2(true);
@@ -2112,7 +2092,7 @@ export default function ClientGamePage({
                 </Card>
               )}
             {gameEmotes.length > 0 && (
-              <Card>
+              <Card shadow="none">
                 <Vstack align="stretch">
                   <p
                     className="text-xs"
@@ -2125,7 +2105,7 @@ export default function ClientGamePage({
 
                   <div className="flex flex-wrap gap-3">
                     {gameEmotes.map((emoji) => (
-                      <Chip
+                      <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}
                         key={emoji.id}
                         avatarSrc={emoji.image}
                         avatarAlt={`:${emoji.slug}:`}
@@ -2138,31 +2118,54 @@ export default function ClientGamePage({
               </Card>
             )}
             {soundtrackQueue.length > 0 && (
-              <Card>
-                <Vstack align="stretch">
-                  <p
-                    className="text-xs"
-                    style={{
-                      color: colors["textFaded"],
-                    }}
-                  >
-                    MUSIC
-                  </p>
-
-                  {soundtrackQueue.map((track) => (
+              <Card shadow="none">
+                <Vstack align="stretch" gap={0}>
+                  <div className="flex items-center gap-3 pb-3">
+                    <img
+                      src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
+                      alt=""
+                      className="h-14 w-14 shrink-0 rounded-md object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold">Soundtrack</p>
+                      <p className="text-xs" style={{ color: colors.textFaded }}>
+                        {soundtrackQueue.length} {soundtrackQueue.length === 1 ? "track" : "tracks"}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      icon="play"
+                      aria-label="Play soundtrack from the first track"
+                      className="shrink-0"
+                      onClick={() => {
+                        const firstTrack = soundtrackQueue[0];
+                        if (!firstTrack) return;
+                        void playItem({
+                          slug: firstTrack.slug,
+                          name: firstTrack.name,
+                          artist: firstTrack.composer,
+                          thumbnail: displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png",
+                          game: firstTrack.game,
+                          song: firstTrack.url,
+                          loudnessGainDb: firstTrack.loudnessGainDb,
+                        }, soundtrackQueue);
+                      }}
+                    >
+                      Play
+                    </Button>
+                  </div>
+                  {soundtrackQueue.map((track, index) => (
                     <SidebarSong
                       key={track.id}
+                      playlistIndex={index}
                       trackId={track.id}
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
                       squareThumbnail
                       showGame={false}
-                      thumbnail={
-                        displayGame.soundtrackThumbnail ||
-                        displayGame.thumbnail ||
-                        "/images/D2J_Icon.png"
-                      }
+                      thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
                       game={track.game}
                       song={track.url}
                       loudnessGainDb={track.loudnessGainDb}
@@ -2170,9 +2173,7 @@ export default function ClientGamePage({
                       license={track.license}
                       allowDownload={track.allowDownload}
                       allowBackgroundUse={track.allowBackgroundUse}
-                      allowBackgroundUseAttribution={
-                        track.allowBackgroundUseAttribution
-                      }
+                      allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
                       showRating={canRateDisplayedTrack}
                       hideRatings={effectiveHideRatings}
@@ -2180,39 +2181,14 @@ export default function ClientGamePage({
                       onRate={async (value) => {
                         if (!trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;
-                        emitTrackRatingSync({
-                          trackId: track.id,
-                          categoryId: trackOverallCategory.id,
-                          value,
-                        });
-                        setTrackSelectedStars((prev) => ({
-                          ...prev,
-                          [track.id]: value,
-                        }));
-
-                        const response = await postTrackRating(
-                          track.id,
-                          trackOverallCategory.id,
-                          value,
-                        );
-
+                        emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value });
+                        setTrackSelectedStars((prev) => ({ ...prev, [track.id]: value }));
+                        const response = await postTrackRating(track.id, trackOverallCategory.id, value);
                         if (!response.ok) {
-                          const payload = await response
-                            .json()
-                            .catch(() => null);
-                          addToast({
-                            title:
-                              payload?.message ?? "Failed to save track rating",
-                          });
-                          emitTrackRatingSync({
-                            trackId: track.id,
-                            categoryId: trackOverallCategory.id,
-                            value: previous,
-                          });
-                          setTrackSelectedStars((prev) => ({
-                            ...prev,
-                            [track.id]: previous,
-                          }));
+                          const payload = await response.json().catch(() => null);
+                          addToast({ title: payload?.message ?? "Failed to save track rating" });
+                          emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value: previous });
+                          setTrackSelectedStars((prev) => ({ ...prev, [track.id]: previous }));
                         }
                       }}
                     />
@@ -2220,8 +2196,9 @@ export default function ClientGamePage({
                 </Vstack>
               </Card>
             )}
-            {displayGame.category !== "EXTERNAL" && (
-              <Card className="order-50">
+
+{displayGame.category !== "EXTERNAL" && (
+              <Card shadow="none" className="order-50">
                 <Vstack align="start">
                 <p
                   className="text-xs"
@@ -2232,7 +2209,7 @@ export default function ClientGamePage({
                   STATS
                 </p>
                 <Vstack align="start">
-                  <Chip>
+                  <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                     Ratings Received:{" "}
                     {Math.round(
                       (game?.ratings ?? []).filter(
@@ -2246,7 +2223,7 @@ export default function ClientGamePage({
                   {displayGame.category !== "EXTRA" &&
                     selectedVersion !== "POST_JAM" && (
                     <Hstack>
-                      <Chip>
+                      <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                         Ranked Ratings Received:{" "}
                         {Math.round(
                           (game?.ratings ?? []).filter(
@@ -2293,7 +2270,7 @@ export default function ClientGamePage({
                     </Hstack>
                   )}
                   <Hstack>
-                    <Chip>
+                    <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                       Ratings Given:{" "}
                       {Math.round(
                         displayGame.team.users.reduce(
@@ -2526,9 +2503,9 @@ export default function ClientGamePage({
           </div>
         </div>
       </div>
-      <div className="my-10 w-fit">
+      <Card shadow="none" className="my-10">
         <CreateComment gamePageId={selectedPage?.id} />
-      </div>
+      </Card>
 
       <div className="flex flex-col gap-3">
         {displayComments

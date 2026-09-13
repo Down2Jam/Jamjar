@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import { ReactNode, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -73,7 +74,7 @@ export default function Drawer({
               <div
                 className="flex items-center justify-between px-4 py-2 border-b backdrop-blur-lg"
                 style={{
-                  borderColor: colors["base"],
+                  borderColor: getNeutralBorderColor(colors),
                 }}
               >
                 {header}

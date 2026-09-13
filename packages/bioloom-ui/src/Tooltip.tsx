@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Popover from "./Popover";
 
 interface TooltipProps {
@@ -27,7 +27,7 @@ export default function Tooltip({
   content,
   children,
   position = "bottom",
-  delay = 100,
+  delay = 500,
   hideDelay = 100,
   compact = false,
   showArrow = true,
@@ -101,6 +101,10 @@ export default function Tooltip({
     setPositionerStyle(nextStyle);
   }, [position]);
 
+  useEffect(() => () => {
+    if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
+  }, []);
+
   const showTooltip = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     updatePosition();
@@ -131,7 +135,7 @@ export default function Tooltip({
         showArrow={showArrow}
         instant={instant}
         interactive={false}
-        surface="contrast"
+        surface="default"
       >
         <div
           className={

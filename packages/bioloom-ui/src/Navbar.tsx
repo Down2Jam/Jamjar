@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -40,7 +41,7 @@ export function Navbar({
   };
 
   if (isBordered && !mergedStyle.borderColor) {
-    mergedStyle.borderColor = colors["base"];
+    mergedStyle.borderColor = getNeutralBorderColor(colors);
   }
 
   const borderClass = isBordered ? "border-b" : "";

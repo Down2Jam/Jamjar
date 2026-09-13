@@ -19,7 +19,7 @@ export default function NavbarTooltip({
   name,
   description,
   hotkey,
-  delay = 1000,
+  delay = 500,
   children,
 }: NavbarButtonProps) {
   const { siteTheme } = useTheme();

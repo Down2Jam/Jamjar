@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -31,7 +32,7 @@ export function Table({
       ].join(" ")}
       style={{
         backgroundColor: colors.mantle,
-        borderColor: colors.base,
+        borderColor: getNeutralBorderColor(colors),
         color: colors.text,
       }}
       {...rest}
@@ -48,7 +49,7 @@ export function Table({
       </div>
 
       {bottomContent && (
-        <div className="p-2 border-t" style={{ borderColor: colors.base }}>
+        <div className="p-2 border-t" style={{ borderColor: getNeutralBorderColor(colors) }}>
           {bottomContent}
         </div>
       )}
@@ -88,7 +89,7 @@ export function TableColumn({
       style={{
         color: colors.text,
         padding: "0.5rem 0.75rem",
-        borderBottom: `1px solid ${colors.base}`,
+        borderBottom: `1px solid ${getNeutralBorderColor(colors)}`,
         ...style,
       }}
       scope="col"
@@ -122,7 +123,7 @@ export function TableRow({
     <tr
       className={["transition-colors", className].join(" ")}
       style={{
-        borderBottom: `1px solid ${colors.base}`,
+        borderBottom: `1px solid ${getNeutralBorderColor(colors)}`,
         ...style,
       }}
       {...rest}

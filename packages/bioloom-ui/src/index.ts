@@ -1,4 +1,5 @@
 export * from "./Accordion";
+export * from "./borders";
 export * from "./Avatar";
 export * from "./Backdrop";
 export * from "./Badge";

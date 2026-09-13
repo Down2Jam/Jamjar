@@ -1,0 +1,12 @@
+.composer button {
+  box-shadow: none;
+}
+
+.composer :global(.ProseMirror) {
+  border-color: var(--comment-border);
+  border-radius: 0.5rem;
+}
+
+.composer :global(.ProseMirror:focus) {
+  border-color: var(--comment-focus);
+}

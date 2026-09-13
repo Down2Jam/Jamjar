@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTranslations } from "@/compat/next-intl";
@@ -51,7 +52,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   const variantStyles: Record<InputVariant, React.CSSProperties> = {
     standard: {
       color: colors["text"],
-      borderColor: colors["base"],
+      borderColor: getNeutralBorderColor(colors),
       backgroundColor: colors["mantle"],
       boxShadow: `inset 0 1px 2px ${colors.crust}`,
     },

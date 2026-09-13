@@ -1,5 +1,6 @@
 "use client";
 
+import { useDelayedHover } from "@/hooks/useDelayedHover";
 import { GameHoverPreview, type GameCardGame } from "@/components/gamecard";
 import { useGame, useUser } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -47,7 +48,7 @@ export function UserHoverPreview({
   className?: string;
   portal?: boolean;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useDelayedHover(false);
   const anchorRef = useRef<HTMLSpanElement>(null);
   const [portalPosition, setPortalPosition] = useState<CSSProperties>();
   const { data } = useUser(user.slug, hovered);
@@ -96,7 +97,7 @@ export function UserHoverPreview({
         padding={10}
         showArrow
         interactive={false}
-        surface="contrast"
+        surface="default"
       >
         <div className="flex w-64 flex-col gap-2 text-left">
           <div className="flex items-center gap-2">
@@ -172,7 +173,7 @@ export function AchievementHoverPreview({
   children: ReactNode;
   className?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useDelayedHover(false);
   const { colors } = useTheme();
   const accent = colors[achievementTierColor[entry.tier]];
   const rarity = entry.tier === "Default" ? "Common" : entry.tier;
@@ -198,7 +199,7 @@ export function AchievementHoverPreview({
         padding={10}
         showArrow
         interactive={false}
-        surface="contrast"
+        surface="default"
       >
         <div className="flex w-72 flex-col gap-3 text-left">
           <div className="flex items-center gap-3">
@@ -267,7 +268,7 @@ export function ScoreHoverPreview({
   children: ReactNode;
   className?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] = useDelayedHover(false);
   const { colors } = useTheme();
   const accent =
     score.placement === 1
@@ -294,7 +295,7 @@ export function ScoreHoverPreview({
         padding={10}
         showArrow
         interactive={false}
-        surface="contrast"
+        surface="default"
       >
         <div className="flex w-72 flex-col gap-3 text-left">
           <div className="flex items-center gap-3">

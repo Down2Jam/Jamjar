@@ -60,7 +60,6 @@ export default function NavbarButton({
         name={name}
         description={description}
         hotkey={hotkey}
-        delay={isIconOnly ? 300 : undefined}
       >
         <>
           <Badge

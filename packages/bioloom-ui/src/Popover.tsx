@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import { useTheme } from "./theme";
 import useHasMounted from "./useHasMounted";
@@ -159,20 +160,12 @@ export default function Popover({
     ? "rgba(8, 12, 20, 0.55)"
     : surface === "transparent"
       ? "transparent"
-    : surface === "card"
-      ? `color-mix(in srgb, ${colors["mantle"]} 98%, transparent)`
-    : surface === "contrast"
-      ? colors["crust"]
       : colors["mantle"];
   const surfaceBorderColor = glass
     ? "rgba(255, 255, 255, 0.15)"
     : surface === "transparent"
       ? "transparent"
-    : surface === "card"
-      ? `color-mix(in srgb, ${colors["text"]} 5%, transparent)`
-    : surface === "contrast"
-      ? `color-mix(in srgb, ${colors["text"]} 12%, ${colors["crust"]})`
-      : colors["base"];
+      : getNeutralBorderColor(colors);
   const surfaceShadow =
     surface === "transparent"
       ? "none"
@@ -409,6 +402,7 @@ export default function Popover({
   }, [shown]);
 
   useLayoutEffect(() => {
+    if (!hasMounted) return;
     if (!shown) {
       setCollisionShift({ x: 0, y: 0 });
       setCollisionReady(false);
@@ -431,7 +425,7 @@ export default function Popover({
       window.removeEventListener("resize", updateCollisionShift);
       window.removeEventListener("scroll", updateCollisionShift, true);
     };
-  }, [shown, updateCollisionShift]);
+  }, [hasMounted, shown, updateCollisionShift]);
 
   if (!hasMounted) return null;
 

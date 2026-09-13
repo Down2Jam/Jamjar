@@ -1,6 +1,6 @@
 "use client";
 
-import { Hstack, Text } from "bioloom-ui";
+import { Hstack, Text, getNeutralBorderColor } from "bioloom-ui";
 import { PageVersion } from "@/types/GameType";
 import { useTheme } from "@/providers/useSiteTheme";
 
@@ -8,10 +8,12 @@ export default function PageVersionToggle({
   value,
   onChange,
   disabled = false,
+  borderColor,
 }: {
   value: PageVersion;
   onChange: (value: PageVersion) => void;
   disabled?: boolean;
+  borderColor?: string;
 }) {
   const { colors } = useTheme();
 
@@ -23,7 +25,7 @@ export default function PageVersionToggle({
   return (
     <Hstack
       className="rounded-xl overflow-hidden border"
-      style={{ borderColor: colors["base"] }}
+      style={{ borderColor: borderColor ?? getNeutralBorderColor(colors) }}
       gap={0}
     >
       {options.map((option, index) => {
@@ -35,11 +37,11 @@ export default function PageVersionToggle({
             type="button"
             disabled={disabled}
             onClick={() => onChange(option.value)}
-            className="px-3 py-2 transition-colors disabled:opacity-50"
+            className="cursor-pointer px-3 py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             style={{
-              backgroundColor: active ? colors["blueDark"] : colors["mantle"],
+              backgroundColor: active ? colors["blue"] : colors["mantle"],
               borderLeft:
-                index === 0 ? undefined : `1px solid ${colors["base"]}`,
+                index === 0 ? undefined : `1px solid ${borderColor ?? getNeutralBorderColor(colors)}`,
             }}
           >
             <Text

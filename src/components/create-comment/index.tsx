@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Button } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
+import { useTheme } from "@/providers/useSiteTheme";
+import styles from "./style.module.css";
 
 // CreateComment.tsx
 export default function CreateComment({
@@ -20,22 +22,25 @@ export default function CreateComment({
 }) {
   const [content, setContent] = useState("");
   const [waitingPost, setWaitingPost] = useState(false);
+  const { colors } = useTheme();
 
   return (
-    <>
+    <div className={size === "sm" ? styles.composer : undefined} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": colors.blue } as React.CSSProperties}>
+      {size === "sm" && <h2 className="mb-3 text-base font-semibold">Leave a comment</h2>}
       <Editor
         content={content}
         setContent={setContent}
         size={size}
         format="markdown"
+        showStats={false}
       />
-      {size == "sm" && <div className="p-4" />}
+      <div className={size === "sm" ? "mt-3 flex justify-start" : ""}>
       {waitingPost ? (
         <Spinner />
       ) : (
         <Button
           size={size}
-          icon="plus"
+          icon={size === "sm" ? "send" : "plus"}
           onClick={async () => {
             if (!content) {
               addToast({
@@ -84,9 +89,10 @@ export default function CreateComment({
             }
           }}
         >
-          {size == "sm" ? "Create Comment" : "Submit Feedback"}
+          {size == "sm" ? "Post comment" : "Submit Feedback"}
         </Button>
       )}
-    </>
+      </div>
+    </div>
   );
 }

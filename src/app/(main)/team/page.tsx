@@ -243,7 +243,7 @@ export default function EditTeamPage() {
   return (
     <div className="flex items-center justify-center">
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
+        className="w-full max-w-6xl flex flex-col gap-4"
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);
@@ -340,7 +340,7 @@ export default function EditTeamPage() {
         )}
         {(!teams[selectedTeam].game ||
           teams[selectedTeam].game.category != "ODA") && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <Button
               icon="user"
               onClick={onOpen}

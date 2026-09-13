@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -33,7 +34,7 @@ export function Kbd({
         .join(" ")}
       style={{
         backgroundColor: colors["mantle"],
-        borderColor: colors["base"],
+        borderColor: getNeutralBorderColor(colors),
         color: colors["text"],
         ...style,
       }}

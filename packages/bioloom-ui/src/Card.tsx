@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -59,7 +60,7 @@ export function Card({
 
   const mergedStyle: React.CSSProperties = {
     backgroundColor: colors["mantle"],
-    borderColor: `color-mix(in srgb, ${colors["text"]} 5%, transparent)`,
+    borderColor: getNeutralBorderColor(colors),
     color: colors["text"],
     padding: `${padding}rem`,
     paddingLeft: `${paddingX ?? padding}rem`,

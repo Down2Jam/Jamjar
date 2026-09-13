@@ -1,5 +1,5 @@
-// Chip.tsx
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import { useTheme } from "./theme";
 import * as React from "react";
@@ -74,7 +74,7 @@ export function Chip(props: ChipProps) {
   // Base styles
   let style: React.CSSProperties = {
     backgroundColor: colors["mantle"],
-    borderColor: colors["base"],
+    borderColor: getNeutralBorderColor(colors),
     color: colors["text"],
     ...styleProp,
   };

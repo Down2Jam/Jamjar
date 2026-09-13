@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import Link from "@/compat/next-link";
@@ -66,7 +67,7 @@ export function Button(props: ButtonProps) {
   const variantStyles: Record<ButtonVariant, React.CSSProperties> = {
     standard: {
       color: colors["text"],
-      borderColor: colors["base"],
+      borderColor: getNeutralBorderColor(colors),
       backgroundColor: colors["mantle"],
     },
     ghost: {

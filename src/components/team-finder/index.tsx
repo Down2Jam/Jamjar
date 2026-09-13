@@ -191,7 +191,7 @@ export default function TeamFinder() {
   return (
     <>
       <section className="mt-4 mb-4 flex flex-col gap-3">
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           {user.teams.filter((team) => team.jamId == jam?.id).length > 0 && (
             <Button icon="users2" href="/team">
               My Team
@@ -209,7 +209,7 @@ export default function TeamFinder() {
             Create Team
           </Button>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           <Dropdown
             selectedValue={teamType}
             onSelect={(key) => {

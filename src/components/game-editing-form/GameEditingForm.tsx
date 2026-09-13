@@ -1,7 +1,13 @@
 "use client";
 
+import "./game-editor.css";
+import ItemEditor from "./ItemEditor";
+import ArtistSuggestions from "./ArtistSuggestions";
+import LeaderboardManager from "./LeaderboardManager";
+
 import { Button } from "bioloom-ui";
 import { Card } from "bioloom-ui";
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import { Input } from "bioloom-ui";
@@ -30,13 +36,14 @@ import { FlagType } from "@/types/FlagType";
 import { GameTagType } from "@/types/GameTagType";
 import { GameEmbedAspectRatio, GameType } from "@/types/GameType";
 import { PageVersion } from "@/types/GameType";
-import { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardType";
+import { LeaderboardInput } from "@/types/LeaderboardType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
 import { TeamType } from "@/types/TeamType";
 import { addToast, Avatar, Form } from "bioloom-ui";
 import Image from "@/compat/next-image";
 import {
   ReactNode,
+  CSSProperties,
   useCallback,
   useEffect,
   useMemo,
@@ -76,7 +83,6 @@ import { readArray, readItem, unwrapItem } from "@/requests/helpers";
 import { debounce } from "lodash";
 import { createTeam } from "@/helpers/team";
 import { Tab, Tabs } from "bioloom-ui";
-import { Accordion, AccordionItem } from "bioloom-ui";
 import { createGameEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
 
 type InputMethodType =
@@ -174,15 +180,6 @@ const TIME_OPTIONS = [
   "5–10 hours",
   "10+ hours",
 ] as const;
-
-const LB_ICON: Record<LeaderboardTypeType, IconName> = {
-  SCORE: "trophy",
-  GOLF: "landplot",
-  SPEEDRUN: "rabbit",
-  ENDURANCE: "turtle",
-};
-
-const lbIconFor = (t: LeaderboardTypeType): IconName => LB_ICON[t] ?? "trophy";
 
 type SongCreditEdit = {
   id: number;
@@ -328,6 +325,8 @@ export default function GameEditingForm({
   const router = useRouter();
   const t = useTranslations();
 
+  const [newSongId, setNewSongId] = useState<number | null>(null);
+  const [newAchievementIndex, setNewAchievementIndex] = useState<number | null>(null);
   const [songs, setSongs] = useState<SongEdit[]>([]);
   const [softwareUsedDrafts, setSoftwareUsedDrafts] = useState<
     Record<number, string>
@@ -340,6 +339,7 @@ export default function GameEditingForm({
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
   const { emojis, refresh: refreshEmojis } = useEmojis();
   const [gameEmoteSlug, setGameEmoteSlug] = useState("");
+  const [addingGameEmote, setAddingGameEmote] = useState(false);
   const [gameEmoteImage, setGameEmoteImage] = useState<string | null>(null);
   const [savingGameEmote, setSavingGameEmote] = useState(false);
   const [gameEmoteArtistSlug, setGameEmoteArtistSlug] = useState("");
@@ -401,6 +401,19 @@ export default function GameEditingForm({
   const [estOneRun, setEstOneRun] = useState<string>("");
   const [estAnyPercent, setEstAnyPercent] = useState<string>("");
   const [estHundredPercent, setEstHundredPercent] = useState<string>("");
+  const [savedFormSnapshot, setSavedFormSnapshot] = useState<string | null>(null);
+  const formSnapshot = JSON.stringify({
+    title, short, content, gameSlug, thumbnailUrl, soundtrackThumbnailUrl,
+    bannerUrl, downloadLinks, flags: [...flags].sort((a, b) => a - b),
+    tags: [...tags].sort((a, b) => a - b), leaderboards, achievements,
+    category, chosenRatingCategories: [...chosenRatingCategories].sort((a, b) => a - b),
+    chosenMajRatingCategories: [...chosenMajRatingCategories].sort((a, b) => a - b),
+    themeJustification, currentTeam, songs, screenshots, trailerUrl, itchEmbedUrl,
+    playableBuildUrl, itchEmbedAspectRatio, playableBuildAspectRatio,
+    playableBuildShowFullscreenButton, emotePrefixInput,
+    inputMethods: [...inputMethods].sort(), estOneRun, estAnyPercent, estHundredPercent,
+  });
+  const hasUnsavedChanges = savedFormSnapshot !== null && formSnapshot !== savedFormSnapshot;
   const gameJamId = game?.jam?.id ?? game?.jamId;
 
   const inCurrentJamContext =
@@ -425,6 +438,7 @@ export default function GameEditingForm({
     inCurrentJamContext && !isRatingPhase && !isPostJamLockedPhase;
 
   useEffect(() => {
+    setSavedFormSnapshot(null);
     setEditGame(!!game);
     setTitle(game?.name || "");
     setGameSlug(game?.slug || "");
@@ -677,6 +691,12 @@ export default function GameEditingForm({
     load();
   }, [refreshTeams, activeJamResponse]);
 
+  useEffect(() => {
+    if (!loading && savedFormSnapshot === null) {
+      setSavedFormSnapshot(formSnapshot);
+    }
+  }, [loading, savedFormSnapshot, formSnapshot]);
+
   const styles: StylesConfig<
     {
       value: string;
@@ -688,14 +708,16 @@ export default function GameEditingForm({
     multiValue: (base) => {
       return {
         ...base,
-        backgroundColor: "#444",
+        backgroundColor: colors.base,
+        borderRadius: 6,
       };
     },
     multiValueLabel: (base) => {
       return {
         ...base,
-        color: "#fff",
-        fontWeight: "bold",
+        color: colors.text,
+        fontWeight: 500,
+        fontSize: 12,
         paddingRight: "2px",
       };
     },
@@ -703,27 +725,58 @@ export default function GameEditingForm({
       return {
         ...base,
         display: "flex",
-        color: "#ddd",
+        color: colors.textFaded,
+        borderRadius: "0 6px 6px 0",
+        ":hover": { backgroundColor: colors.crust, color: colors.red },
       };
     },
-    control: (styles) => ({
-      ...styles,
-      backgroundColor: "#181818",
-      minWidth: "300px",
+    control: (base, { isFocused, isDisabled }) => ({
+      ...base,
+      backgroundColor: colors.mantle,
+      borderColor: isFocused ? colors.blue : colors.base,
+      borderRadius: 8,
+      minHeight: 36,
+      minWidth: 0,
+      fontSize: 12,
+      opacity: isDisabled ? 0.5 : 1,
+      boxShadow: isFocused ? `0 0 0 1px ${colors.blue}` : "none",
+      ":hover": { borderColor: isFocused ? colors.blue : colors.textFaded },
+    }),
+    input: (base) => ({ ...base, color: colors.text }),
+    singleValue: (base) => ({ ...base, color: colors.text }),
+    placeholder: (base) => ({ ...base, color: colors.textFaded }),
+    indicatorSeparator: () => ({ display: "none" }),
+    dropdownIndicator: (base) => ({
+      ...base, color: colors.textFaded, padding: 8,
+      ":hover": { color: colors.text },
+    }),
+    clearIndicator: (base) => ({
+      ...base, color: colors.textFaded,
+      ":hover": { color: colors.red },
     }),
     menu: (styles) => ({
       ...styles,
-      backgroundColor: "#181818",
-      color: "#fff",
+      backgroundColor: colors.mantle,
+      color: colors.text,
+      border: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+      borderRadius: 10,
+      padding: 4,
+      fontSize: 13,
+      boxShadow: "0 12px 28px rgb(0 0 0 / 25%)",
       zIndex: 100,
     }),
     menuPortal: (styles) => ({
       ...styles,
       zIndex: 120,
     }),
-    option: (styles, { isFocused }) => ({
+    option: (styles, { isFocused, isSelected, isDisabled }) => ({
       ...styles,
-      backgroundColor: isFocused ? "#333" : undefined,
+      borderRadius: 6,
+      padding: "8px 10px",
+      color: isDisabled ? colors.textFaded : isSelected ? colors.blue : colors.text,
+      backgroundColor: isFocused || isSelected ? colors.base : "transparent",
+      cursor: isDisabled ? "not-allowed" : "pointer",
+      ":active": { backgroundColor: colors.base },
     }),
   };
 
@@ -920,7 +973,7 @@ export default function GameEditingForm({
   return (
     <Vstack>
       <Form
-        className="w-full max-w-2xl flex flex-col gap-4"
+        className={`w-full max-w-6xl flex flex-col gap-4 ${hasUnsavedChanges ? "pb-48 sm:pb-32" : ""}`}
         onSubmit={async (e) => {
           e.preventDefault();
 
@@ -1102,6 +1155,7 @@ export default function GameEditingForm({
             const response = await request;
 
             if (response.ok) {
+              setSavedFormSnapshot(formSnapshot);
               addToast({
                 title: prevSlug
                   ? t("CreateGame.Update.Success")
@@ -1159,14 +1213,14 @@ export default function GameEditingForm({
               </p>
           </header>
 
-          <Tabs addBottomTabs>
+          <Tabs className="game-editor-tabs [&>[role=tablist]]:justify-center" style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}>
             <Tab title="General" icon="cog">
               <Vstack align="stretch">
-                <Card className="relative z-20 overflow-visible">
+                <div className="game-editor-panel-heading relative z-20 overflow-visible">
                   <Vstack align="start">
                     <Hstack>
                       <Icon name="cog" color="textFaded" size={12} />
-                      <Text size="xs" color="textFaded">
+                      <Text size="lg" color="text" weight="semibold">
                         General
                       </Text>
                     </Hstack>
@@ -1175,8 +1229,8 @@ export default function GameEditingForm({
                       site
                     </Text>
                   </Vstack>
-                </Card>
-                <Card className="relative z-30 overflow-visible">
+                </div>
+                <div className="game-editor-row relative z-30 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Name.Title</Text>
@@ -1198,8 +1252,8 @@ export default function GameEditingForm({
                       }}
                     />
                   </Vstack>
-                </Card>
-                <Card className="relative z-20 overflow-visible">
+                </div>
+                <div className="game-editor-row relative z-20 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Slug.Title</Text>
@@ -1221,11 +1275,11 @@ export default function GameEditingForm({
                       }}
                     />
                   </Vstack>
-                </Card>
+                </div>
 
                 {
                   <>
-                    <Card className="relative z-20 overflow-visible">
+                    <div className="game-editor-row relative z-20 overflow-visible">
                       <Vstack align="start">
                         <div>
                           <Text color="text">CreateGame.Category.Title</Text>
@@ -1234,7 +1288,7 @@ export default function GameEditingForm({
                           </Text>
                         </div>
                         {
-                          <Dropdown
+                          <Dropdown portal
                             disabled={!canSwapCategory}
                             selectedValue={category}
                             onSelect={(key) => {
@@ -1288,11 +1342,11 @@ export default function GameEditingForm({
                           </Dropdown>
                         }
                       </Vstack>
-                    </Card>
+                    </div>
                   </>
                 }
 
-                <Card className="relative z-0">
+                <div className="game-editor-row relative z-0">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Description.Title</Text>
@@ -1307,9 +1361,9 @@ export default function GameEditingForm({
                       gameEditor
                     />
                   </Vstack>
-                </Card>
+                </div>
 
-                <Card className="relative z-10 overflow-visible">
+                <div className="game-editor-row relative z-10 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Short.Title</Text>
@@ -1324,10 +1378,10 @@ export default function GameEditingForm({
                       maxLength={155}
                     />
                   </Vstack>
-                </Card>
+                </div>
 
                 {game?.category !== "EXTERNAL" && (
-                  <Card>
+                  <div className="game-editor-row">
                     <Vstack align="start">
                       <div>
                         <Text color="text">CreateGame.Theme.Title</Text>
@@ -1341,10 +1395,10 @@ export default function GameEditingForm({
                         onValueChange={setThemeJustification}
                       />
                     </Vstack>
-                  </Card>
+                  </div>
                 )}
 
-                <Card className="relative z-10 overflow-visible">
+                <div className="game-editor-row relative z-10 overflow-visible">
                   <Vstack align="start">
                     <div>
                       <Text color="text" size="lg" weight="semibold">
@@ -1358,7 +1412,7 @@ export default function GameEditingForm({
                       </Text>
                     </div>
 
-                    <label className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-current p-6 text-center">
+                    <label className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center" aria-disabled={uploadingWebBuild} style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight } as CSSProperties}>
                       <Icon name="upload" color="text" />
                       <Text color="text" weight="semibold">
                         {uploadingWebBuild
@@ -1426,7 +1480,7 @@ export default function GameEditingForm({
                             Choose the shape that best matches the game window.
                           </Text>
                         </div>
-                        <Dropdown
+                        <Dropdown portal
                           selectedValue={
                             playableBuildUrl
                               ? playableBuildAspectRatio
@@ -1516,9 +1570,9 @@ export default function GameEditingForm({
                       </>
                     )}
                   </Vstack>
-                </Card>
+                </div>
 
-                <Card>
+                <div className="game-editor-row">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Links.Title</Text>
@@ -1575,7 +1629,7 @@ export default function GameEditingForm({
                                   }
                                 }}
                               />
-                              <Dropdown
+                              <Dropdown portal
                                 className="w-96"
                                 placeholder="Select platform"
                                 selectedValue={link.platform}
@@ -1651,9 +1705,9 @@ export default function GameEditingForm({
                       </Button>
                     </div>
                   </Vstack>
-                </Card>
+                </div>
                 {teams.length > 1 && !prevSlug && (
-                  <Card className="relative z-20 overflow-visible">
+                  <div className="game-editor-row relative z-20 overflow-visible">
                     <Vstack align="start">
                       <div>
                         <Text color="text">Team</Text>
@@ -1661,7 +1715,7 @@ export default function GameEditingForm({
                           Set the team associated with the game
                         </Text>
                       </div>
-                      <Dropdown
+                      <Dropdown portal
                         trigger={
                           <Button>
                             {teams && teams[currentTeam]
@@ -1690,7 +1744,7 @@ export default function GameEditingForm({
                         ))}
                       </Dropdown>
                     </Vstack>
-                  </Card>
+                  </div>
                 )}
                 {activeJamResponse &&
                   activeJamResponse.jam &&
@@ -1698,7 +1752,7 @@ export default function GameEditingForm({
                   (activeJamResponse.phase == "Jamming" ||
                     activeJamResponse.phase == "Submission" ||
                     (activeJamResponse.phase == "Rating" && !prevSlug)) && (
-                    <Card className="relative z-0">
+                    <div className="game-editor-row relative z-0">
                       <Vstack align="start">
                         <div>
                           <Text color="text">
@@ -1708,6 +1762,7 @@ export default function GameEditingForm({
                             CreateGame.RatingCategories.Description
                           </Text>
                         </div>
+                        <Vstack align="stretch" gap={3}>
                         {ratingCategories.map((category3) => (
                           <div key={category3.id}>
                             <Hstack>
@@ -1780,18 +1835,19 @@ export default function GameEditingForm({
                               )}
                           </div>
                         ))}
+                        </Vstack>
                       </Vstack>
-                    </Card>
+                    </div>
                   )}
               </Vstack>
             </Tab>
             <Tab title="Media" icon="images">
               <Vstack align="stretch">
-                <Card>
+                <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
                       <Icon name="images" color="textFaded" size={12} />
-                      <Text size="xs" color="textFaded">
+                      <Text size="lg" color="text" weight="semibold">
                         Media
                       </Text>
                     </Hstack>
@@ -1800,8 +1856,8 @@ export default function GameEditingForm({
                       page in various locations
                     </Text>
                   </Vstack>
-                </Card>
-                <Card>
+                </div>
+                <div className="game-editor-row">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Thumbnail.Title</Text>
@@ -1822,9 +1878,9 @@ export default function GameEditingForm({
                       }}
                     />
                   </Vstack>
-                </Card>
+                </div>
 
-                <Card>
+                <div className="game-editor-row">
                   <Vstack align="start">
                     <div>
                       <Text color="text">CreateGame.Banner.Title</Text>
@@ -1845,522 +1901,9 @@ export default function GameEditingForm({
                       }}
                     />
                   </Vstack>
-                </Card>
+                </div>
 
-                <Accordion>
-                  <AccordionItem
-                    title="Game Emotes"
-                    subtitle="Add emotes related to your game for people to use around the site."
-                    icon="smileplus"
-                  >
-                    <Card>
-                      <Vstack align="start">
-                        <div>
-                          <Text color="text">Emote Prefix</Text>
-                          <Text color="textFaded" size="xs">
-                            Choose a 4 to 8 character prefix for this game's
-                            emotes.
-                          </Text>
-                        </div>
-                        <Input
-                          value={emotePrefixInput}
-                          onValueChange={(value) =>
-                            setEmotePrefixInput(
-                              value
-                                .toLowerCase()
-                                .replace(/[^a-z0-9]/g, "")
-                                .slice(0, MAX_EMOTE_PREFIX_LENGTH),
-                            )
-                          }
-                          name="gameEmotePrefix"
-                          placeholder="e.g. jam123"
-                          maxLength={MAX_EMOTE_PREFIX_LENGTH}
-                        />
-                      </Vstack>
-                    </Card>
-
-                    <Card>
-                      <Vstack align="start" className="gap-3">
-                        <div>
-                          <Text color="text">Game Emotes</Text>
-                          <Text color="textFaded" size="xs">
-                            Game emotes use the prefix{" "}
-                            <span className="font-semibold">
-                              {gameEmotePrefix}
-                            </span>
-                            .
-                          </Text>
-                        </div>
-                        <Hstack className="items-end flex-wrap">
-                          <Input
-                            label="Emote slug"
-                            labelPlacement="outside"
-                            placeholder="victory"
-                            value={gameEmoteSlug}
-                            onValueChange={setGameEmoteSlug}
-                            disabled={!game?.slug}
-                          />
-                          <div className="relative">
-                            <Input
-                              label="Artist user slug"
-                              labelPlacement="outside"
-                              placeholder="username"
-                              value={gameEmoteArtistSlug}
-                              onValueChange={(value) => {
-                                setGameEmoteArtistSlug(value);
-                                doEmoteArtistSearch(value, "create");
-                              }}
-                              onKeyDown={(event) => {
-                                if (
-                                  !gameEmoteArtistOpen ||
-                                  gameEmoteArtistMatches.length === 0
-                                ) {
-                                  return;
-                                }
-                                if (event.key === "ArrowDown") {
-                                  event.preventDefault();
-                                  setGameEmoteArtistIndex((prev) =>
-                                    prev + 1 >= gameEmoteArtistMatches.length
-                                      ? 0
-                                      : prev + 1,
-                                  );
-                                } else if (event.key === "ArrowUp") {
-                                  event.preventDefault();
-                                  setGameEmoteArtistIndex((prev) =>
-                                    prev === 0
-                                      ? gameEmoteArtistMatches.length - 1
-                                      : prev - 1,
-                                  );
-                                } else if (event.key === "Enter") {
-                                  event.preventDefault();
-                                  const match =
-                                    gameEmoteArtistMatches[
-                                      gameEmoteArtistIndex
-                                    ];
-                                  if (match) {
-                                    setGameEmoteArtistSlug(match.slug);
-                                    setGameEmoteArtistOpen(false);
-                                  }
-                                } else if (event.key === "Escape") {
-                                  setGameEmoteArtistOpen(false);
-                                }
-                              }}
-                              disabled={!game?.slug}
-                            />
-                            {gameEmoteArtistOpen &&
-                              gameEmoteArtistMatches.length > 0 && (
-                                <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
-                                  {gameEmoteArtistMatches.map((u, index) => (
-                                    <button
-                                      key={u.id}
-                                      type="button"
-                                      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
-                                      style={{
-                                        backgroundColor:
-                                          index === gameEmoteArtistIndex
-                                            ? "rgba(59,130,246,0.3)"
-                                            : "transparent",
-                                      }}
-                                      onMouseDown={(event) => {
-                                        event.preventDefault();
-                                        setGameEmoteArtistSlug(u.slug);
-                                        setGameEmoteArtistOpen(false);
-                                      }}
-                                    >
-                                      <img
-                                        src={
-                                          u.profilePicture ||
-                                          "/images/D2J_Icon.png"
-                                        }
-                                        alt={u.name}
-                                        className="h-5 w-5 rounded-full"
-                                        loading="lazy"
-                                        decoding="async"
-                                      />
-                                      <div className="flex flex-col text-sm">
-                                        <span>{u.name}</span>
-                                        <span className="text-xs opacity-70">
-                                          @{u.slug}
-                                        </span>
-                                      </div>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                          </div>
-                          <Vstack align="start" gap={1}>
-                            <Text size="xs" color="textFaded">
-                              Upload image
-                            </Text>
-                            <ImageInput
-                              value={gameEmoteImage}
-                              width={80}
-                              height={80}
-                              placeholder="Upload"
-                              disabled={!game?.slug}
-                              onSelect={async (file, crop) => {
-                                const url = await uploadTo("image", file, crop);
-                                if (url) {
-                                  setGameEmoteImage(url);
-                                }
-                              }}
-                            />
-                          </Vstack>
-                          <Vstack align="start" gap={1}>
-                            <Text size="xs" color="textFaded">
-                              Preview
-                            </Text>
-                            <Text size="sm">
-                              :{gameEmotePrefix}
-                              {cleanedGameEmoteSlug || "emote"}:
-                            </Text>
-                          </Vstack>
-                          <Button
-                            color="blue"
-                            loading={savingGameEmote}
-                            disabled={!game?.slug}
-                            onClick={async () => {
-                              if (!game?.slug) {
-                                addToast({
-                                  title: "Save your game before adding emotes.",
-                                });
-                                return;
-                              }
-                              if (!cleanedGameEmoteSlug || !gameEmoteImage) {
-                                addToast({
-                                  title: "Slug and image are required",
-                                });
-                                return;
-                              }
-                              setSavingGameEmote(true);
-                              try {
-                                const response = await createGameEmoji(
-                                  game.slug,
-                                  cleanedGameEmoteSlug,
-                                  gameEmoteImage,
-                                  gameEmoteArtistSlug.trim() || null,
-                                );
-                                const data = await response
-                                  .json()
-                                  .catch(() => null);
-                                if (!response.ok) {
-                                  addToast({
-                                    title:
-                                      data?.message ?? "Failed to add emote",
-                                  });
-                                  return;
-                                }
-                                addToast({ title: "Emote added" });
-                                setGameEmoteSlug("");
-                                setGameEmoteImage(null);
-                                setGameEmoteArtistSlug("");
-                                await refreshEmojis();
-                              } catch (error) {
-                                console.error(error);
-                                addToast({ title: "Failed to add emote" });
-                              } finally {
-                                setSavingGameEmote(false);
-                              }
-                            }}
-                          >
-                            Add Emote
-                          </Button>
-                        </Hstack>
-
-                        {gameEmotes.length === 0 ? (
-                          <Text size="sm" color="textFaded">
-                            No game emotes yet.
-                          </Text>
-                        ) : (
-                          <div className="flex flex-wrap gap-3">
-                            {gameEmotes.map((emoji) => (
-                              <div
-                                key={emoji.id}
-                                className="flex items-center gap-2 rounded-lg border border-gray-700 px-3 py-2"
-                              >
-                                <img
-                                  src={emoji.image}
-                                  alt={`:${emoji.slug}:`}
-                                  className="h-6 w-6"
-                                  loading="lazy"
-                                  decoding="async"
-                                />
-                                <Text size="sm">:{emoji.slug}:</Text>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => {
-                                    setEditingGameEmoteId(emoji.id);
-                                    setEditingGameEmoteSlug(
-                                      emoji.slug.replace(gameEmotePrefix, ""),
-                                    );
-                                    setEditingGameEmoteImage(emoji.image);
-                                    setEditingGameEmoteArtistSlug(
-                                      emoji.artistUser?.slug ?? "",
-                                    );
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  color="red"
-                                  variant="ghost"
-                                  onClick={async () => {
-                                    const response = await deleteEmoji(
-                                      emoji.id,
-                                    );
-                                    const data = await response
-                                      .json()
-                                      .catch(() => null);
-                                    if (!response.ok) {
-                                      addToast({
-                                        title:
-                                          data?.message ??
-                                          "Failed to delete emote",
-                                      });
-                                      return;
-                                    }
-                                    addToast({
-                                      title: data?.message ?? "Emote deleted",
-                                    });
-                                    await refreshEmojis();
-                                  }}
-                                >
-                                  Remove
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        {editingGameEmoteId && (
-                          <Card className="w-full">
-                            <Vstack align="start" className="gap-3">
-                              <Text color="text" weight="semibold">
-                                Edit Emote
-                              </Text>
-                              <Hstack className="items-end flex-wrap">
-                                <Input
-                                  label="Emote slug"
-                                  labelPlacement="outside"
-                                  placeholder="victory"
-                                  value={editingGameEmoteSlug}
-                                  onValueChange={setEditingGameEmoteSlug}
-                                />
-                                <div className="relative">
-                                  <Input
-                                    label="Artist user slug"
-                                    labelPlacement="outside"
-                                    placeholder="username"
-                                    value={editingGameEmoteArtistSlug}
-                                    onValueChange={(value) => {
-                                      setEditingGameEmoteArtistSlug(value);
-                                      doEmoteArtistSearch(value, "edit");
-                                    }}
-                                    onKeyDown={(event) => {
-                                      if (
-                                        !editGameEmoteArtistOpen ||
-                                        editGameEmoteArtistMatches.length === 0
-                                      ) {
-                                        return;
-                                      }
-                                      if (event.key === "ArrowDown") {
-                                        event.preventDefault();
-                                        setEditGameEmoteArtistIndex((prev) =>
-                                          prev + 1 >=
-                                          editGameEmoteArtistMatches.length
-                                            ? 0
-                                            : prev + 1,
-                                        );
-                                      } else if (event.key === "ArrowUp") {
-                                        event.preventDefault();
-                                        setEditGameEmoteArtistIndex((prev) =>
-                                          prev === 0
-                                            ? editGameEmoteArtistMatches.length -
-                                              1
-                                            : prev - 1,
-                                        );
-                                      } else if (event.key === "Enter") {
-                                        event.preventDefault();
-                                        const match =
-                                          editGameEmoteArtistMatches[
-                                            editGameEmoteArtistIndex
-                                          ];
-                                        if (match) {
-                                          setEditingGameEmoteArtistSlug(
-                                            match.slug,
-                                          );
-                                          setEditGameEmoteArtistOpen(false);
-                                        }
-                                      } else if (event.key === "Escape") {
-                                        setEditGameEmoteArtistOpen(false);
-                                      }
-                                    }}
-                                  />
-                                  {editGameEmoteArtistOpen &&
-                                    editGameEmoteArtistMatches.length > 0 && (
-                                      <div className="absolute z-50 mt-2 w-full rounded-lg border border-gray-700 bg-black/80 p-2">
-                                        {editGameEmoteArtistMatches.map(
-                                          (u, index) => (
-                                            <button
-                                              key={u.id}
-                                              type="button"
-                                              className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
-                                              style={{
-                                                backgroundColor:
-                                                  index ===
-                                                  editGameEmoteArtistIndex
-                                                    ? "rgba(59,130,246,0.3)"
-                                                    : "transparent",
-                                              }}
-                                              onMouseDown={(event) => {
-                                                event.preventDefault();
-                                                setEditingGameEmoteArtistSlug(
-                                                  u.slug,
-                                                );
-                                                setEditGameEmoteArtistOpen(
-                                                  false,
-                                                );
-                                              }}
-                                            >
-                                              <img
-                                                src={
-                                                  u.profilePicture ||
-                                                  "/images/D2J_Icon.png"
-                                                }
-                                                alt={u.name}
-                                                className="h-5 w-5 rounded-full"
-                                                loading="lazy"
-                                                decoding="async"
-                                              />
-                                              <div className="flex flex-col text-sm">
-                                                <span>{u.name}</span>
-                                                <span className="text-xs opacity-70">
-                                                  @{u.slug}
-                                                </span>
-                                              </div>
-                                            </button>
-                                          ),
-                                        )}
-                                      </div>
-                                    )}
-                                </div>
-                                <Vstack align="start" gap={1}>
-                                  <Text size="xs" color="textFaded">
-                                    Upload image
-                                  </Text>
-                                  <ImageInput
-                                    value={editingGameEmoteImage}
-                                    width={80}
-                                    height={80}
-                                    placeholder="Upload"
-                                    onSelect={async (file, crop) => {
-                                      const url = await uploadTo(
-                                        "image",
-                                        file,
-                                        crop,
-                                      );
-                                      if (url) {
-                                        setEditingGameEmoteImage(url);
-                                      }
-                                    }}
-                                  />
-                                </Vstack>
-                                <Vstack align="start" gap={1}>
-                                  <Text size="xs" color="textFaded">
-                                    Preview
-                                  </Text>
-                                  <Text size="sm">
-                                    :{gameEmotePrefix}
-                                    {cleanedEditingGameEmoteSlug || "emote"}:
-                                  </Text>
-                                </Vstack>
-                                <Hstack>
-                                  <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                      setEditingGameEmoteId(null);
-                                      setEditingGameEmoteSlug("");
-                                      setEditingGameEmoteImage(null);
-                                      setEditingGameEmoteArtistSlug("");
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                  <Button
-                                    color="blue"
-                                    loading={savingEditGameEmote}
-                                    onClick={async () => {
-                                      if (!editingGameEmoteId) return;
-                                      if (
-                                        !cleanedEditingGameEmoteSlug ||
-                                        !editingGameEmoteImage
-                                      ) {
-                                        addToast({
-                                          title: "Slug and image are required",
-                                        });
-                                        return;
-                                      }
-                                      setSavingEditGameEmote(true);
-                                      try {
-                                        const response = await updateEmoji(
-                                          editingGameEmoteId,
-                                          {
-                                            slug: `${gameEmotePrefix}${cleanedEditingGameEmoteSlug}`,
-                                            image: editingGameEmoteImage,
-                                            artistSlug:
-                                              editingGameEmoteArtistSlug.trim() ||
-                                              null,
-                                            scopeUserId: null,
-                                            scopeGameId: game?.id ?? null,
-                                          },
-                                        );
-                                        const data = await response
-                                          .json()
-                                          .catch(() => null);
-                                        if (!response.ok) {
-                                          addToast({
-                                            title:
-                                              data?.message ??
-                                              "Failed to update emote",
-                                          });
-                                          return;
-                                        }
-                                        addToast({ title: "Emote updated" });
-                                        setEditingGameEmoteId(null);
-                                        setEditingGameEmoteSlug("");
-                                        setEditingGameEmoteImage(null);
-                                        setEditingGameEmoteArtistSlug("");
-                                        await refreshEmojis();
-                                      } catch (error) {
-                                        console.error(error);
-                                        addToast({
-                                          title: "Failed to update emote",
-                                        });
-                                      } finally {
-                                        setSavingEditGameEmote(false);
-                                      }
-                                    }}
-                                  >
-                                    Save
-                                  </Button>
-                                </Hstack>
-                              </Hstack>
-                            </Vstack>
-                          </Card>
-                        )}
-                      </Vstack>
-                    </Card>
-                  </AccordionItem>
-                </Accordion>
-
-                <Accordion>
-                  <AccordionItem
-                    title="Trailer & Screenshots"
-                    subtitle="Upload screenshots and add a YouTube trailer for the game page."
-                    icon="images"
-                  >
-                    <Card>
+                <div className="game-editor-row">
                       <Vstack align="start">
                         <div>
                           <Text color="text">Screenshots (up to 5)</Text>
@@ -2484,9 +2027,9 @@ export default function GameEditingForm({
                           )}
                         </Hstack>
                       </Vstack>
-                    </Card>
+                    </div>
 
-                    <Card>
+                    <div className="game-editor-row">
                       <Vstack align="start">
                         <div>
                           <Text color="text">Trailer (YouTube)</Text>
@@ -2528,15 +2071,785 @@ export default function GameEditingForm({
                           </div>
                         )}
                       </Vstack>
-                    </Card>
-                  </AccordionItem>
-                </Accordion>
-                <Accordion>
-                  <AccordionItem
-                    title="CreateGame.Soundtrack.Title"
-                    subtitle="CreateGame.Soundtrack.Description"
-                  >
-                    <Vstack align="start">
+                    </div>
+                <div className="game-editor-block">
+                  <Text color="text" weight="semibold">Game Emotes</Text>
+                  <Text color="textFaded" size="xs">Add emotes related to your game for people to use around the site</Text>
+                </div>
+                    <div className="game-editor-row">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">Emote Prefix</Text>
+                          <Text color="textFaded" size="xs">
+                            Choose a 4 to 8 character prefix for this game's
+                            emotes.
+                          </Text>
+                        </div>
+                        <Input
+                          value={emotePrefixInput}
+                          onValueChange={(value) =>
+                            setEmotePrefixInput(
+                              value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9]/g, "")
+                                .slice(0, MAX_EMOTE_PREFIX_LENGTH),
+                            )
+                          }
+                          name="gameEmotePrefix"
+                          placeholder="e.g. jam123"
+                          maxLength={MAX_EMOTE_PREFIX_LENGTH}
+                        />
+                      </Vstack>
+                    </div>
+
+                    <div className="game-editor-block">
+                      <Vstack align="start" className="gap-3">
+                        <div>
+                          <Text color="text">Game Emotes</Text>
+                          <Text color="textFaded" size="xs">
+                            Game emotes use the prefix{" "}
+                            <span className="font-semibold">
+                              {gameEmotePrefix}
+                            </span>
+                            .
+                          </Text>
+                        </div>
+                        <Button icon="plus" disabled={!game?.slug} onClick={() => setAddingGameEmote(true)}>Add Emote</Button>
+                        {!game?.slug && <Text size="xs" color="textFaded">Save your game before adding emotes</Text>}
+                        <Modal isOpen={addingGameEmote} onOpenChange={open => { if (!open && !savingGameEmote) { setAddingGameEmote(false); setGameEmoteArtistOpen(false); } }} size="2xl">
+                          <ModalContent>
+                            <ModalHeader className="pr-14 text-lg font-semibold">Add Emote</ModalHeader>
+                            <ModalBody className="max-h-[65dvh] overflow-y-auto">
+                              <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
+                                {gameEmoteImage ? <img src={gameEmoteImage} alt="Emote preview" className="h-12 w-12 object-contain" /> : <Icon name="smileplus" size={32} />}
+                                <div><Text size="xs" color="textFaded">Preview</Text><Text size="sm">:{gameEmotePrefix}{cleanedGameEmoteSlug || "emote"}:</Text></div>
+                              </div>
+                        <Hstack className="items-end flex-wrap">
+                          <Input
+                            label="Emote slug"
+                            labelPlacement="outside"
+                            placeholder="victory"
+                            value={gameEmoteSlug}
+                            onValueChange={setGameEmoteSlug}
+                            disabled={!game?.slug}
+                          />
+                          <div className="relative">
+                            <Input
+                              label="Artist user slug"
+                              labelPlacement="outside"
+                              placeholder="username"
+                              value={gameEmoteArtistSlug}
+                              onValueChange={(value) => {
+                                setGameEmoteArtistSlug(value);
+                                doEmoteArtistSearch(value, "create");
+                              }}
+                              onKeyDown={(event) => {
+                                if (
+                                  !gameEmoteArtistOpen ||
+                                  gameEmoteArtistMatches.length === 0
+                                ) {
+                                  return;
+                                }
+                                if (event.key === "ArrowDown") {
+                                  event.preventDefault();
+                                  setGameEmoteArtistIndex((prev) =>
+                                    prev + 1 >= gameEmoteArtistMatches.length
+                                      ? 0
+                                      : prev + 1,
+                                  );
+                                } else if (event.key === "ArrowUp") {
+                                  event.preventDefault();
+                                  setGameEmoteArtistIndex((prev) =>
+                                    prev === 0
+                                      ? gameEmoteArtistMatches.length - 1
+                                      : prev - 1,
+                                  );
+                                } else if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  const match =
+                                    gameEmoteArtistMatches[
+                                      gameEmoteArtistIndex
+                                    ];
+                                  if (match) {
+                                    setGameEmoteArtistSlug(match.slug);
+                                    setGameEmoteArtistOpen(false);
+                                  }
+                                } else if (event.key === "Escape") {
+                                  setGameEmoteArtistOpen(false);
+                                }
+                              }}
+                              disabled={!game?.slug}
+                            />
+                            {gameEmoteArtistOpen &&
+                              gameEmoteArtistMatches.length > 0 && (
+                                <ArtistSuggestions onClose={() => setGameEmoteArtistOpen(false)}>
+                                  {gameEmoteArtistMatches.map((u, index) => (
+                                    <button
+                                      key={u.id}
+                                      type="button"
+                                      className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
+                                      style={{
+                                        backgroundColor:
+                                          index === gameEmoteArtistIndex
+                                            ? "rgba(59,130,246,0.3)"
+                                            : "transparent",
+                                      }}
+                                      onMouseDown={(event) => {
+                                        event.preventDefault();
+                                        setGameEmoteArtistSlug(u.slug);
+                                        setGameEmoteArtistOpen(false);
+                                      }}
+                                    >
+                                      <img
+                                        src={
+                                          u.profilePicture ||
+                                          "/images/D2J_Icon.png"
+                                        }
+                                        alt={u.name}
+                                        className="h-5 w-5 rounded-full"
+                                        loading="lazy"
+                                        decoding="async"
+                                      />
+                                      <div className="flex flex-col text-sm">
+                                        <span>{u.name}</span>
+                                        <span className="text-xs opacity-70">
+                                          @{u.slug}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  ))}
+                                </ArtistSuggestions>
+                              )}
+                          </div>
+                          <Vstack align="start" gap={1}>
+                            <Text size="xs" color="textFaded">
+                              Upload image
+                            </Text>
+                            <ImageInput
+                              value={gameEmoteImage}
+                              width={80}
+                              height={80}
+                              placeholder="Upload"
+                              disabled={!game?.slug}
+                              onSelect={async (file, crop) => {
+                                const url = await uploadTo("image", file, crop);
+                                if (url) {
+                                  setGameEmoteImage(url);
+                                }
+                              }}
+                            />
+                          </Vstack>
+                          <Button
+                            color="blue"
+                            loading={savingGameEmote}
+                            disabled={!game?.slug}
+                            onClick={async () => {
+                              if (!game?.slug) {
+                                addToast({
+                                  title: "Save your game before adding emotes.",
+                                });
+                                return;
+                              }
+                              if (!cleanedGameEmoteSlug || !gameEmoteImage) {
+                                addToast({
+                                  title: "Slug and image are required",
+                                });
+                                return;
+                              }
+                              setSavingGameEmote(true);
+                              try {
+                                const response = await createGameEmoji(
+                                  game.slug,
+                                  cleanedGameEmoteSlug,
+                                  gameEmoteImage,
+                                  gameEmoteArtistSlug.trim() || null,
+                                );
+                                const data = await response
+                                  .json()
+                                  .catch(() => null);
+                                if (!response.ok) {
+                                  addToast({
+                                    title:
+                                      data?.message ?? "Failed to add emote",
+                                  });
+                                  return;
+                                }
+                                addToast({ title: "Emote added" });
+                                setAddingGameEmote(false);
+                                setGameEmoteArtistOpen(false);
+                                setGameEmoteSlug("");
+                                setGameEmoteImage(null);
+                                setGameEmoteArtistSlug("");
+                                await refreshEmojis();
+                              } catch (error) {
+                                console.error(error);
+                                addToast({ title: "Failed to add emote" });
+                              } finally {
+                                setSavingGameEmote(false);
+                              }
+                            }}
+                          >
+                            Add Emote
+                          </Button>
+                        </Hstack>
+                            </ModalBody>
+                            <ModalFooter><Button variant="ghost" disabled={savingGameEmote} onClick={() => { setAddingGameEmote(false); setGameEmoteArtistOpen(false); }}>Cancel</Button></ModalFooter>
+                          </ModalContent>
+                        </Modal>
+
+                        {gameEmotes.length === 0 ? (
+                          <Text size="sm" color="textFaded">
+                            No game emotes yet.
+                          </Text>
+                        ) : (
+                          <div className="w-full">
+                            {gameEmotes.map((emoji) => (
+                              <div
+                                key={emoji.id}
+                                className="flex flex-wrap items-center gap-3 border-b py-4 last:border-b-0"
+                                style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}
+                              >
+                                <img
+                                  src={emoji.image}
+                                  alt={`:${emoji.slug}:`}
+                                  className="h-6 w-6"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                                <div className="min-w-0 flex-1"><Text size="sm">:{emoji.slug}:</Text>{emoji.artistUser && <Text size="xs" color="textFaded">{emoji.artistUser.name || emoji.artistUser.slug}</Text>}</div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  icon="pencil"
+                                  onClick={() => {
+                                    setEditingGameEmoteId(emoji.id);
+                                    setEditingGameEmoteSlug(
+                                      emoji.slug.replace(gameEmotePrefix, ""),
+                                    );
+                                    setEditingGameEmoteImage(emoji.image);
+                                    setEditingGameEmoteArtistSlug(
+                                      emoji.artistUser?.slug ?? "",
+                                    );
+                                  }}
+                                >
+                                  Preview & edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  color="red"
+                                  variant="ghost"
+                                  onClick={async () => {
+                                    const response = await deleteEmoji(
+                                      emoji.id,
+                                    );
+                                    const data = await response
+                                      .json()
+                                      .catch(() => null);
+                                    if (!response.ok) {
+                                      addToast({
+                                        title:
+                                          data?.message ??
+                                          "Failed to delete emote",
+                                      });
+                                      return;
+                                    }
+                                    addToast({
+                                      title: data?.message ?? "Emote deleted",
+                                    });
+                                    await refreshEmojis();
+                                  }}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {editingGameEmoteId && (
+                          <Modal isOpen onOpenChange={open => { if (!open && !savingEditGameEmote) { setEditingGameEmoteId(null); setEditGameEmoteArtistOpen(false); } }} size="2xl">
+                          <ModalContent>
+                          <ModalHeader className="pr-14 text-lg font-semibold">Edit Emote</ModalHeader>
+                          <ModalBody className="max-h-[65dvh] overflow-y-auto">
+                            <div className="mb-5 flex items-center gap-3 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}>
+                              {editingGameEmoteImage && <img src={editingGameEmoteImage} alt="Emote preview" className="h-12 w-12 object-contain" />}
+                              <div><Text size="xs" color="textFaded">Preview</Text><Text size="sm">:{gameEmotePrefix}{cleanedEditingGameEmoteSlug || "emote"}:</Text></div>
+                            </div>
+                            <Vstack align="start" className="gap-3">
+                              <Hstack className="items-end flex-wrap">
+                                <Input
+                                  label="Emote slug"
+                                  labelPlacement="outside"
+                                  placeholder="victory"
+                                  value={editingGameEmoteSlug}
+                                  onValueChange={setEditingGameEmoteSlug}
+                                />
+                                <div className="relative">
+                                  <Input
+                                    label="Artist user slug"
+                                    labelPlacement="outside"
+                                    placeholder="username"
+                                    value={editingGameEmoteArtistSlug}
+                                    onValueChange={(value) => {
+                                      setEditingGameEmoteArtistSlug(value);
+                                      doEmoteArtistSearch(value, "edit");
+                                    }}
+                                    onKeyDown={(event) => {
+                                      if (
+                                        !editGameEmoteArtistOpen ||
+                                        editGameEmoteArtistMatches.length === 0
+                                      ) {
+                                        return;
+                                      }
+                                      if (event.key === "ArrowDown") {
+                                        event.preventDefault();
+                                        setEditGameEmoteArtistIndex((prev) =>
+                                          prev + 1 >=
+                                          editGameEmoteArtistMatches.length
+                                            ? 0
+                                            : prev + 1,
+                                        );
+                                      } else if (event.key === "ArrowUp") {
+                                        event.preventDefault();
+                                        setEditGameEmoteArtistIndex((prev) =>
+                                          prev === 0
+                                            ? editGameEmoteArtistMatches.length -
+                                              1
+                                            : prev - 1,
+                                        );
+                                      } else if (event.key === "Enter") {
+                                        event.preventDefault();
+                                        const match =
+                                          editGameEmoteArtistMatches[
+                                            editGameEmoteArtistIndex
+                                          ];
+                                        if (match) {
+                                          setEditingGameEmoteArtistSlug(
+                                            match.slug,
+                                          );
+                                          setEditGameEmoteArtistOpen(false);
+                                        }
+                                      } else if (event.key === "Escape") {
+                                        setEditGameEmoteArtistOpen(false);
+                                      }
+                                    }}
+                                  />
+                                  {editGameEmoteArtistOpen &&
+                                    editGameEmoteArtistMatches.length > 0 && (
+                                      <ArtistSuggestions onClose={() => setEditGameEmoteArtistOpen(false)}>
+                                        {editGameEmoteArtistMatches.map(
+                                          (u, index) => (
+                                            <button
+                                              key={u.id}
+                                              type="button"
+                                              className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left"
+                                              style={{
+                                                backgroundColor:
+                                                  index ===
+                                                  editGameEmoteArtistIndex
+                                                    ? "rgba(59,130,246,0.3)"
+                                                    : "transparent",
+                                              }}
+                                              onMouseDown={(event) => {
+                                                event.preventDefault();
+                                                setEditingGameEmoteArtistSlug(
+                                                  u.slug,
+                                                );
+                                                setEditGameEmoteArtistOpen(
+                                                  false,
+                                                );
+                                              }}
+                                            >
+                                              <img
+                                                src={
+                                                  u.profilePicture ||
+                                                  "/images/D2J_Icon.png"
+                                                }
+                                                alt={u.name}
+                                                className="h-5 w-5 rounded-full"
+                                                loading="lazy"
+                                                decoding="async"
+                                              />
+                                              <div className="flex flex-col text-sm">
+                                                <span>{u.name}</span>
+                                                <span className="text-xs opacity-70">
+                                                  @{u.slug}
+                                                </span>
+                                              </div>
+                                            </button>
+                                          ),
+                                        )}
+                                      </ArtistSuggestions>
+                                    )}
+                                </div>
+                                <Vstack align="start" gap={1}>
+                                  <Text size="xs" color="textFaded">
+                                    Upload image
+                                  </Text>
+                                  <ImageInput
+                                    value={editingGameEmoteImage}
+                                    width={80}
+                                    height={80}
+                                    placeholder="Upload"
+                                    onSelect={async (file, crop) => {
+                                      const url = await uploadTo(
+                                        "image",
+                                        file,
+                                        crop,
+                                      );
+                                      if (url) {
+                                        setEditingGameEmoteImage(url);
+                                      }
+                                    }}
+                                  />
+                                </Vstack>
+                                <Hstack>
+                                  <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                      setEditingGameEmoteId(null);
+                                      setEditingGameEmoteSlug("");
+                                      setEditingGameEmoteImage(null);
+                                      setEditingGameEmoteArtistSlug("");
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    color="blue"
+                                    loading={savingEditGameEmote}
+                                    onClick={async () => {
+                                      if (!editingGameEmoteId) return;
+                                      if (
+                                        !cleanedEditingGameEmoteSlug ||
+                                        !editingGameEmoteImage
+                                      ) {
+                                        addToast({
+                                          title: "Slug and image are required",
+                                        });
+                                        return;
+                                      }
+                                      setSavingEditGameEmote(true);
+                                      try {
+                                        const response = await updateEmoji(
+                                          editingGameEmoteId,
+                                          {
+                                            slug: `${gameEmotePrefix}${cleanedEditingGameEmoteSlug}`,
+                                            image: editingGameEmoteImage,
+                                            artistSlug:
+                                              editingGameEmoteArtistSlug.trim() ||
+                                              null,
+                                            scopeUserId: null,
+                                            scopeGameId: game?.id ?? null,
+                                          },
+                                        );
+                                        const data = await response
+                                          .json()
+                                          .catch(() => null);
+                                        if (!response.ok) {
+                                          addToast({
+                                            title:
+                                              data?.message ??
+                                              "Failed to update emote",
+                                          });
+                                          return;
+                                        }
+                                        addToast({ title: "Emote updated" });
+                                        setEditingGameEmoteId(null);
+                                        setEditingGameEmoteSlug("");
+                                        setEditingGameEmoteImage(null);
+                                        setEditingGameEmoteArtistSlug("");
+                                        await refreshEmojis();
+                                      } catch (error) {
+                                        console.error(error);
+                                        addToast({
+                                          title: "Failed to update emote",
+                                        });
+                                      } finally {
+                                        setSavingEditGameEmote(false);
+                                      }
+                                    }}
+                                  >
+                                    Save
+                                  </Button>
+                                </Hstack>
+                              </Hstack>
+                            </Vstack>
+                          </ModalBody>
+                          </ModalContent>
+                          </Modal>
+                        )}
+                      </Vstack>
+                    </div>
+              </Vstack>
+            </Tab>
+            <Tab title="Metadata" icon="tags">
+              <Vstack align="stretch">
+                <div className="game-editor-panel-heading">
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="tags" color="textFaded" size={12} />
+                      <Text size="lg" color="text" weight="semibold">
+                        Metadata
+                      </Text>
+                    </Hstack>
+                    <Text size="xs" color="textFaded">
+                      Metadata to help people find your game better and to be
+                      able to know more about your game
+                    </Text>
+                  </Vstack>
+                </div>
+                <div className="game-editor-row">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Tags.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Tags.Description
+                      </Text>
+                    </div>
+                    {isMounted && (
+                      <Select<
+                        {
+                          value: string;
+                          id: number;
+                          label: ReactNode;
+                        },
+                        true
+                      >
+                        styles={styles}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
+                        isMulti
+                        isClearable={false}
+                        onChange={(value) => setTags(value.map((i) => i.id))}
+                        value={tags.map((index) => ({
+                          value: allTags[index].name,
+                          id: index,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              {allTags[index].icon && (
+                                <Avatar
+                                  className="w-6 h-6 min-w-6 min-h-6"
+                                  size={24}
+                                  src={allTags[index].icon}
+                                  style={{ backgroundColor: "transparent" }}
+                                />
+                              )}
+                              <p>{allTags[index].name}</p>
+                            </div>
+                          ),
+                        }))}
+                        isOptionDisabled={() =>
+                          tags != null && tags.length >= 10
+                        }
+                        options={allTags.map((tag, i) => ({
+                          value: tag.name,
+                          id: i,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              <p>{tag.name}</p>
+                            </div>
+                          ),
+                        }))}
+                      />
+                    )}
+                  </Vstack>
+                </div>
+
+                <div className="game-editor-row">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.Flags.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.Flags.Description
+                      </Text>
+                    </div>
+                    {isMounted && (
+                      <Select<
+                        {
+                          value: string;
+                          id: number;
+                          label: ReactNode;
+                        },
+                        true
+                      >
+                        styles={styles}
+                        menuPortalTarget={document.body}
+                        menuPosition="fixed"
+                        isMulti
+                        isClearable={false}
+                        onChange={(value) => setFlags(value.map((i) => i.id))}
+                        value={flags.map((index) => ({
+                          value: allFlags[index].name,
+                          id: index,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              {allFlags[index].icon &&
+                                getIcon(allFlags[index].icon)}
+                              <p>{allFlags[index].name}</p>
+                            </div>
+                          ),
+                        }))}
+                        options={allFlags.map((flag, i) => ({
+                          value: flag.name,
+                          id: i,
+                          label: (
+                            <div className="flex gap-2 items-center">
+                              <p>{flag.name}</p>
+                            </div>
+                          ),
+                        }))}
+                      />
+                    )}
+                  </Vstack>
+                </div>
+
+                <div className="game-editor-row relative z-40 overflow-visible">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">Input Methods</Text>
+                      <Text color="textFaded" size="xs">
+                        Select all input methods that players can use
+                      </Text>
+                    </div>
+
+                    <Dropdown portal
+                      multiple
+                      closeOnSelect={false}
+                      placeholder="Select input methods"
+                      selectedValues={inputMethods}
+                      onSelectionChange={(sel) => {
+                        setInputMethods(sel as Set<InputMethodType>);
+                      }}
+                    >
+                      <Dropdown.Item
+                        icon="eraser"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setInputMethods(new Set());
+                        }}
+                      >
+                        Clear all
+                      </Dropdown.Item>
+
+                      {INPUT_METHOD_OPTIONS.map(({ value, label, icon }) => (
+                        <Dropdown.Item key={value} value={value} icon={icon}>
+                          {label}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown>
+                  </Vstack>
+                </div>
+                    <div className="game-editor-row relative z-30 overflow-visible">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to Complete a Run
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            If your game features multiple runs (such as a
+                            roguelike), how long a user should expect an average
+                            run of the game to take. If your game has only one
+                            run, leave this unset
+                          </Text>
+                        </div>
+
+                        <Dropdown portal
+                          placeholder="Select time interval"
+                          selectedValue={estOneRun || null}
+                          onSelect={(i) => {
+                            setEstOneRun(typeof i === "string" ? i : "");
+                          }}
+                        >
+                          <Dropdown.Item icon="eraser">
+                            Clear selection
+                          </Dropdown.Item>
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </div>
+                    <div className="game-editor-row relative z-20 overflow-visible">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to Beat the Game
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            If your game can be beaten, the average amount of a
+                            time a user would spend playing the game until they
+                            do that
+                          </Text>
+                        </div>
+
+                        <Dropdown portal
+                          placeholder="Select time interval"
+                          selectedValue={estAnyPercent || null}
+                          onSelect={(i) => {
+                            setEstAnyPercent(typeof i === "string" ? i : "");
+                          }}
+                        >
+                          <Dropdown.Item icon="eraser">
+                            Clear selection
+                          </Dropdown.Item>
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </div>
+                    <div className="game-editor-row relative z-10 overflow-visible">
+                      <Vstack align="start">
+                        <div>
+                          <Text color="text">
+                            Time to 100% the game
+                          </Text>
+                          <Text color="textFaded" size="xs">
+                            The average time it would take for a user to achieve
+                            everything in the game if it has more past just the
+                            regular run (e.g. getting all achievements, getting
+                            all optional collectables, etc.)
+                          </Text>
+                        </div>
+
+                        <Dropdown portal
+                          placeholder="Select time interval"
+                          selectedValue={estHundredPercent || null}
+                          onSelect={(i) => {
+                            setEstHundredPercent(
+                              typeof i === "string" ? i : "",
+                            );
+                          }}
+                        >
+                          <Dropdown.Item icon="eraser">
+                            Clear selection
+                          </Dropdown.Item>
+                          {TIME_OPTIONS.map((value) => (
+                            <Dropdown.Item key={value} value={value}>
+                              {value}
+                            </Dropdown.Item>
+                          ))}
+                        </Dropdown>
+                      </Vstack>
+                    </div>
+              </Vstack>
+            </Tab>
+            <Tab title="Soundtrack" icon="music">
+              <Vstack align="stretch">
+                <div className="game-editor-panel-heading">
+                  <Vstack align="start">
+                    <Hstack>
+                      <Icon name="music" color="textFaded" size={12} />
+                      <Text size="lg" color="text" weight="semibold">Soundtrack</Text>
+                    </Hstack>
+                    <Text size="xs" color="textFaded">CreateGame.Soundtrack.Description</Text>
+                  </Vstack>
+                </div>
+                    <Vstack align="start" className="pt-4">
                       <div>
                         <Text color="text">Album Thumbnail</Text>
                         <Text color="textFaded" size="xs">
@@ -2560,36 +2873,20 @@ export default function GameEditingForm({
                       {songs.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {songs.map((song) => {
-                            const licenseMode = licenseModeForFlags({
-                              attribution: song.licenseAttribution,
-                              commercial: song.licenseCommercial,
-                              derivatives: song.licenseDerivatives,
-                              shareAlike: song.licenseShareAlike,
-                            });
-
                             return (
-                              <Card key={song.id}>
-                                <Vstack align="start" className="gap-3">
-                                  <Hstack className="w-full justify-between">
-                                    <Hstack>
-                                      <Icon name="music" />
-                                      <Text color="text" weight="semibold">
-                                        {song.name || "Untitled track"}
-                                      </Text>
-                                    </Hstack>
-                                    <Button
-                                      icon="trash"
-                                      color="red"
-                                      size="sm"
-                                      onClick={() =>
-                                        setSongs((prev) =>
-                                          prev.filter((s) => s.id !== song.id),
-                                        )
-                                      }
-                                    >
-                                      Remove
-                                    </Button>
-                                  </Hstack>
+                              <ItemEditor key={song.id} item={song} title={song.name || "Untitled track"}
+      initiallyOpen={newSongId === song.id}
+      onClose={() => setNewSongId(null)}
+      onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}
+      onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
+      onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
+      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || "Untitled track"}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length} credits · {song.license || "No license selected"}</p></div></div>}
+      preview={draft => <div><p className="mb-2 font-semibold">{draft.name || "Untitled track"}</p>{draft.url && <audio controls preload="none" src={draft.url} className="w-full" />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
+      {(song, setDraft) => {
+        const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
+        const setDraftSongs: typeof setSongs = next => setDraft(current => (typeof next === "function" ? next([current]) : next)[0] ?? current);
+        return (<Vstack align="start" className="gap-3">
+
 
                                   <div className="w-full">
                                     <Text color="text">Song Slug</Text>
@@ -2601,7 +2898,7 @@ export default function GameEditingForm({
                                     placeholder="Enter song slug"
                                     value={song.slug}
                                     onValueChange={(val) =>
-                                      setSongs((prev) =>
+                                      setDraftSongs((prev) =>
                                         prev.map((s) =>
                                           s.id === song.id
                                             ? { ...s, slug: val }
@@ -2620,7 +2917,7 @@ export default function GameEditingForm({
                                     placeholder="Enter song name"
                                     value={song.name}
                                     onValueChange={(val) =>
-                                      setSongs((prev) =>
+                                      setDraftSongs((prev) =>
                                         prev.map((s) =>
                                           s.id === song.id
                                             ? { ...s, name: val }
@@ -2639,7 +2936,7 @@ export default function GameEditingForm({
                                   <Editor
                                     content={song.commentary ?? ""}
                                     setContent={(val) =>
-                                      setSongs((prev) =>
+                                      setDraftSongs((prev) =>
                                         prev.map((s) =>
                                           s.id === song.id
                                             ? { ...s, commentary: val }
@@ -2715,7 +3012,7 @@ export default function GameEditingForm({
                                                         value && "id" in value
                                                           ? [value.id]
                                                           : [];
-                                                      setSongs((prev) =>
+                                                      setDraftSongs((prev) =>
                                                         prev.map((s) => {
                                                           if (s.id !== song.id)
                                                             return s;
@@ -2781,7 +3078,7 @@ export default function GameEditingForm({
                                                       const nextIds = value.map(
                                                         (item) => item.id,
                                                       );
-                                                      setSongs((prev) =>
+                                                      setDraftSongs((prev) =>
                                                         prev.map((s) => {
                                                           if (s.id !== song.id)
                                                             return s;
@@ -2850,7 +3147,7 @@ export default function GameEditingForm({
                                           isMulti
                                           isClearable
                                           onChange={(value) =>
-                                            setSongs((prev) =>
+                                            setDraftSongs((prev) =>
                                               prev.map((s) =>
                                                 s.id === song.id
                                                   ? {
@@ -2897,7 +3194,7 @@ export default function GameEditingForm({
                                             : String(song.bpm)
                                         }
                                         onValueChange={(val) =>
-                                          setSongs((prev) =>
+                                          setDraftSongs((prev) =>
                                             prev.map((s) =>
                                               s.id === song.id
                                                 ? {
@@ -2921,7 +3218,7 @@ export default function GameEditingForm({
                                       <Input
                                         value={song.musicalKey ?? ""}
                                         onValueChange={(val) =>
-                                          setSongs((prev) =>
+                                          setDraftSongs((prev) =>
                                             prev.map((s) =>
                                               s.id === song.id
                                                 ? { ...s, musicalKey: val }
@@ -2940,15 +3237,14 @@ export default function GameEditingForm({
                                     </Text>
                                     <Input
                                       value={
-                                        softwareUsedDrafts[song.id] ??
-                                        song.softwareUsed.join(", ")
+                                        softwareUsedDrafts[song.id] ?? song.softwareUsed.join(", ")
                                       }
                                       onValueChange={(val) => {
                                         setSoftwareUsedDrafts((prev) => ({
                                           ...prev,
                                           [song.id]: val,
                                         }));
-                                        setSongs((prev) =>
+                                        setDraftSongs((prev) =>
                                           prev.map((s) =>
                                             s.id === song.id
                                               ? {
@@ -2982,7 +3278,7 @@ export default function GameEditingForm({
                                           <Input
                                             value={link.label}
                                             onValueChange={(val) =>
-                                              setSongs((prev) =>
+                                              setDraftSongs((prev) =>
                                                 prev.map((s) =>
                                                   s.id === song.id
                                                     ? {
@@ -3006,7 +3302,7 @@ export default function GameEditingForm({
                                           <Input
                                             value={link.url}
                                             onValueChange={(val) =>
-                                              setSongs((prev) =>
+                                              setDraftSongs((prev) =>
                                                 prev.map((s) =>
                                                   s.id === song.id
                                                     ? {
@@ -3032,7 +3328,7 @@ export default function GameEditingForm({
                                             icon="trash"
                                             color="red"
                                             onClick={() =>
-                                              setSongs((prev) =>
+                                              setDraftSongs((prev) =>
                                                 prev.map((s) =>
                                                   s.id === song.id
                                                     ? {
@@ -3053,7 +3349,7 @@ export default function GameEditingForm({
                                         size="sm"
                                         icon="plus"
                                         onClick={() =>
-                                          setSongs((prev) =>
+                                          setDraftSongs((prev) =>
                                             prev.map((s) =>
                                               s.id === song.id
                                                 ? {
@@ -3107,7 +3403,7 @@ export default function GameEditingForm({
 
                                       return (
                                         <>
-                                          <Dropdown
+                                          <Dropdown portal
                                             selectedValue={licenseModeForFlags({
                                               attribution:
                                                 song.licenseAttribution,
@@ -3119,7 +3415,7 @@ export default function GameEditingForm({
                                                 song.licenseShareAlike,
                                             })}
                                             onSelect={(value) => {
-                                              setSongs((prev) =>
+                                              setDraftSongs((prev) =>
                                                 prev.map((s) => {
                                                   if (s.id !== song.id)
                                                     return s;
@@ -3213,7 +3509,7 @@ export default function GameEditingForm({
                                                     song.licenseCommercial
                                                   }
                                                   onChange={(val) =>
-                                                    setSongs((prev) =>
+                                                    setDraftSongs((prev) =>
                                                       prev.map((s) => {
                                                         if (s.id !== song.id)
                                                           return s;
@@ -3251,7 +3547,7 @@ export default function GameEditingForm({
                                                     song.licenseDerivatives
                                                   }
                                                   onChange={(val) =>
-                                                    setSongs((prev) =>
+                                                    setDraftSongs((prev) =>
                                                       prev.map((s) => {
                                                         if (s.id !== song.id)
                                                           return s;
@@ -3290,7 +3586,7 @@ export default function GameEditingForm({
                                                     song.licenseShareAlike
                                                   }
                                                   onChange={(val) =>
-                                                    setSongs((prev) =>
+                                                    setDraftSongs((prev) =>
                                                       prev.map((s) => {
                                                         if (s.id !== song.id)
                                                           return s;
@@ -3341,7 +3637,7 @@ export default function GameEditingForm({
                                                 if (backgroundUsageRequired) {
                                                   return;
                                                 }
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3389,7 +3685,7 @@ export default function GameEditingForm({
                                                   : song.allowBackgroundUseAttribution
                                               }
                                               onChange={(val) =>
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3433,7 +3729,7 @@ export default function GameEditingForm({
                                                   : song.allowDownload
                                               }
                                               onChange={(val) =>
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3506,7 +3802,7 @@ export default function GameEditingForm({
                                                 setHoveredUserId(null)
                                               }
                                               onClick={() => {
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3589,10 +3885,10 @@ export default function GameEditingForm({
                                           className="w-full gap-2"
                                         >
                                           <Hstack className="w-full gap-2">
-                                            <Dropdown
+                                            <Dropdown portal
                                               selectedValue={credit.role}
                                               onSelect={(value) =>
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3635,7 +3931,7 @@ export default function GameEditingForm({
                                               icon="trash"
                                               color="red"
                                               onClick={() =>
-                                                setSongs((prev) =>
+                                                setDraftSongs((prev) =>
                                                   prev.map((s) =>
                                                     s.id === song.id
                                                       ? {
@@ -3695,7 +3991,7 @@ export default function GameEditingForm({
                                                         setHoveredUserId(null)
                                                       }
                                                       onClick={() => {
-                                                        setSongs((prev) =>
+                                                        setDraftSongs((prev) =>
                                                           prev.map((s) =>
                                                             s.id === song.id
                                                               ? {
@@ -3786,16 +4082,6 @@ export default function GameEditingForm({
                                       The track itself
                                     </Text>
                                   </div>
-                                  {song.url && (
-                                    <div className="w-full">
-                                      <audio
-                                        controls
-                                        preload="none"
-                                        src={song.url}
-                                        style={{ width: "100%" }}
-                                      />
-                                    </div>
-                                  )}
                                   <Hstack className="items-center gap-2">
                                     <Button
                                       icon="upload"
@@ -3815,7 +4101,7 @@ export default function GameEditingForm({
                                             file,
                                           );
                                           if (!uploaded) return;
-                                          setSongs((prev) =>
+                                          setDraftSongs((prev) =>
                                             prev.map((s) =>
                                               s.id === song.id
                                                 ? {
@@ -3845,8 +4131,9 @@ export default function GameEditingForm({
                                       Replace Audio
                                     </Button>
                                   </Hstack>
-                                </Vstack>
-                              </Card>
+                                </Vstack>);
+      }}
+    </ItemEditor>
                             );
                           })}
                         </Vstack>
@@ -3899,6 +4186,7 @@ export default function GameEditingForm({
                               ...prev,
                               [songId]: "",
                             }));
+                            setNewSongId(songId);
                             addToast({ title: "Song uploaded" });
                           };
                           input.click();
@@ -3907,508 +4195,58 @@ export default function GameEditingForm({
                         CreateGame.Soundtrack.Add
                       </Button>
                     </Vstack>
-                  </AccordionItem>
-                </Accordion>
               </Vstack>
             </Tab>
-            <Tab title="Metadata" icon="tags">
+            <Tab title="Leaderboards" icon="trophy">
               <Vstack align="stretch">
-                <Card>
+                <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="tags" color="textFaded" size={12} />
-                      <Text size="xs" color="textFaded">
-                        Metadata
+                      <Icon name="trophy" color="textFaded" size={12} />
+                      <Text size="lg" color="text" weight="semibold">
+                        Leaderboards
                       </Text>
                     </Hstack>
                     <Text size="xs" color="textFaded">
-                      Metadata to help people find your game better and to be
-                      able to know more about your game
+                      CreateGame.Leaderboards.Description
                     </Text>
                   </Vstack>
-                </Card>
-                <Card>
-                  <Vstack align="start">
-                    <div>
-                      <Text color="text">CreateGame.Tags.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateGame.Tags.Description
-                      </Text>
-                    </div>
-                    {isMounted && (
-                      <Select<
-                        {
-                          value: string;
-                          id: number;
-                          label: ReactNode;
-                        },
-                        true
-                      >
-                        styles={styles}
-                        menuPortalTarget={document.body}
-                        menuPosition="fixed"
-                        isMulti
-                        isClearable={false}
-                        onChange={(value) => setTags(value.map((i) => i.id))}
-                        value={tags.map((index) => ({
-                          value: allTags[index].name,
-                          id: index,
-                          label: (
-                            <div className="flex gap-2 items-center">
-                              {allTags[index].icon && (
-                                <Avatar
-                                  className="w-6 h-6 min-w-6 min-h-6"
-                                  size={24}
-                                  src={allTags[index].icon}
-                                  style={{ backgroundColor: "transparent" }}
-                                />
-                              )}
-                              <p>{allTags[index].name}</p>
-                            </div>
-                          ),
-                        }))}
-                        isOptionDisabled={() =>
-                          tags != null && tags.length >= 10
-                        }
-                        options={allTags.map((tag, i) => ({
-                          value: tag.name,
-                          id: i,
-                          label: (
-                            <div className="flex gap-2 items-center">
-                              <p>{tag.name}</p>
-                            </div>
-                          ),
-                        }))}
-                      />
-                    )}
-                  </Vstack>
-                </Card>
-
-                <Card>
-                  <Vstack align="start">
-                    <div>
-                      <Text color="text">CreateGame.Flags.Title</Text>
-                      <Text color="textFaded" size="xs">
-                        CreateGame.Flags.Description
-                      </Text>
-                    </div>
-                    {isMounted && (
-                      <Select<
-                        {
-                          value: string;
-                          id: number;
-                          label: ReactNode;
-                        },
-                        true
-                      >
-                        styles={styles}
-                        menuPortalTarget={document.body}
-                        menuPosition="fixed"
-                        isMulti
-                        isClearable={false}
-                        onChange={(value) => setFlags(value.map((i) => i.id))}
-                        value={flags.map((index) => ({
-                          value: allFlags[index].name,
-                          id: index,
-                          label: (
-                            <div className="flex gap-2 items-center">
-                              {allFlags[index].icon &&
-                                getIcon(allFlags[index].icon)}
-                              <p>{allFlags[index].name}</p>
-                            </div>
-                          ),
-                        }))}
-                        options={allFlags.map((flag, i) => ({
-                          value: flag.name,
-                          id: i,
-                          label: (
-                            <div className="flex gap-2 items-center">
-                              <p>{flag.name}</p>
-                            </div>
-                          ),
-                        }))}
-                      />
-                    )}
-                  </Vstack>
-                </Card>
-
-                <Card className="relative z-40 overflow-visible">
-                  <Vstack align="start">
-                    <div>
-                      <Text color="text">Input Methods</Text>
-                      <Text color="textFaded" size="xs">
-                        Select all input methods that players can use
-                      </Text>
-                    </div>
-
-                    <Dropdown
-                      multiple
-                      closeOnSelect={false}
-                      placeholder="Select input methods"
-                      selectedValues={inputMethods}
-                      onSelectionChange={(sel) => {
-                        setInputMethods(sel as Set<InputMethodType>);
-                      }}
-                    >
-                      <Dropdown.Item
-                        icon="eraser"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setInputMethods(new Set());
-                        }}
-                      >
-                        Clear all
-                      </Dropdown.Item>
-
-                      {INPUT_METHOD_OPTIONS.map(({ value, label, icon }) => (
-                        <Dropdown.Item key={value} value={value} icon={icon}>
-                          {label}
-                        </Dropdown.Item>
-                      ))}
-                    </Dropdown>
-                  </Vstack>
-                </Card>
-                <Accordion>
-                  <AccordionItem
-                    title="Estimated Playtimes"
-                    subtitle="Times it would take people to complete runs / playthroughs of the game"
-                    icon="trophy"
-                  >
-                    <Card className="relative z-30 overflow-visible">
-                      <Vstack align="start">
-                        <div>
-                          <Text color="text">
-                            Time to Complete a Run (optional)
-                          </Text>
-                          <Text color="textFaded" size="xs">
-                            If your game features multiple runs (such as a
-                            roguelike), how long a user should expect an average
-                            run of the game to take
-                          </Text>
-                        </div>
-
-                        <Dropdown
-                          placeholder="Select time interval"
-                          selectedValue={estOneRun || null}
-                          onSelect={(i) => {
-                            setEstOneRun(typeof i === "string" ? i : "");
-                          }}
-                        >
-                          <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
-                          {TIME_OPTIONS.map((value) => (
-                            <Dropdown.Item key={value} value={value}>
-                              {value}
-                            </Dropdown.Item>
-                          ))}
-                        </Dropdown>
-                      </Vstack>
-                    </Card>
-                    <Card className="relative z-20 overflow-visible">
-                      <Vstack align="start">
-                        <div>
-                          <Text color="text">
-                            Time to Beat the Game (optional)
-                          </Text>
-                          <Text color="textFaded" size="xs">
-                            If your game can be beaten, the average amount of a
-                            time a user would spend playing the game until they
-                            do that
-                          </Text>
-                        </div>
-
-                        <Dropdown
-                          placeholder="Select time interval"
-                          selectedValue={estAnyPercent || null}
-                          onSelect={(i) => {
-                            setEstAnyPercent(typeof i === "string" ? i : "");
-                          }}
-                        >
-                          <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
-                          {TIME_OPTIONS.map((value) => (
-                            <Dropdown.Item key={value} value={value}>
-                              {value}
-                            </Dropdown.Item>
-                          ))}
-                        </Dropdown>
-                      </Vstack>
-                    </Card>
-                    <Card className="relative z-10 overflow-visible">
-                      <Vstack align="start">
-                        <div>
-                          <Text color="text">
-                            Time to 100% the game (optional)
-                          </Text>
-                          <Text color="textFaded" size="xs">
-                            The average time it would take for a user to achieve
-                            everything in the game if it has more past just the
-                            regular run (e.g. getting all achievements, getting
-                            all optional collectables, etc.)
-                          </Text>
-                        </div>
-
-                        <Dropdown
-                          placeholder="Select time interval"
-                          selectedValue={estHundredPercent || null}
-                          onSelect={(i) => {
-                            setEstHundredPercent(
-                              typeof i === "string" ? i : "",
-                            );
-                          }}
-                        >
-                          <Dropdown.Item icon="eraser">
-                            Clear selection
-                          </Dropdown.Item>
-                          {TIME_OPTIONS.map((value) => (
-                            <Dropdown.Item key={value} value={value}>
-                              {value}
-                            </Dropdown.Item>
-                          ))}
-                        </Dropdown>
-                      </Vstack>
-                    </Card>
-                  </AccordionItem>
-                </Accordion>
+                </div>
+                <div className="pt-4">
+                    <LeaderboardManager value={leaderboards} onChange={setLeaderboards} />
+                </div>
               </Vstack>
             </Tab>
-            <Tab title="Achievements & Leaderboards" icon="circlestar">
+            <Tab title="Achievements" icon="award">
               <Vstack align="stretch">
-                <Card>
+                <div className="game-editor-panel-heading">
                   <Vstack align="start">
                     <Hstack>
-                      <Icon name="circlestar" color="textFaded" size={12} />
-                      <Text size="xs" color="textFaded">
-                        Achievements & Leaderboards
-                      </Text>
+                      <Icon name="award" color="textFaded" size={12} />
+                      <Text size="lg" color="text" weight="semibold">Achievements</Text>
                     </Hstack>
-                    <Text size="xs" color="textFaded">
-                      Things for people to achieve for your game (competing for
-                      high scores or getting game achievements for things in the
-                      game)
-                    </Text>
+                    <Text size="xs" color="textFaded">CreateGame.Achievements.Description</Text>
                   </Vstack>
-                </Card>
-                <Accordion>
-                  <AccordionItem
-                    title="CreateGame.Leaderboards.Title"
-                    subtitle="CreateGame.Leaderboards.Description"
-                    icon="trophy"
-                  >
-                    <Vstack align="start">
-                      {leaderboards.map((lb, index) => (
-                        <Card key={index}>
-                          <Vstack align="start">
-                            <Hstack className="mb-2">
-                              <Icon name={lbIconFor(lb.type)} size={16} />
-                              <Text size="lg">
-                                Leaderboard #{index + 1}
-                                {lb.name ? `: ${lb.name}` : ""}
-                              </Text>
-                            </Hstack>
-                            <div>
-                              <Text color="text">
-                                CreateLeaderboard.Name.Title
-                              </Text>
-                              <Text color="textFaded" size="xs">
-                                CreateLeaderboard.Name.Description
-                              </Text>
-                            </div>
-                            <Input
-                              placeholder="CreateLeaderboard.Name.Placeholder"
-                              value={lb.name}
-                              onChange={(e) => {
-                                const updated = [...leaderboards];
-                                updated[index].name = e.target.value;
-                                setLeaderboards(updated);
-                              }}
-                            />
-                            <div>
-                              <Text color="text">
-                                CreateLeaderboard.UsersPerPage.Title
-                              </Text>
-                              <Text color="textFaded" size="xs">
-                                CreateLeaderboard.UsersPerPage.Description
-                              </Text>
-                            </div>
-                            <Input
-                              type="number"
-                              value={lb.maxUsersShown}
-                              min={0}
-                              max={100}
-                              onValueChange={(e) => {
-                                const updated = [...leaderboards];
-                                updated[index].maxUsersShown = parseInt(e);
-                                setLeaderboards(updated);
-                              }}
-                            />
-                            <div>
-                              <Text color="text">
-                                CreateLeaderboard.Type.Title
-                              </Text>
-                              <Text color="textFaded" size="xs">
-                                CreateLeaderboard.Type.Description
-                              </Text>
-                            </div>
-                            <Dropdown
-                              selectedValue={leaderboards[index].type}
-                              onSelect={(value) => {
-                                const updated = [...leaderboards];
-                                updated[index].type =
-                                  value as LeaderboardTypeType;
-                                setLeaderboards(updated);
-                              }}
-                            >
-                              <Dropdown.Item
-                                value="SCORE"
-                                description="LeaderboardType.Score.Description"
-                                icon="trophy"
-                              >
-                                LeaderboardType.Score.Title
-                              </Dropdown.Item>
-
-                              <Dropdown.Item
-                                value="GOLF"
-                                description="LeaderboardType.Golf.Description"
-                                icon="landplot"
-                              >
-                                LeaderboardType.Golf.Title
-                              </Dropdown.Item>
-
-                              <Dropdown.Item
-                                value="SPEEDRUN"
-                                description="LeaderboardType.Speedrun.Description"
-                                icon="rabbit"
-                              >
-                                LeaderboardType.Speedrun.Title
-                              </Dropdown.Item>
-
-                              <Dropdown.Item
-                                value="ENDURANCE"
-                                description="LeaderboardType.Endurance.Description"
-                                icon="turtle"
-                              >
-                                LeaderboardType.Endurance.Title
-                              </Dropdown.Item>
-                            </Dropdown>
-                            {(lb.type == "SCORE" || lb.type == "GOLF") && (
-                              <>
-                                <div>
-                                  <Text color="text">
-                                    CreateLeaderboard.Decimals.Title
-                                  </Text>
-                                  <Text color="textFaded" size="xs">
-                                    CreateLeaderboard.Decimals.Description
-                                  </Text>
-                                </div>
-                                <Input
-                                  type="number"
-                                  value={lb.decimalPlaces}
-                                  min={0}
-                                  max={3}
-                                  onValueChange={(e) => {
-                                    const updated = [...leaderboards];
-                                    updated[index].decimalPlaces = parseInt(e);
-                                    setLeaderboards(updated);
-                                  }}
-                                />
-                              </>
-                            )}
-                            <div>
-                              <Text color="text">
-                                CreateLeaderboard.Advanced.Title
-                              </Text>
-                              <Text color="textFaded" size="xs">
-                                CreateLeaderboard.Advanced.Description
-                              </Text>
-                            </div>
-                            <Hstack>
-                              <Switch
-                                checked={lb.onlyBest}
-                                onChange={(value) => {
-                                  const updated = [...leaderboards];
-                                  updated[index].onlyBest = value;
-                                  setLeaderboards(updated);
-                                }}
-                              />
-                              <Vstack gap={0} align="start">
-                                <Text size="sm">
-                                  CreateLeaderboard.Highest.Title
-                                </Text>
-                                <Text size="xs" color="textFaded">
-                                  CreateLeaderboard.Highest.Description
-                                </Text>
-                              </Vstack>
-                            </Hstack>
-                            <div className="p-1" />
-                            <Button
-                              icon="trash"
-                              color="red"
-                              onClick={() =>
-                                setLeaderboards(
-                                  leaderboards.filter((_, i) => i !== index),
-                                )
-                              }
-                            >
-                              Remove {lb.name}
-                            </Button>
-                          </Vstack>
-                        </Card>
-                      ))}
-                      <Button
-                        icon="plus"
-                        onClick={() =>
-                          setLeaderboards([
-                            ...leaderboards,
-                            {
-                              name: "",
-                              type: "SCORE",
-                              onlyBest: true,
-                              game: {} as GameType,
-                              scores: [],
-                              maxUsersShown: 10,
-                              decimalPlaces: 0,
-                            },
-                          ])
-                        }
-                      >
-                        CreateGame.Leaderboards.Add
-                      </Button>
-                    </Vstack>
-                  </AccordionItem>
-                  <AccordionItem
-                    title="CreateGame.Achievements.Title"
-                    subtitle="CreateGame.Achievements.Description"
-                    icon="award"
-                  >
-                    <Vstack align="start">
+                </div>
+                    <Vstack align="start" className="pt-4">
                       {achievements.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {achievements.map((a, idx) => (
-                            <Card key={idx}>
-                              <Vstack align="start" className="gap-3">
-                                <Hstack className="w-full justify-between">
-                                  <Hstack>
-                                    <Icon name="award" />
-                                    <Text color="text" weight="semibold">
-                                      {a.name || `Achievement #${idx + 1}`}
-                                    </Text>
-                                  </Hstack>
-                                  <Button
-                                    icon="trash"
-                                    color="red"
-                                    size="sm"
-                                    onClick={() =>
-                                      setAchievements((prev) =>
-                                        prev.filter((_, i) => i !== idx),
-                                      )
-                                    }
-                                  >
-                                    Remove
-                                  </Button>
-                                </Hstack>
+                            <ItemEditor key={a.id < 0 ? idx : a.id} item={a} title={a.name || "Achievement"}
+      initiallyOpen={newAchievementIndex === idx}
+      discardNewOnCancel={newAchievementIndex === idx}
+      onClose={() => setNewAchievementIndex(null)}
+      onApply={draft => setAchievements(prev => prev.map((item, index) => index === idx ? draft : item))}
+      onRemove={() => setAchievements(prev => prev.filter((_, index) => index !== idx))}
+      summary={<div className="flex items-center gap-3">{a.image ? <img src={a.image} alt="" className="h-10 w-10 rounded object-cover" /> : <Icon name="award" />}<div><p className="text-sm font-semibold">{a.name || "Untitled achievement"}</p><p className="line-clamp-2 text-xs" style={{ color: colors.textFaded }}>{a.description || "No description yet"}</p></div></div>}
+      preview={draft => <div className="flex items-center gap-4">{draft.image ? <img src={draft.image} alt="" className="h-16 w-16 rounded object-cover" /> : <Icon name="award" size={40} />}<div><p className="font-semibold">{draft.name || "Untitled achievement"}</p><p className="text-sm" style={{ color: colors.textFaded }}>{draft.description || "Describe how players earn this achievement."}</p></div></div>}>
+      {(a, setDraft) => {
+        const setDraftAchievements: typeof setAchievements = next => setDraft(current => {
+          const items = achievements.map((item, index) => index === idx ? current : item);
+          return (typeof next === "function" ? next(items) : next)[idx] ?? current;
+        });
+        return (<Vstack align="start" className="gap-3">
+
 
                                 <div className="w-full">
                                   <Text color="text">Name</Text>
@@ -4420,7 +4258,7 @@ export default function GameEditingForm({
                                   placeholder="Enter achievement name"
                                   value={a.name ?? ""}
                                   onValueChange={(val) =>
-                                    setAchievements((prev) => {
+                                    setDraftAchievements((prev) => {
                                       const copy = [...prev];
                                       copy[idx] = { ...copy[idx], name: val };
                                       return copy;
@@ -4440,7 +4278,7 @@ export default function GameEditingForm({
                                   placeholder="Enter description"
                                   value={a.description ?? ""}
                                   onValueChange={(val) =>
-                                    setAchievements((prev) => {
+                                    setDraftAchievements((prev) => {
                                       const copy = [...prev];
                                       copy[idx] = {
                                         ...copy[idx],
@@ -4470,7 +4308,7 @@ export default function GameEditingForm({
                                         crop,
                                       );
                                       if (!url) return;
-                                      setAchievements((prev) => {
+                                      setDraftAchievements((prev) => {
                                         const copy = [...prev];
                                         copy[idx] = {
                                           ...copy[idx],
@@ -4485,7 +4323,7 @@ export default function GameEditingForm({
                                       icon="trash"
                                       color="red"
                                       onClick={() =>
-                                        setAchievements((prev) => {
+                                        setDraftAchievements((prev) => {
                                           const copy = [...prev];
                                           copy[idx] = {
                                             ...copy[idx],
@@ -4499,15 +4337,16 @@ export default function GameEditingForm({
                                     </Button>
                                   )}
                                 </Hstack>
-                              </Vstack>
-                            </Card>
+                              </Vstack>);
+      }}
+    </ItemEditor>
                           ))}
                         </Vstack>
                       )}
 
                       <Button
                         icon="plus"
-                        onClick={() =>
+                        onClick={() => { setNewAchievementIndex(achievements.length);
                           setAchievements((prev) => [
                             ...prev,
                             {
@@ -4516,22 +4355,25 @@ export default function GameEditingForm({
                               description: "",
                               image: "",
                             } as AchievementType,
-                          ])
-                        }
+                          ]); }}
                       >
                         CreateGame.Achievements.Add
                       </Button>
                     </Vstack>
-                  </AccordionItem>
-                </Accordion>
               </Vstack>
             </Tab>
           </Tabs>
-          <Hstack>
+          <footer className={`game-editor-footer ${hasUnsavedChanges ? "game-editor-footer-floating" : ""}`} style={{ backgroundColor: colors.mantle, borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, color: colors.text }}>
+            <div className="game-editor-footer-content">
+            <div className="game-editor-save-status">
+              <strong>{hasUnsavedChanges ? "Unsaved changes" : game?.published ? "Published game" : "Game draft"}</strong>
+              <span style={{ color: colors.text }}>{waitingPost ? "Saving your game…" : hasUnsavedChanges ? "Save your changes before leaving this page." : game?.published ? "Your game is live. You can keep updating it here." : "Your game is currently not published"}</span>
+            </div>
+          <Hstack wrap justify="end">
             {waitingPost ? (
               <Spinner />
             ) : (
-              <Button color="green" type="submit" name="action" value="save">
+              <Button variant="ghost" size="sm" icon="save" style={{ color: colors.blue }} type="submit" name="action" value="save">
                 {prevSlug
                   ? "CreateGame.Update.Title"
                   : "CreateGame.Create.Title"}
@@ -4543,7 +4385,10 @@ export default function GameEditingForm({
                 <Spinner />
               ) : (
                 <Button
-                  color="pink"
+                  variant="ghost"
+                  size="sm"
+                  icon="upload"
+                  style={{ color: colors.green }}
                   type="submit"
                   name="action"
                   value="publish"
@@ -4559,7 +4404,10 @@ export default function GameEditingForm({
                 <Spinner />
               ) : (
                 <Button
-                  color="red"
+                  variant="ghost"
+                  size="sm"
+                  icon="download"
+                  style={{ color: colors.red }}
                   type="submit"
                   name="action"
                   value="unpublish"
@@ -4568,6 +4416,8 @@ export default function GameEditingForm({
                 </Button>
               ))}
           </Hstack>
+            </div>
+          </footer>
         </Vstack>
       </Form>
       <div className="p-2" />

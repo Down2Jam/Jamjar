@@ -294,7 +294,7 @@ export default function CreatePostPage({
         </header>
       )}
       <Card
-        className={embedded ? "w-full" : "mx-auto w-full max-w-3xl"}
+        className={embedded ? "w-full" : "mx-auto w-full max-w-6xl"}
         padding={embedded ? 0 : 1}
         shadow={embedded ? "none" : "sm"}
         radius={embedded ? "none" : "md"}

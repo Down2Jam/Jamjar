@@ -72,6 +72,8 @@ type EditorProps = {
   gameEditor?: boolean;
   size?: "xs" | "sm";
   format?: "html" | "markdown";
+  compactStats?: boolean;
+  showStats?: boolean;
 };
 
 const limit = 32767;
@@ -227,6 +229,8 @@ export default function Editor({
   gameEditor,
   size,
   format = "html",
+  compactStats = false,
+  showStats = true,
 }: EditorProps) {
   const { colors } = useTheme();
   const t = useTranslations();
@@ -1030,10 +1034,10 @@ export default function Editor({
           </div>
         </div>
       )}
-      {size == "sm" && <div className="mt-3" />}
-      {editor && size == "sm" && (
+      {showStats && size == "sm" && <div className="mt-3" />}
+      {showStats && editor && size == "sm" && (
         <div
-          className={`transform-color duration-250 ease-linear flex items-center gap-3`}
+          className={`transform-color duration-250 ease-linear flex items-center gap-3 ${compactStats ? "text-xs flex-wrap" : ""}`}
           style={{
             color:
               editor.storage.characterCount.characters() === limit
@@ -1043,7 +1047,7 @@ export default function Editor({
                 : colors["textFaded"],
           }}
         >
-          <svg width="30" height="30" viewBox="0 0 36 36">
+          {!compactStats && <svg width="30" height="30" viewBox="0 0 36 36">
             <circle
               cx="18"
               cy="18"
@@ -1074,11 +1078,15 @@ export default function Editor({
               transform="rotate(-90 18 18)"
               className="!duration-250 !ease-linear !transition-all"
             />
-          </svg>
+          </svg>}
+          <span>
           {editor.storage.characterCount.characters()} / {limit}{" "}
           {t("Markdown.Characters")}
-          <br />
+          </span>
+          {compactStats ? <span aria-hidden="true">·</span> : <br />}
+          <span>
           {editor.storage.characterCount.words()} {t("Markdown.Words")}
+          </span>
         </div>
       )}
     </div>

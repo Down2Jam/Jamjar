@@ -17,8 +17,8 @@ import { Link } from "bioloom-ui";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
-import { Star } from "lucide-react";
-import { CSSProperties, useState } from "react";
+import { Pause, Play, Star } from "lucide-react";
+import { CSSProperties, useEffect, useState } from "react";
 import {
   GameDataHoverPreview,
   UserHoverPreview,
@@ -47,6 +47,8 @@ interface SidebarSongProps {
   squareThumbnail?: boolean;
   showGame?: boolean;
   queue?: PlayerTrack[];
+  playlistIndex?: number;
+  showArtist?: boolean;
 }
 
 export default function SidebarSong({
@@ -72,11 +74,35 @@ export default function SidebarSong({
   squareThumbnail = false,
   showGame = true,
   queue,
+  playlistIndex,
+  showArtist = true,
 }: SidebarSongProps) {
+  const playlist = playlistIndex !== undefined;
   const { current, isPlaying, playItem, toggle } = useMusic();
   const { colors } = useTheme();
   const [hoverValue, setHoverValue] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [duration, setDuration] = useState<number | null>(null);
+  useEffect(() => {
+    setDuration(null);
+    if (!playlist || !song) return;
+    const audio = new Audio();
+    audio.preload = "metadata";
+    const updateDuration = () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        setDuration(Math.floor(audio.duration));
+      }
+    };
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
+    audio.src = song;
+    return () => {
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
+      audio.removeAttribute("src");
+      audio.load();
+    };
+  }, [playlist, song]);
   const displayValue = hoverValue || ratingValue;
   const backgroundUseLabel = allowBackgroundUse
     ? allowBackgroundUseAttribution
@@ -100,10 +126,18 @@ export default function SidebarSong({
 
   return (
     <Card
-      className="post-card-shadow"
+      className={playlist ? undefined : "post-card-shadow"}
       padding={wide ? 0 : 1}
       style={{
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+        ...(playlist ? {
+          border: 0,
+          borderTop: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          borderRadius: 0,
+          boxShadow: "none",
+          padding: "6px 0",
+          backgroundColor: "transparent",
+        } : {}),
       } as CSSProperties}
     >
       <Vstack align="stretch" gap={2}>
@@ -113,7 +147,23 @@ export default function SidebarSong({
           className={wide ? "min-h-24 min-w-0 p-3 sm:p-4" : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
-            <Image
+            {playlist ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={togglePlayback}
+                aria-label={`${isCurrent && isPlaying ? "Pause" : "Play"} ${name}`}
+                className="group/track-play relative !h-9 !w-9 shrink-0 !rounded-md !p-0"
+              >
+                <span className={isCurrent ? "hidden" : "text-xs tabular-nums group-hover/track-play:hidden group-focus-visible/track-play:hidden"}>
+                  {String(playlistIndex + 1).padStart(2, "0")}
+                </span>
+                <span className={isCurrent ? "flex" : "hidden group-hover/track-play:flex group-focus-visible/track-play:flex"}>
+                  {isCurrent && isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+                </span>
+              </Button>
+            ) : <Image
               src={thumbnail}
               width={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
               height={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
@@ -127,8 +177,8 @@ export default function SidebarSong({
                     : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
               }
               alt="Song Thumbnail"
-            />
-            <Vstack className="z-10 min-w-0" align="start" gap={wide ? 1 : 0}>
+            />}
+            <Vstack className={playlist ? "z-10 min-w-0 flex-1" : "z-10 min-w-0"} align="start" gap={wide ? 1 : 0}>
               <Link
                 href={
                   slug
@@ -142,7 +192,8 @@ export default function SidebarSong({
                 <Text
                   size={wide ? "lg" : undefined}
                   weight={wide ? "semibold" : undefined}
-                  className="max-w-full truncate"
+                  className={playlist ? "max-w-full break-words text-sm font-semibold" : "max-w-full truncate"}
+                  style={playlist && isCurrent ? { color: colors.blue } : undefined}
                 >
                   {name}
                 </Text>
@@ -174,7 +225,7 @@ export default function SidebarSong({
                   </Link>
                 </GameDataHoverPreview>
               )}
-              <Hstack gap={1} className="min-w-0">
+              {showArtist && <Hstack gap={1} align="baseline" justify="start" className={playlist ? "min-w-0 w-full" : "min-w-0"}>
                 <UserHoverPreview
                   user={{
                     slug: artist.slug ?? "",
@@ -188,7 +239,7 @@ export default function SidebarSong({
                     className="sidebar-media-link inline-flex min-w-0 items-center gap-1"
                     style={{ textDecoration: "none" }}
                   >
-                    {(wide || squareThumbnail) && (
+                    {!playlist && (wide || squareThumbnail) && (
                       <Avatar
                         size={16}
                         src={artist.profilePicture || "/images/D2J_Icon.png"}
@@ -196,19 +247,24 @@ export default function SidebarSong({
                     )}
                     <Text
                       size="sm"
-                      color="textFaded"
+                      color={playlist ? "text" : "textFaded"}
                       className="max-w-full truncate"
                     >
                       {artist.name || artist.slug}
                     </Text>
                   </Link>
                 </UserHoverPreview>
-              </Hstack>
-              {license && (
+                {playlist && duration !== null && (
+                  <span className="shrink-0 pl-2 text-sm leading-5 tabular-nums" style={{ color: colors.text }}>
+                    {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
+                  </span>
+                )}
+              </Hstack>}
+              {!playlist && license && (
                 <span
-                  className="max-w-full truncate rounded px-2 py-0.5 text-xs"
+                  className={playlist ? "max-w-full truncate text-xs" : "max-w-full truncate rounded px-2 py-0.5 text-xs"}
                   style={{
-                    backgroundColor: colors["base"],
+                    backgroundColor: playlist ? "transparent" : colors["base"],
                     color: colors["textFaded"],
                   }}
                   title={`${license}${backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}`}
@@ -227,19 +283,20 @@ export default function SidebarSong({
                 : "flex shrink-0 flex-col items-center gap-2"
             }
           >
-            <Button
+            {!playlist && <Button
               size="sm"
               color="default"
               className="!h-9 !w-14 !rounded-md !p-0"
               icon={isCurrent && isPlaying ? "pause" : "play"}
               aria-label={isCurrent && isPlaying ? "Pause track" : "Play track"}
               onClick={togglePlayback}
-            />
+            />}
             {allowDownload && (
               <Button
                 size="sm"
                 color="default"
-                className="!h-9 !w-14 !rounded-md !p-0"
+                className={playlist ? "!h-8 !w-8 !rounded-md !p-0" : "!h-9 !w-14 !rounded-md !p-0"}
+                variant={playlist ? "ghost" : undefined}
                 loading={isDownloading}
                 icon="download"
                 aria-label="Download track"
@@ -267,7 +324,7 @@ export default function SidebarSong({
             hiddenText="Ratings are hidden by your settings."
             buttonSize="xs"
           >
-            <Hstack className="justify-center gap-1 pt-2">
+            <Hstack className={playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
               {[2, 4, 6, 8, 10].map((value) => (
                 <div
                   key={`${trackId ?? slug ?? name}-${value}`}

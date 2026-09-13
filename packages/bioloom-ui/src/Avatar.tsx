@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -53,7 +54,7 @@ export function Avatar({
     minHeight: size,
     flexShrink: 0,
     backgroundColor: colors.surface,
-    border: `1px solid ${colors.base}`,
+    border: `1px solid ${getNeutralBorderColor(colors)}`,
     color: colors.text,
   };
 

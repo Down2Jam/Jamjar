@@ -416,6 +416,7 @@ const Icon = forwardRef<SVGSVGElement, IconProps>(function Icon(
       ref={ref}
       size={size}
       color={color ? colors[color] : undefined}
+      {...(name === "play" ? { fill: "currentColor" } : {})}
       {...rest}
     />
   );

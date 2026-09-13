@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import { useState, ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
@@ -47,7 +48,7 @@ export function AccordionItem({
   return (
     <div
       style={{
-        border: `1px solid ${colors.base}`,
+        border: `1px solid ${getNeutralBorderColor(colors)}`,
         borderRadius: 8,
         backgroundColor: colors.mantle,
         overflow: open ? "visible" : "hidden",
@@ -89,7 +90,7 @@ export function AccordionItem({
       >
         <div
           className="relative z-20 overflow-visible px-4 py-2 border-t"
-          style={{ borderColor: colors.base }}
+          style={{ borderColor: getNeutralBorderColor(colors) }}
         >
           {children}
         </div>

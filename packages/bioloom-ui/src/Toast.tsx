@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import { createPortal } from "react-dom";
 import {
@@ -130,7 +131,7 @@ export function ToastProvider({ placement = "bottom-right" }: ToastProviderProps
   const colorMap = {
     default: {
       background: colors["mantle"],
-      border: colors["base"],
+      border: getNeutralBorderColor(colors),
       text: colors["text"],
     },
     success: {

@@ -1,5 +1,7 @@
 "use client";
 
+import { useDelayedHover } from "@/hooks/useDelayedHover";
+
 import { useMusic } from "bioloom-miniplayer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -85,7 +87,7 @@ export default function TrackWaveformPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [commentDraft, setCommentDraft] = useState("");
   const [savingComment, setSavingComment] = useState(false);
-  const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
+  const [hoveredCommentId, setHoveredCommentId] = useDelayedHover<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
   const [commentModalOpen, setCommentModalOpen] = useState(false);
@@ -374,9 +376,7 @@ export default function TrackWaveformPlayer({
                 zIndex: showPopover ? 20 : 10,
               }}
               onMouseEnter={() => setHoveredCommentId(comment.id)}
-              onMouseLeave={() => setHoveredCommentId((current) =>
-                current === comment.id ? null : current,
-              )}
+              onMouseLeave={() => setHoveredCommentId(null)}
             >
               {showPopover && (
                 <div

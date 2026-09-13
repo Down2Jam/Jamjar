@@ -10,6 +10,7 @@ import type { ReactionSummaryType, ReactionType } from "@/types/ReactionType";
 import { useReactionColors } from "./useReactionColors";
 import { useTheme } from "@/providers/useSiteTheme";
 import { sortEmojisByUsage } from "@/helpers/emojiSorting";
+import { useDelayedHover } from "@/hooks/useDelayedHover";
 
 const MAX_UNIQUE_REACTIONS = 20;
 
@@ -35,43 +36,16 @@ export default function CommentReactions({
   const [emojiQuery, setEmojiQuery] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
   const [reactionEffectId, setReactionEffectId] = useState<number | null>(null);
-  const [hoveredReactionId, setHoveredReactionId] = useState<number | null>(
+  const [hoveredReactionId, setHoveredReactionId] = useDelayedHover<number | null>(
     null,
   );
   const reactionColors = useReactionColors(current);
   const pickerRef = useRef<HTMLDivElement | null>(null);
-  const pickerCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const openPicker = () => {
-    if (pickerCloseTimer.current) {
-      clearTimeout(pickerCloseTimer.current);
-      pickerCloseTimer.current = null;
-    }
-    setPickerOpen(true);
-  };
-
-  const schedulePickerClose = () => {
-    if (pickerCloseTimer.current) {
-      clearTimeout(pickerCloseTimer.current);
-    }
-    pickerCloseTimer.current = setTimeout(() => {
-      setPickerOpen(false);
-      pickerCloseTimer.current = null;
-    }, 140);
-  };
 
   useEffect(() => {
     setCurrent(reactions ?? []);
     setReactionEffectId(null);
   }, [commentId, reactions]);
-
-  useEffect(() => {
-    return () => {
-      if (pickerCloseTimer.current) {
-        clearTimeout(pickerCloseTimer.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -81,9 +55,14 @@ export default function CommentReactions({
         setPickerOpen(false);
       }
     };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPickerOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("mousedown", handleDown, true);
     return () => {
       document.removeEventListener("mousedown", handleDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [pickerOpen]);
 
@@ -229,6 +208,7 @@ export default function CommentReactions({
           </Button>
           <Popover
             shown={hoveredReactionId === entry.reaction.id}
+            interactive={false}
             anchorToScreen={false}
             position="top"
             padding={10}
@@ -251,9 +231,8 @@ export default function CommentReactions({
               ) : (
                 <div className="flex max-h-48 flex-col gap-1 overflow-y-auto">
                   {(entry.users ?? []).map((user) => (
-                    <a
+                    <div
                       key={user.id}
-                      href={`/u/${user.slug}`}
                       className="flex items-center gap-2 text-sm"
                     >
                       <img
@@ -264,7 +243,7 @@ export default function CommentReactions({
                         decoding="async"
                       />
                       <span>{user.name}</span>
-                    </a>
+                    </div>
                   ))}
                 </div>
               )}
@@ -277,16 +256,15 @@ export default function CommentReactions({
         <div
           ref={pickerRef}
           className="relative z-30"
-          onMouseEnter={openPicker}
-          onMouseLeave={schedulePickerClose}
         >
           <Button
             className="post-action-button min-w-12"
             size="sm"
             variant="ghost"
             icon="smileplus"
-            onClick={openPicker}
-            onFocus={openPicker}
+            onClick={() => setPickerOpen((open) => !open)}
+            aria-label="Add reaction"
+            aria-expanded={pickerOpen}
           />
           <Popover
             shown={pickerOpen}
@@ -296,13 +274,6 @@ export default function CommentReactions({
             showArrow
             surface="contrast"
             transformOrigin="center"
-            onHoverChange={(hovered) => {
-              if (hovered) {
-                openPicker();
-              } else {
-                schedulePickerClose();
-              }
-            }}
           >
             <div className="flex w-64 flex-col gap-2">
               <Input

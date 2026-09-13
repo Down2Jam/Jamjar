@@ -696,7 +696,7 @@ export default function Down2GuessPage() {
             key={platform}
             content={platform}
             position="top"
-            delay={0}
+            delay={500}
             hideDelay={0}
             compact
             showArrow
@@ -724,7 +724,7 @@ export default function Down2GuessPage() {
             key={tag}
             content={tag}
             position="top"
-            delay={0}
+            delay={500}
             hideDelay={0}
             compact
             showArrow
@@ -754,7 +754,7 @@ export default function Down2GuessPage() {
               key={flagName}
               content={flagName}
               position="top"
-              delay={0}
+              delay={500}
               hideDelay={0}
               compact
               showArrow

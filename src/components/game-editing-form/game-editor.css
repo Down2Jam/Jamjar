@@ -1,0 +1,199 @@
+.game-editor-build-upload {
+  cursor: pointer;
+  background-color: var(--build-surface);
+  border-color: var(--build-border);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) {
+  background-color: var(--build-hover);
+  border-color: var(--build-hover-border);
+}
+
+.game-editor-build-upload > svg {
+  transition: transform 150ms ease;
+}
+
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) > svg {
+  transform: scale(1.15);
+}
+
+.game-editor-build-upload[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+.game-editor-tabs > [role="tabpanel"] {
+  background: var(--editor-surface);
+  --editor-border: color-mix(in srgb, var(--editor-text) 5%, var(--editor-surface));
+  border: 1px solid var(--editor-border);
+  border-radius: 12px;
+  box-shadow: none;
+  padding: 0 24px 12px;
+}
+
+.game-editor-tabs > [role="tabpanel"] > .flex {
+  gap: 0 !important;
+}
+
+.game-editor-panel-heading {
+  margin-inline: -24px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--editor-border);
+}
+
+.game-editor-panel-heading > div {
+  gap: 4px !important;
+}
+
+.game-editor-panel-heading > div > div:first-child {
+  width: 100%;
+  padding: 0;
+  border-radius: 11px 11px 0 0;
+  background: var(--editor-surface);
+  box-shadow: none;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
+
+.game-editor-panel-heading > div > :last-child {
+  padding: 0;
+}
+
+.game-editor-panel-heading svg {
+  width: 20px;
+  height: 20px;
+  color: var(--editor-accent) !important;
+}
+
+.game-editor-row,
+.game-editor-block {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--editor-border);
+  box-shadow: none;
+  min-width: 0;
+}
+
+.game-editor-row > div > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.game-editor-tabs > [role="tabpanel"] > .flex > :last-child:is(.game-editor-row, .game-editor-block) {
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.game-editor-row > div > :first-child > :first-child {
+  font-weight: 600;
+}
+
+.game-editor-advanced {
+  border-bottom: 1px solid color-mix(in srgb, var(--editor-text) 8%, transparent);
+}
+
+.game-editor-advanced > summary {
+  cursor: pointer;
+  padding: 14px 12px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--editor-text) 4%, transparent);
+}
+
+.game-editor-advanced > summary span {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.65;
+}
+
+.game-editor-footer {
+  z-index: 45;
+  width: 100%;
+  margin-top: 16px;
+  padding: 8px 20px;
+  border-top: 1px solid;
+  box-shadow: 0 -25px 50px -12px rgb(0 0 0 / 25%);
+  transition: background-color 500ms ease-in-out, border-color 500ms ease-in-out;
+  background-image: url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png);
+  background-position: 45px center, right 45px center;
+  background-size: 210px;
+  background-repeat: no-repeat;
+}
+
+.game-editor-footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 1536px;
+  min-height: 48px;
+  margin-inline: auto;
+}
+
+.game-editor-footer:not(.game-editor-footer-floating) {
+  border: 1px solid;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.game-editor-footer-floating {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  margin-top: 0;
+  border-radius: 0;
+  border-inline: 0;
+  border-bottom: 0;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+}
+
+.game-editor-save-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.game-editor-save-status span {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+@media (min-width: 768px) {
+  .game-editor-row > div {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    column-gap: 28px !important;
+    row-gap: 12px !important;
+    align-items: start;
+  }
+
+  .game-editor-row > div > :first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .game-editor-row > div > :not(:first-child) {
+    grid-column: 2;
+  }
+
+  /* Dropdown popovers anchor to their wrapper, which must fit the trigger. */
+  .game-editor-row > div > .relative.inline-block {
+    justify-self: start;
+  }
+
+}
+
+@media (max-width: 767px) {
+  .game-editor-tabs > [role="tabpanel"] {
+    padding-inline: 16px;
+  }
+
+  .game-editor-panel-heading {
+    margin-inline: -16px;
+  }
+}

@@ -179,7 +179,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
         backgroundPositionX: "45px, right 45px",
         backgroundSize: "210px",
         backgroundRepeat: "no-repeat",
-        backgroundColor: siteTheme.colors["crust"],
+        backgroundColor: siteTheme.colors["mantle"],
+        borderColor: `color-mix(in srgb, ${siteTheme.colors["text"]} 5%, ${siteTheme.colors["mantle"]})`,
       }}
       isBordered
       height={64}

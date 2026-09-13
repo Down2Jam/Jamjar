@@ -72,7 +72,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         backgroundPositionX: "0px, right 0px",
         backgroundSize: "210px",
         backgroundRepeat: "no-repeat",
-        backgroundColor: colors["crust"],
+        backgroundColor: colors["mantle"],
       }}
       isBordered
     >

@@ -13,7 +13,6 @@ import { Input } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Hstack, Stack, Vstack } from "bioloom-ui";
-import { Icon } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
@@ -79,7 +78,7 @@ export default function UserPage() {
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [roles, setRoles] = useState<RoleType[]>([]);
-  const { colors } = useTheme();
+  const { colors, siteTheme } = useTheme();
   const [defaultPfps, setDefaultPfps] = useState<string[]>([]);
   const { emojis, refresh: refreshEmojis } = useEmojis();
   const [emoteSlug, setEmoteSlug] = useState("");
@@ -384,7 +383,7 @@ export default function UserPage() {
   return (
     <div className="flex items-center justify-center">
       <Form
-        className={`w-full max-w-2xl flex flex-col gap-4 ${
+        className={`w-full max-w-6xl flex flex-col gap-4 ${
           hasUnsavedChanges ? "pb-28" : ""
         }`}
         validationErrors={errors}
@@ -445,19 +444,33 @@ export default function UserPage() {
           }
         }}
       >
-        <Card>
-          <Vstack align="start">
-            <Hstack>
-              <Icon name="cog" color="text" />
-              <Text size="xl" color="text" weight="semibold">
-                Settings
-              </Text>
-            </Hstack>
-            <Text size="sm" color="textFaded">
-              Manage your preferences
-            </Text>
-          </Vstack>
-        </Card>
+        <header className="py-2 text-center">
+          <h1
+            className="text-3xl font-semibold"
+            style={{
+              color: colors["text"],
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
+            }}
+          >
+            Settings
+          </h1>
+          <p
+            className="mt-1 text-sm"
+            style={{
+              color: colors["text"],
+              opacity: 0.82,
+              textShadow:
+                siteTheme.type === "Light"
+                  ? "none"
+                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            Manage your preferences
+          </p>
+        </header>
 
         <Stack align="stretch" direction="flex-col lg:flex-row">
           <Card>

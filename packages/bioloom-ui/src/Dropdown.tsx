@@ -117,6 +117,7 @@ interface DropdownProps {
   triggerStyle?: React.CSSProperties;
   menuStyle?: React.CSSProperties;
   freezePositionWhileOpen?: boolean;
+  portal?: boolean;
 }
 
 function Dropdown({
@@ -147,7 +148,9 @@ function Dropdown({
   triggerStyle,
   menuStyle,
   freezePositionWhileOpen = false,
+  portal = false,
 }: DropdownProps) {
+  const useViewportAnchor = portal || freezePositionWhileOpen;
   const [internalOpen, setInternalOpen] = useState(defaultOpen);
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -189,23 +192,37 @@ function Dropdown({
 
   const setOpenAndNotify = useCallback(
     (value: boolean) => {
-      if (freezePositionWhileOpen && value && rootRef.current) {
+      if (useViewportAnchor && value && rootRef.current) {
         setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
       }
       if (isOpen === undefined) setInternalOpen(value);
       onOpenChange?.(value);
     },
-    [freezePositionWhileOpen, isOpen, onOpenChange]
+    [useViewportAnchor, isOpen, onOpenChange]
   );
 
   useEffect(() => {
-    if (open && freezePositionWhileOpen && !frozenAnchorRect && rootRef.current) {
+    if (open && useViewportAnchor && !frozenAnchorRect && rootRef.current) {
       setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
     }
-  }, [freezePositionWhileOpen, frozenAnchorRect, open]);
+  }, [useViewportAnchor, frozenAnchorRect, open]);
+
+  useEffect(() => {
+    if (!open || !portal || freezePositionWhileOpen) return;
+    const updateAnchor = () => {
+      if (rootRef.current) setFrozenAnchorRect(rootRef.current.getBoundingClientRect());
+    };
+    updateAnchor();
+    window.addEventListener("resize", updateAnchor);
+    window.addEventListener("scroll", updateAnchor, true);
+    return () => {
+      window.removeEventListener("resize", updateAnchor);
+      window.removeEventListener("scroll", updateAnchor, true);
+    };
+  }, [open, portal, freezePositionWhileOpen]);
 
   const frozenPositionerStyle = useMemo<React.CSSProperties | undefined>(() => {
-    if (!freezePositionWhileOpen || !frozenAnchorRect) return undefined;
+    if (!useViewportAnchor || !frozenAnchorRect) return undefined;
 
     const offset = 8;
     const base: React.CSSProperties = {
@@ -278,7 +295,7 @@ function Dropdown({
           transform: "translateX(-50%)",
         };
     }
-  }, [freezePositionWhileOpen, frozenAnchorRect, position]);
+  }, [useViewportAnchor, frozenAnchorRect, position]);
 
   useEffect(() => {
     if (!open || !closeOnOutsideClick) return;
@@ -294,14 +311,21 @@ function Dropdown({
     return () => document.removeEventListener("mousedown", onDown, true);
   }, [open, closeOnOutsideClick, setOpenAndNotify]);
 
+  useEffect(() => () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+  }, []);
+
   const handleMouseEnter = () => {
     if (!supportsHover) return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
-    setOpenAndNotify(true);
+    if (!open) {
+      hoverTimeoutRef.current = setTimeout(() => setOpenAndNotify(true), 500);
+    }
   };
 
   const handleMouseLeave = () => {
     if (!supportsHover) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(
       () => setOpenAndNotify(false),
       hoverDelay
@@ -310,6 +334,7 @@ function Dropdown({
 
   const handleClick = () => {
     if (!supportsClick) return;
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setOpenAndNotify(!open);
   };
 
@@ -377,13 +402,15 @@ function Dropdown({
         <Popover
           shown={open}
           position={position}
-          anchorToScreen={freezePositionWhileOpen}
+          anchorToScreen={useViewportAnchor}
           className={className}
           positionerStyle={frozenPositionerStyle}
           showArrow
         >
           <div
             ref={menuRef}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             role="menu"
             aria-orientation="vertical"
             style={{

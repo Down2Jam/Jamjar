@@ -29,6 +29,7 @@ import { Dropdown } from "bioloom-ui";
 import { UserType } from "@/types/UserType";
 import ContentStatusMeta from "./ContentStatusMeta";
 import CommentReactions from "./CommentReactions";
+import { UserHoverPreview } from "@/components/hover-previews";
 
 export default function CommentCard({
   comment,
@@ -128,6 +129,7 @@ export default function CommentCard({
           <Text size="xs" color="textFaded">
             PostCard.By
           </Text>
+          <UserHoverPreview user={currentComment.author} portal>
           <Link
             href={`/u/${currentComment.author.slug}`}
             className="flex items-center gap-2"
@@ -135,6 +137,7 @@ export default function CommentCard({
             <Avatar size={24} src={currentComment.author.profilePicture} />
             <p>{currentComment.author.name}</p>
           </Link>
+          </UserHoverPreview>
           <ContentStatusMeta
             createdAt={currentComment.createdAt}
             editedAt={currentComment.editedAt}

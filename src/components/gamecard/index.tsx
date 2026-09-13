@@ -344,7 +344,7 @@ export function GameHoverPreview({
     hoverTimerRef.current = setTimeout(() => {
       updatePreviewPosition();
       setShowPreview(true);
-    }, immediate ? 0 : 320);
+    }, immediate ? 0 : 500);
   }, [updatePreviewPosition]);
 
   const closePreview = useCallback(() => {

@@ -1,4 +1,5 @@
 "use client";
+import { getNeutralBorderColor } from "./borders";
 
 import * as React from "react";
 import { useTheme } from "./theme";
@@ -52,7 +53,7 @@ export function Badge({
     default: {
       backgroundColor: colors.mantle,
       color: colors.text,
-      borderColor: colors.base,
+      borderColor: getNeutralBorderColor(colors),
     },
     blue: {
       backgroundColor: colors.blue,

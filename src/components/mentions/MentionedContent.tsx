@@ -1,5 +1,7 @@
 "use client";
 
+import { useDelayedHover } from "@/hooks/useDelayedHover";
+
 import {
   createElement,
   useCallback,
@@ -185,13 +187,14 @@ function LinkPreviewAnchor({
   }, []);
 
   const beginPreview = () => {
-    setHovered(true);
-    if (!previewUrl || preview) return;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
     hoverTimerRef.current = setTimeout(() => {
+      setHovered(true);
+      if (!previewUrl || preview) return;
       void loadLinkPreview(previewUrl).then((data) => {
         if (data) setPreview(data);
       });
-    }, 250);
+    }, 500);
   };
 
   const endPreview = () => {
@@ -629,7 +632,7 @@ function MentionChip({
   colors: Record<string, string>;
 }) {
   const latestCacheKeyRef = useRef("");
-  const [mentionHovered, setMentionHovered] = useState(false);
+  const [mentionHovered, setMentionHovered] = useDelayedHover(false);
   const hostname = (() => {
     if (domain) return domain;
     if (href) {
@@ -744,6 +747,7 @@ function MentionChip({
       </a>
       <Popover
         shown={mentionHovered && hasResolvedMentionData("user", userData)}
+        interactive={false}
         anchorToScreen={false}
         position="top"
         padding={10}

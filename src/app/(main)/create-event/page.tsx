@@ -195,7 +195,7 @@ export default function CreateEventPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-4xl pb-10">
+    <main className="mx-auto w-full max-w-6xl pb-10">
       <Vstack align="stretch" gap={5}>
         <header className="relative py-2 text-center">
           <h1
