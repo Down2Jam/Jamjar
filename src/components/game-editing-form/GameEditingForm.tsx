@@ -299,6 +299,7 @@ export default function GameEditingForm({
   const [allTrackTags, setAllTrackTags] = useState<TrackTagType[]>([]);
   const [allTrackFlags, setAllTrackFlags] = useState<TrackFlagType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
+  const activeJamId = activeJamResponse?.jam?.id;
   const [loading, setLoading] = useState<boolean>(true);
   const [title, setTitle] = useState("");
   const [short, setShort] = useState("");
@@ -473,12 +474,7 @@ export default function GameEditingForm({
     setDownloadLinks(game?.downloadLinks || []);
     setAchievements(game?.achievements || []);
     setLeaderboards(game?.leaderboards || []);
-    const desiredCategory =
-      game?.category ?? (isRatingPhase ? "EXTRA" : "REGULAR");
-    const shouldForceExtra =
-      inCurrentJamContext && isRatingPhase && (!game || !game.published);
-
-    setCategory(shouldForceExtra ? "EXTRA" : desiredCategory);
+    setCategory(game?.category ?? "REGULAR");
     setChosenRatingCategories(
       game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || [],
     );
@@ -582,29 +578,16 @@ export default function GameEditingForm({
       ),
     );
 
-    async function loadData() {
-      const teamResponse = await getTeamsUser();
+    // Only loading a different game/page should replace the draft. The current
+    // jam is polled in the background and must never reinitialize these fields.
+  }, [game]);
 
-      if (teamResponse.status == 200) {
-        const data = await readArray<TeamType>(teamResponse);
-        const relevantTeams = game
-          ? data.filter((team: TeamType) => team.game?.slug === game.slug)
-          : data.filter(
-              (team: TeamType) =>
-                !team.game && team.jamId === activeJamResponse?.jam?.id,
-            );
-        updateTeams(relevantTeams);
-      }
+  useEffect(() => {
+    // Phase changes can enforce the submission category without clearing edits.
+    if (inCurrentJamContext && isRatingPhase && (!game || !game.published)) {
+      setCategory("EXTRA");
     }
-
-    loadData();
-  }, [
-    game,
-    activeJamResponse,
-    inCurrentJamContext,
-    isRatingPhase,
-    updateTeams,
-  ]);
+  }, [game, inCurrentJamContext, isRatingPhase]);
 
   useEffect(() => {
     setFlags(
@@ -630,12 +613,12 @@ export default function GameEditingForm({
         ? data.filter((team: TeamType) => team.game?.slug === game.slug)
         : data.filter(
             (team: TeamType) =>
-              !team.game && team.jamId === activeJamResponse?.jam?.id,
+              !team.game && team.jamId === activeJamId,
           );
       updateTeams(filtered);
       setCurrentTeam((i) => Math.min(i, Math.max(filtered.length - 1, 0)));
     }
-  }, [activeJamResponse?.jam?.id, game, updateTeams]);
+  }, [activeJamId, game, updateTeams]);
 
   useEffect(() => {
     const load = async () => {
@@ -681,14 +664,14 @@ export default function GameEditingForm({
         if (!localuser) return;
 
         const hasTeamForJam =
-          !!activeJamResponse?.jam?.id &&
-          localuser.teams.some((t) => t.jamId === activeJamResponse.jam?.id);
+          !!activeJamId &&
+          localuser.teams.some((t) => t.jamId === activeJamId);
 
         if (!hasTeamForJam && !creatingTeamRef.current) {
           creatingTeamRef.current = true;
 
           const alreadyHas = teamsRef.current.some(
-            (t) => t.jamId === activeJamResponse?.jam?.id,
+            (t) => t.jamId === activeJamId,
           );
           if (!alreadyHas) {
             const created = await createTeam(); // should return truthy or handle 409
@@ -709,7 +692,7 @@ export default function GameEditingForm({
       }
     };
     load();
-  }, [refreshTeams, activeJamResponse]);
+  }, [refreshTeams, activeJamId]);
 
   useEffect(() => {
     if (!loading && savedFormSnapshot === null) {
