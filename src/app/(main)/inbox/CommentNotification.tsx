@@ -11,6 +11,7 @@ import { Button } from "bioloom-ui";
 import { NotificationType } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
 import Link from "@/compat/next-link";
+import { getNotificationLink } from "@/helpers/notificationLink";
 import { useState } from "react";
 import Editor from "@/components/editor";
 import { hasCookie } from "@/helpers/cookie";
@@ -128,7 +129,7 @@ function getDescriptor(n: NotificationType, t: ReturnType<typeof useUiTranslatio
     icon: "messagecircle",
     subtitle: uiText("AppStrings.Value0RepliedToYourComment", { value0: c?.author?.name ?? uiText("AppStrings.Someone") }),
     href:
-      n.link ??
+      getNotificationLink(n) ??
       (c ? `?comment=${c.id}#comment-${c.id}` : "/"),
   };
 }

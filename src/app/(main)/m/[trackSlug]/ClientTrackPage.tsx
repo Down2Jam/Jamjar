@@ -170,7 +170,7 @@ export default function ClientTrackPage({
       ? `${track.name} by ${composerName} for ${track.game.name}`
       : "Music track on Down2Jam");
   const metadataImage =
-    track?.game?.banner || track?.game?.thumbnail || "/images/D2J_Icon.png";
+    track?.game?.banner || track?.game?.thumbnail || "/images/game-thumbnail.png";
   usePageMetadata({
     title: (track?.name ?? trackSlug) || uiText("AppStrings.Track2"),
     description: metadataDescription,
@@ -385,7 +385,7 @@ export default function ClientTrackPage({
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] opacity-25"
           style={{
-            backgroundImage: `url(${track.game.banner || track.game.thumbnail || "/images/D2J_Icon.png"})`,
+            backgroundImage: `url(${track.game.banner || track.game.thumbnail || "/images/game-thumbnail.png"})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -419,7 +419,7 @@ export default function ClientTrackPage({
                   thumbnail={
                     track.game.soundtrackThumbnail ||
                     track.game.thumbnail ||
-                    "/images/D2J_Icon.png"
+                    "/images/game-thumbnail.png"
                   }
                   url={track.url}
                   loudnessGainDb={track.loudnessGainDb}

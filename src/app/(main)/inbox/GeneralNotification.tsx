@@ -11,6 +11,7 @@ import { Icon } from "bioloom-ui";
 import { NotificationType as AppNotification } from "@/types/NotificationType";
 import { formatDistance } from "date-fns";
 import Link from "@/compat/next-link";
+import { getNotificationLink } from "@/helpers/notificationLink";
 
 type Props = {
   notification: AppNotification;
@@ -77,21 +78,4 @@ export default function GeneralNotification({
       </Vstack>
     </Card>
   );
-}
-
-function getNotificationLink(notification: AppNotification) {
-  if (notification.type === "FOLLOW") {
-    const userSlug =
-      typeof notification.data?.userSlug === "string"
-        ? notification.data.userSlug
-        : null;
-    if (userSlug) return `/u/${userSlug}`;
-  }
-
-  if (!notification.link) return null;
-  const legacyUserMatch = notification.link.match(/^\/users\/([^/?#]+)(.*)$/);
-  if (legacyUserMatch) {
-    return `/u/${legacyUserMatch[1]}${legacyUserMatch[2] ?? ""}`;
-  }
-  return notification.link;
 }

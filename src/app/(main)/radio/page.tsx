@@ -138,7 +138,7 @@ const toAudioVolume = (sliderVolume: number) =>
 const getTrackThumbnail = (track?: RadioTrack | null) =>
   track?.gamePage.soundtrackThumbnail ||
   track?.gamePage.thumbnail ||
-  "/images/D2J_Icon.png";
+  "/images/game-thumbnail.png";
 
 const getTrackBackground = (track?: RadioTrack | null) =>
   track?.gamePage.screenshots?.[0] ||
@@ -825,6 +825,15 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       setAutoPlaybackBlocked(true);
     }
   }, [playCurrentTrack]);
+
+  useEffect(() => {
+    if (state && !state.current) {
+      audioRef.current?.pause();
+      autoAttemptedTrackId.current = null;
+      lastSyncedTrackId.current = null;
+      setIsListening(false);
+    }
+  }, [state]);
 
   useEffect(() => {
     if (!state?.current) return;

@@ -1622,7 +1622,7 @@ export default function ClientUserPage({
                           thumbnail={
                             track.game?.soundtrackThumbnail ||
                             track.game?.thumbnail ||
-                            "/images/D2J_Icon.png"
+                            "/images/game-thumbnail.png"
                           }
                           game={track.game}
                           song={track.url}
@@ -1696,7 +1696,7 @@ export default function ClientUserPage({
                     thumbnail={
                       track.game.soundtrackThumbnail ||
                       track.game.thumbnail ||
-                      "/images/D2J_Icon.png"
+                      "/images/game-thumbnail.png"
                     }
                     game={{
                       ...track.game,
@@ -1844,8 +1844,8 @@ export default function ClientUserPage({
                             <Hstack gap={3} className="min-w-0">
                               <Image
                                 src={
-                                  score.leaderboard.game.thumbnail ??
-                                  "/images/D2J_Icon.png"
+                                  score.leaderboard.game.thumbnail ||
+                                  "/images/game-thumbnail.png"
                                 }
                                 alt=""
                                 width={48}
@@ -1929,7 +1929,7 @@ export default function ClientUserPage({
                                         src={
                                           achievement.image ||
                                           achievement.game.thumbnail ||
-                                          "/images/D2J_Icon.png"
+                                          "/images/game-thumbnail.png"
                                         }
                                         width={48}
                                         height={48}
@@ -1947,7 +1947,7 @@ export default function ClientUserPage({
                                           <Image
                                             src={
                                               achievement.game.thumbnail ||
-                                              "/images/D2J_Icon.png"
+                                              "/images/game-thumbnail.png"
                                             }
                                             alt={uiText("AppStrings.GameThumbnail")}
                                             width={18}
@@ -1986,7 +1986,7 @@ export default function ClientUserPage({
                                       src={
                                         achievement.image ||
                                         achievement.game.thumbnail ||
-                                        "/images/D2J_Icon.png"
+                                        "/images/game-thumbnail.png"
                                       }
                                       width={48}
                                       height={48}

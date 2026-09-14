@@ -1,3 +1,4 @@
+import { countComments } from "@/helpers/commentCount";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 
@@ -775,7 +776,7 @@ export default function Posts() {
                     size="sm"
                     icon="messagecircle"
                   >
-                    {forumPosts[currentPost].comments.length}
+                    {countComments(forumPosts[currentPost].comments)}
                   </Button>
                 </Link>
                 <PostReactions

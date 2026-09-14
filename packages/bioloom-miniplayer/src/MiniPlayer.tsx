@@ -315,7 +315,7 @@ export default function MiniPlayer() {
     current.thumbnail ||
     displayGame.soundtrackThumbnail ||
     displayGame.thumbnail ||
-    "/images/D2J_Icon.png";
+    "/images/game-thumbnail.png";
   const gameName = displayGame.name?.trim() ?? "";
   const artistName =
     current.artist.name?.trim() || current.artist.slug?.trim() || "";

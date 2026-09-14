@@ -22,7 +22,7 @@ export default function SearchResultTrack({
   const thumbnail =
     track.game.soundtrackThumbnail ||
     track.game.thumbnail ||
-    "/images/D2J_Icon.png";
+    "/images/game-thumbnail.png";
 
   return (
     <Card

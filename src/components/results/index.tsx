@@ -475,7 +475,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                     className="z-0 h-[108px] w-[192px] object-cover"
                     height={108}
                     width={192}
-                    src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                    src={game.thumbnail || "/images/game-thumbnail.png"}
                   />
                   <div className="flex flex-col">
                     <Link href={`/g/${game.slug}`}>{game.name}</Link>
@@ -575,7 +575,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         src={
                           track.game.soundtrackThumbnail ||
                           track.game.thumbnail ||
-                          "/images/D2J_Icon.png"
+                          "/images/game-thumbnail.png"
                         }
                       />
                       <div className="flex flex-col">
@@ -598,7 +598,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                                 thumbnail:
                                   track.game.soundtrackThumbnail ||
                                   track.game.thumbnail ||
-                                  "/images/D2J_Icon.png",
+                                  "/images/game-thumbnail.png",
                                 game: track.game,
                                 song: track.url,
                                 loudnessGainDb: track.loudnessGainDb,

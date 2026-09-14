@@ -68,7 +68,7 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   const image = (achievement: AchievementType, size: string, muted = !unlocked(achievement)) => {
     const tier = rarity(achievement);
     return <span className={`${size} ${styles.icon} ${tier && !muted && tier.shimmer ? styles.shimmer : ""}`} style={tier ? { "--rarity-color": tier.color, "--rarity-glow": `${tier.strength}px`, "--rarity-opacity": muted ? 0.08 : 0.25 } as CSSProperties : undefined}>
-      <img src={achievement.image || thumbnail || "/images/D2J_Icon.png"} alt="" className="h-full w-full rounded object-cover" style={{ filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.6 : 1 }} />
+      <img src={achievement.image || thumbnail || "/images/game-thumbnail.png"} alt="" className="h-full w-full rounded object-cover" style={{ filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.6 : 1 }} />
     </span>;
   };
   const showAchievement = () => { setSearch(""); setView(userId ? "personal" : "global"); setOpen(true); };
@@ -123,7 +123,7 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
       <ModalContent className="!w-[840px] !max-w-[calc(100vw-32px)]">
         <ModalHeader className="pr-14 pb-4">
           <div className="flex items-center gap-3">
-            <img src={thumbnail || "/images/D2J_Icon.png"} alt="" className="h-9 w-9 rounded object-cover" />
+            <img src={thumbnail || "/images/game-thumbnail.png"} alt="" className="h-9 w-9 rounded object-cover" />
             <h2 className="text-xl font-semibold">{gameName}</h2>
           </div>
         </ModalHeader>
@@ -158,7 +158,13 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
                   {group.items.map((achievement) => {
                     const date = unlockDate(achievement);
                     const globalPercent = (engagedUsers ? Math.min(100, achievement.users.length / engagedUsers * 100) : 0).toFixed(1);
-                    return <div key={achievement.id} className="flex flex-wrap items-center gap-3 rounded border p-3" style={{ backgroundColor: colors.mantle, borderColor }}>
+                    return <div key={achievement.id} className="flex flex-wrap items-center gap-3 rounded border p-3" style={{
+                      backgroundColor: colors.mantle,
+                      backgroundImage: view === "global"
+                        ? `linear-gradient(to right, color-mix(in srgb, ${borderColor} 50%, ${colors.mantle}) ${globalPercent}%, transparent ${globalPercent}%)`
+                        : undefined,
+                      borderColor,
+                    }}>
                       {image(achievement, "h-10 w-10", view === "personal" && !unlocked(achievement))}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold">{achievement.name}</p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { countComments } from "@/helpers/commentCount";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -310,7 +311,7 @@ export default function PostPage() {
                         size="sm"
                         icon="messagecircle"
                       >
-                        {post.comments.length}
+                        {countComments(post.comments)}
                       </Button>
                     </Link>
                     <PostReactions postId={post.id} reactions={post.reactions} />

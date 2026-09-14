@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+import Link from "@/compat/next-link";
 
 
 import { GameType } from "@/types/GameType";
@@ -90,14 +91,18 @@ export default function SidebarStats() {
         {games != 0 && (
           <Hstack>
             <Icon name="gamepad2" color="textFaded" size={iconSize} />
-            <Text size={textSize}>Stats.Games</Text>
+            <Link href="/games">
+              <Text size={textSize}>Stats.Games</Text>
+            </Link>
             <Text size={textSize} color="blue">{games}</Text>
           </Hstack>
         )}
         {music != 0 && (
           <Hstack>
             <Icon name="music" color="textFaded" size={iconSize} />
-            <Text size={textSize}>{uiText("Navbar.Music.Title")}</Text>
+            <Link href="/music">
+              <Text size={textSize}>{uiText("Navbar.Music.Title")}</Text>
+            </Link>
             <Text size={textSize} color="blue">{music}</Text>
           </Hstack>
         )}

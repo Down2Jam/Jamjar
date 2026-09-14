@@ -60,7 +60,7 @@ export default function NotificationsView() {
               if (await handleApplication(applicationId, false)) await archive(notificationId);
             }} />;
         }
-        if (["GAME_COMMENT", "TRACK_COMMENT", "POST_COMMENT", "COMMENT_REPLY"].includes(notification.type)) {
+        if (notification.comment && ["GAME_COMMENT", "TRACK_COMMENT", "POST_COMMENT", "COMMENT_REPLY"].includes(notification.type)) {
           return <CommentNotification key={notification.id} notification={notification} onMarkRead={markRead} />;
         }
         return <GeneralNotification key={notification.id} notification={notification} onMarkRead={markRead} />;

@@ -104,7 +104,7 @@ export default function SidebarGames() {
                     className="z-0 h-full w-full object-cover"
                     height={119}
                     width={212}
-                    src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                    src={game.thumbnail || "/images/game-thumbnail.png"}
                   />
                 </div>
               </Link>
@@ -130,7 +130,7 @@ export default function SidebarGames() {
                     className="z-0 w-full h-full object-cover"
                     height={77}
                     width={136}
-                    src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                    src={game.thumbnail || "/images/game-thumbnail.png"}
                   />
                 </div>
               </Link>
@@ -157,7 +157,7 @@ export default function SidebarGames() {
                       className="z-0 w-full h-full object-cover"
                       height={59}
                       width={104}
-                      src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                      src={game.thumbnail || "/images/game-thumbnail.png"}
                     />
                   </div>
                 </Link>

@@ -816,7 +816,7 @@ function HighlightGameCard({
             height={200}
             width={360}
             className="w-full h-[180px] object-cover shadow-inner"
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <Vstack
@@ -876,7 +876,7 @@ function HighlightTrackCard({
             src={
               track.game?.soundtrackThumbnail ||
               track.game?.thumbnail ||
-              "/images/D2J_Icon.png"
+              "/images/game-thumbnail.png"
             }
             width={64}
             height={64}
@@ -910,7 +910,7 @@ function HighlightTrackCard({
                 thumbnail:
                   track.game?.soundtrackThumbnail ||
                   track.game?.thumbnail ||
-                  "/images/D2J_Icon.png",
+                  "/images/game-thumbnail.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
                 loudnessGainDb: track.loudnessGainDb,
@@ -971,7 +971,7 @@ function TrackScoreCard({
             src={
               track.game?.soundtrackThumbnail ||
               track.game?.thumbnail ||
-              "/images/D2J_Icon.png"
+              "/images/game-thumbnail.png"
             }
             width={64}
             height={64}
@@ -1016,7 +1016,7 @@ function TrackScoreCard({
                 thumbnail:
                   track.game?.soundtrackThumbnail ||
                   track.game?.thumbnail ||
-                  "/images/D2J_Icon.png",
+                  "/images/game-thumbnail.png",
                 game: track.game ?? { name: "Unknown game", slug: "" },
                 song: track.url,
                 loudnessGainDb: track.loudnessGainDb,
@@ -1999,7 +1999,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                     thumbnail={
                       track.game?.soundtrackThumbnail ||
                       track.game?.thumbnail ||
-                      "/images/D2J_Icon.png"
+                      "/images/game-thumbnail.png"
                     }
                     game={
                       track.game
@@ -2115,7 +2115,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                   src={
                                     achievement.image ||
                                     achievement.game?.thumbnail ||
-                                    "/images/D2J_Icon.png"
+                                    "/images/game-thumbnail.png"
                                   }
                                   width={48}
                                   height={48}
@@ -2131,7 +2131,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                     <Image
                                       src={
                                         achievement.game?.thumbnail ||
-                                        "/images/D2J_Icon.png"
+                                        "/images/game-thumbnail.png"
                                       }
                                       alt={uiText("AppStrings.GameThumbnail")}
                                       width={18}
@@ -2165,7 +2165,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                                 src={
                                   achievement.image ||
                                   achievement.game?.thumbnail ||
-                                  "/images/D2J_Icon.png"
+                                  "/images/game-thumbnail.png"
                                 }
                                 width={48}
                                 height={48}

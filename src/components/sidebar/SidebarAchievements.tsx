@@ -104,7 +104,7 @@ export default function SidebarAchievements() {
                       src={
                         entry.achievement.image ||
                         entry.game.thumbnail ||
-                        "/images/D2J_Icon.png"
+                        "/images/game-thumbnail.png"
                       }
                       alt={entry.achievement.name}
                       width={56}

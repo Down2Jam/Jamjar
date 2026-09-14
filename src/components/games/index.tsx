@@ -304,6 +304,10 @@ function canUseScoreSort(
   currentPhase: string | null | undefined,
   pageVersion: ListingPageVersion,
 ): boolean {
+  if (isActiveJamBehavior(selectedJamId, currentJamId, currentPhase)) {
+    return false;
+  }
+
   return !(
     !!currentJamId &&
     selectedJamId === currentJamId &&
@@ -650,7 +654,7 @@ export default function Games() {
     hasNextPage,
     fetchNextPage,
   } = useGamesInfinite(
-    sort,
+    sort === "score" && !canUseScore ? "recommended" : sort,
     jamId !== "all" ? jamId : undefined,
     pageVersion,
     !jamDetecting,

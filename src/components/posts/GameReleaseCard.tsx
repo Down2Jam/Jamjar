@@ -9,7 +9,6 @@ import type { GameReleaseFeedItemType } from "@/types/PostType";
 import type { PostStyle } from "@/types/PostStyle";
 import { formatDistance } from "date-fns";
 import { Avatar, Card, Text } from "bioloom-ui";
-import { Gamepad2 } from "lucide-react";
 
 export default function GameReleaseCard({
   release,
@@ -47,21 +46,15 @@ export default function GameReleaseCard({
         <div className="flex min-w-0 items-center gap-3">
           <Link
             href={`/g/${release.game.slug}`}
-            className="block h-14 w-20 shrink-0 overflow-hidden rounded-md"
+            className="block aspect-[9/5] w-20 shrink-0 overflow-hidden rounded-md"
           >
-            {release.game.thumbnail ? (
-              <Image
-                src={release.game.thumbnail}
-                alt=""
-                width={160}
-                height={112}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-black/15">
-                <Gamepad2 aria-hidden="true" size={20} />
-              </div>
-            )}
+            <Image
+              src={release.game.thumbnail || "/images/game-thumbnail.png"}
+              alt=""
+              width={360}
+              height={200}
+              className="h-full w-full object-cover"
+            />
           </Link>
 
           <div className="min-w-0 flex-1">
@@ -90,21 +83,15 @@ export default function GameReleaseCard({
         <div className="flex min-w-0 items-center gap-3">
           <Link
             href={`/g/${release.game.slug}`}
-            className="block h-10 w-16 shrink-0 overflow-hidden rounded-md"
+            className="block aspect-[9/5] w-16 shrink-0 overflow-hidden rounded-md"
           >
-            {release.game.thumbnail ? (
-              <Image
-                src={release.game.thumbnail}
-                alt=""
-                width={128}
-                height={80}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-black/15">
-                <Gamepad2 aria-hidden="true" size={16} />
-              </div>
-            )}
+            <Image
+              src={release.game.thumbnail || "/images/game-thumbnail.png"}
+              alt=""
+              width={360}
+              height={200}
+              className="h-full w-full object-cover"
+            />
           </Link>
 
           <div className="min-w-0 flex-1">
@@ -132,21 +119,15 @@ export default function GameReleaseCard({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <Link
           href={`/g/${release.game.slug}`}
-          className="block h-32 w-full shrink-0 overflow-hidden rounded-md sm:h-28 sm:w-44"
+          className="block aspect-[9/5] w-full shrink-0 overflow-hidden rounded-md sm:w-44"
         >
-          {release.game.thumbnail ? (
-            <Image
-              src={release.game.thumbnail}
-              alt=""
-              width={352}
-              height={224}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-black/15">
-              <Gamepad2 aria-hidden="true" size={34} />
-            </div>
-          )}
+          <Image
+            src={release.game.thumbnail || "/images/game-thumbnail.png"}
+            alt=""
+            width={360}
+            height={200}
+            className="h-full w-full object-cover"
+          />
         </Link>
 
         <div className="min-w-0 flex-1">

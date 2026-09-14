@@ -423,7 +423,7 @@ export default function ClientGamePage({
       displayGame?.banner ||
       game?.thumbnail ||
       game?.banner ||
-      "/images/D2J_Icon.png",
+      "/images/game-thumbnail.png",
     icon:
       displayGame?.thumbnail ||
       game?.thumbnail ||
@@ -1586,7 +1586,7 @@ export default function ClientGamePage({
                 <Vstack align="stretch" gap={0}>
                   <div className="flex items-center gap-3 p-3">
                     <img
-                      src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
+                      src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png"}
                       alt=""
                       className="block aspect-square h-14 w-14 shrink-0 rounded-sm object-cover"
                     />
@@ -1616,7 +1616,7 @@ export default function ClientGamePage({
                           slug: firstTrack.slug,
                           name: firstTrack.name,
                           artist: firstTrack.composer,
-                          thumbnail: displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png",
+                          thumbnail: displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png",
                           game: firstTrack.game,
                           song: firstTrack.url,
                           loudnessGainDb: firstTrack.loudnessGainDb,
@@ -1639,7 +1639,7 @@ export default function ClientGamePage({
                       artist={track.composer}
                       squareThumbnail
                       showGame={false}
-                      thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
+                      thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png"}
                       game={track.game}
                       song={track.url}
                       loudnessGainDb={track.loudnessGainDb}

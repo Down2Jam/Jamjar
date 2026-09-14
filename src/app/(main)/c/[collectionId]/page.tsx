@@ -161,7 +161,7 @@ function itemThumbnail(item: CollectionItem) {
     item.track?.thumbnail ||
     item.track?.game?.thumbnail ||
     item.game?.thumbnail ||
-    "/images/D2J_Icon.png",
+    (item.game || item.track?.game ? "/images/game-thumbnail.png" : "/images/D2J_Icon.png"),
   );
 }
 

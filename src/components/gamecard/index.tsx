@@ -498,7 +498,7 @@ export function GameCard({
             alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
             fill
             className="object-cover shadow-inner"
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <div
@@ -512,7 +512,7 @@ export function GameCard({
             alt=""
             fill
             className="object-cover shadow-inner"
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <Hstack

@@ -228,7 +228,7 @@ async function metadataForPath(url) {
       page?.banner ??
       game?.thumbnail ??
       game?.banner ??
-      defaultMeta.image;
+      "/images/game-thumbnail.png";
     return {
       title: name,
       description,

@@ -295,7 +295,7 @@ const renderChip = (
   img.src =
     type === "user"
       ? (data as UserMentionData).profilePicture || FALLBACK_IMAGE
-      : (data as GameMentionData).thumbnail || FALLBACK_IMAGE;
+      : (data as GameMentionData).thumbnail || "/images/game-thumbnail.png";
   img.alt = type === "user" ? "User avatar" : "Game thumbnail";
   img.width = 18;
   img.height = 18;
@@ -344,7 +344,7 @@ const createPopover = (
   img.src =
     type === "user"
       ? (data as UserMentionData).profilePicture || FALLBACK_IMAGE
-      : (data as GameMentionData).thumbnail || FALLBACK_IMAGE;
+      : (data as GameMentionData).thumbnail || "/images/game-thumbnail.png";
   img.alt = type === "user" ? "User avatar" : "Game thumbnail";
   img.width = 32;
   img.height = 32;
@@ -682,7 +682,7 @@ function MentionChip({
   const image =
     type === "user"
       ? (data as UserMentionData).profilePicture || FALLBACK_IMAGE
-      : (data as GameMentionData).thumbnail || FALLBACK_IMAGE;
+      : (data as GameMentionData).thumbnail || "/images/game-thumbnail.png";
   const label =
     type === "user"
       ? (data as UserMentionData).name || slug

@@ -945,7 +945,7 @@ export default function Down2GuessPage() {
                 <Dropdown.Item key={game.id} value={game.id}>
                   <span className="inline-flex items-center gap-2">
                     <img
-                      src={game.thumbnail ?? "/images/D2J_Icon.png"}
+                      src={game.thumbnail || "/images/game-thumbnail.png"}
                       alt=""
                       aria-hidden="true"
                       className="h-8 w-12 shrink-0 rounded object-cover"
@@ -1113,9 +1113,9 @@ export default function Down2GuessPage() {
                 >
                   <img
                     src={
-                      row.game.jamPage?.thumbnail ??
-                      row.game.thumbnail ??
-                      "/images/D2J_Icon.png"
+                      row.game.jamPage?.thumbnail ||
+                      row.game.thumbnail ||
+                      "/images/game-thumbnail.png"
                     }
                     alt=""
                     aria-hidden="true"

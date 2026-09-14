@@ -1,5 +1,6 @@
 "use client";
 
+import { countComments } from "@/helpers/commentCount";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -363,7 +364,7 @@ export default function PostCard({
                   size="sm"
                   icon="messagecircle"
                 >
-                  {postComments.length}
+                  {countComments(postComments)}
                 </Button>
               </Link>
               <PostReactions
@@ -682,7 +683,7 @@ export default function PostCard({
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={14} />
-              {postComments.length}
+              {countComments(postComments)}
             </span>
           </div>
         </div>
@@ -733,7 +734,7 @@ export default function PostCard({
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={13} />
-              {postComments.length}
+              {countComments(postComments)}
             </span>
           </div>
         </div>
