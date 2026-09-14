@@ -5,8 +5,6 @@ import { useTranslations } from "@/compat/next-intl";
 import { useTheme } from "@/providers/useSiteTheme";
 import { getGameDevlogPosts } from "@/requests/game";
 import { readArray } from "@/requests/helpers";
-import MentionedContent from "@/components/mentions/MentionedContent";
-import ThemedProse from "@/components/themed-prose";
 import ContentStatusMeta from "./ContentStatusMeta";
 
 type DevlogPost = { id: number; slug: string; title: string; content: string; createdAt: string; authorSlug: string; authorName: string };
@@ -32,20 +30,14 @@ export default function GameDevlog({ gameSlug }: { gameSlug: string }) {
     return () => { active = false; };
   }, [gameSlug, attempt]);
   if (!loading && !failed && !posts.length) return null;
-  return <section className="flex min-w-0 flex-col gap-4 border-t pt-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 10%, transparent)` }}>
+  return <section aria-label={t("PostGames.Devlog")} className="flex min-w-0 flex-col gap-2">
     <h2 className="text-lg font-bold">{t("PostGames.Devlog")}</h2>
-    {posts.map(post => <article key={post.id} className="min-w-0 rounded-lg border p-4" style={{ borderColor: `color-mix(in srgb, ${colors.text} 8%, transparent)`, backgroundColor: colors.mantle }}>
-      <Link href={`/p/${post.slug}`} className="post-title-link text-base font-semibold">{post.title}</Link>
-      <div className="my-2 flex flex-wrap items-center gap-2 text-xs" style={{ color: colors.textFaded }}>
-        <Link href={`/u/${post.authorSlug}`}>{post.authorName}</Link>
-        <span aria-hidden="true">·</span>
-        <ContentStatusMeta createdAt={new Date(post.createdAt)} />
+    {posts.map(post => <div key={post.id} className="flex min-w-0 items-center gap-2">
+      <Link href={`/p/${post.slug}`} title={post.title} className="min-w-0 truncate text-sm hover:underline" style={{ color: colors.blue }}>{post.title}</Link>
+      <div className="shrink-0 whitespace-nowrap">
+        <ContentStatusMeta createdAt={post.createdAt} />
       </div>
-      <ThemedProse className="max-h-40 overflow-hidden [&_p:first-child]:mt-0">
-        <MentionedContent html={post.content} />
-      </ThemedProse>
-      <Link href={`/p/${post.slug}`} className="mt-3 inline-block text-xs" style={{ color: colors.blue }}>{t("PostGames.ReadPost")}</Link>
-    </article>)}
+    </div>)}
     {loading && <Spinner />}
     {failed && <div className="flex items-center gap-2 text-sm" role="status">
       <span>{t("PostGames.LoadError")}</span>

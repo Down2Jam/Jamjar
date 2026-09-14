@@ -27,7 +27,7 @@ import {
   updatePost,
 } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
-import { postComment } from "@/requests/comment";
+import CreateComment from "@/components/create-comment";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
@@ -57,8 +57,6 @@ export default function PostPage() {
   const editParam = searchParams.get("edit");
   const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [content, setContent] = useState("");
-  const [waitingPost, setWaitingPost] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draftGames, setDraftGames] = useState<LinkedPostGame[]>([]);
   const [draftTitle, setDraftTitle] = useState("");
@@ -597,54 +595,9 @@ export default function PostPage() {
             </div>
           </Card>
           <div id="create-comment" className="mb-10" />
-          {!isModerated &&
-            hasCookie("token") &&
-            (waitingPost ? (
-              <Card>
-                <Hstack>
-                  <Spinner />
-                  <Text>{uiText("ThemeSuggestions.Loading.Title")}</Text>
-                </Hstack>
-              </Card>
-            ) : (
-              <>
-                <Editor
-                  content={content}
-                  setContent={setContent}
-                  format="markdown"
-                />
-                <div className="mt-1" />
-                <Button
-                  onClick={async () => {
-                    if (!content) {
-                      addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
-                      return;
-                    }
-
-                    setWaitingPost(true);
-
-                    const response = await postComment(content, post!.id);
-
-                    if (response.status == 401) {
-                      addToast({ title: uiText("AppStrings.InvalidUser") });
-                      setWaitingPost(false);
-                      return;
-                    }
-
-                    if (response.ok) {
-                      addToast({ title: uiText("AppStrings.SuccessfullyCreatedComment") });
-                      //setWaitingPost(false);
-                      window.location.reload();
-                    } else {
-                      addToast({ title: uiText("AppStrings.AnErrorOccured") });
-                      setWaitingPost(false);
-                    }
-                  }}
-                >
-                   {uiText("AppStrings.CreateComment")} </Button>
-              </>
-            ))}
-
+          {!isModerated && hasCookie("token") && (
+            <CreateComment postId={post!.id} framed />
+          )}
           <div className="flex flex-col gap-3 mt-10">
             {post?.comments.map((comment) => (
               <div key={comment.id}>

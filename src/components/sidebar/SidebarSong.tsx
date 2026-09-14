@@ -129,6 +129,79 @@ export default function SidebarSong({
     );
   };
 
+  const rating = (
+    showRating && (
+    <RatingVisibilityGate
+      hiddenByPreference={hideRatings}
+      hiddenText="Ratings are hidden by your settings."
+      buttonSize="xs"
+    >
+      <Hstack className={wide ? "gap-1" : playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
+        {[2, 4, 6, 8, 10].map((value) => (
+          <div
+            key={`${trackId ?? slug ?? name}-${value}`}
+            className={`relative h-4 w-4 ${ratingDisabled ? "cursor-default" : "cursor-pointer"}`}
+            onMouseEnter={() => {
+              if (!ratingDisabled) setHoverValue(value);
+            }}
+            onMouseLeave={() => {
+              if (!ratingDisabled) setHoverValue(0);
+            }}
+          >
+            <Star
+              size={16}
+              fill="currentColor"
+              className="absolute"
+              style={{
+                color:
+                  displayValue >= value
+                    ? colors["yellow"]
+                    : colors["base"],
+                transition: "color 150ms ease",
+              }}
+            />
+            <Star
+              size={16}
+              fill="currentColor"
+              className="absolute"
+              style={{
+                clipPath: "inset(0 50% 0 0)",
+                color:
+                  displayValue >= value - 1
+                    ? colors["yellow"]
+                    : colors["base"],
+                transition: "color 150ms ease",
+              }}
+            />
+            <div
+              className="absolute left-0 top-0 h-4 w-2"
+              onMouseEnter={() => {
+                if (!ratingDisabled) setHoverValue(value - 1);
+              }}
+              onClick={() => {
+                if (!ratingDisabled) {
+                  void onRate?.(value - 1);
+                }
+              }}
+            />
+            <div
+              className="absolute right-0 top-0 h-4 w-2"
+              onMouseEnter={() => {
+                if (!ratingDisabled) setHoverValue(value);
+              }}
+              onClick={() => {
+                if (!ratingDisabled) {
+                  void onRate?.(value);
+                }
+              }}
+            />
+          </div>
+        ))}
+      </Hstack>
+    </RatingVisibilityGate>
+  )
+  );
+
   return (
     <Card
       className={playlist ? undefined : "post-card-shadow"}
@@ -289,6 +362,8 @@ export default function SidebarSong({
             </Vstack>
           </Hstack>
 
+          {wide && rating && <div className="shrink-0">{rating}</div>}
+
           <div
             className={
               wide
@@ -331,76 +406,7 @@ export default function SidebarSong({
           </div>
         </Hstack>
 
-        {showRating && (
-          <RatingVisibilityGate
-            hiddenByPreference={hideRatings}
-            hiddenText="Ratings are hidden by your settings."
-            buttonSize="xs"
-          >
-            <Hstack className={playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
-              {[2, 4, 6, 8, 10].map((value) => (
-                <div
-                  key={`${trackId ?? slug ?? name}-${value}`}
-                  className={`relative h-4 w-4 ${ratingDisabled ? "cursor-default" : "cursor-pointer"}`}
-                  onMouseEnter={() => {
-                    if (!ratingDisabled) setHoverValue(value);
-                  }}
-                  onMouseLeave={() => {
-                    if (!ratingDisabled) setHoverValue(0);
-                  }}
-                >
-                  <Star
-                    size={16}
-                    fill="currentColor"
-                    className="absolute"
-                    style={{
-                      color:
-                        displayValue >= value
-                          ? colors["yellow"]
-                          : colors["base"],
-                      transition: "color 150ms ease",
-                    }}
-                  />
-                  <Star
-                    size={16}
-                    fill="currentColor"
-                    className="absolute"
-                    style={{
-                      clipPath: "inset(0 50% 0 0)",
-                      color:
-                        displayValue >= value - 1
-                          ? colors["yellow"]
-                          : colors["base"],
-                      transition: "color 150ms ease",
-                    }}
-                  />
-                  <div
-                    className="absolute left-0 top-0 h-4 w-2"
-                    onMouseEnter={() => {
-                      if (!ratingDisabled) setHoverValue(value - 1);
-                    }}
-                    onClick={() => {
-                      if (!ratingDisabled) {
-                        void onRate?.(value - 1);
-                      }
-                    }}
-                  />
-                  <div
-                    className="absolute right-0 top-0 h-4 w-2"
-                    onMouseEnter={() => {
-                      if (!ratingDisabled) setHoverValue(value);
-                    }}
-                    onClick={() => {
-                      if (!ratingDisabled) {
-                        void onRate?.(value);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-            </Hstack>
-          </RatingVisibilityGate>
-        )}
+        {!wide && rating}
       </Vstack>
     </Card>
   );

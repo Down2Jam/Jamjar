@@ -2,10 +2,11 @@ import { useTranslations } from "@/compat/next-intl";
 import Editor from "../editor";
 import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
+import { addCollectionComment } from "@/requests/collection";
 import { useId, useState } from "react";
 import useMobileLayout from "@/hooks/useMobileLayout";
 import MobileComposerDialog from "./MobileComposerDialog";
-import { Button } from "bioloom-ui";
+import { Button, Card } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -13,11 +14,19 @@ import styles from "./style.module.css";
 
 // CreateComment.tsx
 export default function CreateComment({
+  postId,
+  collectionId,
+  onCreated,
+  framed = false,
   gameId,
   gamePageId,
   trackId,
   size = "sm",
 }: {
+  postId?: number | null;
+  collectionId?: number;
+  onCreated?: () => void | Promise<void>;
+  framed?: boolean;
   gameId?: number | null;
   gamePageId?: number | null;
   trackId?: number | null;
@@ -57,7 +66,7 @@ export default function CreateComment({
           disabled={waitingPost || (mobile && !content.trim())}
           aria-busy={waitingPost}
           onClick={async () => {
-            if (!content) {
+            if (!content.trim()) {
               addToast({
                 title: t("AppStrings.PleaseEnterValidContent"),
               });
@@ -74,9 +83,11 @@ export default function CreateComment({
             setWaitingPost(true);
 
             try {
-            const response = await postComment(
+            const response = collectionId != null
+              ? await addCollectionComment(collectionId, content)
+              : await postComment(
               content,
-              null,
+              postId ?? null,
               null,
               gameId ?? null,
               gamePageId ?? null,
@@ -96,7 +107,10 @@ export default function CreateComment({
                 title: t("AppStrings.SuccessfullyCreatedComment"),
               });
               setWaitingPost(false);
-              window.location.reload(); // Consider improving this too
+              setContent("");
+              setOpen(false);
+              if (onCreated) await onCreated();
+              else window.location.reload();
             } else {
               addToast({
                 title: t("AppStrings.AnErrorOccurred"),
@@ -116,7 +130,11 @@ export default function CreateComment({
     </div>
   );
 
-  if (!mobile) return composer;
+  if (!mobile) return framed ? (
+    <Card padding={1.5} shadow="none" className="shadow-2xl w-full max-lg:!rounded-none">
+      {composer}
+    </Card>
+  ) : composer;
   return <>
     <Button size="sm" icon="send" fullWidth className="min-h-11" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
       {size === "sm" ? t("AppStrings.LeaveAComment") : t("AppStrings.LeaveFeedback")}

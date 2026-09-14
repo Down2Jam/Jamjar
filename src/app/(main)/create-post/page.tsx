@@ -211,6 +211,7 @@ export default function CreatePostPage({
     TagOption,
     true
   > = {
+    container: (base) => ({ ...base, width: "100%", maxWidth: "28rem", fontSize: 14, lineHeight: "20px" }),
     multiValue: (base) => ({ ...base, backgroundColor: colors.base, borderRadius: 6 }),
     multiValueLabel: (base) => ({ ...base, color: colors.text }),
     multiValueRemove: (base) => ({
@@ -230,7 +231,7 @@ export default function CreatePostPage({
     input: (base) => ({ ...base, color: colors.text }),
     placeholder: (base) => ({ ...base, color: colors.textFaded }),
     menu: (base) => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
-    menuPortal: (base) => ({ ...base, zIndex: 100 }),
+    menuPortal: (base) => ({ ...base, zIndex: 100, fontSize: 14, lineHeight: "20px" }),
     option: (base, { isFocused }) => ({
       ...base,
       backgroundColor: isFocused ? colors.base : "transparent",
@@ -358,6 +359,7 @@ export default function CreatePostPage({
                  {uiText("AppStrings.ThePostTitle")} </Text>
             </div>
             <Input
+              fullWidth
               required
               name="title"
               placeholder={uiText("AppStrings.EnterATitle")}

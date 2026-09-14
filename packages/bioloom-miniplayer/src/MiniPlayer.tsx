@@ -608,10 +608,10 @@ export default function MiniPlayer() {
                       WebkitAppearance: "none",
                       height: "4px",
                       borderRadius: "4px",
-                      background: `linear-gradient(to right, 
-      ${colors["blue"]} 0%, 
-      ${colors["indigo"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
-      ${colors["base"]} ${(progress.time / (progress.duration || 1)) * 100}%, 
+                      background: `linear-gradient(to right,
+      ${colors["blue"]} 0%,
+      ${colors["indigo"]} ${(progress.time / (progress.duration || 1)) * 100}%,
+      ${colors["base"]} ${(progress.time / (progress.duration || 1)) * 100}%,
       ${colors["base"]} 100%)`,
                       outline: "none",
                     }}
@@ -621,40 +621,8 @@ export default function MiniPlayer() {
                   </Text>
                 </div>
 
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "auto minmax(0, 1fr) auto",
-                    alignItems: "center",
-                    gap: 12,
-                    marginTop: 10,
-                  }}
-                >
-                    <Icon name="volume1" color="text" size={18} />
-                    <input
-                      type="range"
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={volume}
-                      onChange={(e) => setVolume(parseFloat(e.target.value))}
-                      aria-label={uiText("AppStrings.Volume")}
-                      style={{
-                        width: "100%",
-                        WebkitAppearance: "none",
-                        height: "4px",
-                        borderRadius: "4px",
-                        background: `linear-gradient(to right, 
-      ${colors["yellow"]} 0%, 
-      ${colors["orange"]} ${(volume / 1) * 100}%, 
-      ${colors["base"]} ${(volume / 1) * 100}%, 
-      ${colors["base"]} 100%)`,
-                        outline: "none",
-                      }}
-                    />
-                    <Icon name="volume2" color="text" size={18} />
-                </div>
-
+                <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10 }}>
+                  <div style={{ flexShrink: 0, display: showRating ? undefined : "none" }}>
                   {showRating && (
                     <RatingVisibilityGate
                       hiddenByPreference={effectiveHideRatings}
@@ -667,7 +635,7 @@ export default function MiniPlayer() {
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
-                          marginTop: 8,
+                          marginTop: 0,
                         }}
                       >
                         <Text color="text" size="xs">
@@ -900,6 +868,42 @@ export default function MiniPlayer() {
                       </div>
                     </RatingVisibilityGate>
                   )}
+                  </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+                    alignItems: "center",
+                    gap: 12,
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                    <Icon name="volume1" color="text" size={16} />
+                    <input
+                      type="range"
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={volume}
+                      onChange={(e) => setVolume(parseFloat(e.target.value))}
+                      aria-label={uiText("AppStrings.Volume")}
+                      style={{
+                        width: "100%",
+                        WebkitAppearance: "none",
+                        height: "4px",
+                        borderRadius: "4px",
+                        background: `linear-gradient(to right,
+      ${colors["yellow"]} 0%,
+      ${colors["orange"]} ${(volume / 1) * 100}%,
+      ${colors["base"]} ${(volume / 1) * 100}%,
+      ${colors["base"]} 100%)`,
+                        outline: "none",
+                      }}
+                    />
+                    <Icon name="volume2" color="text" size={16} />
+                </div>
+                </div>
               </div>
             )}
           </div>

@@ -4,7 +4,6 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
 import {
-  addCollectionComment,
   addCollectionItem,
   getCollection,
   getCollectionMusicMetadata,
@@ -26,7 +25,7 @@ import Link from "@/compat/next-link";
 import ContentStatusMeta from "@/components/posts/ContentStatusMeta";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import ThemedProse from "@/components/themed-prose";
-import Editor from "@/components/editor";
+import CreateComment from "@/components/create-comment";
 import { stripHtmlForMetadata, usePageMetadata } from "@/hooks/usePageMetadata";
 import { CollectionArtwork } from "@/components/collections/CollectionArtwork";
 import {
@@ -503,8 +502,6 @@ export default function CollectionPage({
   const { collectionId } = use(params);
   const [collection, setCollection] = useState<CollectionDetails | null>(null);
   const [comments, setComments] = useState<CollectionComment[]>([]);
-  const [comment, setComment] = useState("");
-  const [commentLoading, setCommentLoading] = useState(false);
   const [showCommentComposer, setShowCommentComposer] = useState(false);
   const [trackQuery, setTrackQuery] = useState("");
   const [trackResults, setTrackResults] = useState<TrackSearchResult[]>([]);
@@ -967,48 +964,14 @@ export default function CollectionPage({
           )}
           {showCommentComposer && (
             <div className="mt-2">
-              <Editor
-                content={comment}
-                setContent={setComment}
-                size="sm"
-                format="markdown"
+              <CreateComment
+                collectionId={collection.id}
+                framed
+                onCreated={async () => {
+                  setShowCommentComposer(false);
+                  await load();
+                }}
               />
-              <div className="p-4" />
-              {commentLoading ? (
-                <Spinner />
-              ) : (
-                <Button
-                  size="sm"
-                  icon="plus"
-                  onClick={async () => {
-                    if (!comment.trim()) {
-                      addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
-                      return;
-                    }
-                    if (!hasCookie("token")) {
-                      addToast({ title: uiText("CreateGame.NotLogged") });
-                      return;
-                    }
-                    setCommentLoading(true);
-                    try {
-                      const response = await addCollectionComment(collection.id, comment);
-                      if (response.ok) {
-                        setComment("");
-                        setShowCommentComposer(false);
-                        await load();
-                        addToast({ title: uiText("AppStrings.SuccessfullyCreatedComment") });
-                      } else if (response.status === 401) {
-                        addToast({ title: uiText("AppStrings.InvalidUser2") });
-                      } else {
-                        addToast({ title: uiText("AppStrings.AnErrorOccurred") });
-                      }
-                    } finally {
-                      setCommentLoading(false);
-                    }
-                  }}
-                >
-                   {uiText("AppStrings.CreateComment")} </Button>
-              )}
             </div>
           )}
           {comments.length > 0 && (

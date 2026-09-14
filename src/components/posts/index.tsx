@@ -803,15 +803,22 @@ export default function Posts() {
         backdrop="opaque"
         size="2xl"
       >
-        <ModalContent className="overflow-visible">
+        <ModalContent
+          className="flex flex-col overflow-hidden"
+          style={{
+            width: "min(52rem, calc(100vw - 2rem))",
+            maxWidth: "calc(100vw - 2rem)",
+            maxHeight: "calc(100dvh - 2rem)",
+          }}
+        >
           {(onClose) => (
             <>
-              <ModalHeader>
+              <ModalHeader className="shrink-0 pr-16">
                 <Text size="xl">{uiText("AppStrings.CreatePost")}</Text>
                 <Text size="sm" color="textFaded">
                    {uiText("AppStrings.SubmitAPostToTheForum")} </Text>
               </ModalHeader>
-              <ModalBody>
+              <ModalBody className="min-h-0 overflow-y-auto overscroll-contain">
                 <CreatePostPage
                   embedded
                   onCreated={async () => {

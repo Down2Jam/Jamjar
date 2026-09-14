@@ -24,6 +24,7 @@ export default function PostGameSelector({ value, onChange }: {
     return () => { active = false; };
   }, []);
   const styles: StylesConfig<LinkedPostGame, true> = {
+    container: base => ({ ...base, width: "100%", maxWidth: "28rem", fontSize: 14, lineHeight: "20px" }),
     control: (base, { isFocused }) => ({
       ...base,
       backgroundColor: colors.base,
@@ -36,7 +37,7 @@ export default function PostGameSelector({ value, onChange }: {
     input: base => ({ ...base, color: colors.text }),
     placeholder: base => ({ ...base, color: colors.textFaded }),
     menu: base => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
-    menuPortal: base => ({ ...base, zIndex: 100 }),
+    menuPortal: base => ({ ...base, zIndex: 100, fontSize: 14, lineHeight: "20px" }),
     option: (base, { isFocused }) => ({ ...base, backgroundColor: isFocused ? colors.base : "transparent", color: colors.text }),
     multiValue: base => ({ ...base, backgroundColor: colors.surface0 }),
     multiValueLabel: base => ({ ...base, color: colors.text }),

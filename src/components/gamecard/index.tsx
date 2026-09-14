@@ -423,11 +423,11 @@ export function GameCard({
         padding={0}
         shadow="none"
         className="overflow-hidden relative"
-        style={{ borderColor: "transparent" }}
+        style={{ borderWidth: 0 }}
       >
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-[1] rounded-[9px] border"
+          className="pointer-events-none absolute inset-0 z-[1] rounded-[10px] border"
           style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}
         />
         {rated && (
