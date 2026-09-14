@@ -13,12 +13,12 @@ import type { JamType } from "@/types/JamType";
 import { unwrapArray } from "./helpers";
 
 export function useCurrentJam() {
-  return useQuery<ActiveJamResponse | null>({
+  return useQuery<ActiveJamResponse>({
     queryKey: queryKeys.jam.current(),
     queryFn: getCurrentJam,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 30 * 1000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
   });
 }
 

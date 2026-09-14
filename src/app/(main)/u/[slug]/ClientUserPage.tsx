@@ -532,14 +532,17 @@ export default function ClientUserPage({
       const [_, selfRes, jamRes] = await Promise.all([
         refreshUser(),
         getSelf(),
-        getCurrentJam(),
+        getCurrentJam().catch((error) => {
+          console.error("Failed to refresh profile jam", error);
+          return undefined;
+        }),
       ]);
 
       if (selfRes.ok) {
         const nextSelf = await readItem<UserType>(selfRes);
         setSelf(nextSelf ? normalizeProfileUser(nextSelf) : undefined);
       }
-      setActiveJamResponse(jamRes);
+      if (jamRes) setActiveJamResponse(jamRes);
     };
 
     fetchUser();

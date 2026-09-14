@@ -1,4 +1,4 @@
-import { JamPhase, JamType } from "@/types/JamType";
+import type { JamPhase, JamType } from "@/types/JamType";
 import * as jamRequests from "@/requests/jam";
 import { unwrapArray, unwrapItem } from "@/requests/helpers";
 
@@ -13,25 +13,28 @@ export async function getJams(): Promise<JamType[]> {
   return unwrapArray<JamType>(await response.json());
 }
 
-export async function getCurrentJam(): Promise<ActiveJamResponse | null> {
-  try {
-    const response = await jamRequests.getCurrentJam();
-    const json = await response.json();
-    const data = json?.data ?? json;
-
-    if (!data) {
-      return null;
-    }
-
-    return {
-      phase: data.phase ?? "No Active Jams",
-      jam: data.jam ?? null,
-      nextJam: data.nextJam ?? null,
-    };
-  } catch (error) {
-    console.error("Error fetching active jam:", error);
-    return null;
+export async function getCurrentJam(): Promise<ActiveJamResponse> {
+  const response = await jamRequests.getCurrentJam();
+  // Reject failed refreshes so React Query retains the last successful jam
+  // and retries, instead of caching a failure as an empty jam.
+  if (!response.ok) {
+    throw new Error(`Error fetching active jam (${response.status})`);
   }
+
+  const data = unwrapItem<ActiveJamResponse>(await response.json());
+  if (
+    !data ||
+    typeof data.phase !== "string" ||
+    (!data.jam && data.phase !== "No Active Jams")
+  ) {
+    throw new Error("Invalid active jam response");
+  }
+
+  return {
+    phase: data.phase,
+    jam: data.jam ?? null,
+    nextJam: data.nextJam ?? null,
+  };
 }
 
 export async function joinJam(jamId: number) {
