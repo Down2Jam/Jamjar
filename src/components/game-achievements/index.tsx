@@ -1,5 +1,5 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { Button, Card, Modal, ModalBody, ModalContent, ModalHeader, Tooltip, getNeutralBorderColor, addToast } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -22,6 +22,22 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"personal" | "global">("personal");
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const badgeRowRef = useRef<HTMLDivElement>(null);
+  const [visibleBadgeCount, setVisibleBadgeCount] = useState(0);
+  useLayoutEffect(() => {
+    const row = badgeRowRef.current;
+    if (!row) return;
+    const update = () => {
+      const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+      const slots = Math.max(0, Math.floor((row.getBoundingClientRect().width + gap) / (44 + gap)));
+      // Reserve one slot for the overflow count whenever not all badges fit.
+      setVisibleBadgeCount(achievements.length <= slots ? achievements.length : Math.max(0, slots - 1));
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(row);
+    update();
+    return () => observer.disconnect();
+  }, [achievements.length, modalOnly]);
   const unlocked = (achievement: AchievementType) => achievement.users.some((entry) => entry.id === userId);
   const unlockTime = (achievement: AchievementType) => {
     if (!unlocked(achievement)) return null;
@@ -90,16 +106,18 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
         {image(featured, "h-10 w-10")}
         <div className="min-w-0"><p className="text-sm font-semibold">{featured.name}</p><p className="line-clamp-2 text-xs" style={{ color: colors.textFaded }}>{featured.description}</p></div>
       </button></Tooltip>}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {achievements.slice(0, 5).map((achievement) => <Tooltip key={achievement.id} compact position="top" content={achievementPreview(achievement)}>
-          <button type="button" aria-label={uiText("AppStrings.ViewValue0", { value0: achievement.name })} onClick={() => showAchievement()} className="relative cursor-pointer rounded p-1 transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2">
+      <div className="mt-3 flex items-center gap-2">
+        <div ref={badgeRowRef} className="flex min-w-[44px] flex-1 items-center gap-2 [&>div]:shrink-0">
+        {achievements.slice(0, visibleBadgeCount).map((achievement) => <Tooltip key={achievement.id} compact position="top" content={achievementPreview(achievement)}>
+          <button type="button" aria-label={uiText("AppStrings.ViewValue0", { value0: achievement.name })} onClick={() => showAchievement()} className="relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded p-1 transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2">
             {image(achievement, "h-9 w-9")}
             {unlocked(achievement) && <Check size={12} className="absolute bottom-0 right-0 rounded" style={{ backgroundColor: colors.mantle, color: colors.green }} />}
           </button>
         </Tooltip>)}
-        {achievements.length > 5 && <Button variant="ghost" className="!h-11 !w-11 !p-0" onClick={() => showAchievement()} aria-label={uiText("AppStrings.ViewAllValue0Achievements", { value0: achievements.length })}>+{achievements.length - 5}</Button>}
+        {achievements.length > visibleBadgeCount && <Button variant="ghost" className="!h-[44px] !w-[44px] shrink-0 !p-0" onClick={() => showAchievement()} aria-label={uiText("AppStrings.ViewAllValue0Achievements", { value0: achievements.length })}>+{achievements.length - visibleBadgeCount}</Button>}
+        </div>
+        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => showAchievement()}>{userId ? uiText("AppStrings.ViewMyAchievements") : uiText("AppStrings.ViewAchievements")}</Button>
       </div>
-      <div className="mt-3 flex justify-end"><Button variant="ghost" size="sm" onClick={() => showAchievement()}>{userId ? uiText("AppStrings.ViewMyAchievements") : uiText("AppStrings.ViewAchievements")}</Button></div>
     </Card>}
     <Modal isOpen={modalOnly || open} onOpenChange={(value) => { if (!value) { setOpen(false); onClose?.(); } }} size="2xl" className="!rounded-md">
       <ModalContent className="!w-[840px] !max-w-[calc(100vw-32px)]">

@@ -137,7 +137,7 @@ export default function SidebarSong({
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
         ...(playlist ? {
           border: 0,
-          borderTop: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          borderTop: playlistIndex === 0 ? 0 : `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
           borderRadius: 0,
           boxShadow: "none",
           padding: "4px 0",
@@ -222,11 +222,8 @@ export default function SidebarSong({
                     <Text size="xs" color="textFaded">
                       {game.name}
                       {game.category !== "EXTERNAL" &&
-                        (pageVersion === "POST_JAM"
-                          ? uiText("AppStrings.PostJam")
-                          : pageVersion === "JAM"
-                            ? uiText("AppStrings.Jam2")
-                            : "")}
+                        pageVersion === "POST_JAM" &&
+                        uiText("AppStrings.PostJam")}
                     </Text>
                   </Link>
                 </GameDataHoverPreview>
@@ -266,6 +263,15 @@ export default function SidebarSong({
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
                   </span>
                 )}
+                {playlist && (license || backgroundUseLabel) && (
+                  <span
+                    className="min-w-0 truncate pl-2 text-xs leading-4"
+                    style={{ color: colors.textFaded }}
+                    title={[license ? translateSystemLabel(license, uiText) : "", backgroundUseLabel].filter(Boolean).join(" ")}
+                  >
+                    {[license ? translateSystemLabel(license, uiText) : "", backgroundUseLabel].filter(Boolean).join(" ")}
+                  </span>
+                )}
               </Hstack>}
               {!playlist && license && (
                 <span
@@ -277,7 +283,7 @@ export default function SidebarSong({
                   title={uiText("AppStrings.Value0Value13", { value0: translateSystemLabel(license, uiText), value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
                 >
                   {translateSystemLabel(license, uiText)}
-                  {backgroundUseLabel ? uiText("AppStrings.Value08", { value0: backgroundUseLabel }) : ""}
+                  {backgroundUseLabel ? ` ${uiText("AppStrings.Value08", { value0: backgroundUseLabel })}` : ""}
                 </span>
               )}
             </Vstack>

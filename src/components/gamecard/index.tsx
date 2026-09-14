@@ -1,6 +1,6 @@
 import { translateSystemLabel } from "@/helpers/systemLabels";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { Card } from "bioloom-ui";
+import { Card, Chip } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -104,6 +104,7 @@ function GamePreview({
   const screenshots = (game.screenshots ?? []).filter(Boolean).slice(0, 3);
   const tags = (game.tags ?? []).slice(0, 3);
   const flags = game.flags ?? [];
+  const interactiveOutlineColor = `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`;
   const tooltipBorderColor = `color-mix(in srgb, ${colors.text} 12%, ${colors.crust})`;
 
   return createPortal(
@@ -230,22 +231,22 @@ function GamePreview({
         {(tags.length > 0 || (game.inputMethods?.length ?? 0) > 0) && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <span
+              <Chip
                 key={tag.id ?? tag.name}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {translateSystemLabel(tag.name, uiText)}
-              </span>
+              </Chip>
             ))}
             {(game.inputMethods ?? []).slice(0, Math.max(0, 3 - tags.length)).map((input) => (
-              <span
+              <Chip
                 key={input}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {input}
-              </span>
+              </Chip>
             ))}
           </div>
         )}
@@ -253,13 +254,13 @@ function GamePreview({
         {flags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {flags.map((flag) => (
-              <span
+              <Chip
                 key={flag.id ?? flag.name}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {flag.name}
-              </span>
+              </Chip>
             ))}
           </div>
         )}
@@ -412,7 +413,7 @@ export function GameCard({
   const buildPlatforms = getBuildPlatforms(game);
   const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
   const versionLabel =
-    game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
+    game.pageVersion === "POST_JAM" ? "Post-Jam" : null;
   const creatorName = getCreatorName(game);
 
   return (

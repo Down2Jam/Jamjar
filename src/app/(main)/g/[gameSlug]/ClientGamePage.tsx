@@ -81,7 +81,7 @@ import { BASE_URL } from "@/requests/config";
 import { getPlayableSandbox } from "@/helpers/playableSandbox";
 import { getPlayableBuildUrl } from "@/requests/config";
 import { Popover } from "bioloom-ui";
-import { Modal } from "bioloom-ui";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
@@ -351,6 +351,7 @@ export default function ClientGamePage({
   const [user, setUser] = useState<UserType | null>(null);
   const [page, setPage] = useState(1);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [selectedScore, setSelectedScore] = useState<string>("");
   const [selectedLeaderboard, setSelectedLeaderboard] =
     useState<LeaderboardType>();
@@ -921,7 +922,6 @@ export default function ClientGamePage({
                 { name: uiText("CreateGame.Soundtrack.Title"), icon: "music", show: soundtrackQueue.length > 0 },
                 { name: uiText("CreateGame.Leaderboards.Title"), icon: "trophy", show: !!displayGame.leaderboards?.length },
                 { name: uiText("CreateGame.Achievements.Title"), icon: "award", show: !!displayGame.achievements?.length },
-                { name: uiText("AppStrings.Stats"), icon: "linechart", show: displayGame.category !== "EXTERNAL" },
               ].filter((section) => section.show).map((section) => <Button key={section.name} size="sm" variant="ghost" icon={section.icon as IconName} onClick={() => setMobileSection(section.name)}>{section.name}</Button>)}
             </div>
             {playableEmbedUrl && (
@@ -1579,17 +1579,20 @@ export default function ClientGamePage({
             </GameSidebarSection>
             <GameSidebarSection name="Soundtrack" selected={mobileSection} onClose={() => setMobileSection(null)}>
             {soundtrackQueue.length > 0 && (
-              <Card padding={1} shadow="none">
+              <Card padding={0} shadow="none" className="overflow-hidden">
                 <Vstack align="stretch" gap={0}>
-                  <div className="flex items-center gap-3 pb-3">
+                  <div className="flex items-center gap-3 p-3">
                     <img
                       src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
                       alt=""
-                      className="h-14 w-14 shrink-0 rounded-md object-cover"
+                      className="block aspect-square h-14 w-14 shrink-0 rounded-sm object-cover"
                     />
+                    <div
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold">{uiText("CreateGame.Soundtrack.Title")}</p>
-                      <p className="text-xs leading-4" style={{ color: colors.textFaded }}>
+                      <p className="text-lg font-bold leading-tight">{uiText("CreateGame.Soundtrack.Title")}</p>
+                      <p className="mt-1 text-xs leading-4" style={{ color: colors.textFaded }}>
                         {soundtrackQueue.length} {soundtrackQueue.length === 1 ? uiText("AppStrings.Track") : uiText("AppStrings.Tracks")}
                       </p>
                     </div>
@@ -1598,7 +1601,7 @@ export default function ClientGamePage({
                       variant="ghost"
                       icon={isSoundtrackCurrent && isPlaying ? "pause" : "play"}
                       aria-label={isSoundtrackCurrent && isPlaying ? uiText("AppStrings.PauseSoundtrack") : isSoundtrackCurrent ? uiText("AppStrings.ResumeSoundtrack") : uiText("AppStrings.PlaySoundtrackFromTheFirstTrack")}
-                      className="shrink-0"
+                      className="!h-8 shrink-0 !rounded-md !px-3"
                       onClick={() => {
                         if (isSoundtrackCurrent) {
                           toggle();
@@ -1619,7 +1622,9 @@ export default function ClientGamePage({
                     >
                       {isSoundtrackCurrent && isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
                     </Button>
+                    </div>
                   </div>
+                  <div className="px-3 pb-3 pt-1">
                   <ScrollableTracks activeIndex={soundtrackQueue.findIndex((track) => current?.slug === track.slug || current?.song === track.url)}>
                   {soundtrackQueue.map((track, index) => (
                     <SidebarSong
@@ -1660,6 +1665,7 @@ export default function ClientGamePage({
                     />
                   ))}
                   </ScrollableTracks>
+                  </div>
                 </Vstack>
               </Card>
             )}
@@ -1756,17 +1762,20 @@ export default function ClientGamePage({
 }} />
               )}
             </GameSidebarSection>
-            <GameSidebarSection name="Stats" selected={mobileSection} onClose={() => setMobileSection(null)}>
-{displayGame.category !== "EXTERNAL" && (
-              <Card padding={1} shadow="none">
-                <Vstack align="start">
-                <p
-                  className="text-xs leading-4"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
+            {displayGame.category !== "EXTERNAL" && (
+              <div className="mt-auto flex justify-end">
+                <Button
+                  icon="linechart"
+                  style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
+                  aria-haspopup="dialog"
+                  onClick={() => setIsStatsOpen(true)}
                 >
-                   {uiText("AppStrings.STATS")} </p>
+                  {uiText("AppStrings.Stats")}
+                </Button>
+                <Modal isOpen={isStatsOpen} onOpenChange={(open) => setIsStatsOpen(!!open)} size="lg">
+                  <ModalContent className="!w-[480px] !max-w-[calc(100vw-24px)]">
+                    <ModalHeader className="pr-14 text-base font-semibold">{uiText("AppStrings.Stats")}</ModalHeader>
+                    <ModalBody className="max-h-[75dvh] overflow-y-auto">
                 <Vstack align="start" gap={1.5}>
                   <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                      {uiText("AppStrings.RatingsReceived")}{" "}
@@ -1887,10 +1896,11 @@ export default function ClientGamePage({
                     )}
                   </Hstack>
                 </Vstack>
-                </Vstack>
-              </Card>
+                    </ModalBody>
+                  </ModalContent>
+                </Modal>
+              </div>
             )}
-            </GameSidebarSection>
             <Popover
               shown={
                 isScreenshotViewerOpen && selectedMedia?.type === "screenshot"
