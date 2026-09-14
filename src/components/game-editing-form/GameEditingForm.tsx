@@ -396,6 +396,7 @@ export default function GameEditingForm({
   const uploadedAudioFiles = useRef(new Map<string, File>());
   const teamCheckDoneRef = useRef(false);
 
+  const [pageBackground, setPageBackground] = useState<string | null>(null);
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
@@ -425,7 +426,7 @@ export default function GameEditingForm({
   const [savedFormSnapshot, setSavedFormSnapshot] = useState<string | null>(null);
   const formSnapshot = JSON.stringify({
     title, short, content, gameSlug, thumbnailUrl, soundtrackThumbnailUrl,
-    bannerUrl, downloadLinks, flags: [...flags].sort((a, b) => a - b),
+    bannerUrl, pageBackground, downloadLinks, flags: [...flags].sort((a, b) => a - b),
     tags: [...tags].sort((a, b) => a - b), leaderboards, achievements,
     category, chosenRatingCategories: [...chosenRatingCategories].sort((a, b) => a - b),
     chosenMajRatingCategories: [...chosenMajRatingCategories].sort((a, b) => a - b),
@@ -483,6 +484,7 @@ export default function GameEditingForm({
         [],
     );
     setScreenshots(game?.screenshots ?? []);
+    setPageBackground(game?.pageBackground ?? null);
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
     setPlayableBuildUrl(game?.playableBuildUrl ?? "");
@@ -1117,6 +1119,7 @@ export default function GameEditingForm({
                   estHundredPercent || null,
                   cleanedPrefix || null,
                   pageVersion,
+                  pageBackground,
                 )
               : postGame(
                   title,
@@ -1154,6 +1157,7 @@ export default function GameEditingForm({
                   estHundredPercent || null,
                   cleanedPrefix || null,
                   pageVersion,
+                  pageBackground,
                 );
 
             const response = await request;
@@ -1876,6 +1880,29 @@ export default function GameEditingForm({
                         if (url) {
                           setBannerUrl(url);
                         }
+                      }}
+                    />
+                  </Vstack>
+                </div>
+
+                <div className="game-editor-row">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.PageBackground.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.PageBackground.Description
+                      </Text>
+                    </div>
+                    <ImageInput
+                      value={pageBackground}
+                      width={640}
+                      height={360}
+                      enableCrop={false}
+                      placeholder={uiText("CreateGame.PageBackground.Upload")}
+                      onClear={() => setPageBackground(null)}
+                      onSelect={async (file, crop) => {
+                        const url = await uploadTo("image", file, crop);
+                        if (url) setPageBackground(url);
                       }}
                     />
                   </Vstack>

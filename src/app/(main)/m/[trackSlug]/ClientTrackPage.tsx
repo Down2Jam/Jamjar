@@ -6,6 +6,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/providers/useSiteTheme";
+import { GamePageBackground } from "@/app/(main)/PageBackground";
 import { useCurrentJam } from "@/hooks/queries";
 import {
   getTrack,
@@ -373,6 +374,7 @@ export default function ClientTrackPage({
 
   return (
     <>
+      <GamePageBackground image={track.game.pageBackground?.trim() || null} />
       <div
         className="relative mb-6 overflow-visible border-0 rounded-none lg:border lg:rounded-xl"
         style={{

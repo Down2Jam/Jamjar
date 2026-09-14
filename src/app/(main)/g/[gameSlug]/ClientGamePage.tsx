@@ -6,6 +6,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { use, useCallback, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
+import { GamePageBackground } from "@/app/(main)/PageBackground";
 import { addToast } from "bioloom-ui";
 import { Tabs, Tab } from "bioloom-ui";
 import {
@@ -853,6 +854,7 @@ export default function ClientGamePage({
 
   return (
     <PriorityEmotesContext.Provider value={gameEmotes}>
+      <GamePageBackground image={displayGame.pageBackground?.trim() || null} />
       <div
         style={{
           backgroundColor: siteTheme.colors["mantle"],

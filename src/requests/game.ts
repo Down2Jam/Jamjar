@@ -172,6 +172,7 @@ export async function postGame(
   estHundredPercent: string | null,
   emotePrefix: string | null,
   pageVersion: PageVersion = "JAM",
+  pageBackground: string | null = null,
 ) {
   const response = await fetch(`${BASE_URL}/games`, {
     body: JSON.stringify({
@@ -181,6 +182,7 @@ export async function postGame(
       thumbnail,
       soundtrackThumbnail,
       banner,
+      pageBackground,
       downloadLinks,
       userSlug,
       category,
@@ -278,6 +280,7 @@ export async function updateGame(
   estHundredPercent: string | null,
   emotePrefix: string | null,
   pageVersion: PageVersion = "JAM",
+  pageBackground: string | null = null,
 ) {
   const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -287,6 +290,7 @@ export async function updateGame(
       thumbnail,
       soundtrackThumbnail,
       banner,
+      pageBackground,
       downloadLinks,
       userSlug,
       category,

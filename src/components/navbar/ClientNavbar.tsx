@@ -21,7 +21,7 @@ export default function ClientNavbar({
   if (!hasMounted) return null; // prevent hydration mismatch
 
   return (
-    <div>
+    <div className={isMobile ? undefined : "h-16 shrink-0"}>
       {isMobile ? (
         <Mobilebar isLoggedIn={isLoggedIn} />
       ) : (

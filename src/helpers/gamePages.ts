@@ -20,6 +20,7 @@ export function materializeGamePage(
     thumbnail: page.thumbnail ?? undefined,
     soundtrackThumbnail: page.soundtrackThumbnail ?? undefined,
     banner: page.banner ?? undefined,
+    pageBackground: page.pageBackground ?? null,
     themeJustification: page.themeJustification,
     published: Boolean(game.published),
     achievements: page.achievements ?? [],

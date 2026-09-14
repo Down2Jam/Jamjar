@@ -788,6 +788,11 @@
       "Title": "Thumbnail",
       "Description": "Shows when people are browsing through games (360x200)"
     },
+    "PageBackground": {
+      "Title": "Page background",
+      "Description": "Upload a background for your game page. When unset, diagonal stripes are used.",
+      "Upload": "Upload page background"
+    },
     "Banner": {
       "Title": "Banner",
       "Description": "Shows on the game page and in search results (1468 x 240)"
