@@ -414,8 +414,36 @@ export default function JamHeader() {
   })();
 
   const hasPrimaryActionImage = activeJamResponse?.phase === "Voting";
+  const showRatingActions = ["Submission", "Rating", "Post-Jam Rating"].includes(
+    activeJamResponse?.phase ?? "",
+  );
 
-  const renderPrimaryAction = (className = "") => primaryAction ? (
+  const renderPrimaryAction = (className = "") => showRatingActions ? (
+    <div className={`inline-flex flex-wrap items-center justify-center gap-2 ${className}`}>
+      {[
+        { href: "/games", text: "Rate Games", image: "/images/rate-games.jpg" },
+        { href: "/music", text: "Rate Music", image: "/images/rate-music.jpg" },
+      ].map((action) => (
+        <Link
+          key={action.href}
+          href={action.href}
+          className="group relative inline-flex min-h-10 items-center gap-2 overflow-hidden rounded-lg border py-2 pr-3 pl-12 text-[11px] font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-xs"
+          style={{
+            color: colors.text,
+            borderColor: colors.base,
+            backgroundColor: `${colors.mantle}e6`,
+            outlineColor: colors.blue,
+          }}
+        >
+          <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden">
+            <img src={action.image} alt="" className="h-full w-full object-contain object-right" />
+          </span>
+          <Text size="xs" weight="semibold" className="relative z-10">{action.text}</Text>
+          <ArrowRight size={15} aria-hidden="true" className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: "#fff" }} />
+        </Link>
+      ))}
+    </div>
+  ) : primaryAction ? (
     <Link
       href={primaryAction.href}
       className={`group relative inline-flex items-center gap-2 overflow-hidden rounded-lg border font-semibold transition-[filter] duration-200 hover:brightness-110 active:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
@@ -510,7 +538,7 @@ export default function JamHeader() {
             </div>
             {renderPrimaryAction(
               `md:hidden xl:inline-flex xl:mr-8 ${
-                isVotingPhase
+                isVotingPhase || showRatingActions
                   ? "xl:translate-y-4"
                   : ""
               }`,

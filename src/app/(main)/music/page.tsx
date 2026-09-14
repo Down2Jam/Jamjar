@@ -1,4 +1,5 @@
 import { translateSystemLabel } from "@/helpers/systemLabels";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 "use client";
 
 import { useTranslations } from "@/compat/next-intl";
@@ -703,11 +704,7 @@ export default function MusicPage() {
   const displayedMusic = useMemo(() => {
     const filteredMusic = music.filter((track) => {
       const tagIds = new Set((track.tags ?? []).map((tag) => String(tag.id)));
-      const isOwnMusic = Boolean(
-        user &&
-        (track.game?.team?.ownerId === user.id ||
-          track.game?.team?.users?.some((member) => member.id === user.id)),
-      );
+      const isOwnMusic = isOwnTrack(track, user);
       const hasRatedTrack = Boolean(
         user &&
           (track.sourceTrackId ?? track.id) &&
@@ -786,9 +783,7 @@ export default function MusicPage() {
     const regularRatedTracks: TrackType[] = [];
 
     filteredMusic.forEach((track) => {
-      const isOwnMusic =
-        track.game?.team?.ownerId === user.id ||
-        track.game?.team?.users?.some((member) => member.id === user.id);
+      const isOwnMusic = isOwnTrack(track, user);
       const hasRatedTrack = Boolean(
         (track.sourceTrackId ?? track.id) &&
           (trackSelectedStars[track.sourceTrackId ?? track.id] ?? 0) > 0,
@@ -1181,9 +1176,8 @@ export default function MusicPage() {
               Boolean(user) &&
               Boolean(ratingTrackId) &&
               track.pageVersion !== "POST_JAM" &&
-              !track.game?.team?.users?.some(
-                (member) => member.id === user?.id,
-              ) &&
+              Array.isArray(track.game?.team?.users) &&
+              !isOwnTrack(track, user) &&
               currentJamId != null &&
               String(track.game?.jamId ?? "") === currentJamId &&
               (activeJamPhase === "Rating" ||
@@ -1220,6 +1214,7 @@ export default function MusicPage() {
                 ratingDisabled={!canRateTrack}
                 onRate={async (value) => {
                   if (
+                    !canRateTrack ||
                     !ratingTrackId ||
                     !trackOverallCategory ||
                     track.pageVersion === "POST_JAM"

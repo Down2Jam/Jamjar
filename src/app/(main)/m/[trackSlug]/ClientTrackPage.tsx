@@ -13,6 +13,7 @@ import {
   postTrackTimestampComment,
 } from "@/requests/track";
 import { postTrackRating } from "@/requests/rating";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 import { TrackType } from "@/types/TrackType";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { UserType } from "@/types/UserType";
@@ -300,6 +301,7 @@ export default function ClientTrackPage({
   }
 
   const selectedRating = track.viewerRating?.value ?? 0;
+  const isOwnMusic = isOwnTrack(track, user);
   const isTeamMember = Boolean(
     user && track.game?.team?.users?.some((member) => member.id === user.id),
   );
@@ -326,7 +328,7 @@ export default function ClientTrackPage({
     (!isCurrentJamTrack || shouldShowCurrentVersionResults);
   const canRateCurrentVersion =
     Boolean(user) &&
-    !isTeamMember &&
+    !isOwnMusic &&
     isCurrentJamTrack &&
     isRatingOpenPhase &&
     Boolean(overallCategory);
@@ -599,6 +601,7 @@ export default function ClientTrackPage({
                           hoverCategory={hoverCategory}
                           setHoverCategory={setHoverCategory}
                           onRate={async (value) => {
+                            if (!canRateCurrentVersion) return;
                             const previous = selectedRating;
                             emitTrackRatingSync({
                               trackId: track.id,
@@ -657,7 +660,7 @@ export default function ClientTrackPage({
                         {(overallScore.averageUnrankedScore / 2).toFixed(2)}{" "}
                          {uiText("AppStrings.PublicAverageFrom")} {overallScore.ratingCount}  {uiText("AppStrings.Ratings")} </Text>
                     )}
-                    {isTeamMember && isCurrentJamTrack && isRatingOpenPhase && (
+                    {isOwnMusic && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
                          {uiText("AppStrings.YouCanAndAposTRateYourOwn2")} </Text>
                     )}

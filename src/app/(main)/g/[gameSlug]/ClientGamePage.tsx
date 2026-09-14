@@ -39,6 +39,7 @@ import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
 import { postRating, postTrackRating } from "@/requests/rating";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 import ScrollableTracks from "@/components/sidebar/ScrollableTracks";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { PriorityEmotesContext } from "@/components/editor/PriorityEmotesContext";
@@ -1541,7 +1542,8 @@ export default function ClientGamePage({
                                   id={ratingCategory.id}
                                   name={t(ratingCategory.name)}
                                   text={
-                                    ratingCategory.name == "Theme"
+                                    (ratingCategory.name === "RatingCategory.Theme.Title" ||
+                                      ratingCategory.name === "Theme")
                                       ? displayGame.themeJustification
                                       : ""
                                   }
@@ -1637,11 +1639,11 @@ export default function ClientGamePage({
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
-                      showRating={canRateDisplayedTrack}
+                      showRating={canRateDisplayedTrack && !isOwnTrack(track, user)}
                       hideRatings={effectiveHideRatings}
-                      ratingDisabled={!canRateDisplayedTrack}
+                      ratingDisabled={!canRateDisplayedTrack || isOwnTrack(track, user)}
                       onRate={async (value) => {
-                        if (!trackOverallCategory) return;
+                        if (!canRateDisplayedTrack || isOwnTrack(track, user) || !trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;
                         emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value });
                         setTrackSelectedStars((prev) => ({ ...prev, [track.id]: value }));
@@ -2117,8 +2119,7 @@ function StarRow({
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
   const { colors } = useTheme();
   const themeJustification = text?.trim();
-  const showThemeJustification =
-    name.toLowerCase() === "theme" && Boolean(themeJustification);
+  const showThemeJustification = Boolean(themeJustification);
 
   return (
     <div className="flex items-center gap-4">

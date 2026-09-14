@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { addToast, Button, Icon, Popover, Text } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { Star } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTheme } from "bioloom-ui";
 import { readStorage, storageKey, writeStorage } from "./MusicProvider";
 import { useMusic } from "./useMusic";
@@ -124,8 +124,9 @@ export default function MiniPlayer() {
   });
 
   const marginLeftTop = 16;
-  const marginRightBottom = 38;
+  const marginRightBottom = marginLeftTop;
   const snapDistance = 120;
+  const playerChrome = (minimized ? 12 : 0) * 2 + 2;
 
   const setAnchorCornerRef = (corner: AnchorCorner) => {
     anchorCornerRef.current = corner;
@@ -134,8 +135,8 @@ export default function MiniPlayer() {
 
   const computeSnapPosition = (corner: AnchorCorner) => {
     if (!dragRef.current) return { left: marginLeftTop, top: marginLeftTop };
-    const rectWidth = dragRef.current.offsetWidth;
-    const rectHeight = dragRef.current.offsetHeight;
+    const rectWidth = dragRef.current.offsetWidth + playerChrome;
+    const rectHeight = dragRef.current.offsetHeight + playerChrome;
     const maxLeft = Math.max(
       marginLeftTop,
       window.innerWidth - rectWidth - marginRightBottom,
@@ -181,9 +182,9 @@ export default function MiniPlayer() {
     const vertical = position.top <= midY ? "top" : "bottom";
     setTransformOrigin(`${vertical} ${horizontal}`);
     setAnchorCornerRef(`${vertical}-${horizontal}` as AnchorCorner);
-  }, [position, minimized]);
+  }, [position]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!dragRef.current || !position) return;
     const anchorCorner = anchorCornerRef.current;
     setPosition((prev) => (prev ? computeSnapPosition(anchorCorner) : prev));
@@ -270,9 +271,11 @@ export default function MiniPlayer() {
 
   if (!current) return null;
 
-  const isTeamMember = Boolean(
+  const isOwnTrack = Boolean(
     viewerId &&
-    current.game.team?.users?.some((member) => member.id === viewerId),
+    (current.artist.id === viewerId ||
+      current.game.team?.ownerId === viewerId ||
+      current.game.team?.users?.some((member) => member.id === viewerId)),
   );
   const isCurrentJamTrack =
     activeJamId != null &&
@@ -280,12 +283,12 @@ export default function MiniPlayer() {
     activeJamId === current.game.jamId;
   const canRateDuringJam =
     Boolean(viewerId) &&
-    !isTeamMember &&
+    !isOwnTrack &&
     isCurrentJamTrack &&
     (activeJamPhase === "Rating" || activeJamPhase === "Submission");
   const showRating =
     !minimized &&
-    !isTeamMember &&
+    !isOwnTrack &&
     current.id != null &&
     Boolean(viewerId) &&
     Boolean(ratingCategoryId) &&
@@ -319,8 +322,8 @@ export default function MiniPlayer() {
 
   const clampPosition = (left: number, top: number) => {
     if (!dragRef.current) return { left, top };
-    const rectWidth = dragRef.current.offsetWidth;
-    const rectHeight = dragRef.current.offsetHeight;
+    const rectWidth = dragRef.current.offsetWidth + playerChrome;
+    const rectHeight = dragRef.current.offsetHeight + playerChrome;
     const maxLeft = Math.max(
       marginLeftTop,
       window.innerWidth - rectWidth - marginRightBottom,
@@ -399,6 +402,7 @@ export default function MiniPlayer() {
       showArrow={false}
       showCloseButton
       disableHoverScale
+      avoidCollisions={false}
       closeButtonPosition="top-left"
       onClose={stop}
       startsShown={true}

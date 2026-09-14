@@ -59,6 +59,7 @@ interface PopoverProps {
   interactive?: boolean;
   surface?: "default" | "contrast" | "card" | "transparent";
   borderless?: boolean;
+  avoidCollisions?: boolean;
 }
 
 export default function Popover({
@@ -91,6 +92,7 @@ export default function Popover({
   interactive = true,
   surface = "contrast",
   borderless = false,
+  avoidCollisions = true,
 }: PopoverProps) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -407,6 +409,11 @@ export default function Popover({
 
   useLayoutEffect(() => {
     if (!hasMounted) return;
+    if (!avoidCollisions) {
+      setCollisionShift({ x: 0, y: 0 });
+      setCollisionReady(true);
+      return;
+    }
     if (!shown) {
       setCollisionShift({ x: 0, y: 0 });
       setCollisionReady(false);
@@ -429,7 +436,7 @@ export default function Popover({
       window.removeEventListener("resize", updateCollisionShift);
       window.removeEventListener("scroll", updateCollisionShift, true);
     };
-  }, [hasMounted, shown, updateCollisionShift]);
+  }, [hasMounted, shown, updateCollisionShift, avoidCollisions]);
 
   if (!hasMounted) return null;
 

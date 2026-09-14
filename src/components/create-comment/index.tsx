@@ -33,7 +33,7 @@ export default function CreateComment({
   const { colors } = useTheme();
 
   const composer = (
-    <div className={!mobile && size === "sm" ? styles.composer : undefined} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": `color-mix(in srgb, ${colors.text} 20%, ${colors.mantle})` } as React.CSSProperties}>
+    <div className={!mobile && size === "sm" ? styles.composer : styles.feedback} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": `color-mix(in srgb, ${colors.text} 20%, ${colors.mantle})` } as React.CSSProperties}>
       {(size === "sm" || mobile) && <div className="mb-3 flex items-center justify-between gap-3">
         {(size === "sm" || mobile) && <h2 id={titleId} className="text-base font-semibold">{size === "sm" ? t("AppStrings.LeaveAComment") : t("AppStrings.LeaveFeedback")}</h2>}
         {mobile && <Button size="sm" variant="ghost" icon="x" aria-label={t("AppStrings.CloseComment")} disabled={waitingPost} onClick={close} />}
@@ -48,7 +48,7 @@ export default function CreateComment({
         showStats={false}
       />
       </fieldset>
-      <div className={mobile ? "mt-3 flex justify-end gap-2" : size === "sm" ? styles.submitRow : ""}>
+      <div className={mobile ? "mt-3 flex justify-end gap-2" : size === "sm" ? styles.submitRow : "mt-3"}>
       {mobile && <Button size="sm" variant="ghost" disabled={waitingPost} onClick={close}>{t("AppStrings.Cancel")}</Button>}
         <Button
           size={mobile ? "sm" : size}
