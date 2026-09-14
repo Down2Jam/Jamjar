@@ -226,6 +226,7 @@ export default function CommentCard({
           {(isAuthor || user?.mod || user?.admin) && (
             <div className="relative z-30 ml-auto">
               <Dropdown
+                portal
                 trigger={
                   <Button
                     className="post-action-button post-card-corner-button"

@@ -374,6 +374,7 @@ export default function PostCard({
               />
               <div className="relative z-30 ml-auto">
                 <Dropdown
+                  portal
                   onOpenChange={setDropdownOpen}
                   trigger={
                     <Button
