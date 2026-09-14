@@ -1,4 +1,7 @@
 key,en,fr,it,de,es,tr,tl,ru,ja,pt-br,tok,mis-edikan,mis-meow
+GameDraftBanner.Title,DRAFT PAGE,,,,,,,,,,,,
+GameDraftBanner.Description,This game is unpublished. Publish it in settings to make it public.,,,,,,,,,,,,
+GameDraftBanner.Settings,Open game settings,,,,,,,,,,,,
 Splash.Title,Down2Jam,Down2Jam,Down2Jam,,,Down2Jam,Down2Jam,Down2Jam,ダウン2ジャム,Down2Jam,,,Meow
 Splash.Description,The community centered game jam,,La game jam incentrata sulla comunità,,,Topluluk odaklı game jam,Game Jam para sa komunidad,Комьюнити-центричный геймджем,,O game jam centrado na comunidade,,,Meow meow meow meow meow
 Splash.Join,Join,,Partecipa,,,Katıl,Salin na,Участвовать,,Participar,,kyo,Meow
@@ -2554,7 +2557,7 @@ AppStrings.RATED,RATED,,,,,,,,,,,,
 AppStrings.Value0SThumbnail,{value0}'s thumbnail,,,,,,,,,,,,
 AppStrings.Value06,{value0},,,,,,,,,,,,
 AppStrings.SortedByValue0,Sorted by {value0},,,,,,,,,,,,
-AppStrings.Results,results),,,,,,,,,,,,
+AppStrings.Results,results,,,,,,,,,,,,
 AppStrings.AdvancedSearch,Advanced Search,,,,,,,,,,,,
 AppStrings.BrowseEntriesFromEveryJam,Browse entries from every jam,,,,,,,,,,,,
 AppStrings.ShowAllGameCategories,Show all game categories,,,,,,,,,,,,
@@ -2579,7 +2582,7 @@ AppStrings.AddToProfile,Add to profile,,,,,,,,,,,,
 AppStrings.TheCommunityCenteredJam,The community-centered jam,,,,,,,,,,,,
 AppStrings.JamTimelineDragHorizontallyToViewMorePhases,Jam timeline. Drag horizontally to view more phases.,,,,,,,,,,,,
 AppStrings.UserAvatar,User avatar,,,,,,,,,,,,
-AppStrings.ImportAGameFromItchIo,Import a non-jam game from itch.io to display alongside your jam games,,,,,,,,,,,,
+AppStrings.ImportAGameFromItchIo,Import a non-d2jam jam game from itch.io to display alongside your d2jam games,,,,,,,,,,,,
 AppStrings.ImportGame2,Import Game,,,,,,,,,,,,
 AppStrings.ViewTheResultsOfTheLastD2Jam,View the results of the last D2Jam,,,,,,,,,,,,
 AppStrings.SubmitPossibleThemesForTheJam,Submit possible themes for the jam,,,,,,,,,,,,

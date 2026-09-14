@@ -152,7 +152,7 @@ export async function postGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
-    id: number;
+    id?: number;
     slug: string;
     license?: string | null;
     allowDownload?: boolean;
@@ -260,7 +260,7 @@ export async function updateGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
-    id: number;
+    id?: number;
     slug: string;
     license?: string | null;
     allowDownload?: boolean;
@@ -405,10 +405,14 @@ export async function getGameDevlogPosts(
   gameSlug: string,
   relationType?: "devlog" | "release" | "postmortem" | "announcement" | "other",
   limit?: number,
+  cursor?: string,
+  cursorId?: number,
 ) {
   const params = new URLSearchParams();
   if (relationType) params.set("relationType", relationType);
   if (limit) params.set("limit", String(limit));
+  if (cursor) params.set("cursor", cursor);
+  if (cursorId) params.set("cursorId", String(cursorId));
 
   return fetch(
     `${BASE_URL}/games/${encodeURIComponent(gameSlug)}/devlog${params.size ? `?${params.toString()}` : ""}`,

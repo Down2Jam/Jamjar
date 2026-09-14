@@ -29,6 +29,8 @@ import { readArray, readItem, unwrapArray } from "@/requests/helpers";
 import { BASE_URL } from "@/requests/config";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import GameTokensSection from "@/components/settings/GameTokensSection";
+import ConnectedAppsSection from "@/components/settings/ConnectedAppsSection";
+import DeveloperAppsSection, { DEVELOPER_APP_FORM_ID } from "@/components/settings/DeveloperAppsSection";
 
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
@@ -392,6 +394,8 @@ export default function UserPage() {
 
   return (
     <div className="flex items-center justify-center">
+      {/* App fields use this separate form so they never submit or validate the profile form. */}
+      <form id={DEVELOPER_APP_FORM_ID} onSubmit={event => event.preventDefault()} />
       <Form
         className={`w-full max-w-6xl flex flex-col gap-4 ${
           hasUnsavedChanges ? "pb-48 sm:pb-32" : ""
@@ -486,7 +490,7 @@ export default function UserPage() {
              {uiText("Navbar.Settings.Description")} </p>
         </header>
 
-        <Tabs defaultIndex={new URLSearchParams(window.location.search).get("tab") === "streams" ? 1 : 0} className="[&>[role=tablist]]:justify-center">
+        <Tabs defaultIndex={Math.max(0, ["general", "streams", "emotes", "tokens", "apps"].indexOf(new URLSearchParams(window.location.search).get("tab") ?? "general"))} className="[&>[role=tablist]]:justify-center">
           <Tab title={uiText("AppStrings.General")} icon="cog">
             <div className="form-editor-panel settings-editor-panel">
               <div className="game-editor-panel-heading">
@@ -1303,7 +1307,11 @@ export default function UserPage() {
                 </Vstack>
               </div>
               <GameTokensSection flat />
+              <ConnectedAppsSection />
             </div>
+          </Tab>
+          <Tab title="Your apps" icon="code">
+            <DeveloperAppsSection />
           </Tab>
         </Tabs>
 

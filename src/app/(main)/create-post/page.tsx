@@ -31,6 +31,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
+import PostGameSelector from "@/components/posts/PostGameSelector";
+import type { LinkedPostGame } from "@/types/PostType";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -71,10 +73,11 @@ export default function CreatePostPage({
   const [fixedOptions, setFixedOptions] = useState<TagOption[]>();
   const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [user, setUser] = useState<UserType>();
+  const [linkedGames, setLinkedGames] = useState<LinkedPostGame[]>([]);
   const [sticky, setSticky] = useState(false);
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
-  const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || sticky);
+  const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || linkedGames.length || sticky);
   const floatingFooter = !embedded && hasUnsavedChanges;
 
   useEffect(() => {
@@ -312,7 +315,8 @@ export default function CreatePostPage({
                 title,
                 submittedContent,
                 sticky,
-                combinedTagIds()
+                combinedTagIds(),
+                linkedGames.map(({ gameId, relationType }) => ({ gameId, relationType }))
               );
 
               if (response.status == 401) {
@@ -333,6 +337,7 @@ export default function CreatePostPage({
                   setContent("");
                   setSelectedTags(null);
                   setSticky(false);
+                  setLinkedGames([]);
                   await onCreated();
                 } else {
                   redirect("/");
@@ -438,6 +443,8 @@ export default function CreatePostPage({
                 </Vstack>
               </Hstack>
             )}
+
+            {user && <PostGameSelector value={linkedGames} onChange={setLinkedGames} />}
 
             </div>
             {hasUnsavedChanges && (

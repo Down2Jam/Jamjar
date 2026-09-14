@@ -36,7 +36,9 @@ export default function CommentCard({
   user,
   onOverlayChange,
   edgeToEdge = false,
+  className = "",
 }: {
+  className?: string;
   edgeToEdge?: boolean;
   comment: CommentType;
   user?: UserType | null;
@@ -108,7 +110,7 @@ export default function CommentCard({
       className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
     >
       <Card
-        className={edgeToEdge ? "max-lg:!rounded-none" : undefined}
+        className={`${edgeToEdge ? "max-lg:!rounded-none" : ""} ${className}`}
         style={{
           "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
           "--post-action-hover": colors["base"],

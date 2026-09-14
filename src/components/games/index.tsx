@@ -379,6 +379,9 @@ export default function Games() {
   }, []);
   const [typeFilter, setTypeFilter] =
     useState<TypeOption["id"]>(initialTypeParam);
+  const effectiveTypeFilter = jamId === "external" || typeFilter === "External"
+    ? "all"
+    : typeFilter;
   const initialTagsParam = useMemo(
     () =>
       typeof window === "undefined"
@@ -461,7 +464,6 @@ export default function Games() {
     { id: "Regular", name: uiText("GameCategory.Regular.Title"), icon: "gamepad2" },
     { id: "ODA", name: uiText("AppStrings.ODA"), icon: "swords" },
     { id: "Extra", name: uiText("GameCategory.Extra.Title"), icon: "calendar" },
-    { id: "External", name: uiText("AppStrings.External"), icon: "externalLink" },
   ];
 
   // Fetch user via TanStack Query
@@ -766,6 +768,12 @@ export default function Games() {
     [router],
   );
 
+  useEffect(() => {
+    if (jamDetecting || typeFilter === effectiveTypeFilter) return;
+    setTypeFilter(effectiveTypeFilter);
+    updateQueryParam("type", effectiveTypeFilter);
+  }, [jamDetecting, typeFilter, effectiveTypeFilter, updateQueryParam]);
+
   const updateMoreQueryParam = useCallback(
     (values: Set<string>) => {
       const params = new URLSearchParams(window.location.search);
@@ -1015,8 +1023,8 @@ export default function Games() {
         return false;
       }
 
-      if (typeFilter !== "all") {
-        const wanted = typeFilter.toLowerCase();
+      if (effectiveTypeFilter !== "all") {
+        const wanted = effectiveTypeFilter.toLowerCase();
         const t = game.category ?? "";
         if (String(t).toLowerCase() !== wanted) {
           return false;
@@ -1112,7 +1120,7 @@ export default function Games() {
     selectedMoreFilters,
     selectedTags,
     sort,
-    typeFilter,
+    effectiveTypeFilter,
     user,
   ]);
 
@@ -1294,11 +1302,11 @@ export default function Games() {
                 ))}
               </Dropdown>
 
-              <Dropdown
+              {jamId !== "external" && <Dropdown
                 triggerSize="lg"
                 triggerClassName="m-1 rounded-sm"
                 triggerStyle={gamesDropdownShadow}
-                selectedValue={typeFilter}
+                selectedValue={effectiveTypeFilter}
                 onSelect={(key) => {
                   const val = key as TypeOption["id"];
                   setTypeFilter(val);
@@ -1319,7 +1327,7 @@ export default function Games() {
                     {t.name}
                   </Dropdown.Item>
                 ))}
-              </Dropdown>
+              </Dropdown>}
 
               {tagOptions.length > 0 && (
                 <Dropdown

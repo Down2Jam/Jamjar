@@ -64,6 +64,7 @@ import useMobileLayout from "@/hooks/useMobileLayout";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Chip } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
+import GameDevlog from "@/components/posts/GameDevlog";
 import ThemedProse from "@/components/themed-prose";
 import { Button } from "bioloom-ui";
 import { Link } from "bioloom-ui";
@@ -72,6 +73,7 @@ import { useSearchParams } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import GamePageLoading from "@/components/game-page-loading";
+import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import GameSidebarSection from "@/components/game-sidebar-section";
 import GameLeaderboards from "@/components/game-leaderboards";
 import GameAchievements from "@/components/game-achievements";
@@ -862,10 +864,10 @@ export default function ClientGamePage({
           borderColor: interactiveOutlineColor,
           color: siteTheme.colors["text"],
         }}
-        className="relative border-0 lg:border rounded-none lg:rounded-xl overflow-visible"
+        className="shadow-2xl relative border-0 lg:border rounded-none lg:rounded-xl overflow-visible"
       >
         <div
-          className="relative h-60 overflow-hidden lg:rounded-t-[11px]"
+          className="relative h-60 overflow-hidden lg:-mx-px lg:-mt-px lg:rounded-t-xl"
           style={{
             backgroundColor: colors["base"],
           }}
@@ -1038,6 +1040,7 @@ export default function ClientGamePage({
                 html={displayGame?.description || t("General.NoDescription")}
               />
             </ThemedProse>
+            {displayGame.published && <GameDevlog key={displayGame.slug} gameSlug={displayGame.slug} />}
             <Hstack wrap className="mt-auto">
               {sortedDownloadLinks.map((downloadLink) => (
                 <Button
@@ -1228,7 +1231,7 @@ export default function ClientGamePage({
                   {selectedMedia && (
                     <>
                       <div
-                        className="relative w-full overflow-hidden rounded-xl"
+                        className="relative w-full overflow-hidden rounded-sm"
                         style={{
                           aspectRatio: "16 / 9",
                           backgroundColor: colors["base"],
@@ -1316,7 +1319,7 @@ export default function ClientGamePage({
                               }
                               type="button"
                               onClick={() => setCurrentMediaIndex(index)}
-                              className="relative cursor-pointer overflow-hidden rounded-lg text-left transition-all"
+                              className="relative cursor-pointer overflow-hidden rounded-sm text-left transition-all"
                               style={{
                                 aspectRatio: "16 / 9",
                                 border: `1px solid ${
@@ -2081,7 +2084,7 @@ export default function ClientGamePage({
       </div>
       {mobileLayout ? <div className="my-6 px-3">
         <CreateComment gamePageId={selectedPage?.id} />
-      </div> : <Card padding={1.5} shadow="none" className="my-10 max-lg:!rounded-none">
+      </div> : <Card padding={1.5} shadow="none" className="shadow-2xl my-10 max-lg:!rounded-none">
         <CreateComment gamePageId={selectedPage?.id} />
       </Card>}
 
@@ -2090,10 +2093,21 @@ export default function ClientGamePage({
           ?.sort((a, b) => b.id - a.id)
           .map((comment) => (
             <div key={comment.id}>
-              <CommentCard comment={comment} user={user} edgeToEdge />
+              <CommentCard comment={comment} user={user} edgeToEdge className="!shadow-2xl" />
             </div>
           ))}
       </div>
+      {!displayGame.published && (
+        <>
+          <div aria-hidden="true" className="h-[calc(9rem+env(safe-area-inset-bottom))] sm:h-16" />
+          <EditorFooter
+            floating
+            compact
+            status={uiText("GameDraftBanner.Title")}
+            description={uiText("GameDraftBanner.Description")}
+          />
+        </>
+      )}
     </PriorityEmotesContext.Provider>
   );
 }

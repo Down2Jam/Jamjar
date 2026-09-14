@@ -18,9 +18,11 @@ export function GamePageBackground({ image }: { image: string | null }) {
 export default function PageBackground({
   children,
   defaultImage = "/images/terra.png",
+  dimBackground = true,
 }: {
   children: ReactNode | ReactNode[];
   defaultImage?: string | null;
+  dimBackground?: boolean;
 }) {
   const { siteTheme } = useTheme();
   const isLightTheme = siteTheme.type === "Light";
@@ -43,7 +45,7 @@ export default function PageBackground({
         >
           <div
             className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-[filter,opacity] duration-500 ${
-              !image
+              !dimBackground || !image
                 ? "opacity-100"
                 : isLightTheme
                 ? "opacity-[0.72] sm:opacity-[0.78]"
@@ -53,7 +55,7 @@ export default function PageBackground({
               backgroundImage: image
                 ? `url(${JSON.stringify(image)})`
                 : `repeating-linear-gradient(135deg, ${siteTheme.colors.mantle} 0px, ${siteTheme.colors.mantle} 40px, ${stripeDark} 40px, ${stripeDark} 80px)`,
-              filter: !image ? "brightness(0.75)" : isLightTheme
+              filter: !dimBackground ? "none" : !image ? "brightness(0.75)" : isLightTheme
                 ? "brightness(1.02) saturate(0.8) contrast(0.9)"
                 : "brightness(0.68) saturate(0.72) contrast(0.92)",
               transform: image ? "scale(1.01)" : undefined,

@@ -13,24 +13,14 @@ import { merge } from "lodash";
 import { AbstractIntlMessages, NextIntlClientProvider } from "@/compat/next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
-import { QueryClient, QueryClientProvider, HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
+import { QueryClientProvider, HydrationBoundary, type DehydratedState } from "@tanstack/react-query";
+import { getSessionQueryClient } from "@/requests/sessionQueryClient";
+import { useSession } from "@/hooks/useSession";
 
 const previewMessageLoaders = import.meta.glob<AbstractIntlMessages>(
   ["../messages/*.json", "!../messages/en.json", "!../messages/coverage.json"],
   { import: "default" },
 );
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-});
 
 export default function Providers({
   children,
@@ -44,6 +34,8 @@ export default function Providers({
   dehydratedState?: DehydratedState;
 }>) {
   const { isMobile } = useBreakpoint();
+  const session = useSession();
+  const queryClient = getSessionQueryClient();
   const { previewLocale, selectedLocale } = useLanguagePreview();
   const [activeMessages, setActiveMessages] = useState(messages);
   const [activeLocale, setActiveLocale] = useState(locale);
@@ -82,8 +74,9 @@ export default function Providers({
   }, [previewLocale, selectedLocale, locale, messages]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <HydrationBoundary state={dehydratedState}>
+    <QueryClientProvider key={session.revision} client={queryClient}>
+      {/* Reset component-held account data too; never rehydrate the previous session. */}
+      <HydrationBoundary state={session.signedIn && session.revision === 0 ? dehydratedState : undefined}>
         <LanguageAccountSync />
         <ShortcutProvider>
           <SiteThemeProvider>

@@ -423,7 +423,13 @@ export function GameCard({
         padding={0}
         shadow="none"
         className="overflow-hidden relative"
+        style={{ borderColor: "transparent" }}
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1] rounded-[9px] border"
+          style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}
+        />
         {rated && (
           <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
             <p className="opacity-50">{uiText("AppStrings.RATED")}</p>
@@ -487,7 +493,7 @@ export function GameCard({
         >
           {game.category}
         </div>
-        <div className="relative aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
+        <div className="relative z-[2] aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
           <Image
             alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
             fill

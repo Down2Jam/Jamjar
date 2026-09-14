@@ -16,6 +16,7 @@ import { useCurrentJam, useRecentAchievements } from "@/hooks/queries";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { AchievementRarityTier } from "@/types/RecentAchievementType";
 import { formatDistance } from "date-fns";
+import { getNeutralBorderColor } from "bioloom-ui";
 import SidebarSectionTitle from "./SidebarSectionTitle";
 
 const tierColor: Record<AchievementRarityTier, string> = {
@@ -88,7 +89,10 @@ export default function SidebarAchievements() {
               className="flex min-h-[76px] items-center gap-3 rounded-xl border p-2"
               style={{
                 backgroundColor: colors.mantle,
-                borderColor: `${accent}99`,
+                borderColor:
+                  entry.tier === "Default"
+                    ? getNeutralBorderColor(colors)
+                    : `${accent}99`,
                 boxShadow:
                   entry.tier === "Default" ? undefined : `0 0 9px ${accent}33`,
               }}

@@ -10,6 +10,7 @@ import {
   Cloudy,
   Code,
   Droplet,
+  Expand,
   Fan,
   FileCode,
   Flame,
@@ -26,6 +27,7 @@ import {
   Palette,
   Pill,
   Rat,
+  Scaling,
   Shell,
   Slice,
   SquareDashed,
@@ -39,6 +41,10 @@ import {
 
 export function getIcon(icon: string = "event", size: number = 24) {
   switch (icon) {
+    case "expand":
+      return <Expand size={size} />;
+    case "scaling":
+      return <Scaling size={size} />;
     case "alargesmall":
       return <ALargeSmall size={size} />;
     case "ban":

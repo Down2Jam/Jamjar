@@ -1051,7 +1051,7 @@ export default function GameEditingForm({
                   role: credit.role.trim(),
                   userId: credit.userId as number,
                 })),
-              id: s.id,
+              id: s.id > 0 && s.id <= 2147483647 ? s.id : undefined,
               slug: s.slug,
               license: s.license || null,
               allowDownload: s.allowDownload,

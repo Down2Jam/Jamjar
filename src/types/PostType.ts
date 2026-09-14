@@ -1,9 +1,19 @@
+export type PostGameRelation = "devlog" | "release" | "postmortem" | "announcement" | "other";
+export interface LinkedPostGame {
+  gameId: number;
+  slug: string;
+  name: string;
+  thumbnail?: string | null;
+  relationType?: PostGameRelation;
+}
+
 import { CommentType } from "./CommentType";
 import { TagType } from "./TagType";
 import { UserType } from "./UserType";
 import { ReactionSummaryType } from "./ReactionType";
 
 export interface PostType {
+  games?: LinkedPostGame[];
   id: number;
   slug: string;
   title: string;

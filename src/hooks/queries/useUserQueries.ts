@@ -5,9 +5,11 @@ import { getSelf, getUser, searchUsers } from "@/requests/user";
 import { queryKeys } from "./queryKeys";
 import type { UserType } from "@/types/UserType";
 import { unwrapArray, unwrapItem } from "./helpers";
+import { useSession } from "../useSession";
 
 export function useSelf(enabled = true) {
-  return useQuery<UserType>({
+  const { signedIn } = useSession();
+  const query = useQuery<UserType>({
     queryKey: queryKeys.user.self(),
     queryFn: async () => {
       const res = await getSelf();
@@ -18,9 +20,10 @@ export function useSelf(enabled = true) {
       return user;
     },
     retry: false,
-    enabled,
+    enabled: enabled && signedIn,
     staleTime: 2 * 60 * 1000,
   });
+  return signedIn ? query : { ...query, data: undefined };
 }
 
 export function useUser(slug: string, enabled = true) {

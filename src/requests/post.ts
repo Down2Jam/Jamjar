@@ -1,3 +1,4 @@
+import type { LinkedPostGame } from "@/types/PostType";
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PostTime } from "@/types/PostTimes";
@@ -48,6 +49,7 @@ export async function postPost(
   content: string,
   sticky: boolean,
   tags: (number | undefined)[],
+  gameLinks?: Pick<LinkedPostGame, "gameId" | "relationType">[],
 ) {
   const response = await fetch(`${BASE_URL}/posts`, {
     body: JSON.stringify({
@@ -56,6 +58,7 @@ export async function postPost(
       sticky,
       username: getCookie("user"),
       tags,
+      gameLinks,
     }),
     method: "POST",
     headers: {
@@ -125,6 +128,7 @@ export async function updatePost(
     title?: string;
     content?: string;
     tags?: number[];
+    gameLinks?: Pick<LinkedPostGame, "gameId" | "relationType">[];
   },
 ) {
   const response = await fetch(`${BASE_URL}/posts/${encodeURIComponent(postSlug)}`, {
@@ -280,4 +284,11 @@ export async function togglePostReaction(postId: number, reactionId: number) {
   });
 
   return response;
+}
+
+export function getLinkablePostGames() {
+  return fetch(`${BASE_URL}/posts/linkable-games`, {
+    headers: { authorization: `Bearer ${getCookie("token")}` },
+    credentials: "include",
+  });
 }

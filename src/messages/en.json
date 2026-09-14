@@ -1,4 +1,21 @@
 {
+  "GameDraftBanner": {
+    "Title": "DRAFT PAGE",
+    "Description": "This game is unpublished. Publish it in settings to make it public.",
+    "Settings": "Open game settings"
+  },
+  "PostGames": {
+    "SelectPlaceholder": "Select games…",
+    "NoMatchingGames": "No matching games",
+    "SelectTitle": "Linked games (optional)",
+    "SelectDescription": "Share this post on the devlog of a published game you made.",
+    "LinkedGames": "Linked games",
+    "Devlog": "Posts & devlog",
+    "ReadPost": "Read post →",
+    "LoadMore": "Load more",
+    "LoadError": "Could not load posts.",
+    "Retry": "Try again"
+  },
   "Splash": {
     "Title": "Down2Jam",
     "Description": "The community centered game jam",
@@ -298,7 +315,7 @@
       "General": "Manage your profile, account details, and preferences.",
       "Streams": "Manage your connected channel and rating visibility while streaming.",
       "Emotes": "Customize your emote prefix and manage your personal emotes.",
-      "Tokens": "Review and revoke game access linked to your account."
+      "Tokens": "Review and revoke game and app access linked to your account."
     }
   },
   "Markdown": {
@@ -2407,7 +2424,7 @@
     "Value0SThumbnail": "{value0}'s thumbnail",
     "Value06": "{value0}",
     "SortedByValue0": "Sorted by {value0}",
-    "Results": "results)",
+    "Results": "results",
     "AdvancedSearch": "Advanced Search",
     "BrowseEntriesFromEveryJam": "Browse entries from every jam",
     "ShowAllGameCategories": "Show all game categories",
@@ -2432,7 +2449,7 @@
     "TheCommunityCenteredJam": "The community-centered jam",
     "JamTimelineDragHorizontallyToViewMorePhases": "Jam timeline. Drag horizontally to view more phases.",
     "UserAvatar": "User avatar",
-    "ImportAGameFromItchIo": "Import a non-jam game from itch.io to display alongside your jam games",
+    "ImportAGameFromItchIo": "Import a non-d2jam jam game from itch.io to display alongside your d2jam games",
     "ImportGame2": "Import Game",
     "ViewTheResultsOfTheLastD2Jam": "View the results of the last D2Jam",
     "SubmitPossibleThemesForTheJam": "Submit possible themes for the jam",

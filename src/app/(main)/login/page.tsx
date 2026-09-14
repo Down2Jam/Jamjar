@@ -14,8 +14,9 @@ import { login } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
 import { useState } from "react";
 import Cookies from "js-cookie";
+import { synchronizeSession } from "@/requests/sessionState";
 
-const SESSION_DURATION_DAYS = 14;
+const SESSION_DURATION_DAYS = 30;
 
 export default function UserPage() {
   const uiText = useUiTranslations();
@@ -76,18 +77,21 @@ export default function UserPage() {
             return;
           }
 
-          Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/" });
+          Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/", sameSite: "strict", secure: location.protocol === "https:" });
           Cookies.set("user", user.slug, {
             expires: SESSION_DURATION_DAYS,
             path: "/",
           });
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
+          synchronizeSession(true);
 
           addToast({
             title: uiText("AppStrings.SuccessfullyLoggedIn"),
           });
 
-          window.location.replace("/");
+          const returnTo = new URLSearchParams(window.location.search).get("returnTo");
+          const target = returnTo ? new URL(returnTo, window.location.origin) : null;
+          window.location.replace(target?.origin === window.location.origin ? target.href : "/");
         }}
       >
         <Card>

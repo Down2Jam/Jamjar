@@ -17,6 +17,10 @@
   gap: 0;
 }
 
+.post-editor-form > :is(.form-editor-panel, .post-editor-embedded) > :last-child:is(.game-editor-row, .game-editor-block) {
+  border-bottom: 0;
+}
+
 .settings-editor-panel > :last-child {
   border-bottom: 0;
 }

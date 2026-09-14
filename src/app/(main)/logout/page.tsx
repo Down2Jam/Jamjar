@@ -7,6 +7,7 @@ import { useRouter } from "@/compat/next-navigation";
 import { useEffect } from "react";
 import { logout as logoutUser } from "@/requests/auth";
 import { addToast } from "bioloom-ui";
+import { endSession } from "@/requests/sessionState";
 
 export default function UserPage() {
   const uiText = useUiTranslations();
@@ -17,16 +18,11 @@ export default function UserPage() {
       const response = await logoutUser();
 
       if (response.ok) {
-        document.cookie =
-          "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-          "user=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-
         addToast({
           title: uiText("AppStrings.SuccessfullyLoggedOut"),
         });
         router.replace("/");
-        router.refresh();
+        endSession();
       } else {
         addToast({
           title: uiText("AppStrings.ErrorWhileTryingToLogOut"),
