@@ -344,6 +344,7 @@ export default function Games() {
       "score",
   );
   const hasUserSelected = useRef(false);
+  const hasUserSelectedSort = useRef(false);
   const hasAppliedDefault = useRef(false);
 
   const initialJamParam = useMemo(() => {
@@ -627,7 +628,7 @@ export default function Games() {
       const detectedVersion = hasPageVersionParam ? pageVersion :
         getDefaultListingPageVersion(detectedJamId, currentJamValue, currentJamData?.phase);
       setPageVersion(detectedVersion);
-      if (!searchParams.get("sort")) {
+      if (!hasUserSelectedSort.current && !searchParams.get("sort")) {
         setSort(getDefaultGameSort(detectedJamId, currentJamValue, currentJamData?.phase, detectedVersion));
       }
     }
@@ -839,6 +840,7 @@ export default function Games() {
 
   useEffect(() => {
     if (jamDetecting) return;
+    if (hasUserSelectedSort.current) return;
     if (searchParams.get("sort")) return;
 
     const nextSort = getDefaultGameSort(
@@ -1161,6 +1163,9 @@ export default function Games() {
         )
           return;
 
+        // URL navigation can lag behind this local update. Keep the default-sort
+        // effects from resetting an explicit choice while it is in flight.
+        hasUserSelectedSort.current = true;
         setSort(next);
         updateQueryParam("sort", key as string);
       }}
