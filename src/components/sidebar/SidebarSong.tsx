@@ -221,7 +221,7 @@ export default function SidebarSong({
         } : {}),
       } as CSSProperties}
     >
-      <Vstack align="stretch" gap={2}>
+      <Vstack align="stretch" gap={playlist ? 1 : 2}>
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
