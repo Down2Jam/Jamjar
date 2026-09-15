@@ -76,7 +76,7 @@ export function usePosts(
       following,
       pageSize,
     ),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam, signal }) => {
       const res = await getPosts(
         sort,
         time,
@@ -86,7 +86,9 @@ export function usePosts(
         following,
         pageParam,
         pageSize,
+        signal,
       );
+      if (!res.ok) throw new Error("Failed to load posts");
       const json = (await res.json()) as PostsPageResponse;
       return readPostsPage(json);
     },

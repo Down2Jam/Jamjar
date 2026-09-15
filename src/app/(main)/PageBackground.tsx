@@ -17,7 +17,7 @@ export function GamePageBackground({ image }: { image: string | null }) {
 
 export default function PageBackground({
   children,
-  defaultImage = "/images/terra.png",
+  defaultImage = "/images/terra-optimized.webp",
   dimBackground = true,
 }: {
   children: ReactNode | ReactNode[];

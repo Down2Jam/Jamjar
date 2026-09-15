@@ -1,10 +1,13 @@
 "use client";
 
 import useBreakpoint from "@/hooks/useBreakpoint";
-import PCbar from "./pcbar";
+import { lazy, Suspense } from "react";
 import useHasMounted from "@/hooks/useHasMounted";
 import Mobilebar from "./mobilebar/Mobilebar";
 import { LanguageInfo } from "@/types/LanguageInfoType";
+
+// Mobile navigation does not need the desktop menus and theme previews.
+const PCbar = lazy(() => import("./pcbar"));
 
 type ClientNavbarProps = {
   isLoggedIn: boolean;
@@ -25,7 +28,9 @@ export default function ClientNavbar({
       {isMobile ? (
         <Mobilebar isLoggedIn={isLoggedIn} />
       ) : (
-        <PCbar isLoggedIn={isLoggedIn} languages={languages} />
+        <Suspense fallback={null}>
+          <PCbar isLoggedIn={isLoggedIn} languages={languages} />
+        </Suspense>
       )}
     </div>
   );

@@ -1,11 +1,25 @@
 import react from "@vitejs/plugin-react";
 import path from "node:path";
 import { defineConfig } from "vite";
+import YAML from "yaml";
 
 const src = path.resolve(__dirname, "src");
 
 export default defineConfig({
-  plugins: [react()],
+  optimizeDeps: {
+    // Prepare the music page's icons before its lazy route is first opened.
+    include: ["react-icons/fa"],
+  },
+  plugins: [
+    react(),
+    {
+      name: "language-data",
+      transform(code, id) {
+        if (!id.replaceAll("\\", "/").endsWith("/src/data/languages.yaml")) return;
+        return { code: `export default ${JSON.stringify(YAML.parse(code))};`, map: null };
+      },
+    },
+  ],
   server: {
     proxy: {
       "/api": {

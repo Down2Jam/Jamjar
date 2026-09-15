@@ -9,7 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
-import Editor from "../editor";
+import dynamic from "@/compat/next-dynamic";
+const Editor = dynamic(() => import("../editor"), {
+  loading: () => <div className="min-h-24 animate-pulse rounded-md bg-current/5" />,
+});
 import LikeButton from "./LikeButton";
 import {
   deleteComment,

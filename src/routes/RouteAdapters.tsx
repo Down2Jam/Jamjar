@@ -1,19 +1,22 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { useEffect, useMemo } from "react";
+import { lazy, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import type { PageVersion } from "@/types/GameType";
-import CollectionPage from "@/app/(main)/c/[collectionId]/page";
-import DocumentationSectionPage from "@/components/documentation/DocumentationSectionPage";
-import ClientGamePage from "@/app/(main)/g/[gameSlug]/ClientGamePage";
-import ClientGameEditPage from "@/app/(main)/g/[gameSlug]/edit/ClientGameEditPage";
-import ClientTrackPage from "@/app/(main)/m/[trackSlug]/ClientTrackPage";
-import ClientTrackEditPage from "@/app/(main)/m/[trackSlug]/edit/ClientTrackEditPage";
-import { RadioStationPage } from "@/app/(main)/radio/page";
 import type { RadioStation } from "@/requests/radio";
-import RecapPage from "@/components/recap";
-import ClientUserPage from "@/app/(main)/u/[slug]/ClientUserPage";
 import { getRandomGame } from "@/requests/game";
 import { readItem } from "@/requests/helpers";
+
+// Keep each detail page independent: viewing a game must not load the editors,
+// profile, documentation, track, and recap pages alongside it.
+const CollectionPage = lazy(() => import("@/app/(main)/c/[collectionId]/page"));
+const DocumentationSectionPage = lazy(() => import("@/components/documentation/DocumentationSectionPage"));
+const ClientGamePage = lazy(() => import("@/app/(main)/g/[gameSlug]/ClientGamePage"));
+const ClientGameEditPage = lazy(() => import("@/app/(main)/g/[gameSlug]/edit/ClientGameEditPage"));
+const ClientTrackPage = lazy(() => import("@/app/(main)/m/[trackSlug]/ClientTrackPage"));
+const ClientTrackEditPage = lazy(() => import("@/app/(main)/m/[trackSlug]/edit/ClientTrackEditPage"));
+const RadioStationPage = lazy(() => import("@/app/(main)/radio/page").then(module => ({ default: module.RadioStationPage })));
+const RecapPage = lazy(() => import("@/components/recap"));
+const ClientUserPage = lazy(() => import("@/app/(main)/u/[slug]/ClientUserPage"));
 
 function usePromiseParams<T extends Record<string, string | undefined>>() {
   const params = useParams<T>();

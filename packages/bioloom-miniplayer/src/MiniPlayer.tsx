@@ -621,10 +621,11 @@ export default function MiniPlayer() {
                   </Text>
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 10 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 4, height: 26 }}>
                   <div style={{ flexShrink: 0, display: showRating ? undefined : "none" }}>
                   {showRating && (
                     <RatingVisibilityGate
+                      inline
                       hiddenByPreference={effectiveHideRatings}
                       hiddenText="Ratings are hidden by your settings."
                       buttonSize="xs"
@@ -890,6 +891,7 @@ export default function MiniPlayer() {
                       aria-label={uiText("AppStrings.Volume")}
                       style={{
                         width: "100%",
+                        minWidth: 0,
                         WebkitAppearance: "none",
                         height: "4px",
                         borderRadius: "4px",

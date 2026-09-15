@@ -132,11 +132,12 @@ export default function SidebarSong({
   const rating = (
     showRating && (
     <RatingVisibilityGate
+      inline
       hiddenByPreference={hideRatings}
       hiddenText="Ratings are hidden by your settings."
       buttonSize="xs"
     >
-      <Hstack className={wide ? "gap-1" : playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
+      <Hstack className={hideRatings || wide ? "shrink-0 gap-1" : playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
         {[2, 4, 6, 8, 10].map((value) => (
           <div
             key={`${trackId ?? slug ?? name}-${value}`}
@@ -156,7 +157,7 @@ export default function SidebarSong({
                 color:
                   displayValue >= value
                     ? colors["yellow"]
-                    : colors["base"],
+                    : `color-mix(in srgb, ${colors.gray} 32%, black)`,
                 transition: "color 150ms ease",
               }}
             />
@@ -169,7 +170,7 @@ export default function SidebarSong({
                 color:
                   displayValue >= value - 1
                     ? colors["yellow"]
-                    : colors["base"],
+                    : `color-mix(in srgb, ${colors.gray} 32%, black)`,
                 transition: "color 150ms ease",
               }}
             />
@@ -223,7 +224,7 @@ export default function SidebarSong({
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
-          className={wide ? "min-h-24 min-w-0 p-3 sm:p-4" : ""}
+          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rating ? "!pb-0" : ""}` : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             {playlist ? (
@@ -362,8 +363,6 @@ export default function SidebarSong({
             </Vstack>
           </Hstack>
 
-          {wide && rating && <div className="shrink-0">{rating}</div>}
-
           <div
             className={
               wide
@@ -406,7 +405,9 @@ export default function SidebarSong({
           </div>
         </Hstack>
 
-        {!wide && rating}
+        {wide && rating ? (
+          <div className="self-start px-4 pt-2 pb-4 sm:px-5 sm:pb-5">{rating}</div>
+        ) : !wide && rating}
       </Vstack>
     </Card>
   );

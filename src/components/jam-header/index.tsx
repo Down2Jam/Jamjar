@@ -417,12 +417,14 @@ export default function JamHeader() {
   const showRatingActions = ["Submission", "Rating", "Post-Jam Rating"].includes(
     activeJamResponse?.phase ?? "",
   );
+  const actionBackgroundColor =
+    siteTheme.type === "Light" ? colors.base : `${colors.mantle}e6`;
 
   const renderPrimaryAction = (className = "") => showRatingActions ? (
     <div className={`inline-flex flex-wrap items-center justify-center gap-2 ${className}`}>
       {[
-        { href: "/games", text: "Rate Games", image: "/images/rate-games.jpg" },
-        { href: "/music", text: "Rate Music", image: "/images/rate-music.jpg" },
+        { href: "/games", text: "Rate Games", image: "/images/rate-games-optimized.webp" },
+        { href: "/music", text: "Rate Music", image: "/images/rate-music-optimized.webp" },
       ].map((action) => (
         <Link
           key={action.href}
@@ -431,15 +433,15 @@ export default function JamHeader() {
           style={{
             color: colors.text,
             borderColor: colors.base,
-            backgroundColor: `${colors.mantle}e6`,
+            backgroundColor: actionBackgroundColor,
             outlineColor: colors.blue,
           }}
         >
           <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 overflow-hidden">
-            <img src={action.image} alt="" className="h-full w-full object-contain object-right" />
+            <img src={action.image} alt="" className="h-full w-full object-cover" />
           </span>
           <Text size="xs" weight="semibold" className="relative z-10">{action.text}</Text>
-          <ArrowRight size={15} aria-hidden="true" className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5" style={{ color: "#fff" }} />
+          <ArrowRight size={15} aria-hidden="true" className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5" />
         </Link>
       ))}
     </div>
@@ -454,7 +456,7 @@ export default function JamHeader() {
       style={{
         color: colors["text"],
         borderColor: colors["base"],
-        backgroundColor: `${colors["mantle"]}e6`,
+        backgroundColor: actionBackgroundColor,
         outlineColor: colors["blue"],
       }}
     >
@@ -488,7 +490,6 @@ export default function JamHeader() {
           size={hasPrimaryActionImage ? 15 : 17}
           aria-hidden="true"
           className="relative z-10 transition-transform duration-200 group-hover:translate-x-0.5"
-          style={{ color: "#fff" }}
         />
       )}
     </Link>

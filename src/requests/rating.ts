@@ -1,6 +1,8 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PageVersion } from "@/types/GameType";
+import { getSessionQueryClient } from "./sessionQueryClient";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 export async function postRating(
   gameId: number,
@@ -9,7 +11,8 @@ export async function postRating(
   value: number,
   pageVersion: PageVersion = "JAM",
 ) {
-  return fetch(`${BASE_URL}/rating`, {
+  const queryClient = getSessionQueryClient();
+  const response = await fetch(`${BASE_URL}/rating`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -24,6 +27,10 @@ export async function postRating(
       pageVersion,
     }),
   });
+  if (response.ok) {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+  }
+  return response;
 }
 
 export async function postTrackRating(
@@ -32,7 +39,8 @@ export async function postTrackRating(
   value: number,
   pageVersion?: PageVersion,
 ) {
-  return fetch(`${BASE_URL}/track-rating`, {
+  const queryClient = getSessionQueryClient();
+  const response = await fetch(`${BASE_URL}/track-rating`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -46,4 +54,8 @@ export async function postTrackRating(
       pageVersion,
     }),
   });
+  if (response.ok) {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+  }
+  return response;
 }

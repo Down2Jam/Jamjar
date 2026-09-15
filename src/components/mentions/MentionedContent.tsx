@@ -880,6 +880,11 @@ const domNodeToReact = (
     props[propName] = propValue;
   });
 
+  if (tag === "img") {
+    props.loading = props.loading ?? "lazy";
+    props.decoding = props.decoding ?? "async";
+  }
+
   if (tag === "iframe") {
     const src = element.getAttribute("src") ?? "";
     if (isTwitchEmbedSrc(src)) {

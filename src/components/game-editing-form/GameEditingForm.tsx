@@ -91,7 +91,7 @@ import { TrackTagType } from "@/types/TrackTagType";
 import { useTheme } from "@/providers/useSiteTheme";
 import { useEmojis } from "@/providers/useEmojis";
 import { getApiErrorMessage, readArray, readItem, unwrapItem } from "@/requests/helpers";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { createTeam } from "@/helpers/team";
 import { Tab, Tabs } from "bioloom-ui";
 import { createGameEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";

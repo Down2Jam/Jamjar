@@ -1,5 +1,8 @@
 import { useTranslations } from "@/compat/next-intl";
-import Editor from "../editor";
+import dynamic from "@/compat/next-dynamic";
+const Editor = dynamic(() => import("../editor"), {
+  loading: () => <div className="min-h-24 animate-pulse rounded-md bg-current/5" />,
+});
 import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
 import { addCollectionComment } from "@/requests/collection";

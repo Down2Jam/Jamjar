@@ -29,7 +29,7 @@ export default function GameDevlog({ gameSlug }: { gameSlug: string }) {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [gameSlug, attempt]);
-  if (!loading && !failed && !posts.length) return null;
+  if (!posts.length && !failed) return null;
   return <section aria-label={t("PostGames.Devlog")} className="flex min-w-0 flex-col gap-2">
     <h2 className="text-lg font-bold">{t("PostGames.Devlog")}</h2>
     {posts.map(post => <div key={post.id} className="flex min-w-0 items-center gap-2">

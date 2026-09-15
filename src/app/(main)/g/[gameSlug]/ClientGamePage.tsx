@@ -21,7 +21,7 @@ import { Pagination } from "bioloom-ui";
 import { GameEmbedAspectRatio, GameType, PageVersion } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
-import { getSelf } from "@/requests/user";
+
 import Image from "@/compat/next-image";
 import {
   AlertTriangle,
@@ -49,16 +49,9 @@ import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { emitTrackRatingSync, subscribeToTrackRatingSync } from "@/helpers/trackRatingSync";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
-import { useCurrentJam } from "@/hooks/queries";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { useCurrentJam, useSelf } from "@/hooks/queries";
+import dynamic from "@/compat/next-dynamic";
+const GameRatingChart = dynamic(() => import("@/components/GameRatingChart"));
 import CreateComment from "@/components/create-comment";
 import useMobileLayout from "@/hooks/useMobileLayout";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -350,7 +343,7 @@ export default function ClientGamePage({
   const searchParams = useSearchParams();
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
-  const [user, setUser] = useState<UserType | null>(null);
+  const { data: user = null } = useSelf();
   const [page, setPage] = useState(1);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -505,68 +498,42 @@ export default function ClientGamePage({
   }, [displayGame, game]);
 
   useEffect(() => {
-    const fetchGameAndUser = async () => {
-      const gameResponse = await getGame(gameSlug);
-
-      let gameData;
-      let initialVersion: PageVersion = "JAM";
-      if (gameResponse.ok) {
-        gameData = await readItem<GameType>(gameResponse);
-
-        setGame(gameData);
-        initialVersion =
-          requestedPageVersion === "JAM" || requestedPageVersion === "POST_JAM"
-            ? requestedPageVersion
-            : gameData?.postJamPage
-              ? "POST_JAM"
-              : "JAM";
-        setSelectedVersion(initialVersion);
-      }
-
-      const ratingResponse = await getRatingCategories(true);
-      setRatingCategories(await readArray(ratingResponse));
-      const trackRatingResponse = await getTrackRatingCategories();
-      if (trackRatingResponse.ok) {
-        const categories = await readArray<TrackRatingCategoryType>(trackRatingResponse);
-        setTrackOverallCategory(categories.find((category) => category.name === "Overall") ?? null);
-      }
-
-      // Fetch the logged-in user data
-      if (getCookie("token")) {
-        try {
-          const userResponse = await getSelf();
-
-          if (userResponse.ok) {
-            const userData = await readItem<UserType>(userResponse);
-            if (!userData) return;
-            setUser(userData);
-
-            if (gameData) {
-              const selectedGamePage =
-                initialVersion === "POST_JAM"
-                  ? gameData.postJamPage
-                  : gameData.jamPage;
-              const ratings = getSelectedStarsForVersion({
-                ratings: userData.ratings ?? gameData.ratings ?? [],
-                userId: userData.id,
-                gameId: gameData.id,
-                gamePageId: selectedGamePage?.id,
-                pageVersion: initialVersion,
-              });
-
-              setSelectedStars(ratings);
-              setTrackSelectedStars(Object.fromEntries((userData.trackRatings ?? []).map((rating) => [rating.trackId, rating.value])));
-
-            }
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
+    let cancelled = false;
+    const load = async () => {
+      const response = await getGame(gameSlug);
+      if (!response.ok) return;
+      const gameData = await readItem<GameType>(response);
+      if (cancelled) return;
+      setGame(gameData);
+      setSelectedVersion(
+        requestedPageVersion === "JAM" || requestedPageVersion === "POST_JAM"
+          ? requestedPageVersion
+          : gameData?.postJamPage ? "POST_JAM" : "JAM",
+      );
     };
-
-    fetchGameAndUser();
+    void load().catch(console.error);
+    return () => { cancelled = true; };
   }, [gameSlug, requestedPageVersion]);
+
+  // These shared categories do not depend on the game or each other.
+  useEffect(() => {
+    let cancelled = false;
+    void getRatingCategories(true).then(async response => {
+      if (!response.ok) return;
+      const categories = await readArray<RatingCategoryType>(response);
+      if (!cancelled) setRatingCategories(categories);
+    }).catch(console.error);
+    void getTrackRatingCategories().then(async response => {
+      if (!response.ok) return;
+      const categories = await readArray<TrackRatingCategoryType>(response);
+      if (!cancelled) setTrackOverallCategory(categories.find(category => category.name === "Overall") ?? null);
+    }).catch(console.error);
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    setTrackSelectedStars(Object.fromEntries((user?.trackRatings ?? []).map(rating => [rating.trackId, rating.value])));
+  }, [user]);
 
   useEffect(() => {
     if (!game || !user) return;
@@ -860,30 +827,31 @@ export default function ClientGamePage({
       <GamePageBackground image={displayGame.pageBackground?.trim() || null} />
       <div
         style={{
-          backgroundColor: siteTheme.colors["mantle"],
-          borderColor: interactiveOutlineColor,
           color: siteTheme.colors["text"],
         }}
-        className="shadow-2xl relative border-0 lg:border rounded-none lg:rounded-xl overflow-visible"
+        className="shadow-2xl relative rounded-none lg:rounded-xl overflow-visible"
       >
         <div
-          className="relative h-60 overflow-hidden lg:-mx-px lg:-mt-px lg:rounded-t-xl"
+          className="relative h-60 lg:rounded-t-xl"
           style={{
-            backgroundColor: colors["base"],
+            backgroundColor: displayGame.thumbnail || displayGame.banner
+              ? undefined
+              : colors["base"],
           }}
         >
           {(displayGame.thumbnail || displayGame.banner) && (
             <Image
               src={displayGame.banner || displayGame.thumbnail || ""}
               alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
-              className="object-cover"
+              className="object-cover lg:rounded-t-xl"
               fill
             />
           )}
         </div>
         <div
-          className="grid gap-6 border-t p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]"
+          className="grid gap-6 border-t p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]"
           style={{
+            backgroundColor: siteTheme.colors["mantle"],
             borderColor: interactiveOutlineColor,
           }}
         >
@@ -1040,21 +1008,23 @@ export default function ClientGamePage({
                 html={displayGame?.description || t("General.NoDescription")}
               />
             </ThemedProse>
-            {displayGame.published && <GameDevlog key={displayGame.slug} gameSlug={displayGame.slug} />}
-            <Hstack wrap className="mt-auto">
-              {sortedDownloadLinks.map((downloadLink) => (
-                <Button
-                  className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
-                  externalIcon={false}
-                  style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
-                  icon={getPlatformIcon(downloadLink.platform)}
-                  key={downloadLink.id}
-                  href={downloadLink.url}
-                >
-                  {downloadLink.platform}
-                </Button>
-              ))}
-            </Hstack>
+            <div className="mt-auto flex flex-col gap-4">
+              {displayGame.published && <GameDevlog key={displayGame.slug} gameSlug={displayGame.slug} />}
+              <Hstack wrap>
+                {sortedDownloadLinks.map((downloadLink) => (
+                  <Button
+                    className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
+                    externalIcon={false}
+                    style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
+                    icon={getPlatformIcon(downloadLink.platform)}
+                    key={downloadLink.id}
+                    href={downloadLink.url}
+                  >
+                    {downloadLink.platform}
+                  </Button>
+                ))}
+              </Hstack>
+            </div>
           </div>
           <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-4">
             <GameSidebarSection name="Details" selected={mobileSection} onClose={() => setMobileSection(null)}>
@@ -1447,12 +1417,7 @@ export default function ClientGamePage({
                           );
                         })}
                       <div className="w-96 h-60">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart
-                            cx="50%"
-                            cy="50%"
-                            outerRadius="80%"
-                            data={currentScoreKeys.map(
+                        <GameRatingChart data={currentScoreKeys.map(
                               (score) => ({
                                 subject: t(score),
                                 A: currentScores[score].averageScore / 2,
@@ -1460,35 +1425,7 @@ export default function ClientGamePage({
                                   currentScores[score].averageUnrankedScore / 2,
                                 fullMark: 5,
                               }),
-                            )}
-                          >
-                            <PolarGrid stroke={colors["crust"]} />
-                            <PolarAngleAxis
-                              dataKey="subject"
-                              tick={{ fill: colors["textFaded"], fontSize: 14 }}
-                            />
-                            <PolarRadiusAxis
-                              domain={[0, 5]}
-                              axisLine={false}
-                              tick={false}
-                            />
-                            <Radar
-                              name="All"
-                              dataKey="B"
-                              stroke={colors["magenta"]}
-                              fill={colors["magentaDark"]}
-                              fillOpacity={0.6}
-                            />
-                            <Radar
-                              name="Ranked"
-                              dataKey="A"
-                              stroke={colors["blue"]}
-                              fill={colors["blueDark"]}
-                              fillOpacity={0.6}
-                            />
-                            <Legend />
-                          </RadarChart>
-                        </ResponsiveContainer>
+                            )} />
                       </div>
                     </>
                   )}
@@ -2261,7 +2198,7 @@ function StarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       {/* Half Star (Overlapping Left Side) */}
@@ -2278,7 +2215,7 @@ function StarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value - 1
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }} // Show only left half
       />
       {/* Left Half (Triggers value - 1) */}

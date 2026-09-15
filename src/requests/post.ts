@@ -12,6 +12,7 @@ export async function getPosts(
   following?: boolean,
   cursor?: string | null,
   limit?: number,
+  signal?: AbortSignal,
 ) {
   const params = new URLSearchParams({
     sort,
@@ -33,7 +34,7 @@ export async function getPosts(
     );
   }
 
-  return fetch(`${BASE_URL}/posts?${params.toString()}`);
+  return fetch(`${BASE_URL}/posts?${params.toString()}`, { signal });
 }
 
 export async function getPost(postSlug: string, userSlug?: string) {

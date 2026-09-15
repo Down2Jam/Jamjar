@@ -9,7 +9,6 @@ import LanguageAccountSync from "@/providers/LanguageAccountSync";
 import { BASE_URL } from "@/requests/config";
 import { MusicProvider } from "bioloom-miniplayer";
 import { ThemeProvider, ToastProvider } from "bioloom-ui";
-import { merge } from "lodash";
 import { AbstractIntlMessages, NextIntlClientProvider } from "@/compat/next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { ShortcutProvider } from "react-keybind";
@@ -57,7 +56,11 @@ export default function Providers({
           throw new Error(`No messages found for ${targetLocale}`);
         }
 
-        const merged = merge({}, messages, await loadPreviewMessages());
+        const [{ default: merge }, previewMessages] = await Promise.all([
+          import("lodash/merge"),
+          loadPreviewMessages(),
+        ]);
+        const merged = merge({}, messages, previewMessages);
         if (cancelled) return;
         setActiveMessages(merged);
         setActiveLocale(targetLocale);

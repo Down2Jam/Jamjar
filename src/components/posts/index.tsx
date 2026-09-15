@@ -5,9 +5,9 @@ import { translateSystemLabel } from "@/helpers/systemLabels";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
-import { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
+import { type ComponentProps, CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import CreatePostPage from "@/app/(main)/create-post/page";
+import dynamic from "@/compat/next-dynamic";
 import PostCard from "./PostCard";
 import {
   ForumFeedItemType,
@@ -23,7 +23,6 @@ import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import Link from "@/compat/next-link";
 import LikeButton from "./LikeButton";
 import { formatDistance } from "date-fns";
-import CommentCard from "./CommentCard";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Button } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
@@ -57,8 +56,15 @@ import {
   ModalHeader,
 } from "bioloom-ui";
 
+const loadCreatePost = () => import("@/app/(main)/create-post/page");
+const CreatePostPage = dynamic<NonNullable<ComponentProps<typeof import("@/app/(main)/create-post/page").default>>>(loadCreatePost, {
+  loading: () => <div className="min-h-32" role="status" aria-label="Loading post editor" />,
+});
+const CommentCard = dynamic(() => import("./CommentCard"));
+
+// Warm the composer on interaction, rather than competing with the feed on load.
 const preloadCreatePostDependencies = () =>
-  Promise.all([import("@/components/editor"), import("react-select")]);
+  Promise.all([loadCreatePost(), import("@/components/editor"), import("react-select")]);
 
 export default function Posts() {
   const uiText = useUiTranslations();
@@ -66,28 +72,6 @@ export default function Posts() {
 
   const { siteTheme, colors } = useTheme();
 
-  useEffect(() => {
-    const preload = () => {
-      void preloadCreatePostDependencies();
-    };
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (
-        callback: IdleRequestCallback,
-        options?: IdleRequestOptions,
-      ) => number;
-      cancelIdleCallback?: (handle: number) => void;
-    };
-
-    if (typeof idleWindow.requestIdleCallback === "function") {
-      const idleCallback = idleWindow.requestIdleCallback(preload, {
-        timeout: 1500,
-      });
-      return () => idleWindow.cancelIdleCallback?.(idleCallback);
-    }
-
-    const timeout = globalThis.setTimeout(preload, 500);
-    return () => globalThis.clearTimeout(timeout);
-  }, []);
   const [sort, setSort] = useState<PostSort>(
     (["newest", "hot", "top", "all_time", "oldest"].includes(
       searchParams.get("sort") as PostSort
@@ -202,6 +186,10 @@ export default function Posts() {
   }, [tagQuery, tags]);
 
   const activeTagRuleCount = Object.keys(tagRules ?? {}).length;
+  const postIndexes = useMemo(
+    () => new Map(forumPosts.map((post, index) => [post.id, index])),
+    [forumPosts],
+  );
   const activeTagRules = useMemo(
     () =>
       (rawTags ?? [])
@@ -258,7 +246,7 @@ export default function Posts() {
     return () => observer.disconnect();
   }, [fetchMorePosts, hasMorePosts, isFetchingMorePosts]);
 
-  const updateQueryParam = (key: string, value: string) => {
+  const updateQueryParam = useCallback((key: string, value: string) => {
     const params = new URLSearchParams(window.location.search);
     if (value) {
       params.set(key, value);
@@ -266,9 +254,9 @@ export default function Posts() {
       params.delete(key);
     }
     navigateToSearchIfChanged(router, params);
-  };
+  }, [router]);
 
-  const setTagRule = (tagId: number, rule: 1 | -1) => {
+  const setTagRule = useCallback((tagId: number, rule: 1 | -1) => {
     const nextRules = { ...tagRules };
 
     if (nextRules[tagId] === rule) {
@@ -281,7 +269,7 @@ export default function Posts() {
       Object.keys(nextRules).length > 0 ? nextRules : undefined;
     setTagRules(normalizedRules);
     updateQueryParam("tags", serializePostTagRules(normalizedRules));
-  };
+  }, [tagRules, updateQueryParam]);
 
   const clearTagRules = () => {
     setTagRules(undefined);
@@ -627,7 +615,7 @@ export default function Posts() {
                   post={item}
                   style={style}
                   user={user}
-                  index={forumPosts.findIndex((post) => post.id === item.id)}
+                  index={postIndexes.get(item.id)}
                   setCurrentPost={style === "Cozy" ? undefined : setCurrentPost}
                   onOpen={style === "Cozy" ? undefined : setOpen}
                   tagRules={tagRules}

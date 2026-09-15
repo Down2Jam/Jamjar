@@ -15,14 +15,10 @@ import { SiteThemeContext } from "./SiteThemeContext";
 import { hasCookie } from "@/helpers/cookie";
 import { updateCurrentSiteTheme } from "@/requests/siteTheme";
 import { useQueryClient } from "@tanstack/react-query";
+import { defaultSiteTheme } from "./defaultSiteTheme";
 
 export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
-  const [siteTheme, setSiteThemeBacking] = useState<SiteThemeType>({
-    name: "Dummy",
-    authors: [],
-    type: "Dark",
-    colors: {},
-  });
+  const [siteTheme, setSiteThemeBacking] = useState<SiteThemeType>(defaultSiteTheme);
   const [previewedSiteTheme, setPreviewedSiteThemeBacking] =
     useState<SiteThemeType | null>(null);
   const [isThemeReady, setIsThemeReady] = useState(false);

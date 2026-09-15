@@ -599,6 +599,7 @@ export default function Games() {
       currentJamData?.phase === "Post-Jam Rating";
 
     let ratingDefault: string | null = null;
+    let detectedJamId = jamId;
     if (
       currentJamHasContentListing &&
       isCurrentJamDefaultPhase &&
@@ -613,6 +614,7 @@ export default function Games() {
       ratingDefault
     ) {
       hasAppliedDefault.current = true;
+      detectedJamId = ratingDefault;
       setJamId(ratingDefault);
 
       const params = new URLSearchParams(window.location.search);
@@ -621,6 +623,14 @@ export default function Games() {
       router.replace(qs ? `?${qs}` : "?");
     }
 
+    if (jamDetecting) {
+      const detectedVersion = hasPageVersionParam ? pageVersion :
+        getDefaultListingPageVersion(detectedJamId, currentJamValue, currentJamData?.phase);
+      setPageVersion(detectedVersion);
+      if (!searchParams.get("sort")) {
+        setSort(getDefaultGameSort(detectedJamId, currentJamValue, currentJamData?.phase, detectedVersion));
+      }
+    }
     setJamDetecting(false);
   }, [
     currentJamData,

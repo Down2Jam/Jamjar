@@ -158,13 +158,14 @@ export function useGamesInfinite(
 
   return useInfiniteQuery({
     queryKey: [...queryKeys.game.list(sort, jamId, pageVersion, pageLimit), "infinite"] as const,
-    queryFn: async ({ pageParam }: { pageParam?: string | null }) => {
+    queryFn: async ({ pageParam, signal }) => {
       const res = await getGamesPage({
         sort,
         jamId,
         pageVersion,
         cursor: pageParam ?? null,
         limit: pageLimit,
+        signal,
       });
       if (!res.ok) throw new Error("Failed to load games");
       const json = (await res.json()) as PaginatedGamesResponse | GameType[];

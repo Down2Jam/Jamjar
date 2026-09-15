@@ -6,7 +6,10 @@ import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { CommentType } from "@/types/CommentType";
-import Editor from "../editor";
+import dynamic from "@/compat/next-dynamic";
+const Editor = dynamic(() => import("../editor"), {
+  loading: () => <div className="min-h-24 animate-pulse rounded-md bg-current/5" />,
+});
 import useMobileLayout from "@/hooks/useMobileLayout";
 import MobileComposerDialog from "../create-comment/MobileComposerDialog";
 import MentionedContent from "../mentions/MentionedContent";

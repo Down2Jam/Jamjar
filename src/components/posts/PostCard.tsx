@@ -13,6 +13,7 @@ import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
 import {
+  memo,
   CSSProperties,
   Dispatch,
   SetStateAction,
@@ -41,7 +42,7 @@ import {
 } from "@/helpers/postTagFilter";
 import { UserHoverPreview } from "@/components/hover-previews";
 
-export default function PostCard({
+function PostCard({
   post,
   style,
   user,
@@ -744,6 +745,8 @@ export default function PostCard({
     </Card>
   );
 }
+
+export default memo(PostCard);
 
 function PostAuthorHoverLink({ author }: { author: UserType }) {
   return (

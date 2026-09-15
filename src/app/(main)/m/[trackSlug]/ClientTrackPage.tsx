@@ -919,7 +919,7 @@ function TrackStarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       <Star
@@ -934,7 +934,7 @@ function TrackStarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value - 1
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       <div
