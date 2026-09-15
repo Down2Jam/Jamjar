@@ -133,6 +133,7 @@ export default function SidebarSong({
     showRating && (
     <RatingVisibilityGate
       inline
+      revealToLeft={wide}
       hiddenByPreference={hideRatings}
       hiddenText="Ratings are hidden by your settings."
       buttonSize="xs"
@@ -224,7 +225,7 @@ export default function SidebarSong({
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
-          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rating ? "!pb-0" : ""}` : ""}
+          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rating ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             {playlist ? (
@@ -363,10 +364,16 @@ export default function SidebarSong({
             </Vstack>
           </Hstack>
 
+          {wide && rating && (
+            <div className="col-span-2 row-start-2 justify-self-center p-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+              {rating}
+            </div>
+          )}
+
           <div
             className={
               wide
-                ? "flex shrink-0 items-center gap-2"
+                ? "col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-2 sm:col-start-3"
                 : "flex shrink-0 flex-col items-center gap-2"
             }
           >
@@ -405,9 +412,7 @@ export default function SidebarSong({
           </div>
         </Hstack>
 
-        {wide && rating ? (
-          <div className="self-start px-4 pt-2 pb-4 sm:px-5 sm:pb-5">{rating}</div>
-        ) : !wide && rating}
+        {!wide && rating}
       </Vstack>
     </Card>
   );
