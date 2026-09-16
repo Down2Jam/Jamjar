@@ -1163,7 +1163,11 @@ export default function GameEditingForm({
             const response = await request;
 
             if (response.ok) {
-              await queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.game.all }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.user.all }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.jam.all }),
+              ]);
               setSavedFormSnapshot(formSnapshot);
               addToast({
                 title: prevSlug
@@ -1737,7 +1741,7 @@ export default function GameEditingForm({
                   (activeJamResponse.jam.id === game?.jam?.id || !game) &&
                   (activeJamResponse.phase == "Jamming" ||
                     activeJamResponse.phase == "Submission" ||
-                    (activeJamResponse.phase == "Rating" && !prevSlug)) && (
+                    activeJamResponse.phase == "Rating") && (
                     <div className="game-editor-row relative z-0">
                       <Vstack align="start">
                         <div>

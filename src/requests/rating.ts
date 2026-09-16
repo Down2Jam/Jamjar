@@ -29,6 +29,8 @@ export async function postRating(
   });
   if (response.ok) {
     void queryClient.invalidateQueries({ queryKey: queryKeys.user.self() });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.jam.all });
   }
   return response;
 }

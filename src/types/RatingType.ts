@@ -6,6 +6,7 @@ import { UserType } from "./UserType";
 export interface RatingType {
   id: number;
   value: number;
+  categoryId?: number;
   category: RatingCategoryType;
   user: UserType;
   game: GameType;

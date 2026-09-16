@@ -343,7 +343,7 @@ export default function ClientGamePage({
   const searchParams = useSearchParams();
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
-  const { data: user = null } = useSelf();
+  const { data: user = null, refetch: refreshUser } = useSelf();
   const [page, setPage] = useState(1);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -505,6 +505,8 @@ export default function ClientGamePage({
       const gameData = await readItem<GameType>(response);
       if (cancelled) return;
       setGame(gameData);
+      if (getCookie("token")) await refreshUser();
+      if (cancelled) return;
       setSelectedVersion(
         requestedPageVersion === "JAM" || requestedPageVersion === "POST_JAM"
           ? requestedPageVersion
@@ -513,7 +515,13 @@ export default function ClientGamePage({
     };
     void load().catch(console.error);
     return () => { cancelled = true; };
-  }, [gameSlug, requestedPageVersion]);
+  }, [gameSlug, requestedPageVersion, refreshUser]);
+
+  const refreshRatingCategories = async () => {
+    const response = await getGame(gameSlug);
+    if (response.ok) setGame(await readItem<GameType>(response));
+    await refreshUser();
+  };
 
   // These shared categories do not depend on the game or each other.
   useEffect(() => {
@@ -539,7 +547,7 @@ export default function ClientGamePage({
     if (!game || !user) return;
 
     const ratings = getSelectedStarsForVersion({
-      ratings: user.ratings ?? game.ratings ?? [],
+      ratings: [...(game.ratings ?? []), ...(user.ratings ?? [])],
       userId: user.id,
       gameId: game.id,
       gamePageId: selectedPage?.id,
@@ -1499,6 +1507,7 @@ export default function ClientGamePage({
                                   gameId={displayGame.id}
                                   gamePageId={selectedPage?.id ?? 0}
                                   pageVersion={selectedVersion}
+                                  onRatingError={refreshRatingCategories}
                                 />
                               ))}
                           </Vstack>
@@ -2063,6 +2072,7 @@ function StarRow({
   gameId,
   gamePageId,
   pageVersion,
+  onRatingError,
 }: {
   id: number;
   name: string;
@@ -2071,12 +2081,13 @@ function StarRow({
   hoverStars: { [key: number]: number };
   setHoverStars: (stars: { [key: number]: number }) => void;
   selectedStars: { [key: number]: number };
-  setSelectedStars: (stars: { [key: number]: number }) => void;
+  setSelectedStars: React.Dispatch<React.SetStateAction<{ [key: number]: number }>>;
   hoverCategory: number | null;
   setHoverCategory: (id: number | null) => void;
   gameId: number;
   gamePageId: number;
   pageVersion: PageVersion;
+  onRatingError: () => Promise<void>;
 }) {
   const uiText = useUiTranslations();
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
@@ -2103,6 +2114,7 @@ function StarRow({
             gameId={gameId}
             gamePageId={gamePageId}
             pageVersion={pageVersion}
+            onRatingError={onRatingError}
           />
         ))}
       </div>
@@ -2158,13 +2170,14 @@ function StarElement({
   gameId,
   gamePageId,
   pageVersion,
+  onRatingError,
 }: {
   id: number;
   value: number;
   hoverStars: { [key: number]: number };
   setHoverStars: (stars: { [key: number]: number }) => void;
   selectedStars: { [key: number]: number };
-  setSelectedStars: (stars: { [key: number]: number }) => void;
+  setSelectedStars: React.Dispatch<React.SetStateAction<{ [key: number]: number }>>;
   hoverCategoryId: number | null;
   setHoverCategoryId: (id: number | null) => void;
   newlyClicked: boolean;
@@ -2172,8 +2185,26 @@ function StarElement({
   gameId: number;
   gamePageId: number;
   pageVersion: PageVersion;
+  onRatingError: () => Promise<void>;
 }) {
   const { colors } = useTheme();
+
+  const saveRating = async (nextValue: number) => {
+    const previous = selectedStars[id];
+    setSelectedStars((current) => ({ ...current, [id]: nextValue }));
+    setNewlyClicked(true);
+    try {
+      const response = await postRating(gameId, gamePageId, id, nextValue, pageVersion);
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message ?? "Could not save your rating.");
+      }
+    } catch (error) {
+      setSelectedStars((current) => ({ ...current, [id]: previous ?? 0 }));
+      addToast({ title: error instanceof Error ? error.message : "Could not save your rating." });
+      await onRatingError().catch(console.error);
+    }
+  };
 
   return (
     <div
@@ -2226,9 +2257,7 @@ function StarElement({
           setNewlyClicked(false);
         }}
         onClick={() => {
-          setSelectedStars({ ...selectedStars, [id]: value - 1 });
-          setNewlyClicked(true);
-          postRating(gameId, gamePageId, id, value - 1, pageVersion);
+          void saveRating(value - 1);
         }}
       />
       {/* Right Half (Triggers value) */}
@@ -2239,9 +2268,7 @@ function StarElement({
           setNewlyClicked(false);
         }}
         onClick={() => {
-          setSelectedStars({ ...selectedStars, [id]: value });
-          setNewlyClicked(true);
-          postRating(gameId, gamePageId, id, value, pageVersion);
+          void saveRating(value);
         }}
       />
     </div>

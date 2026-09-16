@@ -19,6 +19,7 @@ import { useTranslations } from "@/compat/next-intl";
 import { PlatformType } from "@/types/DownloadLinkType";
 import {
   useSelf,
+  useRatingCategories,
   useCurrentJam,
   useJams,
   useGamesInfinite,
@@ -473,6 +474,15 @@ export default function Games() {
 
   // Fetch user via TanStack Query
   const { data: user } = useSelf();
+  const { data: mandatoryRatingCategories = [] } = useRatingCategories(true);
+  const hasCompletedRating = useCallback((game: GameType, userId?: number) => {
+    if (!userId || mandatoryRatingCategories.length === 0) return false;
+    const categories = [...mandatoryRatingCategories, ...(game.ratingCategories ?? [])]
+      .filter((category) => game.pageVersion !== "POST_JAM" || category.name === "RatingCategory.Overall.Title");
+    const ratedIds = new Set(game.ratings.filter((rating) => rating.userId === userId)
+      .map((rating) => rating.categoryId ?? rating.category?.id));
+    return categories.length > 0 && categories.every((category) => ratedIds.has(category.id));
+  }, [mandatoryRatingCategories]);
 
   // Fetch current jam and all jams via TanStack Query
   const { data: currentJamData, isPending: currentJamPending } = useCurrentJam();
@@ -1034,7 +1044,7 @@ export default function Games() {
       if (
         hideRatedGames &&
         user &&
-        game.ratings.some((rating) => rating.userId === user.id)
+        hasCompletedRating(game, user.id)
       ) {
         return false;
       }
@@ -1102,9 +1112,7 @@ export default function Games() {
       const isOwnGame =
         game.team?.ownerId === user.id ||
         game.team?.users?.some((member) => member.id === user.id);
-      const isRatedGame = game.ratings.some(
-        (rating) => rating.userId === user.id,
-      );
+      const isRatedGame = hasCompletedRating(game, user.id);
 
       if (moveOwnGameToEnd && isOwnGame) {
         ownGames.push(game);
@@ -1130,6 +1138,7 @@ export default function Games() {
     return [...regularUnratedGames, ...regularRatedGames];
   }, [
     excludedFlags,
+    hasCompletedRating,
     games,
     selectedBuildTypes,
     selectedInputMethods,
@@ -1513,7 +1522,7 @@ export default function Games() {
               game={game}
               rated={
                 showRatedOverlay &&
-                game.ratings.some((rating) => rating.userId == user?.id)
+                hasCompletedRating(game, user?.id)
               }
             />
           ))
