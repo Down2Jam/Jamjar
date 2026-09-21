@@ -4,6 +4,7 @@ import { UserType } from "./UserType";
 import { TrackTagType } from "./TrackTagType";
 import { TrackFlagType } from "./TrackFlagType";
 import { PageVersion } from "./GameType";
+import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
 
 export interface TrackType {
   id: number;
@@ -13,7 +14,9 @@ export interface TrackType {
   slug: string;
   name: string;
   url: string;
-  license?: string | null;
+  origin?: TrackOrigin;
+  externalAuthorName?: string | null;
+  license?: TrackLicenseCode | null;
   allowDownload?: boolean;
   allowBackgroundUse?: boolean;
   allowBackgroundUseAttribution?: boolean;
@@ -37,7 +40,7 @@ export interface TrackType {
     userId: number;
     user: UserType;
   }>;
-  composerId: number;
+  composerId?: number | null;
   composer: UserType;
   gameId: number;
   game: GameType;

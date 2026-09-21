@@ -1,4 +1,3 @@
-import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
@@ -23,6 +22,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Pause, Play, Star } from "lucide-react";
 import { CSSProperties, useEffect, useState } from "react";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import { getTrackLicense, TrackOrigin } from "@/helpers/trackLicense";
 import {
   GameDataHoverPreview,
   UserHoverPreview,
@@ -32,7 +33,9 @@ interface SidebarSongProps {
   slug?: string;
   trackId?: number;
   name: string;
-  artist: TrackComposer;
+  artist?: TrackComposer | null;
+  origin?: TrackOrigin;
+  externalAuthorName?: string | null;
   thumbnail: string;
   song: string;
   loudnessGainDb?: number | null;
@@ -65,6 +68,8 @@ export default function SidebarSong({
   game,
   pageVersion,
   artist,
+  origin = "ORIGINAL",
+  externalAuthorName,
   license,
   allowDownload,
   allowBackgroundUse,
@@ -88,6 +93,10 @@ export default function SidebarSong({
   const [hoverValue, setHoverValue] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
+  const displayArtist: TrackComposer = artist ?? {
+    name: externalAuthorName || "Unknown composer",
+    slug: "",
+  };
   useEffect(() => {
     setDuration(null);
     if (!playlist || !song) return;
@@ -124,7 +133,7 @@ export default function SidebarSong({
     }
 
     void playItem(
-      { slug, name, artist, thumbnail, game, song, loudnessGainDb },
+      { slug, name, artist: displayArtist, thumbnail, game, song, loudnessGainDb },
       queue,
     );
   };
@@ -304,16 +313,25 @@ export default function SidebarSong({
                 </GameDataHoverPreview>
               )}
               {showArtist && <Hstack gap={1} align="baseline" justify="start" className={playlist ? "min-w-0 w-full" : "min-w-0"}>
+                {origin === "ASSET_PACK" ? (
+                  <Text
+                    size={playlist ? "xs" : "sm"}
+                    color={playlist ? "text" : "textFaded"}
+                    className="max-w-full truncate"
+                  >
+                    {externalAuthorName || displayArtist.name}
+                  </Text>
+                ) : (
                 <UserHoverPreview
                   portal
                   user={{
-                    slug: artist.slug ?? "",
-                    name: artist.name,
-                    profilePicture: artist.profilePicture,
+                    slug: displayArtist.slug ?? "",
+                    name: displayArtist.name,
+                    profilePicture: displayArtist.profilePicture,
                   }}
                 >
                   <Link
-                    href={`/u/${artist.slug}`}
+                    href={`/u/${displayArtist.slug}`}
                     underline={false}
                     className="sidebar-media-link inline-flex min-w-0 items-center gap-1"
                     style={{ textDecoration: "none" }}
@@ -321,7 +339,7 @@ export default function SidebarSong({
                     {!playlist && (wide || squareThumbnail) && (
                       <Avatar
                         size={16}
-                        src={artist.profilePicture || "/images/D2J_Icon.png"}
+                        src={displayArtist.profilePicture || "/images/D2J_Icon.png"}
                       />
                     )}
                     <Text
@@ -329,10 +347,11 @@ export default function SidebarSong({
                       color={playlist ? "text" : "textFaded"}
                       className="max-w-full truncate"
                     >
-                      {artist.name || artist.slug}
+                      {displayArtist.name || displayArtist.slug}
                     </Text>
                   </Link>
                 </UserHoverPreview>
+                )}
                 {playlist && duration !== null && (
                   <span className="shrink-0 pl-2 text-xs leading-4 tabular-nums" style={{ color: colors.text }}>
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
@@ -342,9 +361,10 @@ export default function SidebarSong({
                   <span
                     className="min-w-0 truncate pl-2 text-xs leading-4"
                     style={{ color: colors.textFaded }}
-                    title={[license ? translateSystemLabel(license, uiText) : "", backgroundUseLabel].filter(Boolean).join(" ")}
+                    title={[license ? getTrackLicense(license).label : "", backgroundUseLabel].filter(Boolean).join(" ")}
                   >
-                    {[license ? translateSystemLabel(license, uiText) : "", backgroundUseLabel].filter(Boolean).join(" ")}
+                    {license && <TrackLicenseLink license={license} />}
+                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
                   </span>
                 )}
               </Hstack>}
@@ -355,9 +375,9 @@ export default function SidebarSong({
                     backgroundColor: playlist ? "transparent" : colors["base"],
                     color: colors["textFaded"],
                   }}
-                  title={uiText("AppStrings.Value0Value13", { value0: translateSystemLabel(license, uiText), value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
+                  title={uiText("AppStrings.Value0Value13", { value0: getTrackLicense(license).label, value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
                 >
-                  {translateSystemLabel(license, uiText)}
+                  <TrackLicenseLink license={license} />
                   {backgroundUseLabel ? ` ${uiText("AppStrings.Value08", { value0: backgroundUseLabel })}` : ""}
                 </span>
               )}

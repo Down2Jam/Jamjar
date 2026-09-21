@@ -11,7 +11,7 @@ import {
   backgroundUsageAllowedByDefault,
   backgroundUsageRequiredByLicense,
   backgroundUsageWithLicenseDefaults,
-  licenseFlagsToLabel,
+  licenseFlagsToCode,
   licenseModeForFlags,
   LicenseFlags,
   LicenseMode,
@@ -20,6 +20,7 @@ import {
   TRACK_CREDIT_ROLE_OPTIONS,
   TRACK_TAG_CATEGORY_HELPERS,
 } from "@/components/tracks/editingShared";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
 import { searchUsers } from "@/requests/user";
 import { getTrackFlags, getTrackTags, updateTrack } from "@/requests/track";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -68,9 +69,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
   const [musicalKey, setMusicalKey] = useState(track.musicalKey ?? "");
   const [softwareUsed, setSoftwareUsed] = useState(
     (track.softwareUsed ?? []).join(", "),
-  );
-  const [allowDownload, setAllowDownload] = useState(
-    Boolean(track.allowDownload),
   );
   const [licenseFlags, setLicenseFlags] = useState<LicenseFlags>(() =>
     parseLicenseFlags(track.license),
@@ -213,7 +211,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
   const backgroundUsageEnabled = backgroundUsageRequired
     ? true
     : allowBackgroundUse;
-  const downloadRequired = licenseMode !== "ARR" || backgroundUsageEnabled;
 
   const handleCreditSearch = async (value: string) => {
     setCreditQuery(value);
@@ -605,7 +602,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                     nextFlags,
                   );
                 setLicenseFlags(nextFlags);
-                setAllowDownload(nextAllowBackgroundUse);
                 setAllowBackgroundUse(nextAllowBackgroundUse);
                 setAllowBackgroundUseAttribution(false);
                 return;
@@ -618,7 +614,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                   shareAlike: false,
                 };
                 setLicenseFlags(nextFlags);
-                setAllowDownload(true);
                 setAllowBackgroundUse(
                   backgroundUsageWithLicenseDefaults(
                     allowBackgroundUse,
@@ -642,7 +637,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                 shareAlike: false,
               };
               setLicenseFlags(nextFlags);
-              setAllowDownload(true);
               setAllowBackgroundUse(
                 backgroundUsageWithLicenseDefaults(
                   allowBackgroundUse,
@@ -741,7 +735,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             </>
           )}
           <Text size="xs" color="textFaded">
-             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(licenseFlagsToLabel(licenseFlags), uiText)}
+             {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={licenseFlagsToCode(licenseFlags)} />
           </Text>
 
           <Hstack className="w-full items-start gap-3">
@@ -750,7 +744,6 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
               onChange={(value) => {
                 if (backgroundUsageRequired) return;
                 if (value) {
-                  setAllowDownload(true);
                   setAllowBackgroundUseAttribution((current) => current);
                 } else {
                   setAllowBackgroundUseAttribution(false);
@@ -782,18 +775,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             </Vstack>
           </Hstack>
 
-          <Hstack className="w-full items-start gap-3">
-            <Switch
-              checked={downloadRequired ? true : allowDownload}
-              onChange={setAllowDownload}
-              disabled={downloadRequired}
-            />
-            <Vstack align="start" gap={0} className="min-w-0 flex-1">
-              <Text size="sm">{uiText("AppStrings.AllowDownloads")}</Text>
-              <Text size="xs" color="textFaded">
-                 {uiText("AppStrings.LetListenersDownloadThisTrack")} </Text>
-            </Vstack>
-          </Hstack>
+          <Text size="xs" color="textFaded">
+            Downloads and radio eligibility are determined automatically by this license.
+          </Text>
 
           <Hstack className="w-full justify-between">
             <Button
@@ -826,10 +810,9 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                         .split(",")
                         .map((value) => value.trim())
                         .filter(Boolean),
-                      allowDownload,
                       allowBackgroundUse,
                       allowBackgroundUseAttribution,
-                      license: licenseFlagsToLabel(licenseFlags),
+                      license: licenseFlagsToCode(licenseFlags),
                       tagIds: selectedTagIds,
                       flagIds: selectedFlagIds,
                       links: links

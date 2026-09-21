@@ -49,6 +49,8 @@ export function materializeGamePage(
       slug: song.slug,
       name: song.name,
       url: song.url,
+      origin: song.origin ?? "ORIGINAL",
+      externalAuthorName: song.externalAuthorName ?? null,
       commentary: song.commentary ?? null,
       bpm: song.bpm ?? null,
       musicalKey: song.musicalKey ?? null,

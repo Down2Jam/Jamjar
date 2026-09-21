@@ -395,6 +395,11 @@ export default function ClientGamePage({
 
     return (displayGame.tracks ?? []).map((track) => ({
       ...track,
+      composer: track.composer ?? {
+        id: 0,
+        slug: "",
+        name: track.externalAuthorName || uiText("AppStrings.UnknownComposer"),
+      },
       game: {
         ...track.game,
         id: displayGame.id,
@@ -406,7 +411,7 @@ export default function ClientGamePage({
         team: displayGame.team,
       },
     }));
-  }, [displayGame]);
+  }, [displayGame, uiText]);
   const isSoundtrackCurrent = soundtrackQueue.some((track) =>
     current?.slug === track.slug || current?.song === track.url,
   );
@@ -1596,6 +1601,8 @@ export default function ClientGamePage({
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
+                      origin={track.origin}
+                      externalAuthorName={track.externalAuthorName}
                       squareThumbnail
                       showGame={false}
                       thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png"}
@@ -1608,9 +1615,9 @@ export default function ClientGamePage({
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
-                      showRating={canRateDisplayedTrack && !isOwnTrack(track, user)}
+                      showRating={track.origin !== "ASSET_PACK" && canRateDisplayedTrack && !isOwnTrack(track, user)}
                       hideRatings={effectiveHideRatings}
-                      ratingDisabled={!canRateDisplayedTrack || isOwnTrack(track, user)}
+                      ratingDisabled={track.origin === "ASSET_PACK" || !canRateDisplayedTrack || isOwnTrack(track, user)}
                       onRate={async (value) => {
                         if (!canRateDisplayedTrack || isOwnTrack(track, user) || !trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;

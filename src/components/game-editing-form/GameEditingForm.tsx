@@ -74,7 +74,8 @@ import {
   backgroundUsageAllowedByDefault,
   backgroundUsageRequiredByLicense,
   backgroundUsageWithLicenseDefaults,
-  licenseFlagsToLabel,
+  getTrackLicenseVersion,
+  licenseFlagsToCode,
   LicenseFlags,
   licenseModeForFlags,
   LicenseMode,
@@ -83,6 +84,13 @@ import {
   TRACK_CREDIT_ROLE_OPTIONS,
   TRACK_TAG_CATEGORY_HELPERS,
 } from "@/components/tracks/editingShared";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import {
+  ASSET_TRACK_LICENSE_OPTIONS,
+  getTrackLicense,
+  TrackLicenseCode,
+  TrackOrigin,
+} from "@/helpers/trackLicense";
 import { redirect, useRouter } from "@/compat/next-navigation";
 import { useTranslations } from "@/compat/next-intl";
 import { getSelf, searchUsers } from "@/requests/user";
@@ -224,8 +232,10 @@ type SongEdit = {
   truePeakDb?: number | null;
   loudnessGainDb?: number | null;
   softwareUsed: string[];
-  license: string;
-  allowDownload: boolean;
+  origin: TrackOrigin;
+  externalAuthorName: string;
+  license: TrackLicenseCode | null;
+  licenseVersion: "3.0" | "4.0";
   allowBackgroundUse: boolean;
   allowBackgroundUseAttribution: boolean;
   licenseAttribution: boolean;
@@ -266,8 +276,6 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
     licenseDerivatives: flags.derivatives,
     licenseShareAlike: normalizedFlags.shareAlike,
     allowBackgroundUse: nextAllowBackgroundUse,
-    allowDownload:
-      licenseModeForFlags(flags) !== "ARR" || nextAllowBackgroundUse,
     allowBackgroundUseAttribution: nextAllowBackgroundUse
       ? backgroundUsageAttributionWithLicenseDefaults(
           song.allowBackgroundUseAttribution,
@@ -280,7 +288,10 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
           normalizedFlags,
         )
       : false,
-    license: licenseFlagsToLabel(normalizedFlags),
+    license: licenseFlagsToCode(
+      normalizedFlags,
+      song.origin === "ASSET_PACK" ? song.licenseVersion : "4.0",
+    ),
   };
 };
 
@@ -542,8 +553,13 @@ export default function GameEditingForm({
         truePeakDb: s.truePeakDb ?? null,
         loudnessGainDb: s.loudnessGainDb ?? null,
         softwareUsed: s.softwareUsed ?? [],
-        license: licenseFlagsToLabel(flags),
-        allowDownload: Boolean(s.allowDownload),
+        origin: s.origin ?? "ORIGINAL",
+        externalAuthorName: s.externalAuthorName ?? "",
+        license: licenseFlagsToCode(
+          flags,
+          s.origin === "ASSET_PACK" ? getTrackLicenseVersion(s.license) : "4.0",
+        ),
+        licenseVersion: getTrackLicenseVersion(s.license),
         allowBackgroundUse:
           s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
         allowBackgroundUseAttribution:
@@ -1072,17 +1088,29 @@ export default function GameEditingForm({
                 })),
               id: s.id > 0 && s.id <= 2147483647 ? s.id : undefined,
               slug: s.slug,
-              license: s.license || null,
-              allowDownload: s.allowDownload,
+              origin: s.origin,
+              externalAuthorName:
+                s.origin === "ASSET_PACK" ? s.externalAuthorName.trim() : null,
+              license: s.license ?? undefined,
               allowBackgroundUse: s.allowBackgroundUse,
               allowBackgroundUseAttribution: s.allowBackgroundUseAttribution,
             }));
 
             for (const song of payloadSongs) {
-              if ((song.credits?.length ?? 0) === 0) {
+              if (song.origin === "ORIGINAL" && (song.credits?.length ?? 0) === 0) {
                 addToast({
                   title: uiText("AppStrings.Value0IsMissingACreditedPerson", { value0: song.name }),
                 });
+                return;
+              }
+
+              if (song.origin === "ASSET_PACK" && !song.externalAuthorName) {
+                addToast({ title: `${song.name} is missing an asset-pack author` });
+                return;
+              }
+
+              if (song.origin === "ASSET_PACK" && !song.license) {
+                addToast({ title: `${song.name} is missing an asset-pack license` });
                 return;
               }
 
@@ -2882,7 +2910,7 @@ export default function GameEditingForm({
       onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}
       onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
       onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
-      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length}  {uiText("AppStrings.Credits2")} {(song.license && translateSystemLabel(song.license, uiText)) || uiText("AppStrings.NoLicenseSelected")}</p></div></div>}
+      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.origin === "ASSET_PACK" ? song.externalAuthorName || "Asset-pack author required" : `${song.credits.length} ${uiText("AppStrings.Credits2")}`} · {song.license ? <TrackLicenseLink license={song.license} /> : "License required"}</p></div></div>}
       preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <AudioPreview key={draft.url} url={draft.url} file={uploadedAudioFiles.current.get(draft.url)} />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
       {(song, setDraft) => {
         const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
@@ -2926,6 +2954,63 @@ export default function GameEditingForm({
                                       )
                                     }
                                   />
+                                  <div className="w-full">
+                                    <Text color="text">Music source</Text>
+                                    <Text color="textFaded" size="xs">
+                                      Choose whether the track was made for the game or came from an asset pack.
+                                    </Text>
+                                  </div>
+                                  <Dropdown
+                                    portal
+                                    selectedValue={song.origin}
+                                    onSelect={(value) =>
+                                      setDraftSongs((prev) =>
+                                        prev.map((s) => {
+                                          if (s.id !== song.id) return s;
+                                          const origin = value as TrackOrigin;
+                                          const next = { ...s, origin };
+                                          if (origin === "ASSET_PACK") {
+                                            return { ...next, license: null };
+                                          }
+                                          if (!next.license) {
+                                            return applyLicenseFlags(next, {
+                                              attribution: false,
+                                              commercial: false,
+                                              derivatives: false,
+                                              shareAlike: false,
+                                            });
+                                          }
+                                          return next;
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <Dropdown.Item value="ORIGINAL">Original music</Dropdown.Item>
+                                    <Dropdown.Item value="ASSET_PACK">From an asset pack</Dropdown.Item>
+                                  </Dropdown>
+                                  {song.origin === "ASSET_PACK" && (
+                                    <>
+                                      <div className="w-full">
+                                        <Text color="text">Original author</Text>
+                                        <Text color="textFaded" size="xs">
+                                          Enter the name credited by the asset pack.
+                                        </Text>
+                                      </div>
+                                      <Input
+                                        placeholder="Author name"
+                                        value={song.externalAuthorName}
+                                        onValueChange={(value) =>
+                                          setDraftSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? { ...s, externalAuthorName: value }
+                                                : s,
+                                            ),
+                                          )
+                                        }
+                                      />
+                                    </>
+                                  )}
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Commentary")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -3365,10 +3450,54 @@ export default function GameEditingForm({
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.License")}</Text>
                                     <Text color="textFaded" size="xs">
-                                       {uiText("AppStrings.ChooseHowOthersCanUseThisTrack")} </Text>
+                                      {song.origin === "ASSET_PACK"
+                                        ? "What license is this asset listed under"
+                                        : uiText("AppStrings.ChooseHowOthersCanUseThisTrack")}
+                                    </Text>
                                   </div>
                                   <Vstack align="start" className="gap-2">
                                     {(() => {
+                                      if (song.origin === "ASSET_PACK") {
+                                        return (
+                                          <>
+                                            <Dropdown
+                                              portal
+                                              selectedValue={song.license ?? undefined}
+                                              placeholder="Select a license"
+                                              onSelect={(value) =>
+                                                setDraftSongs((prev) =>
+                                                  prev.map((s) => {
+                                                    if (s.id !== song.id) return s;
+
+                                                    const license = value as TrackLicenseCode;
+                                                    const licenseVersion = getTrackLicenseVersion(license);
+                                                    return {
+                                                      ...applyLicenseFlags(
+                                                        { ...s, licenseVersion },
+                                                        parseLicenseFlags(license),
+                                                      ),
+                                                      license,
+                                                      licenseVersion,
+                                                    };
+                                                  }),
+                                                )
+                                              }
+                                            >
+                                              {ASSET_TRACK_LICENSE_OPTIONS.map((license) => (
+                                                <Dropdown.Item key={license} value={license}>
+                                                  {getTrackLicense(license).label}
+                                                </Dropdown.Item>
+                                              ))}
+                                            </Dropdown>
+                                            {song.license && (
+                                              <Text size="xs" color="textFaded">
+                                                {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={song.license} />
+                                              </Text>
+                                            )}
+                                          </>
+                                        );
+                                      }
+
                                       const backgroundUsageRequired =
                                         backgroundUsageRequiredByLicense({
                                           attribution: song.licenseAttribution,
@@ -3382,12 +3511,6 @@ export default function GameEditingForm({
                                         derivatives: song.licenseDerivatives,
                                         shareAlike: song.licenseShareAlike,
                                       });
-                                      const downloadRequired =
-                                        licenseMode !== "ARR" ||
-                                        (backgroundUsageRequired
-                                          ? true
-                                          : song.allowBackgroundUse);
-
                                       return (
                                         <>
                                           <Dropdown portal
@@ -3596,7 +3719,7 @@ export default function GameEditingForm({
                                             </>
                                           )}
                                           <Text size="xs" color="textFaded">
-                                             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(song.license, uiText)}
+                                             {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={song.license} />
                                           </Text>
                                           <Hstack className="w-full items-start gap-3">
                                             <Switch
@@ -3620,9 +3743,6 @@ export default function GameEditingForm({
                                                             val
                                                               ? s.allowBackgroundUseAttribution
                                                               : false,
-                                                          allowDownload: val
-                                                            ? true
-                                                            : s.allowDownload,
                                                         }
                                                       : s,
                                                   ),
@@ -3679,43 +3799,15 @@ export default function GameEditingForm({
                                                  {uiText("AppStrings.WhenPeopleUseThisSongInTheBackground")} </Text>
                                             </Vstack>
                                           </Hstack>
-                                          <Hstack className="w-full items-start gap-3">
-                                            <Switch
-                                              checked={
-                                                downloadRequired
-                                                  ? true
-                                                  : song.allowDownload
-                                              }
-                                              onChange={(val) =>
-                                                setDraftSongs((prev) =>
-                                                  prev.map((s) =>
-                                                    s.id === song.id
-                                                      ? {
-                                                          ...s,
-                                                          allowDownload: val,
-                                                        }
-                                                      : s,
-                                                  ),
-                                                )
-                                              }
-                                              disabled={downloadRequired}
-                                            />
-                                            <Vstack
-                                              align="start"
-                                              gap={0}
-                                              className="min-w-0 flex-1"
-                                            >
-                                              <Text color="text" size="sm">
-                                                 {uiText("AppStrings.AllowDownloads")} </Text>
-                                              <Text color="textFaded" size="xs">
-                                                 {uiText("AppStrings.LetListenersDownloadThisTrack")} </Text>
-                                            </Vstack>
-                                          </Hstack>
+                                          <Text color="textFaded" size="xs">
+                                            Downloads and radio eligibility are determined automatically by this license.
+                                          </Text>
                                         </>
                                       );
                                     })()}
                                   </Vstack>
 
+                                  {song.origin === "ORIGINAL" && (<>
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Credits")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -4029,6 +4121,7 @@ export default function GameEditingForm({
                                       </Card>
                                     ))}
                                   </Vstack>
+                                  </>)}
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Song")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -4121,8 +4214,10 @@ export default function GameEditingForm({
                                 bpm: null,
                                 musicalKey: "",
                                 softwareUsed: [],
-                                license: "All rights reserved",
-                                allowDownload: false,
+                                origin: "ORIGINAL",
+                                externalAuthorName: "",
+                                license: "ALL_RIGHTS_RESERVED",
+                                licenseVersion: "4.0",
                                 allowBackgroundUse: false,
                                 allowBackgroundUseAttribution: true,
                                 licenseAttribution: false,

@@ -47,6 +47,7 @@ import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggl
 import Link from "@/compat/next-link";
 import { useRouter } from "@/compat/next-navigation";
 import TrackWaveformPlayer from "@/components/tracks/TrackWaveformPlayer";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
 import {
   AlertTriangle,
   Award,
@@ -163,7 +164,8 @@ export default function ClientTrackPage({
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const { data: activeJamResponse } = useCurrentJam();
   const effectiveHideRatings = useEffectiveHideRatings(user);
-  const composerName = track?.composer?.name || track?.composer?.slug;
+  const composerName =
+    track?.externalAuthorName || track?.composer?.name || track?.composer?.slug;
   const metadataDescription =
     track?.commentary?.trim() ||
     (composerName && track?.game?.name
@@ -302,6 +304,7 @@ export default function ClientTrackPage({
   }
 
   const selectedRating = track.viewerRating?.value ?? 0;
+  const isAssetPackTrack = track.origin === "ASSET_PACK";
   const isOwnMusic = isOwnTrack(track, user);
   const isTeamMember = Boolean(
     user && track.game?.team?.users?.some((member) => member.id === user.id),
@@ -329,6 +332,7 @@ export default function ClientTrackPage({
     (!isCurrentJamTrack || shouldShowCurrentVersionResults);
   const canRateCurrentVersion =
     Boolean(user) &&
+    !isAssetPackTrack &&
     !isOwnMusic &&
     isCurrentJamTrack &&
     isRatingOpenPhase &&
@@ -355,7 +359,10 @@ export default function ClientTrackPage({
     (flag) => flag.name === "Explicit Lyrics",
   );
   const overallScore = track.scores?.Overall;
-  const primaryArtist = credits[0]?.user ?? track.composer;
+  const primaryArtist = credits[0]?.user ?? track.composer ?? {
+    name: track.externalAuthorName || uiText("AppStrings.UnknownComposer"),
+    slug: "",
+  };
   const overallScoreGradient = overallScore
     ? getResultsGradient(
         overallScore.placement,
@@ -404,11 +411,17 @@ export default function ClientTrackPage({
               </Text>
               <Hstack className="flex-wrap gap-3">
                 <Text color="textFaded">{uiText("PostCard.By")}</Text>
-                <Link href={`/u/${primaryArtist.slug}`}>
+                {isAssetPackTrack ? (
                   <Text color="text">
-                    {primaryArtist.name || primaryArtist.slug}
+                    {track.externalAuthorName || uiText("AppStrings.UnknownComposer")}
                   </Text>
-                </Link>
+                ) : (
+                  <Link href={`/u/${primaryArtist.slug}`}>
+                    <Text color="text">
+                      {primaryArtist.name || primaryArtist.slug}
+                    </Text>
+                  </Link>
+                )}
               </Hstack>
               <div className="w-full max-w-6xl">
                 <TrackWaveformPlayer
@@ -483,7 +496,7 @@ export default function ClientTrackPage({
                   <>
                     <Text size="xs" color="textFaded">
                        {uiText("AppStrings.ACTIONS")} </Text>
-                    {isTeamMember && (
+                    {isTeamMember && !isAssetPackTrack && (
                       <Button
                         icon="squarepen"
                         href={`/m/${track.slug}/edit${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
@@ -513,7 +526,12 @@ export default function ClientTrackPage({
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.PEOPLE")} </Text>
                 <div className="flex flex-wrap gap-2">
-                  {credits.map((credit) => (
+                  {isAssetPackTrack ? (
+                    <Chip className="post-tag-chip">
+                      {track.externalAuthorName || uiText("AppStrings.UnknownComposer")} {" "}
+                      <span className="opacity-70">(Original author)</span>
+                    </Chip>
+                  ) : credits.map((credit) => (
                     <Chip className="post-tag-chip"
                       key={`${credit.id}-${credit.role}-${credit.userId}`}
                       avatarSrc={credit.user?.profilePicture}
@@ -541,7 +559,7 @@ export default function ClientTrackPage({
               </Card>
             )}
 
-            <Card className="w-full">
+            {!isAssetPackTrack && <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.RATING")} </Text>
@@ -696,7 +714,7 @@ export default function ClientTrackPage({
                   </Vstack>
                 </RatingVisibilityGate>
               </Vstack>
-            </Card>
+            </Card>}
 
             {((track.links?.length ?? 0) > 0 || track.allowDownload) && (
               <Card className="w-full">
@@ -745,7 +763,7 @@ export default function ClientTrackPage({
                      {uiText("AppStrings.DETAILS")} </Text>
                   {track.bpm && <Chip className="post-tag-chip">{uiText("AppStrings.BPM")} {track.bpm}</Chip>}
                   {track.musicalKey && <Chip className="post-tag-chip">{uiText("AppStrings.Key2")} {track.musicalKey}</Chip>}
-                  {track.license && <Chip className="post-tag-chip">{uiText("AppStrings.License2")} {translateSystemLabel(track.license, uiText)}</Chip>}
+                  {track.license && <Chip className="post-tag-chip">{uiText("AppStrings.License2")} <TrackLicenseLink license={track.license} /></Chip>}
                   {track.allowBackgroundUse && (
                     <Chip className="post-tag-chip">{uiText("AppStrings.BackgroundUseInStreamsVideosAllowed")}</Chip>
                   )}
@@ -764,7 +782,7 @@ export default function ClientTrackPage({
               </Card>
             )}
 
-            <Card className="w-full">
+            {!isAssetPackTrack && <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.STATS")} </Text>
@@ -794,7 +812,7 @@ export default function ClientTrackPage({
                   </Hstack>
                 </Vstack>
               </Vstack>
-            </Card>
+            </Card>}
           </Vstack>
         </div>
       </div>

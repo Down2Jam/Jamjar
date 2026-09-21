@@ -2,6 +2,7 @@ import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { ListingPageVersion, PageVersion } from "@/types/GameType";
 import { isNumericJamValue } from "@/helpers/jamUrl";
+import type { TrackLicenseCode } from "@/helpers/trackLicense";
 
 export async function getTrack(trackSlug: string, pageVersion?: PageVersion) {
   const params = new URLSearchParams();
@@ -28,10 +29,9 @@ export async function updateTrack(
     bpm?: number | null;
     musicalKey?: string | null;
     softwareUsed?: string[];
-    allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
-    license?: string | null;
+    license?: TrackLicenseCode;
     composerId?: number;
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;

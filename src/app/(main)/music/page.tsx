@@ -10,6 +10,7 @@ import { Button, Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
+import { getTrackLicense } from "@/helpers/trackLicense";
 import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
@@ -73,7 +74,7 @@ const DEFAULT_MORE_FILTERS = new Set<string>([
 const EMPTY_MORE_FILTERS_PARAM = "none";
 
 function LicenseMark({ license }: { license: string }) {
-  const normalized = license.toUpperCase().replace(/\s+/g, " ").trim();
+  const normalized = getTrackLicense(license).label.toUpperCase().replace(/\s+/g, " ").trim();
 
   if (normalized === "ALL RIGHTS RESERVED") {
     return (
@@ -824,6 +825,20 @@ export default function MusicPage() {
     user,
   ]);
 
+  const musicQueue = useMemo(
+    () =>
+      displayedMusic.map((track) => ({
+        ...track,
+        composer: track.composer ?? {
+          id: 0,
+          slug: "",
+          name:
+            track.externalAuthorName || t("AppStrings.UnknownComposer"),
+        },
+      })),
+    [displayedMusic, t],
+  );
+
   const activeFilterCount =
     selectedGenres.size +
     selectedMoods.size +
@@ -1078,7 +1093,7 @@ export default function MusicPage() {
               <Dropdown.Item key={license} value={license}>
                 <span className="flex items-center gap-2">
                   <LicenseMark license={license} />
-                  <span>{translateSystemLabel(license, t)}</span>
+                  <span>{getTrackLicense(license).label}</span>
                 </span>
               </Dropdown.Item>
             ))}
@@ -1169,12 +1184,13 @@ export default function MusicPage() {
       >
         {initialLoading && <ListingSkeleton kind="music" />}
         {musicError && <Button onClick={() => void refetchMusic()}>{t("AppStrings.Retry")}</Button>}
-        {displayedMusic.map((track, index) => (
+        {musicQueue.map((track, index) => (
           (() => {
             const ratingTrackId = track.sourceTrackId ?? track.id;
             const canRateTrack =
               Boolean(user) &&
               Boolean(ratingTrackId) &&
+              track.origin !== "ASSET_PACK" &&
               track.pageVersion !== "POST_JAM" &&
               Array.isArray(track.game?.team?.users) &&
               !isOwnTrack(track, user) &&
@@ -1191,6 +1207,8 @@ export default function MusicPage() {
                 trackId={ratingTrackId}
                 name={track.name}
                 artist={track.composer}
+                origin={track.origin}
+                externalAuthorName={track.externalAuthorName}
                 thumbnail={
                   track.game.soundtrackThumbnail ||
                   track.game.thumbnail ||
@@ -1200,7 +1218,7 @@ export default function MusicPage() {
                 pageVersion={track.pageVersion}
                 song={track.url}
                 loudnessGainDb={track.loudnessGainDb}
-                queue={displayedMusic}
+                queue={musicQueue}
                 license={track.license}
                 allowDownload={track.allowDownload}
                 allowBackgroundUse={track.allowBackgroundUse}

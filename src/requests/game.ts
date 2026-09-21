@@ -9,6 +9,7 @@ import {
   PageVersion,
 } from "@/types/GameType";
 import { isNumericJamValue } from "@/helpers/jamUrl";
+import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
 
 const inflightGetRequests = new Map<string, Promise<Response>>();
 
@@ -152,10 +153,11 @@ export async function postGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
+    origin?: TrackOrigin;
+    externalAuthorName?: string | null;
     id?: number;
     slug: string;
-    license?: string | null;
-    allowDownload?: boolean;
+    license?: TrackLicenseCode;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
   }[],
@@ -260,10 +262,11 @@ export async function updateGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
+    origin?: TrackOrigin;
+    externalAuthorName?: string | null;
     id?: number;
     slug: string;
-    license?: string | null;
-    allowDownload?: boolean;
+    license?: TrackLicenseCode;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
   }[],
