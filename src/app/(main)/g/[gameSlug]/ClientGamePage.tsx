@@ -88,6 +88,8 @@ import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggl
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 import { UserHoverPreview } from "@/components/hover-previews";
+import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
+import { useSession } from "@/hooks/useSession";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -344,6 +346,7 @@ export default function ClientGamePage({
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
   const { data: user = null, refetch: refreshUser } = useSelf();
+  const { signedIn } = useSession();
   const [page, setPage] = useState(1);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -975,6 +978,16 @@ export default function ClientGamePage({
                     </button>
                   )}
               </div>
+            )}
+            {playableBuildUrl && displayGame && (
+              <EmbeddedGameBridge
+                iframeRef={playableEmbedRef}
+                buildUrl={playableBuildUrl}
+                game={displayGame}
+                pageVersion={selectedVersion}
+                signedIn={signedIn}
+                user={user}
+              />
             )}
             {!playableEmbedUrl && sortedDownloadLinks.length > 0 && (
               <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
