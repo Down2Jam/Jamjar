@@ -10,6 +10,7 @@ import { queryKeys } from "@/hooks/queries/queryKeys";
 
 import "./game-editor.css";
 import EditorFooter from "./EditorFooter";
+import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
 import ItemEditor from "./ItemEditor";
 import AudioPreview from "./AudioPreview";
 import ArtistSuggestions from "./ArtistSuggestions";
@@ -28,7 +29,8 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL, getPlayableBuildUrl } from "@/requests/config";
-import { useCurrentJam } from "@/hooks/queries";
+import { useCurrentJam, useSelf } from "@/hooks/queries";
+import { useSession } from "@/hooks/useSession";
 import { sanitize } from "@/helpers/sanitize";
 import useHasMounted from "@/hooks/useHasMounted";
 import {
@@ -290,6 +292,8 @@ export default function GameEditingForm({
   pageVersion?: PageVersion;
 }) {
   const uiText = useUiTranslations();
+  const { signedIn } = useSession();
+  const { data: user = null } = useSelf();
   const isMounted = useHasMounted();
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
@@ -318,6 +322,21 @@ export default function GameEditingForm({
   const [tags, setTags] = useState<number[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardInput[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const bridgeLeaderboards = useMemo(
+    () => leaderboards.flatMap((leaderboard) => {
+      const id = leaderboard.id;
+      if (typeof id !== "number" || id <= 0) return [];
+
+      return [{
+        id,
+        name: leaderboard.name,
+        type: leaderboard.type,
+        decimalPlaces: leaderboard.decimalPlaces,
+        onlyBest: leaderboard.onlyBest,
+      }];
+    }),
+    [leaderboards],
+  );
   const [teams, setTeams] = useState<TeamType[]>([]);
   const [category, setCategory] = useState<
     "REGULAR" | "ODA" | "EXTRA" | "EXTERNAL"
@@ -1505,15 +1524,29 @@ export default function GameEditingForm({
                             style={{ aspectRatio: playableBuildAspectRatio }}
                           >
                             {isPlayableBuildPreviewActive ? (
-                              <iframe
-                                ref={playableBuildPreviewRef}
-                                src={getPlayableBuildUrl(playableBuildUrl)}
-                                title={uiText("AppStrings.PlayableWebBuildPreview")}
-                                className="h-full w-full border-0"
-                                sandbox={getPlayableSandbox(getPlayableBuildUrl(playableBuildUrl), window.location.origin)}
-                                allow="fullscreen; gamepad"
-                                allowFullScreen
-                              />
+                              <>
+                                <iframe
+                                  ref={playableBuildPreviewRef}
+                                  src={getPlayableBuildUrl(playableBuildUrl)}
+                                  title={uiText("AppStrings.PlayableWebBuildPreview")}
+                                  className="h-full w-full border-0"
+                                  sandbox={getPlayableSandbox(getPlayableBuildUrl(playableBuildUrl), window.location.origin)}
+                                  allow="fullscreen; gamepad"
+                                  allowFullScreen
+                                />
+                                {game && (
+                                  <EmbeddedGameBridge
+                                    iframeRef={playableBuildPreviewRef}
+                                    buildUrl={getPlayableBuildUrl(playableBuildUrl)}
+                                    game={game}
+                                    pageVersion={pageVersion}
+                                    signedIn={signedIn}
+                                    user={user ?? null}
+                                    achievements={achievements}
+                                    leaderboards={bridgeLeaderboards}
+                                  />
+                                )}
+                              </>
                             ) : (
                               <button
                                 type="button"

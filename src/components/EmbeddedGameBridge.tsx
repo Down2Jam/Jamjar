@@ -25,6 +25,8 @@ type EmbeddedGameBridgeProps = {
   pageVersion: PageVersion;
   signedIn: boolean;
   user: UserType | null;
+  achievements?: Array<Pick<GameType["achievements"][number], "id" | "name" | "description" | "image">>;
+  leaderboards?: Array<Pick<GameType["leaderboards"][number], "id" | "name" | "type" | "decimalPlaces" | "onlyBest">>;
 };
 
 type BridgeResult =
@@ -48,7 +50,12 @@ function publicContext({
   pageVersion,
   signedIn,
   user,
+  achievements,
+  leaderboards,
 }: Omit<EmbeddedGameBridgeProps, "iframeRef" | "buildUrl">) {
+  const contextAchievements = achievements ?? game.achievements ?? [];
+  const contextLeaderboards = leaderboards ?? game.leaderboards ?? [];
+
   return {
     signedIn,
     user: signedIn && user
@@ -64,13 +71,13 @@ function publicContext({
       slug: game.slug,
       pageVersion,
     },
-    achievements: (game.achievements ?? []).map((achievement) => ({
+    achievements: contextAchievements.map((achievement) => ({
       id: achievement.id,
       name: achievement.name,
       description: achievement.description,
       image: achievement.image,
     })),
-    leaderboards: (game.leaderboards ?? []).map((leaderboard) => ({
+    leaderboards: contextLeaderboards.map((leaderboard) => ({
       id: leaderboard.id,
       name: leaderboard.name,
       type: leaderboard.type,
@@ -135,6 +142,66 @@ async function postAuthenticatedJson(
   return { ok: true as const, data: payload };
 }
 
+async function uploadEvidenceImage(dataUrl: string): Promise<BridgeResult> {
+  const token = getCookie("token");
+  if (!token) {
+    return {
+      ok: false as const,
+      error: "Sign in to save game progress.",
+    };
+  }
+
+  const match = /^data:(image\/(?:png|jpeg|gif|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(dataUrl);
+  if (!match) {
+    return {
+      ok: false as const,
+      error: "The evidence image is invalid.",
+    };
+  }
+
+  const mimeType = match[1];
+  const extension = mimeType === "image/jpeg"
+    ? "jpg"
+    : mimeType.slice("image/".length);
+  const binary = atob(match[2]);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  const formData = new FormData();
+  formData.append(
+    "upload",
+    new Blob([bytes], { type: mimeType }),
+    `d2jam-evidence.${extension}`,
+  );
+
+  const response = await fetch(`${BASE_URL}/image`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    return {
+      ok: false as const,
+      error: getApiErrorMessage(payload) ?? "The evidence image could not be uploaded.",
+    };
+  }
+
+  const evidenceUrl = isRecord(payload) && typeof payload.data === "string"
+    ? payload.data
+    : "";
+  if (!evidenceUrl) {
+    return {
+      ok: false as const,
+      error: "The evidence image upload returned no URL.",
+    };
+  }
+
+  return { ok: true as const, data: evidenceUrl };
+}
+
 export default function EmbeddedGameBridge({
   iframeRef,
   buildUrl,
@@ -142,6 +209,8 @@ export default function EmbeddedGameBridge({
   pageVersion,
   signedIn,
   user,
+  achievements,
+  leaderboards,
 }: EmbeddedGameBridgeProps) {
   const didHandshakeRef = useRef(false);
 
@@ -159,7 +228,14 @@ export default function EmbeddedGameBridge({
       }
     })();
 
-    const context = () => publicContext({ game, pageVersion, signedIn, user });
+    const context = () => publicContext({
+      game,
+      pageVersion,
+      signedIn,
+      user,
+      achievements,
+      leaderboards,
+    });
     const sendSession = (targetOrigin = "*") => {
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow || !didHandshakeRef.current) return;
@@ -236,9 +312,27 @@ export default function EmbeddedGameBridge({
             return;
           }
 
-          const evidence = typeof message.evidence === "string"
+          const evidenceImage = typeof message.evidenceImage === "string"
+            ? message.evidenceImage.trim()
+            : "";
+          let evidence = typeof message.evidence === "string"
             ? message.evidence.trim().slice(0, 2000)
             : undefined;
+          if (evidenceImage) {
+            const uploadedEvidence = await uploadEvidenceImage(evidenceImage);
+            if (!uploadedEvidence.ok) {
+              responseToGame(iframe, message.requestId, targetOrigin, uploadedEvidence);
+              return;
+            }
+            if (typeof uploadedEvidence.data !== "string") {
+              responseToGame(iframe, message.requestId, targetOrigin, {
+                ok: false,
+                error: "The evidence image upload returned no URL.",
+              });
+              return;
+            }
+            evidence = uploadedEvidence.data;
+          }
           const result = await postAuthenticatedJson(
             "/score",
             {
@@ -272,7 +366,7 @@ export default function EmbeddedGameBridge({
       disposed = true;
       window.removeEventListener("message", onMessage);
     };
-  }, [buildUrl, game, iframeRef, pageVersion, signedIn, user]);
+  }, [achievements, buildUrl, game, iframeRef, leaderboards, pageVersion, signedIn, user]);
 
   return null;
 }
