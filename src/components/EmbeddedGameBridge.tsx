@@ -213,9 +213,11 @@ export default function EmbeddedGameBridge({
   leaderboards,
 }: EmbeddedGameBridgeProps) {
   const didHandshakeRef = useRef(false);
+  const idempotencyNamespaceRef = useRef(crypto.randomUUID());
 
   useEffect(() => {
     didHandshakeRef.current = false;
+    idempotencyNamespaceRef.current = crypto.randomUUID();
   }, [buildUrl, game.id, pageVersion]);
 
   useEffect(() => {
@@ -290,7 +292,7 @@ export default function EmbeddedGameBridge({
           const result = await postAuthenticatedJson(
             "/achievement",
             { achievementId },
-            message.requestId,
+            `${idempotencyNamespaceRef.current}:${message.requestId}`,
           );
           if (!disposed) responseToGame(iframe, message.requestId, targetOrigin, result);
           return;
@@ -340,7 +342,7 @@ export default function EmbeddedGameBridge({
               score,
               ...(evidence ? { evidence } : {}),
             },
-            message.requestId,
+            `${idempotencyNamespaceRef.current}:${message.requestId}`,
           );
           if (!disposed) responseToGame(iframe, message.requestId, targetOrigin, result);
           return;
