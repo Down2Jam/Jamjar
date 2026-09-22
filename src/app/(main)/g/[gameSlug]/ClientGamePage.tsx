@@ -857,14 +857,12 @@ export default function ClientGamePage({
         <div
           className="relative h-60 lg:rounded-t-xl"
           style={{
-            backgroundColor: displayGame.thumbnail || displayGame.banner
-              ? undefined
-              : colors["base"],
+            backgroundColor: displayGame.banner ? undefined : colors["base"],
           }}
         >
-          {(displayGame.thumbnail || displayGame.banner) && (
+          {displayGame.banner && (
             <Image
-              src={displayGame.banner || displayGame.thumbnail || ""}
+              src={displayGame.banner}
               alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
               className="object-cover lg:rounded-t-xl"
               fill

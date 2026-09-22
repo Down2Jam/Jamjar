@@ -5,16 +5,20 @@
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
-.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) {
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within, [data-drag-active="true"]) {
   background-color: var(--build-hover);
   border-color: var(--build-hover-border);
+}
+
+.game-editor-build-upload:not([aria-disabled="true"])[data-drag-active="true"] {
+  border-color: var(--build-drag-border);
 }
 
 .game-editor-build-upload > svg {
   transition: transform 150ms ease;
 }
 
-.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) > svg {
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within, [data-drag-active="true"]) > svg {
   transform: scale(1.15);
 }
 

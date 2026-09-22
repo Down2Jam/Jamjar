@@ -1,20 +1,49 @@
 import type { EmojiType } from "@/providers/useEmojis";
 
 const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
+const STICKER_REGEX = /^::([a-zA-Z0-9_-]+)::$/;
 const EMOJI_LINE_SELECTOR = "p,li,h1,h2,h3,h4,h5,h6";
 const MAX_LARGE_EMOJIS = 5;
 
 export function replaceEmojiShortcodes(
   html: string,
-  emojiMap: Record<string, EmojiType>
+  emojiMap: Record<string, EmojiType>,
+  stickerMap: Record<string, EmojiType> = {},
 ): string {
-  if (!html || !emojiMap || Object.keys(emojiMap).length === 0) return html;
+  if (
+    !html ||
+    (Object.keys(emojiMap).length === 0 && Object.keys(stickerMap).length === 0)
+  ) {
+    return html;
+  }
   if (typeof window === "undefined" || typeof DOMParser === "undefined") {
     return html;
   }
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
+
+  doc.body.querySelectorAll(EMOJI_LINE_SELECTOR).forEach((element) => {
+    if (element.children.length > 0) return;
+
+    const visibleText = element.textContent
+      ?.replace(/[\u200B-\u200D\uFEFF]/g, "")
+      .trim();
+    const match = visibleText?.match(STICKER_REGEX);
+    const sticker = match ? stickerMap[match[1]] : null;
+    if (!match || !sticker) return;
+
+    const token = match[0];
+    const img = doc.createElement("img");
+    img.src = sticker.image;
+    img.alt = token;
+    img.title = token;
+    img.className = "sticker-inline";
+    img.setAttribute("data-sticker", match[1]);
+    img.setAttribute("draggable", "false");
+    element.replaceChildren(img);
+  });
+
   const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT);
   const nodes: Text[] = [];
 
@@ -33,6 +62,10 @@ export function replaceEmojiShortcodes(
     let replaced = false;
 
     while ((match = EMOJI_REGEX.exec(text))) {
+      const previousCharacter = text[match.index - 1];
+      const nextCharacter = text[match.index + match[0].length];
+      if (previousCharacter === ":" || nextCharacter === ":") continue;
+
       const slug = match[1];
       const emoji = emojiMap[slug];
       if (!emoji) continue;

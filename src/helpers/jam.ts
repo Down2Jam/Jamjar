@@ -1,4 +1,5 @@
 import type { JamPhase, JamType } from "@/types/JamType";
+import type { JamMetadata } from "@/types/JamType";
 import * as jamRequests from "@/requests/jam";
 import { unwrapArray, unwrapItem } from "@/requests/helpers";
 
@@ -6,6 +7,12 @@ export interface ActiveJamResponse {
   phase: JamPhase;
   jam: JamType | null; // Jam will be null if no active jam is found
   nextJam?: JamType | null;
+}
+
+export interface ActiveJamMetadataResponse {
+  phase: JamPhase;
+  jam: JamMetadata | null;
+  nextJam?: JamMetadata | null;
 }
 
 export async function getJams(): Promise<JamType[]> {
@@ -37,6 +44,28 @@ export async function getCurrentJam(): Promise<ActiveJamResponse> {
   };
 }
 
+export async function getCurrentJamMetadata(): Promise<ActiveJamMetadataResponse> {
+  const response = await jamRequests.getCurrentJamMetadata();
+  if (!response.ok) {
+    throw new Error(`Error fetching active jam metadata (${response.status})`);
+  }
+
+  const data = unwrapItem<ActiveJamMetadataResponse>(await response.json());
+  if (
+    !data ||
+    typeof data.phase !== "string" ||
+    (!data.jam && data.phase !== "No Active Jams")
+  ) {
+    throw new Error("Invalid active jam metadata response");
+  }
+
+  return {
+    phase: data.phase,
+    jam: data.jam ?? null,
+    nextJam: data.nextJam ?? null,
+  };
+}
+
 export async function joinJam(jamId: number) {
   const response = await jamRequests.joinJam(jamId);
 
@@ -54,7 +83,7 @@ export async function joinJam(jamId: number) {
 
 export async function hasJoinedCurrentJam(): Promise<boolean> {
   try {
-    const activeJam = await getCurrentJam();
+    const activeJam = await getCurrentJamMetadata();
     const jamSlug = (activeJam?.jam as (JamType & { slug?: string }) | null)
       ?.slug;
     if (!jamSlug) return false;

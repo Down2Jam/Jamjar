@@ -20,6 +20,7 @@ import {
   Quote,
   Redo,
   SmilePlus,
+  Sticker,
   Strikethrough,
   Subscript,
   Superscript,
@@ -35,28 +36,35 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Popover, Text, Input } from "bioloom-ui";
 import { BASE_URL } from "@/requests/config";
 import { useTheme } from "@/providers/useSiteTheme";
+import KlipyGifPicker from "./KlipyGifPicker";
 
 type EditorMenuProps = {
   editor: Editor | null;
   size?: "xs" | "sm";
+  enableMediaPickers?: boolean;
 };
 
 export default function EditorMenuBar({
   editor,
   size = "sm",
+  enableMediaPickers = false,
 }: EditorMenuProps) {
   if (!editor) return null;
-  return <ReadyEditorMenuBar editor={editor} size={size} />;
+  return <ReadyEditorMenuBar editor={editor} size={size} enableMediaPickers={enableMediaPickers} />;
 }
 
-function ReadyEditorMenuBar({ editor, size = "sm" }: { editor: Editor; size?: "xs" | "sm" }) {
+function ReadyEditorMenuBar({ editor, size = "sm", enableMediaPickers = false }: { editor: Editor; size?: "xs" | "sm"; enableMediaPickers?: boolean }) {
   const uiText = useUiTranslations();
   const t = useTranslations();
-  const { emojis, priorityEmotes } = useEmojis();
+  const { emojis, stickers, priorityEmotes } = useEmojis();
   const { colors } = useTheme();
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiQuery, setEmojiQuery] = useState("");
+  const [stickerOpen, setStickerOpen] = useState(false);
+  const [stickerQuery, setStickerQuery] = useState("");
+  const [gifOpen, setGifOpen] = useState(false);
   const pickerRef = useRef<HTMLDivElement | null>(null);
+  const stickerPickerRef = useRef<HTMLDivElement | null>(null);
 
   const addLink = () => {
     const url = prompt(t("AppStrings.EnterLinkURL"));
@@ -300,16 +308,38 @@ function ReadyEditorMenuBar({ editor, size = "sm" }: { editor: Editor; size?: "x
   }, [emojiOpen]);
 
   useEffect(() => {
+    if (!stickerOpen) return;
+    const handleDown = (event: MouseEvent) => {
+      if (stickerPickerRef.current && !stickerPickerRef.current.contains(event.target as Node)) {
+        setStickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleDown, true);
+    return () => document.removeEventListener("mousedown", handleDown, true);
+  }, [stickerOpen]);
+
+  useEffect(() => {
     if (!emojiOpen) {
       setEmojiQuery("");
     }
   }, [emojiOpen]);
+
+  useEffect(() => {
+    if (!stickerOpen) {
+      setStickerQuery("");
+    }
+  }, [stickerOpen]);
 
   const filteredEmojis = useMemo(() => {
     const query = emojiQuery.trim().toLowerCase();
     const matches = (emoji: { slug: string }) => !query || emoji.slug.toLowerCase().includes(query);
     return sortEmojisByUsage(emojis.filter(matches), {}, priorityEmotes);
   }, [emojiQuery, emojis, priorityEmotes]);
+
+  const filteredStickers = useMemo(() => {
+    const query = stickerQuery.trim().toLowerCase();
+    return stickers.filter((sticker) => !query || sticker.slug.toLowerCase().includes(query));
+  }, [stickerQuery, stickers]);
 
   return (
     <Hstack className="mb-2" data-editor-toolbar wrap>
@@ -328,7 +358,11 @@ function ReadyEditorMenuBar({ editor, size = "sm" }: { editor: Editor; size?: "x
       <div ref={pickerRef} className="relative z-30">
         <EditorMenuButton
           label={t("AppStrings.Emotes")}
-          onClick={() => setEmojiOpen((open) => !open)}
+          onClick={() => {
+            setEmojiOpen((open) => !open);
+            setStickerOpen(false);
+            setGifOpen(false);
+          }}
           isActive={emojiOpen}
           disabled={emojis.length === 0 && priorityEmotes.length === 0}
           size={size}
@@ -389,7 +423,95 @@ function ReadyEditorMenuBar({ editor, size = "sm" }: { editor: Editor; size?: "x
           </div>
         </Popover>
       </div>
-      <Dropdown portal backdrop={false} onOpenChange={(open) => { if (open) setEmojiOpen(false); }} trigger={
+      {enableMediaPickers ? (
+        <div ref={stickerPickerRef} className="relative z-30">
+          <EditorMenuButton
+            label="Stickers"
+            onClick={() => {
+              setStickerOpen((open) => !open);
+              setEmojiOpen(false);
+              setGifOpen(false);
+            }}
+            isActive={stickerOpen}
+            disabled={stickers.length === 0}
+            size={size}
+          >
+            <Sticker size={iconSize} />
+          </EditorMenuButton>
+          <Popover
+            shown={stickerOpen}
+            anchorToScreen={false}
+            position="bottom"
+            padding={12}
+            showArrow
+            surface="contrast"
+            transformOrigin="center"
+          >
+            <div className="flex w-80 flex-col gap-2">
+              <Input
+                value={stickerQuery}
+                onValueChange={setStickerQuery}
+                placeholder="Search stickers"
+                size="sm"
+                fullWidth
+                style={{
+                  backgroundColor: colors.mantle,
+                  borderColor: "transparent",
+                  boxShadow: "none",
+                }}
+              />
+              {filteredStickers.length === 0 ? (
+                <Text size="xs" color="textFaded">No stickers found.</Text>
+              ) : (
+                <div className="grid max-h-72 grid-cols-3 gap-2 overflow-y-auto">
+                  {filteredStickers.map((sticker) => (
+                    <Button
+                      key={sticker.id}
+                      size="sm"
+                      variant="ghost"
+                      color="default"
+                      leftSlot={
+                        <img
+                          src={sticker.image}
+                          alt={`::${sticker.slug}::`}
+                          className="h-16 w-16 object-contain"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      }
+                      tooltip={`::${sticker.slug}::`}
+                      style={{ width: "100%", height: 80, padding: 4 }}
+                      onClick={() => {
+                        editor.chain().focus().insertContent({
+                          type: "paragraph",
+                          content: [{ type: "text", text: `::${sticker.slug}::` }],
+                        }).run();
+                        setStickerOpen(false);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </Popover>
+        </div>
+      ) : null}
+      {enableMediaPickers ? (
+        <KlipyGifPicker
+          editor={editor}
+          size={size}
+          iconSize={iconSize}
+          open={gifOpen}
+          onOpenChange={(open) => {
+            setGifOpen(open);
+            if (open) {
+              setEmojiOpen(false);
+              setStickerOpen(false);
+            }
+          }}
+        />
+      ) : null}
+      <Dropdown portal backdrop={false} onOpenChange={(open) => { if (open) { setEmojiOpen(false); setStickerOpen(false); setGifOpen(false); } }} trigger={
         <Button data-editor-toolbar-action type="button" size={size} aria-label={t("AppStrings.MoreFormatting")} title={t("AppStrings.MoreFormatting")}><Ellipsis size={iconSize} /></Button>
       }>
         {moreButtons.map((button) => <Dropdown.Item key={button.label} disabled={button.disabled} onClick={button.onClick}>

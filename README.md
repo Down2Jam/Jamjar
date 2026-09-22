@@ -40,6 +40,12 @@ VITE_GAME_BUILDS_ORIGIN=https://play.d2jam.com
 
 In production, `VITE_GAME_BUILDS_ORIGIN` should be a dedicated cookieless origin that proxies `/game-builds/*` to Jamcore. Keep it unset for local same-origin development.
 
+To enable the GIF picker in markdown editors, add a KLIPY browser API key:
+
+```env
+VITE_KLIPY_API_KEY=your_klipy_api_key
+```
+
 ## Docker
 
 ```bash

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-labelledby="title">
+  <title id="title">Post-jam</title>
+  <defs>
+    <linearGradient id="postjam-gradient" x1="4" y1="3" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#48c5e4"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#postjam-gradient)" d="M6 2a1 1 0 0 0 0 2h.5v2.15c0 1.84.92 3.55 2.45 4.57L10.87 12l-1.92 1.28a5.5 5.5 0 0 0-2.45 4.57V20H6a1 1 0 1 0 0 2h12a1 1 0 1 0 0-2h-.5v-2.15a5.5 5.5 0 0 0-2.45-4.57L13.13 12l1.92-1.28a5.5 5.5 0 0 0 2.45-4.57V4h.5a1 1 0 1 0 0-2H6Zm2.5 2h7v2.15a3.5 3.5 0 0 1-1.56 2.9L12 10.35l-1.94-1.3a3.5 3.5 0 0 1-1.56-2.9V4Zm3.5 9.2 1.94 1.3a3.5 3.5 0 0 1 1.56 2.9V20h-7v-2.6a3.5 3.5 0 0 1 1.56-2.9L12 13.2Z"/>
+  <path fill="#fff" d="m10.6 17.2.95.95 2.2-2.2.7.7-2.9 2.9-1.65-1.65.7-.7Z"/>
+</svg>

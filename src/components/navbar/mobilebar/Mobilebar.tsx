@@ -226,7 +226,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           <Dropdown.Item
             value="inbox"
             icon="bell"
-            href="/inbox/messages"
+            href="/inbox"
             description={uiText("Navbar.Inbox.Description")}
           >
              {uiText("Navbar.Inbox.Title")} </Dropdown.Item>
@@ -397,10 +397,10 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         ) : (
           (user && (user.receivedNotifications.length + (messageCounts?.total ?? 0)) > 0 ? (
             <Badge position="top-right" content={user.receivedNotifications.length + (messageCounts?.total ?? 0)}>
-              <Button href="/inbox/messages" icon="bell" variant="ghost" />
+              <Button href="/inbox" icon="bell" variant="ghost" />
             </Badge>
           ) : (
-            <Button href="/inbox/messages" icon="bell" variant="ghost" />
+            <Button href="/inbox" icon="bell" variant="ghost" />
           ))
         )}
       </NavbarItem>

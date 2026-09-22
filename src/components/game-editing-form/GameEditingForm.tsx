@@ -15,6 +15,7 @@ import ItemEditor from "./ItemEditor";
 import AudioPreview from "./AudioPreview";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
+import StickerManager from "@/components/stickers/StickerManager";
 import ReorderControls, { moveItem } from "./ReorderControls";
 
 import { Button } from "bioloom-ui";
@@ -236,6 +237,7 @@ type SongEdit = {
   externalAuthorName: string;
   license: TrackLicenseCode | null;
   licenseVersion: "3.0" | "4.0";
+  allowDownload: boolean;
   allowBackgroundUse: boolean;
   allowBackgroundUseAttribution: boolean;
   licenseAttribution: boolean;
@@ -276,6 +278,8 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
     licenseDerivatives: flags.derivatives,
     licenseShareAlike: normalizedFlags.shareAlike,
     allowBackgroundUse: nextAllowBackgroundUse,
+    allowDownload:
+      licenseModeForFlags(flags) !== "ARR" || nextAllowBackgroundUse,
     allowBackgroundUseAttribution: nextAllowBackgroundUse
       ? backgroundUsageAttributionWithLicenseDefaults(
           song.allowBackgroundUseAttribution,
@@ -434,6 +438,7 @@ export default function GameEditingForm({
   const [isPlayableBuildPreviewActive, setIsPlayableBuildPreviewActive] =
     useState(false);
   const [uploadingWebBuild, setUploadingWebBuild] = useState(false);
+  const [webBuildDragActive, setWebBuildDragActive] = useState(false);
   const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
     useState<GameEmbedAspectRatio>("16 / 9");
   const [playableBuildAspectRatio, setPlayableBuildAspectRatio] =
@@ -560,6 +565,7 @@ export default function GameEditingForm({
           s.origin === "ASSET_PACK" ? getTrackLicenseVersion(s.license) : "4.0",
         ),
         licenseVersion: getTrackLicenseVersion(s.license),
+        allowDownload: Boolean(s.allowDownload),
         allowBackgroundUse:
           s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
         allowBackgroundUseAttribution:
@@ -904,6 +910,49 @@ export default function GameEditingForm({
     }
   }
 
+  const handleWebBuildUpload = async (file?: File) => {
+    if (!file || uploadingWebBuild) return;
+    if (file.size > 95_000_000) {
+      addToast({ title: uiText("AppStrings.TheWebBuildZIPMustBe95MBOrSmaller") });
+      return;
+    }
+
+    setUploadingWebBuild(true);
+
+    try {
+      const response = await uploadWebBuild(file);
+      if (!response.ok) {
+        const body = await response.json().catch(() => null) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(
+          body?.error?.message ||
+            "The web build could not be uploaded.",
+        );
+      }
+
+      const uploaded = await readItem<{
+        playableUrl: string;
+      }>(response);
+      if (!uploaded?.playableUrl) {
+        throw new Error("The upload returned no playable build.");
+      }
+
+      setPlayableBuildUrl(uploaded.playableUrl);
+      setPlayableBuildShowFullscreenButton(true);
+      addToast({ title: uiText("AppStrings.WebBuildUploadedAndChecked") });
+    } catch (error) {
+      addToast({
+        title:
+          error instanceof Error
+            ? error.message
+            : uiText("AppStrings.TheWebBuildCouldNotBeUploaded"),
+      });
+    } finally {
+      setUploadingWebBuild(false);
+    }
+  };
+
   const doArtistSearch = useMemo(
     () =>
       debounce(async (songId: number, q: string) => {
@@ -1092,6 +1141,7 @@ export default function GameEditingForm({
               externalAuthorName:
                 s.origin === "ASSET_PACK" ? s.externalAuthorName.trim() : null,
               license: s.license ?? undefined,
+              allowDownload: s.allowDownload,
               allowBackgroundUse: s.allowBackgroundUse,
               allowBackgroundUseAttribution: s.allowBackgroundUseAttribution,
             }));
@@ -1445,7 +1495,24 @@ export default function GameEditingForm({
                          {uiText("AppStrings.UploadAZIPContainingAnIndexHtmlFileAndAllOfTheFilesYourBrowserGameNeedsTheBuildRunsIn")} </Text>
                     </div>
 
-                    <label className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center" aria-disabled={uploadingWebBuild} style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight } as CSSProperties}>
+                    <label
+                      className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center"
+                      aria-disabled={uploadingWebBuild}
+                      data-drag-active={webBuildDragActive}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        if (uploadingWebBuild) return;
+                        setWebBuildDragActive(true);
+                      }}
+                      onDragLeave={() => setWebBuildDragActive(false)}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (uploadingWebBuild) return;
+                        setWebBuildDragActive(false);
+                        void handleWebBuildUpload(event.dataTransfer.files?.[0]);
+                      }}
+                      style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight, "--build-drag-border": colors.blue } as CSSProperties}
+                    >
                       <Icon name="upload" color="text" />
                       <Text color="text" weight="semibold">
                         {uploadingWebBuild
@@ -1461,45 +1528,10 @@ export default function GameEditingForm({
                         type="file"
                         accept=".zip,application/zip,application/x-zip-compressed"
                         disabled={uploadingWebBuild}
-                        onChange={async (event) => {
+                        onChange={(event) => {
                           const file = event.currentTarget.files?.[0];
                           event.currentTarget.value = "";
-                          if (!file) return;
-                          if (file.size > 95_000_000) {
-                            addToast({ title: uiText("AppStrings.TheWebBuildZIPMustBe95MBOrSmaller") });
-                            return;
-                          }
-                          setUploadingWebBuild(true);
-                          try {
-                            const response = await uploadWebBuild(file);
-                            if (!response.ok) {
-                              const body = await response.json().catch(() => null) as
-                                | { error?: { message?: string } }
-                                | null;
-                              throw new Error(
-                                body?.error?.message ||
-                                  "The web build could not be uploaded.",
-                              );
-                            }
-                            const uploaded = await readItem<{
-                              playableUrl: string;
-                            }>(response);
-                            if (!uploaded?.playableUrl) {
-                              throw new Error("The upload returned no playable build.");
-                            }
-                            setPlayableBuildUrl(uploaded.playableUrl);
-                            setPlayableBuildShowFullscreenButton(true);
-                            addToast({ title: uiText("AppStrings.WebBuildUploadedAndChecked") });
-                          } catch (error) {
-                            addToast({
-                              title:
-                                error instanceof Error
-                                  ? error.message
-                                  : uiText("AppStrings.TheWebBuildCouldNotBeUploaded"),
-                            });
-                          } finally {
-                            setUploadingWebBuild(false);
-                          }
+                          void handleWebBuildUpload(file);
                         }}
                       />
                     </label>
@@ -2632,6 +2664,17 @@ export default function GameEditingForm({
                         )}
                       </Vstack>
                     </div>
+                    {game?.id ? (
+                      <div className="game-editor-block">
+                        <StickerManager
+                          scope="GAME"
+                          scopeId={game.id}
+                          prefix={gameEmotePrefix}
+                          gameSlug={game.slug}
+                          disabled={!game.slug}
+                        />
+                      </div>
+                    ) : null}
               </Vstack>
             </Tab>
             <Tab title={uiText("AppStrings.Metadata")} icon="tags">
@@ -3511,6 +3554,11 @@ export default function GameEditingForm({
                                         derivatives: song.licenseDerivatives,
                                         shareAlike: song.licenseShareAlike,
                                       });
+                                      const downloadRequired =
+                                        licenseMode !== "ARR" ||
+                                        (backgroundUsageRequired
+                                          ? true
+                                          : song.allowBackgroundUse);
                                       return (
                                         <>
                                           <Dropdown portal
@@ -3743,6 +3791,9 @@ export default function GameEditingForm({
                                                             val
                                                               ? s.allowBackgroundUseAttribution
                                                               : false,
+                                                          allowDownload: val
+                                                            ? true
+                                                            : s.allowDownload,
                                                         }
                                                       : s,
                                                   ),
@@ -3799,9 +3850,38 @@ export default function GameEditingForm({
                                                  {uiText("AppStrings.WhenPeopleUseThisSongInTheBackground")} </Text>
                                             </Vstack>
                                           </Hstack>
-                                          <Text color="textFaded" size="xs">
-                                            Downloads and radio eligibility are determined automatically by this license.
-                                          </Text>
+                                          <Hstack className="w-full items-start gap-3">
+                                            <Switch
+                                              checked={
+                                                downloadRequired
+                                                  ? true
+                                                  : song.allowDownload
+                                              }
+                                              onChange={(val) =>
+                                                setDraftSongs((prev) =>
+                                                  prev.map((s) =>
+                                                    s.id === song.id
+                                                      ? {
+                                                          ...s,
+                                                          allowDownload: val,
+                                                        }
+                                                      : s,
+                                                  ),
+                                                )
+                                              }
+                                              disabled={downloadRequired}
+                                            />
+                                            <Vstack
+                                              align="start"
+                                              gap={0}
+                                              className="min-w-0 flex-1"
+                                            >
+                                              <Text color="text" size="sm">
+                                                 {uiText("AppStrings.AllowDownloads")} </Text>
+                                              <Text color="textFaded" size="xs">
+                                                 {uiText("AppStrings.LetListenersDownloadThisTrack")} </Text>
+                                            </Vstack>
+                                          </Hstack>
                                         </>
                                       );
                                     })()}
@@ -4218,6 +4298,7 @@ export default function GameEditingForm({
                                 externalAuthorName: "",
                                 license: "ALL_RIGHTS_RESERVED",
                                 licenseVersion: "4.0",
+                                allowDownload: false,
                                 allowBackgroundUse: false,
                                 allowBackgroundUseAttribution: true,
                                 licenseAttribution: false,

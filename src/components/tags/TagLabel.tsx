@@ -116,6 +116,7 @@ const TAG_ICONS: Record<string, string> = {
   flickgame: "flickgame",
   flaxengine: "flaxengine",
   flstudio: "flstudio",
+  fmod: "fmod.svg",
   furnacetracker: "furnacetracker",
   gamemaker: "gamemaker",
   gamejolt: "gamejolt",
@@ -156,6 +157,7 @@ const TAG_ICONS: Record<string, string> = {
   pixelorama: "pixelorama",
   playcanvas: "playcanvas",
   playstationstore: "playstationstore",
+  postjam: "postjam.svg",
   procreate: "procreate",
   protools: "protools.svg",
   puzzlescript: "puzzlescript",
@@ -181,6 +183,7 @@ const TAG_ICONS: Record<string, string> = {
   unity: "unity",
   unreal: "unrealengine.svg",
   unrealengine: "unrealengine.svg",
+  wwise: "wwise.svg",
   xboxstore: "xboxstore",
   zbrush: "zbrush.svg",
 };

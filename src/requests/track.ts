@@ -29,6 +29,7 @@ export async function updateTrack(
     bpm?: number | null;
     musicalKey?: string | null;
     softwareUsed?: string[];
+    allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
     license?: TrackLicenseCode;

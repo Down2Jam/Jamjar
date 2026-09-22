@@ -20,7 +20,7 @@ import { PlatformType } from "@/types/DownloadLinkType";
 import {
   useSelf,
   useRatingCategories,
-  useCurrentJam,
+  useCurrentJamMetadata,
   useJams,
   useGamesInfinite,
 } from "@/hooks/queries";
@@ -485,7 +485,7 @@ export default function Games() {
   }, [mandatoryRatingCategories]);
 
   // Fetch current jam and all jams via TanStack Query
-  const { data: currentJamData, isPending: currentJamPending } = useCurrentJam();
+  const { data: currentJamData, isPending: currentJamPending } = useCurrentJamMetadata();
   const { data: allJams } = useJams();
 
   const currentJamId = currentJamData?.jam?.id?.toString();

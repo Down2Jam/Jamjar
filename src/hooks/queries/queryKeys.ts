@@ -2,6 +2,7 @@ export const queryKeys = {
   jam: {
     all: ["jam"] as const,
     current: () => [...queryKeys.jam.all, "current"] as const,
+    metadata: () => [...queryKeys.jam.all, "metadata"] as const,
     list: () => [...queryKeys.jam.all, "list"] as const,
     participation: (jamSlug?: string) =>
       [...queryKeys.jam.all, "participation", jamSlug] as const,
@@ -95,6 +96,10 @@ export const queryKeys = {
   emoji: {
     all: ["emoji"] as const,
     list: () => [...queryKeys.emoji.all, "list"] as const,
+  },
+  sticker: {
+    all: ["sticker"] as const,
+    list: () => [...queryKeys.sticker.all, "list"] as const,
   },
   team: {
     all: ["team"] as const,

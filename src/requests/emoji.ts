@@ -5,6 +5,10 @@ export async function getEmojis() {
   return fetch(`${BASE_URL}/emojis`);
 }
 
+export async function getStickers() {
+  return fetch(`${BASE_URL}/stickers`);
+}
+
 export async function createEmoji(
   slug: string,
   image: string,
@@ -50,6 +54,39 @@ export async function createGameEmoji(
   artistSlug?: string | null
 ) {
   return fetch(`${BASE_URL}/emojis/game/${encodeURIComponent(gameSlug)}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({ slug, image, artistSlug }),
+  });
+}
+
+export async function createUserSticker(
+  slug: string,
+  image: string,
+  artistSlug?: string | null,
+) {
+  return fetch(`${BASE_URL}/stickers/user`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      authorization: `Bearer ${getCookie("token")}`,
+    },
+    credentials: "include",
+    body: JSON.stringify({ slug, image, artistSlug }),
+  });
+}
+
+export async function createGameSticker(
+  gameSlug: string,
+  slug: string,
+  image: string,
+  artistSlug?: string | null,
+) {
+  return fetch(`${BASE_URL}/stickers/game/${encodeURIComponent(gameSlug)}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

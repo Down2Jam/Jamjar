@@ -2,6 +2,7 @@ export interface ReactionType {
   id: number;
   slug: string;
   image: string;
+  kind?: "EMOTE" | "STICKER";
   artist?: string | null;
   artistId?: number | null;
   artistUser?: {

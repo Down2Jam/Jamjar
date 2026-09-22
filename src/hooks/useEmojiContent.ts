@@ -5,10 +5,10 @@ import { replaceEmojiShortcodes } from "@/helpers/emoji";
 import { useEmojis } from "@/providers/useEmojis";
 
 export default function useEmojiContent(html: string) {
-  const { emojiMap } = useEmojis();
+  const { emojiMap, stickerMap } = useEmojis();
 
   return useMemo(
-    () => replaceEmojiShortcodes(html, emojiMap),
-    [html, emojiMap]
+    () => replaceEmojiShortcodes(html, emojiMap, stickerMap),
+    [html, emojiMap, stickerMap]
   );
 }

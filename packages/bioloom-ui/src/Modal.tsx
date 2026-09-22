@@ -5,6 +5,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type HTMLAttributes,
@@ -109,6 +110,41 @@ function FormModal({
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
+  const uploadImage = async (field: ImageUploadField, file: File) => {
+    if (busyField) return;
+
+    try {
+      setBusyField(field.name);
+      const uploadedUrl = await field.upload(file);
+      handleChange(field.name, uploadedUrl);
+    } finally {
+      setBusyField(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!shown || busyField) return;
+
+    const imageField = fields.find(
+      (field): field is ImageUploadField => field.type === "imageUpload",
+    );
+    if (!imageField) return;
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const imageItem = Array.from(event.clipboardData?.items ?? []).find(
+        (item) => item.kind === "file" && item.type.startsWith("image/"),
+      );
+      const imageFile = imageItem?.getAsFile();
+      if (!imageFile) return;
+
+      event.preventDefault();
+      void uploadImage(imageField, imageFile);
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [shown, fields, busyField]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formState);
@@ -206,15 +242,7 @@ function FormModal({
                     accept={accepting}
                     placeholder={ph}
                     height={phHeight}
-                    onSelect={async (file) => {
-                      try {
-                        setBusyField(field.name);
-                        const uploadedUrl = await field.upload(file);
-                        handleChange(field.name, uploadedUrl);
-                      } finally {
-                        setBusyField(null);
-                      }
-                    }}
+                    onSelect={(file) => uploadImage(field, file)}
                     disabled={busyField === field.name}
                   />
                 </Vstack>

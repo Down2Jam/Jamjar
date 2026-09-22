@@ -7,6 +7,7 @@ import type { MutableRefObject } from "react";
 import type { EmojiType } from "@/providers/useEmojis";
 
 const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
+const STICKER_REGEX = /^::([a-zA-Z0-9_-]+)::$/;
 const MAX_LARGE_EMOJIS = 5;
 
 function isEmojiOnlyLine(
@@ -20,7 +21,11 @@ function isEmojiOnlyLine(
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(visibleText))) {
-    if (visibleText.slice(lastIndex, match.index).trim() || !emojis[match[1]]) {
+    if (
+      visibleText.slice(lastIndex, match.index).trim() ||
+      !emojis[match[1]] ||
+      emojis[match[1]].kind === "STICKER"
+    ) {
       return false;
     }
 
@@ -33,7 +38,8 @@ function isEmojiOnlyLine(
 }
 
 export function createEmojiShortcodeExtension(
-  emojiMapRef: MutableRefObject<Record<string, EmojiType>>
+  emojiMapRef: MutableRefObject<Record<string, EmojiType>>,
+  stickerMapRef: MutableRefObject<Record<string, EmojiType>>,
 ) {
   return Extension.create({
     name: "emojiShortcodes",
@@ -43,7 +49,11 @@ export function createEmojiShortcodeExtension(
           props: {
             decorations: (state: EditorState) => {
               const emojis = emojiMapRef.current;
-              if (!emojis || Object.keys(emojis).length === 0) {
+              const stickers = stickerMapRef.current;
+              if (
+                Object.keys(emojis).length === 0 &&
+                Object.keys(stickers).length === 0
+              ) {
                 return DecorationSet.empty;
               }
 
@@ -51,6 +61,50 @@ export function createEmojiShortcodeExtension(
               const { doc } = state;
 
               doc.descendants((node, pos) => {
+                if (node.isTextblock) {
+                  const visibleText = node.textContent
+                    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+                    .trim();
+                  const stickerMatch = visibleText.match(STICKER_REGEX);
+                  const sticker = stickerMatch ? stickers[stickerMatch[1]] : null;
+
+                  if (sticker && stickerMatch) {
+                    const token = stickerMatch[0];
+                    const tokenIndex = node.textContent.indexOf(token);
+                    if (tokenIndex < 0) return false;
+
+                    const start = pos + 1 + tokenIndex;
+                    const end = start + token.length;
+                    const slug = stickerMatch[1];
+
+                    decorations.push(
+                      Decoration.widget(
+                        start,
+                        () => {
+                          const img = document.createElement("img");
+                          img.src = sticker.image;
+                          img.alt = token;
+                          img.title = token;
+                          img.className = "sticker-inline";
+                          img.setAttribute("data-sticker", slug);
+                          img.setAttribute("draggable", "false");
+                          return img;
+                        },
+                        { side: 0, stopEvent: () => true },
+                      ),
+                    );
+
+                    decorations.push(
+                      Decoration.inline(start, end, {
+                        style:
+                          "font-size:0;line-height:0;width:0;height:0;display:inline-block;overflow:hidden;",
+                      }),
+                    );
+
+                    return false;
+                  }
+                }
+
                 if (node.isTextblock && isEmojiOnlyLine(node.textContent, emojis)) {
                   decorations.push(
                     Decoration.node(pos, pos + node.nodeSize, {
@@ -65,6 +119,10 @@ export function createEmojiShortcodeExtension(
                 let match: RegExpExecArray | null;
 
                 while ((match = EMOJI_REGEX.exec(node.text))) {
+                  const previousCharacter = node.text[match.index - 1];
+                  const nextCharacter = node.text[match.index + match[0].length];
+                  if (previousCharacter === ":" || nextCharacter === ":") continue;
+
                   const slug = match[1];
                   const emoji = emojis[slug];
                   if (!emoji) continue;

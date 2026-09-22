@@ -2,6 +2,7 @@ import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
 let currentJamRequest: Promise<Response> | null = null;
+let currentJamMetadataRequest: Promise<Response> | null = null;
 
 export async function getJams() {
   return fetch(`${BASE_URL}/jams`);
@@ -15,6 +16,16 @@ export async function getCurrentJam() {
   }
 
   return currentJamRequest.then((response) => response.clone());
+}
+
+export async function getCurrentJamMetadata() {
+  if (!currentJamMetadataRequest) {
+    currentJamMetadataRequest = fetch(`${BASE_URL}/jam/metadata`).finally(() => {
+      currentJamMetadataRequest = null;
+    });
+  }
+
+  return currentJamMetadataRequest.then((response) => response.clone());
 }
 
 export async function joinJam(jamId: number) {

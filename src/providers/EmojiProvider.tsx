@@ -8,18 +8,19 @@ import { queryKeys } from "@/hooks/queries/queryKeys";
 import { EmojiContext } from "./EmojiContext";
 
 export function EmojiProvider({ children }: { children: ReactNode }) {
-  const { emojis, emojiMap, isLoading } = useEmojisQuery();
+  const { emojis, emojiMap, stickers, stickerMap, isLoading } = useEmojisQuery();
   const queryClient = useQueryClient();
 
   const refresh = useMemo(
     () => async () => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.emoji.list() });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.sticker.list() });
     },
     [queryClient]
   );
   const value = useMemo(
-    () => ({ emojis, emojiMap, loading: isLoading, refresh }),
-    [emojis, emojiMap, isLoading, refresh],
+    () => ({ emojis, emojiMap, stickers, stickerMap, loading: isLoading, refresh }),
+    [emojis, emojiMap, stickers, stickerMap, isLoading, refresh],
   );
 
   return (

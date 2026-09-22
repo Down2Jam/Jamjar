@@ -158,6 +158,7 @@ export async function postGame(
     id?: number;
     slug: string;
     license?: TrackLicenseCode;
+    allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
   }[],
@@ -267,6 +268,7 @@ export async function updateGame(
     id?: number;
     slug: string;
     license?: TrackLicenseCode;
+    allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
   }[],

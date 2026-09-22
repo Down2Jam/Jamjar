@@ -47,7 +47,18 @@ export function installSessionFetch() {
     if (auth && getSessionSnapshot().revision !== revision) throw new DOMException("Session changed", "AbortError");
     if (response.status !== 401 || !failedToken || auth !== `Bearer ${failedToken}`) return response;
     const token = await refresh(failedToken);
-    if (!token) return response;
+    if (!token) {
+      const signedOut = !Cookies.get("token") && !getSessionSnapshot().signedIn;
+      const canRetryAnonymously = retry.method === "GET" || retry.method === "HEAD";
+      if (!signedOut || !canRetryAnonymously) return response;
+
+      const revision = getSessionSnapshot().revision;
+      const headers = new Headers(retry.headers);
+      headers.delete("Authorization");
+      const retried = await originalFetch(new Request(retry, { headers }));
+      if (getSessionSnapshot().revision !== revision) throw new DOMException("Session changed", "AbortError");
+      return retried;
+    }
     const headers = new Headers(retry.headers);
     headers.set("Authorization", `Bearer ${token}`);
     const retried = await originalFetch(new Request(retry, { headers }));

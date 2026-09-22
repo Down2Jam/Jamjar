@@ -18,12 +18,28 @@ type Props = {
   onMarkRead: (id: number) => Promise<void> | void;
 };
 
+const leaderboardBands: Partial<Record<AppNotification["type"], string>> = {
+  LEADERBOARD_TOP_SPOT_LOST: "top spot",
+  LEADERBOARD_TOP_THREE_LOST: "top 3",
+  LEADERBOARD_TOP_FIVE_LOST: "top 5",
+};
+
 export default function GeneralNotification({
   notification,
   onMarkRead,
 }: Props) {
   const uiText = useUiTranslations();
   const viewLink = getNotificationLink(notification);
+  const leaderboardBand = leaderboardBands[notification.type];
+  const leaderboardName = typeof notification.data?.leaderboardName === "string"
+    ? notification.data.leaderboardName
+    : null;
+  const gameName = typeof notification.data?.gameName === "string"
+    ? notification.data.gameName
+    : null;
+  const showLinkedGameBody = Boolean(
+    leaderboardBand && leaderboardName && gameName && viewLink,
+  );
 
   return (
     <Card className="min-w-96">
@@ -35,7 +51,21 @@ export default function GeneralNotification({
           </Hstack>
         </Vstack>
 
-        {notification.body && (
+        {showLinkedGameBody ? (
+          <Text color="textFaded" size="sm">
+            Your score on{" "}
+            <Link
+              href={viewLink!}
+              className="font-medium underline underline-offset-2"
+              onClick={() => {
+                void onMarkRead(notification.id);
+              }}
+            >
+              {gameName}
+            </Link>
+            &apos;s {leaderboardName} leaderboard was knocked out of the {leaderboardBand}.
+          </Text>
+        ) : notification.body && (
           <Text color="textFaded" size="sm">
             {notification.body}
           </Text>

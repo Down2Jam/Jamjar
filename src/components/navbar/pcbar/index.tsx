@@ -730,7 +730,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 >
                   <NavbarButton
                     icon="bell"
-                    href="/inbox/messages"
+                    href="/inbox"
                     name="Navbar.Inbox.Title"
                     description="Navbar.Inbox.Description"
                     hotkey={["G", "I"]}
@@ -741,7 +741,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               ) : (
                 <NavbarButton
                   icon="bell"
-                  href="/inbox/messages"
+                  href="/inbox"
                   name="Navbar.Inbox.Title"
                   description="Navbar.Inbox.Description"
                   hotkey={["G", "I"]}

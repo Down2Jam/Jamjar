@@ -311,8 +311,39 @@
       "Title": "Reset",
       "Description": "Reset your settings to the last save (discards changes)"
     },
+    "Notifications": {
+      "Title": "Notifications",
+      "General": {
+        "Title": "General activity",
+        "Description": "Mentions, collection activity, followed creators, moderation updates, and other site alerts."
+      },
+      "Comments": {
+        "Title": "Comments and replies",
+        "Description": "Comments on your posts, games, and music, plus replies to your comments."
+      },
+      "Follows": {
+        "Title": "New followers",
+        "Description": "Alerts when somebody follows you or follows you back."
+      },
+      "Teams": {
+        "Title": "Team activity",
+        "Description": "Team invitations and applications to teams you manage."
+      },
+      "Leaderboards": {
+        "Title": "Leaderboard placement changes",
+        "Description": "Alerts when one of your watched scores falls out of a leaderboard placement band."
+      },
+      "StreamLive": {
+        "Title": "D2Jam streamer goes live",
+        "Description": "Notify me when a stream starts with the D2Jam tag in a category eligible for the stream widget. Off by default."
+      },
+      "Saved": "Notification settings saved",
+      "LoadError": "Failed to load notification settings",
+      "SaveError": "Failed to save notification settings"
+    },
     "TabDescriptions": {
       "General": "Manage your profile, account details, and preferences.",
+      "Notifications": "Choose which activity creates an inbox notification.",
       "Streams": "Manage your connected channel and rating visibility while streaming.",
       "Emotes": "Customize your emote prefix and manage your personal emotes.",
       "Tokens": "Review and revoke game and app access linked to your account."
@@ -1214,7 +1245,9 @@
     "FailedToVote": "Failed to vote",
     "FeatureComingSoon": "Feature coming soon",
     "FeelFreeToMakeAPostOnThe": "Feel free to make a post on the forum introducing yourself!",
+    "FillFrame": "Fill Frame",
     "FirstTwoWillBeShownOnHoverAll": "First three will be shown on hover. All will be shown on game page.",
+    "FitImage": "Fit Image",
     "Flags": "Flags",
     "FlipHorizontal": "Flip Horizontal",
     "FlipVertical": "Flip Vertical",

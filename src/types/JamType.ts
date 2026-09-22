@@ -26,6 +26,8 @@ export interface JamType {
   icon: IconName;
 }
 
+export type JamMetadata = Omit<JamType, "users" | "games">;
+
 export type JamPhase =
   | "Upcoming Jam"
   | "Suggestion"

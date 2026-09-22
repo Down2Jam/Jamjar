@@ -92,6 +92,15 @@ html.theme-preview-transitioning *::after {
   margin: 0 0.08em;
 }
 
+.sticker-inline {
+  display: block;
+  width: 10em;
+  height: 10em;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 0.5em 0;
+}
+
 .mention-chip {
   display: inline-flex;
   align-items: center;

@@ -31,6 +31,8 @@ import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import GameTokensSection from "@/components/settings/GameTokensSection";
 import ConnectedAppsSection from "@/components/settings/ConnectedAppsSection";
 import DeveloperAppsSection, { DEVELOPER_APP_FORM_ID } from "@/components/settings/DeveloperAppsSection";
+import NotificationSettingsSection from "@/components/settings/NotificationSettingsSection";
+import StickerManager from "@/components/stickers/StickerManager";
 
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
@@ -490,7 +492,7 @@ export default function UserPage() {
              {uiText("Navbar.Settings.Description")} </p>
         </header>
 
-        <Tabs defaultIndex={Math.max(0, ["general", "streams", "emotes", "tokens", "apps"].indexOf(new URLSearchParams(window.location.search).get("tab") ?? "general"))} className="[&>[role=tablist]]:justify-center">
+        <Tabs defaultIndex={Math.max(0, ["general", "notifications", "streams", "emotes", "tokens", "apps"].indexOf(new URLSearchParams(window.location.search).get("tab") ?? "general"))} className="[&>[role=tablist]]:justify-center">
           <Tab title={uiText("AppStrings.General")} icon="cog">
             <div className="form-editor-panel settings-editor-panel">
               <div className="game-editor-panel-heading">
@@ -780,6 +782,24 @@ export default function UserPage() {
           </div>
         </>
 
+            </div>
+          </Tab>
+          <Tab title={uiText("Settings.Notifications.Title")} icon="bell">
+            <div className="form-editor-panel settings-editor-panel">
+              <div className="game-editor-panel-heading">
+                <Vstack align="start">
+                  <Hstack>
+                    <Icon name="bell" color="text" size={28} />
+                    <Text size="2xl" color="text" weight="bold">
+                      {uiText("Settings.Notifications.Title")}
+                    </Text>
+                  </Hstack>
+                  <Text size="sm" color="textFaded">
+                    {uiText("Settings.TabDescriptions.Notifications")}
+                  </Text>
+                </Vstack>
+              </div>
+              <NotificationSettingsSection />
             </div>
           </Tab>
           <Tab title={uiText("AppStrings.Streams")} icon="sitwitch">
@@ -1287,6 +1307,14 @@ export default function UserPage() {
               </Modal>
             )}
           </Vstack>
+        </div>
+
+        <div className="game-editor-block">
+          <StickerManager
+            scope="USER"
+            scopeId={user.id}
+            prefix={emotePrefix}
+          />
         </div>
 
             </div>
