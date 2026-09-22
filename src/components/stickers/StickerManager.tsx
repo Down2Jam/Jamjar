@@ -144,7 +144,7 @@ export default function StickerManager({
           {scope === "USER" ? "Your stickers" : "Game stickers"}
         </Text>
         <Text color="textFaded" size="xs">
-          Stickers use the prefix <span className="font-semibold">{prefix}</span>, the <span className="font-semibold">::name::</span> syntax, and appear as large, standalone media in messages.
+          Stickers use the prefix <span className="font-semibold">{prefix}</span>.
         </Text>
         <Text color="textFaded" size="xs">Only upload stickers you have permission to use.</Text>
       </div>

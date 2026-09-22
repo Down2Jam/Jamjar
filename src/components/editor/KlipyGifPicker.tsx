@@ -46,11 +46,20 @@ function getCountry(locale: string) {
   return "US";
 }
 
-function getMedia(item: KlipyGif) {
+function getThumbnailMedia(item: KlipyGif) {
   return (
     item.media_formats?.tinygif ??
     item.media_formats?.mediumgif ??
     item.media_formats?.gif ??
+    (item.url ? { url: item.url } : undefined)
+  );
+}
+
+function getInsertMedia(item: KlipyGif) {
+  return (
+    item.media_formats?.mediumgif ??
+    item.media_formats?.gif ??
+    item.media_formats?.tinygif ??
     (item.url ? { url: item.url } : undefined)
   );
 }
@@ -153,36 +162,14 @@ export default function KlipyGifPicker({
   };
 
   const chooseGif = (item: KlipyGif) => {
-    const media = getMedia(item);
+    const media = getInsertMedia(item);
     if (!media?.url) return;
     const alt = item.content_description || item.title || "KLIPY GIF";
-    const itemUrl = item.itemurl || "https://klipy.com";
 
     editor
       .chain()
       .focus()
-      .insertContent([
-        { type: "imageResize", attrs: { src: media.url, alt } },
-        {
-          type: "paragraph",
-          content: [
-            {
-              type: "text",
-              text: "GIF from KLIPY",
-              marks: [
-                {
-                  type: "link",
-                  attrs: {
-                    href: itemUrl,
-                    target: "_blank",
-                    rel: "noopener noreferrer nofollow",
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ])
+      .insertContent({ type: "imageResize", attrs: { src: media.url, alt } })
       .run();
 
     const shareUrl = new URL(`${KLIPY_API_URL}/registershare`);
@@ -244,22 +231,22 @@ export default function KlipyGifPicker({
           {!loading && items.length === 0 && !error ? (
             <Text size="xs" color="textFaded">No GIFs found.</Text>
           ) : (
-            <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto">
+            <div className="max-h-72 columns-2 gap-2 overflow-y-auto pr-1">
               {items.map((item) => {
-                const media = getMedia(item);
+                const media = getThumbnailMedia(item);
                 if (!media?.url) return null;
                 return (
                   <button
                     key={item.id}
                     type="button"
-                    className="overflow-hidden rounded-lg"
+                    className="mb-2 block w-full cursor-pointer break-inside-avoid overflow-hidden rounded-lg"
                     title={item.title || item.content_description || "KLIPY GIF"}
                     onClick={() => chooseGif(item)}
                   >
                     <img
                       src={media.url}
                       alt={item.content_description || item.title || "KLIPY GIF"}
-                      className="h-28 w-full object-cover"
+                      className="block h-auto w-full"
                       loading="lazy"
                       decoding="async"
                     />

@@ -216,6 +216,25 @@ export default function EmbeddedGameBridge({
 }: EmbeddedGameBridgeProps) {
   const didHandshakeRef = useRef(false);
   const idempotencyNamespaceRef = useRef(crypto.randomUUID());
+  const bridgeContextRef = useRef({
+    game,
+    pageVersion,
+    signedIn,
+    user,
+    achievements,
+    leaderboards,
+  });
+  const onProgressSavedRef = useRef(onProgressSaved);
+
+  bridgeContextRef.current = {
+    game,
+    pageVersion,
+    signedIn,
+    user,
+    achievements,
+    leaderboards,
+  };
+  onProgressSavedRef.current = onProgressSaved;
 
   useEffect(() => {
     didHandshakeRef.current = false;
@@ -232,14 +251,7 @@ export default function EmbeddedGameBridge({
       }
     })();
 
-    const context = () => publicContext({
-      game,
-      pageVersion,
-      signedIn,
-      user,
-      achievements,
-      leaderboards,
-    });
+    const context = () => publicContext(bridgeContextRef.current);
     const sendSession = (targetOrigin = "*") => {
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow || !didHandshakeRef.current) return;
@@ -282,8 +294,9 @@ export default function EmbeddedGameBridge({
 
       try {
         if (message.type === "unlock-achievement") {
+          const currentGame = bridgeContextRef.current.game;
           const achievementId = positiveInteger(message.achievementId);
-          if (!achievementId || !game.achievements.some((achievement) => achievement.id === achievementId)) {
+          if (!achievementId || !currentGame.achievements.some((achievement) => achievement.id === achievementId)) {
             responseToGame(iframe, message.requestId, targetOrigin, {
               ok: false,
               error: "That achievement does not belong to this game.",
@@ -298,17 +311,18 @@ export default function EmbeddedGameBridge({
           );
           if (!disposed) {
             responseToGame(iframe, message.requestId, targetOrigin, result);
-            if (result.ok) void Promise.resolve(onProgressSaved?.()).catch(() => {});
+            if (result.ok) void Promise.resolve(onProgressSavedRef.current?.()).catch(() => {});
           }
           return;
         }
 
         if (message.type === "submit-score") {
+          const currentGame = bridgeContextRef.current.game;
           const leaderboardId = positiveInteger(message.leaderboardId);
           const score = message.score;
           if (
             !leaderboardId ||
-            !game.leaderboards.some((leaderboard) => leaderboard.id === leaderboardId) ||
+            !currentGame.leaderboards.some((leaderboard) => leaderboard.id === leaderboardId) ||
             typeof score !== "number" ||
             !Number.isFinite(score)
           ) {
@@ -351,7 +365,7 @@ export default function EmbeddedGameBridge({
           );
           if (!disposed) {
             responseToGame(iframe, message.requestId, targetOrigin, result);
-            if (result.ok) void Promise.resolve(onProgressSaved?.()).catch(() => {});
+            if (result.ok) void Promise.resolve(onProgressSavedRef.current?.()).catch(() => {});
           }
           return;
         }
@@ -376,7 +390,7 @@ export default function EmbeddedGameBridge({
       disposed = true;
       window.removeEventListener("message", onMessage);
     };
-  }, [achievements, buildUrl, game, iframeRef, leaderboards, onProgressSaved, pageVersion, signedIn, user]);
+  }, [buildUrl, game.id, iframeRef, pageVersion]);
 
   return null;
 }
