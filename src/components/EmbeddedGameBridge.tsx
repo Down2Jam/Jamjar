@@ -377,6 +377,7 @@ export default function EmbeddedGameBridge({
     };
 
     window.addEventListener("message", onMessage);
+    sendSession();
 
     return () => {
       window.removeEventListener("message", onMessage);

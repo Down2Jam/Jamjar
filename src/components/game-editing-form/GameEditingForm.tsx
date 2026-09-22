@@ -1273,9 +1273,11 @@ export default function GameEditingForm({
               });
               router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
             } else {
-              const error = await response.text();
+              const errorBody = await response.json().catch(() => null);
               addToast({
-                title: error || t("CreateGame.Create.Error"),
+                title: response.status === 413
+                  ? "The game page is too large to save. Remove large embedded images or shorten the description."
+                  : getApiErrorMessage(errorBody) || t("CreateGame.Create.Error"),
               });
             }
           } catch (error) {
