@@ -531,6 +531,13 @@ export default function ClientGamePage({
     await refreshUser();
   };
 
+  const refreshGameProgress = useCallback(async () => {
+    const response = await getGame(gameSlug);
+    if (!response.ok) return;
+
+    setGame(await readItem<GameType>(response));
+  }, [gameSlug]);
+
   // These shared categories do not depend on the game or each other.
   useEffect(() => {
     let cancelled = false;
@@ -992,6 +999,7 @@ export default function ClientGamePage({
                 pageVersion={selectedVersion}
                 signedIn={signedIn}
                 user={user}
+                onProgressSaved={refreshGameProgress}
               />
             )}
             {!playableEmbedUrl && sortedDownloadLinks.length > 0 && (
@@ -1975,7 +1983,7 @@ export default function ClientGamePage({
                 );
                 if (ok) {
                   setIsOpen2(false);
-                  window.location.reload();
+                  await refreshGameProgress();
                 }
               }}
               fields={[

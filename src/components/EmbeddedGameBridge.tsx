@@ -27,6 +27,7 @@ type EmbeddedGameBridgeProps = {
   user: UserType | null;
   achievements?: Array<Pick<GameType["achievements"][number], "id" | "name" | "description" | "image">>;
   leaderboards?: Array<Pick<GameType["leaderboards"][number], "id" | "name" | "type" | "decimalPlaces" | "onlyBest">>;
+  onProgressSaved?: () => void | Promise<void>;
 };
 
 type BridgeResult =
@@ -52,7 +53,7 @@ function publicContext({
   user,
   achievements,
   leaderboards,
-}: Omit<EmbeddedGameBridgeProps, "iframeRef" | "buildUrl">) {
+}: Omit<EmbeddedGameBridgeProps, "iframeRef" | "buildUrl" | "onProgressSaved">) {
   const contextAchievements = achievements ?? game.achievements ?? [];
   const contextLeaderboards = leaderboards ?? game.leaderboards ?? [];
 
@@ -211,6 +212,7 @@ export default function EmbeddedGameBridge({
   user,
   achievements,
   leaderboards,
+  onProgressSaved,
 }: EmbeddedGameBridgeProps) {
   const didHandshakeRef = useRef(false);
   const idempotencyNamespaceRef = useRef(crypto.randomUUID());
@@ -294,7 +296,10 @@ export default function EmbeddedGameBridge({
             { achievementId },
             `${idempotencyNamespaceRef.current}:${message.requestId}`,
           );
-          if (!disposed) responseToGame(iframe, message.requestId, targetOrigin, result);
+          if (!disposed) {
+            responseToGame(iframe, message.requestId, targetOrigin, result);
+            if (result.ok) void Promise.resolve(onProgressSaved?.()).catch(() => {});
+          }
           return;
         }
 
@@ -344,7 +349,10 @@ export default function EmbeddedGameBridge({
             },
             `${idempotencyNamespaceRef.current}:${message.requestId}`,
           );
-          if (!disposed) responseToGame(iframe, message.requestId, targetOrigin, result);
+          if (!disposed) {
+            responseToGame(iframe, message.requestId, targetOrigin, result);
+            if (result.ok) void Promise.resolve(onProgressSaved?.()).catch(() => {});
+          }
           return;
         }
 
@@ -368,7 +376,7 @@ export default function EmbeddedGameBridge({
       disposed = true;
       window.removeEventListener("message", onMessage);
     };
-  }, [achievements, buildUrl, game, iframeRef, leaderboards, pageVersion, signedIn, user]);
+  }, [achievements, buildUrl, game, iframeRef, leaderboards, onProgressSaved, pageVersion, signedIn, user]);
 
   return null;
 }

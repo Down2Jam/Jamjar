@@ -6,6 +6,24 @@ import { UserHoverPreview } from "@/components/hover-previews";
 import type { LeaderboardType } from "@/types/LeaderboardType";
 import type { ScoreType } from "@/types/ScoreType";
 
+function getPreviewIndices(scoreCount: number, ownIndex: number) {
+  const indices = new Set<number>();
+  const addWindow = (start: number) => {
+    for (let index = start; index < start + 3; index += 1) {
+      if (index >= 0 && index < scoreCount) indices.add(index);
+    }
+  };
+
+  addWindow(0);
+  addWindow(Math.max(0, scoreCount - 3));
+
+  const canCenterOnPlayer = ownIndex >= 2 && ownIndex <= scoreCount - 3;
+  const middleStart = Math.max(0, Math.floor(scoreCount / 2) - 1);
+  addWindow(canCenterOnPlayer ? ownIndex - 1 : middleStart);
+
+  return [...indices].sort((left, right) => left - right);
+}
+
 export default function GameLeaderboards({ leaderboards, userId, canManage, onSubmit, onDelete }: {
   leaderboards: LeaderboardType[];
   userId?: number;
@@ -32,15 +50,7 @@ export default function GameLeaderboards({ leaderboards, userId, canManage, onSu
     return true;
   }) : sorted;
   const ownIndex = scores.findIndex((score) => score.user.id === userId);
-  const nearbyIndices: number[] = [];
-  if (ownIndex >= 0) {
-    const above = scores.slice(0, ownIndex).findLastIndex((score) => score.user.id !== userId);
-    const below = scores.findIndex((score, index) => index > ownIndex && score.user.id !== userId);
-    if (above >= 0) nearbyIndices.push(above);
-    nearbyIndices.push(ownIndex);
-    if (below >= 0) nearbyIndices.push(below);
-  }
-  const previewIndices = [...new Set([...scores.slice(0, 3).map((_, index) => index), ...(ownIndex >= 0 ? nearbyIndices : scores.slice(-3).map((_, index) => Math.max(0, scores.length - 3) + index))])].sort((a, b) => a - b);
+  const previewIndices = getPreviewIndices(scores.length, ownIndex);
   const pageSize = 10;
   const pages = Math.max(1, Math.ceil(scores.length / pageSize));
   const currentPage = Math.min(page, pages);
