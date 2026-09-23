@@ -732,8 +732,7 @@ export default function Games() {
     recommended: {
       name: uiText("AppStrings.Recommended"),
       icon: "thumbsup",
-      description:
-        uiText("AppStrings.LikeKarmaButGivesASmallBoostTo"),
+      description: uiText("AppStrings.RecommendedSortDescription"),
     },
     karma: {
       name: uiText("AppStrings.Karma"),

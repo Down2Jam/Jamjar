@@ -317,6 +317,10 @@
         "Title": "General activity",
         "Description": "Mentions, collection activity, followed creators, moderation updates, and other site alerts."
       },
+      "RatingReminders": {
+        "Title": "Jam rating reminders",
+        "Description": "Remind me halfway through rating when my team's game or music needs more ratings."
+      },
       "Comments": {
         "Title": "Comments and replies",
         "Description": "Comments on your posts, games, and music, plus replies to your comments."
@@ -329,9 +333,17 @@
         "Title": "Team activity",
         "Description": "Team invitations and applications to teams you manage."
       },
-      "Leaderboards": {
-        "Title": "Leaderboard placement changes",
-        "Description": "Alerts when one of your watched scores falls out of a leaderboard placement band."
+      "LeaderboardTopSpot": {
+        "Title": "Lost the top spot",
+        "Description": "Notify me if my score was the 5th submission or later and then loses the top spot."
+      },
+      "LeaderboardTopThree": {
+        "Title": "Dropped out of the top 3",
+        "Description": "Notify me if my score was the 10th submission or later and then drops out of the top 3."
+      },
+      "LeaderboardTopFive": {
+        "Title": "Dropped out of the top 5",
+        "Description": "Notify me if my score was the 15th submission or later and then drops out of the top 5."
       },
       "StreamLive": {
         "Title": "D2Jam streamer goes live",
@@ -1350,6 +1362,7 @@
     "License2": "License:",
     "Licenses": "Licenses",
     "LikeKarmaButGivesASmallBoostTo": "Like Karma, but gives a small boost to games people enjoy as well",
+    "RecommendedSortDescription": "Community recommendations, adjusted for games, creators, controls, and tags you have enjoyed or rated poorly",
     "LikeKarmaButGivesASmallBoostTo2": "Like Karma, but gives a small boost to tracks people enjoy as well",
     "LiveOverview": "Live Overview",
     "LoadMorePosts": "Load More Posts",
@@ -2754,6 +2767,30 @@
     "Tracks": "Music tracks",
     "Present": "Present",
     "Missing": "Missing"
+  },
+  "AdminRecommendations": {
+    "Title": "Recommended sort preview",
+    "Description": "Compare the visitor ranking with a selected player's personalized ranking, before game-list filters are applied.",
+    "OpenPreview": "Open preview",
+    "Back": "Admin overview",
+    "Jam": "Jam",
+    "AllJams": "All jams",
+    "Version": "Page version",
+    "LatestVersion": "Latest available",
+    "JamVersion": "Jam",
+    "PostJamVersion": "Post-jam",
+    "Player": "Player",
+    "SearchPlayer": "Search players",
+    "VisitorOrder": "Visitor order",
+    "PlayerOrder": "{name}'s order",
+    "VisitorRank": "Visitor rank #{rank}",
+    "PlayerRank": "Player rank #{rank}",
+    "Adjustment": "Personal adjustment: {value}",
+    "NoMatch": "No strong preference match",
+    "GameCount": "{count} games in this view",
+    "LoadMore": "Load more",
+    "Loading": "Loading…",
+    "LoadError": "Could not load the recommendation preview. Try another selection."
   },
   "Language": {
     "Select": "Select language"

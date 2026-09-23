@@ -224,6 +224,20 @@ export default function AdminDashboard() {
         <Card className="h-full">
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">
+              <Text size="lg" weight="semibold">{t("AdminRecommendations.Title")}</Text>
+              <Text size="sm" color="textFaded">{t("AdminRecommendations.Description")}</Text>
+            </Vstack>
+            <Hstack wrap>
+              <Button color="blue" href="/admin/recommendations" icon="thumbsup">
+                {t("AdminRecommendations.OpenPreview")}
+              </Button>
+            </Hstack>
+          </Vstack>
+        </Card>
+
+        <Card className="h-full">
+          <Vstack align="stretch">
+            <Vstack gap={1} align="stretch">
               <Text size="lg" weight="semibold">
                  {uiText("Navbar.ThemeSuggestions.Title")} </Text>
               <Text size="sm" color="textFaded">

@@ -27,6 +27,11 @@ const NOTIFICATION_GROUPS: Array<{
     types: ["GENERAL"],
   },
   {
+    title: "Settings.Notifications.RatingReminders.Title",
+    description: "Settings.Notifications.RatingReminders.Description",
+    types: ["RATING_REMINDER"],
+  },
+  {
     title: "Settings.Notifications.Comments.Title",
     description: "Settings.Notifications.Comments.Description",
     types: ["GAME_COMMENT", "TRACK_COMMENT", "POST_COMMENT", "COMMENT_REPLY"],
@@ -42,13 +47,19 @@ const NOTIFICATION_GROUPS: Array<{
     types: ["TEAM_INVITE", "TEAM_APPLICATION"],
   },
   {
-    title: "Settings.Notifications.Leaderboards.Title",
-    description: "Settings.Notifications.Leaderboards.Description",
-    types: [
-      "LEADERBOARD_TOP_SPOT_LOST",
-      "LEADERBOARD_TOP_THREE_LOST",
-      "LEADERBOARD_TOP_FIVE_LOST",
-    ],
+    title: "Settings.Notifications.LeaderboardTopSpot.Title",
+    description: "Settings.Notifications.LeaderboardTopSpot.Description",
+    types: ["LEADERBOARD_TOP_SPOT_LOST"],
+  },
+  {
+    title: "Settings.Notifications.LeaderboardTopThree.Title",
+    description: "Settings.Notifications.LeaderboardTopThree.Description",
+    types: ["LEADERBOARD_TOP_THREE_LOST"],
+  },
+  {
+    title: "Settings.Notifications.LeaderboardTopFive.Title",
+    description: "Settings.Notifications.LeaderboardTopFive.Description",
+    types: ["LEADERBOARD_TOP_FIVE_LOST"],
   },
 ];
 

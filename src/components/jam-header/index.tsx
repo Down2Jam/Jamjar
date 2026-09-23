@@ -248,34 +248,6 @@ export default function JamHeader() {
     ...event,
   }));
 
-  const milestones = getJamMilestones(displayJam);
-  const phaseDateRange = (() => {
-    if (!displayJam || !milestones) return null;
-
-    switch (activeJamResponse?.phase) {
-      case "Rating":
-        return {
-          start: milestones.ratingStart,
-          end: milestones.resultsStart,
-        };
-      case "Post-Jam Refinement":
-        return {
-          start: milestones.postJamRefinementStart,
-          end: milestones.postJamRefinementEnd,
-        };
-      case "Post-Jam Rating":
-        return {
-          start: milestones.postJamRatingStart,
-          end: milestones.postJamRatingEnd,
-        };
-      default:
-        return {
-          start: milestones.jamStart,
-          end: milestones.jamStart + displayJam.jammingHours * 60 * 60 * 1000,
-        };
-    }
-  })();
-
   const nextEventIndex = sortedEvents.findIndex(
     (event) => event.date && event.date >= currentDate,
   );
@@ -375,21 +347,18 @@ export default function JamHeader() {
   const currentPhase = activeJamResponse?.phase
     ? getPhaseObj(activeJamResponse.phase)
     : null;
-  const phaseStartDate = displayJam
-    ? new Date(phaseDateRange?.start ?? displayJam.startTime)
-    : null;
-  const phaseEndDate = displayJam
+  const jamStartDate = displayJam ? new Date(displayJam.startTime) : null;
+  const jamEndDate = displayJam
     ? new Date(
-        phaseDateRange?.end ??
-          new Date(displayJam.startTime).getTime() +
-            displayJam.jammingHours * 60 * 60 * 1000,
+        new Date(displayJam.startTime).getTime() +
+          displayJam.jammingHours * 60 * 60 * 1000,
       )
     : null;
   const compactDateRange =
-    phaseStartDate && phaseEndDate
-      ? phaseStartDate.getMonth() === phaseEndDate.getMonth()
-        ? `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate, false)}`
-        : `${formatDate(phaseStartDate)} - ${formatDate(phaseEndDate)}`
+    jamStartDate && jamEndDate
+      ? jamStartDate.getMonth() === jamEndDate.getMonth()
+        ? `${formatDate(jamStartDate)} - ${formatDate(jamEndDate, false)}`
+        : `${formatDate(jamStartDate)} - ${formatDate(jamEndDate)}`
       : "Dates TBA";
   const themeVotingOpen = isThemeVotingOpen(
     activeJamResponse?.phase,

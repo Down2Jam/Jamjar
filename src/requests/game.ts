@@ -361,7 +361,17 @@ export async function getGames(
     params.set("pageVersion", pageVersion);
   }
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store" });
+  const rawToken = getCookie("token");
+  const token = sort === "recommended" && rawToken && rawToken !== "null" && rawToken !== "undefined" ? rawToken : null;
+  const url = `${BASE_URL}/games?${params.toString()}`;
+  const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "include",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+  });
+  return response.status === 401 && token
+    ? fetch(url, { cache: "no-store", credentials: "include" })
+    : response;
 }
 
 export async function getGamesPage({
@@ -386,7 +396,18 @@ export async function getGamesPage({
   if (pageVersion && pageVersion !== "JAM") params.set("pageVersion", pageVersion);
   if (cursor) params.set("cursor", cursor);
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store", signal });
+  const rawToken = getCookie("token");
+  const token = sort === "recommended" && rawToken && rawToken !== "null" && rawToken !== "undefined" ? rawToken : null;
+  const url = `${BASE_URL}/games?${params.toString()}`;
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal,
+    credentials: "include",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+  });
+  return response.status === 401 && token
+    ? fetch(url, { cache: "no-store", signal, credentials: "include" })
+    : response;
 }
 
 export async function getRandomGame(includeExternal = true) {

@@ -6,6 +6,7 @@ import { TeamInviteType } from "./TeamInviteType";
 
 export type NotificationKind =
   | "GENERAL"
+  | "RATING_REMINDER"
   | "GAME_COMMENT"
   | "TRACK_COMMENT"
   | "COMMENT_REPLY"
