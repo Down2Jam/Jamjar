@@ -1190,7 +1190,6 @@ export default function MusicPage() {
             const canRateTrack =
               Boolean(user) &&
               Boolean(ratingTrackId) &&
-              track.origin !== "ASSET_PACK" &&
               track.pageVersion !== "POST_JAM" &&
               Array.isArray(track.game?.team?.users) &&
               !isOwnTrack(track, user) &&

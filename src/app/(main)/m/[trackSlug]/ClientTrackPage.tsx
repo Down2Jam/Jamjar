@@ -332,7 +332,6 @@ export default function ClientTrackPage({
     (!isCurrentJamTrack || shouldShowCurrentVersionResults);
   const canRateCurrentVersion =
     Boolean(user) &&
-    !isAssetPackTrack &&
     !isOwnMusic &&
     isCurrentJamTrack &&
     isRatingOpenPhase &&
@@ -559,7 +558,7 @@ export default function ClientTrackPage({
               </Card>
             )}
 
-            {!isAssetPackTrack && <Card className="w-full">
+            <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.RATING")} </Text>
@@ -714,7 +713,7 @@ export default function ClientTrackPage({
                   </Vstack>
                 </RatingVisibilityGate>
               </Vstack>
-            </Card>}
+            </Card>
 
             {((track.links?.length ?? 0) > 0 || track.allowDownload) && (
               <Card className="w-full">
@@ -782,7 +781,7 @@ export default function ClientTrackPage({
               </Card>
             )}
 
-            {!isAssetPackTrack && <Card className="w-full">
+            <Card className="w-full">
               <Vstack align="start" className="gap-3">
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.STATS")} </Text>
@@ -793,7 +792,8 @@ export default function ClientTrackPage({
                        {uiText("AppStrings.RatingsGiven2")}{" "}
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
-                    {track.game.category !== "EXTRA" &&
+                    {!isAssetPackTrack &&
+                      track.game.category !== "EXTRA" &&
                       track.game.category !== "EXTERNAL" &&
                       track.pageVersion !== "POST_JAM" &&
                       Math.round(overallScore?.ratingsGivenCount ?? 0) < 5 && (
@@ -812,7 +812,7 @@ export default function ClientTrackPage({
                   </Hstack>
                 </Vstack>
               </Vstack>
-            </Card>}
+            </Card>
           </Vstack>
         </div>
       </div>

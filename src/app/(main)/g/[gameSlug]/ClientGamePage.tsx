@@ -1656,9 +1656,9 @@ export default function ClientGamePage({
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
-                      showRating={track.origin !== "ASSET_PACK" && canRateDisplayedTrack && !isOwnTrack(track, user)}
+                      showRating={canRateDisplayedTrack && !isOwnTrack(track, user)}
                       hideRatings={effectiveHideRatings}
-                      ratingDisabled={track.origin === "ASSET_PACK" || !canRateDisplayedTrack || isOwnTrack(track, user)}
+                      ratingDisabled={!canRateDisplayedTrack || isOwnTrack(track, user)}
                       onRate={async (value) => {
                         if (!canRateDisplayedTrack || isOwnTrack(track, user) || !trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;

@@ -8,13 +8,13 @@ import type { ScoreType } from "@/types/ScoreType";
 
 function getPreviewIndices(scoreCount: number, ownIndex: number) {
   const indices = new Set<number>();
-  const addWindow = (start: number) => {
-    for (let index = start; index < start + 3; index += 1) {
+  const addWindow = (start: number, count = 3) => {
+    for (let index = start; index < start + count; index += 1) {
       if (index >= 0 && index < scoreCount) indices.add(index);
     }
   };
 
-  addWindow(0);
+  addWindow(0, 4);
   addWindow(Math.max(0, scoreCount - 3));
 
   const canCenterOnPlayer = ownIndex >= 2 && ownIndex <= scoreCount - 3;
