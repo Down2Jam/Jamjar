@@ -382,7 +382,6 @@ export default function Posts() {
                         <span
                           key={tag.id}
                           className="relative h-5 min-w-[0.35rem] flex-1 basis-5"
-                          title={uiText("AppStrings.Value0Value14", { value0: tag.name, value1: rule === 1 ? "included" : "excluded" })}
                         >
                           <span
                             className="absolute left-0 top-0 flex h-5 w-5 items-center justify-center rounded-sm border"

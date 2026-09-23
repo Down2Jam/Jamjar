@@ -1,6 +1,6 @@
 import type { EmojiType } from "@/providers/useEmojis";
 
-const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
+const EMOJI_REGEX = /::[a-zA-Z0-9_-]+::|:([a-zA-Z0-9_-]+):/g;
 const STICKER_REGEX = /^::([a-zA-Z0-9_-]+)::$/;
 const EMOJI_LINE_SELECTOR = "p,li,h1,h2,h3,h4,h5,h6";
 const MAX_LARGE_EMOJIS = 5;
@@ -62,11 +62,9 @@ export function replaceEmojiShortcodes(
     let replaced = false;
 
     while ((match = EMOJI_REGEX.exec(text))) {
-      const previousCharacter = text[match.index - 1];
-      const nextCharacter = text[match.index + match[0].length];
-      if (previousCharacter === ":" || nextCharacter === ":") continue;
-
       const slug = match[1];
+      if (!slug) continue;
+
       const emoji = emojiMap[slug];
       if (!emoji) continue;
 

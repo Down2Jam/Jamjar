@@ -86,6 +86,8 @@ import {
   GiWorld,
   GiAlarmClock,
   GiElectric,
+  GiExtraTime,
+  GiRocketFlight,
 } from "react-icons/gi";
 
 const TAG_ICONS: Record<string, string> = {
@@ -157,7 +159,6 @@ const TAG_ICONS: Record<string, string> = {
   pixelorama: "pixelorama",
   playcanvas: "playcanvas",
   playstationstore: "playstationstore",
-  postjam: "postjam.svg",
   procreate: "procreate",
   protools: "protools.svg",
   puzzlescript: "puzzlescript",
@@ -270,6 +271,8 @@ const GAME_ICONS: Record<string, GameIconDefinition> = {
   introduction: { icon: GiCharacter, color: "#0ea5e9" },
   memes: { icon: GiJesterHat, color: "#ec4899" },
   postmortem: { icon: GiTombstone, color: "#8b5cf6" },
+  postjam: { icon: GiExtraTime, color: "#8b5cf6" },
+  release: { icon: GiRocketFlight, color: "#f97316" },
   stream: { icon: GiRadioTower, color: "#ef4444" },
   teamup: { icon: GiMeepleGroup, color: "#06b6d4" },
   themevote: { icon: GiVote, color: "#a855f7" },

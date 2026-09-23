@@ -6,7 +6,7 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 import type { MutableRefObject } from "react";
 import type { EmojiType } from "@/providers/useEmojis";
 
-const EMOJI_REGEX = /:([a-zA-Z0-9_-]+):/g;
+const EMOJI_REGEX = /::[a-zA-Z0-9_-]+::|:([a-zA-Z0-9_-]+):/g;
 const STICKER_REGEX = /^::([a-zA-Z0-9_-]+)::$/;
 const MAX_LARGE_EMOJIS = 5;
 
@@ -119,11 +119,9 @@ export function createEmojiShortcodeExtension(
                 let match: RegExpExecArray | null;
 
                 while ((match = EMOJI_REGEX.exec(node.text))) {
-                  const previousCharacter = node.text[match.index - 1];
-                  const nextCharacter = node.text[match.index + match[0].length];
-                  if (previousCharacter === ":" || nextCharacter === ":") continue;
-
                   const slug = match[1];
+                  if (!slug) continue;
+
                   const emoji = emojis[slug];
                   if (!emoji) continue;
 

@@ -160,6 +160,30 @@ function gradientTextStyle(
   };
 }
 
+function hasTransparentBannerPixels(image: HTMLImageElement) {
+  if (!image.naturalWidth || !image.naturalHeight) return false;
+
+  const scale = Math.min(1, 256 / image.naturalWidth, 64 / image.naturalHeight);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return false;
+
+  try {
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    for (let index = 3; index < pixels.length; index += 4) {
+      if (pixels[index] < 245) return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function toCanonicalItchEmbedUrl(url?: string | null) {
   if (!url) return null;
 
@@ -345,6 +369,7 @@ export default function ClientGamePage({
   const searchParams = useSearchParams();
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
+  const [bannerTransparency, setBannerTransparency] = useState<Record<string, boolean>>({});
   const { data: user = null, refetch: refreshUser } = useSelf();
   const { signedIn } = useSession();
   const [page, setPage] = useState(1);
@@ -844,6 +869,9 @@ export default function ClientGamePage({
       : displayGame.category === "ODA" ? "purple"
         : displayGame.category === "EXTERNAL" ? "orange" : "pink"
   ];
+  const hasTransparentBanner = Boolean(
+    displayGame.banner && bannerTransparency[displayGame.banner],
+  );
 
   return (
     <PriorityEmotesContext.Provider value={gameEmotes}>
@@ -852,10 +880,10 @@ export default function ClientGamePage({
         style={{
           color: siteTheme.colors["text"],
         }}
-        className="shadow-2xl relative rounded-none lg:rounded-xl overflow-visible"
+        className={`relative rounded-none overflow-visible ${hasTransparentBanner ? "" : "shadow-2xl lg:rounded-xl"}`}
       >
         <div
-          className="relative h-60 lg:rounded-t-xl"
+          className={`relative aspect-[1468/240] w-full ${hasTransparentBanner ? "" : "lg:rounded-t-xl"}`}
           style={{
             backgroundColor: displayGame.banner ? undefined : colors["base"],
           }}
@@ -864,13 +892,20 @@ export default function ClientGamePage({
             <Image
               src={displayGame.banner}
               alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
-              className="object-cover lg:rounded-t-xl"
+              className={`object-contain ${hasTransparentBanner ? "drop-shadow-2xl" : "lg:rounded-t-xl"}`}
               fill
+              onLoad={(event) => {
+                const banner = displayGame.banner;
+                if (!banner) return;
+
+                const transparent = hasTransparentBannerPixels(event.currentTarget);
+                setBannerTransparency((current) => ({ ...current, [banner]: transparent }));
+              }}
             />
           )}
         </div>
         <div
-          className="grid gap-6 border-t p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]"
+          className={`grid gap-6 border-t p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)] ${hasTransparentBanner ? "rounded-t-xl shadow-2xl" : ""}`}
           style={{
             backgroundColor: siteTheme.colors["mantle"],
             borderColor: interactiveOutlineColor,
@@ -1856,6 +1891,7 @@ export default function ClientGamePage({
                         0,
                       ),
                     ) < 5 &&
+                      displayGame.category !== "EXTRA" &&
                       selectedVersion !== "POST_JAM" && (
                       <Tooltip
                         content="This game needs 5 ratings given in order to be ranked after the rating period"

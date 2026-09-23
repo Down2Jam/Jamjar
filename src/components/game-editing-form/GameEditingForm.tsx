@@ -1973,6 +1973,8 @@ export default function GameEditingForm({
                       value={bannerUrl}
                       width={734}
                       height={120}
+                      maxOutputWidth={1468}
+                      maxOutputHeight={240}
                       placeholder={uiText("AppStrings.UploadBanner")}
                       onSelect={async (file, crop) => {
                         const url = await uploadTo("image", file, crop);

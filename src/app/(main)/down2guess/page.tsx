@@ -85,7 +85,7 @@ type GamesPagePayload = {
   pageInfo?: { hasMore?: boolean; nextCursor?: string | null };
 };
 
-async function getAllGuessableGames() {
+async function getAllGuessableGames(jamId: number | null) {
   const games: GameType[] = [];
   const seen = new Set<number>();
   let cursor: string | null = null;
@@ -93,6 +93,7 @@ async function getAllGuessableGames() {
   for (let page = 0; page < 100; page += 1) {
     const response = await getGamesPage({
       sort: "newest",
+      jamId: jamId === null ? undefined : String(jamId),
       cursor,
       limit: 50,
     });
@@ -424,6 +425,9 @@ export default function Down2GuessPage() {
   const [dataLoading, setDataLoading] = useState(true);
   const [gameLoading, setGameLoading] = useState(true);
   const [answer, setAnswer] = useState<GameType | null>(null);
+  const [guessJamId, setGuessJamId] = useState<number | null | undefined>(
+    undefined,
+  );
   const [guessInput, setGuessInput] = useState("");
   const [guessOptionsOpen, setGuessOptionsOpen] = useState(false);
   const [guesses, setGuesses] = useState<GameType[]>([]);
@@ -508,6 +512,8 @@ export default function Down2GuessPage() {
     hintCandidates.length > 0;
 
   useEffect(() => {
+    if (guessJamId === undefined) return;
+
     let cancelled = false;
 
     const loadAll = async () => {
@@ -516,7 +522,7 @@ export default function Down2GuessPage() {
         const [tagsRes, flagsRes, games, ratingRes] = await Promise.all([
           getGameTags(),
           getFlags(),
-          getAllGuessableGames(),
+          getAllGuessableGames(guessJamId),
           getRatingCategories(true),
         ]);
 
@@ -543,14 +549,14 @@ export default function Down2GuessPage() {
           addToast({ title: uiText("AppStrings.FailedToLoadGameData") });
         }
       }
-      setDataLoading(false);
+      if (!cancelled) setDataLoading(false);
     };
 
     loadAll();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [guessJamId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -559,7 +565,9 @@ export default function Down2GuessPage() {
       setGameLoading(true);
       try {
         const randomRes = await getRandomGame(false);
-        const randomGame = await readItem<GameType>(randomRes);
+        const randomGame = await readItem<GameType & { activeJamGame?: boolean }>(
+          randomRes,
+        );
         const slug = randomGame?.slug;
         if (!slug) {
           throw new Error("No random game returned.");
@@ -573,11 +581,13 @@ export default function Down2GuessPage() {
 
         if (!cancelled) {
           setAnswer(gamePayload);
+          setGuessJamId(randomGame.activeJamGame ? randomGame.jamId : null);
         }
       } catch (error) {
         if (!cancelled) {
           addToast({ title: uiText("AppStrings.FailedToLoadARandomGame") });
           setAnswer(null);
+          setGuessJamId(null);
         }
       }
       setGameLoading(false);
@@ -597,11 +607,15 @@ export default function Down2GuessPage() {
     setRevealedHints([]);
     setRoundEntries([]);
     setAnswer(null);
+    setGuessJamId(undefined);
+    setDataLoading(true);
     setGameLoading(true);
 
     try {
       const randomRes = await getRandomGame(false);
-      const randomGame = await readItem<GameType>(randomRes);
+      const randomGame = await readItem<GameType & { activeJamGame?: boolean }>(
+        randomRes,
+      );
       const slug = randomGame?.slug;
       if (!slug) {
         throw new Error("No random game returned.");
@@ -612,8 +626,10 @@ export default function Down2GuessPage() {
         throw new Error("Game details were not returned.");
       }
       setAnswer(gamePayload);
+      setGuessJamId(randomGame.activeJamGame ? randomGame.jamId : null);
     } catch (error) {
       addToast({ title: uiText("AppStrings.FailedToStartANewRound") });
+      setGuessJamId(null);
     } finally {
       setGameLoading(false);
     }

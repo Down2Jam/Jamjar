@@ -38,6 +38,11 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Let editor wheel scrolling reach the page until its content actually overflows. */
+.overflow-y-auto.ProseMirror {
+  overscroll-behavior-y: auto;
+}
+
 .overflow-x-auto {
   overscroll-behavior-x: contain;
 }

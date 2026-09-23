@@ -15,7 +15,7 @@ export default function GamePageLoading() {
     <div role="status" aria-label={uiText("AppStrings.LoadingGame")} aria-busy="true">
       <Card shadow="none" padding={0} className="overflow-hidden !rounded-none !border-0 lg:!rounded-xl lg:!border">
         <div aria-hidden="true" className="motion-safe:animate-pulse">
-          <div className="h-60" style={{ backgroundColor: placeholderColor }} />
+          <div className="aspect-[1468/240] w-full" style={{ backgroundColor: placeholderColor }} />
           <div className="grid gap-6 border-t p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]" style={{ borderColor }}>
             <div className="min-w-0">
               {placeholder("h-9 w-2/5")}
