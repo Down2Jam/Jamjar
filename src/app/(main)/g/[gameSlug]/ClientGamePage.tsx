@@ -6,6 +6,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { use, useCallback, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
+import { getGameTeamName } from "@/helpers/gameTeamName";
 import { GamePageBackground } from "@/app/(main)/PageBackground";
 import { addToast } from "bioloom-ui";
 import { Tabs, Tab } from "bioloom-ui";
@@ -921,10 +922,9 @@ export default function ClientGamePage({
                   }}
                 >
                    {uiText("PostCard.By")}{" "}
-                  {displayGame.team.name ||
-                    (displayGame.team.users.length == 1
-                      ? displayGame.team.owner.name
-                      : uiText("AppStrings.Value0STeam", { value0: displayGame.team.owner.name }))}{" "}
+                  {getGameTeamName(displayGame.team, (ownerName) =>
+                    uiText("AppStrings.Value0STeam", { value0: ownerName }),
+                  )}{" "}
                 </p>
                 <Chip
                   style={{
@@ -1715,6 +1715,7 @@ export default function ClientGamePage({
                                       },
                                     );
                                     if (res.ok) {
+                                      void refreshUser();
                                       const payload = await res.json().catch(() => null);
                                       const nextUnlocks = (achievement.unlocks ?? []).filter((entry) => entry.userId !== user.id);
                                       if (!hasIt && payload?.earnedAt) nextUnlocks.push({ userId: user.id, earnedAt: payload.earnedAt });

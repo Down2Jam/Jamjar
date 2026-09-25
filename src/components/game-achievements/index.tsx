@@ -54,6 +54,7 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   };
   const count = achievements.filter(unlocked).length;
   const percent = achievements.length ? Math.round(count / achievements.length * 100) : 0;
+  const allUnlocked = Boolean(userId && achievements.length && count === achievements.length);
   const featured = achievements.filter(unlocked).sort((a, b) => (unlockTime(b) ?? -Infinity) - (unlockTime(a) ?? -Infinity))[0];
   const borderColor = getNeutralBorderColor(colors);
   const rarity = (achievement: AchievementType) => {
@@ -93,9 +94,10 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
     {!modalOnly && <Card padding={1} shadow="none">
       <p className="mb-3 text-xs leading-4" style={{ color: colors.textFaded }}>{uiText("AppStrings.ACHIEVEMENTS")}</p>
       <div className="flex items-center gap-3">
+        {allUnlocked && <img src="/images/award.png" alt="" className="h-12 w-12 shrink-0 scale-125 object-contain" />}
         <div className="min-w-0 flex-1">
           <p className="mb-2 text-xs" style={{ color: colors.textFaded }}>
-            {userId ? <>{count === achievements.length ? uiText("AppStrings.YouVeUnlockedAllAchievements") : uiText("AppStrings.YouVeUnlocked")} {count}/{achievements.length} ({percent}%)</> : uiText("AppStrings.Value0AchievementsSignInToTrackYourProgress", { value0: achievements.length })}
+            {userId ? <>{allUnlocked ? uiText("AppStrings.YouVeUnlockedAllAchievements") : uiText("AppStrings.YouVeUnlocked")} {count}/{achievements.length} ({percent}%)</> : uiText("AppStrings.Value0AchievementsSignInToTrackYourProgress", { value0: achievements.length })}
           </p>
           <div role="progressbar" aria-label={uiText("AppStrings.AchievementsUnlocked")} aria-valuenow={count} aria-valuemin={0} aria-valuemax={achievements.length} className="h-2 overflow-hidden rounded-sm" style={{ backgroundColor: colors.base }}>
             <div className="h-full transition-[width] motion-reduce:transition-none" style={{ width: `${percent}%`, backgroundColor: colors.blue }} />

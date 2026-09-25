@@ -31,10 +31,21 @@ export function useUser(slug: string, enabled = true) {
     queryKey: queryKeys.user.detail(slug),
     queryFn: async () => {
       const res = await getUser(slug);
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => null)) as {
+          error?: { message?: string };
+          message?: string;
+        } | null;
+        throw new Error(payload?.error?.message ?? payload?.message ?? "Unable to load profile");
+      }
       const json = await res.json();
-      return unwrapItem<UserType>(json)!;
+      const user = unwrapItem<UserType>(json);
+      if (!user) throw new Error("Unable to load profile");
+      return user;
     },
     enabled: enabled && !!slug,
+    staleTime: 2 * 60 * 1000,
+    refetchOnMount: true,
   });
 }
 

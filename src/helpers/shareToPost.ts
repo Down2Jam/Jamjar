@@ -1,16 +1,32 @@
 import { getCookie } from "@/helpers/cookie";
+import { defaultSiteTheme } from "@/providers/defaultSiteTheme";
 import { BASE_URL } from "@/requests/config";
 
 const SHARE_DRAFT_KEY = "jamjar:share-post-draft";
+const themeColors = defaultSiteTheme.colors;
+
+function mixHexColors(foreground: string, background: string, amount: number) {
+  const channels = [1, 3, 5].map((offset) => {
+    const front = Number.parseInt(foreground.slice(offset, offset + 2), 16);
+    const back = Number.parseInt(background.slice(offset, offset + 2), 16);
+    return Math.round(front * amount + back * (1 - amount))
+      .toString(16)
+      .padStart(2, "0");
+  });
+  return `#${channels.join("")}`;
+}
+
 const OBSIDIAN = {
-  background: "#141414",
-  surface: "#222222",
-  text: "#ffffff",
-  muted: "#939393",
-  red: "#e95833",
-  yellow: "#f5dc42",
-  green: "#5ef24e",
-  blue: "#4eb9f2",
+  background: themeColors.mantle,
+  surface: mixHexColors(themeColors.base, themeColors.mantle, 0.4),
+  surfaceAlternate: mixHexColors(themeColors.base, themeColors.mantle, 0.2),
+  thumbnailBackground: themeColors.crust,
+  text: themeColors.text,
+  muted: themeColors.textFaded,
+  red: themeColors.red,
+  yellow: themeColors.yellow,
+  green: themeColors.green,
+  blue: themeColors.blue,
 } as const;
 
 export type SharedPostDraft = {
@@ -36,6 +52,13 @@ type ThemeVotingChoice = {
   id: number;
   theme: string;
   vote: 0 | 1 | 3 | null;
+};
+
+export type RecommendationSharePick = {
+  name: string;
+  detail?: string;
+  reason?: string;
+  thumbnail?: string | null;
 };
 
 function stableHash(value: string) {
@@ -96,6 +119,71 @@ function fitText(context: CanvasRenderingContext2D, value: string, maxWidth: num
     shortened = shortened.slice(0, -1);
   }
   return `${shortened}…`;
+}
+
+function wrapText(context: CanvasRenderingContext2D, value: string, maxWidth: number) {
+  const lines: string[] = [];
+  for (const paragraph of value.trim().split(/\n/)) {
+    let line = "";
+    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
+      const candidate = line ? `${line} ${word}` : word;
+      if (line && context.measureText(candidate).width > maxWidth) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = candidate;
+      }
+    }
+    if (line) lines.push(line);
+  }
+  return lines;
+}
+
+function loadShareThumbnail(source?: string | null) {
+  return new Promise<HTMLImageElement | null>((resolve) => {
+    if (!source) {
+      resolve(null);
+      return;
+    }
+
+    const image = new window.Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => resolve(image);
+    image.onerror = () => resolve(null);
+    image.src = source;
+  });
+}
+
+function drawShareThumbnail(
+  context: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  cover = false,
+) {
+  const scale = (cover ? Math.max : Math.min)(
+    width / image.naturalWidth,
+    height / image.naturalHeight,
+  );
+  const imageWidth = image.naturalWidth * scale;
+  const imageHeight = image.naturalHeight * scale;
+
+  context.save();
+  context.beginPath();
+  context.roundRect(x, y, width, height, 4);
+  context.clip();
+  context.fillStyle = OBSIDIAN.thumbnailBackground;
+  context.fillRect(x, y, width, height);
+  context.drawImage(
+    image,
+    x + (width - imageWidth) / 2,
+    y + (height - imageHeight) / 2,
+    imageWidth,
+    imageHeight,
+  );
+  context.restore();
 }
 
 function canvasToBlob(canvas: HTMLCanvasElement) {
@@ -225,7 +313,7 @@ async function createVotingShareImage(
   choices.forEach((_choice, index) => {
     const centerY = 88 + index * 36;
     const isLightRow = index % 2 === 0;
-    context.fillStyle = isLightRow ? OBSIDIAN.surface : "#1b1b1b";
+    context.fillStyle = isLightRow ? OBSIDIAN.surface : OBSIDIAN.surfaceAlternate;
     context.beginPath();
     context.roundRect(32, centerY - 15, 456, 30, 6);
     context.fill();
@@ -235,8 +323,8 @@ async function createVotingShareImage(
     context.roundRect(32, centerY - 15, 456, 30, 6);
     context.clip();
     const laneColors = isLightRow
-      ? ["#1b1b1b", "#1f1f1f", "#1b1b1b"]
-      : ["#151515", "#181818", "#151515"];
+      ? [OBSIDIAN.surfaceAlternate, OBSIDIAN.surface, OBSIDIAN.surfaceAlternate]
+      : [OBSIDIAN.thumbnailBackground, OBSIDIAN.background, OBSIDIAN.thumbnailBackground];
     laneColors.forEach((color, laneIndex) => {
       context.fillStyle = color;
       context.fillRect(404 + laneIndex * 28, centerY - 15, 28, 30);
@@ -369,4 +457,141 @@ export function buildVotingShareDraft({
       content: `\u200B\n\n![${jamName} theme voting picks](${imageUrl})`,
       tags: ["ThemeVote"],
     }));
+}
+
+type RecommendationsShareInput = {
+  jamName: string;
+  userName: string;
+  games: RecommendationSharePick[];
+  tracks: RecommendationSharePick[];
+};
+
+export async function createRecommendationsShareImage({
+  jamName,
+  userName,
+  games,
+  tracks,
+}: RecommendationsShareInput) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 520;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("Canvas is not available");
+
+  const sections = [
+    { heading: "Games", picks: games, fallback: "/images/game-thumbnail.png", squareThumbnail: false },
+    { heading: "Music", picks: tracks, fallback: "/images/game-thumbnail.png", squareThumbnail: true },
+  ].filter((section) => section.picks.length > 0);
+  const cards = await Promise.all(sections.map(async (section) => ({
+    ...section,
+    picks: await Promise.all(section.picks.map(async (pick) => {
+      context.font = "400 13px Inter, Arial, sans-serif";
+      const textWidth = section.squareThumbnail ? 348 : 330;
+      const reasonLines = pick.reason?.trim()
+        ? wrapText(context, pick.reason, textWidth)
+        : [];
+      return {
+        ...pick,
+        reasonLines,
+        height: Math.max(
+          section.squareThumbnail ? 96 : 74,
+          (pick.detail ? 49 : 32) + reasonLines.length * 17 + 14,
+        ),
+        image: (await loadShareThumbnail(pick.thumbnail)) ?? await loadShareThumbnail(section.fallback),
+      };
+    })),
+  })));
+  canvas.height = Math.max(260, 92 + cards.reduce(
+    (total, section) => total + 36 + section.picks.reduce(
+      (height, pick) => height + pick.height + 8,
+      0,
+    ),
+    0,
+  ) + 8);
+
+  context.fillStyle = OBSIDIAN.background;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.textAlign = "center";
+  context.fillStyle = OBSIDIAN.muted;
+  context.font = "600 13px Inter, Arial, sans-serif";
+  context.fillText(fitText(context, jamName, 480), 260, 30);
+  context.fillStyle = OBSIDIAN.text;
+  context.font = "700 23px Inter, Arial, sans-serif";
+  context.fillText(fitText(context, `${userName}'s Favorites`, 480), 260, 57);
+
+  context.textAlign = "left";
+  let y = 92;
+  let rowIndex = 0;
+  for (const section of cards) {
+    context.fillStyle = OBSIDIAN.text;
+    context.font = "600 18px Inter, Arial, sans-serif";
+    context.textAlign = "center";
+    context.fillText(section.heading, 260, y + 23);
+    context.textAlign = "left";
+    y += 36;
+
+    for (const pick of section.picks) {
+      const textX = section.squareThumbnail ? 128 : 146;
+      const textWidth = 476 - textX;
+
+      context.fillStyle = rowIndex % 2 === 0 ? OBSIDIAN.surface : OBSIDIAN.surfaceAlternate;
+      context.beginPath();
+      context.roundRect(32, y, 456, pick.height, 6);
+      context.fill();
+
+      if (pick.image) {
+        drawShareThumbnail(
+          context,
+          pick.image,
+          42,
+          y + 12,
+          section.squareThumbnail ? 72 : 90,
+          section.squareThumbnail ? 72 : 50,
+          section.squareThumbnail,
+        );
+      }
+
+      context.fillStyle = OBSIDIAN.text;
+      context.font = "600 14px Inter, Arial, sans-serif";
+      context.fillText(fitText(context, pick.name, textWidth), textX, y + 27);
+      if (pick.detail) {
+        context.fillStyle = OBSIDIAN.muted;
+        context.font = "400 11px Inter, Arial, sans-serif";
+        context.fillText(fitText(context, pick.detail, textWidth), textX, y + 44);
+      }
+
+      context.fillStyle = OBSIDIAN.muted;
+      context.font = "400 13px Inter, Arial, sans-serif";
+      pick.reasonLines.forEach((line, index) => {
+        context.fillText(
+          fitText(context, line, textWidth),
+          textX,
+          y + (pick.detail ? 63 : 46) + index * 17,
+        );
+      });
+      y += pick.height + 8;
+      rowIndex += 1;
+    }
+  }
+
+  return canvasToBlob(canvas);
+}
+
+export async function buildRecommendationsShareDraft({
+  jamName,
+  userName,
+  games,
+  tracks,
+}: RecommendationsShareInput): Promise<SharedPostDraft> {
+  const imageUrl = await uploadThemeShareImage(
+    await createRecommendationsShareImage({ jamName, userName, games, tracks }),
+    "jam-favorites.png",
+  );
+  return {
+    title: "",
+    content: `\u200B\n\n![${jamName} ${[
+      games.length ? "games" : "",
+      tracks.length ? "music" : "",
+    ].filter(Boolean).join(" and ")} favorites](${imageUrl})`,
+    tags: ["Favorites"],
+  };
 }

@@ -1,4 +1,5 @@
 import ListingPageLoading from "@/components/listing-loading";
+import { UserProfileSkeleton } from "@/components/skeletons";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { lazy, Suspense, type ComponentType } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router";
@@ -409,7 +410,7 @@ export default function App() {
           <Route path="theme-voting" element={<ThemeVotingPage />} />
           <Route path="themes" element={<ThemesPage />} />
           <Route path="languages" element={<LanguagesPage />} />
-          <Route path="u/:slug" element={<UserRoute />} />
+          <Route path="u/:slug" element={<Suspense fallback={<UserProfileSkeleton />}><UserRoute /></Suspense>} />
           <Route path="why" element={<WhyPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

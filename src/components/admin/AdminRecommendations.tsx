@@ -16,6 +16,14 @@ type PreviewItem = {
   baseScore: number;
   adjustment: number;
   reasons: Array<{ family: string; label: string; contribution: number }>;
+  scoreParts: {
+    ratingsGiven: number;
+    commentLikes: number;
+    achievements: number;
+    leaderboardScores: number;
+    ratingsReceived: number;
+    communityRecommendations: number;
+  };
 };
 
 type PreviewData = {
@@ -25,57 +33,79 @@ type PreviewData = {
   pageInfo: { totalCount: number; hasMore: boolean; nextOffset: number | null };
 };
 
-function PreviewColumn({
+function signedScore(value: number) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+}
+
+function PreviewEntry({
   title,
-  items,
+  item,
   personalized,
   t,
 }: {
   title: string;
-  items: PreviewItem[];
+  item: PreviewItem;
   personalized: boolean;
   t: ReturnType<typeof useTranslations>;
 }) {
+  const movement = item.otherRank === null ? 0 : item.otherRank - item.rank;
+  const scoreParts = [
+    { key: "RatingsGiven", value: item.scoreParts.ratingsGiven },
+    { key: "CommentLikes", value: item.scoreParts.commentLikes },
+    { key: "Achievements", value: item.scoreParts.achievements },
+    { key: "LeaderboardScores", value: item.scoreParts.leaderboardScores },
+    { key: "RatingsReceived", value: item.scoreParts.ratingsReceived },
+    { key: "CommunityRecommendations", value: item.scoreParts.communityRecommendations },
+  ];
+
   return (
-    <section className="min-w-0 space-y-3">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {items.map((item) => {
-        const movement = item.otherRank === null ? 0 : item.otherRank - item.rank;
-        return (
-          <div key={`${item.game.id}:${item.game.pageVersion ?? "JAM"}`} className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span className="font-semibold">#{item.rank}</span>
-              <span className="opacity-75">
-                {personalized
-                  ? t("AdminRecommendations.VisitorRank", { rank: item.otherRank ?? "—" })
-                  : t("AdminRecommendations.PlayerRank", { rank: item.otherRank ?? "—" })}
-                {personalized && movement !== 0 ? ` · ${movement > 0 ? "↑" : "↓"}${Math.abs(movement)}` : ""}
-              </span>
+    <section className="flex min-w-0 flex-col gap-2">
+      <h2 className="text-xl font-semibold lg:hidden">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span className="font-semibold">#{item.rank}</span>
+        <span className="opacity-75">
+          {personalized
+            ? t("AdminRecommendations.VisitorRank", { rank: item.otherRank ?? "—" })
+            : t("AdminRecommendations.PlayerRank", { rank: item.otherRank ?? "—" })}
+          {personalized && movement !== 0 ? ` · ${movement > 0 ? "↑" : "↓"}${Math.abs(movement)}` : ""}
+        </span>
+      </div>
+      <GameCard game={item.game} />
+      <div className="flex-1 rounded-lg border border-white/10 px-3 py-2 text-sm">
+        <div className="flex items-baseline justify-between gap-3 font-semibold">
+          <span>{t("AdminRecommendations.TotalScore")}</span>
+          <span>{(item.baseScore + (personalized ? item.adjustment : 0)).toFixed(2)}</span>
+        </div>
+        <dl className="mt-2 space-y-1">
+          {scoreParts.map((part) => (
+            <div key={part.key} className="flex justify-between gap-3">
+              <dt className="opacity-75">{t(`AdminRecommendations.${part.key}`)}</dt>
+              <dd className="shrink-0 tabular-nums">{signedScore(part.value)}</dd>
             </div>
-            <GameCard game={item.game} />
-            {personalized && (
-              <div className="rounded-lg border border-white/10 px-3 py-2 text-sm">
-                <p className="font-medium">
-                  {t("AdminRecommendations.Adjustment", {
-                    value: `${item.adjustment >= 0 ? "+" : ""}${item.adjustment.toFixed(2)}`,
-                  })}
-                </p>
-                {item.reasons.length > 0 ? (
-                  <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1 opacity-80">
-                    {item.reasons.map((reason) => (
-                      <li key={`${reason.family}:${reason.label}`}>
-                        {reason.contribution > 0 ? "+" : "−"}{reason.label}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-1 opacity-70">{t("AdminRecommendations.NoMatch")}</p>
-                )}
-              </div>
-            )}
+          ))}
+          <div className="flex justify-between gap-3 border-t border-white/10 pt-1">
+            <dt className="opacity-75">{t("AdminRecommendations.BaseScore")}</dt>
+            <dd className="shrink-0 tabular-nums">{item.baseScore.toFixed(2)}</dd>
           </div>
-        );
-      })}
+          <div className="flex justify-between gap-3 font-medium">
+            <dt>{t("AdminRecommendations.PersonalAdjustment")}</dt>
+            <dd className="shrink-0 tabular-nums">{signedScore(personalized ? item.adjustment : 0)}</dd>
+          </div>
+        </dl>
+        {personalized ? (item.reasons.length > 0 ? (
+          <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 border-t border-white/10 pt-2 opacity-80">
+            {item.reasons.map((reason) => (
+              <li key={`${reason.family}:${reason.label}`}>
+                {reason.label} {signedScore(reason.contribution)}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 border-t border-white/10 pt-2 opacity-70">{t("AdminRecommendations.NoMatch")}</p>
+        )) : (
+          <p className="mt-2 border-t border-white/10 pt-2 opacity-70">{t("AdminRecommendations.VisitorNoAdjustment")}</p>
+        )}
+      </div>
     </section>
   );
 }
@@ -197,10 +227,20 @@ export default function AdminRecommendations() {
           <p className="text-sm opacity-75">
             {t("AdminRecommendations.GameCount", { count: data.pageInfo.totalCount })}
           </p>
-          <div className="grid gap-5 lg:grid-cols-2">
-            <PreviewColumn title={t("AdminRecommendations.VisitorOrder")} items={data.baseline} personalized={false} t={t} />
-            <PreviewColumn title={t("AdminRecommendations.PlayerOrder", { name: data.viewer.name })}
-              items={data.personalized} personalized t={t} />
+          <div className="space-y-6">
+            <div className="hidden gap-5 lg:grid lg:grid-cols-2">
+              <h2 className="text-xl font-semibold">{t("AdminRecommendations.VisitorOrder")}</h2>
+              <h2 className="text-xl font-semibold">{t("AdminRecommendations.PlayerOrder", { name: data.viewer.name })}</h2>
+            </div>
+            {data.baseline.map((item, index) => (
+              <div key={index} className="grid gap-5 lg:grid-cols-2">
+                <PreviewEntry title={t("AdminRecommendations.VisitorOrder")} item={item} personalized={false} t={t} />
+                {data.personalized[index] && (
+                  <PreviewEntry title={t("AdminRecommendations.PlayerOrder", { name: data.viewer.name })}
+                    item={data.personalized[index]} personalized t={t} />
+                )}
+              </div>
+            ))}
           </div>
           {data.pageInfo.hasMore && (
             <div className="flex justify-center">

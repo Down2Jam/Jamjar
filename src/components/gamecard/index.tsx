@@ -402,9 +402,11 @@ export function GameHoverPreview({
 export function GameCard({
   game,
   rated = false,
+  perfected = false,
 }: {
   game: GameCardGame;
   rated?: boolean;
+  perfected?: boolean;
 }) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -465,33 +467,36 @@ export function GameCard({
             </div>
           )}
         </div>
-        <div
-          className="absolute top-0 right-0 z-10 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
-          style={{
-            color: colors["text"],
-            backgroundColor:
-              colors[
-                game.category == "REGULAR"
-                  ? "blue"
-                  : game.category == "ODA"
-                  ? "purple"
-                  : game.category == "EXTERNAL"
-                  ? "orange"
-                  : "pink"
-              ] + "aa",
-            borderColor:
-              colors[
-                game.category == "REGULAR"
-                  ? "blue"
-                  : game.category == "ODA"
-                  ? "purple"
-                  : game.category == "EXTERNAL"
-                  ? "orange"
-                  : "pink"
-              ],
-          }}
-        >
-          {game.category}
+        <div className="absolute top-0 right-0 z-10 m-2">
+          {perfected && <img src="/images/award.png" alt="" className="pointer-events-none absolute right-0 top-full h-16 w-16 object-contain" />}
+          <div
+            className="relative rounded p-2 pt-1 pb-1 shadow-md backdrop-blur-md text-xs"
+            style={{
+              color: colors["text"],
+              backgroundColor:
+                colors[
+                  game.category == "REGULAR"
+                    ? "blue"
+                    : game.category == "ODA"
+                    ? "purple"
+                    : game.category == "EXTERNAL"
+                    ? "orange"
+                    : "pink"
+                ] + "aa",
+              borderColor:
+                colors[
+                  game.category == "REGULAR"
+                    ? "blue"
+                    : game.category == "ODA"
+                    ? "purple"
+                    : game.category == "EXTERNAL"
+                    ? "orange"
+                    : "pink"
+                ],
+            }}
+          >
+            {game.category}
+          </div>
         </div>
         <div className="relative z-[2] aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
           <Image

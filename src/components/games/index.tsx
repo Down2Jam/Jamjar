@@ -474,6 +474,9 @@ export default function Games() {
 
   // Fetch user via TanStack Query
   const { data: user } = useSelf();
+  const perfectedGameKeys = useMemo(() => new Set(
+    (user?.perfectedGamePages ?? []).map(({ gameId, pageVersion }) => `${gameId}:${pageVersion}`),
+  ), [user?.perfectedGamePages]);
   const { data: mandatoryRatingCategories = [] } = useRatingCategories(true);
   const hasCompletedRating = useCallback((game: GameType, userId?: number) => {
     if (!userId || mandatoryRatingCategories.length === 0) return false;
@@ -1519,6 +1522,7 @@ export default function Games() {
             <GameCard
               key={`${game.id}-${game.pageVersion ?? "JAM"}`}
               game={game}
+              perfected={perfectedGameKeys.has(`${game.id}:${game.pageVersion ?? "JAM"}`)}
               rated={
                 showRatedOverlay &&
                 hasCompletedRating(game, user?.id)

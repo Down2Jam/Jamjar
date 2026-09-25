@@ -55,6 +55,7 @@ export const SYSTEM_LABEL_KEYS: Record<string, string> = {
   "epicgamesstore": "SystemLabels.epicgamesstore",
   "experimental": "SystemLabels.experimental",
   "exploration": "SystemLabels.exploration",
+  "favorites": "SystemLabels.favorites",
   "flstudio": "SystemLabels.flstudio",
   "famistudio": "SystemLabels.famistudio",
   "fighting": "SystemLabels.fighting",

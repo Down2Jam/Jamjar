@@ -143,5 +143,6 @@ export function TrackEditRoute() {
 
 export function UserRoute() {
   const params = usePromiseParams<{ slug: string }>();
-  return <ClientUserPage params={params as Promise<{ slug: string }>} />;
+  const { slug = "" } = useParams();
+  return <ClientUserPage key={slug} params={params as Promise<{ slug: string }>} />;
 }

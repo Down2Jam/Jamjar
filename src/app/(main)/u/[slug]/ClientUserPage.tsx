@@ -7,6 +7,7 @@ import { GameCard } from "@/components/gamecard";
 import PostCard from "@/components/posts/PostCard";
 import CommentCard from "@/components/posts/CommentCard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
+import { UserProfileSkeleton } from "@/components/skeletons";
 import ThemedProse from "@/components/themed-prose";
 import {
   addToast,
@@ -33,16 +34,16 @@ import {
   useDisclosure,
 } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
-import { followUser, getSelf, getUser, updateUser } from "@/requests/user";
+import { followUser, updateUser } from "@/requests/user";
 import { GameType } from "@/types/GameType";
 import { TrackType } from "@/types/TrackType";
 import { UserType } from "@/types/UserType";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { computeEffectiveRecommendationItems } from "@/helpers/recommendations";
-import { ActiveJamResponse, getCurrentJam } from "@/helpers/jam";
+import { getGameTeamName } from "@/helpers/gameTeamName";
+import { useCurrentJam, useSelf, useUser } from "@/hooks/queries";
 import {
   readArray,
-  readItem,
   unwrapArray,
   unwrapItem,
 } from "@/requests/helpers";
@@ -93,6 +94,10 @@ const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
   loading: () => <div className="min-h-[160px]" />,
 });
+
+const ShareRecommendationsModal = dynamic(
+  () => import("@/components/recommendations/ShareRecommendationsModal"),
+);
 
 function getRarityTier(
   haveCount: number,
@@ -328,9 +333,10 @@ export default function ClientUserPage({
   const uiText = useUiTranslations();
   const resolvedParams = use(params);
   const slug = resolvedParams.slug;
-  const [user, setUser] = useState<UserType>();
-  const [profileLoadError, setProfileLoadError] = useState<string | null>(null);
-  const [self, setSelf] = useState<UserType>();
+  const { data: profile, error: profileLoadError, refetch: refetchUser } = useUser(slug);
+  const user = useMemo(() => profile ? normalizeProfileUser(profile) : undefined, [profile]);
+  const { data: self } = useSelf();
+  const { data: activeJamResponse } = useCurrentJam();
   const { colors } = useTheme();
   const [roles, setRoles] = useState<RoleType[]>([]);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
@@ -375,6 +381,7 @@ export default function ClientUserPage({
   const [recType, setRecType] = useState<"games" | "posts" | "tracks">("games");
   const [recSelected, setRecSelected] = useState<number[]>([]);
   const [recHidden, setRecHidden] = useState<number[]>([]);
+  const [shareCategory, setShareCategory] = useState<"games" | "tracks" | null>(null);
   const [profileSection, setProfileSection] = useState<ProfileSection>("bio");
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
@@ -382,8 +389,7 @@ export default function ClientUserPage({
   const [savingProfile, setSavingProfile] = useState(false);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
-  const [activeJamResponse, setActiveJamResponse] =
-    useState<ActiveJamResponse | null>(null);
+  const activeJamId = activeJamResponse?.jam?.id ?? null;
   const {
     isOpen: isAvatarOpen,
     onOpen: openAvatar,
@@ -476,22 +482,7 @@ export default function ClientUserPage({
   });
 
   const refreshUser = async () => {
-    const response = await getUser(`${slug}`);
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => null)) as {
-        error?: { message?: string };
-        message?: string;
-      } | null;
-      setUser(undefined);
-      setProfileLoadError(
-        payload?.error?.message ?? payload?.message ?? "Unable to load profile",
-      );
-      return;
-    }
-
-    const nextUser = await readItem<UserType>(response);
-    setProfileLoadError(null);
-    setUser(nextUser ? normalizeProfileUser(nextUser) : undefined);
+    await refetchUser();
   };
 
   const normalizeImage = (value?: string | null) => {
@@ -526,27 +517,6 @@ export default function ClientUserPage({
     const data = await response.json();
     return unwrapItem<string>(data) ?? "";
   };
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      const [_, selfRes, jamRes] = await Promise.all([
-        refreshUser(),
-        getSelf(),
-        getCurrentJam().catch((error) => {
-          console.error("Failed to refresh profile jam", error);
-          return undefined;
-        }),
-      ]);
-
-      if (selfRes.ok) {
-        const nextSelf = await readItem<UserType>(selfRes);
-        setSelf(nextSelf ? normalizeProfileUser(nextSelf) : undefined);
-      }
-      if (jamRes) setActiveJamResponse(jamRes);
-    };
-
-    fetchUser();
-  }, [slug]);
 
   useEffect(() => {
     if (!user) return;
@@ -613,49 +583,71 @@ export default function ClientUserPage({
   }, [user?.slug]);
 
   useEffect(() => {
-    if (!isRecOpen || !recSearch.trim()) return;
+    if (!isRecOpen || !recSearch.trim()) {
+      setRecResults({ games: [], posts: [], tracks: [] });
+      setRecLoading(false);
+      return;
+    }
     const controller = new AbortController();
     const fetchResults = async () => {
       setRecLoading(true);
       try {
+        const searchParams = new URLSearchParams({
+          query: recSearch.trim(),
+          type: recType,
+          limit: "8",
+        });
+        if (activeJamId != null && recType !== "posts") {
+          searchParams.set("jamId", String(activeJamId));
+        }
         const response = await fetch(
-          `${BASE_URL}/search?query=${encodeURIComponent(recSearch.trim())}`,
+          `${BASE_URL}/search?${searchParams.toString()}`,
           { signal: controller.signal },
         );
         if (!response.ok) {
-          setRecResults({ games: [], posts: [], tracks: [] });
+          if (!controller.signal.aborted) {
+            setRecResults({ games: [], posts: [], tracks: [] });
+          }
           return;
         }
         const json = await response.json();
-        setRecResults({
-          games: json.data?.games ?? [],
-          posts: json.data?.posts ?? [],
-          tracks: json.data?.tracks ?? [],
-        });
+        if (!controller.signal.aborted) {
+          setRecResults({
+            games: recType === "games" ? json.data?.games ?? [] : [],
+            posts: recType === "posts" ? json.data?.posts ?? [] : [],
+            tracks: recType === "tracks" ? json.data?.tracks ?? [] : [],
+          });
+        }
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           console.error(error);
         }
       } finally {
-        setRecLoading(false);
+        if (!controller.signal.aborted) setRecLoading(false);
       }
     };
 
     fetchResults();
     return () => controller.abort();
-  }, [isRecOpen, recSearch]);
+  }, [activeJamId, isRecOpen, recSearch, recType]);
 
   const openRecommendations = (type: "games" | "posts" | "tracks") => {
     if (!user) return;
     setRecType(type);
     if (type === "games") {
-      setRecSelected(user.recommendedGameOverrideIds ?? []);
+      const currentGameIds = new Set(
+        [...recGames, ...recGameCandidates].map((game) => game.id),
+      );
+      setRecSelected((user.recommendedGameOverrideIds ?? []).filter((id) => currentGameIds.has(id)));
       setRecHidden(user.recommendedGameHiddenIds ?? []);
     } else if (type === "posts") {
       setRecSelected((user.recommendedPosts ?? []).map((p) => p.id));
       setRecHidden([]);
     } else {
-      setRecSelected(user.recommendedTrackOverrideIds ?? []);
+      const currentTrackIds = new Set(
+        [...recTracks, ...recTrackCandidates].map((track) => track.id),
+      );
+      setRecSelected((user.recommendedTrackOverrideIds ?? []).filter((id) => currentTrackIds.has(id)));
       setRecHidden(user.recommendedTrackHiddenIds ?? []);
     }
     setRecSearch("");
@@ -810,7 +802,6 @@ export default function ClientUserPage({
       );
     });
 
-  const activeJamId = activeJamResponse?.jam?.id ?? null;
   const recGames = useMemo(
     () =>
       (user?.recommendedGames ?? []).filter(
@@ -1028,13 +1019,13 @@ export default function ClientUserPage({
           <Vstack align="center" gap={3} className="py-4 text-center">
             <Text size="lg" weight="semibold">
                {uiText("AppStrings.UnableToLoadThisProfile")} </Text>
-            <Text color="textFaded">{profileLoadError}</Text>
+            <Text color="textFaded">{profileLoadError.message}</Text>
             <Button onClick={() => void refreshUser()}>{uiText("AppStrings.TryAgain")}</Button>
           </Vstack>
         </Card>
       );
     }
-    return <></>;
+    return <UserProfileSkeleton />;
   }
 
   return (
@@ -1582,12 +1573,17 @@ export default function ClientUserPage({
                       <Text size="lg" weight="semibold" color="text">
                          {uiText("AppStrings.RecommendedGames")} </Text>
                       {isOwner && canShowRecommendedGames && (
-                        <Button
-                          size="sm"
-                          icon="pencil"
-                          onClick={() => openRecommendations("games")}
-                        >
-                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
+                        <Hstack className="gap-2">
+                          <Button size="sm" icon="send" onClick={() => setShareCategory("games")}>
+                            {uiText("AppStrings.Share")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            icon="pencil"
+                            onClick={() => openRecommendations("games")}
+                          >
+                             {uiText("ThemeSuggestions.Edit.Title")} </Button>
+                        </Hstack>
                       )}
                     </Hstack>
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1603,12 +1599,17 @@ export default function ClientUserPage({
                       <Text size="lg" weight="semibold">
                          {uiText("AppStrings.RecommendedMusic")} </Text>
                       {isOwner && canShowRecommendedTracks && (
-                        <Button
-                          size="sm"
-                          icon="pencil"
-                          onClick={() => openRecommendations("tracks")}
-                        >
-                           {uiText("ThemeSuggestions.Edit.Title")} </Button>
+                        <Hstack className="gap-2">
+                          <Button size="sm" icon="send" onClick={() => setShareCategory("tracks")}>
+                            {uiText("AppStrings.Share")}
+                          </Button>
+                          <Button
+                            size="sm"
+                            icon="pencil"
+                            onClick={() => openRecommendations("tracks")}
+                          >
+                             {uiText("ThemeSuggestions.Edit.Title")} </Button>
+                        </Hstack>
                       )}
                     </Hstack>
                     <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2020,6 +2021,29 @@ export default function ClientUserPage({
           </Vstack>
         )}
       </Vstack>
+
+      {shareCategory && (
+        <ShareRecommendationsModal
+          category={shareCategory}
+          games={hasVisibleRecommendedGames ? visibleRecommendedGames.map((game) => ({
+            id: game.id,
+            name: game.name,
+            detail: getGameTeamName(game.team, (ownerName) =>
+              uiText("AppStrings.Value0STeam", { value0: ownerName }),
+            ) ?? undefined,
+            thumbnail: game.thumbnail,
+          })) : []}
+          tracks={hasVisibleRecommendedTracks ? visibleRecommendedTracks.map((track) => ({
+            id: track.id,
+            name: track.name,
+            detail: track.composer?.name,
+            thumbnail: track.game?.soundtrackThumbnail || track.game?.thumbnail,
+          })) : []}
+          jamName={activeJamResponse?.jam?.name ?? "Game jam"}
+          userName={user.name}
+          onClose={() => setShareCategory(null)}
+        />
+      )}
 
       <Modal
         isOpen={isAvatarOpen}
@@ -2554,19 +2578,20 @@ export default function ClientUserPage({
         backdrop="opaque"
       >
         <ModalContent
+          className="flex max-h-[calc(100dvh-2rem)] min-h-0 flex-col overflow-hidden"
           style={{
             backgroundColor: colors["mantle"],
           }}
         >
           {(onClose) => (
             <>
-              <ModalHeader>
+              <ModalHeader className="shrink-0">
                 <Vstack align="start">
                   <Text size="xl" color="text">
                      {uiText("AppStrings.EditRecommendations")} </Text>
                 </Vstack>
               </ModalHeader>
-              <ModalBody>
+              <ModalBody className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
                 <Vstack align="stretch" gap={3}>
                   {recType !== "posts" && (
                     <Vstack align="stretch" gap={2}>
@@ -2628,18 +2653,31 @@ export default function ClientUserPage({
                       .map((item) => (
                         <Card key={item.id}>
                           <Hstack justify="between" className="gap-3">
-                            <Vstack align="start" gap={0}>
-                              <Text weight="semibold">
-                                {"title" in item ? item.title : item.name}
-                              </Text>
-                              {"slug" in item && (
-                                <Text size="xs" color="textFaded">
-                                  {"title" in item
-                                    ? uiText("AppStrings.PValue0", { value0: item.slug })
-                                    : uiText("AppStrings.GValue0", { value0: item.slug })}
-                                </Text>
+                            <Hstack gap={3} className="min-w-0 flex-1">
+                              {"game" in item && (
+                                <img
+                                  src={item.game?.soundtrackThumbnail || item.game?.thumbnail || "/images/game-thumbnail.png"}
+                                  alt=""
+                                  className="h-10 w-10 shrink-0 rounded object-cover"
+                                />
                               )}
-                            </Vstack>
+                              <Vstack align="start" gap={0} className="min-w-0">
+                                <Text weight="semibold" className="max-w-full truncate">
+                                  {"title" in item ? item.title : item.name}
+                                </Text>
+                                {"game" in item ? (
+                                  <Text size="xs" color="textFaded" className="max-w-full truncate">
+                                    {[item.game?.name, item.composer?.name].filter(Boolean).join(" · ")}
+                                  </Text>
+                                ) : "slug" in item && (
+                                  <Text size="xs" color="textFaded">
+                                    {"title" in item
+                                      ? uiText("AppStrings.PValue0", { value0: item.slug })
+                                      : uiText("AppStrings.GValue0", { value0: item.slug })}
+                                  </Text>
+                                )}
+                              </Vstack>
+                            </Hstack>
                             <Button
                               size="sm"
                               icon="plus"
@@ -2754,7 +2792,7 @@ export default function ClientUserPage({
                   )}
                 </Vstack>
               </ModalBody>
-              <ModalFooter>
+              <ModalFooter className="shrink-0">
                 <Button onClick={onClose} disabled={savingProfile}>
                    {uiText("AppStrings.Cancel")} </Button>
                 <Button
