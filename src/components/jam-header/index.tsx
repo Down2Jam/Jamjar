@@ -165,7 +165,8 @@ export default function JamHeader() {
       };
     if (jamPhase === "Post-Jam Refinement")
       return {
-        text: "Post-jam refinement in progress. Update your entries!",
+        text: "JamHeader.ViewRecap",
+        href: "/recap",
       };
     if (jamPhase === "Post-Jam Rating")
       return {
@@ -413,7 +414,8 @@ export default function JamHeader() {
       : { href: "/about", text: "Explore the jam" };
   })();
 
-  const hasPrimaryActionImage = activeJamResponse?.phase === "Voting";
+  const isRecapAction = activeJamResponse?.phase === "Post-Jam Refinement";
+  const hasPrimaryActionImage = activeJamResponse?.phase === "Voting" || isRecapAction;
 
   const renderPrimaryAction = (className = "") => primaryAction ? (
     <Link
@@ -437,13 +439,15 @@ export default function JamHeader() {
         >
           <img
             src={
-              themeVotingOpen
+              isRecapAction
+                ? "/images/jam-recap.png"
+                : themeVotingOpen
                 ? "/images/voted.png"
                 : "/images/theme-reveal.gif"
             }
             alt=""
             className={`h-full w-full object-contain object-right ${
-              themeVotingOpen ? "-scale-x-100" : ""
+              !isRecapAction && themeVotingOpen ? "-scale-x-100" : ""
             }`}
           />
         </span>

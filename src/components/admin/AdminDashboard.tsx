@@ -58,7 +58,7 @@ export default function AdminDashboard() {
           setEvents([]);
         }
 
-        const sorted = [...jamList].sort((a, b) => {
+        const sorted = jamList.filter((jam) => !jam.sourcePlatform).sort((a, b) => {
           const aTime = a.startTime ? new Date(a.startTime).getTime() : 0;
           const bTime = b.startTime ? new Date(b.startTime).getTime() : 0;
           return bTime - aTime;
@@ -144,6 +144,13 @@ export default function AdminDashboard() {
       </section>
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Card className="h-full">
+          <Vstack align="stretch" gap={3}>
+            <Text size="lg" weight="semibold">{uiText("AppStrings.RecapPreview")}</Text>
+            <Text size="sm" color="textFaded">{uiText("AppStrings.PreviewAnyUserRecap")}</Text>
+            <Button href="/admin/recap" icon="eye">{uiText("AppStrings.RecapPreview")}</Button>
+          </Vstack>
+        </Card>
         <Card className="h-full">
           <Vstack align="stretch">
             <Vstack gap={1} align="stretch">

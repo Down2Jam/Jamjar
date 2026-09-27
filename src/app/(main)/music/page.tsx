@@ -1,3 +1,4 @@
+import { isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 
@@ -229,6 +230,7 @@ function getDefaultMusicMoreFilters(
       currentPhase === "Submission" ||
       currentPhase === "Rating");
 
+  if (isCurrentJam && isPostJamPhase(currentPhase)) return new Set(["postJamFirst"]);
   return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
 }
 
@@ -778,7 +780,7 @@ export default function MusicPage() {
       sort !== "score" && moveOwnMusicToEnd;
 
     if (!user || (!shouldMoveOwnMusicToEnd && !moveRatedMusicToEnd)) {
-      return filteredMusic;
+      return postJamFirst(filteredMusic, selectedMoreFilters.has("postJamFirst"));
     }
 
     const regularUnratedTracks: TrackType[] = [];
@@ -808,14 +810,14 @@ export default function MusicPage() {
     });
 
     if (shouldMoveOwnMusicToEnd && moveRatedMusicToEnd) {
-      return [...regularUnratedTracks, ...ownTracks, ...regularRatedTracks];
+      return postJamFirst([...regularUnratedTracks, ...ownTracks, ...regularRatedTracks], selectedMoreFilters.has("postJamFirst"));
     }
 
     if (shouldMoveOwnMusicToEnd) {
-      return [...regularUnratedTracks, ...ownTracks];
+      return postJamFirst([...regularUnratedTracks, ...ownTracks], selectedMoreFilters.has("postJamFirst"));
     }
 
-    return [...regularUnratedTracks, ...regularRatedTracks];
+    return postJamFirst([...regularUnratedTracks, ...regularRatedTracks], selectedMoreFilters.has("postJamFirst"));
   }, [
     music,
     selectedGenres,
@@ -1100,6 +1102,9 @@ export default function MusicPage() {
           }}
           trigger={<Button icon="morehorizontal">{t("AppStrings.More")}</Button>}
         >
+          <Dropdown.Item value="postJamFirst" icon="hammer" description={t("AppStrings.PostJamFirstDescription")}>
+            {t("AppStrings.PostJamFirst")}
+          </Dropdown.Item>
           <Dropdown.Item
             value={MORE_FILTERS.downloadable}
             icon="download"

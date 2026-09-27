@@ -1,7 +1,7 @@
 "use client";
 
-import { JamPhase } from "@/types/JamType";
-import { ListingPageVersion } from "@/types/GameType";
+import type { JamPhase } from "@/types/JamType";
+import type { ListingPageVersion } from "@/types/GameType";
 
 export function isJamPhase(phase?: JamPhase | string | null) {
   return phase === "Jamming" || phase === "Submission" || phase === "Rating";
@@ -26,11 +26,11 @@ export function getDefaultListingPageVersion(
     return "JAM";
   }
 
-  if (isPostJamPhase(currentPhase)) {
-    return "POST_JAM";
-  }
-
   return "ALL";
+}
+
+export function postJamFirst<T extends { pageVersion?: string }>(items: T[], enabled: boolean): T[] {
+  return enabled ? [...items].sort((a, b) => Number(b.pageVersion === "POST_JAM") - Number(a.pageVersion === "POST_JAM")) : items;
 }
 
 export const listingPageVersionOptions: Array<{

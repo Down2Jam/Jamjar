@@ -1,4 +1,8 @@
 "use client";
+import { getResultsGradient } from "@/helpers/ratingColor";
+import { RatingRadarShape } from "@/components/RatingRadarShape";
+import { RatingRadarLabel } from "@/components/RatingRadarLabel";
+import { compareResultCategories } from "./categoryOrder";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -51,37 +55,6 @@ function gradientTextStyle(
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     color: fallback,
-  };
-}
-
-function getResultsGradient(
-  placement: number,
-  averageScore: number,
-  colors: Record<string, string>
-  ) {
-    if (placement >= 1 && placement <= 3)
-      return {
-        gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
-        first: colors["red"],
-      };
-    if (averageScore >= 8)
-      return {
-        gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
-        first: colors["green"],
-      };
-    if (averageScore >= 7)
-      return {
-        gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
-        first: colors["blueLight"],
-      };
-    if (averageScore >= 6)
-      return {
-        gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
-        first: colors["purple"],
-      };
-  return {
-    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
-    first: colors["textFaded"],
   };
 }
 
@@ -229,7 +202,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
 
         if (Array.isArray(jams)) {
           jams.forEach((jam) => {
-            if (!shouldShowJamInContentListings(jam)) {
+            if (jam.sourcePlatform || !shouldShowJamInContentListings(jam)) {
               return;
             }
 
@@ -345,41 +318,72 @@ export default function Results({ preview = false }: { preview?: boolean }) {
            {uiText("AppStrings.HereAreTheOverallResultsFromTheJam")} </p>
       </section>
 
-      <Hstack>
-        <Dropdown
-          trigger={<Button>{view === "GAMES" ? uiText("Navbar.Games.Title") : uiText("Navbar.Music.Title")}</Button>}
-          onSelect={(key) => {
-            const next = key as "GAMES" | "MUSIC";
-            setView(next);
-            updateQueryParam("view", key as string);
-          }}
+      <Hstack wrap>
+        <fieldset
+          aria-label="Results type"
+          className="relative isolate m-0 grid h-8 min-w-0 shrink-0 grid-cols-2 rounded-lg border-0 p-0.5"
+          style={{ backgroundColor: colors.mantle }}
         >
-          <Dropdown.Item value="GAMES" icon="gamepad2">
-             {uiText("Navbar.Games.Title")} </Dropdown.Item>
-          <Dropdown.Item value="MUSIC" icon="music">
-             {uiText("Navbar.Music.Title")} </Dropdown.Item>
-        </Dropdown>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0.5 left-0.5 -z-10 w-[calc(50%-0.125rem)] rounded-md transition-transform duration-200 motion-reduce:transition-none"
+            style={{ backgroundColor: `color-mix(in srgb, ${colors.text} 10%, ${colors.mantle})`, transform: view === "MUSIC" ? "translateX(100%)" : "translateX(0)" }}
+          />
+          {(["GAMES", "MUSIC"] as const).map((value) => (
+            <label key={value} className="relative cursor-pointer">
+              <input
+                type="radio"
+                name="results-view"
+                value={value}
+                checked={view === value}
+                className="peer sr-only"
+                onChange={() => {
+                  setView(value);
+                  updateQueryParam("view", value);
+                }}
+              />
+              <span
+                className="flex h-7 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors hover:brightness-125 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+                style={{ color: view === value ? colors.text : colors.textFaded }}
+              >
+                {uiText(value === "GAMES" ? "Navbar.Games.Title" : "Navbar.Music.Title")}
+              </span>
+            </label>
+          ))}
+        </fieldset>
 
-        <Dropdown
-          trigger={<Button>{category}</Button>}
-          onSelect={(key) => {
-            setCategory(key as "REGULAR" | "ODA");
-            updateQueryParam("category", key as string);
-          }}
+        <fieldset
+          aria-label="Game category"
+          className="relative isolate m-0 grid h-8 min-w-0 shrink-0 grid-cols-2 rounded-lg border-0 p-0.5"
+          style={{ backgroundColor: colors.mantle }}
         >
-          <Dropdown.Item
-            value={"REGULAR"}
-            description={uiText("GameCategory.Regular.Description")}
-            icon="gamepad2"
-          >
-             {uiText("GameCategory.Regular.Title")} </Dropdown.Item>
-          <Dropdown.Item
-            value={"ODA"}
-            description={uiText("GameCategory.Oda.Description")}
-            icon="swords"
-          >
-             {uiText("GameCategory.Oda.Title")} </Dropdown.Item>
-        </Dropdown>
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0.5 left-0.5 -z-10 w-[calc(50%-0.125rem)] rounded-md transition-transform duration-200 motion-reduce:transition-none"
+            style={{ backgroundColor: `color-mix(in srgb, ${colors.text} 10%, ${colors.mantle})`, transform: category === "ODA" ? "translateX(100%)" : "translateX(0)" }}
+          />
+          {(["REGULAR", "ODA"] as const).map((value) => (
+            <label key={value} className="relative cursor-pointer">
+              <input
+                type="radio"
+                name="results-category"
+                value={value}
+                checked={category === value}
+                className="peer sr-only"
+                onChange={() => {
+                  setCategory(value);
+                  updateQueryParam("category", value);
+                }}
+              />
+              <span
+                className="flex h-7 items-center justify-center rounded-md px-4 text-xs font-semibold transition-colors hover:brightness-125 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2"
+                style={{ color: category === value ? colors.text : colors.textFaded }}
+              >
+                {value === "REGULAR" ? uiText("GameCategory.Regular.Title") : "ODA"}
+              </span>
+            </label>
+          ))}
+        </fieldset>
 
         {view === "GAMES" && category === "REGULAR" && (
           <Dropdown
@@ -464,6 +468,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
             const radarData = game.categoryAverages.map((avg) => ({
               subject: t(avg.categoryName),
               rating: avg.averageScore / 2,
+              placement: avg.placement,
               fullMark: 5,
             }));
 
@@ -479,8 +484,8 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                   />
                   <div className="flex flex-col">
                     <Link href={`/g/${game.slug}`}>{game.name}</Link>
-                    {game.categoryAverages
-                      .sort((a, b) => a.placement - b.placement)
+                    {[...game.categoryAverages]
+                      .sort(compareResultCategories)
                       .map((category) => {
                         const { gradient, first } = getResultsGradient(
                           category.placement,
@@ -515,7 +520,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         );
                       })}
                   </div>
-                  <div className="w-60 h-32 shrink-0">
+                  <div className="w-80 h-40 shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart
                         cx="50%"
@@ -526,7 +531,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         <PolarGrid stroke={colors["crust"]} />
                         <PolarAngleAxis
                           dataKey="subject"
-                          tick={{ fill: colors["textFaded"], fontSize: 12 }}
+                          tick={<RatingRadarLabel color={colors.textFaded} />}
                         />
                         <PolarRadiusAxis
                           domain={[0, 5]}
@@ -536,9 +541,7 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         <Radar
                           name="Rating"
                           dataKey="rating"
-                          stroke={colors["blue"]}
-                          fill={colors["blueDark"]}
-                          fillOpacity={0.6}
+                          shape={<RatingRadarShape colors={colors} fillOpacity={0.6} />}
                         />
                       </RadarChart>
                     </ResponsiveContainer>

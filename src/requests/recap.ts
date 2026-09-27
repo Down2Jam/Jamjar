@@ -1,8 +1,9 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 
-export async function getRecapVisibility(userSlug?: string, jamId?: number) {
+export async function getRecapVisibility(userSlug?: string, jamId?: number, preview = false) {
   const params = new URLSearchParams();
+  if (preview) params.set("preview", "1");
   if (userSlug) {
     params.set("userSlug", userSlug);
   }

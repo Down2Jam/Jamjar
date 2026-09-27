@@ -139,9 +139,9 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             value="results"
             icon="trophy"
             href="/recap"
-            description={uiText("AppStrings.ViewTheResultsOfTheLastD2Jam")}
+            description={uiText("Navbar.Recap.Description")}
           >
-             {uiText("Navbar.Results.Title")} </Dropdown.Item>
+             {uiText("Navbar.Recap.Title")} </Dropdown.Item>
         )}
         {jamPhase === "Suggestion" && (
           <Dropdown.Item

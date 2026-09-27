@@ -412,7 +412,7 @@ export function GameCard({
   const buildPlatforms = getBuildPlatforms(game);
   const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
   const versionLabel =
-    game.pageVersion === "POST_JAM" ? "Post-Jam" : game.pageVersion === "JAM" ? "Jam" : null;
+    game.pageVersion === "POST_JAM" ? "Post-Jam" : null;
   const creatorName = getCreatorName(game);
 
   return (

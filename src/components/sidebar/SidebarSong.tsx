@@ -32,7 +32,7 @@ interface SidebarSongProps {
   slug?: string;
   trackId?: number;
   name: string;
-  artist: TrackComposer;
+  artist?: TrackComposer | null;
   thumbnail: string;
   song: string;
   loudnessGainDb?: number | null;
@@ -124,7 +124,7 @@ export default function SidebarSong({
     }
 
     void playItem(
-      { slug, name, artist, thumbnail, game, song, loudnessGainDb },
+      { slug, name, artist: artist ?? {}, thumbnail, game, song, loudnessGainDb },
       queue,
     );
   };
@@ -232,7 +232,7 @@ export default function SidebarSong({
                 </GameDataHoverPreview>
               )}
               {showArtist && <Hstack gap={1} align="baseline" justify="start" className={playlist ? "min-w-0 w-full" : "min-w-0"}>
-                <UserHoverPreview
+                {artist?.slug ? <UserHoverPreview
                   portal
                   user={{
                     slug: artist.slug ?? "",
@@ -260,7 +260,15 @@ export default function SidebarSong({
                       {artist.name || artist.slug}
                     </Text>
                   </Link>
-                </UserHoverPreview>
+                </UserHoverPreview> : artist?.name ? (
+                  <Text
+                    size={playlist ? "xs" : "sm"}
+                    color={playlist ? "text" : "textFaded"}
+                    className="max-w-full truncate"
+                  >
+                    {artist.name}
+                  </Text>
+                ) : null}
                 {playlist && duration !== null && (
                   <span className="shrink-0 pl-2 text-xs leading-4 tabular-nums" style={{ color: colors.text }}>
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}

@@ -13,7 +13,12 @@ export type NotificationKind =
   | "FOLLOW"
   | "FOLLOW_BACK"
   | "TEAM_INVITE"
-  | "TEAM_APPLICATION";
+  | "TEAM_APPLICATION"
+  | "LEADERBOARD_TOP_SPOT_LOST"
+  | "LEADERBOARD_TOP_THREE_LOST"
+  | "LEADERBOARD_TOP_FIVE_LOST"
+  | "STREAM_LIVE"
+  | "RATING_REMINDER";
 
 export type NotificationData = {
   previewText?: string;

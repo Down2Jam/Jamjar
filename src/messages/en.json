@@ -169,6 +169,10 @@
     "News": {
       "Title": "News",
       "Description": "Read Down2Jam announcements and site updates"
+    },
+    "Recap": {
+      "Title": "Recap",
+      "Description": "View your jam recap"
     }
   },
   "PostStyle": {
@@ -577,7 +581,8 @@
     "JamSoon": "Theme will be revealed on jam start",
     "NoTheme": "No top-scoring theme available",
     "Submissions": "Submissions close soon",
-    "Rate": "Go rate games!"
+    "Rate": "Go rate games!",
+    "ViewRecap": "View your jam recap"
   },
   "Stats": {
     "Timer": "Jam starts in",
@@ -1046,6 +1051,12 @@
     "CouldNotLoadUserRecap": "Could not load user recap.",
     "CouldNotUpdateFollow": "Could not update follow",
     "CreateAPostJamVersionOfThePage": "Create a post jam version of the page",
+    "CreatePostJamTrackVersion": "Create post-jam version",
+    "ShareRecapPost": "Share as a post",
+    "PostJamFirst": "Post-jam first",
+    "PostJamFirstDescription": "Show post-jam versions before jam versions",
+    "CreatingRecapPost": "Creating recap…",
+    "CouldNotCreateRecapPost": "Could not create the recap post. Please try again.",
     "CreateAccount": "Create account",
     "CreateCollection": "Create collection",
     "CreateComment": "Create Comment",
@@ -1395,6 +1406,12 @@
     "NoRecommendationsWillBeShown": "No recommendations will be shown.",
     "NoReusePermissionsGranted": "No reuse permissions granted.",
     "NoScoresYet": "No scores yet.",
+    "ScoresYouEarned": "Scores You Earned",
+    "ScoresEarned": "Scores earned",
+    "SomeRecapDetailsCouldNotLoad": "Some recap details couldn’t load.",
+    "RecapScorePlacement": "#{placement} of {players} players",
+    "RecapScorePercent": "Top {percent}%",
+    "YourBestLeaderboardScoresThisJam": "Your leaderboard scores from this jam",
     "NoScreenshotsFound": "No screenshots found.",
     "NoSuggestionsFoundYet": "No suggestions found yet.",
     "NoTagsCouldBeFound": "No tags could be found",
@@ -1442,7 +1459,7 @@
     "PasteAYoutubeUrlWatchShareLinkShorts": "Paste a YouTube URL (watch, share link, shorts, or embed)",
     "PasteYourItchWidgetUrlHereSuchAs": "Paste your Itch widget URL here, such as",
     "PeopleHadYourMusicInTheirFavorites": "People Had Your Music In Their Favorites",
-    "PeopleReallyEnjoyedYourGameAndHadIt": "People really enjoyed your game and had it as one of their favorites in the jam!",
+    "PeopleReallyEnjoyedYourGameAndHadIt": "People really enjoyed your game and had it as one of their top 3 games in the jam!",
     "PerRun": "Per run",
     "Phases": "Phases",
     "PickAGameFromTheList": "Pick a game from the list.",
@@ -1468,7 +1485,7 @@
     "PostTitle": "Post title",
     "PostUpdated": "Post updated",
     "PostJamPage": "Post-Jam Page",
-    "PostJamRefinementStartsNow": "Post-jam refinement starts now",
+    "PostJamRefinementStartsNow": "Post-jam refinement starts now!",
     "PostJamVersions": "Post-Jam Versions",
     "Posts": "Posts",
     "Presets": "Presets",
@@ -1556,6 +1573,10 @@
     "SearchEmotes": "Search emotes",
     "SearchIcons": "Search icons",
     "SearchUsers": "Search users...",
+    "RecapPreview": "Recap preview",
+    "PreviewAnyUserRecap": "Preview any user’s jam recap.",
+    "NoUsersFound": "No users found.",
+    "UserSearchFailed": "Could not load users.",
     "SecondaryRoles": "Secondary roles",
     "Seconds": "Seconds",
     "SeedScore": "Seed Score",
@@ -1795,11 +1816,13 @@
     "YouAndAposVeUnlocked": "You've unlocked",
     "YourEmotesUseThePrefix": "Your emotes use the prefix",
     "YourGameWasRecommended": "Your game was Recommended",
-    "YourGameFavoritesAndStandoutJamEntries": "Your game, favorites, and standout jam entries",
+    "YourMusicWasRecommended": "Your music was Recommended",
+    "PeopleReallyEnjoyedYourMusicAndHadIt": "People really enjoyed your music and had it as one of their top 3 songs in the jam!",
+    "YourGameFavoritesAndStandoutJamEntries": "Your game, your favourites, and the best games in the jam!",
     "YourRatingsWillNotCountTowardsTheRankings": "Your ratings will not count towards the rankings as you did not submit a game",
     "YourRatingsWillNotCountTowardsTheRankings2": "Your ratings will not count towards the rankings as you did not submit a game.",
-    "YourSoundtrackHighlightsAndNotableTracks": "Your soundtrack highlights and notable tracks",
-    "YourTracksTheirStarRatingsAndThePlacements": "Your tracks, their star ratings, and the placements that stood out",
+    "YourSoundtrackHighlightsAndNotableTracks": "Your music, your favourites, and the best music in the jam",
+    "YourTracksTheirStarRatingsAndThePlacements": "The star rating of your music tracks!",
     "YourVote": "Your Vote",
     "Zoom": "Zoom",
     "LeaveAComment": "Leave a comment",
@@ -2505,7 +2528,7 @@
     "Had": "had",
     "PersonHad": "person had",
     "PeopleHad": "people had",
-    "CheckWhatPeopleLikedAndDidnTLikeAboutTheGameAndGoThroughAndMakeImprovementsBasedOnHow": "Check what people liked and didn't like about the game and go through and make improvements based on how you want to improve it! There is now an optional post-jam refinement period you can use to keep working on your game, prepare materials, and get everything ready to be shown outside the jam. After that, there is a separate post-jam rating period to go through and play updated games.",
+    "CheckWhatPeopleLikedAndDidnTLikeAboutTheGameAndGoThroughAndMakeImprovementsBasedOnHow": "Check what people liked and didn't like about the game and go through and make improvements based on how you want to improve it! There is now an optional post-jam refinement period you can use to keep working on your game, prepare materials, and get everything ready to be shown outside the jam if you want to then release it on platforms such as Newgrounds, Crazy Games, Itch, etc.. After that, there is a separate post-jam rating period to go through and play updated games.",
     "SelectJam2": "Select Jam",
     "Value0Art": "{value0} art",
     "For": "for",
@@ -2934,5 +2957,10 @@
     "trackCategoryHelp2": "How the track feels emotionally, like calm, tense, triumphant, or dreamy.",
     "trackCategoryHelp4": "What part of a game this best fits, like menu, battle, boss, town, or credits.",
     "trackCategoryHelp5": "Whether this track is meant to loop cleanly, play through once, or act as a short stinger."
+  },
+  "Recap": {
+    "NoJams": "No jams available.",
+    "Retry": "Try Again",
+    "CopyFailed": "Could not copy the link."
   }
 }

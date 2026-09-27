@@ -1,5 +1,6 @@
 import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+import { getResultsGradient } from "@/helpers/ratingColor";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -74,41 +75,6 @@ function gradientTextStyle(
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     color: fallback,
-  };
-}
-
-function getResultsGradient(
-  placement: number,
-  averageScore: number,
-  colors: Record<string, string>,
-) {
-  if (placement >= 1 && placement <= 3) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
-      first: colors["red"],
-    };
-  }
-  if (averageScore >= 8) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
-      first: colors["green"],
-    };
-  }
-  if (averageScore >= 7) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
-      first: colors["blueLight"],
-    };
-  }
-  if (averageScore >= 6) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
-      first: colors["purple"],
-    };
-  }
-  return {
-    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
-    first: colors["textFaded"],
   };
 }
 

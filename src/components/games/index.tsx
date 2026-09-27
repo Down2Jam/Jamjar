@@ -1,3 +1,4 @@
+import { isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
@@ -68,6 +69,7 @@ type FilterOption = {
 };
 
 type MoreFilterId =
+  | "postJamFirst"
   | "hideOwnGame"
   | "hideRatedGames"
   | "moveOwnGameToEnd"
@@ -242,6 +244,7 @@ function getDefaultGameMoreFilters(
       currentPhase === "Submission" ||
       currentPhase === "Rating");
 
+  if (isCurrentJam && isPostJamPhase(currentPhase)) return new Set(["postJamFirst"]);
   return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
 }
 
@@ -653,6 +656,7 @@ export default function Games() {
     pageVersion,
     !jamDetecting,
     24,
+    selectedMoreFilters.has("postJamFirst"),
   );
 
   useEffect(() => {
@@ -963,6 +967,12 @@ export default function Games() {
     description: string;
   }> = [
     {
+      id: "postJamFirst",
+      name: uiText("AppStrings.PostJamFirst"),
+      icon: "hammer",
+      description: uiText("AppStrings.PostJamFirstDescription"),
+    },
+    {
       id: "hideOwnGame",
       name: uiText("AppStrings.HideOwnGame"),
       icon: "eye",
@@ -1067,7 +1077,7 @@ export default function Games() {
     });
 
     if (!user || (!moveOwnGameToEnd && !moveRatedGamesToEnd)) {
-      return filteredGames;
+      return postJamFirst(filteredGames, selectedMoreFilters.has("postJamFirst"));
     }
 
     const regularUnratedGames: GameType[] = [];
@@ -1096,14 +1106,14 @@ export default function Games() {
     });
 
     if (moveOwnGameToEnd && moveRatedGamesToEnd) {
-      return [...regularUnratedGames, ...ownGames, ...regularRatedGames];
+      return postJamFirst([...regularUnratedGames, ...ownGames, ...regularRatedGames], selectedMoreFilters.has("postJamFirst"));
     }
 
     if (moveOwnGameToEnd) {
-      return [...regularUnratedGames, ...ownGames];
+      return postJamFirst([...regularUnratedGames, ...ownGames], selectedMoreFilters.has("postJamFirst"));
     }
 
-    return [...regularUnratedGames, ...regularRatedGames];
+    return postJamFirst([...regularUnratedGames, ...regularRatedGames], selectedMoreFilters.has("postJamFirst"));
   }, [
     excludedFlags,
     games,

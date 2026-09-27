@@ -72,7 +72,7 @@ export default function AdminJams() {
 
   const jams = useMemo(() => {
     const list = Array.isArray(rawJams) ? rawJams : [];
-    return [...list].sort((a, b) => {
+    return list.filter((jam) => !jam.sourcePlatform).sort((a, b) => {
       const aTime = a.startTime ? new Date(a.startTime).getTime() : 0;
       const bTime = b.startTime ? new Date(b.startTime).getTime() : 0;
       return bTime - aTime;
