@@ -1,4 +1,6 @@
 "use client";
+import { RatingRadarLabel } from "@/components/RatingRadarLabel";
+import { getResultsGradient } from "@/helpers/ratingColor";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -26,11 +28,8 @@ import { getGame, getRatingCategories } from "@/requests/game";
 import Image from "@/compat/next-image";
 import {
   AlertTriangle,
-  Award,
   ChevronLeft,
   ChevronRight,
-  Circle,
-  CircleSmall,
   CircleHelp,
   MessageCircleMore,
   Play,
@@ -44,6 +43,7 @@ import { postRating, postTrackRating } from "@/requests/rating";
 import { isOwnTrack } from "@/helpers/isOwnTrack";
 import ScrollableTracks from "@/components/sidebar/ScrollableTracks";
 import SidebarSong from "@/components/sidebar/SidebarSong";
+import RatingStars from "@/components/RatingStars";
 import { PriorityEmotesContext } from "@/components/editor/PriorityEmotesContext";
 import { getTrackRatingCategories } from "@/requests/track";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
@@ -245,57 +245,6 @@ declare global {
   interface Window {
     onYouTubeIframeAPIReady?: (() => void) | null;
   }
-}
-
-function getResultsGradient(
-  placement: number,
-  averageScore: number,
-  colors: Record<string, string>,
-) {
-  if (placement >= 1 && placement <= 3)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["yellow"]}, ${colors["red"]})`,
-      first: colors["red"],
-    };
-  if (averageScore >= 8)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["greenLight"]}, ${colors["green"]}, ${colors["greenDark"]})`,
-      first: colors["green"],
-    };
-  if (averageScore >= 7)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["blueLight"]}, ${colors["blue"]}, ${colors["blueDark"]})`,
-      first: colors["blueLight"],
-    };
-  if (averageScore >= 6)
-    return {
-      gradient: `linear-gradient(90deg, ${colors["purpleLight"]}, ${colors["purple"]}, ${colors["purpleDark"]})`,
-      first: colors["purple"],
-    };
-  return {
-    gradient: `linear-gradient(90deg, ${colors["textFaded"]}, ${colors["textFaded"]})`,
-    first: colors["textFaded"],
-  };
-}
-
-function getResultsIcon(
-  placement: number,
-  averageScore: number,
-  color: string,
-) {
-  if (placement >= 1 && placement <= 3) {
-    return <Award size={16} style={{ color }} />;
-  }
-  if (averageScore >= 8) {
-    return <Circle size={15} style={{ color }} />;
-  }
-  if (averageScore >= 7) {
-    return <Circle size={13} style={{ color }} />;
-  }
-  if (averageScore >= 6) {
-    return <CircleSmall size={11} style={{ color }} />;
-  }
-  return null;
 }
 
 function compareGameScoreEntries(
@@ -1436,7 +1385,7 @@ export default function ClientGamePage({
                           return (
                             <div
                               key={score}
-                              className="grid grid-cols-[150px_100px_30px] items-center gap-2"
+                              className="grid w-full grid-cols-[minmax(0,150px)_max-content_max-content] items-center justify-start gap-3"
                             >
                               <span
                                 style={{
@@ -1474,11 +1423,10 @@ export default function ClientGamePage({
                                    {uiText("AppStrings.Stars")} </span>
                               )}
                               <span className="flex items-center justify-center">
-                                {getResultsIcon(
-                                  currentScores[score].placement,
-                                  currentScores[score].averageScore,
-                                  first,
-                                )}
+                                <RatingStars
+                                  value={currentScores[score].averageScore / 2}
+                                  color={first}
+                                />
                               </span>
                             </div>
                           );
@@ -1492,7 +1440,7 @@ export default function ClientGamePage({
                                   currentScores[score].averageUnrankedScore / 2,
                                 fullMark: 5,
                               }),
-                            )} />
+                             )} showRanked={displayGame.category !== "EXTRA"} />
                       </div>
                     </>
                   )}
@@ -1639,6 +1587,7 @@ export default function ClientGamePage({
                       key={track.id}
                       playlistIndex={index}
                       trackId={track.id}
+                      pageVersion={track.pageVersion}
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}

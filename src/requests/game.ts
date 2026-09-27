@@ -381,6 +381,7 @@ export async function getGamesPage({
   pageVersion,
   cursor,
   limit = 50,
+  postJamFirst = false,
   signal,
 }: {
   sort?: string;
@@ -389,12 +390,14 @@ export async function getGamesPage({
   pageVersion?: ListingPageVersion;
   cursor?: string | null;
   limit?: number;
+  postJamFirst?: boolean;
   signal?: AbortSignal;
 }) {
   const params = new URLSearchParams({ sort, limit: String(limit) });
   setJamListingParam(params, jam ?? jamId);
   if (pageVersion && pageVersion !== "JAM") params.set("pageVersion", pageVersion);
   if (cursor) params.set("cursor", cursor);
+  if (postJamFirst) params.set("postJamFirst", "true");
 
   const rawToken = getCookie("token");
   const token = sort === "recommended" && rawToken && rawToken !== "null" && rawToken !== "undefined" ? rawToken : null;

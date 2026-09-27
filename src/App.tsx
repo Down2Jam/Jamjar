@@ -18,6 +18,7 @@ const AdminImagesPage = lazy(() => import("@/app/(main)/admin/images/page"));
 const AdminJamsPage = lazy(() => import("@/app/(main)/admin/jams/page"));
 const AdminJamGamesPage = lazy(() => import("@/components/admin/AdminJamGames"));
 const AdminResultsPage = lazy(() => import("@/app/(main)/admin/results/page"));
+const AdminRecapPreview = lazy(() => import("@/components/admin/AdminRecapPreview"));
 const AdminRecommendationsPage = lazy(() => import("@/app/(main)/admin/recommendations/page"));
 const AdminThemeEliminationPage = lazy(
   () => import("@/app/(main)/admin/themes/elimination/page"),
@@ -342,6 +343,7 @@ export default function App() {
             <Route path="jams" element={<AdminJamsPage />} />
             <Route path="jam-games" element={<AdminJamGamesPage />} />
             <Route path="results" element={<AdminResultsPage />} />
+            <Route path="recap" element={<AdminRecapPreview />} />
             <Route path="recommendations" element={<AdminRecommendationsPage />} />
             <Route
               path="themes/elimination"

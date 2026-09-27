@@ -153,17 +153,19 @@ export function useGamesInfinite(
   pageVersion?: ListingPageVersion,
   enabled = true,
   limit = 24,
+  postJamFirst = false,
 ) {
   const pageLimit = Math.min(Math.max(limit, 1), 50);
 
   return useInfiniteQuery({
-    queryKey: [...queryKeys.game.list(sort, jamId, pageVersion, pageLimit), "infinite"] as const,
+    queryKey: [...queryKeys.game.list(sort, jamId, pageVersion, pageLimit), "infinite", postJamFirst] as const,
     queryFn: async ({ pageParam, signal }) => {
       const res = await getGamesPage({
         sort,
         jamId,
         pageVersion,
         cursor: pageParam ?? null,
+        postJamFirst,
         limit: pageLimit,
         signal,
       });

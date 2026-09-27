@@ -1,4 +1,10 @@
 "use client";
+import { getResultsGradient } from "@/helpers/ratingColor";
+import { RatingRadarShape } from "@/components/RatingRadarShape";
+import { RatingRadarLabel } from "@/components/RatingRadarLabel";
+import { useEmojis } from "@/providers/useEmojis";
+import { buildRecapShareDraft } from "@/helpers/recapShare";
+import { openSharedPostDraft } from "@/helpers/shareToPost";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -11,7 +17,7 @@ import {
   addToast,
   Avatar,
   Button,
-  Card,
+
   Chip,
   Dropdown,
   Hstack,
@@ -31,9 +37,15 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "@/providers/useSiteTheme";
-import { useJams, useSelf, useUser } from "@/hooks/queries";
+import { useCurrentJam, useJams, useSelf, useUser } from "@/hooks/queries";
 import { getGame, getResults } from "@/requests/game";
 import { getTrack, getTrackResults } from "@/requests/track";
+import { getUserGamesForJam } from "./userGames";
+import { getJamRecapScores } from "./scores";
+import { pickRecapJamId } from "./selection";
+import { uniqueRecapWords, loadRecapComments } from "./words";
+import { getCommentReplies } from "@/requests/comment";
+import type { CommentType } from "@/types/CommentType";
 import { getRecapVisibility, updateRecapVisibility } from "@/requests/recap";
 import { unwrapItem } from "@/requests/helpers";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
@@ -41,6 +53,11 @@ import { getJamUrlValue } from "@/helpers/jamUrl";
 import type { AchievementType } from "@/types/AchievementType";
 import { GameCard } from "@/components/gamecard";
 import SidebarSong from "@/components/sidebar/SidebarSong";
+import RatingStars from "@/components/RatingStars";
+import RecapLayout from "./RecapLayout";
+import NextJamInvitation from "./NextJamInvitation";
+import { getEarnedRecapScores } from "./earnedScores";
+import { formatRecentScore } from "@/helpers/scoreDisplay";
 import type { GameType } from "@/types/GameType";
 import type { GameResultType } from "@/types/GameResultType";
 import type { JamType } from "@/types/JamType";
@@ -50,9 +67,11 @@ import type { TrackType } from "@/types/TrackType";
 
 type RecapProps = {
   targetUserSlug?: string;
+  preview?: boolean;
 };
 
 type VisibilityState = {
+  canPreview?: boolean;
   jamId: number | null;
   isPublic: boolean;
   canEdit: boolean;
@@ -61,6 +80,7 @@ type VisibilityState = {
 
 type RecapDataState = {
   gameDetail: GameType | null;
+  gameDetails: GameType[];
   trackDetails: TrackType[];
   gameResults: GameResultType[];
   trackResults: TrackResultType[];
@@ -85,6 +105,15 @@ type RarityTier =
   | "Silver"
   | "Bronze"
   | "Default";
+
+const RARITY_ORDER: Record<RarityTier, number> = {
+  Abyssal: 0,
+  Diamond: 1,
+  Gold: 2,
+  Silver: 3,
+  Bronze: 4,
+  Default: 5,
+};
 
 type WordCloudEntry = {
   key: string;
@@ -140,10 +169,14 @@ function flattenCommentContents(
 
   const output: string[] = [];
   const stack = [...comments];
+  const seen = new Set<number | string>();
 
   while (stack.length > 0) {
     const comment = stack.pop();
     if (!comment) continue;
+    if (comment.id != null && seen.has(comment.id)) continue;
+    if (comment.id != null) seen.add(comment.id);
+    if (comment.deletedAt || comment.removedAt) continue;
     const authorId = comment.authorId ?? comment.author?.id ?? null;
     const isExcludedAuthor =
       authorId != null &&
@@ -168,15 +201,12 @@ function flattenCommentContents(
 function getTopWords(
   contents: string[],
   emojiMap?: Map<string, { image: string; label: string }>,
-  limit = 8,
+  limit = 24,
 ) {
   const counts = new Map<string, WordCloudEntry>();
 
   contents.forEach((content) => {
-    content
-      .replace(/https?:\/\/\S+/g, " ")
-      .match(/:[a-z0-9_]+:|[a-z]+(?:'[a-z]+)*/gi)
-      ?.forEach((token) => {
+    uniqueRecapWords(content).forEach((token) => {
         const normalized = token.toLowerCase();
 
         if (
@@ -197,7 +227,7 @@ function getTopWords(
 
         const normalizedWord = normalized.replace(/^'+|'+$/g, "");
         if (normalizedWord.length < 4) return;
-        if (STOP_WORDS.has(normalizedWord)) return;
+        if (STOP_WORDS.has(normalizedWord.replace(/'/g, ""))) return;
 
         const existing = counts.get(normalizedWord);
         counts.set(normalizedWord, {
@@ -298,12 +328,8 @@ function compareGameScoreEntries(
 }
 
 function getPercentileLabel(percentile: number) {
-  if (percentile <= 1) return "Top 1%";
-  if (percentile <= 5) return "Top 5%";
-  if (percentile <= 10) return "Top 10%";
-  if (percentile <= 25) return "Top 25%";
-  if (percentile <= 50) return "Top 50%";
-  return null;
+  if (!Number.isFinite(percentile) || percentile <= 0 || percentile > 50) return null;
+  return `Top ${Math.max(1, Math.round(percentile)).toLocaleString()}%`;
 }
 
 function safeCompareNames(a?: string | null, b?: string | null) {
@@ -312,41 +338,6 @@ function safeCompareNames(a?: string | null, b?: string | null) {
 
 function buildPlacementPoolKey(group: string | null | undefined, key: string) {
   return `${group ?? "UNKNOWN"}::${key}`;
-}
-
-function getResultsGradient(
-  placement: number,
-  averageScore: number,
-  colors: Record<string, string>,
-) {
-  if (placement >= 1 && placement <= 3) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors.yellow}, ${colors.red})`,
-      first: colors.red,
-    };
-  }
-  if (averageScore >= 8) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors.greenLight}, ${colors.green}, ${colors.greenDark})`,
-      first: colors.green,
-    };
-  }
-  if (averageScore >= 7) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors.blueLight}, ${colors.blue}, ${colors.blueDark})`,
-      first: colors.blueLight,
-    };
-  }
-  if (averageScore >= 6) {
-    return {
-      gradient: `linear-gradient(90deg, ${colors.purpleLight}, ${colors.purple}, ${colors.purpleDark})`,
-      first: colors.purple,
-    };
-  }
-  return {
-    gradient: `linear-gradient(90deg, ${colors.textFaded}, ${colors.textFaded})`,
-    first: colors.textFaded,
-  };
 }
 
 function gradientTextStyle(gradient: string, first: string) {
@@ -372,6 +363,7 @@ function getNotableGameScoreChips(
       return [
         {
           key: `${entry.key}-placement`,
+          categoryKey: entry.key,
           label: `#${entry.placement}`,
           detail: entry.label,
         },
@@ -389,6 +381,7 @@ function getNotableGameScoreChips(
     return [
       {
         key: `${entry.key}-percentile`,
+        categoryKey: entry.key,
         label: percentileLabel,
         detail: entry.label,
       },
@@ -409,22 +402,15 @@ function getScoreCallout(
   }
 
   const percentile = (entry.placement / totalEligible) * 100;
-  if (percentile <= 10) {
-    return `Top 10% in ${entry.label}`;
-  }
   if (percentile <= 25) {
-    return `Top 25% in ${entry.label}`;
+    return `${getPercentileLabel(percentile)} in ${entry.label}`;
   }
 
   return null;
 }
 
 function getUserGameForJam(user: any, jamId: number) {
-  return (
-    user?.teams?.find(
-      (team: any) => team.game?.published && team.game?.jamId === jamId,
-    )?.game ?? null
-  );
+  return getUserGamesForJam(user, jamId)[0] ?? null;
 }
 
 function getJamForId(jams: JamType[], jamId: number | null) {
@@ -470,31 +456,6 @@ function engagedUserIdsForGame(game: GameType): Set<number> {
   return ids;
 }
 
-function pickDefaultJamId(jamParam: string | null, jams: JamType[], user: any) {
-  const parsed = Number(jamParam);
-  if (jamParam && Number.isInteger(parsed)) {
-    return parsed;
-  }
-
-  if (jamParam) {
-    const jamBySlug = jams.find((jam) => jam.slug === jamParam);
-    if (jamBySlug) return jamBySlug.id;
-  }
-
-  const latestUserJamId = (user?.teams ?? [])
-    .filter((team: any) => team.game?.published && team.game?.jamId)
-    .map((team: any) => team.game.jamId)
-    .filter((value: unknown): value is number => Number.isInteger(value))
-    .sort((a: number, b: number) => b - a)[0];
-
-  const latestParticipatedJamId = (user?.teams ?? [])
-    .map((team: any) => team.game?.jamId ?? team.jamId)
-    .filter((value: unknown): value is number => Number.isInteger(value))
-    .sort((a: number, b: number) => b - a)[0];
-
-  return latestUserJamId ?? latestParticipatedJamId ?? jams[0]?.id ?? null;
-}
-
 function getTrackRatingJamId(rating: any) {
   return rating.track?.game?.jamId ?? rating.track?.gamePage?.game?.jamId;
 }
@@ -511,8 +472,8 @@ function StatCard({
   note?: string;
 }) {
   return (
-    <Card className="p-5 md:p-6">
-      <Vstack align="start" gap={2}>
+    <div className="w-32 sm:w-40 text-center">
+      <Vstack align="center" gap={2}>
         <span className="opacity-90">{icon}</span>
         <Text size="sm" color="textFaded">
           {label}
@@ -526,23 +487,25 @@ function StatCard({
           </Text>
         ) : null}
       </Vstack>
-    </Card>
+    </div>
   );
 }
 
 function Section({
+  id,
   title,
   subtitle,
   children,
 }: {
+  id: string;
   title: string;
   subtitle?: string;
   children: ReactNode;
 }) {
   return (
-    <Card className="p-6 md:p-8">
+    <section id={id} data-recap-section={title} tabIndex={-1} className="w-full">
       <Vstack align="start" gap={6}>
-        <Vstack align="start" gap={2}>
+        <Vstack align="center" gap={2} className="w-full text-center">
           <Text size="2xl" weight="bold">
             {title}
           </Text>
@@ -554,7 +517,7 @@ function Section({
         </Vstack>
         {children}
       </Vstack>
-    </Card>
+    </section>
   );
 }
 
@@ -637,8 +600,8 @@ function ScoreCategoryCard({
 }) {
   const uiText = useUiTranslations();
   return (
-    <Card
-      className="p-5 md:p-6"
+    <div
+      className="py-4"
       style={{
         background: `linear-gradient(135deg, ${accent}18, transparent 60%)`,
         borderColor: `${accent}33`,
@@ -648,6 +611,7 @@ function ScoreCategoryCard({
         <Text size="sm" color="textFaded">
           {title}
         </Text>
+        <div className="flex w-full items-center gap-3">
         <Text
           size="3xl"
           weight="bold"
@@ -658,6 +622,8 @@ function ScoreCategoryCard({
         >
           <span>{stars.toFixed(2)}</span>
         </Text>
+        <RatingStars value={stars} color={accent} size={20} className="ml-auto" />
+        </div>
         <Text size="sm" color="textFaded">
            {uiText("AppStrings.Stars")} </Text>
         {note ? (
@@ -672,7 +638,7 @@ function ScoreCategoryCard({
           </div>
         ) : null}
       </Vstack>
-    </Card>
+    </div>
   );
 }
 
@@ -765,25 +731,27 @@ function unwrapArrayResponse<T>(payload: unknown): T[] {
 }
 
 function SectionHeaderCard({
+  id,
   title,
   subtitle,
 }: {
+  id: string;
   title: string;
   subtitle?: string;
 }) {
   return (
-    <Card className="p-5 md:p-6">
-      <Vstack align="center" gap={1} className="text-center">
-        <Text size="xl" weight="bold">
+    <section id={id} data-recap-section={title} data-recap-group="true" tabIndex={-1} className="w-full">
+      <Vstack align="center" gap={3} className="text-center">
+        <h2 className="text-4xl font-bold tracking-tight md:text-5xl">
           {title}
-        </Text>
+        </h2>
         {subtitle ? (
           <Text size="sm" color="textFaded">
             {subtitle}
           </Text>
         ) : null}
       </Vstack>
-    </Card>
+    </section>
   );
 }
 
@@ -798,60 +766,51 @@ function HighlightGameCard({
 }) {
   const uiText = useUiTranslations();
   return (
-    <a href={`/g/${game.slug}`} className="block">
-      <Card padding={0} className="overflow-hidden relative h-full">
-        <div
-          className="absolute top-0 left-0 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs z-10"
-          style={{
-            color: colors.text,
-            backgroundColor: `${colors[game.jam?.color || "green"]}aa`,
-            borderColor: colors[game.jam?.color || "green"],
-          }}
-        >
-          {game.jam?.name || uiText("Phases.GameJam.Title")}
-        </div>
-        <div className="shadow-[inset_0_0_20px_rgba(0, 0, 0, 0.7)]">
+    <a href={`/g/${game.slug}`} className="block h-full">
+      <div
+        className="relative flex h-full flex-col overflow-hidden rounded-[0.625rem] border transition-colors duration-300"
+        style={{
+          backgroundColor: colors.mantle,
+          borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          color: colors.text,
+        }}
+      >
+        <div className="relative aspect-[9/5] w-full shrink-0 overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
           <Image
             alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
-            height={200}
-            width={360}
-            className="w-full h-[180px] object-cover shadow-inner"
+            fill
+            className="object-cover shadow-inner"
             src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <Vstack
           align="start"
-          gap={3}
-          className="border-t-1 w-full p-4"
+          gap={2}
+          className="border-t-1 w-full flex-1 p-2 pb-4 px-4"
           style={{
-            borderColor: `${colors.text}66`,
-            backgroundColor: colors.base,
+            borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+            backgroundColor: colors.mantle,
           }}
         >
-          <Vstack align="start" gap={0}>
-            <Text size="2xl" color="text">
+          <Vstack align="start" gap={0} className="min-w-0 w-full">
+            <Text size="2xl" color="text" className="line-clamp-1">
               {game.name}
             </Text>
-            <Text size="sm" color="textFaded">
+            <Text size="sm" color="textFaded" className="line-clamp-1">
               {game.short?.trim() || "General.NoDescription"}
             </Text>
           </Vstack>
           <Vstack align="start" gap={2} className="w-full mt-2">
             {placements.slice(0, 3).map((placement) => (
-              <div
+              <Chip
                 key={`${game.id}-${uiText(placement.label)}`}
-                className="rounded-full px-3 py-1 text-sm font-semibold"
-                style={{
-                  backgroundColor: `${colors.yellow}14`,
-                  color: colors.yellow,
-                }}
               >
-                {uiText(placement.label)}
-              </div>
+                <span style={gradientTextStyle(`linear-gradient(90deg, ${colors.yellow}, ${colors.red})`, colors.red)}>{uiText(placement.label)}</span>
+              </Chip>
             ))}
           </Vstack>
         </Vstack>
-      </Card>
+      </div>
     </a>
   );
 }
@@ -869,7 +828,7 @@ function HighlightTrackCard({
   const { playItem } = useMusic();
 
   return (
-    <Card className="p-5 md:p-6 h-full">
+    <div className="h-full w-fit min-w-0 max-w-sm py-4">
       <Vstack align="start" gap={4}>
         <Hstack className="items-start gap-3 w-full">
           <Image
@@ -924,20 +883,15 @@ function HighlightTrackCard({
 
         <Vstack align="start" gap={2} className="w-full">
           {placements.slice(0, 3).map((placement) => (
-            <div
+            <Chip
               key={`${track.id}-${uiText(placement.label)}`}
-              className="rounded-full px-3 py-1 text-sm font-semibold"
-              style={{
-                backgroundColor: `${colors.purple}14`,
-                color: colors.purple,
-              }}
             >
-              {uiText(placement.label)}
-            </div>
+              <span style={gradientTextStyle(`linear-gradient(90deg, ${colors.pink}, ${colors.purple})`, colors.pink)}>{uiText(placement.label)}</span>
+            </Chip>
           ))}
         </Vstack>
       </Vstack>
-    </Card>
+    </div>
   );
 }
 
@@ -964,7 +918,7 @@ function TrackScoreCard({
   );
 
   return (
-    <Card className="p-5 md:p-6 h-full">
+    <div className="h-full py-4">
       <Vstack align="start" gap={4} className="w-full">
         <Hstack className="items-start gap-3 w-full">
           <Image
@@ -991,13 +945,16 @@ function TrackScoreCard({
           </Vstack>
         </Hstack>
 
-        <Vstack align="start" gap={1}>
+        <Vstack align="start" gap={1} className="w-full">
+          <div className="flex w-full items-center gap-3">
           <span
             className="text-3xl font-bold leading-none"
             style={gradientTextStyle(gradient, first)}
           >
             {(displayEntry.averageScore / 2).toFixed(2)}
           </span>
+          <RatingStars value={displayEntry.averageScore / 2} color={first} size={20} className="ml-auto" />
+          </div>
           <Text color="textFaded">{uiText("AppStrings.Stars")}</Text>
         </Vstack>
 
@@ -1032,40 +989,62 @@ function TrackScoreCard({
           <div className="flex flex-wrap gap-2 w-full">
             {notableChips.map((chip) => (
               <Chip key={`${track.id}-${chip.key}`}>
-                <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>{" "}
-                <span style={{ color: colors.textFaded }}>{chip.detail}</span>
+                <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>
               </Chip>
             ))}
           </div>
         ) : null}
       </Vstack>
-    </Card>
+    </div>
   );
 }
 
-export default function Recap({ targetUserSlug }: RecapProps) {
+export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
+  const [sharingRecap, setSharingRecap] = useState(false);
+  const { emojis } = useEmojis();
   const uiText = useUiTranslations();
+  const recapText = useTranslations("Recap");
   const t = useTranslations();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const { colors } = useTheme();
-  const { data: self } = useSelf(!targetUserSlug);
+  const { data: self, isLoading: selfLoading } = useSelf();
   const effectiveSlug = targetUserSlug ?? self?.slug ?? "";
   const { data: user, isLoading: userLoading } = useUser(
     effectiveSlug,
     !!effectiveSlug,
   );
-  const { data: jams = [] } = useJams();
+  const {
+    data: listedJams = [],
+    isLoading: jamsLoading,
 
-  const [selectedJamId, setSelectedJamId] = useState<number | null>(null);
+  } = useJams();
+
+  const { data: currentJamResponse, isLoading: currentJamLoading } = useCurrentJam();
+  const currentJam = currentJamResponse?.jam;
+  const jams = useMemo(
+    () => {
+      const trackedJams = listedJams.filter((jam) => !jam.sourcePlatform);
+      return currentJam && !currentJam.sourcePlatform && !trackedJams.some((jam) => jam.id === currentJam.id)
+        ? [currentJam, ...trackedJams]
+        : trackedJams;
+    },
+    [listedJams, currentJam],
+  );
+  const selectedJamId = pickRecapJamId(searchParams.get("jam"), jams, currentJam?.id);
   const [visibility, setVisibility] = useState<VisibilityState | null>(null);
   const [loadingVisibility, setLoadingVisibility] = useState(false);
+  const [visibilityFor, setVisibilityFor] = useState("");
+  const [visibilityError, setVisibilityError] = useState(false);
+  const [loadedFor, setLoadedFor] = useState("");
+  const [retry, setRetry] = useState(0);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recapData, setRecapData] = useState<RecapDataState>({
     gameDetail: null,
+        gameDetails: [],
     trackDetails: [],
     gameResults: [],
     trackResults: [],
@@ -1076,28 +1055,26 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     : Boolean(self?.slug);
 
   useEffect(() => {
-    if (jams.length === 0) return;
-    const nextJamId = pickDefaultJamId(searchParams.get("jam"), jams, user);
-    if (nextJamId && nextJamId !== selectedJamId) {
-      setSelectedJamId(nextJamId);
-    }
-  }, [jams, searchParams, selectedJamId, user]);
-
-  useEffect(() => {
     if (!effectiveSlug || !selectedJamId) return;
 
     let active = true;
     setLoadingVisibility(true);
+    setVisibilityError(false);
+    setVisibility(null);
 
-    getRecapVisibility(effectiveSlug, selectedJamId)
+    getRecapVisibility(effectiveSlug, selectedJamId, preview)
       .then(async (response) => {
+        if (!response.ok) throw new Error("Recap visibility request failed");
         const json = await response.json();
+        if (!json.data) throw new Error("Missing recap visibility");
         if (!active) return;
-        setVisibility(json.data ?? null);
+        setVisibility(json.data);
+        setVisibilityFor(`${selectedJamId}:${effectiveSlug}`);
       })
       .catch(() => {
         if (!active) return;
         setVisibility(null);
+        setVisibilityError(true);
       })
       .finally(() => {
         if (active) {
@@ -1108,18 +1085,33 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     return () => {
       active = false;
     };
-  }, [effectiveSlug, selectedJamId]);
+  }, [effectiveSlug, selectedJamId, retry, preview]);
+
+  const canPreview = preview && self?.admin === true && visibility?.canPreview === true;
+
+  const canReadRecap =
+    !effectiveSlug ||
+    (visibilityFor === `${selectedJamId}:${effectiveSlug}` &&
+      !!visibility &&
+      !loadingVisibility &&
+      (isOwner || canPreview || !!visibility.isPublic));
 
   useEffect(() => {
-    if (!selectedJamId) return;
     if (
-      targetUserSlug &&
-      !isOwner &&
-      !loadingVisibility &&
-      !visibility?.isPublic
-    ) {
+      !canReadRecap ||
+      !selectedJamId ||
+      selfLoading ||
+      (effectiveSlug && userLoading)
+    )
       return;
-    }
+    if (
+      effectiveSlug &&
+      (loadingVisibility ||
+        visibilityFor !== `${selectedJamId}:${effectiveSlug}` ||
+        !visibility)
+    )
+      return;
+    if (targetUserSlug && !isOwner && !canPreview && !visibility?.isPublic) return;
 
     let active = true;
 
@@ -1128,62 +1120,83 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       if (jamId == null) return;
       setLoadingData(true);
       setError(null);
+      setRecapData({
+        gameDetail: null,
+        gameDetails: [],
+        trackDetails: [],
+        gameResults: [],
+        trackResults: [],
+      });
 
       try {
-        const ownerGame = getUserGameForJam(user, jamId);
+        const ownerGames = getUserGamesForJam(user, jamId);
 
-        const rawGameDetail = ownerGame
-          ? unwrapItem<GameType>(
-              await (await getGame(ownerGame.slug, true, "JAM")).json(),
-            )
-          : null;
-        const jamPage = rawGameDetail
-          ? getSelectedGamePage(rawGameDetail, "JAM")
-          : null;
-        const gameDetail =
-          rawGameDetail && jamPage
-            ? materializeGamePage(rawGameDetail, jamPage)
-            : rawGameDetail;
-
-        const trackDetails = gameDetail?.tracks?.length
-          ? await Promise.all(
-              gameDetail.tracks.map(async (track) => {
-                const response = await getTrack(track.slug, "JAM");
-                return unwrapItem<TrackType>(await response.json());
-              }),
-            )
-          : [];
-
-        const [regularGameResultsResponse, odaGameResultsResponse] =
+        async function read<T>(
+          request: () => Promise<Response>,
+          fallback: T,
+        ): Promise<T> {
+          try {
+            const response = await request();
+            if (!response.ok) throw new Error(`Recap request failed (${response.status}): ${response.url}`);
+            return (await response.json()) as T;
+          } catch (requestError) {
+            console.warn(requestError);
+            if (active) setError(uiText("AppStrings.SomeRecapDetailsCouldNotLoad"));
+            return fallback;
+          }
+        }
+        const rawGameDetails = (await Promise.all(ownerGames.map(async (game) =>
+          unwrapItem<GameType>(await read(() => getGame(game.slug, true, "JAM"), null)),
+        ))).filter((game): game is GameType => Boolean(game));
+        const gameDetails = rawGameDetails.map((game) => {
+          const page = getSelectedGamePage(game, "JAM");
+          return page ? materializeGamePage(game, page) : game;
+        });
+        const [trackDetails, regularGames, odaGames, regularTracks, odaTracks] =
           await Promise.all([
-            getResults(
-              "REGULAR",
-              "GAME",
-              "OVERALL",
-              String(jamId),
-              false,
-              true,
+            Promise.all(
+              [...new Map(gameDetails.flatMap((game) => game.tracks ?? []).map((track) => [track.id, track])).values()].map(async (track) =>
+                unwrapItem<TrackType>(
+                  await read(() => getTrack(track.slug, "JAM"), null),
+                ),
+              ),
             ),
-            getResults("ODA", "GAME", "OVERALL", String(jamId), false, true),
+            read(
+              () =>
+                getResults(
+                  "REGULAR",
+                  "GAME",
+                  "OVERALL",
+                  String(jamId),
+                  canPreview,
+                  true,
+                ),
+              [],
+            ),
+            read(
+              () =>
+                getResults(
+                  "ODA",
+                  "GAME",
+                  "OVERALL",
+                  String(jamId),
+                  canPreview,
+                  true,
+                ),
+              [],
+            ),
+            read(
+              () => getTrackResults(String(jamId), canPreview, "REGULAR", true),
+              [],
+            ),
+            read(() => getTrackResults(String(jamId), canPreview, "ODA", true), []),
           ]);
-        const [regularTrackResultsResponse, odaTrackResultsResponse] =
-          await Promise.all([
-            getTrackResults(String(jamId), false, "REGULAR", true),
-            getTrackResults(String(jamId), false, "ODA", true),
-          ]);
-
-        const regularGameResults = unwrapArrayResponse<GameResultType>(
-          await regularGameResultsResponse.json(),
-        );
-        const odaGameResults = unwrapArrayResponse<GameResultType>(
-          await odaGameResultsResponse.json(),
-        );
-        const regularTrackResults = unwrapArrayResponse<TrackResultType>(
-          await regularTrackResultsResponse.json(),
-        );
-        const odaTrackResults = unwrapArrayResponse<TrackResultType>(
-          await odaTrackResultsResponse.json(),
-        );
+        const regularGameResults =
+          unwrapArrayResponse<GameResultType>(regularGames);
+        const odaGameResults = unwrapArrayResponse<GameResultType>(odaGames);
+        const regularTrackResults =
+          unwrapArrayResponse<TrackResultType>(regularTracks);
+        const odaTrackResults = unwrapArrayResponse<TrackResultType>(odaTracks);
 
         const gameResults = [...regularGameResults, ...odaGameResults].filter(
           (entry, index, self) =>
@@ -1198,13 +1211,27 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             self.findIndex((item) => item.id === entry.id) === index,
         );
 
+        const readReplies = async (id: number) => unwrapArrayResponse<CommentType>(
+          await read(() => getCommentReplies(id), []),
+        );
+        const completeGames = await Promise.all(gameDetails.map(async (game, index) => ({
+          ...game,
+          comments: await loadRecapComments([
+            ...(game.comments ?? []), ...(rawGameDetails[index].comments ?? []),
+          ], readReplies),
+        })));
+        const completeTracks = await Promise.all(
+          trackDetails.filter((track): track is TrackType => Boolean(track)).map(async (track) => ({
+            ...track,
+            comments: await loadRecapComments(track.comments ?? [], readReplies),
+          })),
+        );
         if (!active) return;
 
         setRecapData({
-          gameDetail,
-          trackDetails: trackDetails.filter(
-            (track): track is TrackType => Boolean(track),
-          ),
+          gameDetail: completeGames[0] ?? null,
+          gameDetails: completeGames,
+          trackDetails: completeTracks,
           gameResults,
           trackResults,
         });
@@ -1214,6 +1241,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         setError(uiText("AppStrings.FailedToLoadJamRecap"));
       } finally {
         if (active) {
+          setLoadedFor(`${selectedJamId}:${effectiveSlug}`);
           setLoadingData(false);
         }
       }
@@ -1226,11 +1254,17 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     };
   }, [
     isOwner,
-    loadingVisibility,
+    canPreview,
+    canReadRecap,
     selectedJamId,
     targetUserSlug,
     user,
-    visibility?.isPublic,
+    visibilityFor,
+    effectiveSlug,
+    selfLoading,
+    userLoading,
+    retry,
+    uiText,
   ]);
 
   const selectedJam = useMemo(
@@ -1279,19 +1313,21 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const ownerTeamUserIds = useMemo(
     () =>
       new Set(
-        (recapData.gameDetail?.team?.users ?? [])
+        recapData.gameDetails.flatMap((game) => game.team?.users ?? [])
           .map((member: any) => member?.id)
           .filter((value: unknown): value is number => Number.isInteger(value)),
       ),
-    [recapData.gameDetail?.team?.users],
+    [recapData.gameDetails],
   );
 
   const ownerGameEmojiMap = useMemo(
     () =>
       new Map(
-        (recapData.gameDetail?.gameEmotes ?? [])
+        [...emojis, ...recapData.gameDetails.flatMap((game) => game.gameEmotes ?? [])]
           .filter(
-            (reaction: ReactionType | null | undefined): reaction is ReactionType =>
+            (
+              reaction: ReactionType | null | undefined,
+            ): reaction is ReactionType =>
               Boolean(reaction?.slug && reaction?.image),
           )
           .map((reaction) => [
@@ -1302,16 +1338,19 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             },
           ]),
       ),
-    [recapData.gameDetail?.gameEmotes],
+    [emojis, recapData.gameDetails],
   );
 
   const gameCommentWords = useMemo(
     () =>
       getTopWords(
-        flattenCommentContents(recapData.gameDetail?.comments, ownerTeamUserIds),
+        flattenCommentContents(
+          recapData.gameDetails.flatMap((game) => game.comments ?? []),
+          ownerTeamUserIds,
+        ),
         ownerGameEmojiMap,
       ),
-    [ownerGameEmojiMap, ownerTeamUserIds, recapData.gameDetail],
+    [ownerGameEmojiMap, ownerTeamUserIds, recapData.gameDetails],
   );
   const topGamesInJam = useMemo(
     () =>
@@ -1333,30 +1372,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
   const musicCommentWords = useMemo(() => {
     return getTopWords(
       recapData.trackDetails.flatMap((track) =>
-        flattenCommentContents(track.comments, ownerTeamUserIds),
+        [
+          ...flattenCommentContents(track.comments, ownerTeamUserIds),
+          ...flattenCommentContents(track.timestampComments, ownerTeamUserIds),
+        ],
       ),
       ownerGameEmojiMap,
     );
   }, [ownerGameEmojiMap, ownerTeamUserIds, recapData.trackDetails]);
-  const notableGames: Array<{
-    game: GameResultType;
-    placements: Array<{ placement: number; categoryName: string }>;
-  }> = [];
-  const trackRecapCards: Array<{
-    track: TrackType;
-    entries: Array<{
-      key: string;
-      label: string;
-      averageScore: number;
-      placement: number;
-    }>;
-    totalEligibleTracks: number;
-  }> = [];
-  const ratedTracks: TrackType[] = [];
-  const notableTracks: Array<{
-    track: TrackType;
-    placements: Array<{ placement: number; categoryName: string }>;
-  }> = [];
   const topTracksInJam = useMemo(
     () =>
       recapData.trackResults
@@ -1374,25 +1397,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     [recapData.trackResults, t],
   );
 
-  const gameScoreEntries = useMemo(
-    () =>
-      getScoreEntries(recapData.gameDetail?.scores, t).sort(
-        compareGameScoreEntries,
-      ),
-    [recapData.gameDetail?.scores, t],
-  );
-
-  const gameScoreChartData = useMemo(
-    () =>
-      gameScoreEntries.map((entry) => ({
-        subject: entry.label,
-        ranked: entry.averageScore / 2,
-        all: entry.averageUnrankedScore / 2,
-        fullMark: 5,
-      })),
-    [gameScoreEntries],
-  );
-
   const gameCategoryPlacementTotals = useMemo(() => {
     const totals = new Map<string, number>();
 
@@ -1404,7 +1408,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             category.categoryName,
           );
           const current = totals.get(key) ?? 0;
-          totals.set(key, Math.max(current, category.placement));
+          totals.set(key, current + 1);
         }
       }
     }
@@ -1423,7 +1427,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             category.categoryName,
           );
           const current = totals.get(key) ?? 0;
-          totals.set(key, Math.max(current, category.placement));
+          totals.set(key, current + 1);
         }
       }
     }
@@ -1431,19 +1435,15 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     return totals;
   }, [recapData.trackResults]);
 
-  const notableGameScoreChips = useMemo(
-    () =>
-      getNotableGameScoreChips(
-        gameScoreEntries,
-        gameCategoryPlacementTotals,
-        recapData.gameDetail?.category,
-      ),
-    [
-      gameCategoryPlacementTotals,
-      gameScoreEntries,
-      recapData.gameDetail?.category,
-    ],
-  );
+  const gameScoreSummaries = recapData.gameDetails.map((game) => {
+    const entries = getScoreEntries(getJamRecapScores(game), t).sort(compareGameScoreEntries);
+    return {
+      game, entries,
+      chips: getNotableGameScoreChips(entries, gameCategoryPlacementTotals, game.category),
+      chart: entries.map((entry) => ({ subject: entry.label, ranked: entry.averageScore / 2,
+        all: entry.averageUnrankedScore / 2, placement: entry.placement, fullMark: 5 })),
+    };
+  });
 
   const trackScoreSummaries = useMemo(
     () =>
@@ -1487,23 +1487,22 @@ export default function Recap({ targetUserSlug }: RecapProps) {
           track,
           scoreEntries,
           displayEntry,
-            notableChips: getNotableGameScoreChips(
-              scoreEntries,
-              trackCategoryPlacementTotals,
-              matchingTrackResult?.game?.category ??
-                recapData.gameDetail?.category ??
-                track.game?.category,
-            ),
-          });
-          return acc;
-        }, []),
-      [
-        recapData.trackResults,
-        recapData.gameDetail?.category,
-        recapData.trackDetails,
-        t,
-        trackCategoryPlacementTotals,
-      ],
+          notableChips: getNotableGameScoreChips(
+            scoreEntries,
+            trackCategoryPlacementTotals,
+            matchingTrackResult?.game?.category ??
+              track.game?.category,
+          ),
+        });
+        return acc;
+      }, []),
+    [
+      recapData.trackResults,
+      recapData.gameDetail?.category,
+      recapData.trackDetails,
+      t,
+      trackCategoryPlacementTotals,
+    ],
   );
 
   const earnedAchievements = useMemo(
@@ -1513,7 +1512,21 @@ export default function Recap({ targetUserSlug }: RecapProps) {
           (achievement: AchievementType) =>
             achievement.game?.jamId === selectedJamId,
         )
-        .sort((a: AchievementType, b: AchievementType) => b.id - a.id),
+        .map((achievement: AchievementType) => {
+          const fullAchievement = achievement.game?.achievements?.find(
+            (entry) => entry.id === achievement.id,
+          ) ?? achievement;
+          const { tier, pct } = getRarityTier(
+            fullAchievement.users?.length ?? 0,
+            engagedUserIdsForGame(achievement.game).size,
+          );
+          return { achievement, tier, pct };
+        })
+        .sort((a, b) =>
+          RARITY_ORDER[a.tier] - RARITY_ORDER[b.tier] ||
+          a.pct - b.pct ||
+          b.achievement.id - a.achievement.id,
+        ),
     [selectedJamId, user?.achievements],
   );
 
@@ -1540,22 +1553,10 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     [selectedJamId, user],
   );
 
-  const ownerGameFavoriteCount =
-    ownerGame && selectedJamId
-      ? ((user?.favoriteGameCounts ?? []).find(
-          (entry) =>
-            entry.gameId === ownerGame.id &&
-            (entry.pageVersion ?? "JAM") === "JAM",
-        )?.count ?? 0)
-      : 0;
-  const ownerGameFavoriteUsers =
-    ownerGame && selectedJamId
-      ? ((user?.favoriteGameCounts ?? []).find(
-          (entry) =>
-            entry.gameId === ownerGame.id &&
-            (entry.pageVersion ?? "JAM") === "JAM",
-        )?.users ?? [])
-      : [];
+  const gameRecommendations = getUserGamesForJam(user, selectedJamId ?? -1).map((game) => {
+    const favorites = user?.favoriteGameCounts?.find((entry) => entry.gameId === game.id && (entry.pageVersion ?? "JAM") === "JAM");
+    return { game, count: favorites?.count ?? 0, users: favorites?.users ?? [] };
+  }).filter(({ count }) => count > 1);
 
   const favoriteTracksForJam = useMemo(() => {
     const counts = new Map(
@@ -1568,24 +1569,8 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         count: counts.get(track.id)?.count ?? 0,
         users: counts.get(track.id)?.users ?? [],
       }))
-      .filter((entry) => entry.count > 1);
+      .filter((entry) => entry.count > 0);
   }, [recapData.trackDetails, user?.favoriteTrackCounts]);
-
-  const hasGamesSection =
-    gameScoreEntries.length > 0 ||
-    gameCommentWords.length > 0 ||
-    recommendedGamesForJam.length > 0 ||
-    Boolean(ownerGame && ownerGameFavoriteCount > 1) ||
-    topGamesInJam.length > 0;
-
-  const hasMusicSection =
-    trackScoreSummaries.length > 0 ||
-    (recapData.trackDetails.length > 0 && musicCommentWords.length > 0) ||
-    recommendedTracksForJam.length > 0 ||
-    favoriteTracksForJam.length > 0 ||
-    topTracksInJam.length > 0;
-
-  const hasScoresSection = earnedAchievements.length > 0;
 
   const recapStats = useMemo(() => {
     const gamesCommentedOn = new Set(
@@ -1655,13 +1640,14 @@ export default function Recap({ targetUserSlug }: RecapProps) {
     );
     const nextJamId = matchingJam?.id ?? Number(jamValue);
     if (!Number.isInteger(nextJamId)) return;
-    setSelectedJamId(nextJamId);
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("jam", getJamUrlValue(matchingJam) || String(nextJamId));
     router.replace(`${pathname}?${params.toString()}`);
   };
 
   const handleVisibilityChange = async (nextValue: boolean) => {
+    if (preview) return;
     if (!selectedJamId) return;
     setSavingVisibility(true);
     try {
@@ -1669,13 +1655,16 @@ export default function Recap({ targetUserSlug }: RecapProps) {
       const json = await response.json();
       if (!response.ok) {
         addToast({
-          title: json.message ?? uiText("AppStrings.FailedToUpdateRecapVisibility"),
+          title:
+            json.message ?? uiText("AppStrings.FailedToUpdateRecapVisibility"),
         });
         return;
       }
       setVisibility(json.data ?? null);
       addToast({
-        title: nextValue ? uiText("AppStrings.RecapIsNowPublic") : uiText("AppStrings.RecapIsNowPrivate"),
+        title: nextValue
+          ? uiText("AppStrings.RecapIsNowPublic")
+          : uiText("AppStrings.RecapIsNowPrivate"),
       });
     } catch {
       addToast({ title: uiText("AppStrings.FailedToUpdateRecapVisibility") });
@@ -1686,57 +1675,124 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
   const handleCopyShareLink = async () => {
     if (!visibility?.sharePath || typeof window === "undefined") return;
-    await navigator.clipboard.writeText(
-      `${window.location.origin}${visibility.sharePath}`,
-    );
-    addToast({ title: uiText("AppStrings.RecapLinkCopied") });
+    try {
+      await navigator.clipboard.writeText(
+        `${window.location.origin}${visibility.sharePath}`,
+      );
+      addToast({ title: uiText("AppStrings.RecapLinkCopied") });
+    } catch {
+      addToast({ title: recapText("CopyFailed") });
+    }
   };
 
-  if (userLoading || !selectedJamId) {
-    return <div>{uiText("AppStrings.LoadingRecap")}</div>;
-  }
+  const hasGamesSection =
+    gameScoreSummaries.some(({ entries }) => entries.length > 0) ||
+    gameCommentWords.length > 0 ||
+    recommendedGamesForJam.length > 0 ||
+    gameRecommendations.length > 0 ||
+    topGamesInJam.length > 0;
 
-  if (targetUserSlug && !user) {
-    return <div>{uiText("AppStrings.CouldNotLoadUserRecap")}</div>;
-  }
+  const hasMusicSection =
+    trackScoreSummaries.length > 0 ||
+    (recapData.trackDetails.length > 0 && musicCommentWords.length > 0) ||
+    recommendedTracksForJam.length > 0 ||
+    favoriteTracksForJam.length > 0 ||
+    topTracksInJam.length > 0;
 
-  if (targetUserSlug && !isOwner && loadingVisibility) {
-    return <div>{uiText("AppStrings.LoadingRecap")}</div>;
-  }
+  const earnedScores = getEarnedRecapScores(user?.scores ?? [], selectedJamId);
+  const hasScoresSection = earnedAchievements.length > 0 || earnedScores.length > 0;
 
-  if (targetUserSlug && !isOwner && !visibility?.isPublic) {
+  const resultsHref = `/results?jam=${getJamUrlValue(selectedJam) || selectedJamId}`;
+  const currentData = loadedFor === `${selectedJamId}:${effectiveSlug}`;
+
+  const handleSharePost = async () => {
+    if (preview || !isOwner || !currentData || sharingRecap) return;
+    setSharingRecap(true);
+    try {
+      const stats = visibleStatCards.map(({ label, value }) => ({ label, value }));
+      if (earnedAchievements.length) stats.push({ label: uiText("AppStrings.AchievementsEarned"), value: earnedAchievements.length });
+      if (earnedScores.length) stats.push({ label: uiText("AppStrings.ScoresEarned"), value: earnedScores.length });
+      openSharedPostDraft(await buildRecapShareDraft({
+        jamName: selectedJam?.name ?? "Game jam",
+        userName: user?.name ?? effectiveSlug,
+        stats,
+        games: gameScoreSummaries.map(({ game, entries }) => ({ name: game.name, ratings: entries })),
+        music: trackScoreSummaries.map(({ track, displayEntry }) => ({ name: track.name, ratings: [{ ...displayEntry, label: track.name }] })),
+        gameWords: gameCommentWords,
+        musicWords: musicCommentWords,
+        publicUrl: visibility?.isPublic && visibility.sharePath ? new URL(visibility.sharePath, window.location.origin).href : undefined,
+      }));
+    } catch {
+      addToast({ title: uiText("AppStrings.CouldNotCreateRecapPost") });
+    } finally {
+      setSharingRecap(false);
+    }
+  };
+
+  if (selfLoading || (userLoading && !!effectiveSlug) || jamsLoading || currentJamLoading)
+    return <p role="status">{uiText("AppStrings.LoadingRecap")}</p>;
+  if (jams.length === 0)
+    return <p role="status">{recapText("NoJams")}</p>;
+  if (targetUserSlug && !user)
+    return <p role="alert">{uiText("AppStrings.CouldNotLoadUserRecap")}</p>;
+  if (!selectedJamId)
+    return <p role="status">{uiText("AppStrings.LoadingRecap")}</p>;
+  if (
+    effectiveSlug &&
+    (!visibility ||
+      visibilityFor !== `${selectedJamId}:${effectiveSlug}` ||
+      loadingVisibility)
+  ) {
     return (
-      <Card className="p-6">
-        <Vstack align="start" gap={2}>
-          <Text size="2xl" weight="bold">
-             {uiText("AppStrings.ThisRecapIsPrivate")} </Text>
-          <Text color="textFaded">
-            {user?.name ?? uiText("AppStrings.ThisUser")}  {uiText("AppStrings.HasNotSharedThisJamRecapPublicly")} </Text>
-        </Vstack>
-      </Card>
+      <div className="space-y-4" role={visibilityError ? "alert" : "status"}>
+        <p>
+          {visibilityError
+            ? uiText("AppStrings.FailedToLoadJamRecap")
+            : uiText("AppStrings.LoadingRecap")}
+        </p>
+        {visibilityError && (
+          <Button onClick={() => setRetry((value) => value + 1)}>
+            {recapText("Retry")}
+          </Button>
+        )}
+      </div>
     );
   }
+  if (targetUserSlug && !isOwner && !canPreview && !visibility?.isPublic)
+    return (
+      <div className="space-y-3 py-12">
+        <h1 className="text-3xl font-bold">
+          {uiText("AppStrings.ThisRecapIsPrivate")}
+        </h1>
+        <Button href={resultsHref}>
+          {uiText("AppStrings.ViewFullResults")}
+        </Button>
+      </div>
+    );
+  if (loadingData || !currentData)
+    return (
+      <div
+        role="status"
+        className="flex min-h-[55vh] items-center justify-center"
+      >
+        {uiText("AppStrings.LoadingRecapData")}
+      </div>
+    );
 
   return (
-    <div className="flex flex-col gap-8 md:gap-12">
-      <Card
-        className="overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${colors.crust}, ${colors.surface0})`,
-        }}
-      >
-        <div className="p-8 md:p-12">
-          <Vstack align="start" gap={6}>
-            <Hstack wrap className="justify-between gap-3 w-full">
-              <Vstack align="start" gap={2}>
+    <RecapLayout>
+      <section id="overview" data-recap-section={uiText("AppStrings.JamRecap")} data-recap-group="true" tabIndex={-1}><div>
+          <Vstack align="center" gap={6} className="text-center">
+            <Vstack align="center" gap={5} className="w-full">
+              <Vstack align="center" gap={2}>
                 <Text size="4xl" weight="bold">
                    {uiText("AppStrings.JamRecap")} </Text>
                 <Text color="textFaded">
                   {user?.name ?? uiText("Navbar.Brand.Name")}
-                  {selectedJam ? uiText("AppStrings.Value07", { value0: selectedJam.name }) : ""}
+                  {selectedJam ? ` ${selectedJam.name}` : ""}
                 </Text>
               </Vstack>
-              <Hstack wrap className="gap-2">
+              <Hstack wrap className="justify-center gap-2">
                 <Dropdown
                   onSelect={(key) => handleJamChange(String(key))}
                   trigger={
@@ -1758,7 +1814,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                 >
                    {uiText("AppStrings.ViewFullResults")} </Button>
               </Hstack>
-            </Hstack>
+            </Vstack>
 
             <Text color="textFaded">
               {user
@@ -1767,7 +1823,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             </Text>
 
             {visibleStatCards.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 w-full">
+              <div className="flex w-full flex-wrap justify-center gap-x-8 gap-y-6 md:gap-x-12">
                 {visibleStatCards.map((stat) => (
                   <StatCard
                     key={stat.key}
@@ -1780,12 +1836,13 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             ) : null}
           </Vstack>
         </div>
-      </Card>
+      </section>
 
       {error ? (
-        <Card className="p-4">
+        <div className="w-full flex flex-wrap items-center justify-center gap-3" role="status">
           <Text>{error}</Text>
-        </Card>
+          <Button onClick={() => setRetry((value) => value + 1)}>{recapText("Retry")}</Button>
+        </div>
       ) : null}
 
       {loadingData ? <div>{uiText("AppStrings.LoadingRecapData")}</div> : null}
@@ -1794,33 +1851,23 @@ export default function Recap({ targetUserSlug }: RecapProps) {
         <>
           {hasGamesSection ? (
             <SectionHeaderCard
+              id="games"
               title={uiText("Navbar.Games.Title")}
               subtitle={uiText("AppStrings.YourGameFavoritesAndStandoutJamEntries")}
             />
           ) : null}
 
-          {recapData.gameDetail && gameScoreEntries.length > 0 ? (
+          {gameScoreSummaries.filter(({ entries }) => entries.length > 0).map(({ game, entries, chips, chart }) => (
             <Section
-              title={uiText("AppStrings.HowYourGameLanded")}
+              key={game.id}
+              id={`game-ratings-${game.id}`}
+              title={gameScoreSummaries.length > 1 ? game.name : uiText("AppStrings.HowYourGameLanded")}
               subtitle={uiText("AppStrings.TheStarRatingOfVariousAspectsOfYour")}
             >
               <Vstack align="start" gap={6} className="w-full">
-                {notableGameScoreChips.length > 0 ? (
-                  <div className="flex flex-wrap gap-2 w-full">
-                    {notableGameScoreChips.map((chip) => (
-                      <Chip key={chip.key}>
-                        <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>{" "}
-                        <span style={{ color: colors.textFaded }}>
-                          {chip.detail}
-                        </span>
-                      </Chip>
-                    ))}
-                  </div>
-                ) : null}
-
                 <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-6 w-full items-start">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {gameScoreEntries.map((entry) => {
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 xl:gap-x-16 gap-y-6">
+                    {entries.map((entry) => {
                       const { gradient, first } = getResultsGradient(
                         entry.placement,
                         entry.averageScore,
@@ -1828,18 +1875,28 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                       );
 
                       return (
-                        <Card key={entry.key} className="p-5 md:p-6">
+                        <div key={entry.key} className="py-4">
                           <Vstack align="start" gap={3} className="w-full">
                             <Text color="textFaded">{uiText(entry.label)}</Text>
+                            <div className="flex w-full items-center gap-3">
                             <span
                               className="text-3xl font-bold leading-none"
                               style={gradientTextStyle(gradient, first)}
                             >
                               {(entry.averageScore / 2).toFixed(2)}
                             </span>
+                            <RatingStars value={entry.averageScore / 2} color={first} size={20} className="ml-auto" />
+                            </div>
                             <Text color="textFaded">{uiText("AppStrings.Stars")}</Text>
+                            {chips
+                              .filter((chip) => chip.categoryKey === entry.key)
+                              .map((chip) => (
+                                <Chip key={chip.key}>
+                                  <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>
+                                </Chip>
+                              ))}
                           </Vstack>
-                        </Card>
+                        </div>
                       );
                     })}
                   </div>
@@ -1851,12 +1908,13 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                           cx="50%"
                           cy="50%"
                           outerRadius="80%"
-                          data={gameScoreChartData}
+                          data={chart}
+                          margin={{ top: 20, right: 70, bottom: 20, left: 70 }}
                         >
                           <PolarGrid stroke={colors.crust} />
                           <PolarAngleAxis
                             dataKey="subject"
-                            tick={{ fill: colors.textFaded, fontSize: 12 }}
+                            tick={<RatingRadarLabel color={colors.textFaded} />}
                           />
                           <PolarRadiusAxis
                             domain={[0, 5]}
@@ -1864,18 +1922,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                             tick={false}
                           />
                           <Radar
-                            name="All"
-                            dataKey="all"
-                            stroke={colors.magenta}
-                            fill={colors.magentaDark}
-                            fillOpacity={0.55}
-                          />
-                          <Radar
-                            name="Ranked"
-                            dataKey="ranked"
-                            stroke={colors.blue}
-                            fill={colors.blueDark}
-                            fillOpacity={0.55}
+                            name={game.category === "EXTRA" ? "All" : "Ranked"}
+                            dataKey={game.category === "EXTRA" ? "all" : "ranked"}
+                            shape={<RatingRadarShape colors={colors} />}
                           />
                         </RadarChart>
                       </ResponsiveContainer>
@@ -1884,10 +1933,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                 </div>
               </Vstack>
             </Section>
-          ) : null}
+          ))}
 
           <div className={gameCommentWords.length > 0 ? "" : "hidden"}>
             <Section
+              id="game-words"
               title={uiText("AppStrings.WordsPeopleUsed")}
               subtitle={uiText("AppStrings.TheMostCommonWordsInYourGameComments")}
             >
@@ -1897,10 +1947,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recommendedGamesForJam.length > 0 ? (
             <Section
+              id="favorite-games"
               title={uiText("AppStrings.GamesYouEnjoyedMost")}
               subtitle={uiText("AppStrings.TheGamesThatEndedUpInYourFavorites")}
             >
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                 {recommendedGamesForJam.map((game) => (
                   <GameCard key={game.id} game={game} />
                 ))}
@@ -1908,33 +1959,36 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             </Section>
           ) : null}
 
-          {ownerGame && ownerGameFavoriteCount > 1 ? (
+          {gameRecommendations.map(({ game, count, users }) => (
             <Section
+              key={game.id}
+              id={`game-recommendations-${game.id}`}
               title={uiText("AppStrings.YourGameWasRecommended")}
               subtitle={uiText("AppStrings.PeopleReallyEnjoyedYourGameAndHadIt")}
             >
               <Vstack align="center" gap={4} className="w-full text-center">
                 <Vstack align="center" gap={1}>
                   <Text size="xl" weight="bold">
-                    {ownerGameFavoriteCount}{" "}
-                    {ownerGameFavoriteCount === 1 ? uiText("AppStrings.Person") : uiText("AppStrings.People")}
+                    {count}{" "}
+                    {count === 1 ? uiText("AppStrings.Person") : uiText("AppStrings.People")}
                   </Text>
                   <Text color="textFaded" size="sm">
                      {uiText("AppStrings.Had")}{" "}
-                    <span style={{ color: colors.text }}>{ownerGame.name}</span>{" "}
+                    <span style={{ color: colors.text }}>{game.name}</span>{" "}
                      {uiText("AppStrings.InTheirFavorites")} </Text>
                 </Vstack>
-                <FavoriteFacepile users={ownerGameFavoriteUsers} />
+                <FavoriteFacepile users={users} />
               </Vstack>
             </Section>
-          ) : null}
+          ))}
 
           {topGamesInJam.length > 0 ? (
             <Section
+              id="top-games"
               title={uiText("AppStrings.TopGamesInTheJam")}
               subtitle={uiText("AppStrings.GamesThatPlacedTop3InAtLeast")}
             >
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full auto-rows-fr">
                 {topGamesInJam.map(({ game, placements }) => (
                   <HighlightGameCard
                     key={game.id}
@@ -1949,6 +2003,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {hasMusicSection ? (
             <SectionHeaderCard
+              id="music"
               title={uiText("Navbar.Music.Title")}
               subtitle={uiText("AppStrings.YourSoundtrackHighlightsAndNotableTracks")}
             />
@@ -1956,10 +2011,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {trackScoreSummaries.length > 0 ? (
             <Section
+              id="music-ratings"
               title={uiText("AppStrings.HowYourMusicLanded")}
               subtitle={uiText("AppStrings.YourTracksTheirStarRatingsAndThePlacements")}
             >
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+              <section className="grid w-full grid-cols-1 gap-y-8 md:grid-cols-4 md:gap-x-12 xl:gap-x-20 md:[&>*]:col-span-2 md:[&>:last-child:nth-child(odd)]:col-start-2">
                 {trackScoreSummaries.map(
                   ({ track, displayEntry, notableChips }) => (
                     <TrackScoreCard
@@ -1977,6 +2033,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recapData.trackDetails.length > 0 && musicCommentWords.length > 0 ? (
             <Section
+              id="music-words"
               title={uiText("AppStrings.WordsPeopleUsedForYourMusic")}
               subtitle={uiText("AppStrings.TheMostCommonsWordsInYourMusicComments")}
             >
@@ -1986,10 +2043,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {recommendedTracksForJam.length > 0 ? (
             <Section
+              id="favorite-music"
               title={uiText("AppStrings.MusicYouEnjoyedMost")}
               subtitle={uiText("AppStrings.TheTracksThatEndedUpInYourFavorites")}
             >
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+              <section className="mx-auto flex w-full max-w-lg flex-col gap-4">
                 {recommendedTracksForJam.map((track) => (
                   <SidebarSong
                     key={track.id}
@@ -2026,35 +2084,31 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {favoriteTracksForJam.length > 0 ? (
             <Section
-              title={uiText("AppStrings.PeopleHadYourMusicInTheirFavorites")}
-              subtitle={uiText("AppStrings.TracksFromYourGameThatOtherPlayersRecommended")}
+              id="music-recommendations"
+              title={uiText("AppStrings.YourMusicWasRecommended")}
+              subtitle={uiText("AppStrings.PeopleReallyEnjoyedYourMusicAndHadIt")}
             >
               <div className="flex flex-wrap justify-center gap-4 w-full">
                 {favoriteTracksForJam.map(({ track, count, users }) => (
-                  <Card
-                    key={track.id}
-                    className="p-5 md:p-6 w-full md:max-w-[420px]"
-                  >
                     <Vstack
+                      key={track.id}
                       align="center"
                       gap={4}
-                      className="w-full text-center"
+                      className="w-full text-center md:max-w-[420px]"
                     >
                       <Vstack align="center" gap={1}>
-                        <Text weight="bold">{track.name}</Text>
-                        <Text color="textFaded">
-                          {count} {count === 1 ? uiText("AppStrings.PersonHad") : uiText("AppStrings.PeopleHad")}{" "}
-                           {uiText("AppStrings.ThisTrackInTheirFavorites")} </Text>
+                        <Text size="xl" weight="bold">
+                          {count}{" "}
+                          {count === 1 ? uiText("AppStrings.Person") : uiText("AppStrings.People")}
+                        </Text>
+                        <Text color="textFaded" size="sm">
+                          {uiText("AppStrings.Had")}{" "}
+                          <a href={`/m/${track.slug}`} style={{ color: colors.text }}>{track.name}</a>{" "}
+                          {uiText("AppStrings.InTheirFavorites")}
+                        </Text>
                       </Vstack>
                       <FavoriteFacepile users={users} />
-                      <Button
-                        href={`/m/${track.slug}`}
-                        variant="ghost"
-                        icon="music"
-                      >
-                         {uiText("AppStrings.OpenTrackPage")} </Button>
                     </Vstack>
-                  </Card>
                 ))}
               </div>
             </Section>
@@ -2062,10 +2116,11 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {topTracksInJam.length > 0 ? (
             <Section
+              id="top-music"
               title={uiText("AppStrings.TopMusicInTheJam")}
               subtitle={uiText("AppStrings.TracksThatPlacedTop3InAtLeast")}
             >
-              <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+              <section className="mx-auto grid w-full max-w-4xl grid-cols-1 justify-items-center gap-x-12 gap-y-6 md:grid-cols-2">
                 {topTracksInJam.map(({ track, placements }) => (
                   <HighlightTrackCard
                     key={track.id}
@@ -2080,6 +2135,7 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {hasScoresSection ? (
             <SectionHeaderCard
+              id="achievements"
               title={uiText("AppStrings.ScoresAndAchievements")}
               subtitle={uiText("AppStrings.ThingsYouAchievedInGamesThisJam")}
             />
@@ -2087,22 +2143,13 @@ export default function Recap({ targetUserSlug }: RecapProps) {
 
           {earnedAchievements.length > 0 ? (
             <Section
+              id="earned-achievements"
               title={uiText("AppStrings.AchievementsYouEarned")}
               subtitle={uiText("AppStrings.TheAchievementsYouUnlockedDuringThisJam")}
             >
               <div className="flex w-full justify-center">
                 <div className="flex flex-wrap justify-center gap-3 max-w-5xl">
-                  {earnedAchievements.map((achievement) => {
-                    const fullAchievement =
-                      achievement.game?.achievements?.find(
-                        (entry) => entry.id === achievement.id,
-                      ) ?? achievement;
-                    const haveCount = fullAchievement?.users?.length ?? 0;
-                    const engagedIds = engagedUserIdsForGame(achievement.game);
-                    const { tier, pct } = getRarityTier(
-                      haveCount,
-                      engagedIds.size,
-                    );
+                  {earnedAchievements.map(({ achievement, tier, pct }) => {
                     const style = rarityStyles[tier];
 
                     return (
@@ -2196,22 +2243,66 @@ export default function Recap({ targetUserSlug }: RecapProps) {
             </Section>
           ) : null}
 
-          {isOwner ? (
+          {earnedScores.length > 0 ? (
+            <Section id="earned-scores" title={uiText("AppStrings.ScoresYouEarned")} subtitle={uiText("AppStrings.YourBestLeaderboardScoresThisJam")}>
+              <div className="mx-auto grid w-full max-w-4xl grid-cols-1 justify-items-center gap-x-12 gap-y-8 md:grid-cols-4 md:[&>*]:col-span-2 md:[&>:last-child:nth-child(odd)]:col-start-2">
+                {earnedScores.map((score) => {
+                  const rankColor = score.placement === 1 ? colors.yellow
+                    : score.placement === 2 ? `color-mix(in srgb, ${colors.text} 85%, ${colors.blue})`
+                    : score.placement === 3 ? colors.orange
+                    : colors.text;
+                  return (
+                  <a key={score.id} href={`/g/${score.leaderboard.game.slug}?pageVersion=${score.leaderboard.game.pageVersion ?? "JAM"}`} className="flex w-fit min-w-0 max-w-sm items-center gap-4 rounded-lg py-4">
+                    <Image
+                      src={score.leaderboard.game.thumbnail || "/images/D2J_Icon.png"}
+                      alt=""
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 shrink-0 rounded-lg object-cover"
+                    />
+                    <Vstack align="start" gap={1} className="min-w-0">
+                      <Text color="textFaded" size="sm">{score.leaderboard.game.name}</Text>
+                      <Text weight="bold">{score.leaderboard.name}</Text>
+                      <Text size="2xl" weight="bold" style={{ color: rankColor }}>{formatRecentScore(score)}</Text>
+                      {score.placement != null && score.topPercent != null && (
+                        <Hstack wrap className="gap-2 pt-2">
+                          <Chip>
+                            <span style={{ color: rankColor }}>
+                              {uiText("AppStrings.RecapScorePlacement", { placement: score.placement, players: score.playerCount })}
+                            </span>
+                          </Chip>
+                          <Chip>
+                            <span style={{ color: colors.textFaded }}>
+                              {uiText("AppStrings.RecapScorePercent", { percent: Math.max(1, Math.round(score.topPercent)).toLocaleString() })}
+                            </span>
+                          </Chip>
+                        </Hstack>
+                      )}
+                    </Vstack>
+                  </a>
+                  );
+                })}
+              </div>
+            </Section>
+          ) : null}
+
+          {isOwner || canPreview ? (
             <Section
+              id="share"
               title={uiText("AppStrings.ShareYourRecap")}
               subtitle={uiText("AppStrings.MakeThisPagePublicSoOtherPeopleCan")}
             >
-              <Hstack wrap className="justify-between gap-4 w-full">
+              <Hstack wrap justify="center" className="gap-4 w-full">
                 <Vstack align="start" gap={1}>
                   <Text weight="bold">{uiText("AppStrings.PublicRecap")}</Text>
                 </Vstack>
                 <Switch
                   checked={Boolean(visibility?.isPublic)}
-                  disabled={savingVisibility || !recapData.gameDetail}
+                  disabled={preview || savingVisibility || !recapData.gameDetail}
                   onChange={handleVisibilityChange}
                 />
               </Hstack>
-              <Hstack wrap>
+              <Hstack wrap justify="center" className="w-full text-center">
                 <Button
                   icon="link"
                   onClick={handleCopyShareLink}
@@ -2223,10 +2314,21 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                      {uiText("AppStrings.PublishAGameInThisJamToEnable")} </Text>
                 ) : null}
               </Hstack>
+              <Hstack justify="center" className="w-full">
+                <Button icon="send" onClick={handleSharePost} disabled={preview || !isOwner || !currentData || sharingRecap}>
+                  {uiText(sharingRecap ? "AppStrings.CreatingRecapPost" : "AppStrings.ShareRecapPost")}
+                </Button>
+              </Hstack>
             </Section>
           ) : null}
 
-          <Card className="p-8 md:p-10">
+          <NextJamInvitation
+            jams={[...jams, ...(currentJamResponse?.nextJam ? [currentJamResponse.nextJam] : [])]}
+            recapJam={selectedJam}
+            preview={preview}
+          />
+
+          <div id="next" data-recap-section={uiText("AppStrings.ViewFullResults")} tabIndex={-1} className="w-full">
             <Vstack align="start" gap={4}>
               {ownerGame ? (
                 <>
@@ -2236,8 +2338,6 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                   </Hstack>
                   <Text color="textFaded">
                      {uiText("AppStrings.CheckWhatPeopleLikedAndDidnTLikeAboutTheGameAndGoThroughAndMakeImprovementsBasedOnHow")} </Text>
-                  <Text color="textFaded">
-                     {uiText("AppStrings.TheSiteWillBeUpdatedToHelpProvide")} </Text>
                 </>
               ) : null}
               <Hstack wrap>
@@ -2248,9 +2348,9 @@ export default function Recap({ targetUserSlug }: RecapProps) {
                    {uiText("AppStrings.ViewFullResults")} </Button>
               </Hstack>
             </Vstack>
-          </Card>
+          </div>
         </>
       ) : null}
-    </div>
+    </RecapLayout>
   );
 }

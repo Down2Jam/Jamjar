@@ -169,6 +169,10 @@
     "News": {
       "Title": "Meow",
       "Description": "Meow Meow2Meow meow meow meow meow"
+    },
+    "Recap": {
+      "Title": "Meow",
+      "Description": "Meow meow meow meow"
     }
   },
   "PostStyle": {
@@ -577,7 +581,8 @@
     "JamSoon": "Meow meow meow meow meow meow meow",
     "NoTheme": "Meow meow-meow meow meow",
     "Submissions": "Meow meow meow",
-    "Rate": "Meow meow meow!"
+    "Rate": "Meow meow meow!",
+    "ViewRecap": "Meow meow meow meow"
   },
   "Stats": {
     "Timer": "Meow meow meow",
@@ -1045,6 +1050,12 @@
     "CouldNotLoadUserRecap": "Meow meow meow meow meow.",
     "CouldNotUpdateFollow": "Meow meow meow meow",
     "CreateAPostJamVersionOfThePage": "Meow meow meow meow meow meow meow meow",
+    "CreatePostJamTrackVersion": "Meow meow meow",
+    "ShareRecapPost": "Meow meow meow",
+    "PostJamFirst": "Meow meow",
+    "PostJamFirstDescription": "Meow meow meow meow",
+    "CreatingRecapPost": "Meowing…",
+    "CouldNotCreateRecapPost": "Meow meow. Meow meow meow.",
     "CreateAccount": "Meow meow",
     "CreateCollection": "Meow meow",
     "CreateComment": "Meow Meow",
@@ -1442,6 +1453,8 @@
     "PasteAYoutubeUrlWatchShareLinkShorts": "Meow meow Meow MEOW (meow, meow meow, meow, meow meow)",
     "PasteYourItchWidgetUrlHereSuchAs": "Meow meow Meow meow MEOW meow, meow meow",
     "PeopleHadYourMusicInTheirFavorites": "Meow Meow Meow Meow Meow Meow Meow",
+    "YourMusicWasRecommended": "Meow meow meow Meow",
+    "PeopleReallyEnjoyedYourMusicAndHadIt": "Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow!",
     "PeopleReallyEnjoyedYourGameAndHadIt": "Meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow meow!",
     "PerRun": "Meow meow",
     "Phases": "Meow",
@@ -1556,6 +1569,16 @@
     "SearchEmotes": "Meow meow",
     "SearchIcons": "Meow meow",
     "SearchUsers": "Meow meow...",
+    "RecapPreview": "Meow meow",
+    "ScoresYouEarned": "Meow Meow Meow",
+    "ScoresEarned": "Meow meow",
+    "SomeRecapDetailsCouldNotLoad": "Meow meow meow.",
+    "RecapScorePlacement": "#{placement} meow {players} meow",
+    "RecapScorePercent": "Meow {percent}%",
+    "YourBestLeaderboardScoresThisJam": "Meow meow meow meow meow meow meow",
+    "PreviewAnyUserRecap": "Meow meow meow meow meow.",
+    "NoUsersFound": "Meow meow meow.",
+    "UserSearchFailed": "Meow meow meow meow.",
     "SecondaryRoles": "Meow meow",
     "Seconds": "Meow",
     "SeedScore": "Meow Meow",
@@ -2934,5 +2957,10 @@
     "trackCategoryHelp2": "Meow meow meow meow meow, meow meow, meow, meow, meow meow.",
     "trackCategoryHelp4": "Meow meow meow meow meow meow meow meow, meow meow, meow, meow, meow, meow meow.",
     "trackCategoryHelp5": "Meow meow meow meow meow meow meow meow, meow meow meow, meow meow meow meow meow meow."
+  },
+  "Recap": {
+    "NoJams": "Meow Meow Meow.",
+    "Retry": "Meow Meow",
+    "CopyFailed": "Meow Meow Meow Meow Meow."
   }
 }

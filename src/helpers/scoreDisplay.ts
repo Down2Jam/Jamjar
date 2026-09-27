@@ -1,6 +1,6 @@
 import type { RecentScoreType } from "@/types/RecentScoreType";
 
-export function formatRecentScore(score: RecentScoreType) {
+export function formatRecentScore(score: Pick<RecentScoreType, "data" | "leaderboard">) {
   if (score.leaderboard.type === "SCORE" || score.leaderboard.type === "GOLF") {
     return new Intl.NumberFormat(undefined, {
       minimumFractionDigits: score.leaderboard.decimalPlaces,

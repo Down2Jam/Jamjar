@@ -492,8 +492,8 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               <NavbarButton
                 icon="trophy"
                 href="/recap"
-                name="Navbar.Results.Title"
-                description="Navbar.Results.Description"
+                name="Navbar.Recap.Title"
+                description="Navbar.Recap.Description"
                 hotkey={["G", "R"]}
                 color="yellow"
               />
@@ -785,10 +785,10 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                         value="results"
                         icon="trophy"
                         href="/recap"
-                        description={t("Navbar.Results.Description")}
+                        description={t("Navbar.Recap.Description")}
                         kbd="G R"
                       >
-                        {t("Navbar.Results.Title")}
+                        {t("Navbar.Recap.Title")}
                       </Dropdown.Item>
                     )}
                   {hiddenColoredActionCount >= 2 && jamPhase == "Suggestion" && (

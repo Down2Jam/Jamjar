@@ -248,6 +248,79 @@ type SongEdit = {
   credits: SongCreditEdit[];
 };
 
+function trackToSongEdit(s: TrackType): SongEdit {
+      const flags = parseLicenseFlags(s.license);
+      return {
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        url: s.url,
+        commentary: s.commentary ?? "",
+        tagIds: (s.tags ?? []).map((tag) => tag.id),
+        flagIds: (s.flags ?? []).map((flag) => flag.id),
+        bpm: s.bpm ?? null,
+        musicalKey: s.musicalKey ?? "",
+        integratedLufs: s.integratedLufs ?? null,
+        truePeakDb: s.truePeakDb ?? null,
+        loudnessGainDb: s.loudnessGainDb ?? null,
+        softwareUsed: s.softwareUsed ?? [],
+        origin: s.origin ?? "ORIGINAL",
+        externalAuthorName: s.externalAuthorName ?? "",
+        license: licenseFlagsToCode(
+          flags,
+          s.origin === "ASSET_PACK" ? getTrackLicenseVersion(s.license) : "4.0",
+        ),
+        licenseVersion: getTrackLicenseVersion(s.license),
+        allowDownload: Boolean(s.allowDownload),
+        allowBackgroundUse:
+          s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
+        allowBackgroundUseAttribution:
+          s.allowBackgroundUseAttribution ??
+          backgroundUsageAttributionAllowedByDefault(flags),
+        licenseAttribution: flags.attribution,
+        licenseCommercial: flags.commercial,
+        licenseDerivatives: flags.derivatives,
+        licenseShareAlike: flags.shareAlike,
+        links: (s.links ?? []).map((link) => ({
+          id: link.id,
+          label: link.label,
+          url: link.url,
+        })),
+        credits:
+          (s.credits?.length ?? 0) > 0
+            ? (s.credits ?? []).map((credit) => ({
+                id: credit.id,
+                role: credit.role,
+                userId: credit.userId,
+                user: credit.user
+                  ? {
+                      id: credit.user.id,
+                      name: credit.user.name,
+                      slug: credit.user.slug,
+                      profilePicture: credit.user.profilePicture,
+                      short: credit.user.short,
+                    }
+                  : null,
+              }))
+            : s.composer
+              ? [
+                  {
+                    id: -s.id,
+                    role: "Composer",
+                    userId: s.composer.id,
+                    user: {
+                      id: s.composer.id,
+                      name: s.composer.name,
+                      slug: s.composer.slug,
+                      profilePicture: s.composer.profilePicture,
+                      short: s.composer.short,
+                    },
+                  },
+                ]
+              : [],
+      };
+}
+
 type UploadedMusic = {
   url: string;
   integratedLufs?: number | null;
@@ -542,78 +615,7 @@ export default function GameEditingForm({
     setEstAnyPercent(game?.estAnyPercent ?? "");
     setEstHundredPercent(game?.estHundredPercent ?? "");
 
-    const incomingSongs = (game?.tracks || []).map((s: TrackType) => {
-      const flags = parseLicenseFlags(s.license);
-      return {
-        id: s.id,
-        slug: s.slug,
-        name: s.name,
-        url: s.url,
-        commentary: s.commentary ?? "",
-        tagIds: (s.tags ?? []).map((tag) => tag.id),
-        flagIds: (s.flags ?? []).map((flag) => flag.id),
-        bpm: s.bpm ?? null,
-        musicalKey: s.musicalKey ?? "",
-        integratedLufs: s.integratedLufs ?? null,
-        truePeakDb: s.truePeakDb ?? null,
-        loudnessGainDb: s.loudnessGainDb ?? null,
-        softwareUsed: s.softwareUsed ?? [],
-        origin: s.origin ?? "ORIGINAL",
-        externalAuthorName: s.externalAuthorName ?? "",
-        license: licenseFlagsToCode(
-          flags,
-          s.origin === "ASSET_PACK" ? getTrackLicenseVersion(s.license) : "4.0",
-        ),
-        licenseVersion: getTrackLicenseVersion(s.license),
-        allowDownload: Boolean(s.allowDownload),
-        allowBackgroundUse:
-          s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
-        allowBackgroundUseAttribution:
-          s.allowBackgroundUseAttribution ??
-          backgroundUsageAttributionAllowedByDefault(flags),
-        licenseAttribution: flags.attribution,
-        licenseCommercial: flags.commercial,
-        licenseDerivatives: flags.derivatives,
-        licenseShareAlike: flags.shareAlike,
-        links: (s.links ?? []).map((link) => ({
-          id: link.id,
-          label: link.label,
-          url: link.url,
-        })),
-        credits:
-          (s.credits?.length ?? 0) > 0
-            ? (s.credits ?? []).map((credit) => ({
-                id: credit.id,
-                role: credit.role,
-                userId: credit.userId,
-                user: credit.user
-                  ? {
-                      id: credit.user.id,
-                      name: credit.user.name,
-                      slug: credit.user.slug,
-                      profilePicture: credit.user.profilePicture,
-                      short: credit.user.short,
-                    }
-                  : null,
-              }))
-            : s.composer
-              ? [
-                  {
-                    id: -s.id,
-                    role: "Composer",
-                    userId: s.composer.id,
-                    user: {
-                      id: s.composer.id,
-                      name: s.composer.name,
-                      slug: s.composer.slug,
-                      profilePicture: s.composer.profilePicture,
-                      short: s.composer.short,
-                    },
-                  },
-                ]
-              : [],
-      };
-    }) as SongEdit[];
+    const incomingSongs = (game?.tracks || []).map(trackToSongEdit);
     setSongs(incomingSongs);
     setSoftwareUsedDrafts(
       Object.fromEntries(
@@ -2946,6 +2948,21 @@ export default function GameEditingForm({
                       />
 
                       {/* List songs */}
+                      {pageVersion === "POST_JAM" && (game?.jamPage?.tracks ?? [])
+                        .filter((track) => !songs.some((song) => song.slug === track.slug))
+                        .map((track) => (
+                          <Hstack key={`jam-${track.id}`} wrap className="w-full justify-between gap-3 py-2">
+                            <Text>{track.name}</Text>
+                            <Button icon="plus" onClick={() => {
+                              const song = { ...trackToSongEdit(track), id: -Date.now() };
+                              setSongs((current) => current.some((item) => item.slug === song.slug) ? current : [...current, song]);
+                              setSoftwareUsedDrafts((current) => ({ ...current, [song.id]: song.softwareUsed.join(", ") }));
+                              setNewSongId(song.id);
+                            }}>
+                              {uiText("AppStrings.CreatePostJamTrackVersion")}
+                            </Button>
+                          </Hstack>
+                        ))}
                       {songs.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {songs.map((song, index) => {
@@ -4343,6 +4360,26 @@ export default function GameEditingForm({
                   </Vstack>
                 </div>
                 <div className="pt-4">
+                    {pageVersion === "POST_JAM" && (game?.jamPage?.leaderboards ?? [])
+                      .filter((board) => !leaderboards.some((item) => item.name === board.name))
+                      .map((board) => (
+                        <Hstack key={`jam-board-${board.id}`} wrap className="w-full justify-between gap-3 py-2">
+                          <Text>{board.name}</Text>
+                          <Button icon="plus" onClick={() => setLeaderboards((current) =>
+                            current.some((item) => item.name === board.name) ? current : [...current, {
+                              name: board.name,
+                              type: board.type,
+                              onlyBest: board.onlyBest,
+                              maxUsersShown: board.maxUsersShown,
+                              decimalPlaces: board.decimalPlaces,
+                              game: game!,
+                              scores: [],
+                            }]
+                          )}>
+                            {uiText("AppStrings.CreatePostJamTrackVersion")}
+                          </Button>
+                        </Hstack>
+                      ))}
                     <LeaderboardManager value={leaderboards} onChange={setLeaderboards} />
                 </div>
               </Vstack>
@@ -4359,6 +4396,27 @@ export default function GameEditingForm({
                   </Vstack>
                 </div>
                     <Vstack align="start" className="pt-4">
+                      {pageVersion === "POST_JAM" && (game?.jamPage?.achievements ?? [])
+                        .filter((achievement) => !achievements.some((item) => item.name === achievement.name))
+                        .map((achievement) => (
+                          <Hstack key={`jam-achievement-${achievement.id}`} wrap className="w-full justify-between gap-3 py-2">
+                            <Text>{achievement.name}</Text>
+                            <Button icon="plus" onClick={() => {
+                              setNewAchievementIndex(achievements.length);
+                              setAchievements((current) => current.some((item) => item.name === achievement.name) ? current : [...current, {
+                                id: -Date.now(),
+                                name: achievement.name,
+                                description: achievement.description,
+                                image: achievement.image,
+                                game: game!,
+                                users: [],
+                                unlocks: [],
+                              }]);
+                            }}>
+                              {uiText("AppStrings.CreatePostJamTrackVersion")}
+                            </Button>
+                          </Hstack>
+                        ))}
                       {achievements.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {achievements.map((a, idx) => (

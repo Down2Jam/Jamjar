@@ -12,7 +12,7 @@ import { useCurrentJam } from "@/hooks/queries";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import { addToast } from "bioloom-ui";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
-import { readItem } from "@/requests/helpers";
+import { getApiErrorMessage, readItem } from "@/requests/helpers";
 
 export default function ClientGameEditPage({
   params,
@@ -65,7 +65,7 @@ export default function ClientGameEditPage({
     if (!game) return undefined;
     const selectedPage = getSelectedGamePage(game, selectedVersion);
     if (selectedPage) {
-      return materializeGamePage(game, selectedPage);
+      return materializeGamePage(game, selectedPage, false);
     }
     return game;
   }, [game, selectedVersion]);
@@ -118,14 +118,16 @@ export default function ClientGameEditPage({
                 if (response.ok) {
                   const nextGame = await getGame(game.slug);
                   if (nextGame.ok) {
-                    const payload = await nextGame.json();
-                    setGame(payload);
-                    setSelectedVersion("POST_JAM");
+                    const payload = await readItem<GameType>(nextGame);
+                    if (payload) {
+                      setGame(payload);
+                      setSelectedVersion("POST_JAM");
+                    }
                   }
                 } else {
                   addToast({
                     title:
-                      (await response.text()) ||
+                      getApiErrorMessage(await response.json().catch(() => null)) ||
                       uiText("AppStrings.FailedToCreatePostJamVersion"),
                   });
                 }

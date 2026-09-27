@@ -1,4 +1,5 @@
 import { GamePageType, GameType, PageVersion } from "@/types/GameType";
+import { getPageSoundtrack } from "./pageSoundtrack";
 
 export function getSelectedGamePage(
   game: GameType | null | undefined,
@@ -11,7 +12,13 @@ export function getSelectedGamePage(
 export function materializeGamePage(
   game: GameType,
   page: GamePageType,
+  inheritJamTracks = true,
 ): GameType {
+  const tracks = getPageSoundtrack(
+    inheritJamTracks ? game.jamPage?.tracks ?? [] : [],
+    page.tracks ?? [],
+    page.version,
+  );
   return {
     ...game,
     name: page.name,
@@ -44,7 +51,8 @@ export function materializeGamePage(
     tags: page.tags ?? [],
     flags: page.flags ?? [],
     comments: page.comments ?? [],
-    tracks: (page.tracks ?? []).map((song) => ({
+    tracks: tracks.map((song) => ({
+      ...song,
       id: song.id,
       slug: song.slug,
       name: song.name,

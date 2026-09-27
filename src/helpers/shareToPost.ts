@@ -16,7 +16,7 @@ function mixHexColors(foreground: string, background: string, amount: number) {
   return `#${channels.join("")}`;
 }
 
-const OBSIDIAN = {
+export const OBSIDIAN = {
   background: themeColors.mantle,
   surface: mixHexColors(themeColors.base, themeColors.mantle, 0.4),
   surfaceAlternate: mixHexColors(themeColors.base, themeColors.mantle, 0.2),
@@ -112,7 +112,7 @@ function capitalizeWords(value: string) {
   return value.replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-function fitText(context: CanvasRenderingContext2D, value: string, maxWidth: number) {
+export function fitText(context: CanvasRenderingContext2D, value: string, maxWidth: number) {
   if (context.measureText(value).width <= maxWidth) return value;
   let shortened = value;
   while (shortened.length > 1 && context.measureText(`${shortened}…`).width > maxWidth) {
@@ -186,7 +186,7 @@ function drawShareThumbnail(
   context.restore();
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement) {
+export function canvasToBlob(canvas: HTMLCanvasElement) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob);
@@ -364,7 +364,7 @@ async function createVotingShareImage(
   return canvasToBlob(canvas);
 }
 
-async function uploadThemeShareImage(blob: Blob, filename: string) {
+export async function uploadThemeShareImage(blob: Blob, filename: string) {
   const formData = new FormData();
   formData.append("upload", new File([blob], filename, { type: "image/png" }));
   const response = await fetch(`${BASE_URL}/image`, {

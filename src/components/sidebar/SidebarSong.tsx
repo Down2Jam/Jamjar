@@ -321,7 +321,7 @@ export default function SidebarSong({
                   >
                     {externalAuthorName || displayArtist.name}
                   </Text>
-                ) : (
+                ) : artist?.slug ? (
                 <UserHoverPreview
                   portal
                   user={{
@@ -350,8 +350,15 @@ export default function SidebarSong({
                       {displayArtist.name || displayArtist.slug}
                     </Text>
                   </Link>
-                </UserHoverPreview>
-                )}
+                </UserHoverPreview>) : artist?.name ? (
+                  <Text
+                    size={playlist ? "xs" : "sm"}
+                    color={playlist ? "text" : "textFaded"}
+                    className="max-w-full truncate"
+                  >
+                    {artist.name}
+                  </Text>
+                ) : null}
                 {playlist && duration !== null && (
                   <span className="shrink-0 pl-2 text-xs leading-4 tabular-nums" style={{ color: colors.text }}>
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}

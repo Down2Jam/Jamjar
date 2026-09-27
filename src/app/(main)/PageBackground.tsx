@@ -19,10 +19,12 @@ export default function PageBackground({
   children,
   defaultImage = "/images/terra-optimized.webp",
   dimBackground = true,
+  plain = false,
 }: {
   children: ReactNode | ReactNode[];
   defaultImage?: string | null;
   dimBackground?: boolean;
+  plain?: boolean;
 }) {
   const { siteTheme } = useTheme();
   const isLightTheme = siteTheme.type === "Light";
@@ -43,7 +45,7 @@ export default function PageBackground({
             backgroundColor: siteTheme.colors[image ? "crust" : "mantle"],
           }}
         >
-          <div
+          {!plain && <div
             className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-[filter,opacity] duration-500 ${
               !dimBackground || !image
                 ? "opacity-100"
@@ -60,7 +62,7 @@ export default function PageBackground({
                 : "brightness(0.68) saturate(0.72) contrast(0.92)",
               transform: image ? "scale(1.01)" : undefined,
             }}
-          />
+          />}
         </div>
         {children}
       </div>
