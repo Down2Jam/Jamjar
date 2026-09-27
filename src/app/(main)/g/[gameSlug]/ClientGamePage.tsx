@@ -552,21 +552,6 @@ export default function ClientGamePage({
   }, [gameSlug]);
 
 
-  function ordinal_suffix_of(i: number) {
-    const j = i % 10,
-      k = i % 100;
-    if (j === 1 && k !== 11) {
-      return i + "st";
-    }
-    if (j === 2 && k !== 12) {
-      return i + "nd";
-    }
-    if (j === 3 && k !== 13) {
-      return i + "rd";
-    }
-    return i + "th";
-  }
-
   const uploadEvidence = async (file: File) => {
     const formData = new FormData();
     formData.append("upload", file);
@@ -1385,7 +1370,7 @@ export default function ClientGamePage({
                           return (
                             <div
                               key={score}
-                              className="grid w-full grid-cols-[minmax(0,150px)_max-content_max-content] items-center justify-start gap-3"
+                              className="grid w-full grid-cols-[minmax(0,1fr)_2.5rem_3rem_max-content] items-center gap-2"
                             >
                               <span
                                 style={{
@@ -1395,33 +1380,17 @@ export default function ClientGamePage({
                               >
                                 {t(score)}:
                               </span>
-                              {currentScores[score].placement &&
-                              currentScores[score].placement !== -1 ? (
-                                <Tooltip
-                                  content={ordinal_suffix_of(
-                                    currentScores[score].placement,
-                                  )}
-                                  position="top"
-                                >
-                                  <span
-                                    style={gradientTextStyle(gradient, first)}
-                                    className="w-fit"
-                                  >
-                                    {(
-                                      currentScores[score].averageScore / 2
-                                    ).toFixed(2)}{" "}
-                                     {uiText("AppStrings.Stars")} </span>
-                                </Tooltip>
-                              ) : (
-                                <span
-                                  style={gradientTextStyle(gradient, first)}
-                                  className="w-fit"
-                                >
-                                  {(
-                                    currentScores[score].averageScore / 2
-                                  ).toFixed(2)}{" "}
-                                   {uiText("AppStrings.Stars")} </span>
-                              )}
+                              <span className="text-sm" style={{ color: colors["textFaded"] }}>
+                                {currentScores[score].placement > 0
+                                  ? `#${currentScores[score].placement}`
+                                  : null}
+                              </span>
+                              <span
+                                style={gradientTextStyle(gradient, first)}
+                                className="font-semibold"
+                              >
+                                {(currentScores[score].averageScore / 2).toFixed(2)}
+                              </span>
                               <span className="flex items-center justify-center">
                                 <RatingStars
                                   value={currentScores[score].averageScore / 2}

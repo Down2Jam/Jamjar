@@ -358,34 +358,34 @@ function getNotableGameScoreChips(
   categoryPlacementTotals: Map<string, number>,
   group: string | null | undefined,
 ) {
+  if (group === "EXTRA") return [];
+
   return scoreEntries.flatMap((entry) => {
-    if (entry.placement >= 1 && entry.placement <= 3) {
-      return [
-        {
-          key: `${entry.key}-placement`,
-          categoryKey: entry.key,
-          label: `#${entry.placement}`,
-          detail: entry.label,
-        },
-      ];
-    }
+    if (entry.placement < 1) return [];
+
+    const chips = [{
+      key: `${entry.key}-placement`,
+      categoryKey: entry.key,
+      label: `#${entry.placement}`,
+      detail: entry.label,
+    }];
 
     const total =
       categoryPlacementTotals.get(buildPlacementPoolKey(group, entry.key)) ?? 0;
-    if (entry.placement < 1 || total <= 0) return [];
+    if (total <= 0) return chips;
 
     const percentile = (entry.placement / total) * 100;
     const percentileLabel = getPercentileLabel(percentile);
-    if (!percentileLabel) return [];
+    if (!percentileLabel) return chips;
 
-    return [
-      {
-        key: `${entry.key}-percentile`,
-        categoryKey: entry.key,
-        label: percentileLabel,
-        detail: entry.label,
-      },
-    ];
+    chips.push({
+      key: `${entry.key}-percentile`,
+      categoryKey: entry.key,
+      label: percentileLabel,
+      detail: entry.label,
+    });
+
+    return chips;
   });
 }
 
@@ -1041,6 +1041,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
   const [retry, setRetry] = useState(0);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
+  const [loadingSupplementalData, setLoadingSupplementalData] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recapData, setRecapData] = useState<RecapDataState>({
     gameDetail: null,
@@ -1119,7 +1120,9 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
       const jamId = selectedJamId;
       if (jamId == null) return;
       setLoadingData(true);
+      setLoadingSupplementalData(false);
       setError(null);
+      setLoadedFor(`${jamId}:${effectiveSlug}`);
       setRecapData({
         gameDetail: null,
         gameDetails: [],
@@ -1152,6 +1155,18 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
           const page = getSelectedGamePage(game, "JAM");
           return page ? materializeGamePage(game, page) : game;
         });
+        if (!active) return;
+
+        setRecapData({
+          gameDetail: gameDetails[0] ?? null,
+          gameDetails,
+          trackDetails: [],
+          gameResults: [],
+          trackResults: [],
+        });
+        setLoadingData(false);
+        setLoadingSupplementalData(true);
+
         const [trackDetails, regularGames, odaGames, regularTracks, odaTracks] =
           await Promise.all([
             Promise.all(
@@ -1161,34 +1176,9 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                 ),
               ),
             ),
-            read(
-              () =>
-                getResults(
-                  "REGULAR",
-                  "GAME",
-                  "OVERALL",
-                  String(jamId),
-                  canPreview,
-                  true,
-                ),
-              [],
-            ),
-            read(
-              () =>
-                getResults(
-                  "ODA",
-                  "GAME",
-                  "OVERALL",
-                  String(jamId),
-                  canPreview,
-                  true,
-                ),
-              [],
-            ),
-            read(
-              () => getTrackResults(String(jamId), canPreview, "REGULAR", true),
-              [],
-            ),
+            read(() => getResults("REGULAR", "GAME", "OVERALL", String(jamId), canPreview, true), []),
+            read(() => getResults("ODA", "GAME", "OVERALL", String(jamId), canPreview, true), []),
+            read(() => getTrackResults(String(jamId), canPreview, "REGULAR", true), []),
             read(() => getTrackResults(String(jamId), canPreview, "ODA", true), []),
           ]);
         const regularGameResults =
@@ -1211,21 +1201,33 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
             self.findIndex((item) => item.id === entry.id) === index,
         );
 
+        const validTracks = trackDetails.filter((track): track is TrackType => Boolean(track));
+        if (!active) return;
+
+        setRecapData({
+          gameDetail: gameDetails[0] ?? null,
+          gameDetails,
+          trackDetails: validTracks,
+          gameResults,
+          trackResults,
+        });
+        setLoadingData(false);
+
         const readReplies = async (id: number) => unwrapArrayResponse<CommentType>(
           await read(() => getCommentReplies(id), []),
         );
-        const completeGames = await Promise.all(gameDetails.map(async (game, index) => ({
-          ...game,
-          comments: await loadRecapComments([
-            ...(game.comments ?? []), ...(rawGameDetails[index].comments ?? []),
-          ], readReplies),
-        })));
-        const completeTracks = await Promise.all(
-          trackDetails.filter((track): track is TrackType => Boolean(track)).map(async (track) => ({
+        const [completeGames, completeTracks] = await Promise.all([
+          Promise.all(gameDetails.map(async (game, index) => ({
+            ...game,
+            comments: await loadRecapComments([
+              ...(game.comments ?? []), ...(rawGameDetails[index].comments ?? []),
+            ], readReplies),
+          }))),
+          Promise.all(validTracks.map(async (track) => ({
             ...track,
             comments: await loadRecapComments(track.comments ?? [], readReplies),
-          })),
-        );
+          }))),
+        ]);
         if (!active) return;
 
         setRecapData({
@@ -1241,8 +1243,8 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
         setError(uiText("AppStrings.FailedToLoadJamRecap"));
       } finally {
         if (active) {
-          setLoadedFor(`${selectedJamId}:${effectiveSlug}`);
           setLoadingData(false);
+          setLoadingSupplementalData(false);
         }
       }
     }
@@ -1706,7 +1708,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
   const currentData = loadedFor === `${selectedJamId}:${effectiveSlug}`;
 
   const handleSharePost = async () => {
-    if (preview || !isOwner || !currentData || sharingRecap) return;
+    if (preview || !isOwner || !currentData || loadingData || loadingSupplementalData || sharingRecap) return;
     setSharingRecap(true);
     try {
       const stats = visibleStatCards.map(({ label, value }) => ({ label, value }));
@@ -1769,7 +1771,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
         </Button>
       </div>
     );
-  if (loadingData || !currentData)
+  if (!currentData)
     return (
       <div
         role="status"
@@ -1845,7 +1847,9 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
         </div>
       ) : null}
 
-      {loadingData ? <div>{uiText("AppStrings.LoadingRecapData")}</div> : null}
+      {loadingData || loadingSupplementalData ? (
+        <div role="status">{uiText("AppStrings.LoadingRecapData")}</div>
+      ) : null}
 
       {!loadingData ? (
         <>
@@ -1873,6 +1877,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                         entry.averageScore,
                         colors,
                       );
+                      const entryChips = chips.filter((chip) => chip.categoryKey === entry.key);
 
                       return (
                         <div key={entry.key} className="py-4">
@@ -1888,13 +1893,15 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                             <RatingStars value={entry.averageScore / 2} color={first} size={20} className="ml-auto" />
                             </div>
                             <Text color="textFaded">{uiText("AppStrings.Stars")}</Text>
-                            {chips
-                              .filter((chip) => chip.categoryKey === entry.key)
-                              .map((chip) => (
-                                <Chip key={chip.key}>
-                                  <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>
-                                </Chip>
-                              ))}
+                            {entryChips.length > 0 ? (
+                              <div className="flex flex-wrap gap-2">
+                                {entryChips.map((chip) => (
+                                  <Chip key={chip.key}>
+                                    <span style={{ color: colors.blue }}>{uiText(chip.label)}</span>
+                                  </Chip>
+                                ))}
+                              </div>
+                            ) : null}
                           </Vstack>
                         </div>
                       );
@@ -2315,7 +2322,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                 ) : null}
               </Hstack>
               <Hstack justify="center" className="w-full">
-                <Button icon="send" onClick={handleSharePost} disabled={preview || !isOwner || !currentData || sharingRecap}>
+                <Button icon="send" onClick={handleSharePost} disabled={preview || !isOwner || !currentData || loadingSupplementalData || sharingRecap}>
                   {uiText(sharingRecap ? "AppStrings.CreatingRecapPost" : "AppStrings.ShareRecapPost")}
                 </Button>
               </Hstack>
