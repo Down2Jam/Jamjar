@@ -3,7 +3,7 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
-import { getNextJamForHome } from "@/helpers/jamDisplay";
+import { getNextJamForHome, isPostJamPhase } from "@/helpers/jamDisplay";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { joinJam } from "@/helpers/jam";
 import { useCurrentJam, useRatingCategories, useSelf } from "@/hooks/queries";
@@ -34,6 +34,9 @@ export default function SidebarNextJam() {
   const hasTeamInNextJam = Boolean(
     user && nextJam && user.teams?.some((team) => team.jamId === nextJam.id),
   );
+  const isRatingPeriod = activeJamResponse?.phase === "Rating";
+  const hideTeamFinder =
+    isRatingPeriod || isPostJamPhase(activeJamResponse?.phase);
 
   const ratings = useMemo(() => {
     if (!nextJam) return null;
@@ -109,36 +112,40 @@ export default function SidebarNextJam() {
             <Text size={textSize} color="blue">{ratings}</Text>
           </Hstack>
         ) : null}
-        <Hstack wrap className="pt-2">
-          {!user ? (
-            <Button href="/signup" icon="login" color="green" size={buttonSize}>
-               {uiText("Navbar.JoinJam.Title")} </Button>
-          ) : !hasJoinedNextJam ? (
-            <Button
-              icon="calendarplus"
-              color="green"
-              size={buttonSize}
-              onClick={async () => {
-                if (await joinJam(nextJam.id)) {
-                  setJoinedOverride(true);
-                  addToast({ title: uiText("AppStrings.JoinedJam") });
-                  return;
-                }
+        {(!isRatingPeriod || !user || !hasJoinedNextJam || hasTeamInNextJam) && (
+          <Hstack wrap className="pt-2">
+            {!user ? (
+              <Button href="/signup" icon="login" color="green" size={buttonSize}>
+                 {uiText("Navbar.JoinJam.Title")} </Button>
+            ) : !hasJoinedNextJam ? (
+              <Button
+                icon="calendarplus"
+                color="green"
+                size={buttonSize}
+                onClick={async () => {
+                  if (await joinJam(nextJam.id)) {
+                    setJoinedOverride(true);
+                    addToast({ title: uiText("AppStrings.JoinedJam") });
+                    return;
+                  }
 
-                addToast({ title: uiText("AppStrings.FailedToJoinJam") });
-              }}
-            >
-               {uiText("Navbar.JoinJam.Title")} </Button>
-          ) : hasTeamInNextJam ? (
-            <Button href="/team" icon="users" color="green" size={buttonSize}>
-               {uiText("Navbar.MyTeam.Title")} </Button>
-          ) : (
-            <Button href="/team-finder" icon="users" color="green" size={buttonSize}>
-               {uiText("Navbar.TeamFinder.Title")} </Button>
-          )}
-          <Button href="/about" icon="info" size={buttonSize}>
-             {uiText("Splash.About")} </Button>
-        </Hstack>
+                  addToast({ title: uiText("AppStrings.FailedToJoinJam") });
+                }}
+              >
+                 {uiText("Navbar.JoinJam.Title")} </Button>
+            ) : hasTeamInNextJam ? (
+              <Button href="/team" icon="users" color="green" size={buttonSize}>
+                 {uiText("Navbar.MyTeam.Title")} </Button>
+            ) : hideTeamFinder ? null : (
+              <Button href="/team-finder" icon="users" color="green" size={buttonSize}>
+                 {uiText("Navbar.TeamFinder.Title")} </Button>
+            )}
+            {!isRatingPeriod && (
+              <Button href="/about" icon="info" size={buttonSize}>
+                 {uiText("Splash.About")} </Button>
+            )}
+          </Hstack>
+        )}
       </Vstack>
     </Card>
   );
