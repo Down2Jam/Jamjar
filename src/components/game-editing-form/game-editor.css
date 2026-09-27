@@ -5,16 +5,20 @@
   transition: background-color 150ms ease, border-color 150ms ease;
 }
 
-.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) {
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within, [data-drag-active="true"]) {
   background-color: var(--build-hover);
   border-color: var(--build-hover-border);
+}
+
+.game-editor-build-upload:not([aria-disabled="true"])[data-drag-active="true"] {
+  border-color: var(--build-drag-border);
 }
 
 .game-editor-build-upload > svg {
   transition: transform 150ms ease;
 }
 
-.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within) > svg {
+.game-editor-build-upload:not([aria-disabled="true"]):is(:hover, :focus-within, [data-drag-active="true"]) > svg {
   transform: scale(1.15);
 }
 
@@ -163,6 +167,21 @@
 .game-editor-save-status span {
   font-size: 12px;
   opacity: 0.7;
+}
+
+.game-editor-footer-compact .game-editor-footer-content {
+  min-height: 24px;
+  justify-content: center;
+}
+
+.game-editor-footer-compact .game-editor-save-status {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+.game-editor-footer-compact .game-editor-save-status strong {
+  flex-shrink: 0;
 }
 
 @media (min-width: 768px) {

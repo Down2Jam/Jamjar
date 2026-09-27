@@ -173,7 +173,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   return (
     <Navbar
       maxWidth="2xl"
-      className="px-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="!fixed inset-x-0 top-0 !z-50 px-1 duration-500 ease-in-out transition-color shadow-2xl"
       style={{
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
@@ -730,7 +730,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                 >
                   <NavbarButton
                     icon="bell"
-                    href="/inbox/messages"
+                    href="/inbox"
                     name="Navbar.Inbox.Title"
                     description="Navbar.Inbox.Description"
                     hotkey={["G", "I"]}
@@ -741,7 +741,7 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
               ) : (
                 <NavbarButton
                   icon="bell"
-                  href="/inbox/messages"
+                  href="/inbox"
                   name="Navbar.Inbox.Title"
                   description="Navbar.Inbox.Description"
                   hotkey={["G", "I"]}

@@ -1,16 +1,16 @@
 "use client";
 
-import { useCurrentJam } from "@/hooks/queries";
-import type { JamType, JamPhase } from "@/types/JamType";
+import { useCurrentJamMetadata } from "@/hooks/queries";
+import type { JamMetadata, JamPhase } from "@/types/JamType";
 
 type UseJamReturn = {
-  jam: JamType | null;
-  nextJam: JamType | null;
+  jam: JamMetadata | null;
+  nextJam: JamMetadata | null;
   jamPhase: JamPhase | null;
 };
 
 export function useJam(): UseJamReturn {
-  const { data } = useCurrentJam();
+  const { data } = useCurrentJamMetadata();
 
   return {
     jam: data?.jam ?? null,

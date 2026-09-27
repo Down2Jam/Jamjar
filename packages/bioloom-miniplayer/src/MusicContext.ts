@@ -1,6 +1,7 @@
 import { createContext } from "react";
 
 export type TrackComposer = {
+  id?: number;
   name?: string;
   slug?: string;
   profilePicture?: string | null;
@@ -15,6 +16,7 @@ export type TrackGame = {
   soundtrackThumbnail?: string | null;
   slug?: string;
   team?: {
+    ownerId?: number;
     users?: Array<{
       id: number;
     }>;

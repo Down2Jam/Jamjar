@@ -1,5 +1,6 @@
 "use client";
 
+import { countComments } from "@/helpers/commentCount";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -7,10 +8,12 @@ import { addToast, Avatar } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import { PostType } from "@/types/PostType";
 import { Heart, MessageCircle, MoreVertical } from "lucide-react";
+import LinkedPostGames from "./LinkedPostGames";
 import LikeButton from "./LikeButton";
 import { PostStyle } from "@/types/PostStyle";
 import { UserType } from "@/types/UserType";
 import {
+  memo,
   CSSProperties,
   Dispatch,
   SetStateAction,
@@ -39,7 +42,7 @@ import {
 } from "@/helpers/postTagFilter";
 import { UserHoverPreview } from "@/components/hover-previews";
 
-export default function PostCard({
+function PostCard({
   post,
   style,
   user,
@@ -147,7 +150,7 @@ export default function PostCard({
 
   return (
     <Card
-      className={`post-card-shell relative overflow-visible max-sm:!p-3 ${actionsLayerOpen ? "z-50" : "z-0"}`}
+      className={`post-card-shell relative flex-col overflow-visible max-sm:!p-3 ${actionsLayerOpen ? "z-50" : "z-0"}`}
       padding={style === "Cozy" ? 1.25 : 1}
       style={{
         display: hidden ? "none" : "flex",
@@ -311,6 +314,7 @@ export default function PostCard({
               </>
             )}
 
+            {!isModerated && <LinkedPostGames games={currentPostData.games} />}
             {!isModerated && visiblePostTags.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {visiblePostTags.map((tag: TagType) => {
@@ -361,7 +365,7 @@ export default function PostCard({
                   size="sm"
                   icon="messagecircle"
                 >
-                  {postComments.length}
+                  {countComments(postComments)}
                 </Button>
               </Link>
               <PostReactions
@@ -371,6 +375,7 @@ export default function PostCard({
               />
               <div className="relative z-30 ml-auto">
                 <Dropdown
+                  portal
                   onOpenChange={setDropdownOpen}
                   trigger={
                     <Button
@@ -680,7 +685,7 @@ export default function PostCard({
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={14} />
-              {postComments.length}
+              {countComments(postComments)}
             </span>
           </div>
         </div>
@@ -731,14 +736,17 @@ export default function PostCard({
             </span>
             <span className="inline-flex items-center gap-1">
               <MessageCircle size={13} />
-              {postComments.length}
+              {countComments(postComments)}
             </span>
           </div>
         </div>
       )}
+      {style !== "Cozy" && !isModerated && <LinkedPostGames games={currentPostData.games} />}
     </Card>
   );
 }
+
+export default memo(PostCard);
 
 function PostAuthorHoverLink({ author }: { author: UserType }) {
   return (

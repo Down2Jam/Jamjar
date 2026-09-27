@@ -27,6 +27,8 @@ import {
   Vstack,
 } from "bioloom-ui";
 import Link from "@/compat/next-link";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
 import {
   type CSSProperties,
   useCallback,
@@ -41,7 +43,9 @@ type RadioTrack = {
   slug: string;
   url: string;
   name: string;
-  license?: string | null;
+  origin: TrackOrigin;
+  externalAuthorName?: string | null;
+  license?: TrackLicenseCode | null;
   allowDownload?: boolean;
   allowBackgroundUse?: boolean;
   composer: {
@@ -138,7 +142,7 @@ const toAudioVolume = (sliderVolume: number) =>
 const getTrackThumbnail = (track?: RadioTrack | null) =>
   track?.gamePage.soundtrackThumbnail ||
   track?.gamePage.thumbnail ||
-  "/images/D2J_Icon.png";
+  "/images/game-thumbnail.png";
 
 const getTrackBackground = (track?: RadioTrack | null) =>
   track?.gamePage.screenshots?.[0] ||
@@ -224,7 +228,7 @@ function RadioLandingChoice({
         {state?.current?.track && (
           <Text size="sm" color="textLightFaded">
              {uiText("AppStrings.Playing")} {state.current.track.name}  {uiText("AppStrings.By")}{" "}
-            {state.current.track.composer?.name ?? uiText("AppStrings.UnknownComposer")}
+            {state.current.track.externalAuthorName ?? state.current.track.composer?.name ?? uiText("AppStrings.UnknownComposer")}
           </Text>
         )}
       </div>
@@ -827,6 +831,15 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   }, [playCurrentTrack]);
 
   useEffect(() => {
+    if (state && !state.current) {
+      audioRef.current?.pause();
+      autoAttemptedTrackId.current = null;
+      lastSyncedTrackId.current = null;
+      setIsListening(false);
+    }
+  }, [state]);
+
+  useEffect(() => {
     if (!state?.current) return;
     if (autoAttemptedTrackId.current === state.current.track.id) return;
 
@@ -1250,6 +1263,14 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
                   {currentTrack.composer.name}
                 </Text>
               </Link>
+            )}
+            {!currentTrack.composer && currentTrack.externalAuthorName && (
+              <Text size="sm" color="textFaded">
+                {currentTrack.externalAuthorName}
+              </Text>
+            )}
+            {currentTrack.license && (
+              <TrackLicenseLink license={currentTrack.license} className="text-sm text-white/70" />
             )}
             <div className="mt-1 h-1.5 w-52 max-w-full overflow-hidden rounded-full bg-white/20">
               <div

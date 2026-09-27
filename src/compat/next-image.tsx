@@ -15,7 +15,10 @@ export default function Image({
   fill,
   objectFit,
   objectPosition,
-  priority: _priority,
+  priority = false,
+  loading,
+  fetchPriority,
+  decoding = "async",
   quality: _quality,
   unoptimized: _unoptimized,
   style,
@@ -33,6 +36,9 @@ export default function Image({
   return (
     <img
       {...props}
+      loading={priority ? "eager" : loading ?? "lazy"}
+      fetchPriority={priority ? "high" : fetchPriority}
+      decoding={decoding}
       style={{ ...fillStyle, objectFit, objectPosition, ...style }}
     />
   );

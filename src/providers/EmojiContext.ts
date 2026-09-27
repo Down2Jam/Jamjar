@@ -6,6 +6,8 @@ export type EmojiType = ReactionType;
 export type EmojiContextValue = {
   emojis: EmojiType[];
   emojiMap: Record<string, EmojiType>;
+  stickers: EmojiType[];
+  stickerMap: Record<string, EmojiType>;
   loading: boolean;
   refresh: () => Promise<void>;
 };

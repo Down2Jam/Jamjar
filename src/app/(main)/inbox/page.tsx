@@ -224,9 +224,10 @@ export default function InboxPage() {
   const [params] = useSearchParams();
   const { data: self, isError: selfError } = useSelf();
   const { colors } = useTheme();
-  const { data: counts } = useMessageCounts(Boolean(self));
+  const { data: counts, isError: countsError } = useMessageCounts(Boolean(self));
   const [composing, setComposing] = useState(Boolean(params.get("to")));
   const archived = params.get("archived") === "1";
+  const isInboxRoot = /^\/inbox\/?$/.test(location.pathname);
   const section: InboxSection = location.pathname.includes("/requests") ? "requests" : location.pathname.includes("/notifications") ? "notifications" : "messages";
   const conversationBox = archived && section === "messages" ? "archived" : section === "requests" ? "requests" : "messages";
   const { data: conversations = [], isLoading: conversationsLoading } = useConversations(conversationBox);
@@ -237,7 +238,12 @@ export default function InboxPage() {
   useEffect(() => {
     if (selfError) navigate("/login");
   }, [navigate, selfError]);
-  if (!self) return <div className="flex justify-center py-20"><Spinner /></div>;
+  useEffect(() => {
+    if (!isInboxRoot || (!counts && !countsError)) return;
+
+    navigate(counts?.unreadMessages ? "/inbox/messages" : "/inbox/notifications", { replace: true });
+  }, [counts, countsError, isInboxRoot, navigate]);
+  if (!self || isInboxRoot) return <div className="flex justify-center py-20"><Spinner /></div>;
 
   const empty = !conversationsLoading && !conversations.length && !selectedId && !composing;
   const inboxSurfaceStyle = {

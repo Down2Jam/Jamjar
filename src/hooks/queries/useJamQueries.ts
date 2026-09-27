@@ -3,9 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   getCurrentJam,
+  getCurrentJamMetadata,
   hasJoinedJam,
   hasJoinedCurrentJam,
   type ActiveJamResponse,
+  type ActiveJamMetadataResponse,
 } from "@/helpers/jam";
 import * as jamRequests from "@/requests/jam";
 import { queryKeys } from "./queryKeys";
@@ -13,12 +15,22 @@ import type { JamType } from "@/types/JamType";
 import { unwrapArray } from "./helpers";
 
 export function useCurrentJam() {
-  return useQuery<ActiveJamResponse | null>({
+  return useQuery<ActiveJamResponse>({
     queryKey: queryKeys.jam.current(),
     queryFn: getCurrentJam,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 30 * 1000,
-    refetchIntervalInBackground: true,
+    refetchIntervalInBackground: false,
+  });
+}
+
+export function useCurrentJamMetadata() {
+  return useQuery<ActiveJamMetadataResponse>({
+    queryKey: queryKeys.jam.metadata(),
+    queryFn: getCurrentJamMetadata,
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
   });
 }
 

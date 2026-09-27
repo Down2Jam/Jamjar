@@ -1,8 +1,12 @@
 "use client";
 
+import { countComments } from "@/helpers/commentCount";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
+import PostGameSelector from "@/components/posts/PostGameSelector";
+import LinkedPostGames from "@/components/posts/LinkedPostGames";
+import type { LinkedPostGame } from "@/types/PostType";
 import LikeButton from "@/components/posts/LikeButton";
 import { hasCookie } from "@/helpers/cookie";
 import { PostType } from "@/types/PostType";
@@ -24,7 +28,7 @@ import {
   updatePost,
 } from "@/requests/post";
 import { assignAdmin, assignMod } from "@/requests/mod";
-import { postComment } from "@/requests/comment";
+import CreateComment from "@/components/create-comment";
 import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import ThemedProse from "@/components/themed-prose";
@@ -54,9 +58,8 @@ export default function PostPage() {
   const editParam = searchParams.get("edit");
   const [user, setUser] = useState<UserType>();
   const [loading, setLoading] = useState<boolean>(true);
-  const [content, setContent] = useState("");
-  const [waitingPost, setWaitingPost] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [draftGames, setDraftGames] = useState<LinkedPostGame[]>([]);
   const [draftTitle, setDraftTitle] = useState("");
   const [draftContent, setDraftContent] = useState("");
   const t = useTranslations();
@@ -103,6 +106,7 @@ export default function PostPage() {
 
   useEffect(() => {
     if (!post) return;
+    setDraftGames(post.games ?? []);
     setDraftTitle(post.title);
     setDraftContent(post.content);
   }, [post]);
@@ -211,6 +215,7 @@ export default function PostPage() {
                         setContent={setDraftContent}
                         format="markdown"
                       />
+                      {isAuthor && <PostGameSelector value={draftGames} onChange={setDraftGames} />}
                       <div className="flex gap-2">
                         <Button
                           color="blue"
@@ -218,6 +223,7 @@ export default function PostPage() {
                             const response = await updatePost(post.slug, {
                               title: draftTitle,
                               content: draftContent,
+                              ...(isAuthor && JSON.stringify(draftGames) !== JSON.stringify(post.games ?? []) ? { gameLinks: draftGames.map(({ gameId, relationType }) => ({ gameId, relationType })) } : {}),
                             });
 
                             if (!response.ok) {
@@ -227,12 +233,13 @@ export default function PostPage() {
                               return;
                             }
 
-                            const json = await response.json();
+                            const updated = await readItem<PostType>(response);
                             setPost((prev) =>
                               prev
                                 ? {
                                     ...prev,
-                                    ...json.data,
+                                    ...updated,
+                                    ...(isAuthor ? { games: draftGames } : {}),
                                     author: prev.author,
                                     comments: prev.comments,
                                     likes: prev.likes,
@@ -248,6 +255,7 @@ export default function PostPage() {
                            {uiText("Settings.Save.Title")} </Button>
                         <Button
                           onClick={() => {
+                            setDraftGames(post.games ?? []);
                             setDraftTitle(post.title);
                             setDraftContent(post.content);
                             setEditing(false);
@@ -272,6 +280,7 @@ export default function PostPage() {
                     </ThemedProse>
                   )}
 
+                  {!isModerated && !editing && <LinkedPostGames games={post.games} />}
                   {!isModerated && visiblePostTags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {visiblePostTags.map((tag: TagType) => (
@@ -302,7 +311,7 @@ export default function PostPage() {
                         size="sm"
                         icon="messagecircle"
                       >
-                        {post.comments.length}
+                        {countComments(post.comments)}
                       </Button>
                     </Link>
                     <PostReactions postId={post.id} reactions={post.reactions} />
@@ -587,54 +596,9 @@ export default function PostPage() {
             </div>
           </Card>
           <div id="create-comment" className="mb-10" />
-          {!isModerated &&
-            hasCookie("token") &&
-            (waitingPost ? (
-              <Card>
-                <Hstack>
-                  <Spinner />
-                  <Text>{uiText("ThemeSuggestions.Loading.Title")}</Text>
-                </Hstack>
-              </Card>
-            ) : (
-              <>
-                <Editor
-                  content={content}
-                  setContent={setContent}
-                  format="markdown"
-                />
-                <div className="mt-1" />
-                <Button
-                  onClick={async () => {
-                    if (!content) {
-                      addToast({ title: uiText("AppStrings.PleaseEnterValidContent") });
-                      return;
-                    }
-
-                    setWaitingPost(true);
-
-                    const response = await postComment(content, post!.id);
-
-                    if (response.status == 401) {
-                      addToast({ title: uiText("AppStrings.InvalidUser") });
-                      setWaitingPost(false);
-                      return;
-                    }
-
-                    if (response.ok) {
-                      addToast({ title: uiText("AppStrings.SuccessfullyCreatedComment") });
-                      //setWaitingPost(false);
-                      window.location.reload();
-                    } else {
-                      addToast({ title: uiText("AppStrings.AnErrorOccured") });
-                      setWaitingPost(false);
-                    }
-                  }}
-                >
-                   {uiText("AppStrings.CreateComment")} </Button>
-              </>
-            ))}
-
+          {!isModerated && hasCookie("token") && (
+            <CreateComment postId={post!.id} framed />
+          )}
           <div className="flex flex-col gap-3 mt-10">
             {post?.comments.map((comment) => (
               <div key={comment.id}>

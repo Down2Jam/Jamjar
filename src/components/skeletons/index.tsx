@@ -1,3 +1,5 @@
+import { useTranslations } from "@/compat/next-intl";
+
 type SkeletonProps = {
   className?: string;
 };
@@ -8,6 +10,45 @@ export function Skeleton({ className = "" }: SkeletonProps) {
       className={`animate-pulse rounded-md bg-white/10 ${className}`}
       aria-hidden="true"
     />
+  );
+}
+
+export function UserProfileSkeleton() {
+  const uiText = useTranslations();
+
+  return (
+    <div role="status" className="flex flex-col gap-4">
+      <span className="sr-only">{uiText("AppStrings.Loading")}</span>
+      <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.035]">
+        <Skeleton className="aspect-11/1 min-h-24 w-full rounded-none" />
+        <div className="relative px-4 pb-6 pt-4 sm:px-8 sm:pb-8">
+          <Skeleton className="absolute -top-12 left-4 h-24 w-24 rounded-full sm:left-16" />
+          <div className="ml-28 space-y-3 sm:ml-44">
+            <Skeleton className="h-8 w-48 max-w-full" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+          <div className="mt-8 flex flex-wrap gap-2">
+            {["w-28", "w-24", "w-32", "w-20"].map((width) => (
+              <Skeleton key={width} className={`h-8 ${width}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.035] p-5">
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
+        <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.035] p-5">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-11/12" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+    </div>
   );
 }
 

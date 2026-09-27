@@ -1,6 +1,6 @@
 import { translateSystemLabel } from "@/helpers/systemLabels";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { Card } from "bioloom-ui";
+import { Card, Chip } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
@@ -104,6 +104,7 @@ function GamePreview({
   const screenshots = (game.screenshots ?? []).filter(Boolean).slice(0, 3);
   const tags = (game.tags ?? []).slice(0, 3);
   const flags = game.flags ?? [];
+  const interactiveOutlineColor = `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`;
   const tooltipBorderColor = `color-mix(in srgb, ${colors.text} 12%, ${colors.crust})`;
 
   return createPortal(
@@ -230,22 +231,22 @@ function GamePreview({
         {(tags.length > 0 || (game.inputMethods?.length ?? 0) > 0) && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {tags.map((tag) => (
-              <span
+              <Chip
                 key={tag.id ?? tag.name}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {translateSystemLabel(tag.name, uiText)}
-              </span>
+              </Chip>
             ))}
             {(game.inputMethods ?? []).slice(0, Math.max(0, 3 - tags.length)).map((input) => (
-              <span
+              <Chip
                 key={input}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {input}
-              </span>
+              </Chip>
             ))}
           </div>
         )}
@@ -253,13 +254,13 @@ function GamePreview({
         {flags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {flags.map((flag) => (
-              <span
+              <Chip
                 key={flag.id ?? flag.name}
-                className="post-tag-chip rounded text-[11px]"
-                style={{ backgroundColor: colors.mantle, color: colors.textFaded }}
+                className="post-tag-chip"
+                style={{ borderColor: interactiveOutlineColor }}
               >
                 {flag.name}
-              </span>
+              </Chip>
             ))}
           </div>
         )}
@@ -401,9 +402,11 @@ export function GameHoverPreview({
 export function GameCard({
   game,
   rated = false,
+  perfected = false,
 }: {
   game: GameCardGame;
   rated?: boolean;
+  perfected?: boolean;
 }) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -422,7 +425,13 @@ export function GameCard({
         padding={0}
         shadow="none"
         className="overflow-hidden relative"
+        style={{ borderWidth: 0 }}
       >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[1] rounded-[10px] border"
+          style={{ borderColor: `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }}
+        />
         {rated && (
           <div className="absolute z-20 inset-0 flex items-center justify-center text-white font-bold text-xl bg-black/80">
             <p className="opacity-50">{uiText("AppStrings.RATED")}</p>
@@ -458,40 +467,43 @@ export function GameCard({
             </div>
           )}
         </div>
-        <div
-          className="absolute top-0 right-0 z-10 p-2 pt-1 pb-1 rounded shadow-md m-2 backdrop-blur-md text-xs"
-          style={{
-            color: colors["text"],
-            backgroundColor:
-              colors[
-                game.category == "REGULAR"
-                  ? "blue"
-                  : game.category == "ODA"
-                  ? "purple"
-                  : game.category == "EXTERNAL"
-                  ? "orange"
-                  : "pink"
-              ] + "aa",
-            borderColor:
-              colors[
-                game.category == "REGULAR"
-                  ? "blue"
-                  : game.category == "ODA"
-                  ? "purple"
-                  : game.category == "EXTERNAL"
-                  ? "orange"
-                  : "pink"
-              ],
-          }}
-        >
-          {game.category}
+        <div className="absolute top-0 right-0 z-10 m-2">
+          {perfected && <img src="/images/award.png" alt="" className="pointer-events-none absolute right-0 top-full h-16 w-16 object-contain" />}
+          <div
+            className="relative rounded p-2 pt-1 pb-1 shadow-md backdrop-blur-md text-xs"
+            style={{
+              color: colors["text"],
+              backgroundColor:
+                colors[
+                  game.category == "REGULAR"
+                    ? "blue"
+                    : game.category == "ODA"
+                    ? "purple"
+                    : game.category == "EXTERNAL"
+                    ? "orange"
+                    : "pink"
+                ] + "aa",
+              borderColor:
+                colors[
+                  game.category == "REGULAR"
+                    ? "blue"
+                    : game.category == "ODA"
+                    ? "purple"
+                    : game.category == "EXTERNAL"
+                    ? "orange"
+                    : "pink"
+                ],
+            }}
+          >
+            {game.category}
+          </div>
         </div>
-        <div className="relative aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
+        <div className="relative z-[2] aspect-[9/5] w-full overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.7)]">
           <Image
             alt={uiText("AppStrings.Value0SThumbnail", { value0: game.name })}
             fill
             className="object-cover shadow-inner"
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <div
@@ -505,7 +517,7 @@ export function GameCard({
             alt=""
             fill
             className="object-cover shadow-inner"
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
           />
         </div>
         <Hstack

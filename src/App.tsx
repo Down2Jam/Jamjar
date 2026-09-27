@@ -1,4 +1,5 @@
 import ListingPageLoading from "@/components/listing-loading";
+import { UserProfileSkeleton } from "@/components/skeletons";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { lazy, Suspense, type ComponentType } from "react";
 import { Navigate, Outlet, Route, Routes } from "react-router";
@@ -18,6 +19,7 @@ const AdminJamsPage = lazy(() => import("@/app/(main)/admin/jams/page"));
 const AdminJamGamesPage = lazy(() => import("@/components/admin/AdminJamGames"));
 const AdminResultsPage = lazy(() => import("@/app/(main)/admin/results/page"));
 const AdminRecapPreview = lazy(() => import("@/components/admin/AdminRecapPreview"));
+const AdminRecommendationsPage = lazy(() => import("@/app/(main)/admin/recommendations/page"));
 const AdminThemeEliminationPage = lazy(
   () => import("@/app/(main)/admin/themes/elimination/page"),
 );
@@ -45,6 +47,8 @@ const GamesPage = lazy(() => import("@/app/(main)/games/page"));
 const HomePage = lazy(() => import("@/app/(main)/home/page"));
 const InboxPage = lazy(() => import("@/app/(main)/inbox/page"));
 const LinkDevicePage = lazy(() => import("@/app/(main)/link-device/page"));
+const AuthorizeAppPage = lazy(() => import("@/app/(main)/authorize-app/page"));
+const ConnectedAppsPage = lazy(() => import("@/app/(main)/connected-apps/page"));
 const LoginPage = lazy(() => import("@/app/(main)/login/page"));
 const LogoutPage = lazy(() => import("@/app/(main)/logout/page"));
 const MusicPage = lazy(() => import("@/app/(main)/music/page"));
@@ -285,6 +289,8 @@ const noindexRoutePatterns = [
   /^\/forgot-password\/?$/,
   /^\/inbox\/?$/,
   /^\/link-device\/?$/,
+  /^\/authorize-app\/?$/,
+  /^\/connected-apps\/?$/,
   /^\/login\/?$/,
   /^\/logout\/?$/,
   /^\/lucky\/?$/,
@@ -338,6 +344,7 @@ export default function App() {
             <Route path="jam-games" element={<AdminJamGamesPage />} />
             <Route path="results" element={<AdminResultsPage />} />
             <Route path="recap" element={<AdminRecapPreview />} />
+            <Route path="recommendations" element={<AdminRecommendationsPage />} />
             <Route
               path="themes/elimination"
               element={<AdminThemeEliminationPage />}
@@ -370,6 +377,8 @@ export default function App() {
           <Route path="home" element={<HomePage />} />
           <Route path="inbox/*" element={<InboxPage />} />
           <Route path="link-device" element={<LinkDevicePage />} />
+          <Route path="authorize-app" element={<AuthorizeAppPage />} />
+          <Route path="connected-apps" element={<ConnectedAppsPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="logout" element={<LogoutPage />} />
           <Route path="lucky" element={<LuckyRoute />} />
@@ -403,7 +412,7 @@ export default function App() {
           <Route path="theme-voting" element={<ThemeVotingPage />} />
           <Route path="themes" element={<ThemesPage />} />
           <Route path="languages" element={<LanguagesPage />} />
-          <Route path="u/:slug" element={<UserRoute />} />
+          <Route path="u/:slug" element={<Suspense fallback={<UserProfileSkeleton />}><UserRoute /></Suspense>} />
           <Route path="why" element={<WhyPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>

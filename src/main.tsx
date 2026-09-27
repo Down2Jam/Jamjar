@@ -14,6 +14,11 @@ import "./app/globals.css";
 import messages from "./messages/en.json";
 import Providers from "./app/providers";
 import { LanguagePreviewProvider } from "./providers/LanguagePreviewProvider";
+import { installSessionFetch } from "./requests/sessionFetch";
+import { installSessionSync } from "./requests/sessionState";
+
+installSessionSync();
+installSessionFetch();
 
 const root = document.getElementById("root");
 

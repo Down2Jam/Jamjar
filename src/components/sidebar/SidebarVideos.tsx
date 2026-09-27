@@ -128,6 +128,9 @@ export default function SidebarVideos() {
   const titleQueries = useQueries({
     queries: videos.map((video) => ({
       queryKey: ["featured-video-title", video.id],
+      // Curated videos and game trailers already have display titles. Avoid
+      // spending the metadata endpoint's quota again on every sidebar mount.
+      enabled: !video.title,
       queryFn: async () => {
         const response = await getCollectionMusicMetadata(video.url);
         if (!response.ok) throw new Error("Video metadata unavailable");
@@ -138,7 +141,8 @@ export default function SidebarVideos() {
         return title;
       },
       staleTime: 24 * 60 * 60 * 1000,
-      retry: 1,
+      gcTime: 24 * 60 * 60 * 1000,
+      retry: false,
     })),
   });
 

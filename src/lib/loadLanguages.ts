@@ -1,6 +1,6 @@
-import YAML from "yaml";
-import languagesFile from "@/data/languages.yaml?raw";
+import languages from "@/data/languages.yaml";
+import type { LanguageInfo } from "@/types/LanguageInfoType";
 
 export function loadLanguages() {
-  return YAML.parse(languagesFile);
+  return languages as LanguageInfo[];
 }

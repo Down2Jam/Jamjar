@@ -11,7 +11,7 @@ import {
   backgroundUsageAllowedByDefault,
   backgroundUsageRequiredByLicense,
   backgroundUsageWithLicenseDefaults,
-  licenseFlagsToLabel,
+  licenseFlagsToCode,
   licenseModeForFlags,
   LicenseFlags,
   LicenseMode,
@@ -20,6 +20,7 @@ import {
   TRACK_CREDIT_ROLE_OPTIONS,
   TRACK_TAG_CATEGORY_HELPERS,
 } from "@/components/tracks/editingShared";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
 import { searchUsers } from "@/requests/user";
 import { getTrackFlags, getTrackTags, updateTrack } from "@/requests/track";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -741,7 +742,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
             </>
           )}
           <Text size="xs" color="textFaded">
-             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(licenseFlagsToLabel(licenseFlags), uiText)}
+             {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={licenseFlagsToCode(licenseFlags)} />
           </Text>
 
           <Hstack className="w-full items-start gap-3">
@@ -829,7 +830,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                       allowDownload,
                       allowBackgroundUse,
                       allowBackgroundUseAttribution,
-                      license: licenseFlagsToLabel(licenseFlags),
+                      license: licenseFlagsToCode(licenseFlags),
                       tagIds: selectedTagIds,
                       flagIds: selectedFlagIds,
                       links: links

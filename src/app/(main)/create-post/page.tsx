@@ -31,6 +31,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
+import PostGameSelector from "@/components/posts/PostGameSelector";
+import type { LinkedPostGame } from "@/types/PostType";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
 const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
@@ -71,10 +73,11 @@ export default function CreatePostPage({
   const [fixedOptions, setFixedOptions] = useState<TagOption[]>();
   const [availableTags, setAvailableTags] = useState<TagType[]>([]);
   const [user, setUser] = useState<UserType>();
+  const [linkedGames, setLinkedGames] = useState<LinkedPostGame[]>([]);
   const [sticky, setSticky] = useState(false);
   const { colors, siteTheme } = useTheme();
   const headerColor = colors["text"];
-  const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || sticky);
+  const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || linkedGames.length || sticky);
   const floatingFooter = !embedded && hasUnsavedChanges;
 
   useEffect(() => {
@@ -208,6 +211,7 @@ export default function CreatePostPage({
     TagOption,
     true
   > = {
+    container: (base) => ({ ...base, width: "100%", maxWidth: "28rem", fontSize: 14, lineHeight: "20px" }),
     multiValue: (base) => ({ ...base, backgroundColor: colors.base, borderRadius: 6 }),
     multiValueLabel: (base) => ({ ...base, color: colors.text }),
     multiValueRemove: (base) => ({
@@ -227,7 +231,7 @@ export default function CreatePostPage({
     input: (base) => ({ ...base, color: colors.text }),
     placeholder: (base) => ({ ...base, color: colors.textFaded }),
     menu: (base) => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
-    menuPortal: (base) => ({ ...base, zIndex: 100 }),
+    menuPortal: (base) => ({ ...base, zIndex: 100, fontSize: 14, lineHeight: "20px" }),
     option: (base, { isFocused }) => ({
       ...base,
       backgroundColor: isFocused ? colors.base : "transparent",
@@ -312,7 +316,8 @@ export default function CreatePostPage({
                 title,
                 submittedContent,
                 sticky,
-                combinedTagIds()
+                combinedTagIds(),
+                linkedGames.map(({ gameId, relationType }) => ({ gameId, relationType }))
               );
 
               if (response.status == 401) {
@@ -333,6 +338,7 @@ export default function CreatePostPage({
                   setContent("");
                   setSelectedTags(null);
                   setSticky(false);
+                  setLinkedGames([]);
                   await onCreated();
                 } else {
                   redirect("/");
@@ -353,6 +359,7 @@ export default function CreatePostPage({
                  {uiText("AppStrings.ThePostTitle")} </Text>
             </div>
             <Input
+              fullWidth
               required
               name="title"
               placeholder={uiText("AppStrings.EnterATitle")}
@@ -438,6 +445,8 @@ export default function CreatePostPage({
                 </Vstack>
               </Hstack>
             )}
+
+            {user && <PostGameSelector value={linkedGames} onChange={setLinkedGames} />}
 
             </div>
             {hasUnsavedChanges && (

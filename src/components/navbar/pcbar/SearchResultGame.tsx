@@ -33,7 +33,7 @@ export default function SearchResultGame({
           offset={4}
         >
           <Image
-            src={game.thumbnail ?? "/images/D2J_Icon.png"}
+            src={game.thumbnail || "/images/game-thumbnail.png"}
             alt={uiText("AppStrings.GameThumbnail")}
             width={45}
             height={25}

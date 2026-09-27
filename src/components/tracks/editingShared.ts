@@ -1,3 +1,9 @@
+import {
+  getTrackLicenseVersion,
+  normalizeTrackLicense,
+  type TrackLicenseCode,
+} from "@/helpers/trackLicense";
+
 export const SINGLE_TRACK_TAG_CATEGORIES = new Set(["Looping"]);
 
 export const TRACK_TAG_CATEGORY_HELPERS: Record<string, string> = {
@@ -42,26 +48,29 @@ export const licenseModeForFlags = (flags: LicenseFlags): LicenseMode => {
   return "CC_BY";
 };
 
-export const licenseFlagsToLabel = (flags: LicenseFlags) => {
+export const licenseFlagsToCode = (
+  flags: LicenseFlags,
+  version: "3.0" | "4.0" = "4.0",
+): TrackLicenseCode => {
   if (
     !flags.attribution &&
     !flags.commercial &&
     !flags.derivatives &&
     !flags.shareAlike
   ) {
-    return "All rights reserved";
+    return "ALL_RIGHTS_RESERVED";
   }
 
-  if (!flags.attribution && flags.commercial) return "CC0";
-  const prefix = "CC BY";
-  const suffixParts: string[] = [];
+  if (!flags.attribution && flags.commercial) return "CC0_1_0";
+  const suffixParts: string[] = ["CC", "BY"];
   if (!flags.commercial) suffixParts.push("NC");
   if (!flags.derivatives) {
     suffixParts.push("ND");
   } else if (flags.shareAlike) {
     suffixParts.push("SA");
   }
-  return suffixParts.length > 0 ? `${prefix}-${suffixParts.join("-")}` : prefix;
+  suffixParts.push(version.replace(".", "_"));
+  return suffixParts.join("_") as TrackLicenseCode;
 };
 
 export const backgroundUsageAllowedByDefault = (flags: LicenseFlags) => {
@@ -108,8 +117,8 @@ export const backgroundUsageAttributionWithLicenseDefaults = (
 };
 
 export const parseLicenseFlags = (license?: string | null): LicenseFlags => {
-  const normalized = (license ?? "").toUpperCase().replace(/\s+/g, " ").trim();
-  if (!normalized || normalized === "ALL RIGHTS RESERVED") {
+  const normalized = normalizeTrackLicense(license);
+  if (normalized === "ALL_RIGHTS_RESERVED") {
     return {
       attribution: false,
       commercial: false,
@@ -117,7 +126,7 @@ export const parseLicenseFlags = (license?: string | null): LicenseFlags => {
       shareAlike: false,
     };
   }
-  if (normalized.startsWith("CC0")) {
+  if (normalized === "CC0_1_0") {
     return {
       attribution: false,
       commercial: true,
@@ -136,3 +145,5 @@ export const parseLicenseFlags = (license?: string | null): LicenseFlags => {
     shareAlike: !hasNd && hasSa,
   };
 };
+
+export { getTrackLicenseVersion };

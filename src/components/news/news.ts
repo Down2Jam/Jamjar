@@ -1,6 +1,6 @@
 import type { PostType } from "@/types/PostType";
 import type { TagType } from "@/types/TagType";
-import type { CommentType } from "@/types/CommentType";
+export { countComments as newsCommentCount } from "@/helpers/commentCount";
 
 export const NEWS_TAG_NAMES = new Set(["siteannouncement", "sitechangelog"]);
 export const NEWS_READ_STORAGE_KEY = "d2jam-news-last-read";
@@ -86,13 +86,6 @@ export function markNewsRead() {
 
 export function newsPostPath(slug: string) {
   return `/news/${encodeURIComponent(slug)}`;
-}
-
-export function newsCommentCount(comments: CommentType[]): number {
-  return comments.reduce(
-    (total, comment) => total + 1 + newsCommentCount(comment.children ?? []),
-    0,
-  );
 }
 
 export function newsShareUrls(title: string, url: string) {

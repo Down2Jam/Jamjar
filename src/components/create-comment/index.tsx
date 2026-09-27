@@ -1,11 +1,15 @@
 import { useTranslations } from "@/compat/next-intl";
-import Editor from "../editor";
+import dynamic from "@/compat/next-dynamic";
+const Editor = dynamic(() => import("../editor"), {
+  loading: () => <div className="min-h-24 animate-pulse rounded-md bg-current/5" />,
+});
 import { hasCookie } from "@/helpers/cookie";
 import { postComment } from "@/requests/comment";
+import { addCollectionComment } from "@/requests/collection";
 import { useId, useState } from "react";
 import useMobileLayout from "@/hooks/useMobileLayout";
 import MobileComposerDialog from "./MobileComposerDialog";
-import { Button } from "bioloom-ui";
+import { Button, Card } from "bioloom-ui";
 import { addToast } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -13,11 +17,19 @@ import styles from "./style.module.css";
 
 // CreateComment.tsx
 export default function CreateComment({
+  postId,
+  collectionId,
+  onCreated,
+  framed = false,
   gameId,
   gamePageId,
   trackId,
   size = "sm",
 }: {
+  postId?: number | null;
+  collectionId?: number;
+  onCreated?: () => void | Promise<void>;
+  framed?: boolean;
   gameId?: number | null;
   gamePageId?: number | null;
   trackId?: number | null;
@@ -33,7 +45,7 @@ export default function CreateComment({
   const { colors } = useTheme();
 
   const composer = (
-    <div className={!mobile && size === "sm" ? styles.composer : undefined} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": `color-mix(in srgb, ${colors.text} 20%, ${colors.mantle})` } as React.CSSProperties}>
+    <div className={!mobile && size === "sm" ? styles.composer : styles.feedback} style={{ "--comment-border": `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`, "--comment-focus": `color-mix(in srgb, ${colors.text} 20%, ${colors.mantle})` } as React.CSSProperties}>
       {(size === "sm" || mobile) && <div className="mb-3 flex items-center justify-between gap-3">
         {(size === "sm" || mobile) && <h2 id={titleId} className="text-base font-semibold">{size === "sm" ? t("AppStrings.LeaveAComment") : t("AppStrings.LeaveFeedback")}</h2>}
         {mobile && <Button size="sm" variant="ghost" icon="x" aria-label={t("AppStrings.CloseComment")} disabled={waitingPost} onClick={close} />}
@@ -48,7 +60,7 @@ export default function CreateComment({
         showStats={false}
       />
       </fieldset>
-      <div className={mobile ? "mt-3 flex justify-end gap-2" : size === "sm" ? styles.submitRow : ""}>
+      <div className={mobile ? "mt-3 flex justify-end gap-2" : size === "sm" ? styles.submitRow : "mt-3"}>
       {mobile && <Button size="sm" variant="ghost" disabled={waitingPost} onClick={close}>{t("AppStrings.Cancel")}</Button>}
         <Button
           size={mobile ? "sm" : size}
@@ -57,7 +69,7 @@ export default function CreateComment({
           disabled={waitingPost || (mobile && !content.trim())}
           aria-busy={waitingPost}
           onClick={async () => {
-            if (!content) {
+            if (!content.trim()) {
               addToast({
                 title: t("AppStrings.PleaseEnterValidContent"),
               });
@@ -74,9 +86,11 @@ export default function CreateComment({
             setWaitingPost(true);
 
             try {
-            const response = await postComment(
+            const response = collectionId != null
+              ? await addCollectionComment(collectionId, content)
+              : await postComment(
               content,
-              null,
+              postId ?? null,
               null,
               gameId ?? null,
               gamePageId ?? null,
@@ -96,7 +110,10 @@ export default function CreateComment({
                 title: t("AppStrings.SuccessfullyCreatedComment"),
               });
               setWaitingPost(false);
-              window.location.reload(); // Consider improving this too
+              setContent("");
+              setOpen(false);
+              if (onCreated) await onCreated();
+              else window.location.reload();
             } else {
               addToast({
                 title: t("AppStrings.AnErrorOccurred"),
@@ -116,7 +133,11 @@ export default function CreateComment({
     </div>
   );
 
-  if (!mobile) return composer;
+  if (!mobile) return framed ? (
+    <Card padding={1.5} shadow="none" className="shadow-2xl w-full max-lg:!rounded-none">
+      {composer}
+    </Card>
+  ) : composer;
   return <>
     <Button size="sm" icon="send" fullWidth className="min-h-11" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
       {size === "sm" ? t("AppStrings.LeaveAComment") : t("AppStrings.LeaveFeedback")}

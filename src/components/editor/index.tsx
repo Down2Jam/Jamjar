@@ -238,8 +238,9 @@ export default function Editor({
   const uiText = useUiTranslations();
   const { colors } = useTheme();
   const t = useTranslations();
-  const { emojiMap, emojis, priorityEmotes } = useEmojis();
+  const { emojiMap, stickerMap, emojis, stickers, priorityEmotes } = useEmojis();
   const emojiMapRef = useRef(emojiMap);
+  const stickerMapRef = useRef(stickerMap);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [emojiMatches, setEmojiMatches] = useState<EmojiType[]>([]);
   const [emojiIndex, setEmojiIndex] = useState(0);
@@ -277,10 +278,11 @@ export default function Editor({
 
   useEffect(() => {
     emojiMapRef.current = emojiMap;
-  }, [emojiMap]);
+    stickerMapRef.current = stickerMap;
+  }, [emojiMap, stickerMap]);
 
   const emojiExtension = useMemo(
-    () => createEmojiShortcodeExtension(emojiMapRef),
+    () => createEmojiShortcodeExtension(emojiMapRef, stickerMapRef),
     []
   );
   const initialContent =
@@ -290,10 +292,15 @@ export default function Editor({
     (emoji: EmojiType, range: { from: number; to: number }) => {
       const activeEditor = editorRef.current;
       if (!activeEditor) return;
+      const shortcode =
+        emoji.kind === "STICKER"
+          ? `::${emoji.slug}::`
+          : `:${emoji.slug}:`;
+
       activeEditor
         .chain()
         .focus()
-        .insertContentAt(range, `:${emoji.slug}:`)
+        .insertContentAt(range, shortcode)
         .run();
       setEmojiOpen(false);
       setEmojiMatches([]);
@@ -423,7 +430,7 @@ export default function Editor({
         setEmojiOpen(false);
         return;
       }
-      if (!activeEditor || emojis.length === 0) {
+      if (!activeEditor || (emojis.length === 0 && stickers.length === 0)) {
         setEmojiOpen(false);
         return;
       }
@@ -442,6 +449,13 @@ export default function Editor({
         return;
       }
 
+      const isSticker = lastColon > 0 && parentText[lastColon - 1] === ":";
+      const triggerIndex = isSticker ? lastColon - 1 : lastColon;
+      if (isSticker && triggerIndex > 0 && parentText[triggerIndex - 1] === ":") {
+        setEmojiOpen(false);
+        return;
+      }
+
       const query = parentText.slice(lastColon + 1);
       if (!/^[a-zA-Z0-9_-]{1,40}$/.test(query)) {
         setEmojiOpen(false);
@@ -450,10 +464,12 @@ export default function Editor({
 
       const normalized = query.toLowerCase();
       const prioritySlugs = new Set(priorityEmotes.map((emoji) => emoji.slug));
-      const matches = emojis
+      const matches = (isSticker ? stickers : emojis)
         .filter((emoji) => emoji.slug.includes(normalized))
         .sort((a, b) => {
-          const priorityDelta = Number(prioritySlugs.has(b.slug)) - Number(prioritySlugs.has(a.slug));
+          const priorityDelta = isSticker
+            ? 0
+            : Number(prioritySlugs.has(b.slug)) - Number(prioritySlugs.has(a.slug));
           if (priorityDelta !== 0) return priorityDelta;
           const aStarts = a.slug.startsWith(normalized) ? 1 : 0;
           const bStarts = b.slug.startsWith(normalized) ? 1 : 0;
@@ -468,7 +484,7 @@ export default function Editor({
       }
 
       const parentStart = from - $from.parentOffset;
-      const range = { from: parentStart + lastColon, to: from };
+      const range = { from: parentStart + triggerIndex, to: from };
       const coords = view.coordsAtPos(from);
       setEmojiOpen(true);
       setEmojiMatches(matches);
@@ -476,7 +492,7 @@ export default function Editor({
       setEmojiRange(range);
       setEmojiCoords({ left: coords.left, top: coords.bottom + 6 });
     },
-    [emojis, mentionOpen, priorityEmotes]
+    [emojis, mentionOpen, priorityEmotes, stickers]
   );
 
   const handleEmojiKeyDown = useCallback(
@@ -934,7 +950,7 @@ export default function Editor({
           "--editor-focus-border-color": colors.blue,
         } as CSSProperties}
       >
-      <EditorMenuBar editor={editor} size={size} />
+      <EditorMenuBar editor={editor} size={size} enableMediaPickers={format === "markdown"} />
       <ThemedProse className="[&_.ProseMirror_h1]:my-0 [&_.ProseMirror_h1]:text-inherit [&_.ProseMirror_h1]:leading-inherit [&_.ProseMirror_h2]:my-0 [&_.ProseMirror_h2]:text-inherit [&_.ProseMirror_h2]:leading-inherit [&_.ProseMirror_h3]:my-0 [&_.ProseMirror_h3]:text-inherit [&_.ProseMirror_h3]:leading-inherit [&_.ProseMirror_p]:my-3 [&_.ProseMirror_p:empty]:h-auto [&_.ProseMirror_p:empty]:my-3 [&_.ProseMirror_p>br:only-child]:inline">
         <EditorContent editor={editor} />
       </ThemedProse>
@@ -1042,7 +1058,11 @@ export default function Editor({
                   loading="lazy"
                   decoding="async"
                 />
-                <span>:{emoji.slug}:</span>
+                <span>
+                  {emoji.kind === "STICKER"
+                    ? `::${emoji.slug}::`
+                    : `:${emoji.slug}:`}
+                </span>
               </button>
             ))}
           </div>

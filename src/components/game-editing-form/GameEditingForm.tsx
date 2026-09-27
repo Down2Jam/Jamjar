@@ -10,10 +10,12 @@ import { queryKeys } from "@/hooks/queries/queryKeys";
 
 import "./game-editor.css";
 import EditorFooter from "./EditorFooter";
+import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
 import ItemEditor from "./ItemEditor";
 import AudioPreview from "./AudioPreview";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
+import StickerManager from "@/components/stickers/StickerManager";
 import ReorderControls, { moveItem } from "./ReorderControls";
 
 import { Button } from "bioloom-ui";
@@ -28,7 +30,8 @@ import { Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL, getPlayableBuildUrl } from "@/requests/config";
-import { useCurrentJam } from "@/hooks/queries";
+import { useCurrentJam, useSelf } from "@/hooks/queries";
+import { useSession } from "@/hooks/useSession";
 import { sanitize } from "@/helpers/sanitize";
 import useHasMounted from "@/hooks/useHasMounted";
 import {
@@ -72,7 +75,8 @@ import {
   backgroundUsageAllowedByDefault,
   backgroundUsageRequiredByLicense,
   backgroundUsageWithLicenseDefaults,
-  licenseFlagsToLabel,
+  getTrackLicenseVersion,
+  licenseFlagsToCode,
   LicenseFlags,
   licenseModeForFlags,
   LicenseMode,
@@ -81,6 +85,13 @@ import {
   TRACK_CREDIT_ROLE_OPTIONS,
   TRACK_TAG_CATEGORY_HELPERS,
 } from "@/components/tracks/editingShared";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import {
+  ASSET_TRACK_LICENSE_OPTIONS,
+  getTrackLicense,
+  TrackLicenseCode,
+  TrackOrigin,
+} from "@/helpers/trackLicense";
 import { redirect, useRouter } from "@/compat/next-navigation";
 import { useTranslations } from "@/compat/next-intl";
 import { getSelf, searchUsers } from "@/requests/user";
@@ -91,7 +102,7 @@ import { TrackTagType } from "@/types/TrackTagType";
 import { useTheme } from "@/providers/useSiteTheme";
 import { useEmojis } from "@/providers/useEmojis";
 import { getApiErrorMessage, readArray, readItem, unwrapItem } from "@/requests/helpers";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { createTeam } from "@/helpers/team";
 import { Tab, Tabs } from "bioloom-ui";
 import { createGameEmoji, deleteEmoji, updateEmoji } from "@/requests/emoji";
@@ -222,7 +233,10 @@ type SongEdit = {
   truePeakDb?: number | null;
   loudnessGainDb?: number | null;
   softwareUsed: string[];
-  license: string;
+  origin: TrackOrigin;
+  externalAuthorName: string;
+  license: TrackLicenseCode | null;
+  licenseVersion: "3.0" | "4.0";
   allowDownload: boolean;
   allowBackgroundUse: boolean;
   allowBackgroundUseAttribution: boolean;
@@ -250,7 +264,13 @@ function trackToSongEdit(s: TrackType): SongEdit {
         truePeakDb: s.truePeakDb ?? null,
         loudnessGainDb: s.loudnessGainDb ?? null,
         softwareUsed: s.softwareUsed ?? [],
-        license: licenseFlagsToLabel(flags),
+        origin: s.origin ?? "ORIGINAL",
+        externalAuthorName: s.externalAuthorName ?? "",
+        license: licenseFlagsToCode(
+          flags,
+          s.origin === "ASSET_PACK" ? getTrackLicenseVersion(s.license) : "4.0",
+        ),
+        licenseVersion: getTrackLicenseVersion(s.license),
         allowDownload: Boolean(s.allowDownload),
         allowBackgroundUse:
           s.allowBackgroundUse ?? backgroundUsageAllowedByDefault(flags),
@@ -345,7 +365,10 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
           normalizedFlags,
         )
       : false,
-    license: licenseFlagsToLabel(normalizedFlags),
+    license: licenseFlagsToCode(
+      normalizedFlags,
+      song.origin === "ASSET_PACK" ? song.licenseVersion : "4.0",
+    ),
   };
 };
 
@@ -357,6 +380,8 @@ export default function GameEditingForm({
   pageVersion?: PageVersion;
 }) {
   const uiText = useUiTranslations();
+  const { signedIn } = useSession();
+  const { data: user = null } = useSelf();
   const isMounted = useHasMounted();
   const [ratingCategories, setRatingCategories] = useState<
     RatingCategoryType[]
@@ -385,6 +410,21 @@ export default function GameEditingForm({
   const [tags, setTags] = useState<number[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardInput[]>([]);
   const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const bridgeLeaderboards = useMemo(
+    () => leaderboards.flatMap((leaderboard) => {
+      const id = leaderboard.id;
+      if (typeof id !== "number" || id <= 0) return [];
+
+      return [{
+        id,
+        name: leaderboard.name,
+        type: leaderboard.type,
+        decimalPlaces: leaderboard.decimalPlaces,
+        onlyBest: leaderboard.onlyBest,
+      }];
+    }),
+    [leaderboards],
+  );
   const [teams, setTeams] = useState<TeamType[]>([]);
   const [category, setCategory] = useState<
     "REGULAR" | "ODA" | "EXTRA" | "EXTERNAL"
@@ -463,6 +503,7 @@ export default function GameEditingForm({
   const uploadedAudioFiles = useRef(new Map<string, File>());
   const teamCheckDoneRef = useRef(false);
 
+  const [pageBackground, setPageBackground] = useState<string | null>(null);
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [trailerUrl, setTrailerUrl] = useState<string>("");
   const [itchEmbedUrl, setItchEmbedUrl] = useState<string>("");
@@ -470,6 +511,7 @@ export default function GameEditingForm({
   const [isPlayableBuildPreviewActive, setIsPlayableBuildPreviewActive] =
     useState(false);
   const [uploadingWebBuild, setUploadingWebBuild] = useState(false);
+  const [webBuildDragActive, setWebBuildDragActive] = useState(false);
   const [itchEmbedAspectRatio, setItchEmbedAspectRatio] =
     useState<GameEmbedAspectRatio>("16 / 9");
   const [playableBuildAspectRatio, setPlayableBuildAspectRatio] =
@@ -492,7 +534,7 @@ export default function GameEditingForm({
   const [savedFormSnapshot, setSavedFormSnapshot] = useState<string | null>(null);
   const formSnapshot = JSON.stringify({
     title, short, content, gameSlug, thumbnailUrl, soundtrackThumbnailUrl,
-    bannerUrl, downloadLinks, flags: [...flags].sort((a, b) => a - b),
+    bannerUrl, pageBackground, downloadLinks, flags: [...flags].sort((a, b) => a - b),
     tags: [...tags].sort((a, b) => a - b), leaderboards, achievements,
     category, chosenRatingCategories: [...chosenRatingCategories].sort((a, b) => a - b),
     chosenMajRatingCategories: [...chosenMajRatingCategories].sort((a, b) => a - b),
@@ -550,6 +592,7 @@ export default function GameEditingForm({
         [],
     );
     setScreenshots(game?.screenshots ?? []);
+    setPageBackground(game?.pageBackground ?? null);
     setTrailerUrl(game?.trailerUrl ?? "");
     setItchEmbedUrl(game?.itchEmbedUrl ?? "");
     setPlayableBuildUrl(game?.playableBuildUrl ?? "");
@@ -869,6 +912,49 @@ export default function GameEditingForm({
     }
   }
 
+  const handleWebBuildUpload = async (file?: File) => {
+    if (!file || uploadingWebBuild) return;
+    if (file.size > 95_000_000) {
+      addToast({ title: uiText("AppStrings.TheWebBuildZIPMustBe95MBOrSmaller") });
+      return;
+    }
+
+    setUploadingWebBuild(true);
+
+    try {
+      const response = await uploadWebBuild(file);
+      if (!response.ok) {
+        const body = await response.json().catch(() => null) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(
+          body?.error?.message ||
+            "The web build could not be uploaded.",
+        );
+      }
+
+      const uploaded = await readItem<{
+        playableUrl: string;
+      }>(response);
+      if (!uploaded?.playableUrl) {
+        throw new Error("The upload returned no playable build.");
+      }
+
+      setPlayableBuildUrl(uploaded.playableUrl);
+      setPlayableBuildShowFullscreenButton(true);
+      addToast({ title: uiText("AppStrings.WebBuildUploadedAndChecked") });
+    } catch (error) {
+      addToast({
+        title:
+          error instanceof Error
+            ? error.message
+            : uiText("AppStrings.TheWebBuildCouldNotBeUploaded"),
+      });
+    } finally {
+      setUploadingWebBuild(false);
+    }
+  };
+
   const doArtistSearch = useMemo(
     () =>
       debounce(async (songId: number, q: string) => {
@@ -1051,19 +1137,32 @@ export default function GameEditingForm({
                   role: credit.role.trim(),
                   userId: credit.userId as number,
                 })),
-              id: s.id,
+              id: s.id > 0 && s.id <= 2147483647 ? s.id : undefined,
               slug: s.slug,
-              license: s.license || null,
+              origin: s.origin,
+              externalAuthorName:
+                s.origin === "ASSET_PACK" ? s.externalAuthorName.trim() : null,
+              license: s.license ?? undefined,
               allowDownload: s.allowDownload,
               allowBackgroundUse: s.allowBackgroundUse,
               allowBackgroundUseAttribution: s.allowBackgroundUseAttribution,
             }));
 
             for (const song of payloadSongs) {
-              if ((song.credits?.length ?? 0) === 0) {
+              if (song.origin === "ORIGINAL" && (song.credits?.length ?? 0) === 0) {
                 addToast({
                   title: uiText("AppStrings.Value0IsMissingACreditedPerson", { value0: song.name }),
                 });
+                return;
+              }
+
+              if (song.origin === "ASSET_PACK" && !song.externalAuthorName) {
+                addToast({ title: `${song.name} is missing an asset-pack author` });
+                return;
+              }
+
+              if (song.origin === "ASSET_PACK" && !song.license) {
+                addToast({ title: `${song.name} is missing an asset-pack license` });
                 return;
               }
 
@@ -1119,6 +1218,7 @@ export default function GameEditingForm({
                   estHundredPercent || null,
                   cleanedPrefix || null,
                   pageVersion,
+                  pageBackground,
                 )
               : postGame(
                   title,
@@ -1156,12 +1256,17 @@ export default function GameEditingForm({
                   estHundredPercent || null,
                   cleanedPrefix || null,
                   pageVersion,
+                  pageBackground,
                 );
 
             const response = await request;
 
             if (response.ok) {
-              await queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: queryKeys.game.all }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.user.all }),
+                queryClient.invalidateQueries({ queryKey: queryKeys.jam.all }),
+              ]);
               setSavedFormSnapshot(formSnapshot);
               addToast({
                 title: prevSlug
@@ -1170,9 +1275,11 @@ export default function GameEditingForm({
               });
               router.push(`/g/${gameSlug || sanitizeSlug(title)}`);
             } else {
-              const error = await response.text();
+              const errorBody = await response.json().catch(() => null);
               addToast({
-                title: error || t("CreateGame.Create.Error"),
+                title: response.status === 413
+                  ? "The game page is too large to save. Remove large embedded images or shorten the description."
+                  : getApiErrorMessage(errorBody) || t("CreateGame.Create.Error"),
               });
             }
           } catch (error) {
@@ -1392,7 +1499,24 @@ export default function GameEditingForm({
                          {uiText("AppStrings.UploadAZIPContainingAnIndexHtmlFileAndAllOfTheFilesYourBrowserGameNeedsTheBuildRunsIn")} </Text>
                     </div>
 
-                    <label className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center" aria-disabled={uploadingWebBuild} style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight } as CSSProperties}>
+                    <label
+                      className="game-editor-build-upload flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center"
+                      aria-disabled={uploadingWebBuild}
+                      data-drag-active={webBuildDragActive}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        if (uploadingWebBuild) return;
+                        setWebBuildDragActive(true);
+                      }}
+                      onDragLeave={() => setWebBuildDragActive(false)}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (uploadingWebBuild) return;
+                        setWebBuildDragActive(false);
+                        void handleWebBuildUpload(event.dataTransfer.files?.[0]);
+                      }}
+                      style={{ "--build-surface": colors.mantle, "--build-hover": colors.base, "--build-border": colors.grayDark, "--build-hover-border": colors.grayLight, "--build-drag-border": colors.blue } as CSSProperties}
+                    >
                       <Icon name="upload" color="text" />
                       <Text color="text" weight="semibold">
                         {uploadingWebBuild
@@ -1408,45 +1532,10 @@ export default function GameEditingForm({
                         type="file"
                         accept=".zip,application/zip,application/x-zip-compressed"
                         disabled={uploadingWebBuild}
-                        onChange={async (event) => {
+                        onChange={(event) => {
                           const file = event.currentTarget.files?.[0];
                           event.currentTarget.value = "";
-                          if (!file) return;
-                          if (file.size > 95_000_000) {
-                            addToast({ title: uiText("AppStrings.TheWebBuildZIPMustBe95MBOrSmaller") });
-                            return;
-                          }
-                          setUploadingWebBuild(true);
-                          try {
-                            const response = await uploadWebBuild(file);
-                            if (!response.ok) {
-                              const body = await response.json().catch(() => null) as
-                                | { error?: { message?: string } }
-                                | null;
-                              throw new Error(
-                                body?.error?.message ||
-                                  "The web build could not be uploaded.",
-                              );
-                            }
-                            const uploaded = await readItem<{
-                              playableUrl: string;
-                            }>(response);
-                            if (!uploaded?.playableUrl) {
-                              throw new Error("The upload returned no playable build.");
-                            }
-                            setPlayableBuildUrl(uploaded.playableUrl);
-                            setPlayableBuildShowFullscreenButton(true);
-                            addToast({ title: uiText("AppStrings.WebBuildUploadedAndChecked") });
-                          } catch (error) {
-                            addToast({
-                              title:
-                                error instanceof Error
-                                  ? error.message
-                                  : uiText("AppStrings.TheWebBuildCouldNotBeUploaded"),
-                            });
-                          } finally {
-                            setUploadingWebBuild(false);
-                          }
+                          void handleWebBuildUpload(file);
                         }}
                       />
                     </label>
@@ -1499,15 +1588,29 @@ export default function GameEditingForm({
                             style={{ aspectRatio: playableBuildAspectRatio }}
                           >
                             {isPlayableBuildPreviewActive ? (
-                              <iframe
-                                ref={playableBuildPreviewRef}
-                                src={getPlayableBuildUrl(playableBuildUrl)}
-                                title={uiText("AppStrings.PlayableWebBuildPreview")}
-                                className="h-full w-full border-0"
-                                sandbox={getPlayableSandbox(getPlayableBuildUrl(playableBuildUrl), window.location.origin)}
-                                allow="fullscreen; gamepad"
-                                allowFullScreen
-                              />
+                              <>
+                                <iframe
+                                  ref={playableBuildPreviewRef}
+                                  src={getPlayableBuildUrl(playableBuildUrl)}
+                                  title={uiText("AppStrings.PlayableWebBuildPreview")}
+                                  className="h-full w-full border-0"
+                                  sandbox={getPlayableSandbox(getPlayableBuildUrl(playableBuildUrl), window.location.origin)}
+                                  allow="fullscreen; gamepad"
+                                  allowFullScreen
+                                />
+                                {game && (
+                                  <EmbeddedGameBridge
+                                    iframeRef={playableBuildPreviewRef}
+                                    buildUrl={getPlayableBuildUrl(playableBuildUrl)}
+                                    game={game}
+                                    pageVersion={pageVersion}
+                                    signedIn={signedIn}
+                                    user={user ?? null}
+                                    achievements={achievements}
+                                    leaderboards={bridgeLeaderboards}
+                                  />
+                                )}
+                              </>
                             ) : (
                               <button
                                 type="button"
@@ -1735,7 +1838,7 @@ export default function GameEditingForm({
                   (activeJamResponse.jam.id === game?.jam?.id || !game) &&
                   (activeJamResponse.phase == "Jamming" ||
                     activeJamResponse.phase == "Submission" ||
-                    (activeJamResponse.phase == "Rating" && !prevSlug)) && (
+                    activeJamResponse.phase == "Rating") && (
                     <div className="game-editor-row relative z-0">
                       <Vstack align="start">
                         <div>
@@ -1872,12 +1975,37 @@ export default function GameEditingForm({
                       value={bannerUrl}
                       width={734}
                       height={120}
+                      maxOutputWidth={1468}
+                      maxOutputHeight={240}
                       placeholder={uiText("AppStrings.UploadBanner")}
                       onSelect={async (file, crop) => {
                         const url = await uploadTo("image", file, crop);
                         if (url) {
                           setBannerUrl(url);
                         }
+                      }}
+                    />
+                  </Vstack>
+                </div>
+
+                <div className="game-editor-row">
+                  <Vstack align="start">
+                    <div>
+                      <Text color="text">CreateGame.PageBackground.Title</Text>
+                      <Text color="textFaded" size="xs">
+                        CreateGame.PageBackground.Description
+                      </Text>
+                    </div>
+                    <ImageInput
+                      value={pageBackground}
+                      width={640}
+                      height={360}
+                      enableCrop={false}
+                      placeholder={uiText("CreateGame.PageBackground.Upload")}
+                      onClear={() => setPageBackground(null)}
+                      onSelect={async (file, crop) => {
+                        const url = await uploadTo("image", file, crop);
+                        if (url) setPageBackground(url);
                       }}
                     />
                   </Vstack>
@@ -2542,6 +2670,17 @@ export default function GameEditingForm({
                         )}
                       </Vstack>
                     </div>
+                    {game?.id ? (
+                      <div className="game-editor-block">
+                        <StickerManager
+                          scope="GAME"
+                          scopeId={game.id}
+                          prefix={gameEmotePrefix}
+                          gameSlug={game.slug}
+                          disabled={!game.slug}
+                        />
+                      </div>
+                    ) : null}
               </Vstack>
             </Tab>
             <Tab title={uiText("AppStrings.Metadata")} icon="tags">
@@ -2835,7 +2974,7 @@ export default function GameEditingForm({
       onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}
       onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
       onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
-      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.credits.length}  {uiText("AppStrings.Credits2")} {(song.license && translateSystemLabel(song.license, uiText)) || uiText("AppStrings.NoLicenseSelected")}</p></div></div>}
+      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.origin === "ASSET_PACK" ? song.externalAuthorName || "Asset-pack author required" : `${song.credits.length} ${uiText("AppStrings.Credits2")}`} · {song.license ? <TrackLicenseLink license={song.license} /> : "License required"}</p></div></div>}
       preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <AudioPreview key={draft.url} url={draft.url} file={uploadedAudioFiles.current.get(draft.url)} />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM · " : ""}{draft.musicalKey || ""}</p></div>}>
       {(song, setDraft) => {
         const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
@@ -2879,6 +3018,63 @@ export default function GameEditingForm({
                                       )
                                     }
                                   />
+                                  <div className="w-full">
+                                    <Text color="text">Music source</Text>
+                                    <Text color="textFaded" size="xs">
+                                      Choose whether the track was made for the game or came from an asset pack.
+                                    </Text>
+                                  </div>
+                                  <Dropdown
+                                    portal
+                                    selectedValue={song.origin}
+                                    onSelect={(value) =>
+                                      setDraftSongs((prev) =>
+                                        prev.map((s) => {
+                                          if (s.id !== song.id) return s;
+                                          const origin = value as TrackOrigin;
+                                          const next = { ...s, origin };
+                                          if (origin === "ASSET_PACK") {
+                                            return { ...next, license: null };
+                                          }
+                                          if (!next.license) {
+                                            return applyLicenseFlags(next, {
+                                              attribution: false,
+                                              commercial: false,
+                                              derivatives: false,
+                                              shareAlike: false,
+                                            });
+                                          }
+                                          return next;
+                                        }),
+                                      )
+                                    }
+                                  >
+                                    <Dropdown.Item value="ORIGINAL">Original music</Dropdown.Item>
+                                    <Dropdown.Item value="ASSET_PACK">From an asset pack</Dropdown.Item>
+                                  </Dropdown>
+                                  {song.origin === "ASSET_PACK" && (
+                                    <>
+                                      <div className="w-full">
+                                        <Text color="text">Original author</Text>
+                                        <Text color="textFaded" size="xs">
+                                          Enter the name credited by the asset pack.
+                                        </Text>
+                                      </div>
+                                      <Input
+                                        placeholder="Author name"
+                                        value={song.externalAuthorName}
+                                        onValueChange={(value) =>
+                                          setDraftSongs((prev) =>
+                                            prev.map((s) =>
+                                              s.id === song.id
+                                                ? { ...s, externalAuthorName: value }
+                                                : s,
+                                            ),
+                                          )
+                                        }
+                                      />
+                                    </>
+                                  )}
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Commentary")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -3318,10 +3514,54 @@ export default function GameEditingForm({
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.License")}</Text>
                                     <Text color="textFaded" size="xs">
-                                       {uiText("AppStrings.ChooseHowOthersCanUseThisTrack")} </Text>
+                                      {song.origin === "ASSET_PACK"
+                                        ? "What license is this asset listed under"
+                                        : uiText("AppStrings.ChooseHowOthersCanUseThisTrack")}
+                                    </Text>
                                   </div>
                                   <Vstack align="start" className="gap-2">
                                     {(() => {
+                                      if (song.origin === "ASSET_PACK") {
+                                        return (
+                                          <>
+                                            <Dropdown
+                                              portal
+                                              selectedValue={song.license ?? undefined}
+                                              placeholder="Select a license"
+                                              onSelect={(value) =>
+                                                setDraftSongs((prev) =>
+                                                  prev.map((s) => {
+                                                    if (s.id !== song.id) return s;
+
+                                                    const license = value as TrackLicenseCode;
+                                                    const licenseVersion = getTrackLicenseVersion(license);
+                                                    return {
+                                                      ...applyLicenseFlags(
+                                                        { ...s, licenseVersion },
+                                                        parseLicenseFlags(license),
+                                                      ),
+                                                      license,
+                                                      licenseVersion,
+                                                    };
+                                                  }),
+                                                )
+                                              }
+                                            >
+                                              {ASSET_TRACK_LICENSE_OPTIONS.map((license) => (
+                                                <Dropdown.Item key={license} value={license}>
+                                                  {getTrackLicense(license).label}
+                                                </Dropdown.Item>
+                                              ))}
+                                            </Dropdown>
+                                            {song.license && (
+                                              <Text size="xs" color="textFaded">
+                                                {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={song.license} />
+                                              </Text>
+                                            )}
+                                          </>
+                                        );
+                                      }
+
                                       const backgroundUsageRequired =
                                         backgroundUsageRequiredByLicense({
                                           attribution: song.licenseAttribution,
@@ -3340,7 +3580,6 @@ export default function GameEditingForm({
                                         (backgroundUsageRequired
                                           ? true
                                           : song.allowBackgroundUse);
-
                                       return (
                                         <>
                                           <Dropdown portal
@@ -3549,7 +3788,7 @@ export default function GameEditingForm({
                                             </>
                                           )}
                                           <Text size="xs" color="textFaded">
-                                             {uiText("AppStrings.LicenseApplied")} {translateSystemLabel(song.license, uiText)}
+                                             {uiText("AppStrings.LicenseApplied")} <TrackLicenseLink license={song.license} />
                                           </Text>
                                           <Hstack className="w-full items-start gap-3">
                                             <Switch
@@ -3669,6 +3908,7 @@ export default function GameEditingForm({
                                     })()}
                                   </Vstack>
 
+                                  {song.origin === "ORIGINAL" && (<>
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Credits")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -3982,6 +4222,7 @@ export default function GameEditingForm({
                                       </Card>
                                     ))}
                                   </Vstack>
+                                  </>)}
                                   <div className="w-full">
                                     <Text color="text">{uiText("AppStrings.Song")}</Text>
                                     <Text color="textFaded" size="xs">
@@ -4074,7 +4315,10 @@ export default function GameEditingForm({
                                 bpm: null,
                                 musicalKey: "",
                                 softwareUsed: [],
-                                license: "All rights reserved",
+                                origin: "ORIGINAL",
+                                externalAuthorName: "",
+                                license: "ALL_RIGHTS_RESERVED",
+                                licenseVersion: "4.0",
                                 allowDownload: false,
                                 allowBackgroundUse: false,
                                 allowBackgroundUseAttribution: true,

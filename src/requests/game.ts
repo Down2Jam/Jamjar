@@ -9,6 +9,7 @@ import {
   PageVersion,
 } from "@/types/GameType";
 import { isNumericJamValue } from "@/helpers/jamUrl";
+import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
 
 const inflightGetRequests = new Map<string, Promise<Response>>();
 
@@ -152,9 +153,11 @@ export async function postGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
-    id: number;
+    origin?: TrackOrigin;
+    externalAuthorName?: string | null;
+    id?: number;
     slug: string;
-    license?: string | null;
+    license?: TrackLicenseCode;
     allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
@@ -172,6 +175,7 @@ export async function postGame(
   estHundredPercent: string | null,
   emotePrefix: string | null,
   pageVersion: PageVersion = "JAM",
+  pageBackground: string | null = null,
 ) {
   const response = await fetch(`${BASE_URL}/games`, {
     body: JSON.stringify({
@@ -181,6 +185,7 @@ export async function postGame(
       thumbnail,
       soundtrackThumbnail,
       banner,
+      pageBackground,
       downloadLinks,
       userSlug,
       category,
@@ -258,9 +263,11 @@ export async function updateGame(
     links?: Array<{ label: string; url: string }>;
     credits?: Array<{ role: string; userId: number }>;
     composerId?: number | null;
-    id: number;
+    origin?: TrackOrigin;
+    externalAuthorName?: string | null;
+    id?: number;
     slug: string;
-    license?: string | null;
+    license?: TrackLicenseCode;
     allowDownload?: boolean;
     allowBackgroundUse?: boolean;
     allowBackgroundUseAttribution?: boolean;
@@ -278,6 +285,7 @@ export async function updateGame(
   estHundredPercent: string | null,
   emotePrefix: string | null,
   pageVersion: PageVersion = "JAM",
+  pageBackground: string | null = null,
 ) {
   const response = await fetch(`${BASE_URL}/games/${previousGameSlug}`, {
     body: JSON.stringify({
@@ -287,6 +295,7 @@ export async function updateGame(
       thumbnail,
       soundtrackThumbnail,
       banner,
+      pageBackground,
       downloadLinks,
       userSlug,
       category,
@@ -352,7 +361,17 @@ export async function getGames(
     params.set("pageVersion", pageVersion);
   }
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store" });
+  const rawToken = getCookie("token");
+  const token = sort === "recommended" && rawToken && rawToken !== "null" && rawToken !== "undefined" ? rawToken : null;
+  const url = `${BASE_URL}/games?${params.toString()}`;
+  const response = await fetch(url, {
+    cache: "no-store",
+    credentials: "include",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+  });
+  return response.status === 401 && token
+    ? fetch(url, { cache: "no-store", credentials: "include" })
+    : response;
 }
 
 export async function getGamesPage({
@@ -363,6 +382,7 @@ export async function getGamesPage({
   cursor,
   limit = 50,
   postJamFirst = false,
+  signal,
 }: {
   sort?: string;
   jamId?: string;
@@ -371,6 +391,7 @@ export async function getGamesPage({
   cursor?: string | null;
   limit?: number;
   postJamFirst?: boolean;
+  signal?: AbortSignal;
 }) {
   const params = new URLSearchParams({ sort, limit: String(limit) });
   setJamListingParam(params, jam ?? jamId);
@@ -378,7 +399,18 @@ export async function getGamesPage({
   if (cursor) params.set("cursor", cursor);
   if (postJamFirst) params.set("postJamFirst", "true");
 
-  return fetch(`${BASE_URL}/games?${params.toString()}`, { cache: "no-store" });
+  const rawToken = getCookie("token");
+  const token = sort === "recommended" && rawToken && rawToken !== "null" && rawToken !== "undefined" ? rawToken : null;
+  const url = `${BASE_URL}/games?${params.toString()}`;
+  const response = await fetch(url, {
+    cache: "no-store",
+    signal,
+    credentials: "include",
+    headers: token ? { authorization: `Bearer ${token}` } : undefined,
+  });
+  return response.status === 401 && token
+    ? fetch(url, { cache: "no-store", signal, credentials: "include" })
+    : response;
 }
 
 export async function getRandomGame(includeExternal = true) {
@@ -404,10 +436,14 @@ export async function getGameDevlogPosts(
   gameSlug: string,
   relationType?: "devlog" | "release" | "postmortem" | "announcement" | "other",
   limit?: number,
+  cursor?: string,
+  cursorId?: number,
 ) {
   const params = new URLSearchParams();
   if (relationType) params.set("relationType", relationType);
   if (limit) params.set("limit", String(limit));
+  if (cursor) params.set("cursor", cursor);
+  if (cursorId) params.set("cursorId", String(cursorId));
 
   return fetch(
     `${BASE_URL}/games/${encodeURIComponent(gameSlug)}/devlog${params.size ? `?${params.toString()}` : ""}`,

@@ -1,5 +1,4 @@
 "use client";
-import { useGamePageBackground } from "@/app/(main)/PageBackground";
 import { RatingRadarLabel } from "@/components/RatingRadarLabel";
 import { getResultsGradient } from "@/helpers/ratingColor";
 
@@ -9,6 +8,8 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { use, useCallback, useMemo, useRef } from "react";
 import { useState, useEffect } from "react";
 import { getCookie } from "@/helpers/cookie";
+import { getGameTeamName } from "@/helpers/gameTeamName";
+import { GamePageBackground } from "@/app/(main)/PageBackground";
 import { addToast } from "bioloom-ui";
 import { Tabs, Tab } from "bioloom-ui";
 import {
@@ -23,7 +24,7 @@ import { Pagination } from "bioloom-ui";
 import { GameEmbedAspectRatio, GameType, PageVersion } from "@/types/GameType";
 import { UserType } from "@/types/UserType";
 import { getGame, getRatingCategories } from "@/requests/game";
-import { getSelf } from "@/requests/user";
+
 import Image from "@/compat/next-image";
 import {
   AlertTriangle,
@@ -39,6 +40,7 @@ import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
 import { postRating, postTrackRating } from "@/requests/rating";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 import ScrollableTracks from "@/components/sidebar/ScrollableTracks";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import RatingStars from "@/components/RatingStars";
@@ -48,21 +50,15 @@ import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { emitTrackRatingSync, subscribeToTrackRatingSync } from "@/helpers/trackRatingSync";
 import { RatingType } from "@/types/RatingType";
 import { RatingCategoryType } from "@/types/RatingCategoryType";
-import { useCurrentJam } from "@/hooks/queries";
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { useCurrentJam, useSelf } from "@/hooks/queries";
+import dynamic from "@/compat/next-dynamic";
+const GameRatingChart = dynamic(() => import("@/components/GameRatingChart"));
 import CreateComment from "@/components/create-comment";
 import useMobileLayout from "@/hooks/useMobileLayout";
 import { useTheme } from "@/providers/useSiteTheme";
 import { Chip } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
+import GameDevlog from "@/components/posts/GameDevlog";
 import ThemedProse from "@/components/themed-prose";
 import { Button } from "bioloom-ui";
 import { Link } from "bioloom-ui";
@@ -71,6 +67,7 @@ import { useSearchParams } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import GamePageLoading from "@/components/game-page-loading";
+import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import GameSidebarSection from "@/components/game-sidebar-section";
 import GameLeaderboards from "@/components/game-leaderboards";
 import GameAchievements from "@/components/game-achievements";
@@ -80,7 +77,7 @@ import { BASE_URL } from "@/requests/config";
 import { getPlayableSandbox } from "@/helpers/playableSandbox";
 import { getPlayableBuildUrl } from "@/requests/config";
 import { Popover } from "bioloom-ui";
-import { Modal } from "bioloom-ui";
+import { Modal, ModalContent, ModalHeader, ModalBody } from "bioloom-ui";
 import { Icon, IconName } from "bioloom-ui";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEffectiveHideRatings } from "@/hooks/useEffectiveHideRatings";
@@ -92,6 +89,8 @@ import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggl
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 import { UserHoverPreview } from "@/components/hover-previews";
+import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
+import { useSession } from "@/hooks/useSession";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -160,6 +159,30 @@ function gradientTextStyle(
     WebkitTextFillColor: "transparent",
     color: fallback,
   };
+}
+
+function hasTransparentBannerPixels(image: HTMLImageElement) {
+  if (!image.naturalWidth || !image.naturalHeight) return false;
+
+  const scale = Math.min(1, 256 / image.naturalWidth, 64 / image.naturalHeight);
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+  canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return false;
+
+  try {
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    for (let index = 3; index < pixels.length; index += 4) {
+      if (pixels[index] < 245) return true;
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 function toCanonicalItchEmbedUrl(url?: string | null) {
@@ -296,9 +319,12 @@ export default function ClientGamePage({
   const searchParams = useSearchParams();
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
-  const [user, setUser] = useState<UserType | null>(null);
+  const [bannerTransparency, setBannerTransparency] = useState<Record<string, boolean>>({});
+  const { data: user = null, refetch: refreshUser } = useSelf();
+  const { signedIn } = useSession();
   const [page, setPage] = useState(1);
   const [mobileSection, setMobileSection] = useState<string | null>(null);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [selectedScore, setSelectedScore] = useState<string>("");
   const [selectedLeaderboard, setSelectedLeaderboard] =
     useState<LeaderboardType>();
@@ -339,12 +365,16 @@ export default function ClientGamePage({
       game && selectedPage ? materializeGamePage(game, selectedPage) : game,
     [game, selectedPage],
   );
-  useGamePageBackground(displayGame?.banner);
   const soundtrackQueue = useMemo(() => {
     if (!displayGame) return [];
 
     return (displayGame.tracks ?? []).map((track) => ({
       ...track,
+      composer: track.composer ?? {
+        id: 0,
+        slug: "",
+        name: track.externalAuthorName || uiText("AppStrings.UnknownComposer"),
+      },
       game: {
         ...track.game,
         id: displayGame.id,
@@ -356,7 +386,7 @@ export default function ClientGamePage({
         team: displayGame.team,
       },
     }));
-  }, [displayGame]);
+  }, [displayGame, uiText]);
   const isSoundtrackCurrent = soundtrackQueue.some((track) =>
     current?.slug === track.slug || current?.song === track.url,
   );
@@ -369,7 +399,7 @@ export default function ClientGamePage({
       displayGame?.banner ||
       game?.thumbnail ||
       game?.banner ||
-      "/images/D2J_Icon.png",
+      "/images/game-thumbnail.png",
     icon:
       displayGame?.thumbnail ||
       game?.thumbnail ||
@@ -451,74 +481,63 @@ export default function ClientGamePage({
   }, [displayGame, game]);
 
   useEffect(() => {
-    const fetchGameAndUser = async () => {
-      const gameResponse = await getGame(gameSlug);
-
-      let gameData;
-      let initialVersion: PageVersion = "JAM";
-      if (gameResponse.ok) {
-        gameData = await readItem<GameType>(gameResponse);
-
-        setGame(gameData);
-        initialVersion =
-          requestedPageVersion === "JAM" || requestedPageVersion === "POST_JAM"
-            ? requestedPageVersion
-            : gameData?.postJamPage
-              ? "POST_JAM"
-              : "JAM";
-        setSelectedVersion(initialVersion);
-      }
-
-      const ratingResponse = await getRatingCategories(true);
-      setRatingCategories(await readArray(ratingResponse));
-      const trackRatingResponse = await getTrackRatingCategories();
-      if (trackRatingResponse.ok) {
-        const categories = await readArray<TrackRatingCategoryType>(trackRatingResponse);
-        setTrackOverallCategory(categories.find((category) => category.name === "Overall") ?? null);
-      }
-
-      // Fetch the logged-in user data
-      if (getCookie("token")) {
-        try {
-          const userResponse = await getSelf();
-
-          if (userResponse.ok) {
-            const userData = await readItem<UserType>(userResponse);
-            if (!userData) return;
-            setUser(userData);
-
-            if (gameData) {
-              const selectedGamePage =
-                initialVersion === "POST_JAM"
-                  ? gameData.postJamPage
-                  : gameData.jamPage;
-              const ratings = getSelectedStarsForVersion({
-                ratings: userData.ratings ?? gameData.ratings ?? [],
-                userId: userData.id,
-                gameId: gameData.id,
-                gamePageId: selectedGamePage?.id,
-                pageVersion: initialVersion,
-              });
-
-              setSelectedStars(ratings);
-              setTrackSelectedStars(Object.fromEntries((userData.trackRatings ?? []).map((rating) => [rating.trackId, rating.value])));
-
-            }
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      }
+    let cancelled = false;
+    const load = async () => {
+      const response = await getGame(gameSlug);
+      if (!response.ok) return;
+      const gameData = await readItem<GameType>(response);
+      if (cancelled) return;
+      setGame(gameData);
+      if (getCookie("token")) await refreshUser();
+      if (cancelled) return;
+      setSelectedVersion(
+        requestedPageVersion === "JAM" || requestedPageVersion === "POST_JAM"
+          ? requestedPageVersion
+          : gameData?.postJamPage ? "POST_JAM" : "JAM",
+      );
     };
+    void load().catch(console.error);
+    return () => { cancelled = true; };
+  }, [gameSlug, requestedPageVersion, refreshUser]);
 
-    fetchGameAndUser();
-  }, [gameSlug, requestedPageVersion]);
+  const refreshRatingCategories = async () => {
+    const response = await getGame(gameSlug);
+    if (response.ok) setGame(await readItem<GameType>(response));
+    await refreshUser();
+  };
+
+  const refreshGameProgress = useCallback(async () => {
+    const response = await getGame(gameSlug);
+    if (!response.ok) return;
+
+    setGame(await readItem<GameType>(response));
+  }, [gameSlug]);
+
+  // These shared categories do not depend on the game or each other.
+  useEffect(() => {
+    let cancelled = false;
+    void getRatingCategories(true).then(async response => {
+      if (!response.ok) return;
+      const categories = await readArray<RatingCategoryType>(response);
+      if (!cancelled) setRatingCategories(categories);
+    }).catch(console.error);
+    void getTrackRatingCategories().then(async response => {
+      if (!response.ok) return;
+      const categories = await readArray<TrackRatingCategoryType>(response);
+      if (!cancelled) setTrackOverallCategory(categories.find(category => category.name === "Overall") ?? null);
+    }).catch(console.error);
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    setTrackSelectedStars(Object.fromEntries((user?.trackRatings ?? []).map(rating => [rating.trackId, rating.value])));
+  }, [user]);
 
   useEffect(() => {
     if (!game || !user) return;
 
     const ratings = getSelectedStarsForVersion({
-      ratings: user.ratings ?? game.ratings ?? [],
+      ratings: [...(game.ratings ?? []), ...(user.ratings ?? [])],
       userId: user.id,
       gameId: game.id,
       gamePageId: selectedPage?.id,
@@ -800,35 +819,45 @@ export default function ClientGamePage({
       : displayGame.category === "ODA" ? "purple"
         : displayGame.category === "EXTERNAL" ? "orange" : "pink"
   ];
+  const hasTransparentBanner = Boolean(
+    displayGame.banner && bannerTransparency[displayGame.banner],
+  );
 
   return (
     <PriorityEmotesContext.Provider value={gameEmotes}>
+      <GamePageBackground image={displayGame.pageBackground?.trim() || null} />
       <div
         style={{
-          backgroundColor: siteTheme.colors["mantle"],
-          borderColor: interactiveOutlineColor,
           color: siteTheme.colors["text"],
         }}
-        className="relative border-0 lg:border rounded-none lg:rounded-xl overflow-visible"
+        className={`relative rounded-none overflow-visible ${hasTransparentBanner ? "" : "shadow-2xl lg:rounded-xl"}`}
       >
         <div
-          className="relative h-60 overflow-hidden lg:rounded-t-[11px]"
+          className={`relative aspect-[1468/240] w-full ${hasTransparentBanner ? "" : "lg:rounded-t-xl"}`}
           style={{
-            backgroundColor: colors["base"],
+            backgroundColor: displayGame.banner ? undefined : colors["base"],
           }}
         >
-          {(displayGame.thumbnail || displayGame.banner) && (
+          {displayGame.banner && (
             <Image
-              src={displayGame.banner || displayGame.thumbnail || ""}
+              src={displayGame.banner}
               alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
-              className="object-cover"
+              className={`object-contain ${hasTransparentBanner ? "drop-shadow-2xl" : "lg:rounded-t-xl"}`}
               fill
+              onLoad={(event) => {
+                const banner = displayGame.banner;
+                if (!banner) return;
+
+                const transparent = hasTransparentBannerPixels(event.currentTarget);
+                setBannerTransparency((current) => ({ ...current, [banner]: transparent }));
+              }}
             />
           )}
         </div>
         <div
-          className="grid gap-6 border-t p-4 md:p-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)]"
+          className={`grid gap-6 border-t p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)] ${hasTransparentBanner ? "rounded-t-xl shadow-2xl" : ""}`}
           style={{
+            backgroundColor: siteTheme.colors["mantle"],
             borderColor: interactiveOutlineColor,
           }}
         >
@@ -842,10 +871,9 @@ export default function ClientGamePage({
                   }}
                 >
                    {uiText("PostCard.By")}{" "}
-                  {displayGame.team.name ||
-                    (displayGame.team.users.length == 1
-                      ? displayGame.team.owner.name
-                      : uiText("AppStrings.Value0STeam", { value0: displayGame.team.owner.name }))}{" "}
+                  {getGameTeamName(displayGame.team, (ownerName) =>
+                    uiText("AppStrings.Value0STeam", { value0: ownerName }),
+                  )}{" "}
                 </p>
                 <Chip
                   style={{
@@ -869,7 +897,6 @@ export default function ClientGamePage({
                 { name: uiText("CreateGame.Soundtrack.Title"), icon: "music", show: soundtrackQueue.length > 0 },
                 { name: uiText("CreateGame.Leaderboards.Title"), icon: "trophy", show: !!displayGame.leaderboards?.length },
                 { name: uiText("CreateGame.Achievements.Title"), icon: "award", show: !!displayGame.achievements?.length },
-                { name: uiText("AppStrings.Stats"), icon: "linechart", show: displayGame.category !== "EXTERNAL" },
               ].filter((section) => section.show).map((section) => <Button key={section.name} size="sm" variant="ghost" icon={section.icon as IconName} onClick={() => setMobileSection(section.name)}>{section.name}</Button>)}
             </div>
             {playableEmbedUrl && (
@@ -946,6 +973,17 @@ export default function ClientGamePage({
                   )}
               </div>
             )}
+            {playableBuildUrl && displayGame && (
+              <EmbeddedGameBridge
+                iframeRef={playableEmbedRef}
+                buildUrl={playableBuildUrl}
+                game={displayGame}
+                pageVersion={selectedVersion}
+                signedIn={signedIn}
+                user={user}
+                onProgressSaved={refreshGameProgress}
+              />
+            )}
             {!playableEmbedUrl && sortedDownloadLinks.length > 0 && (
               <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3">
                 {sortedDownloadLinks.map((downloadLink) => {
@@ -986,20 +1024,23 @@ export default function ClientGamePage({
                 html={displayGame?.description || t("General.NoDescription")}
               />
             </ThemedProse>
-            <Hstack wrap className="mt-auto">
-              {sortedDownloadLinks.map((downloadLink) => (
-                <Button
-                  className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
-                  externalIcon={false}
-                  style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
-                  icon={getPlatformIcon(downloadLink.platform)}
-                  key={downloadLink.id}
-                  href={downloadLink.url}
-                >
-                  {downloadLink.platform}
-                </Button>
-              ))}
-            </Hstack>
+            <div className="mt-auto flex flex-col gap-4">
+              {displayGame.published && <GameDevlog key={displayGame.slug} gameSlug={displayGame.slug} />}
+              <Hstack wrap>
+                {sortedDownloadLinks.map((downloadLink) => (
+                  <Button
+                    className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
+                    externalIcon={false}
+                    style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
+                    icon={getPlatformIcon(downloadLink.platform)}
+                    key={downloadLink.id}
+                    href={downloadLink.url}
+                  >
+                    {downloadLink.platform}
+                  </Button>
+                ))}
+              </Hstack>
+            </div>
           </div>
           <div className="contents lg:flex lg:min-w-0 lg:flex-col lg:gap-4">
             <GameSidebarSection name="Details" selected={mobileSection} onClose={() => setMobileSection(null)}>
@@ -1176,7 +1217,7 @@ export default function ClientGamePage({
                   {selectedMedia && (
                     <>
                       <div
-                        className="relative w-full overflow-hidden rounded-xl"
+                        className="relative w-full overflow-hidden rounded-sm"
                         style={{
                           aspectRatio: "16 / 9",
                           backgroundColor: colors["base"],
@@ -1264,7 +1305,7 @@ export default function ClientGamePage({
                               }
                               type="button"
                               onClick={() => setCurrentMediaIndex(index)}
-                              className="relative cursor-pointer overflow-hidden rounded-lg text-left transition-all"
+                              className="relative cursor-pointer overflow-hidden rounded-sm text-left transition-all"
                               style={{
                                 aspectRatio: "16 / 9",
                                 border: `1px solid ${
@@ -1391,12 +1432,7 @@ export default function ClientGamePage({
                           );
                         })}
                       <div className="w-96 h-60">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <RadarChart
-                            cx="50%"
-                            cy="50%"
-                            outerRadius="80%"
-                            data={currentScoreKeys.map(
+                        <GameRatingChart data={currentScoreKeys.map(
                               (score) => ({
                                 subject: t(score),
                                 A: currentScores[score].averageScore / 2,
@@ -1404,35 +1440,7 @@ export default function ClientGamePage({
                                   currentScores[score].averageUnrankedScore / 2,
                                 fullMark: 5,
                               }),
-                            )}
-                          >
-                            <PolarGrid stroke={colors["crust"]} />
-                            <PolarAngleAxis
-                              dataKey="subject"
-                              tick={<RatingRadarLabel color={colors.textFaded} fontSize={14} />}
-                            />
-                            <PolarRadiusAxis
-                              domain={[0, 5]}
-                              axisLine={false}
-                              tick={false}
-                            />
-                            <Radar
-                              name="All"
-                              dataKey="B"
-                              stroke={colors["magenta"]}
-                              fill={colors["magentaDark"]}
-                              fillOpacity={0.6}
-                            />
-                            {displayGame.category !== "EXTRA" && <Radar
-                              name="Ranked"
-                              dataKey="A"
-                              stroke={colors["blue"]}
-                              fill={colors["blueDark"]}
-                              fillOpacity={0.6}
-                            />}
-                            {displayGame.category !== "EXTRA" && <Legend />}
-                          </RadarChart>
-                        </ResponsiveContainer>
+                             )} showRanked={displayGame.category !== "EXTRA"} />
                       </div>
                     </>
                   )}
@@ -1491,7 +1499,8 @@ export default function ClientGamePage({
                                   id={ratingCategory.id}
                                   name={t(ratingCategory.name)}
                                   text={
-                                    ratingCategory.name == "Theme"
+                                    (ratingCategory.name === "RatingCategory.Theme.Title" ||
+                                      ratingCategory.name === "Theme")
                                       ? displayGame.themeJustification
                                       : ""
                                   }
@@ -1505,6 +1514,7 @@ export default function ClientGamePage({
                                   gameId={displayGame.id}
                                   gamePageId={selectedPage?.id ?? 0}
                                   pageVersion={selectedVersion}
+                                  onRatingError={refreshRatingCategories}
                                 />
                               ))}
                           </Vstack>
@@ -1525,17 +1535,20 @@ export default function ClientGamePage({
             </GameSidebarSection>
             <GameSidebarSection name="Soundtrack" selected={mobileSection} onClose={() => setMobileSection(null)}>
             {soundtrackQueue.length > 0 && (
-              <Card padding={1} shadow="none">
+              <Card padding={0} shadow="none" className="overflow-hidden">
                 <Vstack align="stretch" gap={0}>
-                  <div className="flex items-center gap-3 pb-3">
+                  <div className="flex items-center gap-3 p-3">
                     <img
-                      src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
+                      src={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png"}
                       alt=""
-                      className="h-14 w-14 shrink-0 rounded-md object-cover"
+                      className="block aspect-square h-14 w-14 shrink-0 rounded-sm object-cover"
                     />
+                    <div
+                      className="flex min-w-0 flex-1 items-center gap-3"
+                    >
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold">{uiText("CreateGame.Soundtrack.Title")}</p>
-                      <p className="text-xs leading-4" style={{ color: colors.textFaded }}>
+                      <p className="text-lg font-bold leading-tight">{uiText("CreateGame.Soundtrack.Title")}</p>
+                      <p className="mt-1 text-xs leading-4" style={{ color: colors.textFaded }}>
                         {soundtrackQueue.length} {soundtrackQueue.length === 1 ? uiText("AppStrings.Track") : uiText("AppStrings.Tracks")}
                       </p>
                     </div>
@@ -1544,7 +1557,7 @@ export default function ClientGamePage({
                       variant="ghost"
                       icon={isSoundtrackCurrent && isPlaying ? "pause" : "play"}
                       aria-label={isSoundtrackCurrent && isPlaying ? uiText("AppStrings.PauseSoundtrack") : isSoundtrackCurrent ? uiText("AppStrings.ResumeSoundtrack") : uiText("AppStrings.PlaySoundtrackFromTheFirstTrack")}
-                      className="shrink-0"
+                      className="!h-8 shrink-0 !rounded-md !px-3"
                       onClick={() => {
                         if (isSoundtrackCurrent) {
                           toggle();
@@ -1556,7 +1569,7 @@ export default function ClientGamePage({
                           slug: firstTrack.slug,
                           name: firstTrack.name,
                           artist: firstTrack.composer,
-                          thumbnail: displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png",
+                          thumbnail: displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png",
                           game: firstTrack.game,
                           song: firstTrack.url,
                           loudnessGainDb: firstTrack.loudnessGainDb,
@@ -1565,7 +1578,9 @@ export default function ClientGamePage({
                     >
                       {isSoundtrackCurrent && isPlaying ? uiText("AppStrings.Pause") : uiText("AppStrings.Play")}
                     </Button>
+                    </div>
                   </div>
+                  <div className="px-3 pb-3 pt-1">
                   <ScrollableTracks activeIndex={soundtrackQueue.findIndex((track) => current?.slug === track.slug || current?.song === track.url)}>
                   {soundtrackQueue.map((track, index) => (
                     <SidebarSong
@@ -1576,9 +1591,11 @@ export default function ClientGamePage({
                       slug={track.slug}
                       name={track.name}
                       artist={track.composer}
+                      origin={track.origin}
+                      externalAuthorName={track.externalAuthorName}
                       squareThumbnail
                       showGame={false}
-                      thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/D2J_Icon.png"}
+                      thumbnail={displayGame.soundtrackThumbnail || displayGame.thumbnail || "/images/game-thumbnail.png"}
                       game={track.game}
                       song={track.url}
                       loudnessGainDb={track.loudnessGainDb}
@@ -1588,11 +1605,11 @@ export default function ClientGamePage({
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
-                      showRating={canRateDisplayedTrack}
+                      showRating={canRateDisplayedTrack && !isOwnTrack(track, user)}
                       hideRatings={effectiveHideRatings}
-                      ratingDisabled={!canRateDisplayedTrack}
+                      ratingDisabled={!canRateDisplayedTrack || isOwnTrack(track, user)}
                       onRate={async (value) => {
-                        if (!trackOverallCategory) return;
+                        if (!canRateDisplayedTrack || isOwnTrack(track, user) || !trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;
                         emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value });
                         setTrackSelectedStars((prev) => ({ ...prev, [track.id]: value }));
@@ -1607,6 +1624,7 @@ export default function ClientGamePage({
                     />
                   ))}
                   </ScrollableTracks>
+                  </div>
                 </Vstack>
               </Card>
             )}
@@ -1646,6 +1664,7 @@ export default function ClientGamePage({
                                       },
                                     );
                                     if (res.ok) {
+                                      void refreshUser();
                                       const payload = await res.json().catch(() => null);
                                       const nextUnlocks = (achievement.unlocks ?? []).filter((entry) => entry.userId !== user.id);
                                       if (!hasIt && payload?.earnedAt) nextUnlocks.push({ userId: user.id, earnedAt: payload.earnedAt });
@@ -1703,17 +1722,20 @@ export default function ClientGamePage({
 }} />
               )}
             </GameSidebarSection>
-            <GameSidebarSection name="Stats" selected={mobileSection} onClose={() => setMobileSection(null)}>
-{displayGame.category !== "EXTERNAL" && (
-              <Card padding={1} shadow="none">
-                <Vstack align="start">
-                <p
-                  className="text-xs leading-4"
-                  style={{
-                    color: colors["textFaded"],
-                  }}
+            {displayGame.category !== "EXTERNAL" && (
+              <div className="mt-auto flex justify-end">
+                <Button
+                  icon="linechart"
+                  style={{ boxShadow: "none", borderColor: interactiveOutlineColor, backgroundColor: colors["surface0"] }}
+                  aria-haspopup="dialog"
+                  onClick={() => setIsStatsOpen(true)}
                 >
-                   {uiText("AppStrings.STATS")} </p>
+                  {uiText("AppStrings.Stats")}
+                </Button>
+                <Modal isOpen={isStatsOpen} onOpenChange={(open) => setIsStatsOpen(!!open)} size="lg">
+                  <ModalContent className="!w-[480px] !max-w-[calc(100vw-24px)]">
+                    <ModalHeader className="pr-14 text-base font-semibold">{uiText("AppStrings.Stats")}</ModalHeader>
+                    <ModalBody className="max-h-[75dvh] overflow-y-auto">
                 <Vstack align="start" gap={1.5}>
                   <Chip className="post-tag-chip" style={{ borderColor: interactiveOutlineColor }}>
                      {uiText("AppStrings.RatingsReceived")}{" "}
@@ -1819,6 +1841,7 @@ export default function ClientGamePage({
                         0,
                       ),
                     ) < 5 &&
+                      displayGame.category !== "EXTRA" &&
                       selectedVersion !== "POST_JAM" && (
                       <Tooltip
                         content="This game needs 5 ratings given in order to be ranked after the rating period"
@@ -1834,10 +1857,11 @@ export default function ClientGamePage({
                     )}
                   </Hstack>
                 </Vstack>
-                </Vstack>
-              </Card>
+                    </ModalBody>
+                  </ModalContent>
+                </Modal>
+              </div>
             )}
-            </GameSidebarSection>
             <Popover
               shown={
                 isScreenshotViewerOpen && selectedMedia?.type === "screenshot"
@@ -1943,7 +1967,7 @@ export default function ClientGamePage({
                 );
                 if (ok) {
                   setIsOpen2(false);
-                  window.location.reload();
+                  await refreshGameProgress();
                 }
               }}
               fields={[
@@ -2018,7 +2042,7 @@ export default function ClientGamePage({
       </div>
       {mobileLayout ? <div className="my-6 px-3">
         <CreateComment gamePageId={selectedPage?.id} />
-      </div> : <Card padding={1.5} shadow="none" className="my-10 max-lg:!rounded-none">
+      </div> : <Card padding={1.5} shadow="none" className="shadow-2xl my-10 max-lg:!rounded-none">
         <CreateComment gamePageId={selectedPage?.id} />
       </Card>}
 
@@ -2027,10 +2051,21 @@ export default function ClientGamePage({
           ?.sort((a, b) => b.id - a.id)
           .map((comment) => (
             <div key={comment.id}>
-              <CommentCard comment={comment} user={user} edgeToEdge />
+              <CommentCard comment={comment} user={user} edgeToEdge className="!shadow-2xl" />
             </div>
           ))}
       </div>
+      {!displayGame.published && (
+        <>
+          <div aria-hidden="true" className="h-[calc(9rem+env(safe-area-inset-bottom))] sm:h-16" />
+          <EditorFooter
+            floating
+            compact
+            status={uiText("GameDraftBanner.Title")}
+            description={uiText("GameDraftBanner.Description")}
+          />
+        </>
+      )}
     </PriorityEmotesContext.Provider>
   );
 }
@@ -2049,6 +2084,7 @@ function StarRow({
   gameId,
   gamePageId,
   pageVersion,
+  onRatingError,
 }: {
   id: number;
   name: string;
@@ -2057,19 +2093,19 @@ function StarRow({
   hoverStars: { [key: number]: number };
   setHoverStars: (stars: { [key: number]: number }) => void;
   selectedStars: { [key: number]: number };
-  setSelectedStars: (stars: { [key: number]: number }) => void;
+  setSelectedStars: React.Dispatch<React.SetStateAction<{ [key: number]: number }>>;
   hoverCategory: number | null;
   setHoverCategory: (id: number | null) => void;
   gameId: number;
   gamePageId: number;
   pageVersion: PageVersion;
+  onRatingError: () => Promise<void>;
 }) {
   const uiText = useUiTranslations();
   const [newlyClicked, setNewlyClicked] = useState<boolean>(false);
   const { colors } = useTheme();
   const themeJustification = text?.trim();
-  const showThemeJustification =
-    name.toLowerCase() === "theme" && Boolean(themeJustification);
+  const showThemeJustification = Boolean(themeJustification);
 
   return (
     <div className="flex items-center gap-4">
@@ -2090,6 +2126,7 @@ function StarRow({
             gameId={gameId}
             gamePageId={gamePageId}
             pageVersion={pageVersion}
+            onRatingError={onRatingError}
           />
         ))}
       </div>
@@ -2145,13 +2182,14 @@ function StarElement({
   gameId,
   gamePageId,
   pageVersion,
+  onRatingError,
 }: {
   id: number;
   value: number;
   hoverStars: { [key: number]: number };
   setHoverStars: (stars: { [key: number]: number }) => void;
   selectedStars: { [key: number]: number };
-  setSelectedStars: (stars: { [key: number]: number }) => void;
+  setSelectedStars: React.Dispatch<React.SetStateAction<{ [key: number]: number }>>;
   hoverCategoryId: number | null;
   setHoverCategoryId: (id: number | null) => void;
   newlyClicked: boolean;
@@ -2159,8 +2197,26 @@ function StarElement({
   gameId: number;
   gamePageId: number;
   pageVersion: PageVersion;
+  onRatingError: () => Promise<void>;
 }) {
   const { colors } = useTheme();
+
+  const saveRating = async (nextValue: number) => {
+    const previous = selectedStars[id];
+    setSelectedStars((current) => ({ ...current, [id]: nextValue }));
+    setNewlyClicked(true);
+    try {
+      const response = await postRating(gameId, gamePageId, id, nextValue, pageVersion);
+      if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.message ?? "Could not save your rating.");
+      }
+    } catch (error) {
+      setSelectedStars((current) => ({ ...current, [id]: previous ?? 0 }));
+      addToast({ title: error instanceof Error ? error.message : "Could not save your rating." });
+      await onRatingError().catch(console.error);
+    }
+  };
 
   return (
     <div
@@ -2185,7 +2241,7 @@ function StarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       {/* Half Star (Overlapping Left Side) */}
@@ -2202,7 +2258,7 @@ function StarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value - 1
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }} // Show only left half
       />
       {/* Left Half (Triggers value - 1) */}
@@ -2213,9 +2269,7 @@ function StarElement({
           setNewlyClicked(false);
         }}
         onClick={() => {
-          setSelectedStars({ ...selectedStars, [id]: value - 1 });
-          setNewlyClicked(true);
-          postRating(gameId, gamePageId, id, value - 1, pageVersion);
+          void saveRating(value - 1);
         }}
       />
       {/* Right Half (Triggers value) */}
@@ -2226,9 +2280,7 @@ function StarElement({
           setNewlyClicked(false);
         }}
         onClick={() => {
-          setSelectedStars({ ...selectedStars, [id]: value });
-          setNewlyClicked(true);
-          postRating(gameId, gamePageId, id, value, pageVersion);
+          void saveRating(value);
         }}
       />
     </div>

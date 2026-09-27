@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getEmojis } from "@/requests/emoji";
+import { getEmojis, getStickers } from "@/requests/emoji";
 import { queryKeys } from "./queryKeys";
 import { useMemo } from "react";
 import type { ReactionType } from "@/types/ReactionType";
@@ -9,7 +9,7 @@ import type { ReactionType } from "@/types/ReactionType";
 export type EmojiType = ReactionType;
 
 export function useEmojisQuery() {
-  const query = useQuery({
+  const emojiQuery = useQuery({
     queryKey: queryKeys.emoji.list(),
     queryFn: async () => {
       const res = await getEmojis();
@@ -18,18 +18,38 @@ export function useEmojisQuery() {
     },
     staleTime: 5 * 60 * 1000,
   });
+  const stickerQuery = useQuery({
+    queryKey: queryKeys.sticker.list(),
+    queryFn: async () => {
+      const res = await getStickers();
+      const data = await res.json();
+      return (Array.isArray(data?.data) ? data.data : []) as EmojiType[];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
 
   const emojiMap = useMemo(() => {
     const map: Record<string, EmojiType> = {};
-    (query.data ?? []).forEach((emoji) => {
+    (emojiQuery.data ?? []).forEach((emoji) => {
       map[emoji.slug] = emoji;
     });
     return map;
-  }, [query.data]);
+  }, [emojiQuery.data]);
+
+  const stickerMap = useMemo(() => {
+    const map: Record<string, EmojiType> = {};
+    (stickerQuery.data ?? []).forEach((sticker) => {
+      map[sticker.slug] = sticker;
+    });
+    return map;
+  }, [stickerQuery.data]);
 
   return {
-    ...query,
-    emojis: query.data ?? [],
+    ...emojiQuery,
+    isLoading: emojiQuery.isLoading || stickerQuery.isLoading,
+    emojis: emojiQuery.data ?? [],
     emojiMap,
+    stickers: stickerQuery.data ?? [],
+    stickerMap,
   };
 }

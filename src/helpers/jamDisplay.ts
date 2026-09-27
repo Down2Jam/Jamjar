@@ -18,7 +18,7 @@ const THEME_VOTING_CUTOFF_MS = 24 * 60 * 60 * 1000;
 
 export function isThemeVotingOpen(
   phase?: JamPhase | null,
-  jam?: JamType | null,
+  jam?: Pick<JamType, "startTime"> | null,
   now = new Date(),
 ) {
   if (phase !== "Voting" || !jam) return false;

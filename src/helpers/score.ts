@@ -18,7 +18,7 @@ export async function postScore(
     addToast({
       title: "Created score",
     });
-    return data.data;
+    return true;
   }
 
   addToast({

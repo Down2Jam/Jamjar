@@ -20,7 +20,8 @@ import { useTranslations } from "@/compat/next-intl";
 import { PlatformType } from "@/types/DownloadLinkType";
 import {
   useSelf,
-  useCurrentJam,
+  useRatingCategories,
+  useCurrentJamMetadata,
   useJams,
   useGamesInfinite,
 } from "@/hooks/queries";
@@ -307,6 +308,10 @@ function canUseScoreSort(
   currentPhase: string | null | undefined,
   pageVersion: ListingPageVersion,
 ): boolean {
+  if (isActiveJamBehavior(selectedJamId, currentJamId, currentPhase)) {
+    return false;
+  }
+
   return !(
     !!currentJamId &&
     selectedJamId === currentJamId &&
@@ -343,6 +348,7 @@ export default function Games() {
       "score",
   );
   const hasUserSelected = useRef(false);
+  const hasUserSelectedSort = useRef(false);
   const hasAppliedDefault = useRef(false);
 
   const initialJamParam = useMemo(() => {
@@ -382,6 +388,9 @@ export default function Games() {
   }, []);
   const [typeFilter, setTypeFilter] =
     useState<TypeOption["id"]>(initialTypeParam);
+  const effectiveTypeFilter = jamId === "external" || typeFilter === "External"
+    ? "all"
+    : typeFilter;
   const initialTagsParam = useMemo(
     () =>
       typeof window === "undefined"
@@ -464,14 +473,25 @@ export default function Games() {
     { id: "Regular", name: uiText("GameCategory.Regular.Title"), icon: "gamepad2" },
     { id: "ODA", name: uiText("AppStrings.ODA"), icon: "swords" },
     { id: "Extra", name: uiText("GameCategory.Extra.Title"), icon: "calendar" },
-    { id: "External", name: uiText("AppStrings.External"), icon: "externalLink" },
   ];
 
   // Fetch user via TanStack Query
   const { data: user } = useSelf();
+  const perfectedGameKeys = useMemo(() => new Set(
+    (user?.perfectedGamePages ?? []).map(({ gameId, pageVersion }) => `${gameId}:${pageVersion}`),
+  ), [user?.perfectedGamePages]);
+  const { data: mandatoryRatingCategories = [] } = useRatingCategories(true);
+  const hasCompletedRating = useCallback((game: GameType, userId?: number) => {
+    if (!userId || mandatoryRatingCategories.length === 0) return false;
+    const categories = [...mandatoryRatingCategories, ...(game.ratingCategories ?? [])]
+      .filter((category) => game.pageVersion !== "POST_JAM" || category.name === "RatingCategory.Overall.Title");
+    const ratedIds = new Set(game.ratings.filter((rating) => rating.userId === userId)
+      .map((rating) => rating.categoryId ?? rating.category?.id));
+    return categories.length > 0 && categories.every((category) => ratedIds.has(category.id));
+  }, [mandatoryRatingCategories]);
 
   // Fetch current jam and all jams via TanStack Query
-  const { data: currentJamData, isPending: currentJamPending } = useCurrentJam();
+  const { data: currentJamData, isPending: currentJamPending } = useCurrentJamMetadata();
   const { data: allJams } = useJams();
 
   const currentJamId = currentJamData?.jam?.id?.toString();
@@ -596,6 +616,7 @@ export default function Games() {
       currentJamData?.phase === "Post-Jam Rating";
 
     let ratingDefault: string | null = null;
+    let detectedJamId = jamId;
     if (
       currentJamHasContentListing &&
       isCurrentJamDefaultPhase &&
@@ -610,6 +631,7 @@ export default function Games() {
       ratingDefault
     ) {
       hasAppliedDefault.current = true;
+      detectedJamId = ratingDefault;
       setJamId(ratingDefault);
 
       const params = new URLSearchParams(window.location.search);
@@ -618,6 +640,14 @@ export default function Games() {
       router.replace(qs ? `?${qs}` : "?");
     }
 
+    if (jamDetecting) {
+      const detectedVersion = hasPageVersionParam ? pageVersion :
+        getDefaultListingPageVersion(detectedJamId, currentJamValue, currentJamData?.phase);
+      setPageVersion(detectedVersion);
+      if (!hasUserSelectedSort.current && !searchParams.get("sort")) {
+        setSort(getDefaultGameSort(detectedJamId, currentJamValue, currentJamData?.phase, detectedVersion));
+      }
+    }
     setJamDetecting(false);
   }, [
     currentJamData,
@@ -651,7 +681,7 @@ export default function Games() {
     hasNextPage,
     fetchNextPage,
   } = useGamesInfinite(
-    sort,
+    sort === "score" && !canUseScore ? "recommended" : sort,
     jamId !== "all" ? jamId : undefined,
     pageVersion,
     !jamDetecting,
@@ -709,8 +739,7 @@ export default function Games() {
     recommended: {
       name: uiText("AppStrings.Recommended"),
       icon: "thumbsup",
-      description:
-        uiText("AppStrings.LikeKarmaButGivesASmallBoostTo"),
+      description: uiText("AppStrings.RecommendedSortDescription"),
     },
     karma: {
       name: uiText("AppStrings.Karma"),
@@ -770,6 +799,12 @@ export default function Games() {
     [router],
   );
 
+  useEffect(() => {
+    if (jamDetecting || typeFilter === effectiveTypeFilter) return;
+    setTypeFilter(effectiveTypeFilter);
+    updateQueryParam("type", effectiveTypeFilter);
+  }, [jamDetecting, typeFilter, effectiveTypeFilter, updateQueryParam]);
+
   const updateMoreQueryParam = useCallback(
     (values: Set<string>) => {
       const params = new URLSearchParams(window.location.search);
@@ -821,6 +856,7 @@ export default function Games() {
 
   useEffect(() => {
     if (jamDetecting) return;
+    if (hasUserSelectedSort.current) return;
     if (searchParams.get("sort")) return;
 
     const nextSort = getDefaultGameSort(
@@ -1020,13 +1056,13 @@ export default function Games() {
       if (
         hideRatedGames &&
         user &&
-        game.ratings.some((rating) => rating.userId === user.id)
+        hasCompletedRating(game, user.id)
       ) {
         return false;
       }
 
-      if (typeFilter !== "all") {
-        const wanted = typeFilter.toLowerCase();
+      if (effectiveTypeFilter !== "all") {
+        const wanted = effectiveTypeFilter.toLowerCase();
         const t = game.category ?? "";
         if (String(t).toLowerCase() !== wanted) {
           return false;
@@ -1088,9 +1124,7 @@ export default function Games() {
       const isOwnGame =
         game.team?.ownerId === user.id ||
         game.team?.users?.some((member) => member.id === user.id);
-      const isRatedGame = game.ratings.some(
-        (rating) => rating.userId === user.id,
-      );
+      const isRatedGame = hasCompletedRating(game, user.id);
 
       if (moveOwnGameToEnd && isOwnGame) {
         ownGames.push(game);
@@ -1116,13 +1150,14 @@ export default function Games() {
     return postJamFirst([...regularUnratedGames, ...regularRatedGames], selectedMoreFilters.has("postJamFirst"));
   }, [
     excludedFlags,
+    hasCompletedRating,
     games,
     selectedBuildTypes,
     selectedInputMethods,
     selectedMoreFilters,
     selectedTags,
     sort,
-    typeFilter,
+    effectiveTypeFilter,
     user,
   ]);
 
@@ -1149,6 +1184,9 @@ export default function Games() {
         )
           return;
 
+        // URL navigation can lag behind this local update. Keep the default-sort
+        // effects from resetting an explicit choice while it is in flight.
+        hasUserSelectedSort.current = true;
         setSort(next);
         updateQueryParam("sort", key as string);
       }}
@@ -1304,11 +1342,11 @@ export default function Games() {
                 ))}
               </Dropdown>
 
-              <Dropdown
+              {jamId !== "external" && <Dropdown
                 triggerSize="lg"
                 triggerClassName="m-1 rounded-sm"
                 triggerStyle={gamesDropdownShadow}
-                selectedValue={typeFilter}
+                selectedValue={effectiveTypeFilter}
                 onSelect={(key) => {
                   const val = key as TypeOption["id"];
                   setTypeFilter(val);
@@ -1329,7 +1367,7 @@ export default function Games() {
                     {t.name}
                   </Dropdown.Item>
                 ))}
-              </Dropdown>
+              </Dropdown>}
 
               {tagOptions.length > 0 && (
                 <Dropdown
@@ -1494,9 +1532,10 @@ export default function Games() {
             <GameCard
               key={`${game.id}-${game.pageVersion ?? "JAM"}`}
               game={game}
+              perfected={perfectedGameKeys.has(`${game.id}:${game.pageVersion ?? "JAM"}`)}
               rated={
                 showRatedOverlay &&
-                game.ratings.some((rating) => rating.userId == user?.id)
+                hasCompletedRating(game, user?.id)
               }
             />
           ))

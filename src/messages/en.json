@@ -1,4 +1,21 @@
 {
+  "GameDraftBanner": {
+    "Title": "DRAFT PAGE",
+    "Description": "This game is unpublished. Publish it in settings to make it public.",
+    "Settings": "Open game settings"
+  },
+  "PostGames": {
+    "SelectPlaceholder": "Select games…",
+    "NoMatchingGames": "No matching games",
+    "SelectTitle": "Linked games (optional)",
+    "SelectDescription": "Share this post on the devlog of a published game you made.",
+    "LinkedGames": "Linked games",
+    "Devlog": "Development Log",
+    "ReadPost": "Read post →",
+    "LoadMore": "Load more",
+    "LoadError": "Could not load posts.",
+    "Retry": "Try again"
+  },
   "Splash": {
     "Title": "Down2Jam",
     "Description": "The community centered game jam",
@@ -298,11 +315,54 @@
       "Title": "Reset",
       "Description": "Reset your settings to the last save (discards changes)"
     },
+    "Notifications": {
+      "Title": "Notifications",
+      "General": {
+        "Title": "General activity",
+        "Description": "Mentions, collection activity, followed creators, moderation updates, and other site alerts."
+      },
+      "RatingReminders": {
+        "Title": "Jam rating reminders",
+        "Description": "Remind me halfway through rating when my team's game or music needs more ratings."
+      },
+      "Comments": {
+        "Title": "Comments and replies",
+        "Description": "Comments on your posts, games, and music, plus replies to your comments."
+      },
+      "Follows": {
+        "Title": "New followers",
+        "Description": "Alerts when somebody follows you or follows you back."
+      },
+      "Teams": {
+        "Title": "Team activity",
+        "Description": "Team invitations and applications to teams you manage."
+      },
+      "LeaderboardTopSpot": {
+        "Title": "Lost the top spot",
+        "Description": "Notify me if my score was the 5th submission or later and then loses the top spot."
+      },
+      "LeaderboardTopThree": {
+        "Title": "Dropped out of the top 3",
+        "Description": "Notify me if my score was the 10th submission or later and then drops out of the top 3."
+      },
+      "LeaderboardTopFive": {
+        "Title": "Dropped out of the top 5",
+        "Description": "Notify me if my score was the 15th submission or later and then drops out of the top 5."
+      },
+      "StreamLive": {
+        "Title": "D2Jam streamer goes live",
+        "Description": "Notify me when a stream starts with the D2Jam tag in a category eligible for the stream widget. Off by default."
+      },
+      "Saved": "Notification settings saved",
+      "LoadError": "Failed to load notification settings",
+      "SaveError": "Failed to save notification settings"
+    },
     "TabDescriptions": {
       "General": "Manage your profile, account details, and preferences.",
+      "Notifications": "Choose which activity creates an inbox notification.",
       "Streams": "Manage your connected channel and rating visibility while streaming.",
       "Emotes": "Customize your emote prefix and manage your personal emotes.",
-      "Tokens": "Review and revoke game access linked to your account."
+      "Tokens": "Review and revoke game and app access linked to your account."
     }
   },
   "Markdown": {
@@ -793,6 +853,11 @@
       "Title": "Thumbnail",
       "Description": "Shows when people are browsing through games (360x200)"
     },
+    "PageBackground": {
+      "Title": "Page background",
+      "Description": "Upload a background for your game page. When unset, diagonal stripes are used.",
+      "Upload": "Upload page background"
+    },
     "Banner": {
       "Title": "Banner",
       "Description": "Shows on the game page and in search results (1468 x 240)"
@@ -1203,7 +1268,9 @@
     "FailedToVote": "Failed to vote",
     "FeatureComingSoon": "Feature coming soon",
     "FeelFreeToMakeAPostOnThe": "Feel free to make a post on the forum introducing yourself!",
+    "FillFrame": "Fill Frame",
     "FirstTwoWillBeShownOnHoverAll": "First three will be shown on hover. All will be shown on game page.",
+    "FitImage": "Fit Image",
     "Flags": "Flags",
     "FlipHorizontal": "Flip Horizontal",
     "FlipVertical": "Flip Vertical",
@@ -1306,6 +1373,7 @@
     "License2": "License:",
     "Licenses": "Licenses",
     "LikeKarmaButGivesASmallBoostTo": "Like Karma, but gives a small boost to games people enjoy as well",
+    "RecommendedSortDescription": "Community recommendations, adjusted for games, creators, controls, and tags you have enjoyed or rated poorly",
     "LikeKarmaButGivesASmallBoostTo2": "Like Karma, but gives a small boost to tracks people enjoy as well",
     "LiveOverview": "Live Overview",
     "LoadMorePosts": "Load More Posts",
@@ -1529,6 +1597,11 @@
     "Recommended": "Recommended",
     "RecommendedGames": "Recommended Games",
     "RecommendedMusic": "Recommended Music",
+    "ShareJamFavorites": "Share your jam favorites",
+    "ChooseFavoritesForShareImage": "Choose the games and music to include. Add an optional note about why you like each one.",
+    "WhyDoYouLikeThisOptional": "Why do you like this? (optional)",
+    "CreateShareImage": "Create image & post",
+    "CouldNotShareRecommendations": "Could not create your favorites image",
     "ReenterYourPassword": "Reenter your password",
     "Refresh": "Refresh",
     "Reject": "Reject",
@@ -1951,7 +2024,7 @@
     "ShareWhatYouLlBeDoingAndAnythingAttendeesShouldKnow": "Share what you’ll be doing and anything attendees should know.",
     "CreateEvent2": "Create event",
     "ModOnly": "(Mod Only)",
-    "ShareSomethingWithTheCommunity": "Share something with the community",
+    "ShareSomethingWithTheCommunity": "Changes will be discarded if you close this tab",
     "SuggestedFromYourTitleAndContent": "Suggested from your title and content",
     "AddValue0Tag": "Add {value0} tag",
     "Value0SAvatar": "{value0}'s avatar",
@@ -2425,7 +2498,7 @@
     "Value0SThumbnail": "{value0}'s thumbnail",
     "Value06": "{value0}",
     "SortedByValue0": "Sorted by {value0}",
-    "Results": "results)",
+    "Results": "results",
     "AdvancedSearch": "Advanced Search",
     "BrowseEntriesFromEveryJam": "Browse entries from every jam",
     "ShowAllGameCategories": "Show all game categories",
@@ -2450,7 +2523,7 @@
     "TheCommunityCenteredJam": "The community-centered jam",
     "JamTimelineDragHorizontallyToViewMorePhases": "Jam timeline. Drag horizontally to view more phases.",
     "UserAvatar": "User avatar",
-    "ImportAGameFromItchIo": "Import a non-jam game from itch.io to display alongside your jam games",
+    "ImportAGameFromItchIo": "Import a non-d2jam jam game from itch.io to display alongside your d2jam games",
     "ImportGame2": "Import Game",
     "ViewTheResultsOfTheLastD2Jam": "View the results of the last D2Jam",
     "SubmitPossibleThemesForTheJam": "Submit possible themes for the jam",
@@ -2506,7 +2579,6 @@
     "MostLikedPostsOfAllTime": "Most liked posts of all time",
     "Value0ActiveTagFilters": "{value0} active tag filters",
     "AllTags": "All tags",
-    "Value0Value14": "{value0} — {value1}",
     "TagFiltering": "Tag filtering",
     "ChooseWhichTagsShouldAppearInTheFeed": "Choose which tags should appear in the feed",
     "SearchTags": "Search tags",
@@ -2724,6 +2796,40 @@
     "Present": "Present",
     "Missing": "Missing"
   },
+  "AdminRecommendations": {
+    "Title": "Recommended sort preview",
+    "Description": "Compare the visitor ranking with a selected player's personalized ranking, before game-list filters are applied.",
+    "OpenPreview": "Open preview",
+    "Back": "Admin overview",
+    "Jam": "Jam",
+    "AllJams": "All jams",
+    "Version": "Page version",
+    "LatestVersion": "Latest available",
+    "JamVersion": "Jam",
+    "PostJamVersion": "Post-jam",
+    "Player": "Player",
+    "SearchPlayer": "Search players",
+    "VisitorOrder": "Visitor order",
+    "PlayerOrder": "{name}'s order",
+    "VisitorRank": "Visitor rank #{rank}",
+    "PlayerRank": "Player rank #{rank}",
+    "Adjustment": "Personal adjustment: {value}",
+    "TotalScore": "Final score",
+    "BaseScore": "Base score",
+    "PersonalAdjustment": "Personal adjustment",
+    "RatingsGiven": "Ratings given",
+    "CommentLikes": "Comment likes",
+    "Achievements": "Achievements",
+    "LeaderboardScores": "Leaderboard scores",
+    "RatingsReceived": "Ratings received penalty",
+    "CommunityRecommendations": "Community recommendations",
+    "VisitorNoAdjustment": "No personal adjustment for visitors",
+    "NoMatch": "No strong preference match",
+    "GameCount": "{count} games in this view",
+    "LoadMore": "Load more",
+    "Loading": "Loading…",
+    "LoadError": "Could not load the recommendation preview. Try another selection."
+  },
   "Language": {
     "Select": "Select language"
   },
@@ -2800,6 +2906,7 @@
     "epicgamesstore": "EpicGamesStore",
     "experimental": "Experimental",
     "exploration": "Exploration",
+    "favorites": "Favorites",
     "flstudio": "FLStudio",
     "famistudio": "FamiStudio",
     "fighting": "Fighting",

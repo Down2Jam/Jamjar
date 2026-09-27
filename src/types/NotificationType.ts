@@ -6,6 +6,7 @@ import { TeamInviteType } from "./TeamInviteType";
 
 export type NotificationKind =
   | "GENERAL"
+  | "RATING_REMINDER"
   | "GAME_COMMENT"
   | "TRACK_COMMENT"
   | "COMMENT_REPLY"
@@ -17,8 +18,7 @@ export type NotificationKind =
   | "LEADERBOARD_TOP_SPOT_LOST"
   | "LEADERBOARD_TOP_THREE_LOST"
   | "LEADERBOARD_TOP_FIVE_LOST"
-  | "STREAM_LIVE"
-  | "RATING_REMINDER";
+  | "STREAM_LIVE";
 
 export type NotificationData = {
   previewText?: string;

@@ -11,8 +11,9 @@ import { signup } from "@/requests/auth";
 import { addToast, Form } from "bioloom-ui";
 import { useState } from "react";
 import Cookies from "js-cookie";
+import { synchronizeSession } from "@/requests/sessionState";
 
-const SESSION_DURATION_DAYS = 14;
+const SESSION_DURATION_DAYS = 30;
 
 export default function UserPage() {
   const uiText = useUiTranslations();
@@ -96,12 +97,13 @@ export default function UserPage() {
             return;
           }
 
-          Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/" });
+          Cookies.set("token", token, { expires: SESSION_DURATION_DAYS, path: "/", sameSite: "strict", secure: location.protocol === "https:" });
           Cookies.set("user", user.slug, {
             expires: SESSION_DURATION_DAYS,
             path: "/",
           });
           Cookies.set("hasLoggedIn", "true", { expires: 36500 });
+          synchronizeSession(true);
 
           addToast({
             title: uiText("AppStrings.SuccessfullySignedUp"),

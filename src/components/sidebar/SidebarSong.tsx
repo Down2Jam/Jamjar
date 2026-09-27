@@ -1,4 +1,3 @@
-import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
@@ -23,6 +22,8 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Pause, Play, Star } from "lucide-react";
 import { CSSProperties, useEffect, useState } from "react";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import { getTrackLicense, TrackOrigin } from "@/helpers/trackLicense";
 import {
   GameDataHoverPreview,
   UserHoverPreview,
@@ -33,6 +34,8 @@ interface SidebarSongProps {
   trackId?: number;
   name: string;
   artist?: TrackComposer | null;
+  origin?: TrackOrigin;
+  externalAuthorName?: string | null;
   thumbnail: string;
   song: string;
   loudnessGainDb?: number | null;
@@ -65,6 +68,8 @@ export default function SidebarSong({
   game,
   pageVersion,
   artist,
+  origin = "ORIGINAL",
+  externalAuthorName,
   license,
   allowDownload,
   allowBackgroundUse,
@@ -88,6 +93,10 @@ export default function SidebarSong({
   const [hoverValue, setHoverValue] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
+  const displayArtist: TrackComposer = artist ?? {
+    name: externalAuthorName || "Unknown composer",
+    slug: "",
+  };
   useEffect(() => {
     setDuration(null);
     if (!playlist || !song) return;
@@ -124,10 +133,85 @@ export default function SidebarSong({
     }
 
     void playItem(
-      { slug, name, artist: artist ?? {}, thumbnail, game, song, loudnessGainDb },
+      { slug, name, artist: displayArtist, thumbnail, game, song, loudnessGainDb },
       queue,
     );
   };
+
+  const rating = (
+    showRating && (
+    <RatingVisibilityGate
+      inline
+      revealToLeft={wide}
+      hiddenByPreference={hideRatings}
+      hiddenText="Ratings are hidden by your settings."
+      buttonSize="xs"
+    >
+      <Hstack className={hideRatings || wide ? "shrink-0 gap-1" : playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
+        {[2, 4, 6, 8, 10].map((value) => (
+          <div
+            key={`${trackId ?? slug ?? name}-${value}`}
+            className={`relative h-4 w-4 ${ratingDisabled ? "cursor-default" : "cursor-pointer"}`}
+            onMouseEnter={() => {
+              if (!ratingDisabled) setHoverValue(value);
+            }}
+            onMouseLeave={() => {
+              if (!ratingDisabled) setHoverValue(0);
+            }}
+          >
+            <Star
+              size={16}
+              fill="currentColor"
+              className="absolute"
+              style={{
+                color:
+                  displayValue >= value
+                    ? colors["yellow"]
+                    : `color-mix(in srgb, ${colors.gray} 32%, black)`,
+                transition: "color 150ms ease",
+              }}
+            />
+            <Star
+              size={16}
+              fill="currentColor"
+              className="absolute"
+              style={{
+                clipPath: "inset(0 50% 0 0)",
+                color:
+                  displayValue >= value - 1
+                    ? colors["yellow"]
+                    : `color-mix(in srgb, ${colors.gray} 32%, black)`,
+                transition: "color 150ms ease",
+              }}
+            />
+            <div
+              className="absolute left-0 top-0 h-4 w-2"
+              onMouseEnter={() => {
+                if (!ratingDisabled) setHoverValue(value - 1);
+              }}
+              onClick={() => {
+                if (!ratingDisabled) {
+                  void onRate?.(value - 1);
+                }
+              }}
+            />
+            <div
+              className="absolute right-0 top-0 h-4 w-2"
+              onMouseEnter={() => {
+                if (!ratingDisabled) setHoverValue(value);
+              }}
+              onClick={() => {
+                if (!ratingDisabled) {
+                  void onRate?.(value);
+                }
+              }}
+            />
+          </div>
+        ))}
+      </Hstack>
+    </RatingVisibilityGate>
+  )
+  );
 
   return (
     <Card
@@ -137,7 +221,7 @@ export default function SidebarSong({
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
         ...(playlist ? {
           border: 0,
-          borderTop: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
+          borderTop: playlistIndex === 0 ? 0 : `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
           borderRadius: 0,
           boxShadow: "none",
           padding: "4px 0",
@@ -146,11 +230,11 @@ export default function SidebarSong({
         } : {}),
       } as CSSProperties}
     >
-      <Vstack align="stretch" gap={2}>
+      <Vstack align="stretch" gap={playlist ? 1 : 2}>
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
-          className={wide ? "min-h-24 min-w-0 p-3 sm:p-4" : ""}
+          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rating ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             {playlist ? (
@@ -222,26 +306,32 @@ export default function SidebarSong({
                     <Text size="xs" color="textFaded">
                       {game.name}
                       {game.category !== "EXTERNAL" &&
-                        (pageVersion === "POST_JAM"
-                          ? uiText("AppStrings.PostJam")
-                          : pageVersion === "JAM"
-                            ? uiText("AppStrings.Jam2")
-                            : "")}
+                        pageVersion === "POST_JAM" &&
+                        uiText("AppStrings.PostJam")}
                     </Text>
                   </Link>
                 </GameDataHoverPreview>
               )}
               {showArtist && <Hstack gap={1} align="baseline" justify="start" className={playlist ? "min-w-0 w-full" : "min-w-0"}>
-                {artist?.slug ? <UserHoverPreview
+                {origin === "ASSET_PACK" ? (
+                  <Text
+                    size={playlist ? "xs" : "sm"}
+                    color={playlist ? "text" : "textFaded"}
+                    className="max-w-full truncate"
+                  >
+                    {externalAuthorName || displayArtist.name}
+                  </Text>
+                ) : artist?.slug ? (
+                <UserHoverPreview
                   portal
                   user={{
-                    slug: artist.slug ?? "",
-                    name: artist.name,
-                    profilePicture: artist.profilePicture,
+                    slug: displayArtist.slug ?? "",
+                    name: displayArtist.name,
+                    profilePicture: displayArtist.profilePicture,
                   }}
                 >
                   <Link
-                    href={`/u/${artist.slug}`}
+                    href={`/u/${displayArtist.slug}`}
                     underline={false}
                     className="sidebar-media-link inline-flex min-w-0 items-center gap-1"
                     style={{ textDecoration: "none" }}
@@ -249,7 +339,7 @@ export default function SidebarSong({
                     {!playlist && (wide || squareThumbnail) && (
                       <Avatar
                         size={16}
-                        src={artist.profilePicture || "/images/D2J_Icon.png"}
+                        src={displayArtist.profilePicture || "/images/D2J_Icon.png"}
                       />
                     )}
                     <Text
@@ -257,10 +347,10 @@ export default function SidebarSong({
                       color={playlist ? "text" : "textFaded"}
                       className="max-w-full truncate"
                     >
-                      {artist.name || artist.slug}
+                      {displayArtist.name || displayArtist.slug}
                     </Text>
                   </Link>
-                </UserHoverPreview> : artist?.name ? (
+                </UserHoverPreview>) : artist?.name ? (
                   <Text
                     size={playlist ? "xs" : "sm"}
                     color={playlist ? "text" : "textFaded"}
@@ -274,6 +364,16 @@ export default function SidebarSong({
                     {Math.floor(duration / 60)}:{String(duration % 60).padStart(2, "0")}
                   </span>
                 )}
+                {playlist && (license || backgroundUseLabel) && (
+                  <span
+                    className="min-w-0 truncate pl-2 text-xs leading-4"
+                    style={{ color: colors.textFaded }}
+                    title={[license ? getTrackLicense(license).label : "", backgroundUseLabel].filter(Boolean).join(" ")}
+                  >
+                    {license && <TrackLicenseLink license={license} />}
+                    {backgroundUseLabel ? ` ${backgroundUseLabel}` : ""}
+                  </span>
+                )}
               </Hstack>}
               {!playlist && license && (
                 <span
@@ -282,19 +382,25 @@ export default function SidebarSong({
                     backgroundColor: playlist ? "transparent" : colors["base"],
                     color: colors["textFaded"],
                   }}
-                  title={uiText("AppStrings.Value0Value13", { value0: translateSystemLabel(license, uiText), value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
+                  title={uiText("AppStrings.Value0Value13", { value0: getTrackLicense(license).label, value1: backgroundUseLabel ? ` ${backgroundUseLabel}` : "" })}
                 >
-                  {translateSystemLabel(license, uiText)}
-                  {backgroundUseLabel ? uiText("AppStrings.Value08", { value0: backgroundUseLabel }) : ""}
+                  <TrackLicenseLink license={license} />
+                  {backgroundUseLabel ? ` ${uiText("AppStrings.Value08", { value0: backgroundUseLabel })}` : ""}
                 </span>
               )}
             </Vstack>
           </Hstack>
 
+          {wide && rating && (
+            <div className="col-span-2 row-start-2 justify-self-center p-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+              {rating}
+            </div>
+          )}
+
           <div
             className={
               wide
-                ? "flex shrink-0 items-center gap-2"
+                ? "col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-2 sm:col-start-3"
                 : "flex shrink-0 flex-col items-center gap-2"
             }
           >
@@ -333,76 +439,7 @@ export default function SidebarSong({
           </div>
         </Hstack>
 
-        {showRating && (
-          <RatingVisibilityGate
-            hiddenByPreference={hideRatings}
-            hiddenText="Ratings are hidden by your settings."
-            buttonSize="xs"
-          >
-            <Hstack className={playlist ? "gap-1 pl-12" : "justify-center gap-1 pt-2"}>
-              {[2, 4, 6, 8, 10].map((value) => (
-                <div
-                  key={`${trackId ?? slug ?? name}-${value}`}
-                  className={`relative h-4 w-4 ${ratingDisabled ? "cursor-default" : "cursor-pointer"}`}
-                  onMouseEnter={() => {
-                    if (!ratingDisabled) setHoverValue(value);
-                  }}
-                  onMouseLeave={() => {
-                    if (!ratingDisabled) setHoverValue(0);
-                  }}
-                >
-                  <Star
-                    size={16}
-                    fill="currentColor"
-                    className="absolute"
-                    style={{
-                      color:
-                        displayValue >= value
-                          ? colors["yellow"]
-                          : colors["base"],
-                      transition: "color 150ms ease",
-                    }}
-                  />
-                  <Star
-                    size={16}
-                    fill="currentColor"
-                    className="absolute"
-                    style={{
-                      clipPath: "inset(0 50% 0 0)",
-                      color:
-                        displayValue >= value - 1
-                          ? colors["yellow"]
-                          : colors["base"],
-                      transition: "color 150ms ease",
-                    }}
-                  />
-                  <div
-                    className="absolute left-0 top-0 h-4 w-2"
-                    onMouseEnter={() => {
-                      if (!ratingDisabled) setHoverValue(value - 1);
-                    }}
-                    onClick={() => {
-                      if (!ratingDisabled) {
-                        void onRate?.(value - 1);
-                      }
-                    }}
-                  />
-                  <div
-                    className="absolute right-0 top-0 h-4 w-2"
-                    onMouseEnter={() => {
-                      if (!ratingDisabled) setHoverValue(value);
-                    }}
-                    onClick={() => {
-                      if (!ratingDisabled) {
-                        void onRate?.(value);
-                      }
-                    }}
-                  />
-                </div>
-              ))}
-            </Hstack>
-          </RatingVisibilityGate>
-        )}
+        {!wide && rating}
       </Vstack>
     </Card>
   );

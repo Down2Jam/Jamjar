@@ -211,7 +211,7 @@ export function AchievementHoverPreview({
               src={
                 entry.achievement.image ||
                 entry.game.thumbnail ||
-                "/images/D2J_Icon.png"
+                "/images/game-thumbnail.png"
               }
               alt=""
               className="h-12 w-12 shrink-0 rounded-lg object-cover"
@@ -244,7 +244,7 @@ export function AchievementHoverPreview({
 
           <div className="flex items-center gap-2">
             <img
-              src={entry.game.thumbnail || "/images/D2J_Icon.png"}
+              src={entry.game.thumbnail || "/images/game-thumbnail.png"}
               alt=""
               className="h-8 w-12 shrink-0 rounded-md object-cover"
             />
@@ -304,7 +304,7 @@ export function ScoreHoverPreview({
         <div className="flex w-72 flex-col gap-3 text-left">
           <div className="flex items-center gap-3">
             <img
-              src={score.game.thumbnail || "/images/D2J_Icon.png"}
+              src={score.game.thumbnail || "/images/game-thumbnail.png"}
               alt=""
               className="h-12 w-12 shrink-0 rounded-lg object-cover"
             />

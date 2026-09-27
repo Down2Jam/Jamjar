@@ -9,7 +9,7 @@ export function sanitize(content: string) {
       "label",
     ]),
     allowedAttributes: {
-      img: ["src", "style"],
+      img: ["src", "style", "alt", "title", "loading", "decoding"],
       input: ["type", "checked", "disabled"],
       label: ["for"],
       iframe: [

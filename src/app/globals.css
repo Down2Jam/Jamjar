@@ -38,6 +38,11 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Let editor wheel scrolling reach the page until its content actually overflows. */
+.overflow-y-auto.ProseMirror {
+  overscroll-behavior-y: auto;
+}
+
 .overflow-x-auto {
   overscroll-behavior-x: contain;
 }
@@ -90,6 +95,15 @@ html.theme-preview-transitioning *::after {
   height: 2.5em;
   vertical-align: -0.55em;
   margin: 0 0.08em;
+}
+
+.sticker-inline {
+  display: block;
+  width: 10em;
+  height: 10em;
+  max-width: 100%;
+  object-fit: contain;
+  margin: 0.5em 0;
 }
 
 .mention-chip {

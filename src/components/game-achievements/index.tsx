@@ -1,5 +1,5 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Check } from "lucide-react";
 import { Button, Card, Modal, ModalBody, ModalContent, ModalHeader, Tooltip, getNeutralBorderColor, addToast } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
@@ -22,6 +22,22 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"personal" | "global">("personal");
   const [pendingId, setPendingId] = useState<number | null>(null);
+  const badgeRowRef = useRef<HTMLDivElement>(null);
+  const [visibleBadgeCount, setVisibleBadgeCount] = useState(0);
+  useLayoutEffect(() => {
+    const row = badgeRowRef.current;
+    if (!row) return;
+    const update = () => {
+      const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+      const slots = Math.max(0, Math.floor((row.getBoundingClientRect().width + gap) / (44 + gap)));
+      // Reserve one slot for the overflow count whenever not all badges fit.
+      setVisibleBadgeCount(achievements.length <= slots ? achievements.length : Math.max(0, slots - 1));
+    };
+    const observer = new ResizeObserver(update);
+    observer.observe(row);
+    update();
+    return () => observer.disconnect();
+  }, [achievements.length, modalOnly]);
   const unlocked = (achievement: AchievementType) => achievement.users.some((entry) => entry.id === userId);
   const unlockTime = (achievement: AchievementType) => {
     if (!unlocked(achievement)) return null;
@@ -38,6 +54,7 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   };
   const count = achievements.filter(unlocked).length;
   const percent = achievements.length ? Math.round(count / achievements.length * 100) : 0;
+  const allUnlocked = Boolean(userId && achievements.length && count === achievements.length);
   const featured = achievements.filter(unlocked).sort((a, b) => (unlockTime(b) ?? -Infinity) - (unlockTime(a) ?? -Infinity))[0];
   const borderColor = getNeutralBorderColor(colors);
   const rarity = (achievement: AchievementType) => {
@@ -52,7 +69,7 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
   const image = (achievement: AchievementType, size: string, muted = !unlocked(achievement)) => {
     const tier = rarity(achievement);
     return <span className={`${size} ${styles.icon} ${tier && !muted && tier.shimmer ? styles.shimmer : ""}`} style={tier ? { "--rarity-color": tier.color, "--rarity-glow": `${tier.strength}px`, "--rarity-opacity": muted ? 0.08 : 0.25 } as CSSProperties : undefined}>
-      <img src={achievement.image || thumbnail || "/images/D2J_Icon.png"} alt="" className="h-full w-full rounded object-cover" style={{ filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.6 : 1 }} />
+      <img src={achievement.image || thumbnail || "/images/game-thumbnail.png"} alt="" className="h-full w-full rounded object-cover" style={{ filter: muted ? "grayscale(1)" : undefined, opacity: muted ? 0.6 : 1 }} />
     </span>;
   };
   const showAchievement = () => { setSearch(""); setView(userId ? "personal" : "global"); setOpen(true); };
@@ -77,9 +94,10 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
     {!modalOnly && <Card padding={1} shadow="none">
       <p className="mb-3 text-xs leading-4" style={{ color: colors.textFaded }}>{uiText("AppStrings.ACHIEVEMENTS")}</p>
       <div className="flex items-center gap-3">
+        {allUnlocked && <img src="/images/award.png" alt="" className="h-12 w-12 shrink-0 scale-125 object-contain" />}
         <div className="min-w-0 flex-1">
           <p className="mb-2 text-xs" style={{ color: colors.textFaded }}>
-            {userId ? <>{count === achievements.length ? uiText("AppStrings.YouVeUnlockedAllAchievements") : uiText("AppStrings.YouVeUnlocked")} {count}/{achievements.length} ({percent}%)</> : uiText("AppStrings.Value0AchievementsSignInToTrackYourProgress", { value0: achievements.length })}
+            {userId ? <>{allUnlocked ? uiText("AppStrings.YouVeUnlockedAllAchievements") : uiText("AppStrings.YouVeUnlocked")} {count}/{achievements.length} ({percent}%)</> : uiText("AppStrings.Value0AchievementsSignInToTrackYourProgress", { value0: achievements.length })}
           </p>
           <div role="progressbar" aria-label={uiText("AppStrings.AchievementsUnlocked")} aria-valuenow={count} aria-valuemin={0} aria-valuemax={achievements.length} className="h-2 overflow-hidden rounded-sm" style={{ backgroundColor: colors.base }}>
             <div className="h-full transition-[width] motion-reduce:transition-none" style={{ width: `${percent}%`, backgroundColor: colors.blue }} />
@@ -90,22 +108,24 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
         {image(featured, "h-10 w-10")}
         <div className="min-w-0"><p className="text-sm font-semibold">{featured.name}</p><p className="line-clamp-2 text-xs" style={{ color: colors.textFaded }}>{featured.description}</p></div>
       </button></Tooltip>}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        {achievements.slice(0, 5).map((achievement) => <Tooltip key={achievement.id} compact position="top" content={achievementPreview(achievement)}>
-          <button type="button" aria-label={uiText("AppStrings.ViewValue0", { value0: achievement.name })} onClick={() => showAchievement()} className="relative cursor-pointer rounded p-1 transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2">
+      <div className="mt-3 flex items-center gap-2">
+        <div ref={badgeRowRef} className="flex min-w-[44px] flex-1 items-center gap-2 [&>div]:shrink-0">
+        {achievements.slice(0, visibleBadgeCount).map((achievement) => <Tooltip key={achievement.id} compact position="top" content={achievementPreview(achievement)}>
+          <button type="button" aria-label={uiText("AppStrings.ViewValue0", { value0: achievement.name })} onClick={() => showAchievement()} className="relative flex h-[44px] w-[44px] cursor-pointer items-center justify-center rounded p-1 transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2">
             {image(achievement, "h-9 w-9")}
             {unlocked(achievement) && <Check size={12} className="absolute bottom-0 right-0 rounded" style={{ backgroundColor: colors.mantle, color: colors.green }} />}
           </button>
         </Tooltip>)}
-        {achievements.length > 5 && <Button variant="ghost" className="!h-11 !w-11 !p-0" onClick={() => showAchievement()} aria-label={uiText("AppStrings.ViewAllValue0Achievements", { value0: achievements.length })}>+{achievements.length - 5}</Button>}
+        {achievements.length > visibleBadgeCount && <Button variant="ghost" className="!h-[44px] !w-[44px] shrink-0 !p-0" onClick={() => showAchievement()} aria-label={uiText("AppStrings.ViewAllValue0Achievements", { value0: achievements.length })}>+{achievements.length - visibleBadgeCount}</Button>}
+        </div>
+        <Button variant="ghost" size="sm" className="shrink-0" onClick={() => showAchievement()}>{userId ? uiText("AppStrings.ViewMyAchievements") : uiText("AppStrings.ViewAchievements")}</Button>
       </div>
-      <div className="mt-3 flex justify-end"><Button variant="ghost" size="sm" onClick={() => showAchievement()}>{userId ? uiText("AppStrings.ViewMyAchievements") : uiText("AppStrings.ViewAchievements")}</Button></div>
     </Card>}
     <Modal isOpen={modalOnly || open} onOpenChange={(value) => { if (!value) { setOpen(false); onClose?.(); } }} size="2xl" className="!rounded-md">
       <ModalContent className="!w-[840px] !max-w-[calc(100vw-32px)]">
         <ModalHeader className="pr-14 pb-4">
           <div className="flex items-center gap-3">
-            <img src={thumbnail || "/images/D2J_Icon.png"} alt="" className="h-9 w-9 rounded object-cover" />
+            <img src={thumbnail || "/images/game-thumbnail.png"} alt="" className="h-9 w-9 rounded object-cover" />
             <h2 className="text-xl font-semibold">{gameName}</h2>
           </div>
         </ModalHeader>
@@ -140,7 +160,13 @@ export default function GameAchievements({ achievements, userId, thumbnail, game
                   {group.items.map((achievement) => {
                     const date = unlockDate(achievement);
                     const globalPercent = (engagedUsers ? Math.min(100, achievement.users.length / engagedUsers * 100) : 0).toFixed(1);
-                    return <div key={achievement.id} className="flex flex-wrap items-center gap-3 rounded border p-3" style={{ backgroundColor: colors.mantle, borderColor }}>
+                    return <div key={achievement.id} className="flex flex-wrap items-center gap-3 rounded border p-3" style={{
+                      backgroundColor: colors.mantle,
+                      backgroundImage: view === "global"
+                        ? `linear-gradient(to right, color-mix(in srgb, ${borderColor} 50%, ${colors.mantle}) ${globalPercent}%, transparent ${globalPercent}%)`
+                        : undefined,
+                      borderColor,
+                    }}>
                       {image(achievement, "h-10 w-10", view === "personal" && !unlocked(achievement))}
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold">{achievement.name}</p>

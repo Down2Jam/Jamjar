@@ -27,6 +27,7 @@ export interface UserType {
   createdAt: Date;
   mod: boolean;
   admin: boolean;
+  perfectedGamePages?: Array<{ gameId: number; pageVersion: "JAM" | "POST_JAM" }>;
   followingCount?: number;
   twitch: string;
   pronouns?: string | null;
@@ -44,6 +45,11 @@ export interface UserType {
     playableBuildAspectRatio?: string | null;
     playableBuildShowFullscreenButton?: boolean;
     category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
+    team?: {
+      name?: string | null;
+      owner?: { name?: string | null };
+      users?: Array<{ id: number }>;
+    };
     downloadLinks?: Array<{
       id: number;
       url: string;
@@ -63,6 +69,11 @@ export interface UserType {
     playableBuildAspectRatio?: string | null;
     playableBuildShowFullscreenButton?: boolean;
     category?: "ODA" | "REGULAR" | "EXTRA" | "EXTERNAL";
+    team?: {
+      name?: string | null;
+      owner?: { name?: string | null };
+      users?: Array<{ id: number }>;
+    };
     downloadLinks?: Array<{
       id: number;
       url: string;

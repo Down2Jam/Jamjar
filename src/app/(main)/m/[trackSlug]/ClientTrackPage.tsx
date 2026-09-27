@@ -7,6 +7,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 import { useEffect, useState } from "react";
 import { useTheme } from "@/providers/useSiteTheme";
+import { GamePageBackground } from "@/app/(main)/PageBackground";
 import { useCurrentJam } from "@/hooks/queries";
 import {
   getTrack,
@@ -14,6 +15,7 @@ import {
   postTrackTimestampComment,
 } from "@/requests/track";
 import { postTrackRating } from "@/requests/rating";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 import { TrackType } from "@/types/TrackType";
 import { TrackRatingCategoryType } from "@/types/TrackRatingCategoryType";
 import { UserType } from "@/types/UserType";
@@ -46,6 +48,7 @@ import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggl
 import Link from "@/compat/next-link";
 import { useRouter } from "@/compat/next-navigation";
 import TrackWaveformPlayer from "@/components/tracks/TrackWaveformPlayer";
+import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
 import {
   AlertTriangle,
   Award,
@@ -127,14 +130,15 @@ export default function ClientTrackPage({
   const [hoverCategory, setHoverCategory] = useState<number | null>(null);
   const { data: activeJamResponse } = useCurrentJam();
   const effectiveHideRatings = useEffectiveHideRatings(user);
-  const composerName = track?.composer?.name || track?.composer?.slug;
+  const composerName =
+    track?.externalAuthorName || track?.composer?.name || track?.composer?.slug;
   const metadataDescription =
     track?.commentary?.trim() ||
     (composerName && track?.game?.name
       ? `${track.name} by ${composerName} for ${track.game.name}`
       : "Music track on Down2Jam");
   const metadataImage =
-    track?.game?.banner || track?.game?.thumbnail || "/images/D2J_Icon.png";
+    track?.game?.banner || track?.game?.thumbnail || "/images/game-thumbnail.png";
   usePageMetadata({
     title: (track?.name ?? trackSlug) || uiText("AppStrings.Track2"),
     description: metadataDescription,
@@ -266,6 +270,8 @@ export default function ClientTrackPage({
   }
 
   const selectedRating = track.viewerRating?.value ?? 0;
+  const isAssetPackTrack = track.origin === "ASSET_PACK";
+  const isOwnMusic = isOwnTrack(track, user);
   const isTeamMember = Boolean(
     user && track.game?.team?.users?.some((member) => member.id === user.id),
   );
@@ -292,7 +298,7 @@ export default function ClientTrackPage({
     (!isCurrentJamTrack || shouldShowCurrentVersionResults);
   const canRateCurrentVersion =
     Boolean(user) &&
-    !isTeamMember &&
+    !isOwnMusic &&
     isCurrentJamTrack &&
     isRatingOpenPhase &&
     Boolean(overallCategory);
@@ -318,7 +324,10 @@ export default function ClientTrackPage({
     (flag) => flag.name === "Explicit Lyrics",
   );
   const overallScore = track.scores?.Overall;
-  const primaryArtist = credits[0]?.user ?? track.composer;
+  const primaryArtist = credits[0]?.user ?? track.composer ?? {
+    name: track.externalAuthorName || uiText("AppStrings.UnknownComposer"),
+    slug: "",
+  };
   const overallScoreGradient = overallScore
     ? getResultsGradient(
         overallScore.placement,
@@ -337,6 +346,7 @@ export default function ClientTrackPage({
 
   return (
     <>
+      <GamePageBackground image={track.game.pageBackground?.trim() || null} />
       <div
         className="relative mb-6 overflow-visible border-0 rounded-none lg:border lg:rounded-xl"
         style={{
@@ -347,7 +357,7 @@ export default function ClientTrackPage({
         <div
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit] opacity-25"
           style={{
-            backgroundImage: `url(${track.game.banner || track.game.thumbnail || "/images/D2J_Icon.png"})`,
+            backgroundImage: `url(${track.game.banner || track.game.thumbnail || "/images/game-thumbnail.png"})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -366,11 +376,17 @@ export default function ClientTrackPage({
               </Text>
               <Hstack className="flex-wrap gap-3">
                 <Text color="textFaded">{uiText("PostCard.By")}</Text>
-                <Link href={`/u/${primaryArtist.slug}`}>
+                {isAssetPackTrack ? (
                   <Text color="text">
-                    {primaryArtist.name || primaryArtist.slug}
+                    {track.externalAuthorName || uiText("AppStrings.UnknownComposer")}
                   </Text>
-                </Link>
+                ) : (
+                  <Link href={`/u/${primaryArtist.slug}`}>
+                    <Text color="text">
+                      {primaryArtist.name || primaryArtist.slug}
+                    </Text>
+                  </Link>
+                )}
               </Hstack>
               <div className="w-full max-w-6xl">
                 <TrackWaveformPlayer
@@ -381,7 +397,7 @@ export default function ClientTrackPage({
                   thumbnail={
                     track.game.soundtrackThumbnail ||
                     track.game.thumbnail ||
-                    "/images/D2J_Icon.png"
+                    "/images/game-thumbnail.png"
                   }
                   url={track.url}
                   loudnessGainDb={track.loudnessGainDb}
@@ -445,7 +461,7 @@ export default function ClientTrackPage({
                   <>
                     <Text size="xs" color="textFaded">
                        {uiText("AppStrings.ACTIONS")} </Text>
-                    {isTeamMember && (
+                    {isTeamMember && !isAssetPackTrack && (
                       <Button
                         icon="squarepen"
                         href={`/m/${track.slug}/edit${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
@@ -475,7 +491,12 @@ export default function ClientTrackPage({
                 <Text size="xs" color="textFaded">
                    {uiText("AppStrings.PEOPLE")} </Text>
                 <div className="flex flex-wrap gap-2">
-                  {credits.map((credit) => (
+                  {isAssetPackTrack ? (
+                    <Chip className="post-tag-chip">
+                      {track.externalAuthorName || uiText("AppStrings.UnknownComposer")} {" "}
+                      <span className="opacity-70">(Original author)</span>
+                    </Chip>
+                  ) : credits.map((credit) => (
                     <Chip className="post-tag-chip"
                       key={`${credit.id}-${credit.role}-${credit.userId}`}
                       avatarSrc={credit.user?.profilePicture}
@@ -565,6 +586,7 @@ export default function ClientTrackPage({
                           hoverCategory={hoverCategory}
                           setHoverCategory={setHoverCategory}
                           onRate={async (value) => {
+                            if (!canRateCurrentVersion) return;
                             const previous = selectedRating;
                             emitTrackRatingSync({
                               trackId: track.id,
@@ -623,7 +645,7 @@ export default function ClientTrackPage({
                         {(overallScore.averageUnrankedScore / 2).toFixed(2)}{" "}
                          {uiText("AppStrings.PublicAverageFrom")} {overallScore.ratingCount}  {uiText("AppStrings.Ratings")} </Text>
                     )}
-                    {isTeamMember && isCurrentJamTrack && isRatingOpenPhase && (
+                    {isOwnMusic && isCurrentJamTrack && isRatingOpenPhase && (
                       <Text size="xs" color="textFaded">
                          {uiText("AppStrings.YouCanAndAposTRateYourOwn2")} </Text>
                     )}
@@ -706,7 +728,7 @@ export default function ClientTrackPage({
                      {uiText("AppStrings.DETAILS")} </Text>
                   {track.bpm && <Chip className="post-tag-chip">{uiText("AppStrings.BPM")} {track.bpm}</Chip>}
                   {track.musicalKey && <Chip className="post-tag-chip">{uiText("AppStrings.Key2")} {track.musicalKey}</Chip>}
-                  {track.license && <Chip className="post-tag-chip">{uiText("AppStrings.License2")} {translateSystemLabel(track.license, uiText)}</Chip>}
+                  {track.license && <Chip className="post-tag-chip">{uiText("AppStrings.License2")} <TrackLicenseLink license={track.license} /></Chip>}
                   {track.allowBackgroundUse && (
                     <Chip className="post-tag-chip">{uiText("AppStrings.BackgroundUseInStreamsVideosAllowed")}</Chip>
                   )}
@@ -736,7 +758,8 @@ export default function ClientTrackPage({
                        {uiText("AppStrings.RatingsGiven2")}{" "}
                       {Math.round(overallScore?.ratingsGivenCount ?? 0)}
                     </Chip>
-                    {track.game.category !== "EXTRA" &&
+                    {!isAssetPackTrack &&
+                      track.game.category !== "EXTRA" &&
                       track.game.category !== "EXTERNAL" &&
                       track.pageVersion !== "POST_JAM" &&
                       Math.round(overallScore?.ratingsGivenCount ?? 0) < 5 && (
@@ -880,7 +903,7 @@ function TrackStarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       <Star
@@ -895,7 +918,7 @@ function TrackStarElement({
               ? colors["orangeDark"]
               : selectedStars[id] > 0 && selectedStars[id] >= value - 1
                 ? colors["yellow"]
-                : colors["base"],
+                : `color-mix(in srgb, ${colors.gray} 32%, black)`,
         }}
       />
       <div

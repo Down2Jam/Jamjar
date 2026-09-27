@@ -76,7 +76,7 @@ export default function SplashDate() {
   return (
     <Text color="textLight" className="mx-auto sm:mx-0">
       {formatJamRange(currentJam.startTime, currentJam.jammingHours)}
-      {postJamLabel ? uiText("AppStrings.Value04", { value0: postJamLabel }) : null}
+      {postJamLabel ? ` ${uiText("AppStrings.Value04", { value0: postJamLabel })}` : null}
       {isPostJamPhase(activeJamResponse?.phase) && nextJam && (
         <>
           <br />

@@ -1,5 +1,6 @@
 import { isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
 import { translateSystemLabel } from "@/helpers/systemLabels";
+import { isOwnTrack } from "@/helpers/isOwnTrack";
 "use client";
 
 import { useTranslations } from "@/compat/next-intl";
@@ -10,6 +11,7 @@ import { Button, Hstack, Vstack } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Dropdown } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
+import { getTrackLicense } from "@/helpers/trackLicense";
 import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
@@ -73,7 +75,7 @@ const DEFAULT_MORE_FILTERS = new Set<string>([
 const EMPTY_MORE_FILTERS_PARAM = "none";
 
 function LicenseMark({ license }: { license: string }) {
-  const normalized = license.toUpperCase().replace(/\s+/g, " ").trim();
+  const normalized = getTrackLicense(license).label.toUpperCase().replace(/\s+/g, " ").trim();
 
   if (normalized === "ALL RIGHTS RESERVED") {
     return (
@@ -705,11 +707,7 @@ export default function MusicPage() {
   const displayedMusic = useMemo(() => {
     const filteredMusic = music.filter((track) => {
       const tagIds = new Set((track.tags ?? []).map((tag) => String(tag.id)));
-      const isOwnMusic = Boolean(
-        user &&
-        (track.game?.team?.ownerId === user.id ||
-          track.game?.team?.users?.some((member) => member.id === user.id)),
-      );
+      const isOwnMusic = isOwnTrack(track, user);
       const hasRatedTrack = Boolean(
         user &&
           (track.sourceTrackId ?? track.id) &&
@@ -788,9 +786,7 @@ export default function MusicPage() {
     const regularRatedTracks: TrackType[] = [];
 
     filteredMusic.forEach((track) => {
-      const isOwnMusic =
-        track.game?.team?.ownerId === user.id ||
-        track.game?.team?.users?.some((member) => member.id === user.id);
+      const isOwnMusic = isOwnTrack(track, user);
       const hasRatedTrack = Boolean(
         (track.sourceTrackId ?? track.id) &&
           (trackSelectedStars[track.sourceTrackId ?? track.id] ?? 0) > 0,
@@ -830,6 +826,20 @@ export default function MusicPage() {
     trackSelectedStars,
     user,
   ]);
+
+  const musicQueue = useMemo(
+    () =>
+      displayedMusic.map((track) => ({
+        ...track,
+        composer: track.composer ?? {
+          id: 0,
+          slug: "",
+          name:
+            track.externalAuthorName || t("AppStrings.UnknownComposer"),
+        },
+      })),
+    [displayedMusic, t],
+  );
 
   const activeFilterCount =
     selectedGenres.size +
@@ -1085,7 +1095,7 @@ export default function MusicPage() {
               <Dropdown.Item key={license} value={license}>
                 <span className="flex items-center gap-2">
                   <LicenseMark license={license} />
-                  <span>{translateSystemLabel(license, t)}</span>
+                  <span>{getTrackLicense(license).label}</span>
                 </span>
               </Dropdown.Item>
             ))}
@@ -1179,16 +1189,15 @@ export default function MusicPage() {
       >
         {initialLoading && <ListingSkeleton kind="music" />}
         {musicError && <Button onClick={() => void refetchMusic()}>{t("AppStrings.Retry")}</Button>}
-        {displayedMusic.map((track, index) => (
+        {musicQueue.map((track, index) => (
           (() => {
             const ratingTrackId = track.sourceTrackId ?? track.id;
             const canRateTrack =
               Boolean(user) &&
               Boolean(ratingTrackId) &&
               track.pageVersion !== "POST_JAM" &&
-              !track.game?.team?.users?.some(
-                (member) => member.id === user?.id,
-              ) &&
+              Array.isArray(track.game?.team?.users) &&
+              !isOwnTrack(track, user) &&
               currentJamId != null &&
               String(track.game?.jamId ?? "") === currentJamId &&
               (activeJamPhase === "Rating" ||
@@ -1202,16 +1211,18 @@ export default function MusicPage() {
                 trackId={ratingTrackId}
                 name={track.name}
                 artist={track.composer}
+                origin={track.origin}
+                externalAuthorName={track.externalAuthorName}
                 thumbnail={
                   track.game.soundtrackThumbnail ||
                   track.game.thumbnail ||
-                  "/images/D2J_Icon.png"
+                  "/images/game-thumbnail.png"
                 }
                 game={track.game}
                 pageVersion={track.pageVersion}
                 song={track.url}
                 loudnessGainDb={track.loudnessGainDb}
-                queue={displayedMusic}
+                queue={musicQueue}
                 license={track.license}
                 allowDownload={track.allowDownload}
                 allowBackgroundUse={track.allowBackgroundUse}
@@ -1225,6 +1236,7 @@ export default function MusicPage() {
                 ratingDisabled={!canRateTrack}
                 onRate={async (value) => {
                   if (
+                    !canRateTrack ||
                     !ratingTrackId ||
                     !trackOverallCategory ||
                     track.pageVersion === "POST_JAM"

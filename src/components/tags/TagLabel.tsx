@@ -35,6 +35,7 @@ import {
   GiHamburgerMenu,
   GiHeadphones,
   GiHeavenGate,
+  GiHeartPlus,
   GiHearts,
   GiHourglass,
   GiImpLaugh,
@@ -87,6 +88,8 @@ import {
   GiWorld,
   GiAlarmClock,
   GiElectric,
+  GiExtraTime,
+  GiRocketFlight,
 } from "react-icons/gi";
 
 const TAG_ICONS: Record<string, string> = {
@@ -117,6 +120,7 @@ const TAG_ICONS: Record<string, string> = {
   flickgame: "flickgame",
   flaxengine: "flaxengine",
   flstudio: "flstudio",
+  fmod: "fmod.svg",
   furnacetracker: "furnacetracker",
   gamemaker: "gamemaker",
   gamejolt: "gamejolt",
@@ -182,6 +186,7 @@ const TAG_ICONS: Record<string, string> = {
   unity: "unity",
   unreal: "unrealengine.svg",
   unrealengine: "unrealengine.svg",
+  wwise: "wwise.svg",
   xboxstore: "xboxstore",
   zbrush: "zbrush.svg",
 };
@@ -247,6 +252,7 @@ const GAME_ICONS: Record<string, GameIconDefinition> = {
   energetic: { icon: GiLightningTrio, color: "#f97316" },
   experimental: { icon: GiChemicalDrop, color: "#84cc16" },
   exploration: { icon: GiPathDistance, color: "#22c55e" },
+  favorites: { icon: GiHeartPlus, color: "#f472b6" },
   folk: { icon: GiBanjo, color: "#d97706" },
   gameover: { icon: GiDeadHead, color: "#ef4444" },
   happy: { icon: GiSun, color: "#facc15" },
@@ -268,6 +274,8 @@ const GAME_ICONS: Record<string, GameIconDefinition> = {
   introduction: { icon: GiCharacter, color: "#0ea5e9" },
   memes: { icon: GiJesterHat, color: "#ec4899" },
   postmortem: { icon: GiTombstone, color: "#8b5cf6" },
+  postjam: { icon: GiExtraTime, color: "#8b5cf6" },
+  release: { icon: GiRocketFlight, color: "#f97316" },
   stream: { icon: GiRadioTower, color: "#ef4444" },
   teamup: { icon: GiMeepleGroup, color: "#06b6d4" },
   themevote: { icon: GiVote, color: "#a855f7" },

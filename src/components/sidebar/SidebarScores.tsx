@@ -93,7 +93,7 @@ export default function SidebarScores() {
                 <GameDataHoverPreview game={score.game} className="rounded-lg">
                   <Link href={href} aria-label={uiText("AppStrings.OpenValue0", { value0: score.game.name })}>
                     <Image
-                      src={score.game.thumbnail || "/images/D2J_Icon.png"}
+                      src={score.game.thumbnail || "/images/game-thumbnail.png"}
                       alt={score.game.name}
                       width={56}
                       height={56}

@@ -1,5 +1,7 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
+import { getSessionQueryClient } from "./sessionQueryClient";
+import { queryKeys } from "@/hooks/queries/queryKeys";
 
 export async function getSelf() {
   const tokenCookie = getCookie("token");
@@ -89,6 +91,10 @@ export async function updateUser(
     },
     credentials: "include",
   });
+
+  if (response.ok && (recommendedGameIds !== undefined || recommendedHiddenGameIds !== undefined)) {
+    void getSessionQueryClient().invalidateQueries({ queryKey: queryKeys.game.all });
+  }
 
   return response;
 }

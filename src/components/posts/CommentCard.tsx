@@ -9,7 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
-import Editor from "../editor";
+import dynamic from "@/compat/next-dynamic";
+const Editor = dynamic(() => import("../editor"), {
+  loading: () => <div className="min-h-24 animate-pulse rounded-md bg-current/5" />,
+});
 import LikeButton from "./LikeButton";
 import {
   deleteComment,
@@ -36,7 +39,9 @@ export default function CommentCard({
   user,
   onOverlayChange,
   edgeToEdge = false,
+  className = "",
 }: {
+  className?: string;
   edgeToEdge?: boolean;
   comment: CommentType;
   user?: UserType | null;
@@ -108,7 +113,7 @@ export default function CommentCard({
       className={`relative overflow-visible ${actionsLayerOpen ? "z-50" : "z-0"}`}
     >
       <Card
-        className={edgeToEdge ? "max-lg:!rounded-none" : undefined}
+        className={`${edgeToEdge ? "max-lg:!rounded-none" : ""} ${className}`}
         style={{
           "--post-action-surface": `color-mix(in srgb, ${colors["mantle"]} 70%, ${colors["crust"]})`,
           "--post-action-hover": colors["base"],
@@ -224,6 +229,7 @@ export default function CommentCard({
           {(isAuthor || user?.mod || user?.admin) && (
             <div className="relative z-30 ml-auto">
               <Dropdown
+                portal
                 trigger={
                   <Button
                     className="post-action-button post-card-corner-button"
