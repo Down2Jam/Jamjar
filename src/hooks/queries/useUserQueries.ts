@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getSelf, getUser, searchUsers } from "@/requests/user";
+import { getSelf, getUser, getRecapUser, searchUsers } from "@/requests/user";
 import { queryKeys } from "./queryKeys";
 import type { UserType } from "@/types/UserType";
 import { unwrapArray, unwrapItem } from "./helpers";
@@ -46,6 +46,21 @@ export function useUser(slug: string, enabled = true) {
     enabled: enabled && !!slug,
     staleTime: 2 * 60 * 1000,
     refetchOnMount: true,
+  });
+}
+
+export function useRecapUser(slug: string, jamId: number | null, enabled = true) {
+  return useQuery<UserType>({
+    queryKey: queryKeys.user.recap(slug, jamId),
+    queryFn: async () => {
+      const res = await getRecapUser(slug, jamId!);
+      if (!res.ok) throw new Error("Unable to load recap user");
+      const user = unwrapItem<UserType>(await res.json());
+      if (!user) throw new Error("Unable to load recap user");
+      return user;
+    },
+    enabled: enabled && !!slug && jamId != null,
+    staleTime: 2 * 60 * 1000,
   });
 }
 

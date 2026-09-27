@@ -10,7 +10,9 @@ export const queryKeys = {
   user: {
     all: ["user"] as const,
     self: () => [...queryKeys.user.all, "self"] as const,
-    detail: (slug: string) => [...queryKeys.user.all, "detail", slug] as const,
+      detail: (slug: string) => [...queryKeys.user.all, "detail", slug] as const,
+      recap: (slug: string, jamId: number | null) =>
+        [...queryKeys.user.all, "recap", slug, jamId] as const,
     search: (query: string) =>
       [...queryKeys.user.all, "search", query] as const,
   },

@@ -21,6 +21,14 @@ export async function getUser(userSlug: string) {
   });
 }
 
+export async function getRecapUser(userSlug: string, jamId: number) {
+  const tokenCookie = getCookie("token");
+  return fetch(`${BASE_URL}/users/${encodeURIComponent(userSlug)}/recap?jamId=${jamId}`, {
+    headers: tokenCookie ? { authorization: `Bearer ${tokenCookie}` } : undefined,
+    credentials: "include",
+  });
+}
+
 export async function searchUsers(query: string) {
   const tokenCookie = getCookie("token");
 

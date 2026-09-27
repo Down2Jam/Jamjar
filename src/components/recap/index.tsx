@@ -37,7 +37,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "@/providers/useSiteTheme";
-import { useCurrentJam, useJams, useSelf, useUser } from "@/hooks/queries";
+import { useCurrentJam, useJams, useSelf, useRecapUser } from "@/hooks/queries";
 import { getGame, getResults } from "@/requests/game";
 import { getTrack, getTrackResults } from "@/requests/track";
 import { getUserGamesForJam } from "./userGames";
@@ -1011,10 +1011,6 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
   const { colors } = useTheme();
   const { data: self, isLoading: selfLoading } = useSelf();
   const effectiveSlug = targetUserSlug ?? self?.slug ?? "";
-  const { data: user, isLoading: userLoading } = useUser(
-    effectiveSlug,
-    !!effectiveSlug,
-  );
   const {
     data: listedJams = [],
     isLoading: jamsLoading,
@@ -1033,6 +1029,11 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
     [listedJams, currentJam],
   );
   const selectedJamId = pickRecapJamId(searchParams.get("jam"), jams, currentJam?.id);
+  const { data: user, isLoading: userLoading } = useRecapUser(
+    effectiveSlug,
+    selectedJamId,
+    !!effectiveSlug && selectedJamId != null,
+  );
   const [visibility, setVisibility] = useState<VisibilityState | null>(null);
   const [loadingVisibility, setLoadingVisibility] = useState(false);
   const [visibilityFor, setVisibilityFor] = useState("");
@@ -1519,8 +1520,8 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
             (entry) => entry.id === achievement.id,
           ) ?? achievement;
           const { tier, pct } = getRarityTier(
-            fullAchievement.users?.length ?? 0,
-            engagedUserIdsForGame(achievement.game).size,
+            achievement.rarityEarnedUsers ?? fullAchievement.users?.length ?? 0,
+            achievement.rarityEngagedUsers ?? engagedUserIdsForGame(achievement.game).size,
           );
           return { achievement, tier, pct };
         })

@@ -10,4 +10,6 @@ export interface AchievementType {
   createdAt?: string;
   unlocks?: Array<{ userId: number; earnedAt: string }>;
   game: GameType;
+  rarityEarnedUsers?: number;
+  rarityEngagedUsers?: number;
 }
