@@ -792,8 +792,9 @@ export default function ClientGamePage({
       (contributor: UserType) => contributor.id === user.id,
     );
 
-  const canRateDisplayedTrack = Boolean(user) && !isEditable && selectedVersion === "JAM" &&
-    activeJamResponse?.jam?.id === displayGame.jamId && isJamRatingOpenPhase && Boolean(trackOverallCategory);
+  const canRateDisplayedTrack = (trackVersion?: PageVersion) =>
+    Boolean(user) && !isEditable && isCurrentJamGame && Boolean(trackOverallCategory) &&
+    (trackVersion === "POST_JAM" ? isPostJamRatingOpenPhase : isJamRatingOpenPhase);
 
   if (!displayGame.published && !isEditable && !game?.canViewUnpublished) {
     return <p>{uiText("AppStrings.ThisGameHasNotBeenPublished")}</p>;
@@ -1574,11 +1575,11 @@ export default function ClientGamePage({
                       allowBackgroundUse={track.allowBackgroundUse}
                       allowBackgroundUseAttribution={track.allowBackgroundUseAttribution}
                       ratingValue={trackSelectedStars[track.id] ?? 0}
-                      showRating={canRateDisplayedTrack && !isOwnTrack(track, user)}
+                      showRating={canRateDisplayedTrack(track.pageVersion) && !isOwnTrack(track, user)}
                       hideRatings={effectiveHideRatings}
-                      ratingDisabled={!canRateDisplayedTrack || isOwnTrack(track, user)}
+                      ratingDisabled={!canRateDisplayedTrack(track.pageVersion) || isOwnTrack(track, user)}
                       onRate={async (value) => {
-                        if (!canRateDisplayedTrack || isOwnTrack(track, user) || !trackOverallCategory) return;
+                        if (!canRateDisplayedTrack(track.pageVersion) || isOwnTrack(track, user) || !trackOverallCategory) return;
                         const previous = trackSelectedStars[track.id] ?? 0;
                         emitTrackRatingSync({ trackId: track.id, categoryId: trackOverallCategory.id, value });
                         setTrackSelectedStars((prev) => ({ ...prev, [track.id]: value }));
