@@ -13,3 +13,8 @@ export interface AchievementType {
   rarityEarnedUsers?: number;
   rarityEngagedUsers?: number;
 }
+
+export type AchievementInput = Pick<
+  AchievementType,
+  "name" | "image" | "description"
+> & { id?: number };

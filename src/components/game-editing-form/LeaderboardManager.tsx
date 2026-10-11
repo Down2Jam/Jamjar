@@ -4,7 +4,6 @@ import { Button, Dropdown, Icon, Input, Modal, ModalBody, ModalContent, ModalFoo
 import type { IconName } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardType";
-import type { GameType } from "@/types/GameType";
 import ReorderControls, { moveItem } from "./ReorderControls";
 
 const types: Record<LeaderboardTypeType, { label: string; rule: string; icon: IconName }> = {
@@ -46,9 +45,10 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
   );
 }
 
-export default function LeaderboardManager({ value, onChange }: {
+export default function LeaderboardManager({ value, onChange, entryCounts }: {
   value: LeaderboardInput[];
   onChange: (value: LeaderboardInput[]) => void;
+  entryCounts: Record<number, number>;
 }) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -59,8 +59,8 @@ export default function LeaderboardManager({ value, onChange }: {
   const open = (index: number | null) => {
     setInvalidNumber(false);
     setEditing({ index, draft: index === null ? {
-      name: "", type: "SCORE", onlyBest: true, game: {} as GameType,
-      scores: [], maxUsersShown: 10, decimalPlaces: 0,
+      name: "", type: "SCORE", onlyBest: true,
+      maxUsersShown: 10, decimalPlaces: 0,
     } : { ...value[index] } });
   };
   const apply = () => {
@@ -87,7 +87,11 @@ export default function LeaderboardManager({ value, onChange }: {
               <div className="flex min-w-0 items-start gap-3">
                 <Icon name={types[lb.type].icon} />
                 <div className="min-w-0"><p className="break-words text-sm font-semibold">{lb.name || uiText("AppStrings.LeaderboardValue0", { value0: index + 1 })}</p>
-                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText(types[lb.type].rule)} · {lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")} · {lb.scores.length}  {uiText("AppStrings.Entries")}</p>
+                  <p className="mt-1 flex flex-wrap gap-x-3 text-xs" style={{ color: colors.textFaded }}>
+                    <span>{uiText(types[lb.type].rule)}</span>
+                    <span>{lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")}</span>
+                    <span>{(lb.id === undefined ? 0 : entryCounts[lb.id]) ?? 0} {uiText("AppStrings.Entries")}</span>
+                  </p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
