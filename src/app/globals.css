@@ -325,3 +325,8 @@ html.theme-preview-transitioning *::after {
     animation: none;
   }
 }
+.share-button{
+  position: fixed;
+  bottom: 10%;
+  right: 20px;
+}

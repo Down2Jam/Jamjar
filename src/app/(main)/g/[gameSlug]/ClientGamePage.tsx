@@ -91,6 +91,7 @@ import { usePageMetadata } from "@/hooks/usePageMetadata";
 import { UserHoverPreview } from "@/components/hover-previews";
 import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
 import { useSession } from "@/hooks/useSession";
+import ShareButton from "@/components/share-button";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -2037,6 +2038,7 @@ export default function ClientGamePage({
         </>
       )}
     </PriorityEmotesContext.Provider>
+    
   );
 }
 

@@ -61,6 +61,7 @@ import {
   CollectionArtwork,
   type CollectionArtworkSummary,
 } from "@/components/collections/CollectionArtwork";
+import ShareButton from "@/components/share-button";
 
 type RarityTier =
   | "Abyssal"
@@ -2946,6 +2947,7 @@ export default function ClientUserPage({
           )}
         </ModalContent>
       </Modal>
+      <ShareButton/>
     </>
   );
 }
