@@ -9,7 +9,8 @@ export default function ShareButton(){
         <Button className="share-button"
         
         onClick={()=>{
-            alert("Clicked share button")
+            var url = location.href;
+            navigator.clipboard.writeText(url)
         }
         }
         
