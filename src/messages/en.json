@@ -2771,7 +2771,8 @@
     "EndsIn": "Ends in",
     "StartsIn": "Starts in",
     "Streams": "Streams",
-    "Tokens": "Tokens"
+    "Tokens": "Tokens",
+    "LinkCopied": "Link Copied"
   },
   "AdminJamGames": {
     "Title": "Current jam games",
