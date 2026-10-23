@@ -25,7 +25,7 @@ export default function ShareButton(){
         }
         
         >
-            <Hstack className="items-center gap-2"><Icon name={displayCheckIcon ? "check" : "link"} color="text" size={16} />
+            <Hstack className="items-center gap-2"><Icon name={displayCheckIcon ? "check" : "share2"} color="text" size={16} />
             <span id="copy-link-text">{uiText("AppStrings.CopyShareLink")}</span></Hstack>
             
         </Button>
