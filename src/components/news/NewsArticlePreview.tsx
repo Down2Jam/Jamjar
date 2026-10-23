@@ -102,7 +102,6 @@ export default function NewsArticlePreview({
               >
                 {format(latestAt, "MMMM d, yyyy")}
               </time>
-              <span aria-hidden="true" className="opacity-50">·</span>
               <span>{readingMinutes}  {uiText("AppStrings.MinRead")}</span>
             </span>
           </span>

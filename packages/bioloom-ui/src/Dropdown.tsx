@@ -41,7 +41,9 @@ type Position =
 function isDropdownItemElement(
   node: ReactNode
 ): node is ReactElement<ItemProps, typeof DropdownItem> {
-  return isValidElement(node) && node.type === DropdownItem;
+  if (!isValidElement(node)) return false;
+  const component = node.type as { displayName?: string; name?: string };
+  return node.type === DropdownItem || component.displayName === "DropdownItem" || component.name === "DropdownItem";
 }
 
 function isElementWithChildren(
@@ -67,11 +69,28 @@ function findSelectedDisplay(
   return null;
 }
 
+function collectOptionValues(nodes: ReactNode): unknown[] {
+  return Children.toArray(nodes).flatMap(child => {
+    if (isDropdownItemElement(child)) return child.props.disabled || child.props.value === undefined ? [] : [child.props.value];
+    return isElementWithChildren(child) ? collectOptionValues(child.props.children) : [];
+  });
+}
+
+function collectOptionDisplays(nodes: ReactNode): Array<{ label: ReactNode; icon?: IconName }> {
+  return Children.toArray(nodes).flatMap(child => {
+    if (isDropdownItemElement(child)) return [{ label: child.props.children, icon: child.props.icon }];
+    return isElementWithChildren(child) ? collectOptionDisplays(child.props.children) : [];
+  });
+}
+
 interface DropdownContextValue {
   closeOnSelect: boolean;
   onItemSelect?: (value: unknown) => void;
   setOpen: (v: boolean) => void;
   multiple: boolean;
+  multipleWithModifiers: boolean;
+  selectionAnchor: React.MutableRefObject<unknown>;
+  optionValues: unknown[];
   selectedValues: Set<unknown>;
   setSelectedValues: (set: Set<unknown>) => void;
 
@@ -103,6 +122,8 @@ interface DropdownProps {
   backdrop?: boolean;
   closeOnOutsideClick?: boolean;
   multiple?: boolean;
+  multipleWithModifiers?: boolean;
+  clearSelectionLabel?: string;
   selectedValue?: unknown;
   selectedValues?: Set<unknown>;
   onSelectionChange?: (selected: Set<unknown>) => void;
@@ -110,13 +131,19 @@ interface DropdownProps {
 
   placeholder?: string;
   showChevron?: boolean;
+  fitLongestOption?: boolean;
+  sizingOptions?: Array<{ label: ReactNode; icon?: IconName }>;
   triggerSize?: ButtonSize;
   triggerVariant?: ButtonVariant;
   triggerClassName?: string;
+  triggerChevronClassName?: string;
+  matchTriggerWidth?: boolean;
+  arrowToChevron?: boolean;
   triggerIcon?: IconName;
   triggerStyle?: React.CSSProperties;
   menuStyle?: React.CSSProperties;
   freezePositionWhileOpen?: boolean;
+  instant?: boolean;
   portal?: boolean;
 }
 
@@ -135,19 +162,27 @@ function Dropdown({
   backdrop = true,
   closeOnOutsideClick = true,
   multiple = false,
+  multipleWithModifiers = false,
+  clearSelectionLabel,
   selectedValues: controlledSelectedValues,
   onSelectionChange,
   disabled = false,
   selectedValue,
   placeholder = "Select",
   showChevron = true,
+  fitLongestOption = false,
+  sizingOptions = [],
   triggerSize = "md",
   triggerVariant = "standard",
   triggerClassName = "",
+  triggerChevronClassName,
+  matchTriggerWidth = false,
+  arrowToChevron = false,
   triggerIcon,
   triggerStyle,
   menuStyle,
   freezePositionWhileOpen = false,
+  instant = false,
   portal = false,
 }: DropdownProps) {
   const useViewportAnchor = portal || freezePositionWhileOpen;
@@ -155,6 +190,8 @@ function Dropdown({
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const selectionAnchor = useRef<unknown>(undefined);
+  const optionValues = collectOptionValues(children);
   const [frozenAnchorRect, setFrozenAnchorRect] = useState<DOMRect | null>(null);
   const [internalSelectedValues, setInternalSelectedValues] = useState<
     Set<unknown>
@@ -189,6 +226,7 @@ function Dropdown({
 
   const supportsClick = openOn === "click" || openOn === "both";
   const supportsHover = openOn === "hover" || openOn === "both";
+
 
   const setOpenAndNotify = useCallback(
     (value: boolean) => {
@@ -338,37 +376,49 @@ function Dropdown({
     setOpenAndNotify(!open);
   };
 
+  const singleDisplay = multipleWithModifiers && selectedValues.size === 1
+    ? findSelectedDisplay(children, selectedValues.values().next().value)
+    : null;
   const computedLabel = multiple
     ? selectedValues.size > 0
-      ? `${selectedValues.size} selected`
+      ? singleDisplay?.label ?? `${selectedValues.size} selected`
       : placeholder
     : resolvedSelectedDisplay?.label ?? placeholder;
 
   const computedIcon = multiple
-    ? triggerIcon
+    ? singleDisplay?.icon ?? triggerIcon
     : resolvedSelectedDisplay?.icon ?? triggerIcon;
 
-  const renderDefaultTrigger = () => (
+  const optionDisplays = useMemo(() => fitLongestOption ? collectOptionDisplays(children) : [], [children, fitLongestOption]);
+  const renderDefaultTrigger = (display: { label: ReactNode; icon?: IconName } = { label: computedLabel, icon: computedIcon }) => (
     <Button
-      icon={computedIcon}
+      aria-haspopup="menu"
+      aria-expanded={open}
+      icon={display.icon}
       size={triggerSize}
       variant={triggerVariant}
-      className={triggerClassName}
+      className={`${triggerClassName} ${fitLongestOption ? "w-full whitespace-nowrap !justify-start text-left [&>p]:flex [&>p]:items-center [&>p]:text-left [&>p>span]:flex [&>p>span]:items-center" : ""}`}
       style={triggerStyle}
       disabled={disabled}
       rightSlot={
         showChevron && (
+          triggerChevronClassName ? (
+            <span data-dropdown-chevron className={triggerChevronClassName} aria-hidden="true">
+              <Icon name="chevrondown" size={16} className={`transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : "rotate-0"}`} />
+            </span>
+          ) : (
           <Icon
             name="chevrondown"
             size={16}
-            className={`ml-2 transform transition-transform duration-200 ${
+            className={`${fitLongestOption ? "ml-auto shrink-0" : "ml-2"} transform transition-transform duration-200 ${
               open ? "rotate-180" : "rotate-0"
             }`}
           />
+          )
         )
       }
     >
-      {computedLabel}
+      {display.label}
     </Button>
   );
 
@@ -380,8 +430,13 @@ function Dropdown({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div onClick={handleClick} className="cursor-pointer">
-        {trigger ?? renderDefaultTrigger()}
+      <div onClick={handleClick} className="cursor-pointer" style={fitLongestOption && !trigger ? { display: "inline-grid", gridTemplateColumns: "max-content" } : undefined}>
+        {fitLongestOption && !trigger ? <>
+          <div style={{ gridArea: "1 / 1", minWidth: 0 }}>{renderDefaultTrigger()}</div>
+          {[{ label: placeholder, icon: triggerIcon }, ...(multiple ? [{ label: `${optionDisplays.length} selected`, icon: triggerIcon }] : []), ...optionDisplays, ...sizingOptions].map((display, index) => (
+            <div key={index} aria-hidden="true" inert style={{ gridArea: "1 / 1", visibility: "hidden", pointerEvents: "none" }}>{renderDefaultTrigger(display)}</div>
+          ))}
+        </> : trigger ?? renderDefaultTrigger()}
       </div>
 
       {backdrop && (
@@ -394,13 +449,21 @@ function Dropdown({
           onItemSelect: onSelect,
           setOpen: (v) => setOpenAndNotify(v),
           multiple,
+          multipleWithModifiers,
+          selectionAnchor,
+          optionValues,
           selectedValues,
           setSelectedValues,
           setSelectedDisplay, // NEW
         }}
       >
         <Popover
+          instant={instant}
+          disableHoverScale={instant}
           shown={open}
+          anchorRef={rootRef}
+          matchAnchorWidth={matchTriggerWidth}
+          arrowAnchorSelector={arrowToChevron ? "[data-dropdown-chevron]" : undefined}
           position={position}
           anchorToScreen={useViewportAnchor}
           className={className}
@@ -420,6 +483,9 @@ function Dropdown({
               ...menuStyle,
             }}
           >
+            {multiple && clearSelectionLabel && (
+              <DropdownClearSelection>{clearSelectionLabel}</DropdownClearSelection>
+            )}
             {children}
           </div>
         </Popover>
@@ -464,6 +530,9 @@ export function DropdownItem<T = unknown>({
     onItemSelect,
     setOpen,
     multiple,
+    multipleWithModifiers,
+    selectionAnchor,
+    optionValues,
     selectedValues,
     setSelectedValues,
     setSelectedDisplay,
@@ -478,16 +547,28 @@ export function DropdownItem<T = unknown>({
     if (e.defaultPrevented) return;
 
     if (multiple && value !== undefined) {
-      const newSet = new Set(selectedValues);
-      if (isSelected) newSet.delete(value);
-      else newSet.add(value);
+      const toggle = e.ctrlKey || e.metaKey;
+      const additive = !multipleWithModifiers || toggle;
+      const newSet = additive || (isSelected && !e.shiftKey)
+        ? new Set(selectedValues)
+        : new Set<unknown>();
+      const anchorIndex = optionValues.indexOf(selectionAnchor.current);
+      const targetIndex = optionValues.indexOf(value);
+      if (e.shiftKey && anchorIndex >= 0 && targetIndex >= 0) {
+        for (const item of optionValues.slice(Math.min(anchorIndex, targetIndex), Math.max(anchorIndex, targetIndex) + 1)) newSet.add(item);
+      } else {
+        if (isSelected) newSet.delete(value);
+        else newSet.add(value);
+        selectionAnchor.current = value;
+      }
       setSelectedValues(newSet);
+      if (!additive && !e.shiftKey && closeOnSelect) setOpen(false);
     } else {
       if (value !== undefined) {
         setSelectedDisplay({ label: children, icon });
       }
       handleSelect();
-      if (closeOnSelect) setOpen(false);
+      if (closeOnSelect && !e.ctrlKey && !e.metaKey) setOpen(false);
     }
 
     onSelect?.(value as T);
@@ -584,9 +665,9 @@ export function DropdownItem<T = unknown>({
       }}
     >
       <Hstack justify="between" className="w-full">
-        <Hstack>
-          {icon && <Icon size={16} name={icon} />}
-          <span className="flex flex-col">
+        <Hstack className="min-w-0 flex-1">
+          {icon && <Icon size={16} name={icon} className="shrink-0" />}
+          <span className="flex min-w-0 flex-col">
             <Text>{children}</Text>
             {description && (
               <Text color="textFaded" size="xs">
@@ -595,10 +676,21 @@ export function DropdownItem<T = unknown>({
             )}
           </span>
         </Hstack>
-        {multiple && isSelected && <Icon name="check" className="ml-auto" />}
+        {multiple && isSelected && <Icon name="check" className="ml-auto shrink-0" />}
       </Hstack>
     </button>
   );
 }
 
-export default Object.assign(Dropdown, { Item: DropdownItem });
+DropdownItem.displayName = "DropdownItem";
+
+function DropdownClearSelection({ children }: { children: ReactNode }) {
+  const { selectionAnchor, setSelectedValues } = useDropdownCtx();
+  return <DropdownItem icon="layers" onClick={event => {
+    event.preventDefault();
+    selectionAnchor.current = undefined;
+    setSelectedValues(new Set());
+  }}>{children}</DropdownItem>;
+}
+
+export default Object.assign(Dropdown, { Item: DropdownItem, ClearSelection: DropdownClearSelection });

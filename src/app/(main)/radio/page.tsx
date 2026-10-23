@@ -28,6 +28,7 @@ import {
 } from "bioloom-ui";
 import Link from "@/compat/next-link";
 import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
+import { useMusic } from "bioloom-miniplayer";
 import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
 import {
   type CSSProperties,
@@ -290,6 +291,7 @@ export default function RadioLandingPage() {
 }
 
 export function RadioStationPage({ station }: { station: RadioStation }) {
+  const { stop: stopMusic, setShown: setMusicShown } = useMusic();
   const uiText = useUiTranslations();
   const { colors } = useTheme();
   const { emojis, emojiMap, loading: emojisLoading } = useEmojis();
@@ -802,6 +804,8 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       }
 
       await audio.play();
+      stopMusic();
+      setMusicShown(false);
       seekToLivePosition();
       reportDuration();
       lastSyncedTrackId.current = track.id;
@@ -811,7 +815,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
       }
       return true;
     },
-    [ensureRadioAudio, station, state, timing.elapsedSeconds, volume],
+    [ensureRadioAudio, station, state, timing.elapsedSeconds, volume, stopMusic, setMusicShown],
   );
 
   const startListening = useCallback(async () => {

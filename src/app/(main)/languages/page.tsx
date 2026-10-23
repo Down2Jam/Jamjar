@@ -59,7 +59,7 @@ export default function LanguagesPage() {
                 {selected && <span className="rounded-full px-2 py-1 text-xs font-bold" style={{ backgroundColor: colors.green, color: colors.crust }}>{uiText("AppStrings.Selected2")}</span>}
               </span>
               <span className="mt-1 block text-xs" style={{ color: colors.textFaded }}>
-                {language.key} · {isError || loadingUsage ? uiText("AppStrings.UserCountUnavailable") : uiText("AppStrings.Value0Value1", { value0: language.usageCount, value1: language.usageCount === 1 ? "user" : "users" })}
+                {language.key} {isError || loadingUsage ? uiText("AppStrings.UserCountUnavailable") : uiText("AppStrings.Value0Value1", { value0: language.usageCount, value1: language.usageCount === 1 ? "user" : "users" })}
               </span>
               <span className="mt-6 mb-2 block text-sm">{language.coverage}{uiText("AppStrings.Translated")}</span>
               <span className="block h-2 overflow-hidden rounded-full" style={{ backgroundColor: colors.base }}>

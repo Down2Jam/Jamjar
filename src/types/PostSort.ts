@@ -1,1 +1,1 @@
-export type PostSort = "newest" | "hot" | "top" | "all_time" | "oldest";
+export type PostSort = "newest" | "hot" | "active" | "top" | "all_time" | "oldest";

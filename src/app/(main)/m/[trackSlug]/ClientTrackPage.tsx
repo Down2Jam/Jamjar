@@ -1,3 +1,6 @@
+import { pageVersionUrl, defaultTrackVersion } from "@/helpers/pageVersionUrl";
+import { useContentView } from "@/hooks/useContentView";
+import { GameDataHoverPreview, UserHoverPreview } from "@/components/hover-previews";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
 import { getResultsGradient } from "@/helpers/ratingColor";
@@ -43,7 +46,7 @@ import {
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import CreateComment from "@/components/create-comment";
 import TrackPageLoading from "@/components/track-page-loading";
-import CommentCard from "@/components/posts/CommentCard";
+import VersionedComments from "@/components/comments/VersionedComments";
 import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
 import Link from "@/compat/next-link";
 import { useRouter } from "@/compat/next-navigation";
@@ -117,6 +120,7 @@ export default function ClientTrackPage({
     PageVersion | undefined
   >(undefined);
   const [track, setTrack] = useState<TrackType | null>(null);
+  useContentView("track", track?.slug === trackSlug ? track.id : undefined);
   const [user, setUser] = useState<UserType | null>(null);
   const [overallCategory, setOverallCategory] =
     useState<TrackRatingCategoryType | null>(null);
@@ -147,9 +151,7 @@ export default function ClientTrackPage({
       track?.game?.soundtrackThumbnail ||
       track?.game?.thumbnail ||
       metadataImage,
-    canonical: `/m/${track?.slug || trackSlug}${
-      track?.pageVersion === "POST_JAM" ? "?pageVersion=POST_JAM" : ""
-    }`,
+    canonical: pageVersionUrl(`/m/${track?.slug || trackSlug}`, track?.pageVersion, defaultTrackVersion(track)),
     type: "music.song",
   });
 
@@ -186,6 +188,11 @@ export default function ClientTrackPage({
         if (trackResponse.ok) {
           const payload = await readItem<TrackType>(trackResponse);
           setTrack(payload);
+          if (payload && requestedPageVersion) {
+            const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+            const cleanUrl = pageVersionUrl(currentUrl, payload.pageVersion, defaultTrackVersion(payload));
+            if (cleanUrl !== currentUrl) router.replace(cleanUrl);
+          }
           setPageVersion(
             payload?.pageVersion === "POST_JAM" ? "POST_JAM" : "JAM",
           );
@@ -293,14 +300,17 @@ export default function ClientTrackPage({
     activeJamResponse?.phase === "Post-Jam Rating";
   const shouldShowCurrentVersionResults =
     track.pageVersion === "JAM" ? shouldShowCurrentJamResults : false;
-  const canShowResults =
-    Boolean(activeJamResponse) &&
-    (!isCurrentJamTrack || shouldShowCurrentVersionResults);
+  const jam = track.game?.jam;
+  const ratingEnd = jam ? new Date(jam.startTime).getTime() + (
+    jam.jammingHours + jam.submissionHours + jam.ratingHours +
+    (track.pageVersion === "POST_JAM" ? (jam.postJamRefinementHours ?? 336) + (jam.postJamRatingHours ?? 336) : 0)
+  ) * 60 * 60 * 1000 : null;
+  const canShowResults = (ratingEnd !== null && Date.now() >= ratingEnd) || (
+    Boolean(activeJamResponse) && (!isCurrentJamTrack || shouldShowCurrentVersionResults)
+  );
   const canRateCurrentVersion =
     Boolean(user) &&
     !isOwnMusic &&
-    isCurrentJamTrack &&
-    isRatingOpenPhase &&
     Boolean(overallCategory);
   const hasVersionToggle =
     track.availablePageVersions?.includes("JAM") &&
@@ -340,8 +350,7 @@ export default function ClientTrackPage({
     setPageVersion(nextVersion);
 
     const params = new URLSearchParams(window.location.search);
-    params.set("pageVersion", nextVersion);
-    router.replace(`/m/${trackSlug}?${params.toString()}`);
+    router.replace(pageVersionUrl(`/m/${trackSlug}?${params}${window.location.hash}`, nextVersion, defaultTrackVersion(track)));
   };
 
   return (
@@ -364,13 +373,15 @@ export default function ClientTrackPage({
         />
         <div className="relative p-4 md:p-6">
             <Vstack align="start" className="gap-4">
+              <GameDataHoverPreview game={{ slug: track.game.slug, name: track.game.name, thumbnail: track.game.thumbnail, pageVersion: track.pageVersion }}>
               <Link
-                href={`/g/${track.game.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+                href={pageVersionUrl(`/g/${track.game.slug}`, track.pageVersion, defaultTrackVersion(track))}
               >
                 <Text size="xs" color="textFaded">
                   {track.game.name}
                 </Text>
               </Link>
+              </GameDataHoverPreview>
               <Text size="4xl" color="text" weight="semibold">
                 {track.name}
               </Text>
@@ -381,15 +392,20 @@ export default function ClientTrackPage({
                     {track.externalAuthorName || uiText("AppStrings.UnknownComposer")}
                   </Text>
                 ) : (
+                  <UserHoverPreview user={primaryArtist} portal>
                   <Link href={`/u/${primaryArtist.slug}`}>
                     <Text color="text">
                       {primaryArtist.name || primaryArtist.slug}
                     </Text>
                   </Link>
+                  </UserHoverPreview>
                 )}
               </Hstack>
               <div className="w-full max-w-6xl">
                 <TrackWaveformPlayer
+                  trackId={track.id}
+                  pageVersion={track.pageVersion}
+                  allowDownload={track.allowDownload}
                   slug={track.slug}
                   name={track.name}
                   artist={primaryArtist}
@@ -533,7 +549,7 @@ export default function ClientTrackPage({
                   hiddenText="Ratings are hidden by your settings."
                 >
                   <Vstack align="start" className="gap-3">
-                    {canShowResults && overallScore ? (
+                    {canShowResults && overallScore && (
                       <div className="grid grid-cols-[120px_100px_30px] items-center gap-2">
                         <Text size="sm" color="textFaded">
                            {uiText("RatingCategory.Overall.Title")} </Text>
@@ -569,9 +585,8 @@ export default function ClientTrackPage({
                           )}
                         </span>
                       </div>
-                    ) : (
-                      overallCategory &&
-                      canRateCurrentVersion && (
+                    )}
+                    {overallCategory && canRateCurrentVersion && (
                         <TrackStarRow
                           categoryId={overallCategory.id}
                           name="Overall"
@@ -633,46 +648,42 @@ export default function ClientTrackPage({
                                     }
                                   : prev,
                               );
+                              void getTrack(track.slug, track.pageVersion)
+                                .then(async response => {
+                                  if (!response.ok) return;
+                                  const updated = await readItem<TrackType>(response);
+                                  if (updated) setTrack(current => current && current.id === updated.id ? { ...current, scores: updated.scores, ratings: updated.ratings } : current);
+                                })
+                                .catch(() => {});
                             } finally {
                               setSavingRating(false);
                             }
                           }}
                         />
-                      )
                     )}
                     {canShowResults && overallScore && (
                       <Text size="sm" color="textFaded">
                         {(overallScore.averageUnrankedScore / 2).toFixed(2)}{" "}
                          {uiText("AppStrings.PublicAverageFrom")} {overallScore.ratingCount}  {uiText("AppStrings.Ratings")} </Text>
                     )}
-                    {isOwnMusic && isCurrentJamTrack && isRatingOpenPhase && (
+                    {isOwnMusic && (
                       <Text size="xs" color="textFaded">
                          {uiText("AppStrings.YouCanAndAposTRateYourOwn2")} </Text>
                     )}
-                    {!user && isCurrentJamTrack && isRatingOpenPhase && (
+                    {!user && (
                       <Text size="xs" color="textFaded">
                          {uiText("AppStrings.YouMustBeLoggedInToRateTracks")} </Text>
                     )}
                     {user &&
                       !isTeamMember &&
-                      isCurrentJamTrack &&
-                      !isRatingOpenPhase &&
-                      !canShowResults && (
-                        <Text size="xs" color="textFaded">
-                           {uiText("AppStrings.ItIsNotTheRatingPeriod2")} </Text>
-                      )}
-                    {user &&
-                      !isTeamMember &&
-                      isCurrentJamTrack &&
                       canRateCurrentVersion && (
                         <Text size="xs" color="textFaded">
                            {uiText("AppStrings.RatingsAreAutomaticallySaved2")} </Text>
                       )}
                     {user &&
                       !isTeamMember &&
-                      isCurrentJamTrack &&
                       canRateCurrentVersion &&
-                      !raterHasPublishedGame && (
+                      (!raterHasPublishedGame || !isCurrentJamTrack || !isRatingOpenPhase) && (
                         <Text size="xs" color="textFaded">
                            {uiText("AppStrings.YourRatingsWillNotCountTowardsTheRankings2")} </Text>
                       )}
@@ -783,19 +794,18 @@ export default function ClientTrackPage({
         </div>
       </div>
 
+      <VersionedComments comments={track.comments ?? []} jamComments={track.jamComments} postJam={track.pageVersion === "POST_JAM"} user={user}>
       <Card padding={1.5} shadow="none" className="my-10 w-full max-lg:!rounded-none max-sm:!px-3 max-sm:!py-4">
-        <CreateComment trackId={track.id} />
+        <CreateComment trackId={track.id} onCreated={async () => {
+          const response = await getTrack(trackSlug);
+          if (!response.ok) return;
+          const updatedTrack = await readItem<TrackType>(response);
+          if (!updatedTrack) return;
+          setTrack(updatedTrack);
+          handlePageVersionChange(updatedTrack.pageVersion === "POST_JAM" ? "POST_JAM" : "JAM");
+        }} />
       </Card>
-
-      <div className="flex flex-col gap-3">
-        {(track.comments ?? [])
-          .sort((a, b) => b.id - a.id)
-          .map((comment) => (
-            <div key={comment.id}>
-              <CommentCard comment={comment} user={user} edgeToEdge />
-            </div>
-          ))}
-      </div>
+      </VersionedComments>
     </>
   );
 }

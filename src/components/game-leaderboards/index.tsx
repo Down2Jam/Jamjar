@@ -1,5 +1,5 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { Fragment, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { Avatar, Button, Card, Dropdown, Modal, ModalBody, ModalContent, ModalHeader, Pagination, getNeutralBorderColor } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import { UserHoverPreview } from "@/components/hover-previews";
@@ -29,7 +29,7 @@ export default function GameLeaderboards({ leaderboards, userId, canManage, onSu
   userId?: number;
   canManage: boolean;
   onSubmit: (leaderboard: LeaderboardType) => void;
-  onDelete: (score: ScoreType) => Promise<void>;
+  onDelete: (score: ScoreType) => Promise<boolean>;
 }) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -38,6 +38,24 @@ export default function GameLeaderboards({ leaderboards, userId, canManage, onSu
   const [page, setPage] = useState(1);
   const [evidence, setEvidence] = useState<ScoreType | null>(null);
   const [pending, setPending] = useState<number | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ScoreType | null>(null);
+  const [deleteError, setDeleteError] = useState(false);
+  const deleting = useRef(false);
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting.current) return;
+    deleting.current = true;
+    setPending(deleteTarget.id);
+    setDeleteError(false);
+    try {
+      if (await onDelete(deleteTarget)) setDeleteTarget(null);
+      else setDeleteError(true);
+    } catch {
+      setDeleteError(true);
+    } finally {
+      deleting.current = false;
+      setPending(null);
+    }
+  };
   const board = leaderboards.find((entry) => entry.id === selectedId) ?? leaderboards[0];
   if (!board) return null;
   const borderColor = getNeutralBorderColor(colors);
@@ -75,7 +93,7 @@ export default function GameLeaderboards({ leaderboards, userId, canManage, onSu
     <button type="button" disabled={!score.evidence} onClick={() => setEvidence(score)} aria-label={uiText("AppStrings.Value0Value13", { value0: format(score), value1: score.evidence ? ", view evidence" : "" })} className="shrink-0 rounded text-right text-sm tabular-nums enabled:cursor-pointer enabled:hover:underline focus-visible:outline" style={{ color: colors.blue }}>{format(score)}</button>
     {full && <div className="flex shrink-0 gap-1">
       <Button size="sm" variant="ghost" icon="eye" aria-label={uiText("AppStrings.ViewScoreEvidence")} disabled={!score.evidence} onClick={() => setEvidence(score)} />
-      {(canManage || score.user.id === userId) && <Button size="sm" variant="ghost" icon="trash" color="red" aria-label={uiText("AppStrings.DeleteScore")} disabled={pending !== null} loading={pending === score.id} onClick={async () => { setPending(score.id); try { await onDelete(score); } finally { setPending(null); } }} />}
+      {(canManage || score.user.id === userId) && <Button size="sm" variant="ghost" icon="trash" color="red" aria-label={uiText("AppStrings.DeleteScore")} disabled={pending !== null} onClick={() => { setDeleteError(false); setDeleteTarget(score); }} />}
     </div>}
   </div>;
   const submit = () => { setOpen(false); onSubmit(board); };
@@ -97,16 +115,28 @@ export default function GameLeaderboards({ leaderboards, userId, canManage, onSu
         <Button size="sm" variant="ghost" onClick={() => setOpen(true)}>{uiText("AppStrings.ViewLeaderboard")}</Button>
       </div>
     </Card>
-    <Modal isOpen={open && !evidence} onOpenChange={(value) => setOpen(!!value)} size="2xl" className="!rounded-md">
+    <Modal isOpen={open && !evidence} onOpenChange={(value) => { if (deleting.current) return; setOpen(!!value); if (!value) setDeleteTarget(null); }} size="2xl" className="!rounded-md">
       <ModalContent className="!w-[840px] !max-w-[calc(100vw-32px)]">
-        <ModalHeader className="pr-14"><h2 className="text-xl font-semibold">{uiText("AppStrings.Leaderboard2")}</h2></ModalHeader>
+        <ModalHeader className="pr-14"><h2 className="text-xl font-semibold">{uiText(deleteTarget ? "AppStrings.DeleteScore" : "AppStrings.Leaderboard2")}</h2></ModalHeader>
         <ModalBody>
+          {deleteTarget && <div className="flex flex-col gap-4">
+            <p>{deleteTarget.user.id === userId
+              ? uiText("AppStrings.DeleteOwnScoreConfirmation", { score: format(deleteTarget) })
+              : uiText("AppStrings.DeleteScoreConfirmation", { player: deleteTarget.user.name, score: format(deleteTarget) })}</p>
+            {deleteError && <p role="alert" style={{ color: colors.red }}>{uiText("AppStrings.FailedToDeleteScore")}</p>}
+            <div className="flex justify-end gap-2">
+              <Button autoFocus variant="ghost" disabled={pending !== null} onClick={() => setDeleteTarget(null)}>{uiText("AppStrings.Cancel")}</Button>
+              <Button color="red" icon="trash" disabled={pending !== null} loading={pending !== null} onClick={() => void confirmDelete()}>{uiText("AppStrings.DeleteScore")}</Button>
+            </div>
+          </div>}
+          <div hidden={!!deleteTarget}>
           <div className="mb-3 flex flex-wrap justify-between gap-3">{selector()}<Button size="sm" variant="ghost" icon="plus" onClick={submit}>{uiText("AppStrings.SubmitScore2")}</Button></div>
           <div className="max-h-[55dvh] overflow-y-auto">
             {scores.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((score, index) => row(score, (currentPage - 1) * pageSize + index, true))}
             {!scores.length && <p className="py-6 text-center text-sm" style={{ color: colors.textFaded }}>{uiText("AppStrings.NoScoresYet2")}</p>}
           </div>
           {pages > 1 && <div className="mt-4 flex justify-center"><Pagination showControls color="primary" variant="faded" page={currentPage} total={pages} onChange={setPage} /></div>}
+          </div>
         </ModalBody>
       </ModalContent>
     </Modal>

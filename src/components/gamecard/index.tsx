@@ -1,3 +1,4 @@
+import { pageVersionUrl, defaultGameVersion } from "@/helpers/pageVersionUrl";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { Card, Chip } from "bioloom-ui";
@@ -92,12 +93,14 @@ function GamePreview({
   buildPlatforms,
   position,
   previewRef,
+  zIndex,
 }: {
   game: GameCardGame;
   creatorName: string | null;
   buildPlatforms: string[];
   position: PreviewPosition;
   previewRef: React.RefObject<HTMLDivElement | null>;
+  zIndex?: number;
 }) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -120,6 +123,7 @@ function GamePreview({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
       style={{
+        zIndex,
         left: position.left,
         top: position.top,
         color: colors.text,
@@ -317,10 +321,12 @@ export function GameHoverPreview({
   game,
   children,
   className = "",
+  zIndex,
 }: {
   game: GameCardGame;
   children: ReactNode;
   className?: string;
+  zIndex?: number;
 }) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -388,6 +394,7 @@ export function GameHoverPreview({
       {children}
       {showPreview && (
         <GamePreview
+          zIndex={zIndex}
           game={game}
           creatorName={creatorName}
           buildPlatforms={buildPlatforms}
@@ -413,7 +420,7 @@ export function GameCard({
   const jamColor = game.jam?.color || "green";
   const jamName = game.jam?.name || "Game Jam";
   const buildPlatforms = getBuildPlatforms(game);
-  const href = `/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`;
+  const href = pageVersionUrl(`/g/${game.slug}`, game.pageVersion, defaultGameVersion(game));
   const versionLabel =
     game.pageVersion === "POST_JAM" ? "Post-Jam" : null;
   const creatorName = getCreatorName(game);

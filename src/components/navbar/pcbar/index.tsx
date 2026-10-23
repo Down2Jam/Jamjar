@@ -173,8 +173,9 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
   return (
     <Navbar
       maxWidth="2xl"
-      className="!fixed inset-x-0 top-0 !z-50 px-1 duration-500 ease-in-out transition-color shadow-2xl"
+      className="!fixed inset-x-0 top-0 !z-50 px-1 duration-500 ease-in-out transition-color"
       style={{
+        boxShadow: "0 12px 24px -14px rgb(0 0 0 / 85%)",
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
         backgroundPositionY: "center, center",

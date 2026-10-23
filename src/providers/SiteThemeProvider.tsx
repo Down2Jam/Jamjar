@@ -61,7 +61,7 @@ export function SiteThemeProvider({ children }: { children: React.ReactNode }) {
     Cookies.set("theme", resolvedTheme.name, { expires: 36500 });
     setSiteThemeBacking(resolvedTheme);
 
-    if (user && !user.siteTheme) {
+    if (user && (!user.siteTheme || user.siteTheme === "Obsidian V2")) {
       void persistAccountTheme(resolvedTheme.name);
     }
   }, [

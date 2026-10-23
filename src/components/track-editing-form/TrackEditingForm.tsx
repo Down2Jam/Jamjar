@@ -1,5 +1,7 @@
-import { translateSystemLabel } from "@/helpers/systemLabels";
 "use client";
+
+import { pageVersionUrl, defaultTrackVersion } from "@/helpers/pageVersionUrl";
+import { translateSystemLabel } from "@/helpers/systemLabels";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -798,7 +800,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
 
           <Hstack className="w-full justify-between">
             <Button
-              href={`/m/${track.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`}
+              href={pageVersionUrl(`/m/${track.slug}`, track.pageVersion, defaultTrackVersion(track))}
               variant="ghost"
             >
                {uiText("AppStrings.Cancel")} </Button>
@@ -854,7 +856,7 @@ export default function TrackEditingForm({ track }: { track: TrackType }) {
                     return;
                   }
                   router.push(
-                    `/m/${track.slug}${track.pageVersion ? `?pageVersion=${track.pageVersion}` : ""}`,
+                    pageVersionUrl(`/m/${track.slug}`, track.pageVersion, defaultTrackVersion(track)),
                   );
                 } finally {
                   setSaving(false);

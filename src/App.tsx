@@ -51,6 +51,7 @@ const AuthorizeAppPage = lazy(() => import("@/app/(main)/authorize-app/page"));
 const ConnectedAppsPage = lazy(() => import("@/app/(main)/connected-apps/page"));
 const LoginPage = lazy(() => import("@/app/(main)/login/page"));
 const LogoutPage = lazy(() => import("@/app/(main)/logout/page"));
+const MusicHistoryPage = lazy(() => import("@/app/(main)/music/HistoryPage"));
 const MusicPage = lazy(() => import("@/app/(main)/music/page"));
 const NewsPage = lazy(() => import("@/app/(main)/news/page"));
 const NewsArticlePage = lazy(() => import("@/app/(main)/news/[slug]/page"));
@@ -384,6 +385,7 @@ export default function App() {
           <Route path="lucky" element={<LuckyRoute />} />
           <Route path="m/:trackSlug" element={<TrackRoute />} />
           <Route path="m/:trackSlug/edit" element={<TrackEditRoute />} />
+          <Route path="music/history" element={<Suspense fallback={<ListingPageLoading kind="music" />}><MusicHistoryPage /></Suspense>} />
           <Route path="music" element={<Suspense fallback={<ListingPageLoading kind="music" />}><MusicPage /></Suspense>} />
           <Route path="news" element={<NewsPage />} />
           <Route path="news/:slug" element={<NewsArticlePage />} />

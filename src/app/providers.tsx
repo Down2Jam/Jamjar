@@ -1,5 +1,7 @@
 "use client";
 
+import TrackDownloadModal from "@/components/tracks/TrackDownloadModal";
+
 import useBreakpoint from "@/hooks/useBreakpoint";
 import { useLanguagePreview } from "@/providers/LanguagePreviewProvider";
 import { SiteThemeProvider } from "@/providers/SiteThemeProvider";
@@ -90,6 +92,7 @@ export default function Providers({
                     <ToastProvider
                       placement={isMobile ? "top-center" : "bottom-right"}
                     />
+                    <TrackDownloadModal />
                     {children}
                   </MusicProvider>
                 </EmojiProvider>

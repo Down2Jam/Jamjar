@@ -1117,7 +1117,7 @@ export default function Editor({
           {editor.storage.characterCount.characters()} / {limit}{" "}
           {t("Markdown.Characters")}
           </span>
-          {compactStats ? <span aria-hidden="true">·</span> : <br />}
+          {compactStats ? " " : <br />}
           <span>
           {editor.storage.characterCount.words()} {t("Markdown.Words")}
           </span>

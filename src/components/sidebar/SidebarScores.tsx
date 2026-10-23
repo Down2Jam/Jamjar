@@ -1,5 +1,8 @@
 "use client";
 
+import { pageVersionUrl } from "@/helpers/pageVersionUrl";
+
+
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -20,7 +23,7 @@ import { formatDistance } from "date-fns";
 import SidebarSectionTitle from "./SidebarSectionTitle";
 
 function gameHref(score: RecentScoreType) {
-  return `/g/${score.game.slug}?pageVersion=${score.game.pageVersion}`;
+  return pageVersionUrl(`/g/${score.game.slug}`, score.game.pageVersion, "POST_JAM");
 }
 
 function placementColor(placement: number, colors: Record<string, string>) {
@@ -142,7 +145,7 @@ export default function SidebarScores() {
                     style={{ color: colors.text }}
                   >
                     <span style={{ color: accent }}>{placementLabel}</span>
-                    <span className="mx-1">·</span>
+                    {" "}
                     {formatRecentScore(score)}
                   </Link>
                 </ScoreHoverPreview>
@@ -155,7 +158,7 @@ export default function SidebarScores() {
                       {score.game.name}
                     </Link>
                   </GameDataHoverPreview>
-                  <span className="mx-1">·</span>
+                  {" "}
                   <span className="truncate">{score.leaderboard.name}</span>
                 </div>
               </div>

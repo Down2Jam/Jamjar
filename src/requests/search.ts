@@ -1,6 +1,7 @@
 import { BASE_URL } from "./config";
 
 export async function search(query: string, params?: {
+  signal?: AbortSignal;
   type?: string;
   limit?: number;
   debug?: boolean;
@@ -14,5 +15,5 @@ export async function search(query: string, params?: {
     searchParams.set("includeFacets", String(params.includeFacets));
   }
 
-  return fetch(`${BASE_URL}/search?${searchParams.toString()}`);
+  return fetch(`${BASE_URL}/search?${searchParams.toString()}`, { signal: params?.signal });
 }

@@ -73,7 +73,7 @@ export default function Posts() {
   const { siteTheme, colors } = useTheme();
 
   const [sort, setSort] = useState<PostSort>(
-    (["newest", "hot", "top", "all_time", "oldest"].includes(
+    (["newest", "hot", "active", "top", "all_time", "oldest"].includes(
       searchParams.get("sort") as PostSort
     ) &&
       (searchParams.get("sort") as PostSort)) ||
@@ -297,6 +297,11 @@ export default function Posts() {
       name: uiText("AppStrings.Hot"),
       icon: "flame",
       description: uiText("AppStrings.TrendingPostsFromTheLast24Hours"),
+    },
+    active: {
+      name: "PostSort.Active.Title",
+      icon: "messagecircle",
+      description: "PostSort.Active.Description",
     },
     top: {
       name: "PostSort.Top.Title",

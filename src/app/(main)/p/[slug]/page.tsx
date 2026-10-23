@@ -192,9 +192,6 @@ export default function PostPage() {
                       />
                       <p>{post.author.name}</p>
                     </Link>
-                    <span aria-hidden="true" className="opacity-50">
-                      ·
-                    </span>
                     <ContentStatusMeta
                       createdAt={post.createdAt}
                       editedAt={post.editedAt}

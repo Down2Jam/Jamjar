@@ -1,5 +1,8 @@
 "use client";
 
+import { pageVersionUrl } from "@/helpers/pageVersionUrl";
+
+
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -29,7 +32,7 @@ const tierColor: Record<AchievementRarityTier, string> = {
 };
 
 function gameHref(slug: string, pageVersion: "JAM" | "POST_JAM") {
-  return `/g/${slug}?pageVersion=${pageVersion}`;
+  return pageVersionUrl(`/g/${slug}`, pageVersion, "POST_JAM");
 }
 
 export default function SidebarAchievements() {
@@ -167,7 +170,7 @@ export default function SidebarAchievements() {
                   </GameDataHoverPreview>
                   {entry.tier !== "Default" && (
                     <>
-                      <span className="mx-1">·</span>
+                      {" "}
                       <span style={{ color: accent }}>{entry.tier}</span>
                     </>
                   )}

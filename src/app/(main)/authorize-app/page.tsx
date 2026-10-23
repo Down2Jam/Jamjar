@@ -56,7 +56,7 @@ export default function AuthorizeAppPage() {
           <Text size="sm" color="textFaded">Choose whether to give this app access to your Down2Jam account.</Text>
         </Vstack>
       </header>
-      {isDemo && <div className="game-editor-block" role="note"><Text size="xs" color="textFaded">Development preview · No account access will be granted.</Text></div>}
+      {isDemo && <div className="game-editor-block" role="note"><Text size="xs" color="textFaded">Development preview No account access will be granted.</Text></div>}
       {previewResult && <div className="game-editor-block" role="status"><Text size="sm">{previewResult}</Text></div>}
       {!preview && !error && <div className="game-editor-block" role="status"><Hstack><Spinner /><Text size="sm" color="textFaded">Loading authorization request…</Text></Hstack></div>}
       {error && <div className="game-editor-block" role="alert" style={{ color: colors.red }}>{error}</div>}

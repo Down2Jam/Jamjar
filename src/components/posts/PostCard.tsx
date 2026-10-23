@@ -200,9 +200,6 @@ function PostCard({
                 }}
               >
                 <PostAuthorHoverLink author={currentPostData.author} />
-                <span aria-hidden="true" className="opacity-50">
-                  ·
-                </span>
                 <ContentStatusMeta
                   createdAt={currentPostData.createdAt}
                   editedAt={currentPostData.editedAt}
@@ -258,9 +255,6 @@ function PostCard({
               }}
             >
               <PostAuthorHoverLink author={currentPostData.author} />
-              <span aria-hidden="true" className="opacity-50">
-                ·
-              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}
@@ -664,9 +658,6 @@ function PostCard({
 
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-default-500 pt-1.5">
               <PostAuthorHoverLink author={currentPostData.author} />
-              <span aria-hidden="true" className="opacity-50">
-                ·
-              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}
@@ -715,9 +706,6 @@ function PostCard({
 
             <div className="flex items-center gap-2 text-xs text-default-500 pt-1">
               <PostAuthorHoverLink author={currentPostData.author} />
-              <span aria-hidden="true" className="opacity-50">
-                ·
-              </span>
               <ContentStatusMeta
                 createdAt={currentPostData.createdAt}
                 editedAt={currentPostData.editedAt}

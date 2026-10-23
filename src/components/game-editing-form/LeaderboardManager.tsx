@@ -41,7 +41,7 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
           </tr>
         ))}</tbody>
       </table>
-      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{uiText(types[leaderboard.type].rule)} · {leaderboard.onlyBest ? uiText("AppStrings.BestEntryPerPlayer") : uiText("AppStrings.AllEntries")}</p>
+      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{uiText(types[leaderboard.type].rule)} {leaderboard.onlyBest ? uiText("AppStrings.BestEntryPerPlayer") : uiText("AppStrings.AllEntries")}</p>
     </section>
   );
 }
@@ -87,7 +87,7 @@ export default function LeaderboardManager({ value, onChange }: {
               <div className="flex min-w-0 items-start gap-3">
                 <Icon name={types[lb.type].icon} />
                 <div className="min-w-0"><p className="break-words text-sm font-semibold">{lb.name || uiText("AppStrings.LeaderboardValue0", { value0: index + 1 })}</p>
-                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText(types[lb.type].rule)} · {lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")} · {lb.scores.length}  {uiText("AppStrings.Entries")}</p>
+                  <p className="mt-1 text-xs" style={{ color: colors.textFaded }}>{uiText(types[lb.type].rule)} {lb.onlyBest ? uiText("AppStrings.BestPerPlayer") : uiText("AppStrings.AllEntries")} {lb.scores.length}  {uiText("AppStrings.Entries")}</p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2">
