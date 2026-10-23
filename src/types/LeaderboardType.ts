@@ -14,4 +14,7 @@ export interface LeaderboardType {
   decimalPlaces: number;
 }
 
-export type LeaderboardInput = Omit<LeaderboardType, "id"> & { id?: number };
+export type LeaderboardInput = Pick<
+  LeaderboardType,
+  "name" | "type" | "onlyBest" | "maxUsersShown" | "decimalPlaces"
+> & { id?: number };

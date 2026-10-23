@@ -1137,13 +1137,14 @@ export default function MusicPage() {
             const canRateTrack =
               Boolean(user) &&
               Boolean(ratingTrackId) &&
-              track.pageVersion !== "POST_JAM" &&
               Array.isArray(track.game?.team?.users) &&
               !isOwnTrack(track, user) &&
               currentJamId != null &&
               String(track.game?.jamId ?? "") === currentJamId &&
-              (activeJamPhase === "Rating" ||
-                activeJamPhase === "Submission") &&
+              (track.pageVersion === "POST_JAM"
+                ? activeJamPhase === "Post-Jam Rating"
+                : activeJamPhase === "Rating" ||
+                  activeJamPhase === "Submission") &&
               Boolean(trackOverallCategory);
 
             return (
@@ -1181,8 +1182,7 @@ export default function MusicPage() {
                   if (
                     !canRateTrack ||
                     !ratingTrackId ||
-                    !trackOverallCategory ||
-                    track.pageVersion === "POST_JAM"
+                    !trackOverallCategory
                   ) {
                     return;
                   }

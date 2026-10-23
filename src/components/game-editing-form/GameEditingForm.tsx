@@ -44,7 +44,8 @@ import {
 } from "@/requests/game";
 import { getTrackFlags, getTrackTags } from "@/requests/track";
 import { getTeamsUser } from "@/requests/team";
-import { AchievementType } from "@/types/AchievementType";
+import type { AchievementInput } from "@/types/AchievementType";
+import { toAchievementInput, toLeaderboardInput } from "@/requests/gamePayload";
 import { DownloadLinkType, PlatformType } from "@/types/DownloadLinkType";
 import { FlagType } from "@/types/FlagType";
 import { GameTagType } from "@/types/GameTagType";
@@ -409,7 +410,13 @@ export default function GameEditingForm({
   const [flags, setFlags] = useState<number[]>([]);
   const [tags, setTags] = useState<number[]>([]);
   const [leaderboards, setLeaderboards] = useState<LeaderboardInput[]>([]);
-  const [achievements, setAchievements] = useState<AchievementType[]>([]);
+  const [achievements, setAchievements] = useState<AchievementInput[]>([]);
+  const bridgeAchievements = useMemo(
+    () => achievements.flatMap(({ id, ...achievement }) =>
+      typeof id === "number" && id > 0 ? [{ ...achievement, id }] : [],
+    ),
+    [achievements],
+  );
   const bridgeLeaderboards = useMemo(
     () => leaderboards.flatMap((leaderboard) => {
       const id = leaderboard.id;
@@ -581,8 +588,8 @@ export default function GameEditingForm({
     setSoundtrackThumbnailUrl(game?.soundtrackThumbnail || null);
     setBannerUrl(game?.banner || null);
     setDownloadLinks(game?.downloadLinks || []);
-    setAchievements(game?.achievements || []);
-    setLeaderboards(game?.leaderboards || []);
+    setAchievements((game?.achievements ?? []).map(toAchievementInput));
+    setLeaderboards((game?.leaderboards ?? []).map(toLeaderboardInput));
     setCategory(game?.category ?? "REGULAR");
     setChosenRatingCategories(
       game?.ratingCategories?.map((ratingCategory) => ratingCategory.id) || [],
@@ -1606,7 +1613,7 @@ export default function GameEditingForm({
                                     pageVersion={pageVersion}
                                     signedIn={signedIn}
                                     user={user ?? null}
-                                    achievements={achievements}
+                                    achievements={bridgeAchievements}
                                     leaderboards={bridgeLeaderboards}
                                   />
                                 )}
@@ -4372,15 +4379,19 @@ export default function GameEditingForm({
                               onlyBest: board.onlyBest,
                               maxUsersShown: board.maxUsersShown,
                               decimalPlaces: board.decimalPlaces,
-                              game: game!,
-                              scores: [],
                             }]
                           )}>
                             {uiText("AppStrings.CreatePostJamTrackVersion")}
                           </Button>
                         </Hstack>
                       ))}
-                    <LeaderboardManager value={leaderboards} onChange={setLeaderboards} />
+                    <LeaderboardManager
+                      value={leaderboards}
+                      onChange={setLeaderboards}
+                      entryCounts={Object.fromEntries(
+                        (game?.leaderboards ?? []).map((board) => [board.id, board.scores?.length ?? 0]),
+                      )}
+                    />
                 </div>
               </Vstack>
             </Tab>
@@ -4408,9 +4419,6 @@ export default function GameEditingForm({
                                 name: achievement.name,
                                 description: achievement.description,
                                 image: achievement.image,
-                                game: game!,
-                                users: [],
-                                unlocks: [],
                               }]);
                             }}>
                               {uiText("AppStrings.CreatePostJamTrackVersion")}
@@ -4420,7 +4428,7 @@ export default function GameEditingForm({
                       {achievements.length > 0 && (
                         <Vstack className="w-full gap-3" align="stretch">
                           {achievements.map((a, idx) => (
-                            <ItemEditor key={a.id < 0 ? idx : a.id} item={a} title={a.name || uiText("AppStrings.Achievement")}
+                            <ItemEditor key={a.id !== undefined && a.id > 0 ? a.id : idx} item={a} title={a.name || uiText("AppStrings.Achievement")}
       initiallyOpen={newAchievementIndex === idx}
       discardNewOnCancel={newAchievementIndex === idx}
       onClose={() => setNewAchievementIndex(null)}
@@ -4536,7 +4544,7 @@ export default function GameEditingForm({
                               name: "",
                               description: "",
                               image: "",
-                            } as AchievementType,
+                            },
                           ]); }}
                       >
                         CreateGame.Achievements.Add

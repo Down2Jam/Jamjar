@@ -1,7 +1,7 @@
 import { getCookie } from "@/helpers/cookie";
 import { BASE_URL } from "./config";
 import { PlatformType } from "@/types/DownloadLinkType";
-import { AchievementType } from "@/types/AchievementType";
+import type { AchievementInput } from "@/types/AchievementType";
 import { LeaderboardInput } from "@/types/LeaderboardType";
 import {
   GameEmbedAspectRatio,
@@ -10,6 +10,7 @@ import {
 } from "@/types/GameType";
 import { isNumericJamValue } from "@/helpers/jamUrl";
 import type { TrackLicenseCode, TrackOrigin } from "@/helpers/trackLicense";
+import { toAchievementInput, toLeaderboardInput } from "./gamePayload";
 
 const inflightGetRequests = new Map<string, Promise<Response>>();
 
@@ -133,7 +134,7 @@ export async function postGame(
   majRatingCategories: number[],
   published: boolean,
   themeJustification: string,
-  achievements: AchievementType[],
+  achievements: AchievementInput[],
   flags: number[],
   tags: number[],
   leaderboards: LeaderboardInput[],
@@ -194,10 +195,10 @@ export async function postGame(
       majRatingCategories,
       published,
       themeJustification,
-      achievements,
+      achievements: achievements.map(toAchievementInput),
       flags,
       tags,
-      leaderboards,
+      leaderboards: leaderboards.map(toLeaderboardInput),
       short,
       songs,
       screenshots,
@@ -243,7 +244,7 @@ export async function updateGame(
   majRatingCategories: number[],
   published: boolean,
   themeJustification: string,
-  achievements: AchievementType[],
+  achievements: AchievementInput[],
   flags: number[],
   tags: number[],
   leaderboards: LeaderboardInput[],
@@ -303,10 +304,10 @@ export async function updateGame(
       majRatingCategories,
       published,
       themeJustification,
-      achievements,
+      achievements: achievements.map(toAchievementInput),
       flags,
       tags,
-      leaderboards,
+      leaderboards: leaderboards.map(toLeaderboardInput),
       short,
       songs,
       screenshots,
