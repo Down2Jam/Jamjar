@@ -62,6 +62,7 @@ import {
   type CollectionArtworkSummary,
 } from "@/components/collections/CollectionArtwork";
 import ShareButton from "@/components/share-button";
+import useBreakpoint from "@/hooks/useBreakpoint";
 
 type RarityTier =
   | "Abyssal"
@@ -391,6 +392,7 @@ export default function ClientUserPage({
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
   const activeJamId = activeJamResponse?.jam?.id ?? null;
+  const { isMobile } = useBreakpoint();
   const {
     isOpen: isAvatarOpen,
     onOpen: openAvatar,
@@ -1255,6 +1257,11 @@ export default function ClientUserPage({
                       )}
                     </button>
                   )}
+                  {
+                    !isMobile && (
+                      <ShareButton/>
+                    )
+                  }
                 </Hstack>
                 <Hstack wrap className="items-center gap-2 sm:gap-3">
                   <Text size="sm" color="textFaded">
@@ -1283,7 +1290,13 @@ export default function ClientUserPage({
                       )}
                     </button>
                   )}
+                  
                 </Hstack>
+                {
+                    isMobile && (
+                      <ShareButton/>
+                    )
+                  }
               </Vstack>
               <Hstack
                 wrap
@@ -2947,7 +2960,6 @@ export default function ClientUserPage({
           )}
         </ModalContent>
       </Modal>
-      <ShareButton/>
     </>
   );
 }

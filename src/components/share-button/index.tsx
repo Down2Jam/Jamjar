@@ -8,7 +8,7 @@ export default function ShareButton(){
     const uiText = useUiTranslations();
     const [displayCheckIcon, setDisplayCheckIcon] = useState(false)
     return (
-        <Button className="share-button"
+        <Button 
         onClick={()=>{
             const timeoutTime = 2500
             var url = location.href;
