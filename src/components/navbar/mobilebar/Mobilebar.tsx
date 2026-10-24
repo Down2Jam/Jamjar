@@ -18,6 +18,7 @@ import {
 } from "@/hooks/queries";
 import { Badge } from "bioloom-ui";
 import { useUnreadNews } from "@/components/news/useUnreadNews";
+import Hotkey from "../../hotkey";
 import SearchBar from "../pcbar/SearchBar";
 import { API_DOCS_URL } from "@/requests/config";
 import { useJam } from "@/hooks/useJam";
@@ -66,10 +67,11 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
     <Navbar
       className={`${
         hidden ? "translate-y-full" : "translate-y-0"
-      } border-t-2 !fixed !top-auto bottom-0 left-0 right-0 z-50 px-4 py-1 duration-500 ease-in-out transition-color shadow-2xl`}
+      } border-t-2 !fixed !top-auto bottom-0 left-0 right-0 z-50 px-4 py-1 duration-500 ease-in-out transition-color`}
       style={{
         height: "calc(60px + env(safe-area-inset-bottom))",
         paddingBottom: "env(safe-area-inset-bottom)",
+        boxShadow: "0 -12px 24px -14px rgb(0 0 0 / 85%)",
         backgroundImage:
           "url(/images/D2J_Icon_watermark.png), url(/images/D2J_Icon_watermark.png)",
         backgroundPositionY: "center, center",
@@ -80,6 +82,12 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
       }}
       isBordered
     >
+      {user && <Hotkey
+        hotkey={["G", "X"]}
+        href="/music/history"
+        title="Listening history"
+        description="Revisit tracks you’ve listened to"
+      />}
       <Button href="/" icon="home" variant="ghost"></Button>
       <Button href="/games" icon="gamepad" variant="ghost"></Button>
       <Dropdown
@@ -104,6 +112,17 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             description={uiText("Navbar.Profile.Description")}
           >
              {uiText("Navbar.Profile.Title")} </Dropdown.Item>
+        )}
+        {user && (
+          <Dropdown.Item
+            value="listening-history"
+            icon="clock"
+            href="/music/history"
+            description="Revisit tracks you’ve listened to"
+            kbd="G X"
+          >
+            Listening history
+          </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item

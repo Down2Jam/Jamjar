@@ -64,7 +64,7 @@ export default function AdminJamGames() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div><h2 className="text-lg font-semibold">{game.name}</h2>
             <p className="text-sm opacity-70">{game.team.name || game.team.users.map((user) => user.name).join(", ")}</p>
-            <p className="mt-1 text-sm">{t(game.published ? "AdminJamGames.published" : "AdminJamGames.unpublished")} · {game.category}</p>
+            <p className="mt-1 text-sm">{t(game.published ? "AdminJamGames.published" : "AdminJamGames.unpublished")} {game.category}</p>
           </div>
           <Button href={`/g/${encodeURIComponent(game.slug)}`} size="sm" icon="externalLink">{t(game.published ? "AdminJamGames.VisitPage" : "AdminJamGames.VisitTempPage")}</Button>
         </div>

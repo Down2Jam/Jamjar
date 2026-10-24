@@ -1,4 +1,7 @@
 "use client";
+
+import { pageVersionUrl } from "@/helpers/pageVersionUrl";
+
 import { getResultsGradient } from "@/helpers/ratingColor";
 import { RatingRadarShape } from "@/components/RatingRadarShape";
 import { RatingRadarLabel } from "@/components/RatingRadarLabel";
@@ -2260,7 +2263,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                     : score.placement === 3 ? colors.orange
                     : colors.text;
                   return (
-                  <a key={score.id} href={`/g/${score.leaderboard.game.slug}?pageVersion=${score.leaderboard.game.pageVersion ?? "JAM"}`} className="flex w-fit min-w-0 max-w-sm items-center gap-4 rounded-lg py-4">
+                  <a key={score.id} href={pageVersionUrl(`/g/${score.leaderboard.game.slug}`, score.leaderboard.game.pageVersion ?? "JAM", "POST_JAM")} className="flex w-fit min-w-0 max-w-sm items-center gap-4 rounded-lg py-4">
                     <Image
                       src={score.leaderboard.game.thumbnail || "/images/D2J_Icon.png"}
                       alt=""

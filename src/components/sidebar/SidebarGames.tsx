@@ -1,5 +1,7 @@
 "use client";
 
+import { pageVersionUrl, defaultGameVersion } from "@/helpers/pageVersionUrl";
+
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -90,7 +92,7 @@ export default function SidebarGames() {
               game={game}
             >
               <Link
-                href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+                href={pageVersionUrl(`/g/${game.slug}`, game.pageVersion, defaultGameVersion(game))}
               >
                 <div
                   className="post-card-shadow h-[119px] w-[212px] overflow-hidden rounded-xl"
@@ -116,7 +118,7 @@ export default function SidebarGames() {
               game={game}
             >
               <Link
-                href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+                href={pageVersionUrl(`/g/${game.slug}`, game.pageVersion, defaultGameVersion(game))}
               >
                 <div
                   className="post-card-shadow h-[77px] w-[136px] overflow-hidden rounded-xl"
@@ -143,7 +145,7 @@ export default function SidebarGames() {
                 game={game}
               >
                 <Link
-                  href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+                  href={pageVersionUrl(`/g/${game.slug}`, game.pageVersion, defaultGameVersion(game))}
                 >
                   <div
                     className="post-card-shadow h-[59px] w-[104px] overflow-hidden rounded-xl"

@@ -2672,7 +2672,7 @@ export default function ClientUserPage({
                                 </Text>
                                 {"game" in item ? (
                                   <Text size="xs" color="textFaded" className="max-w-full truncate">
-                                    {[item.game?.name, item.composer?.name].filter(Boolean).join(" · ")}
+                                    {[item.game?.name, item.composer?.name].filter(Boolean).join(" ")}
                                   </Text>
                                 ) : "slug" in item && (
                                   <Text size="xs" color="textFaded">

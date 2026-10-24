@@ -17,15 +17,14 @@ import { LanguagePreviewProvider } from "./providers/LanguagePreviewProvider";
 import { installSessionFetch } from "./requests/sessionFetch";
 import { installSessionSync } from "./requests/sessionState";
 
-installSessionSync();
-installSessionFetch();
-
 const root = document.getElementById("root");
 
 if (!root) {
   throw new Error("Root element not found");
 }
 
+installSessionSync();
+installSessionFetch();
 createRoot(root).render(
   <LanguagePreviewProvider>
     <BrowserRouter>

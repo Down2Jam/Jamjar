@@ -30,6 +30,12 @@ export default function NavbarUser({
       {user && (
         <>
           <Hotkey
+            hotkey={["G", "X"]}
+            href="/music/history"
+            title="Listening history"
+            description="Revisit tracks you’ve listened to"
+          />
+          <Hotkey
             hotkey={["G", "P"]}
             onPress={() => redirect(`/u/${user.slug}`)}
             title="Navbar.Profile.Title"
@@ -85,6 +91,15 @@ export default function NavbarUser({
               kbd="G P"
             >
               Navbar.Profile.Title
+            </Dropdown.Item>
+            <Dropdown.Item
+              value="listening-history"
+              icon="clock"
+              href="/music/history"
+              description="Revisit tracks you’ve listened to"
+              kbd="G X"
+            >
+              Listening history
             </Dropdown.Item>
             <Dropdown.Item
               value="settings"

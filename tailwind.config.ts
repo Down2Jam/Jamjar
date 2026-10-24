@@ -19,6 +19,11 @@ const config: Config = {
         smallwave: "smallwave 1.2s ease-in-out infinite",
       },
       keyframes: {
+        "player-title-scroll": {
+          "0%, 12%, 100%": { transform: "translateX(0)" },
+          "45%, 60%": { transform: "translateX(var(--title-scroll-distance))" },
+          "92%": { transform: "translateX(0)" },
+        },
         wiggle: {
           "0%, 100%": { transform: "rotate(0deg)" },
           "25%": { transform: "rotate(10deg)" },

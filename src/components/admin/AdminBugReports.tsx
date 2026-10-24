@@ -19,7 +19,7 @@ function ReportDetail({ report, onSaved }: { report: BugReport; onSaved: (report
   const [saved, setSaved] = useState(false);
   const selectStyle = { backgroundColor: colors.mantle, color: colors.text, borderColor: `color-mix(in srgb, ${colors.text} 15%, ${colors.mantle})` };
   return <section className="min-w-0 space-y-5" aria-label={uiText("AppStrings.ReportValue0", { value0: report.id })}>
-    <div><p className="mb-2 text-xs" style={{ color: colors.textFaded }}>{uiText("AppStrings.BUG")}{report.id}</p><h2 className="break-words text-2xl font-semibold">{report.reason}</h2><p className="mt-2 text-sm" style={{ color: colors.textFaded }}>{uiText("PostCard.By")} {report.reporterName} · {new Date(report.createdAt).toLocaleString()}</p></div>
+    <div><p className="mb-2 text-xs" style={{ color: colors.textFaded }}>{uiText("AppStrings.BUG")}{report.id}</p><h2 className="break-words text-2xl font-semibold">{report.reason}</h2><p className="mt-2 text-sm" style={{ color: colors.textFaded }}>{uiText("PostCard.By")} {report.reporterName} {new Date(report.createdAt).toLocaleString()}</p></div>
     <div className="whitespace-pre-wrap break-words rounded-lg p-4 text-sm leading-relaxed" style={{ backgroundColor: colors.crust }}>{report.details}</div>
     <form className="space-y-4" onSubmit={async (event) => {
       event.preventDefault(); if (saving) return;
@@ -75,7 +75,7 @@ export default function AdminBugReports() {
         <aside className="min-w-0 space-y-3" aria-label={uiText("AppStrings.BugReportQueue")} aria-busy={loading}>
           {reports.map((report) => <button key={report.id} className="block w-full rounded-lg border p-4 text-left transition-colors" style={{ backgroundColor: selected?.id === report.id ? colors.base : colors.mantle, borderColor: selected?.id === report.id ? colors.blue : `color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})` }} aria-pressed={selected?.id === report.id} onClick={() => setSelected(report)}>
             <div className="mb-2 flex flex-wrap items-center gap-2"><span className="text-xs" style={{ color: colors.textFaded }}>#{report.id}</span><Chip className="post-tag-chip">{labels[report.status]}</Chip><Chip className="post-tag-chip" color={report.priority === "urgent" || report.priority === "high" ? "red" : "default"}>{report.priority}</Chip></div>
-            <p className="break-words text-sm font-semibold">{report.reason}</p><p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{report.reporterName} · {new Date(report.createdAt).toLocaleDateString()}</p>
+            <p className="break-words text-sm font-semibold">{report.reason}</p><p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{report.reporterName} {new Date(report.createdAt).toLocaleDateString()}</p>
           </button>)}
           {loading && <p role="status" className="motion-safe:animate-pulse text-sm">{uiText("AppStrings.LoadingReports")}</p>}
           {!loading && !error && reports.length === 0 && <p className="text-sm" style={{ color: colors.textFaded }}>{uiText("AppStrings.No")} {status === "all" ? uiText("AppStrings.Bug") : labels[status].toLowerCase()}  {uiText("AppStrings.Reports")}</p>}

@@ -40,7 +40,7 @@ function Preview({ leaderboard }: { leaderboard: LeaderboardInput }) {
           </tr>
         ))}</tbody>
       </table>
-      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{uiText(types[leaderboard.type].rule)} · {leaderboard.onlyBest ? uiText("AppStrings.BestEntryPerPlayer") : uiText("AppStrings.AllEntries")}</p>
+      <p className="p-3 text-xs" style={{ color: colors.textFaded }}>{uiText(types[leaderboard.type].rule)} {leaderboard.onlyBest ? uiText("AppStrings.BestEntryPerPlayer") : uiText("AppStrings.AllEntries")}</p>
     </section>
   );
 }

@@ -4,6 +4,11 @@ import { ListingPageVersion, PageVersion } from "@/types/GameType";
 import { isNumericJamValue } from "@/helpers/jamUrl";
 import type { TrackLicenseCode } from "@/helpers/trackLicense";
 
+export function getTrackDownloadDetails(trackSlug: string, pageVersion: PageVersion, signal: AbortSignal) {
+  const params = new URLSearchParams({ pageVersion });
+  return fetch(`${BASE_URL}/tracks/${encodeURIComponent(trackSlug)}/download-details?${params}`, { credentials: "include", signal });
+}
+
 export async function getTrack(trackSlug: string, pageVersion?: PageVersion) {
   const params = new URLSearchParams();
   if (pageVersion) {

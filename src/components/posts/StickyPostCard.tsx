@@ -59,9 +59,6 @@ export default function StickyPostCard({ post }: { post: PostType }) {
               />
               <p>{post.author.name}</p>
             </Link>
-            <span aria-hidden="true" className="opacity-50">
-              ·
-            </span>
             <p>
               {formatDistance(new Date(post.createdAt), new Date(), {
                 addSuffix: true,

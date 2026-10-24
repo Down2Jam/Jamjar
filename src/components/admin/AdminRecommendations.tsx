@@ -67,7 +67,7 @@ function PreviewEntry({
           {personalized
             ? t("AdminRecommendations.VisitorRank", { rank: item.otherRank ?? "—" })
             : t("AdminRecommendations.PlayerRank", { rank: item.otherRank ?? "—" })}
-          {personalized && movement !== 0 ? ` · ${movement > 0 ? "↑" : "↓"}${Math.abs(movement)}` : ""}
+          {personalized && movement !== 0 ? ` ${movement > 0 ? "↑" : "↓"}${Math.abs(movement)}` : ""}
         </span>
       </div>
       <GameCard game={item.game} />

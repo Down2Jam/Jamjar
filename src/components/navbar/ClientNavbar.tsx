@@ -1,7 +1,7 @@
 "use client";
 
 import useBreakpoint from "@/hooks/useBreakpoint";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useLayoutEffect, useRef } from "react";
 import useHasMounted from "@/hooks/useHasMounted";
 import Mobilebar from "./mobilebar/Mobilebar";
 import { LanguageInfo } from "@/types/LanguageInfoType";
@@ -20,11 +20,21 @@ export default function ClientNavbar({
 }: ClientNavbarProps) {
   const { isMobile } = useBreakpoint();
   const hasMounted = useHasMounted();
+  const navbarSpace = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const element = navbarSpace.current;
+    if (!element) return;
+    const update = () => document.documentElement.style.setProperty("--site-navbar-height", `${isMobile ? 0 : element.getBoundingClientRect().height}px`);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => { observer.disconnect(); document.documentElement.style.removeProperty("--site-navbar-height"); };
+  }, [hasMounted, isMobile]);
 
   if (!hasMounted) return null; // prevent hydration mismatch
 
   return (
-    <div className={isMobile ? undefined : "h-16 shrink-0"}>
+    <div ref={navbarSpace} className={isMobile ? undefined : "h-16 shrink-0"}>
       {isMobile ? (
         <Mobilebar isLoggedIn={isLoggedIn} />
       ) : (

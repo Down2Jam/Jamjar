@@ -61,7 +61,6 @@ export default function GameReleaseCard({
             <div className="mb-1 flex min-w-0 items-center gap-2 text-xs text-default-500">
               {creatorAvatars(20)}
               <span className="truncate">{creatorLabel}  {uiText("AppStrings.ReleasedAGame")}</span>
-              <span aria-hidden="true" className="shrink-0 opacity-50">·</span>
               <Text size="xs" color="textFaded" className="shrink-0">
                 {releaseTime}
               </Text>
@@ -98,7 +97,6 @@ export default function GameReleaseCard({
             <div className="mb-1 flex min-w-0 items-center gap-2 text-xs text-default-500">
               {creatorAvatars(18)}
               <span className="truncate">{creatorLabel}  {uiText("AppStrings.ReleasedAGame")}</span>
-              <span aria-hidden="true" className="shrink-0 opacity-50">·</span>
               <Text size="xs" color="textFaded" className="shrink-0">
                 {releaseTime}
               </Text>

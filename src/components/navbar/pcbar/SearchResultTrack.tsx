@@ -48,7 +48,7 @@ export default function SearchResultTrack({
         <Vstack gap={0} align="start">
           <Text color="text">{track.name}</Text>
           <Text color="textFaded" size="sm">
-            {track.game.name} · {track.composer.name}
+            {track.game.name} {track.composer.name}
           </Text>
         </Vstack>
       </Hstack>

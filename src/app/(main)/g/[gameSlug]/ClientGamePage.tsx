@@ -1,4 +1,7 @@
 "use client";
+
+import { pageVersionUrl, defaultGameVersion } from "@/helpers/pageVersionUrl";
+import { useContentView } from "@/hooks/useContentView";
 import { RatingRadarLabel } from "@/components/RatingRadarLabel";
 import { getResultsGradient } from "@/helpers/ratingColor";
 
@@ -35,7 +38,7 @@ import {
   Play,
   Star,
 } from "lucide-react";
-import CommentCard from "@/components/posts/CommentCard";
+import VersionedComments from "@/components/comments/VersionedComments";
 import { LeaderboardType } from "@/types/LeaderboardType";
 import { deleteScore } from "@/helpers/score";
 import { postScore } from "@/requests/score";
@@ -63,7 +66,7 @@ import ThemedProse from "@/components/themed-prose";
 import { Button } from "bioloom-ui";
 import { Link } from "bioloom-ui";
 import { useTranslations } from "@/compat/next-intl";
-import { useSearchParams } from "@/compat/next-navigation";
+import { useSearchParams, useRouter } from "@/compat/next-navigation";
 import { Text } from "bioloom-ui";
 import { Tooltip } from "bioloom-ui";
 import GamePageLoading from "@/components/game-page-loading";
@@ -318,8 +321,10 @@ export default function ClientGamePage({
   const resolvedParams = use(params);
   const gameSlug = resolvedParams.gameSlug;
   const searchParams = useSearchParams();
+  const router = useRouter();
   const mobileLayout = useMobileLayout();
   const [game, setGame] = useState<GameType | null>(null);
+  useContentView("game", game?.slug === gameSlug ? game.id : undefined);
   const [bannerTransparency, setBannerTransparency] = useState<Record<string, boolean>>({});
   const { data: user = null, refetch: refreshUser } = useSelf();
   const { signedIn } = useSession();
@@ -489,6 +494,12 @@ export default function ClientGamePage({
       const gameData = await readItem<GameType>(response);
       if (cancelled) return;
       setGame(gameData);
+      if (gameData && requestedPageVersion) {
+        const version = requestedPageVersion === "JAM" ? "JAM" : gameData.postJamPage ? "POST_JAM" : "JAM";
+        const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+        const cleanUrl = pageVersionUrl(currentUrl, version, defaultGameVersion(gameData));
+        if (cleanUrl !== currentUrl) router.replace(cleanUrl);
+      }
       if (getCookie("token")) await refreshUser();
       if (cancelled) return;
       setSelectedVersion(
@@ -499,7 +510,7 @@ export default function ClientGamePage({
     };
     void load().catch(console.error);
     return () => { cancelled = true; };
-  }, [gameSlug, requestedPageVersion, refreshUser]);
+  }, [gameSlug, requestedPageVersion, refreshUser, router]);
 
   const refreshRatingCategories = async () => {
     const response = await getGame(gameSlug);
@@ -513,6 +524,16 @@ export default function ClientGamePage({
 
     setGame(await readItem<GameType>(response));
   }, [gameSlug]);
+
+  const handleCommentCreated = async () => {
+    const response = await getGame(gameSlug);
+    if (!response.ok) return;
+    const updatedGame = await readItem<GameType>(response);
+    if (!updatedGame) return;
+    setGame(updatedGame);
+    setSelectedVersion(updatedGame.postJamPage ? "POST_JAM" : "JAM");
+    router.replace(pageVersionUrl(window.location.pathname + window.location.search + window.location.hash));
+  };
 
   // These shared categories do not depend on the game or each other.
   useEffect(() => {
@@ -1085,7 +1106,10 @@ export default function ClientGamePage({
                     <PageVersionToggle
                       borderColor={interactiveOutlineColor}
                       value={selectedVersion}
-                      onChange={setSelectedVersion}
+                      onChange={(version) => {
+                        setSelectedVersion(version);
+                        router.replace(pageVersionUrl(window.location.pathname + window.location.search + window.location.hash, version, defaultGameVersion(game)));
+                      }}
                     />
                   </div>
                 )}
@@ -1493,7 +1517,8 @@ export default function ClientGamePage({
                         <Text size="sm" color="textFaded">
                            {uiText("AppStrings.LeaveSomeFeedbackForTheCreatorsWhatDid")} </Text>
                         <CreateComment
-                          gamePageId={selectedPage?.id}
+                          gamePageId={game?.postJamPage?.id ?? selectedPage?.id}
+                          onCreated={handleCommentCreated}
                           size="xs"
                         />
                       </Vstack>
@@ -1606,7 +1631,18 @@ export default function ClientGamePage({
               setSelectedLeaderboard(leaderboard);
               setIsOpen2(true);
             }} onDelete={async (score) => {
-              if (await deleteScore(score.id)) window.location.reload();
+              if (!await deleteScore(score.id)) return false;
+              setGame(previous => {
+                if (!previous) return previous;
+                const removeScore = (boards: LeaderboardType[]) => boards.map(board => ({ ...board, scores: board.scores.filter(entry => entry.id !== score.id) }));
+                return {
+                  ...previous,
+                  leaderboards: removeScore(previous.leaderboards ?? []),
+                  jamPage: previous.jamPage ? { ...previous.jamPage, leaderboards: removeScore(previous.jamPage.leaderboards ?? []) } : previous.jamPage,
+                  postJamPage: previous.postJamPage ? { ...previous.postJamPage, leaderboards: removeScore(previous.postJamPage.leaderboards ?? []) } : previous.postJamPage,
+                };
+              });
+              return true;
             }} />}
             </GameSidebarSection>
             <GameSidebarSection name="Achievements" directMobile selected={mobileSection} onClose={() => setMobileSection(null)}>
@@ -2011,21 +2047,13 @@ export default function ClientGamePage({
           </div>
         </div>
       </div>
+      <VersionedComments comments={displayComments} jamComments={game?.jamPage?.comments ?? game?.comments ?? []} postJam={selectedVersion === "POST_JAM"} user={user} commentClassName="!shadow-2xl">
       {mobileLayout ? <div className="my-6 px-3">
-        <CreateComment gamePageId={selectedPage?.id} />
+        <CreateComment gamePageId={game?.postJamPage?.id ?? selectedPage?.id} onCreated={handleCommentCreated} />
       </div> : <Card padding={1.5} shadow="none" className="shadow-2xl my-10 max-lg:!rounded-none">
-        <CreateComment gamePageId={selectedPage?.id} />
+        <CreateComment gamePageId={game?.postJamPage?.id ?? selectedPage?.id} onCreated={handleCommentCreated} />
       </Card>}
-
-      <div className="flex flex-col gap-3">
-        {displayComments
-          ?.sort((a, b) => b.id - a.id)
-          .map((comment) => (
-            <div key={comment.id}>
-              <CommentCard comment={comment} user={user} edgeToEdge className="!shadow-2xl" />
-            </div>
-          ))}
-      </div>
+      </VersionedComments>
       {!displayGame.published && (
         <>
           <div aria-hidden="true" className="h-[calc(9rem+env(safe-area-inset-bottom))] sm:h-16" />

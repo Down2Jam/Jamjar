@@ -60,6 +60,9 @@ interface PopoverProps {
   surface?: "default" | "contrast" | "card" | "transparent";
   borderless?: boolean;
   avoidCollisions?: boolean;
+  anchorRef?: React.RefObject<HTMLElement | null>;
+  matchAnchorWidth?: boolean;
+  arrowAnchorSelector?: string;
 }
 
 export default function Popover({
@@ -93,6 +96,9 @@ export default function Popover({
   surface = "contrast",
   borderless = false,
   avoidCollisions = true,
+  anchorRef,
+  matchAnchorWidth = false,
+  arrowAnchorSelector,
 }: PopoverProps) {
   const uiText = useUiTranslations();
   const { colors } = useTheme();
@@ -104,6 +110,9 @@ export default function Popover({
   const [collisionReady, setCollisionReady] = useState(false);
   const onHoverChangeRef = useRef(onHoverChange);
   const popoverRef = useRef<HTMLDivElement | null>(null);
+  const [arrowTarget, setArrowTarget] = useState<{ x: number; y: number } | null>(null);
+  const [anchorWidth, setAnchorWidth] = useState<number>();
+  const updateArrowRef = useRef<(() => void) | null>(null);
 
   const isControlled = controlledShown === undefined;
   const shown = isControlled ? internalShown : controlledShown;
@@ -199,6 +208,22 @@ export default function Popover({
       zIndex: 0,
       pointerEvents: "none",
     };
+
+    if (arrowTarget && p !== "center") {
+      const vertical = p.startsWith("top") || p.startsWith("bottom");
+      return {
+        ...base,
+        ...(vertical ? {
+          left: `clamp(10px, ${arrowTarget.x}px, calc(100% - 10px))`,
+          ...(p.startsWith("top") ? { bottom: -6, borderWidth: "0 1px 1px 0" } : { top: -6, borderWidth: "1px 0 0 1px" }),
+          transform: "translateX(-50%) rotate(45deg)",
+        } : {
+          top: `clamp(10px, ${arrowTarget.y}px, calc(100% - 10px))`,
+          ...(p === "left" ? { right: -6, borderWidth: "1px 1px 0 0" } : { left: -6, borderWidth: "0 0 1px 1px" }),
+          transform: "translateY(-50%) rotate(45deg)",
+        }),
+      };
+    }
 
     switch (p) {
       case "top-left":
@@ -438,6 +463,36 @@ export default function Popover({
     };
   }, [hasMounted, shown, updateCollisionShift, avoidCollisions]);
 
+  useLayoutEffect(() => {
+    const anchor = anchorRef?.current;
+    const node = popoverRef.current;
+    if (!shown || !anchor || !node) return;
+
+    const updateArrow = () => {
+      if (matchAnchorWidth) setAnchorWidth(anchor.getBoundingClientRect().width);
+      const target = arrowAnchorSelector ? anchor.querySelector(arrowAnchorSelector) ?? anchor : anchor;
+      const trigger = target.getBoundingClientRect();
+      const panel = node.getBoundingClientRect();
+      if (!panel.width || !panel.height) return;
+      const x = (trigger.left + trigger.width / 2 - panel.left) * node.offsetWidth / panel.width - node.clientLeft;
+      const y = (trigger.top + trigger.height / 2 - panel.top) * node.offsetHeight / panel.height - node.clientTop;
+      setArrowTarget(current => current?.x === x && current?.y === y ? current : { x, y });
+    };
+    updateArrowRef.current = updateArrow;
+    updateArrow();
+    const observer = new ResizeObserver(updateArrow);
+    observer.observe(anchor);
+    observer.observe(node);
+    window.addEventListener("resize", updateArrow);
+    window.addEventListener("scroll", updateArrow, true);
+    return () => {
+      updateArrowRef.current = null;
+      observer.disconnect();
+      window.removeEventListener("resize", updateArrow);
+      window.removeEventListener("scroll", updateArrow, true);
+    };
+  }, [hasMounted, shown, anchorRef, collisionShift, positionerStyle, matchAnchorWidth, arrowAnchorSelector, anchorWidth]);
+
   if (!hasMounted) return null;
 
   const toCssValue = (value?: number | string) =>
@@ -457,6 +512,7 @@ export default function Popover({
           <motion.div
             ref={popoverRef}
             key="popover"
+            onAnimationComplete={() => updateArrowRef.current?.()}
             initial={instant ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: hoverScale }}
             exit={
@@ -475,7 +531,8 @@ export default function Popover({
               zIndex: 1,
               // sizing fixes
               display: "inline-block",
-              width: "max-content",
+              width: matchAnchorWidth && anchorWidth !== undefined ? anchorWidth : "max-content",
+              boxSizing: "border-box",
               maxWidth: `calc(100vw - ${offset * 2}px)`,
               color: colors["text"],
               borderWidth: borderless ? 0 : 1,

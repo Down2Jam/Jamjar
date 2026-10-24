@@ -5,7 +5,7 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 import { useDelayedHover } from "@/hooks/useDelayedHover";
 
-import { useMusic } from "bioloom-miniplayer";
+import { useMusic, loadWaveform, getAnalyzedDuration } from "bioloom-miniplayer";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addToast,
@@ -49,6 +49,9 @@ const truncateComment = (content: string) =>
   content.length > 30 ? `${content.slice(0, 30)}...` : content;
 
 export default function TrackWaveformPlayer({
+  trackId,
+  pageVersion,
+  allowDownload,
   slug,
   name,
   artist,
@@ -60,6 +63,9 @@ export default function TrackWaveformPlayer({
   canComment,
   onSubmitTimestampComment,
 }: {
+  trackId?: number;
+  pageVersion?: "JAM" | "POST_JAM";
+  allowDownload?: boolean;
   slug: string;
   name: string;
   artist: {
@@ -109,41 +115,15 @@ export default function TrackWaveformPlayer({
   const isCurrentTrack = current?.song === url || current?.slug === slug;
 
   useEffect(() => {
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const audioContext = new AudioContext();
-        const buffer = await audioContext.decodeAudioData(arrayBuffer.slice(0));
-        if (cancelled) return;
-
-        const channelData = buffer.getChannelData(0);
-        const samples = 180;
-        const blockSize = Math.floor(channelData.length / samples) || 1;
-        const nextPeaks = Array.from({ length: samples }, (_, index) => {
-          const start = index * blockSize;
-          const end = Math.min(start + blockSize, channelData.length);
-          let max = 0;
-          for (let i = start; i < end; i += 1) {
-            const value = Math.abs(channelData[i] ?? 0);
-            if (value > max) max = value;
-          }
-          return max;
-        });
-
-        setPeaks(nextPeaks);
-        setDuration(buffer.duration || 0);
-        void audioContext.close();
-      } catch (error) {
-        console.error("Failed to decode waveform", error);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    const controller = new AbortController();
+    setPeaks([]);
+    setDuration(0);
+    void loadWaveform(url, controller.signal).then(result => {
+      if (controller.signal.aborted) return;
+      setPeaks(result ?? []);
+      setDuration(getAnalyzedDuration(url) ?? 0);
+    });
+    return () => controller.abort();
   }, [url]);
 
   useEffect(() => {
@@ -257,6 +237,9 @@ export default function TrackWaveformPlayer({
     }
 
     void playItem({
+      id: trackId,
+      pageVersion,
+      allowDownload,
       slug,
       name,
       artist,
@@ -483,6 +466,9 @@ export default function TrackWaveformPlayer({
             }
 
             await playItem({
+      id: trackId,
+      pageVersion,
+      allowDownload,
               slug,
               name,
               artist,

@@ -46,6 +46,7 @@ export interface TrackType {
   game: GameType;
   image?: string;
   comments?: CommentType[];
+  jamComments?: CommentType[];
   timestampComments?: Array<{
     id: number;
     content: string;

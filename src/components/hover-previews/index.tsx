@@ -45,11 +45,13 @@ export function UserHoverPreview({
   children,
   className = "",
   portal = false,
+  zIndex = 80,
 }: {
   user: PreviewUser;
   children: ReactNode;
   className?: string;
   portal?: boolean;
+  zIndex?: number;
 }) {
   const [hovered, setHovered] = useDelayedHover(false);
   const anchorRef = useRef<HTMLSpanElement>(null);
@@ -63,13 +65,13 @@ export function UserHoverPreview({
     const rect = anchorRef.current.getBoundingClientRect();
     setPortalPosition({
       position: "fixed",
-      zIndex: 80,
+      zIndex,
       pointerEvents: "none",
       left: rect.left + rect.width / 2,
       top: rect.top - 8,
       transform: "translate(-50%, -100%)",
     });
-  }, [portal]);
+  }, [portal, zIndex]);
 
   useEffect(() => {
     if (!hovered || !portal) return;
@@ -133,10 +135,12 @@ export function GameDataHoverPreview({
   game,
   children,
   className = "",
+  zIndex,
 }: {
   game: GameCardGame;
   children: ReactNode;
   className?: string;
+  zIndex?: number;
 }) {
   const [active, setActive] = useState(false);
   const { data } = useGame(game.slug, active);
@@ -160,7 +164,7 @@ export function GameDataHoverPreview({
       onMouseEnter={() => setActive(true)}
       onFocus={() => setActive(true)}
     >
-      <GameHoverPreview game={previewGame} className="inline-flex">
+      <GameHoverPreview zIndex={zIndex} game={previewGame} className="inline-flex">
         {children}
       </GameHoverPreview>
     </span>
@@ -340,7 +344,7 @@ export function ScoreHoverPreview({
                  {uiText("AppStrings.From")} {score.game.name}
               </div>
               <div className="truncate text-[11px]" style={{ color: colors.textFaded }}>
-                {score.user.name} · {score.totalScores.toLocaleString()}  {uiText("AppStrings.TotalScores")} </div>
+                {score.user.name} {score.totalScores.toLocaleString()}  {uiText("AppStrings.TotalScores")} </div>
             </div>
           </div>
         </div>

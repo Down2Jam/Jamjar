@@ -1,5 +1,7 @@
 "use client";
 
+import { pageVersionUrl, defaultGameVersion } from "@/helpers/pageVersionUrl";
+
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -113,7 +115,7 @@ export default function SidebarScreenshots() {
         {screenshots.map(({ game, src }) => (
           <Link
             key={`${game.id}:${game.pageVersion ?? "JAM"}:${src}`}
-            href={`/g/${game.slug}${game.pageVersion ? `?pageVersion=${game.pageVersion}` : ""}`}
+            href={pageVersionUrl(`/g/${game.slug}`, game.pageVersion, defaultGameVersion(game))}
             className="group post-card-shadow relative aspect-video overflow-hidden rounded-xl bg-black/30"
             aria-label={uiText("AppStrings.OpenValue0", { value0: game.name })}
           >

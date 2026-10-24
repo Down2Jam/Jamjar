@@ -1,5 +1,7 @@
 "use client";
 
+import { pageVersionUrl, defaultGameVersion } from "@/helpers/pageVersionUrl";
+
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
@@ -14,14 +16,17 @@ import {
   type TrackGame,
   type TrackType as PlayerTrack,
   useMusic,
+  RecordDisc,
+  useArtworkAccent,
 } from "bioloom-miniplayer";
-import Image from "@/compat/next-image";
+import { PlayerContextMenu, useTouchMenu } from "bioloom-miniplayer";
+
 import { Link } from "bioloom-ui";
 import RatingVisibilityGate from "@/components/ratings/RatingVisibilityGate";
 import { useTheme } from "@/providers/useSiteTheme";
 import { downloadTrackBySlug } from "@/helpers/trackDownload";
 import { Pause, Play, Star } from "lucide-react";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 import TrackLicenseLink from "@/components/tracks/TrackLicenseLink";
 import { getTrackLicense, TrackOrigin } from "@/helpers/trackLicense";
 import {
@@ -51,6 +56,7 @@ interface SidebarSongProps {
   showRating?: boolean;
   hideRatings?: boolean;
   wide?: boolean;
+  rowIndex?: number;
   squareThumbnail?: boolean;
   showGame?: boolean;
   queue?: PlayerTrack[];
@@ -80,6 +86,7 @@ export default function SidebarSong({
   showRating = typeof trackId === "number" || Boolean(onRate),
   hideRatings = false,
   wide = false,
+  rowIndex,
   squareThumbnail = false,
   showGame = true,
   queue,
@@ -88,8 +95,10 @@ export default function SidebarSong({
 }: SidebarSongProps) {
   const uiText = useUiTranslations();
   const playlist = playlistIndex !== undefined;
-  const { current, isPlaying, playItem, toggle } = useMusic();
+  const { current, isPlaying, playItem, toggle, clearPlaybackScope, enqueueNext } = useMusic();
   const { colors } = useTheme();
+  const artworkAccent = useArtworkAccent(rowIndex !== undefined ? thumbnail || game.soundtrackThumbnail || game.thumbnail || "/images/game-thumbnail.png" : "");
+  const selectedStarColor = rowIndex !== undefined ? artworkAccent : colors.yellow;
   const [hoverValue, setHoverValue] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
@@ -128,16 +137,21 @@ export default function SidebarSong({
   );
   const togglePlayback = () => {
     if (isCurrent) {
+      clearPlaybackScope();
       toggle();
       return;
     }
 
     void playItem(
-      { slug, name, artist: displayArtist, thumbnail, game, song, loudnessGainDb },
+      { id: trackId, slug, name, artist: displayArtist, thumbnail, game, song, loudnessGainDb, pageVersion, allowDownload, license, allowBackgroundUse, allowBackgroundUseAttribution },
       queue,
     );
   };
 
+  const [trackMenu, setTrackMenu] = useState<{ x: number; y: number } | null>(null);
+  const menuTrigger = useRef<HTMLButtonElement | null>(null);
+  const closeTrackMenu = useCallback((restoreFocus = false) => { setTrackMenu(null); if (restoreFocus) menuTrigger.current?.focus(); }, []);
+  const touchMenu = useTouchMenu((_, target) => { const rect = target.getBoundingClientRect(); setTrackMenu({ x: rect.left, y: rect.top }); });
   const rating = (
     showRating && (
     <RatingVisibilityGate
@@ -166,7 +180,7 @@ export default function SidebarSong({
               style={{
                 color:
                   displayValue >= value
-                    ? colors["yellow"]
+                    ? selectedStarColor
                     : `color-mix(in srgb, ${colors.gray} 32%, black)`,
                 transition: "color 150ms ease",
               }}
@@ -179,7 +193,7 @@ export default function SidebarSong({
                 clipPath: "inset(0 50% 0 0)",
                 color:
                   displayValue >= value - 1
-                    ? colors["yellow"]
+                    ? selectedStarColor
                     : `color-mix(in srgb, ${colors.gray} 32%, black)`,
                 transition: "color 150ms ease",
               }}
@@ -213,12 +227,21 @@ export default function SidebarSong({
   )
   );
 
-  return (
+  return (<>
     <Card
-      className={playlist ? undefined : "post-card-shadow"}
+      className={playlist || rowIndex !== undefined ? undefined : "post-card-shadow"}
       padding={wide ? 0 : 1}
       style={{
         "--post-card-shadow": `color-mix(in srgb, ${colors["crust"]} 68%, transparent)`,
+        ...(rowIndex !== undefined ? {
+          border: 0,
+          borderRadius: 0,
+          boxShadow: "none",
+          transition: "none",
+          backgroundColor: rowIndex % 2 === 1
+            ? `color-mix(in srgb, ${colors.text} 4%, ${colors.mantle})`
+            : colors.mantle,
+        } : {}),
         ...(playlist ? {
           border: 0,
           borderTop: playlistIndex === 0 ? 0 : `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
@@ -234,7 +257,7 @@ export default function SidebarSong({
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
-          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rating ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
+          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rowIndex !== undefined ? "flex-wrap" : ""} ${rating && rowIndex === undefined ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             {playlist ? (
@@ -253,27 +276,28 @@ export default function SidebarSong({
                   {isCurrent && isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
                 </span>
               </Button>
-            ) : <Image
-              src={thumbnail}
-              width={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
-              height={wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50}
-              className={
-                wide
-                  ? "z-0 h-24 w-24 shrink-0 rounded-md object-cover"
-                  : squareThumbnail
-                    ? showGame
-                      ? "z-0 h-20 w-20 shrink-0 rounded-md object-cover"
-                      : "z-0 h-16 w-16 shrink-0 rounded-md object-cover"
-                    : "z-0 h-[50px] w-[50px] shrink-0 rounded object-cover"
-              }
-              alt={uiText("AppStrings.SongThumbnail")}
-            />}
+            ) : <button
+              type="button"
+              className={"sidebar-song-disc-button relative block flex-none p-0 [border:0] rounded-full bg-transparent cursor-[pointer] text-[#e5fff0] [box-shadow:0_3px_8px_#0005] [&_.sidebar-song-disc]:w-full [&_.sidebar-song-disc]:h-full [&_.sidebar-song-disc]:animate-[spin_8s_linear_infinite] [&_.sidebar-song-disc]:[animation-play-state:paused] [&[data-playing='true']_.sidebar-song-disc]:[animation-play-state:running] [&:is(:hover,:focus-visible,[aria-expanded='true'])_.record-disc-label]:[filter:brightness(.72)] [&:is(:hover,:focus-visible,[aria-expanded='true'])_.record-disc-details]:opacity-0 [&:is(:hover,:focus-visible,[aria-expanded='true'])_.sidebar-song-disc-action]:opacity-[1] [&:focus-visible]:[outline:2px_solid_currentColor] [&:focus-visible]:outline-offset-[3px] [@media(prefers-reduced-motion:reduce)]:[&_.sidebar-song-disc]:animate-none [@media(hover:none)]:[&_.record-disc-label]:[filter:brightness(.72)] [@media(hover:none)]:[&_.record-disc-details]:opacity-0 "} ref={menuTrigger} data-touch-menu="track" {...touchMenu}
+              aria-haspopup="menu" aria-expanded={Boolean(trackMenu)}
+              onContextMenu={event => { event.preventDefault(); setTrackMenu({ x: event.clientX, y: event.clientY }); }}
+              onKeyDown={event => { if (event.key === "ContextMenu" || (event.shiftKey && event.key === "F10")) { event.preventDefault(); const rect = event.currentTarget.getBoundingClientRect(); setTrackMenu({ x: rect.left, y: rect.top }); } }}
+              style={{ width: wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50, height: wide ? 96 : squareThumbnail ? (showGame ? 80 : 64) : 50 }}
+              onClick={togglePlayback}
+              aria-label={`${isCurrent && isPlaying ? "Pause" : "Play"} ${name}`}
+              data-playing={isCurrent && isPlaying}
+            >
+              <RecordDisc artwork={thumbnail} className="sidebar-song-disc"/>
+              <span className={"sidebar-song-disc-action absolute inset-[13%] grid place-items-center opacity-0 pointer-events-none [filter:drop-shadow(0_2px_5px_#07111acc)] [&_svg]:w-full [&_svg]:h-full [&_svg]:[stroke-width:1.3] [@media(hover:none)]:opacity-[1] "} aria-hidden="true">
+                {isCurrent && isPlaying ? <Pause fill="currentColor"/> : <Play fill="currentColor"/>}
+              </span>
+            </button>}
             <Vstack className={playlist ? "z-10 min-w-0 flex-1" : "z-10 min-w-0"} align="start" gap={wide ? 1 : 0}>
               <Link
                 href={
                   slug
-                    ? `/m/${slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
-                    : `/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`
+                    ? pageVersionUrl(`/m/${slug}`, pageVersion, defaultGameVersion(game))
+                    : pageVersionUrl(`/g/${game.slug}`, pageVersion, defaultGameVersion(game))
                 }
                 underline={false}
                 className={playlist ? "sidebar-media-link max-w-full" : "sidebar-media-link"}
@@ -298,7 +322,7 @@ export default function SidebarSong({
                   }}
                 >
                   <Link
-                    href={`/g/${game.slug}${pageVersion ? `?pageVersion=${pageVersion}` : ""}`}
+                    href={pageVersionUrl(`/g/${game.slug}`, pageVersion, defaultGameVersion(game))}
                     underline={false}
                     className="sidebar-media-link"
                     style={{ textDecoration: "none" }}
@@ -307,7 +331,7 @@ export default function SidebarSong({
                       {game.name}
                       {game.category !== "EXTERNAL" &&
                         pageVersion === "POST_JAM" &&
-                        uiText("AppStrings.PostJam")}
+                        <>{" "}{uiText("AppStrings.PostJam")}</>}
                     </Text>
                   </Link>
                 </GameDataHoverPreview>
@@ -391,7 +415,7 @@ export default function SidebarSong({
             </Vstack>
           </Hstack>
 
-          {wide && rating && (
+          {wide && rowIndex === undefined && rating && (
             <div className="col-span-2 row-start-2 justify-self-center p-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
               {rating}
             </div>
@@ -399,11 +423,12 @@ export default function SidebarSong({
 
           <div
             className={
-              wide
+              wide && rowIndex === undefined
                 ? "col-start-2 row-start-1 flex shrink-0 items-center justify-self-end gap-2 sm:col-start-3"
-                : "flex shrink-0 flex-col items-center gap-2"
+                : rowIndex !== undefined ? "ml-auto flex shrink-0 items-center gap-2" : "flex shrink-0 flex-col items-center gap-2"
             }
           >
+            {wide && rowIndex !== undefined && rating && <div className="mr-2">{rating}</div>}
             {!playlist && <Button
               size="sm"
               color="default"
@@ -442,5 +467,9 @@ export default function SidebarSong({
         {!wide && rating}
       </Vstack>
     </Card>
+    {trackMenu && <PlayerContextMenu track={{ id: trackId, slug, name, artist: displayArtist, thumbnail, game, song, loudnessGainDb, pageVersion, allowDownload, license, allowBackgroundUse, allowBackgroundUseAttribution }} x={trackMenu.x} y={trackMenu.y} accent={artworkAccent} surfaceGradient={`linear-gradient(90deg, color-mix(in srgb, ${artworkAccent} 24%, #1a2936), #1a2936)`} onClose={closeTrackMenu} onPlayNext={!isCurrent ? () => {
+      if (!current?.song) { togglePlayback(); return; }
+      enqueueNext({ id: trackId, slug, name, composer: displayArtist, game: { ...game, soundtrackThumbnail: thumbnail || game.soundtrackThumbnail }, url: song, loudnessGainDb, pageVersion, allowDownload, license, allowBackgroundUse, allowBackgroundUseAttribution });
+    } : undefined}/>}</>
   );
 }
