@@ -161,6 +161,7 @@ import {
   X,
   ZoomOut,
   ThumbsUp,
+  Share2
 } from "lucide-react";
 import { useTheme } from "./theme";
 import {
@@ -336,6 +337,7 @@ const iconMap = {
   settings: Settings,
   settings2: Settings2,
   shell: Shell,
+  share2: Share2,
   shield: Shield,
   shieldalert: ShieldAlert,
   shieldx: ShieldX,

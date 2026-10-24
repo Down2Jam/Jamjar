@@ -61,6 +61,7 @@ import {
   CollectionArtwork,
   type CollectionArtworkSummary,
 } from "@/components/collections/CollectionArtwork";
+import ShareButton from "@/components/share-button";
 
 type RarityTier =
   | "Abyssal"
@@ -1282,6 +1283,7 @@ export default function ClientUserPage({
                       )}
                     </button>
                   )}
+                  
                 </Hstack>
               </Vstack>
               <Hstack
@@ -1552,13 +1554,16 @@ export default function ClientUserPage({
                       />
                     )}
                   </div>
-                  {isOwner && (
+                  <Hstack>
+                    {isOwner && (
                     <div className="mt-2 px-2 pb-2">
                       <Button href="/settings" icon="cog">
                         {uiText("Settings.Title")}
                       </Button>
                     </div>
                   )}
+                  <ShareButton/>
+                  </Hstack>
                 </Card>
               </div>
             )}
