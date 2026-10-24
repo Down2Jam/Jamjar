@@ -5,6 +5,7 @@ import { lazy, Suspense, useLayoutEffect, useRef } from "react";
 import useHasMounted from "@/hooks/useHasMounted";
 import Mobilebar from "./mobilebar/Mobilebar";
 import { LanguageInfo } from "@/types/LanguageInfoType";
+import Hotkey from "@/components/hotkey";
 
 // Mobile navigation does not need the desktop menus and theme previews.
 const PCbar = lazy(() => import("./pcbar"));
@@ -35,6 +36,8 @@ export default function ClientNavbar({
 
   return (
     <div ref={navbarSpace} className={isMobile ? undefined : "h-16 shrink-0"}>
+      <Hotkey href="https://donate.bioloom.studio" hotkey={["G", "2"]} title="Navbar.Donate.Title" description="Navbar.Donate.Description" />
+      <Hotkey href="/rss" hotkey={["G", "1"]} title="Navbar.RSS.Title" description="Navbar.RSS.Description" />
       {isMobile ? (
         <Mobilebar isLoggedIn={isLoggedIn} />
       ) : (

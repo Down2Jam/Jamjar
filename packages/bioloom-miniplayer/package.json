@@ -7,14 +7,16 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./core": "./src/core.ts",
+    "./player": "./src/player.ts"
   },
   "files": [
     "src"
   ],
   "peerDependencies": {
-    "bioloom-ui": "^0.1.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "lucide-react": "^1.35.0"
   }
 }

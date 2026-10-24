@@ -1,5 +1,7 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { Button, Card, Text } from "bioloom-ui";
+import { Button, Text } from "bioloom-ui";
+import { Rss } from "lucide-react";
+import PageCard from "@/components/PageCard";
 import { usePageMetadata } from "@/hooks/usePageMetadata";
 
 export default function RSSPage() {
@@ -12,11 +14,8 @@ export default function RSSPage() {
   });
 
   return (
-    <Card className="mx-auto max-w-3xl" padding={2}>
-      <h1 className="text-3xl font-semibold">{uiText("AppStrings.RSSFeeds2")}</h1>
-      <Text className="mt-2" color="textFaded">
-         {uiText("AppStrings.FollowDown2JamUpdatesInYourPreferredFeedReader")} </Text>
-      <div className="mt-6 flex items-center justify-between gap-4">
+    <PageCard icon={Rss} title={uiText("AppStrings.RSSFeeds2")} description={uiText("AppStrings.FollowDown2JamUpdatesInYourPreferredFeedReader")}>
+      <div className="flex flex-wrap items-center justify-between gap-4 px-2 py-3 sm:px-3 max-[700px]:px-0">
         <div>
           <h2 className="font-semibold">{uiText("AppStrings.Down2JamNews")}</h2>
           <Text size="sm" color="textFaded">
@@ -25,6 +24,6 @@ export default function RSSPage() {
         <Button href="/news/rss.xml" icon="rss">
            {uiText("AppStrings.OpenFeed")} </Button>
       </div>
-    </Card>
+    </PageCard>
   );
 }

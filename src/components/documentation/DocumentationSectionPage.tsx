@@ -28,6 +28,8 @@ import Link from "@/compat/next-link";
 import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { useEffect, useMemo, useState } from "react";
 import Editor from "@/components/editor";
+import PageCard from "@/components/PageCard";
+import { Newspaper } from "lucide-react";
 import ThemedProse from "@/components/themed-prose";
 import MentionedContent from "@/components/mentions/MentionedContent";
 import DocumentationIconPicker from "./DocumentationIconPicker";
@@ -55,6 +57,8 @@ export default function DocumentationSectionPage({
   showPressKitGallery = false,
 }: Props) {
   const uiText = useUiTranslations();
+  const isPressKit = section === "PRESS_KIT";
+  const flatPanel = isPressKit ? "border-0! bg-transparent! shadow-none! p-0! rounded-none!" : undefined;
   const { data, isLoading } = useDocumentationDocuments(section);
   const { data: user } = useSelf(hasCookie("token"));
   const searchParams = useSearchParams();
@@ -150,12 +154,12 @@ export default function DocumentationSectionPage({
     );
   }
 
-  return (
+  const pageContent = (
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="xl:sticky xl:top-6 xl:self-start">
-        <Card className="overflow-hidden">
+        <Card className={`overflow-hidden ${flatPanel ?? ""}`}>
           <Vstack align="start" gap={0} className="w-full">
-            <div className="w-full border-b border-white/10 p-5">
+            {!isPressKit && <div className="w-full border-b border-white/10 p-5">
               <Vstack align="start" gap={1}>
                 <Hstack>
                   <Icon name={icon} />
@@ -167,7 +171,7 @@ export default function DocumentationSectionPage({
                   {description}
                 </Text>
               </Vstack>
-            </div>
+            </div>}
 
             <div className="w-full p-4">
               {isAdmin ? (
@@ -257,14 +261,14 @@ export default function DocumentationSectionPage({
       <section className="min-w-0">
         {!activeDocument ? (
           showPressKitGallery ? (
-            <PressKitGallery />
+            <PressKitGallery embedded={isPressKit} />
           ) : (
             <Card>
               <Text color="textFaded">{uiText("AppStrings.NoDocumentSelected")}</Text>
             </Card>
           )
         ) : (
-          <Card padding={2}>
+          <Card padding={2} className={flatPanel}>
             <Vstack align="start" gap={4} className="w-full">
               {isEditing ? (
                 <>
@@ -410,4 +414,6 @@ export default function DocumentationSectionPage({
       </section>
     </div>
   );
+
+  return isPressKit ? <PageCard icon={Newspaper} title={title} description={description}>{pageContent}</PageCard> : pageContent;
 }

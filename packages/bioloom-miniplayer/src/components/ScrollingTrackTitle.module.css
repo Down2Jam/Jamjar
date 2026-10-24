@@ -1,0 +1,12 @@
+.titleContent {
+  display: inline-block;
+  width: max-content;
+  max-width: none;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .titleContent {
+    display: inline;
+  }
+}

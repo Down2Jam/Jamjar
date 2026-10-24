@@ -1,0 +1,150 @@
+.trackMenu {
+  width: 280px;
+}
+
+.trackMenu :global(.player-queue-action) {
+  min-height: 40px;
+  width: 24px;
+  flex: 0 0 24px;
+  justify-content: center;
+  padding: 4px;
+}
+
+.trackMenu :global(.player-queue-grip) {
+  width: 18px;
+  flex-basis: 18px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.trackMenu :global(.player-queue-play) {
+  min-width: 0;
+  flex: 1;
+  padding-right: 4px;
+  padding-left: 4px;
+}
+
+.trackMenu :global(.player-track-menu-heading) button {
+  width: auto;
+  padding: 5px;
+}
+
+.trackMenuHeading {
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 5px 7px;
+  border-bottom: 1px solid #ffffff18;
+}
+
+.trackMenuHeading strong {
+  flex: 1;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.trackMenuItems {
+  max-height: min(320px, 60dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.trackMenuItems :global(.player-menu-disc) {
+  height: 40px;
+  width: 40px;
+  flex: 0 0 40px;
+  box-shadow: 0 2px 4px #0004;
+}
+
+.trackMenuItems :global(.player-menu-track-meta) {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.trackMenuItems :global(.player-menu-track-text) {
+  min-width: 0;
+  flex: 1;
+}
+
+.trackMenuItems button:is(:hover, :focus-visible) :global(.record-disc-action) {
+  opacity: 100%;
+}
+
+.trackMenuItems button:is(:hover, :focus-visible) :global(.record-disc-details) {
+  opacity: 0%;
+}
+
+.trackMenuItems button:is(:hover, :focus-visible) :global(.record-disc-label) {
+  filter: brightness(.72);
+}
+
+.trackMenuItems p {
+  margin: 0;
+  padding: 10px;
+  font-weight: 400;
+}
+
+.trackMenuItems small {
+  margin-top: 2px;
+  display: block;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackMenuItems strong {
+  display: block;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queueRow {
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.queueRow[data-drop-target=true] {
+  outline: 1px solid var(--player-accent);
+  outline-offset: -1px;
+}
+
+.queuePlay[data-draggable=true] {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.menuDisc :global(.record-disc-action) {
+  transition-property: none;
+}
+
+.menuDisc :global(.record-disc-details) {
+  transition-property: none;
+}
+
+.menuDisc :global(.record-disc-label) {
+  transition-property: none;
+}
+
+.menuTrackMeta :global(.player-menu-track-time) {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #ffffff80;
+  font-variant-numeric: tabular-nums;
+}
+
+.menuTrackMeta > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

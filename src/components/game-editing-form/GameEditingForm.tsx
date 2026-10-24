@@ -10,9 +10,12 @@ import { queryKeys } from "@/hooks/queries/queryKeys";
 
 import "./game-editor.css";
 import EditorFooter from "./EditorFooter";
+import GameEditorTabs from "./GameEditorTabs";
+import TagLabel from "@/components/tags/TagLabel";
 import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
 import ItemEditor from "./ItemEditor";
 import AudioPreview from "./AudioPreview";
+import SoundtrackDisc from "./SoundtrackDisc";
 import ArtistSuggestions from "./ArtistSuggestions";
 import LeaderboardManager from "./LeaderboardManager";
 import StickerManager from "@/components/stickers/StickerManager";
@@ -21,7 +24,7 @@ import ReorderControls, { moveItem } from "./ReorderControls";
 import { Button } from "bioloom-ui";
 import { Card } from "bioloom-ui";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "bioloom-ui";
-import { Dropdown } from "bioloom-ui";
+import Dropdown from "./EditorDropdown";
 import { Icon, IconName } from "bioloom-ui";
 import { Input } from "bioloom-ui";
 import { ImageCropData, ImageInput } from "bioloom-ui";
@@ -65,7 +68,7 @@ import {
   useRef,
   useState,
 } from "react";
-import Select, { StylesConfig } from "react-select";
+import Select from "@/components/posts/PostSelect";
 import { Switch } from "bioloom-ui";
 import { getIcon } from "@/helpers/icon";
 import { Textarea } from "bioloom-ui";
@@ -376,11 +379,18 @@ const applyLicenseFlags = (song: SongEdit, flags: LicenseFlags): SongEdit => {
 export default function GameEditingForm({
   game = null,
   pageVersion = "JAM",
+  hideHeading = false,
+  musicTabs = false,
+  onPageVersionChange,
 }: {
   game?: GameType | null;
   pageVersion?: PageVersion;
+  hideHeading?: boolean;
+  musicTabs?: boolean;
+  onPageVersionChange?: (version: PageVersion) => void;
 }) {
   const uiText = useUiTranslations();
+  const EditorTabs = musicTabs ? GameEditorTabs : Tabs;
   const { signedIn } = useSession();
   const { data: user = null } = useSelf();
   const isMounted = useHasMounted();
@@ -575,8 +585,8 @@ export default function GameEditingForm({
     inCurrentJamContext && !isRatingPhase && !isPostJamLockedPhase;
 
   useEffect(() => {
-    setSavedFormSnapshot(null);
     setEditGame(!!game);
+    setSavedFormSnapshot(null);
     setTitle(game?.name || "");
     setGameSlug(game?.slug || "");
     setPrevGameSlug(game?.slug || "");
@@ -746,94 +756,14 @@ export default function GameEditingForm({
     load();
   }, [refreshTeams, activeJamId]);
 
+
+
+
   useEffect(() => {
     if (!loading && savedFormSnapshot === null) {
       setSavedFormSnapshot(formSnapshot);
     }
   }, [loading, savedFormSnapshot, formSnapshot]);
-
-  const styles: StylesConfig<
-    {
-      value: string;
-      id: number;
-      label: ReactNode;
-    },
-    boolean
-  > = {
-    multiValue: (base) => {
-      return {
-        ...base,
-        backgroundColor: colors.base,
-        borderRadius: 6,
-      };
-    },
-    multiValueLabel: (base) => {
-      return {
-        ...base,
-        color: colors.text,
-        fontWeight: 500,
-        fontSize: 12,
-        paddingRight: "2px",
-      };
-    },
-    multiValueRemove: (base) => {
-      return {
-        ...base,
-        display: "flex",
-        color: colors.textFaded,
-        borderRadius: "0 6px 6px 0",
-        ":hover": { backgroundColor: colors.crust, color: colors.red },
-      };
-    },
-    control: (base, { isFocused, isDisabled }) => ({
-      ...base,
-      backgroundColor: colors.mantle,
-      borderColor: isFocused ? colors.blue : colors.base,
-      borderRadius: 8,
-      minHeight: 36,
-      minWidth: 0,
-      fontSize: 12,
-      opacity: isDisabled ? 0.5 : 1,
-      boxShadow: isFocused ? `0 0 0 1px ${colors.blue}` : "none",
-      ":hover": { borderColor: isFocused ? colors.blue : colors.textFaded },
-    }),
-    input: (base) => ({ ...base, color: colors.text }),
-    singleValue: (base) => ({ ...base, color: colors.text }),
-    placeholder: (base) => ({ ...base, color: colors.textFaded }),
-    indicatorSeparator: () => ({ display: "none" }),
-    dropdownIndicator: (base) => ({
-      ...base, color: colors.textFaded, padding: 8,
-      ":hover": { color: colors.text },
-    }),
-    clearIndicator: (base) => ({
-      ...base, color: colors.textFaded,
-      ":hover": { color: colors.red },
-    }),
-    menu: (styles) => ({
-      ...styles,
-      backgroundColor: colors.mantle,
-      color: colors.text,
-      border: `1px solid color-mix(in srgb, ${colors.text} 5%, ${colors.mantle})`,
-      borderRadius: 10,
-      padding: 4,
-      fontSize: 13,
-      boxShadow: "0 12px 28px rgb(0 0 0 / 25%)",
-      zIndex: 100,
-    }),
-    menuPortal: (styles) => ({
-      ...styles,
-      zIndex: 120,
-    }),
-    option: (styles, { isFocused, isSelected, isDisabled }) => ({
-      ...styles,
-      borderRadius: 6,
-      padding: "8px 10px",
-      color: isDisabled ? colors.textFaded : isSelected ? colors.blue : colors.text,
-      backgroundColor: isFocused || isSelected ? colors.base : "transparent",
-      cursor: isDisabled ? "not-allowed" : "pointer",
-      ":active": { backgroundColor: colors.base },
-    }),
-  };
 
   const trackTagCategories = useMemo(
     () =>
@@ -1269,12 +1199,12 @@ export default function GameEditingForm({
             const response = await request;
 
             if (response.ok) {
+              setSavedFormSnapshot(formSnapshot);
               await Promise.all([
                 queryClient.invalidateQueries({ queryKey: queryKeys.game.all }),
                 queryClient.invalidateQueries({ queryKey: queryKeys.user.all }),
                 queryClient.invalidateQueries({ queryKey: queryKeys.jam.all }),
               ]);
-              setSavedFormSnapshot(formSnapshot);
               addToast({
                 title: prevSlug
                   ? t("CreateGame.Update.Success")
@@ -1300,7 +1230,7 @@ export default function GameEditingForm({
         }}
       >
         <Vstack align="start">
-          <header className="w-full py-2 text-center">
+          {!hideHeading && <header className="w-full py-2 text-center">
                 <h1
                   className="text-3xl font-semibold"
                   style={{
@@ -1332,9 +1262,9 @@ export default function GameEditingForm({
                     : t("CreateGame.Edit.Description")
                   : t("CreateGame.Create.Description")}
               </p>
-          </header>
+          </header>}
 
-          <Tabs className="game-editor-tabs [&>[role=tablist]]:justify-center" style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}>
+          <EditorTabs {...(musicTabs ? { pageVersion, onPageVersionChange } : {})} className="game-editor-tabs [&>[role=tablist]]:justify-center" style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}>
             <Tab title={uiText("AppStrings.General")} icon="cog">
               <Vstack align="stretch">
                 <div className="game-editor-panel-heading relative z-20 overflow-visible">
@@ -2720,7 +2650,6 @@ export default function GameEditingForm({
                         },
                         true
                       >
-                        styles={styles}
                         menuPortalTarget={document.body}
                         menuPosition="fixed"
                         isMulti
@@ -2731,14 +2660,7 @@ export default function GameEditingForm({
                           id: index,
                           label: (
                             <div className="flex gap-2 items-center">
-                              {allTags[index].icon && (
-                                <Avatar
-                                  className="w-6 h-6 min-w-6 min-h-6"
-                                  size={24}
-                                  src={allTags[index].icon}
-                                  style={{ backgroundColor: "transparent" }}
-                                />
-                              )}
+                              <TagLabel name={allTags[index].name} iconOnly size={24} />
                               <p>{allTags[index].name}</p>
                             </div>
                           ),
@@ -2751,6 +2673,7 @@ export default function GameEditingForm({
                           id: i,
                           label: (
                             <div className="flex gap-2 items-center">
+                              <TagLabel name={tag.name} iconOnly size={24} />
                               <p>{translateSystemLabel(tag.name, uiText)}</p>
                             </div>
                           ),
@@ -2777,7 +2700,6 @@ export default function GameEditingForm({
                         },
                         true
                       >
-                        styles={styles}
                         menuPortalTarget={document.body}
                         menuPosition="fixed"
                         isMulti
@@ -2789,7 +2711,7 @@ export default function GameEditingForm({
                           label: (
                             <div className="flex gap-2 items-center">
                               {allFlags[index].icon &&
-                                getIcon(allFlags[index].icon)}
+                                <Icon name={allFlags[index].icon as IconName} size={24} decorative className="shrink-0" />}
                               <p>{allFlags[index].name}</p>
                             </div>
                           ),
@@ -2799,6 +2721,7 @@ export default function GameEditingForm({
                           id: i,
                           label: (
                             <div className="flex gap-2 items-center">
+                              {flag.icon && <Icon name={flag.icon as IconName} size={24} decorative className="shrink-0" />}
                               <p>{flag.name}</p>
                             </div>
                           ),
@@ -2981,7 +2904,23 @@ export default function GameEditingForm({
       onOpen={() => setSoftwareUsedDrafts(prev => ({ ...prev, [song.id]: song.softwareUsed.join(", ") }))}
       onApply={draft => setSongs(prev => prev.map(item => item.id === song.id ? draft : item))}
       onRemove={() => setSongs(prev => prev.filter(item => item.id !== song.id))}
-      summary={<div className="flex items-center gap-3"><Icon name="music" /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.origin === "ASSET_PACK" ? song.externalAuthorName || "Asset-pack author required" : `${song.credits.length} ${uiText("AppStrings.Credits2")}`} {song.license ? <TrackLicenseLink license={song.license} /> : "License required"}</p></div></div>}
+      summary={<div className="flex items-center gap-3"><SoundtrackDisc track={{
+        id: song.id > 0 ? song.id : undefined,
+        slug: song.id > 0 ? song.slug : undefined,
+        name: song.name || uiText("AppStrings.UntitledTrack"),
+        song: song.url,
+        artist: song.origin === "ASSET_PACK"
+          ? { name: song.externalAuthorName || "Unknown composer" }
+          : song.credits.find(credit => credit.user)?.user ?? { name: "Unknown composer" },
+        thumbnail: soundtrackThumbnailUrl || thumbnailUrl || "/images/game-thumbnail.png",
+        game: { id: game?.id, slug: game?.slug, name: title, thumbnail: thumbnailUrl || undefined, soundtrackThumbnail: soundtrackThumbnailUrl },
+        pageVersion,
+        loudnessGainDb: song.loudnessGainDb,
+        license: song.license,
+        allowDownload: song.allowDownload,
+        allowBackgroundUse: song.allowBackgroundUse,
+        allowBackgroundUseAttribution: song.allowBackgroundUseAttribution,
+      }} /><div><p className="text-sm font-semibold">{song.name || uiText("AppStrings.UntitledTrack")}</p><p className="text-xs" style={{ color: colors.textFaded }}>{song.origin === "ASSET_PACK" ? song.externalAuthorName || "Asset-pack author required" : `${song.credits.length} ${uiText("AppStrings.Credits2")}`} {song.license ? <TrackLicenseLink license={song.license} /> : "License required"}</p></div></div>}
       preview={draft => <div><p className="mb-2 font-semibold">{draft.name || uiText("AppStrings.UntitledTrack")}</p>{draft.url && <AudioPreview key={draft.url} url={draft.url} file={uploadedAudioFiles.current.get(draft.url)} />}<p className="mt-2 text-xs" style={{ color: colors.textFaded }}>{draft.bpm ? draft.bpm + " BPM " : ""}{draft.musicalKey || ""}</p></div>}>
       {(song, setDraft) => {
         const licenseMode = licenseModeForFlags({ attribution: song.licenseAttribution, commercial: song.licenseCommercial, derivatives: song.licenseDerivatives, shareAlike: song.licenseShareAlike });
@@ -3149,9 +3088,8 @@ export default function GameEditingForm({
                                                       value: string;
                                                       id: number;
                                                       label: ReactNode;
-                                                    }
+                                                    }, false
                                                   >
-                                                    styles={styles}
                                                     menuPortalTarget={
                                                       document.body
                                                     }
@@ -3217,7 +3155,6 @@ export default function GameEditingForm({
                                                     },
                                                     true
                                                   >
-                                                    styles={styles}
                                                     menuPortalTarget={
                                                       document.body
                                                     }
@@ -3289,7 +3226,6 @@ export default function GameEditingForm({
                                           },
                                           true
                                         >
-                                          styles={styles}
                                           menuPortalTarget={document.body}
                                           menuPosition="fixed"
                                           isMulti
@@ -4552,11 +4488,12 @@ export default function GameEditingForm({
                     </Vstack>
               </Vstack>
             </Tab>
-          </Tabs>
+          </EditorTabs>
           <EditorFooter
             floating={hasUnsavedChanges}
-            status={hasUnsavedChanges ? uiText("AppStrings.UnsavedChanges") : game?.published ? uiText("AppStrings.PublishedGame") : uiText("AppStrings.GameDraft")}
-            description={waitingPost ? uiText("AppStrings.SavingYourGame") : hasUnsavedChanges ? uiText("AppStrings.SaveYourChangesBeforeLeavingThisPage") : game?.published ? uiText("AppStrings.YourGameIsLiveYouCanKeepUpdatingItHere") : uiText("AppStrings.YourGameIsCurrentlyNotPublished")}
+            actionsOnlyWhenSaved
+            status={uiText("AppStrings.UnsavedChanges")}
+            description={waitingPost ? uiText("AppStrings.SavingYourGame") : uiText("AppStrings.SaveYourChangesBeforeLeavingThisPage")}
           >
             {waitingPost ? (
               <Spinner />

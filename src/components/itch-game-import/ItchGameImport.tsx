@@ -5,6 +5,8 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 import { Button, Hstack, Icon, Input, Text, Vstack, addToast } from "bioloom-ui";
 import { useState } from "react";
+import { Download } from "lucide-react";
+import PageCard from "@/components/PageCard";
 
 import { useRouter } from "@/compat/next-navigation";
 import { importItchGame, previewItchGame } from "@/requests/game";
@@ -118,21 +120,19 @@ export default function ItchGameImport() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-16">
-      <Vstack align="stretch" gap={8}>
-        <Vstack align="start" gap={3}>
-          <Icon name="download" size={34} color="text" />
-          <Text size="4xl" color="text" weight="semibold">
-             {uiText("AppStrings.ImportAGame")} </Text>
-          <Text size="lg" color="textFaded">
-             {uiText("AppStrings.ImportAGameFromAnItchIoJamToBeDisplayedOnTheSiteToListTheGameAndItsMusicAlongsideYour")} </Text>
-        </Vstack>
+    <PageCard
+      icon={Download}
+      title={uiText("AppStrings.ImportAGame")}
+      description={uiText("AppStrings.ImportAGameFromAnItchIoJamToBeDisplayedOnTheSiteToListTheGameAndItsMusicAlongsideYour")}
+    >
+      <Vstack align="stretch" gap={8} className="px-2 sm:px-3 max-[700px]:px-0">
 
         <Vstack align="stretch" gap={6}>
           <Vstack align="stretch" gap={2}>
             <Text color="text" weight="semibold">
                {uiText("AppStrings.ItchIoGameLink")} </Text>
             <Input
+              fullWidth
               placeholder="https://creator.itch.io/game-name"
               value={url}
               onValueChange={(value) => {
@@ -153,7 +153,7 @@ export default function ItchGameImport() {
           </Vstack>
 
           {preview && (
-            <Vstack align="stretch" gap={6} className="border-t pt-6">
+            <Vstack align="stretch" gap={6} className="border-t border-[color-mix(in_srgb,var(--editor-text)_9%,transparent)] pt-6">
               <div>
                 <Text size="2xl" color="text" weight="semibold">
                   {preview.title}
@@ -199,6 +199,7 @@ export default function ItchGameImport() {
                   <Text size="xs" color="textFaded">
                      {uiText("AppStrings.NoJamLinkWasFoundPasteTheItchIoJamPageManually")} </Text>
                   <Input
+                    fullWidth
                     placeholder="https://itch.io/jam/jam-name"
                     value={jamUrl}
                     onValueChange={setJamUrl}
@@ -222,6 +223,6 @@ export default function ItchGameImport() {
           )}
         </Hstack>
       </Vstack>
-    </main>
+    </PageCard>
   );
 }

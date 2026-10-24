@@ -93,15 +93,6 @@ export default function NavbarUser({
               Navbar.Profile.Title
             </Dropdown.Item>
             <Dropdown.Item
-              value="listening-history"
-              icon="clock"
-              href="/music/history"
-              description="Revisit tracks you’ve listened to"
-              kbd="G X"
-            >
-              Listening history
-            </Dropdown.Item>
-            <Dropdown.Item
               value="settings"
               icon="settings"
               description="Navbar.Settings.Description"
@@ -183,9 +174,10 @@ export default function NavbarUser({
             <Dropdown.Item
               value="donate"
               icon="heart"
-              href="/donate"
+              href="https://donate.bioloom.studio"
               description="Navbar.Donate.Description"
-              kbd="G D"
+                  externalIcon={false}
+                  kbd="G 2"
             >
               Navbar.Donate.Title
             </Dropdown.Item>
@@ -194,7 +186,7 @@ export default function NavbarUser({
               icon="rss"
               href="/rss"
               description="Navbar.RSS.Description"
-              kbd="G S"
+                  kbd="G 1"
             >
               Navbar.RSS.Title
             </Dropdown.Item>

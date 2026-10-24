@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+import { SquarePen } from "lucide-react";
 
 
 import { hasCookie } from "@/helpers/cookie";
@@ -8,7 +9,7 @@ import { addToast, Form } from "bioloom-ui";
 import { redirect } from "@/compat/next-navigation";
 import dynamic from "@/compat/next-dynamic";
 import { CSSProperties, ReactNode, useEffect, useMemo, useState } from "react";
-import type { MultiValue, StylesConfig } from "react-select";
+import type { MultiValue } from "react-select";
 import { UserType } from "@/types/UserType";
 import { getSelf } from "@/requests/user";
 import { getTags } from "@/requests/tag";
@@ -31,6 +32,7 @@ import { useTheme } from "@/providers/useSiteTheme";
 
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
+import PostSelect from "@/components/posts/PostSelect";
 import PostGameSelector from "@/components/posts/PostGameSelector";
 import type { LinkedPostGame } from "@/types/PostType";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
@@ -38,9 +40,7 @@ const Editor = dynamic(() => import("@/components/editor"), {
   ssr: false,
   loading: () => <div className="min-h-[100px] rounded-md border border-gray-600" />,
 });
-const Select = dynamic(() => import("react-select"), {
-  ssr: false,
-}) as typeof import("react-select").default;
+
 
 type TagOption = {
   value: string;
@@ -75,8 +75,7 @@ export default function CreatePostPage({
   const [user, setUser] = useState<UserType>();
   const [linkedGames, setLinkedGames] = useState<LinkedPostGame[]>([]);
   const [sticky, setSticky] = useState(false);
-  const { colors, siteTheme } = useTheme();
-  const headerColor = colors["text"];
+  const { colors } = useTheme();
   const hasUnsavedChanges = Boolean(title.trim() || content.trim() || selectedTags?.length || linkedGames.length || sticky);
   const floatingFooter = !embedded && hasUnsavedChanges;
 
@@ -207,71 +206,26 @@ export default function CreatePostPage({
     load();
   }, [embedded, sharedDraft]);
 
-  const styles: StylesConfig<
-    TagOption,
-    true
-  > = {
-    container: (base) => ({ ...base, width: "100%", maxWidth: "28rem", fontSize: 14, lineHeight: "20px" }),
-    multiValue: (base) => ({ ...base, backgroundColor: colors.base, borderRadius: 6 }),
-    multiValueLabel: (base) => ({ ...base, color: colors.text }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: colors.textFaded,
-      ":hover": { backgroundColor: colors.grayDark, color: colors.text },
-    }),
-    control: (base, { isFocused }) => ({
-      ...base,
-      backgroundColor: colors.base,
-      borderColor: isFocused ? colors.blue : `color-mix(in srgb, ${colors.text} 10%, ${colors.mantle})`,
-      boxShadow: isFocused ? `0 0 0 1px ${colors.blue}` : "none",
-      borderRadius: 8,
-      minWidth: 0,
-      ":hover": { borderColor: colors.blue },
-    }),
-    input: (base) => ({ ...base, color: colors.text }),
-    placeholder: (base) => ({ ...base, color: colors.textFaded }),
-    menu: (base) => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
-    menuPortal: (base) => ({ ...base, zIndex: 100, fontSize: 14, lineHeight: "20px" }),
-    option: (base, { isFocused }) => ({
-      ...base,
-      backgroundColor: isFocused ? colors.base : "transparent",
-      color: colors.text,
-    }),
-  };
+
 
   return (
     <Vstack
       align="stretch"
-      className={embedded ? "w-full" : "mx-auto w-full max-w-6xl gap-4"}
-      style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
+      className={embedded ? "w-full" : "mx-auto box-border w-full max-w-[1200px] rounded-[14px] bg-[var(--editor-surface)] p-8 text-[var(--editor-text)] gap-[18px]! shadow-[-22px_0_34px_-18px_rgb(0_0_0_/_78%),22px_0_34px_-18px_rgb(0_0_0_/_78%)] max-[700px]:min-h-[calc(100dvh_-_var(--site-navbar-height,0px)_-_5rem_-_env(safe-area-inset-bottom))] max-[700px]:rounded-none max-[700px]:p-[24px_max(16px,env(safe-area-inset-right))_24px_max(16px,env(safe-area-inset-left))] max-[700px]:gap-[14px]! max-[700px]:shadow-none"}
+      style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-muted": colors.textFaded, "--editor-accent": colors.blue } as CSSProperties}
     >
       {!embedded && (
-        <header className="py-2 text-center">
-          <h1
-            className="text-3xl font-semibold"
-            style={{
-              color: headerColor,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
-            }}
-          >
-             {uiText("Navbar.CreatePost.Title")} </h1>
-          <p
-            className="mt-1 text-sm"
-            style={{
-              color: headerColor,
-              opacity: 0.82,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
-            }}
-          >
-             {uiText("AppStrings.ShareSomethingWithTheCommunity")} </p>
+        <header className="flex flex-col items-start gap-2 px-2 pt-4 pb-1 sm:px-3 sm:pt-5 max-[700px]:items-center max-[700px]:p-[0_0_8px] max-[700px]:text-center">
+          <h1 className="m-0 flex items-center gap-3 text-[clamp(36px,4vw,52px)] font-bold leading-[1.15] tracking-[-.035em] max-[700px]:text-[36px]">
+            <SquarePen aria-hidden="true" strokeWidth={3} className="h-[1em] w-[1em] shrink-0" />
+            {uiText("Navbar.CreatePost.Title")}
+          </h1>
+          <p className="m-0 text-base text-[var(--editor-muted)] max-[700px]:text-sm">
+            {uiText("AppStrings.ShareSomethingWithTheCommunity")}
+          </p>
         </header>
       )}
+      {!embedded && <hr className="m-0 w-full border-0 border-t border-[color-mix(in_srgb,var(--editor-text)_9%,transparent)]" />}
           <Form
             className={`post-editor-form w-full flex flex-col ${floatingFooter ? "pb-48 sm:pb-32" : ""}`}
             onSubmit={async (e) => {
@@ -351,7 +305,7 @@ export default function CreatePostPage({
               }
             }}
           >
-            <div className={embedded ? "post-editor-embedded" : "form-editor-panel"}>
+            <div className={embedded ? "post-editor-embedded" : "form-editor-panel border-0! rounded-none! bg-transparent! px-2! pb-0! sm:px-3! max-[700px]:px-0!"}>
             <div className="game-editor-row"><Vstack align="stretch">
             <div>
               <Text color="text">{uiText("AppStrings.Title")}</Text>
@@ -389,8 +343,7 @@ export default function CreatePostPage({
                  {uiText("AppStrings.TagsAttachedToThePostToMarkWhat")} </Text>
             </div>
             {mounted && (
-              <Select<TagOption, true>
-                styles={styles}
+              <PostSelect<TagOption>
                 isMulti
                 value={selectedTags}
                 onChange={(value) => setSelectedTags(value)}

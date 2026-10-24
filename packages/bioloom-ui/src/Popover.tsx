@@ -408,27 +408,17 @@ export default function Popover({
 
     const viewportPadding = 8;
     const rect = node.getBoundingClientRect();
-    let deltaX = 0;
-    let deltaY = 0;
-
-    if (rect.left < viewportPadding) {
-      deltaX = viewportPadding - rect.left;
-    } else if (rect.right > window.innerWidth - viewportPadding) {
-      deltaX = window.innerWidth - viewportPadding - rect.right;
-    }
-
-    if (rect.top < viewportPadding) {
-      deltaY = viewportPadding - rect.top;
-    } else if (rect.bottom > window.innerHeight - viewportPadding) {
-      deltaY = window.innerHeight - viewportPadding - rect.bottom;
-    }
-
-    if (deltaX !== 0 || deltaY !== 0) {
-      setCollisionShift((current) => ({
-        x: current.x + deltaX,
-        y: current.y + deltaY,
-      }));
-    }
+    setCollisionShift(current => {
+      const left = rect.left - current.x;
+      const right = rect.right - current.x;
+      const top = rect.top - current.y;
+      const bottom = rect.bottom - current.y;
+      const x = left < viewportPadding ? viewportPadding - left
+        : right > window.innerWidth - viewportPadding ? window.innerWidth - viewportPadding - right : 0;
+      const y = top < viewportPadding ? viewportPadding - top
+        : bottom > window.innerHeight - viewportPadding ? window.innerHeight - viewportPadding - bottom : 0;
+      return current.x === x && current.y === y ? current : { x, y };
+    });
     setCollisionReady(true);
   }, [shown]);
 
@@ -446,7 +436,6 @@ export default function Popover({
     }
 
     setCollisionReady(false);
-    setCollisionShift({ x: 0, y: 0 });
     updateCollisionShift();
     const node = popoverRef.current;
     const resizeObserver = node
@@ -461,7 +450,7 @@ export default function Popover({
       window.removeEventListener("resize", updateCollisionShift);
       window.removeEventListener("scroll", updateCollisionShift, true);
     };
-  }, [hasMounted, shown, updateCollisionShift, avoidCollisions]);
+  }, [hasMounted, shown, updateCollisionShift, avoidCollisions, position, positionerStyle]);
 
   useLayoutEffect(() => {
     const anchor = anchorRef?.current;

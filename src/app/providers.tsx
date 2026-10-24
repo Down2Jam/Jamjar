@@ -9,7 +9,7 @@ import { useTheme } from "@/providers/useSiteTheme";
 import { EmojiProvider } from "@/providers/EmojiProvider";
 import LanguageAccountSync from "@/providers/LanguageAccountSync";
 import { BASE_URL } from "@/requests/config";
-import { MusicProvider } from "bioloom-miniplayer";
+import { MusicProvider } from "@/components/music/MusicProvider";
 import { ThemeProvider, ToastProvider } from "bioloom-ui";
 import { AbstractIntlMessages, NextIntlClientProvider } from "@/compat/next-intl";
 import { useEffect, useMemo, useState } from "react";

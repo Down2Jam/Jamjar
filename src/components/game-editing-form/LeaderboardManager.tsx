@@ -1,6 +1,7 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 import { useState } from "react";
-import { Button, Dropdown, Icon, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch } from "bioloom-ui";
+import { Button, Icon, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch } from "bioloom-ui";
+import Dropdown from "./EditorDropdown";
 import type { IconName } from "bioloom-ui";
 import { useTheme } from "@/providers/useSiteTheme";
 import type { LeaderboardInput, LeaderboardTypeType } from "@/types/LeaderboardType";

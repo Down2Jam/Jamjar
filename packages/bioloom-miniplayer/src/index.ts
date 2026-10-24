@@ -1,11 +1,9 @@
-export * from "./MusicProvider";
-export * from "./useMusic";
-export type { PlayableTrack, TrackComposer, TrackGame, TrackType } from "./MusicContext";
+export * from "./core";
 
-export { default as RecordDisc } from "./RecordDisc";
-export { default as PlayerContextMenu } from "./PlayerContextMenu";
-export { useTouchMenu } from "./useTouchMenu";
+export { default as RecordDisc } from "./components/RecordDisc";
+export { default as PlayerContextMenu } from "./components/menus/PlayerContextMenu";
+export { useTouchMenu } from "./hooks/useTouchMenu";
 
-export { useArtworkAccent } from "./useArtworkAccent";
+export { useArtworkAccent } from "./hooks/useArtworkAccent";
 
-export { loadWaveform, getAnalyzedDuration } from "./waveform";
+export { PlayerUIProvider, type PlayerUI, type PlayerTrackActions } from "./context/PlayerUIContext";

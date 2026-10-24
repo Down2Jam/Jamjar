@@ -9,6 +9,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -190,6 +191,8 @@ function Dropdown({
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [resolvedPosition, setResolvedPosition] = useState(position);
+  const [availableMenuHeight, setAvailableMenuHeight] = useState<number>();
   const selectionAnchor = useRef<unknown>(undefined);
   const optionValues = collectOptionValues(children);
   const [frozenAnchorRect, setFrozenAnchorRect] = useState<DOMRect | null>(null);
@@ -223,6 +226,48 @@ function Dropdown({
   };
 
   const open = (isOpen ?? internalOpen) && !disabled;
+
+  useLayoutEffect(() => {
+    if (!open) {
+      setResolvedPosition(position);
+      setAvailableMenuHeight(undefined);
+      return;
+    }
+    const menu = menuRef.current;
+    const anchor = rootRef.current;
+    if (!menu || !anchor) return;
+
+    const updatePlacement = () => {
+      if (!position.startsWith("top") && !position.startsWith("bottom")) return;
+      const rect = freezePositionWhileOpen && frozenAnchorRect ? frozenAnchorRect : anchor.getBoundingClientRect();
+      const above = Math.max(0, rect.top - 16);
+      const below = Math.max(0, window.innerHeight - rect.bottom - 16);
+      const panel = menu.parentElement?.parentElement;
+      const chrome = panel ? Math.max(0, panel.offsetHeight - menu.offsetHeight) : 18;
+      const height = Math.min(320, menu.scrollHeight) + chrome;
+      const prefersTop = position.startsWith("top");
+      const useTop = prefersTop ? !(height > above && below > above) : height > below && above > below;
+      // Top and bottom corner names use opposite horizontal alignment conventions.
+      const flipped: Partial<Record<Position, Position>> = {
+        bottom: "top", "bottom-left": "top-right", "bottom-right": "top-left",
+        top: "bottom", "top-left": "bottom-right", "top-right": "bottom-left",
+      };
+      setResolvedPosition(useTop === prefersTop ? position : flipped[position] ?? position);
+      setAvailableMenuHeight(Math.max(0, (useTop ? above : below) - chrome));
+    };
+
+    updatePlacement();
+    const observer = new ResizeObserver(updatePlacement);
+    observer.observe(menu);
+    observer.observe(anchor);
+    window.addEventListener("resize", updatePlacement);
+    window.addEventListener("scroll", updatePlacement, true);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updatePlacement);
+      window.removeEventListener("scroll", updatePlacement, true);
+    };
+  }, [open, position, freezePositionWhileOpen, frozenAnchorRect, children]);
 
   const supportsClick = openOn === "click" || openOn === "both";
   const supportsHover = openOn === "hover" || openOn === "both";
@@ -271,7 +316,7 @@ function Dropdown({
     const centerX = frozenAnchorRect.left + frozenAnchorRect.width / 2;
     const centerY = frozenAnchorRect.top + frozenAnchorRect.height / 2;
 
-    switch (position) {
+    switch (resolvedPosition) {
       case "top-left":
         return {
           ...base,
@@ -333,7 +378,7 @@ function Dropdown({
           transform: "translateX(-50%)",
         };
     }
-  }, [useViewportAnchor, frozenAnchorRect, position]);
+  }, [useViewportAnchor, frozenAnchorRect, resolvedPosition]);
 
   useEffect(() => {
     if (!open || !closeOnOutsideClick) return;
@@ -464,7 +509,7 @@ function Dropdown({
           anchorRef={rootRef}
           matchAnchorWidth={matchTriggerWidth}
           arrowAnchorSelector={arrowToChevron ? "[data-dropdown-chevron]" : undefined}
-          position={position}
+          position={resolvedPosition}
           anchorToScreen={useViewportAnchor}
           className={className}
           positionerStyle={frozenPositionerStyle}
@@ -481,6 +526,7 @@ function Dropdown({
               overflowY: "auto",
               overscrollBehaviorY: "contain",
               ...menuStyle,
+              ...(availableMenuHeight !== undefined ? { maxHeight: `min(20rem, ${availableMenuHeight}px)` } : {}),
             }}
           >
             {multiple && clearSelectionLabel && (

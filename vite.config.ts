@@ -53,7 +53,7 @@ export default defineConfig({
         replacement: path.resolve(__dirname, "packages/bioloom-ui/src/index.ts"),
       },
       {
-        find: "bioloom-miniplayer",
+        find: /^bioloom-miniplayer$/,
         replacement: path.resolve(
           __dirname,
           "packages/bioloom-miniplayer/src/index.ts",

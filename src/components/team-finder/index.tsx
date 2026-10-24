@@ -16,7 +16,7 @@ import { Card } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Text } from "bioloom-ui";
 import { Chip } from "bioloom-ui";
-import { Dropdown } from "bioloom-ui";
+import Dropdown from "@/components/game-editing-form/EditorDropdown";
 import { Tooltip } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
@@ -177,7 +177,7 @@ export default function TeamFinder() {
   if (isLoading) {
     return (
       <Vstack>
-        <Card className="max-w-96">
+        <div className="py-8">
           <Vstack>
             <Hstack>
               <Spinner />
@@ -185,7 +185,7 @@ export default function TeamFinder() {
             </Hstack>
             <Text color="textFaded">{uiText("AppStrings.LoadingTeamFinder")}</Text>
           </Vstack>
-        </Card>
+        </div>
       </Vstack>
     );
   }
@@ -197,7 +197,7 @@ export default function TeamFinder() {
   return (
     <>
       <section className="mt-4 mb-4 flex flex-col gap-3">
-        <div className="flex flex-wrap justify-center gap-3">
+        <div className="flex flex-wrap justify-start gap-3">
           {hasTeam && (
             <Button icon="users2" href="/team">
                {uiText("Navbar.MyTeam.Title")} </Button>
@@ -214,7 +214,7 @@ export default function TeamFinder() {
             {uiText(hasTeam ? "AppStrings.CreateAnotherTeam" : "AppStrings.CreateTeam")}
           </Button>
         </div>
-        <div className="flex flex-wrap justify-center gap-2">
+        <div className="flex flex-wrap justify-start gap-2">
           <Dropdown
             selectedValue={teamType}
             onSelect={(key) => {
@@ -246,11 +246,11 @@ export default function TeamFinder() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-4">
+      <section className="flex flex-col divide-y divide-[color-mix(in_srgb,var(--editor-text)_10%,transparent)]">
         {teams && teams.length > 0 ? (
           teams.map((team) => (
-            <Card key={team.id}>
-              <div className="flex items-center justify-between flex-row gap-3">
+            <div key={team.id} className="flex min-w-0 flex-col gap-4 px-2 py-6 sm:px-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <Hstack>
                   <div>
                     {team.users.map((user) => (
@@ -277,7 +277,7 @@ export default function TeamFinder() {
               </div>
               {team.description && <p>{team.description}</p>}
               {team.rolesWanted.length > 0 && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <p>{uiText("AppStrings.RolesWanted")}</p>
                   {team.rolesWanted.map((role) => (
                     <Chip
@@ -289,7 +289,7 @@ export default function TeamFinder() {
                   ))}
                 </div>
               )}
-            </Card>
+            </div>
           ))
         ) : (
           <Text color="textFaded">
