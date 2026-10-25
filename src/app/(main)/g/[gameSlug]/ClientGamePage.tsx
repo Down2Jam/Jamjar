@@ -441,7 +441,7 @@ export default function ClientGamePage({
     activeJamResponse?.phase == "Post-Jam Rating";
   const shouldShowResults = !isCurrentJamGame || shouldShowCurrentJamResults;
   const currentRatingCategoryCount =
-    (displayGame?.ratingCategories.length ?? 0) + ratingCategories.length;
+    selectedVersion === "POST_JAM" ? 1 : (displayGame?.ratingCategories.length ?? 0) + ratingCategories.length;
   const currentRatingsReceived =
     currentRatingCategoryCount > 0
       ? Math.round(
@@ -1750,8 +1750,7 @@ export default function ClientGamePage({
                         (rating) =>
                           (rating.pageVersion ?? "JAM") === selectedVersion,
                       ).length /
-                        (displayGame.ratingCategories.length +
-                          ratingCategories.length),
+                        currentRatingCategoryCount,
                     )}
                   </Chip>
                   {displayGame.category !== "EXTRA" &&
@@ -1773,8 +1772,7 @@ export default function ClientGamePage({
                                   team.game.category !== "EXTERNAL",
                               ).length > 0,
                           ).length /
-                            (displayGame.ratingCategories.length +
-                              ratingCategories.length),
+                            currentRatingCategoryCount,
                         )}
                       </Chip>
 
@@ -1791,8 +1789,7 @@ export default function ClientGamePage({
                                 team.game.category !== "EXTERNAL",
                             ).length > 0,
                         ).length /
-                          (displayGame.ratingCategories.length +
-                            ratingCategories.length),
+                          currentRatingCategoryCount,
                       ) < 5 && (
                         <Tooltip
                           content="This game needs 5 ratings received in order to be ranked after the rating period"
@@ -1818,8 +1815,7 @@ export default function ClientGamePage({
                                   | undefined) ?? "JAM") === selectedVersion &&
                                 cur2.game.jamId === displayGame.jamId
                                   ? 1 /
-                                    (cur2.game.ratingCategories.length +
-                                      ratingCategories.length)
+                                    (selectedVersion === "POST_JAM" ? 1 : cur2.game.ratingCategories.length + ratingCategories.length)
                                   : 0),
                               0,
                             ),
@@ -1839,8 +1835,7 @@ export default function ClientGamePage({
                                 | undefined) ?? "JAM") === selectedVersion &&
                               cur2.game.jamId === displayGame.jamId
                                 ? 1 /
-                                  (cur2.game.ratingCategories.length +
-                                    ratingCategories.length)
+                                  (selectedVersion === "POST_JAM" ? 1 : cur2.game.ratingCategories.length + ratingCategories.length)
                                 : 0),
                             0,
                           ),

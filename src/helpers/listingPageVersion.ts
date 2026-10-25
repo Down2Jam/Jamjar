@@ -29,6 +29,17 @@ export function getDefaultListingPageVersion(
   return "ALL";
 }
 
+export function getDefaultMoreFilters<T extends string>(
+  selectedJamId: string,
+  currentJamId: string | null | undefined,
+  currentPhase: string | null | undefined,
+  activeDefaults: Iterable<T>,
+): Set<T | "postJamFirst"> {
+  if (!currentJamId || selectedJamId !== currentJamId) return new Set();
+  if (isPostJamPhase(currentPhase)) return new Set(["postJamFirst"]);
+  return isJamPhase(currentPhase) ? new Set(activeDefaults) : new Set();
+}
+
 export function postJamFirst<T extends { pageVersion?: string }>(items: T[], enabled: boolean): T[] {
   return enabled ? [...items].sort((a, b) => Number(b.pageVersion === "POST_JAM") - Number(a.pageVersion === "POST_JAM")) : items;
 }

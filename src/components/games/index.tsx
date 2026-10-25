@@ -1,4 +1,4 @@
-import { isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
+import { getDefaultMoreFilters, isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
@@ -233,21 +233,6 @@ const restrictedSorts = new Set<GameSort>([
   "ratingbalance",
 ]);
 
-function getDefaultGameMoreFilters(
-  selectedJamId: string,
-  currentJamId: string | null | undefined,
-  currentPhase: string | null | undefined,
-): Set<MoreFilterId> {
-  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
-  const isActiveJamBehavior =
-    isCurrentJam &&
-    (currentPhase === "Jamming" ||
-      currentPhase === "Submission" ||
-      currentPhase === "Rating");
-
-  if (isCurrentJam && isPostJamPhase(currentPhase)) return new Set(["postJamFirst"]);
-  return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
-}
 
 function isActiveJamBehavior(
   selectedJamId: string,
@@ -351,6 +336,9 @@ export default function Games() {
   const hasUserSelectedSort = useRef(false);
   const hasAppliedDefault = useRef(false);
 
+  const hasJamParam = useMemo(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("jam"),
+  []);
   const initialJamParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     const p = new URLSearchParams(window.location.search).get("jam");
@@ -373,10 +361,6 @@ export default function Games() {
   const [pageVersion, setPageVersion] = useState<ListingPageVersion>(
     initialPageVersionParam,
   );
-  const hasMoreParam = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return new URLSearchParams(window.location.search).has("more");
-  }, []);
   const [jamDetecting, setJamDetecting] = useState<boolean>(true);
 
   const initialTypeParam = useMemo(() => {
@@ -438,18 +422,6 @@ export default function Games() {
   const [excludedFlags, setExcludedFlags] = useState<Set<string>>(
     initialExcludedFlagsParam,
   );
-  const initialMoreFiltersParam = useMemo(
-    () =>
-      typeof window === "undefined"
-        ? new Set<string>(DEFAULT_MORE_FILTERS)
-        : getInitialMoreFilters(
-            new URLSearchParams(window.location.search).get("more"),
-          ),
-    [],
-  );
-  const [selectedMoreFilters, setSelectedMoreFilters] = useState<Set<string>>(
-    initialMoreFiltersParam,
-  );
   const hasInitialAdvancedSearchParams = useMemo(() => {
     if (typeof window === "undefined") return false;
     const params = new URLSearchParams(window.location.search);
@@ -496,6 +468,13 @@ export default function Games() {
 
   const currentJamId = currentJamData?.jam?.id?.toString();
   const currentJamValue = getJamUrlValue(currentJamData?.jam);
+  const moreParam = searchParams.get("more");
+  const selectedMoreFilters = useMemo(
+    () => moreParam !== null
+      ? getInitialMoreFilters(moreParam)
+      : getDefaultMoreFilters(jamId, currentJamValue, currentJamData?.phase, DEFAULT_MORE_FILTERS),
+    [moreParam, jamId, currentJamValue, currentJamData?.phase],
+  );
   const currentJamHasContentListing =
     currentJamData?.jam &&
     shouldShowJamInContentListings(
@@ -620,7 +599,7 @@ export default function Games() {
     if (
       currentJamHasContentListing &&
       isCurrentJamDefaultPhase &&
-      (initialJamParam === "all" || !initialJamParam)
+      !hasJamParam
     ) {
       ratingDefault = currentJamValue || null;
     }
@@ -655,6 +634,7 @@ export default function Games() {
     allJams,
     router,
     initialJamParam,
+    hasJamParam,
     currentJamId,
     currentJamValue,
   ]);
@@ -774,10 +754,9 @@ export default function Games() {
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(window.location.search);
-      if (value && value !== "all") {
+      if (value && (value !== "all" || key === "jam")) {
         params.set(key, value);
       } else {
-        // Delete when value is "all" to keep URLs clean.
         params.delete(key);
       }
       navigateToSearchIfChanged(router, params);
@@ -894,21 +873,6 @@ export default function Games() {
     currentJamData?.phase,
     currentJamValue,
     hasPageVersionParam,
-    jamDetecting,
-    jamId,
-  ]);
-
-  useEffect(() => {
-    if (jamDetecting) return;
-    if (hasMoreParam) return;
-
-    setSelectedMoreFilters(
-      getDefaultGameMoreFilters(jamId, currentJamValue, currentJamData?.phase),
-    );
-  }, [
-    currentJamData?.phase,
-    currentJamValue,
-    hasMoreParam,
     jamDetecting,
     jamId,
   ]);
@@ -1279,6 +1243,7 @@ export default function Games() {
                 triggerStyle={gamesDropdownShadow}
                 selectedValue={jamId}
                 onSelect={(key) => {
+                  hasUserSelected.current = true;
                   const val = key as string;
                   setJamId(val);
                   const nextSort = getDefaultGameSort(
@@ -1495,7 +1460,6 @@ export default function Games() {
                   const next = new Set(
                     Array.from(values, (value) => String(value)),
                   );
-                  setSelectedMoreFilters(next);
                   updateMoreQueryParam(next);
                 }}
                 trigger={

@@ -1,4 +1,4 @@
-import { isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
+import { getDefaultMoreFilters, isPostJamPhase, postJamFirst } from "@/helpers/listingPageVersion";
 import { translateSystemLabel } from "@/helpers/systemLabels";
 import { isOwnTrack } from "@/helpers/isOwnTrack";
 "use client";
@@ -21,7 +21,7 @@ import { TrackType } from "@/types/TrackType";
 import { GameSort } from "@/types/GameSort";
 import { ListingPageVersion } from "@/types/GameType";
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { useRouter } from "@/compat/next-navigation";
+import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { useCurrentJam, useJams, useSelf, useTracks } from "@/hooks/queries";
 import { ListingSkeleton, TrackCountSkeleton } from "@/components/listing-loading";
 import { IconName } from "bioloom-ui";
@@ -163,21 +163,6 @@ function canUseScoreSort(
   );
 }
 
-function getDefaultMusicMoreFilters(
-  selectedJamId: string,
-  currentJamId: string | null | undefined,
-  currentPhase: string | null | undefined,
-): Set<string> {
-  const isCurrentJam = !!currentJamId && selectedJamId === currentJamId;
-  const isActiveJamBehavior =
-    isCurrentJam &&
-    (currentPhase === "Jamming" ||
-      currentPhase === "Submission" ||
-      currentPhase === "Rating");
-
-  if (isCurrentJam && isPostJamPhase(currentPhase)) return new Set(["postJamFirst"]);
-  return isActiveJamBehavior ? new Set(DEFAULT_MORE_FILTERS) : new Set();
-}
 
 export default function MusicPage() {
   const { playItem, shuffle, playbackScope, current, isPlaying, toggle } = useMusic();
@@ -270,14 +255,13 @@ export default function MusicPage() {
       ? sortParam as GameSort : "recommended",
   );
 
+  const hasJamParam = useMemo(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).has("jam"),
+  []);
   const initialJamParam = useMemo(() => {
     if (typeof window === "undefined") return "all";
     const p = new URLSearchParams(window.location.search).get("jam");
     return p ?? "all";
-  }, []);
-  const hasMoreParam = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return new URLSearchParams(window.location.search).has("more");
   }, []);
   const initialPageVersionParam = useMemo(() => {
     if (typeof window === "undefined") return "ALL" as ListingPageVersion;
@@ -292,6 +276,14 @@ export default function MusicPage() {
   }, []);
 
   const [jamId, setJamId] = useState<string>(initialJamParam);
+  const searchParams = useSearchParams();
+  const moreParam = searchParams.get("more");
+  const selectedMoreFilters = useMemo(
+    () => moreParam !== null
+      ? getInitialMoreFilters(moreParam)
+      : getDefaultMoreFilters(jamId, currentJamValue, activeJamPhase, DEFAULT_MORE_FILTERS),
+    [moreParam, jamId, currentJamValue, activeJamPhase],
+  );
   const [pageVersion, setPageVersion] =
     useState<ListingPageVersion>(initialPageVersionParam);
   const initialGenresParam = useMemo(
@@ -344,22 +336,11 @@ export default function MusicPage() {
   }, []);
   const [selectedLooping, setSelectedLooping] =
     useState<string>(initialLoopingParam);
-  const initialMoreParam = useMemo(
-    () =>
-      typeof window === "undefined"
-        ? new Set<string>(DEFAULT_MORE_FILTERS)
-        : getInitialMoreFilters(
-            new URLSearchParams(window.location.search).get("more"),
-          ),
-    [],
-  );
-  const [selectedMoreFilters, setSelectedMoreFilters] =
-    useState<Set<string>>(initialMoreParam);
 
   const updateQueryParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(window.location.search);
-      if (value && value !== "all") {
+      if (value && (value !== "all" || key === "jam")) {
         params.set(key, value);
       } else {
         params.delete(key);
@@ -410,7 +391,7 @@ export default function MusicPage() {
       !hasAppliedDefault.current && !hasUserSelected.current &&
       isCurrentJamDefaultPhase && currentJamValue &&
       shouldShowJamInContentListings(currentJamData?.jam, activeJamPhase, currentJamId) &&
-      (initialJamParam === "all" || !initialJamParam)
+      !hasJamParam
     ) {
       hasAppliedDefault.current = true;
       setJamId(currentJamValue);
@@ -419,7 +400,7 @@ export default function MusicPage() {
       navigateToSearchIfChanged(router, params, "replace");
     }
     setJamDetecting(false);
-  }, [router, initialJamParam, currentJamData, currentJamPending, activeJamPhase, currentJamId, currentJamValue]);
+  }, [router, initialJamParam, hasJamParam, currentJamData, currentJamPending, activeJamPhase, currentJamId, currentJamValue]);
 
   useEffect(() => {
     if (jamDetecting || jamOptions.length === 0) return;
@@ -530,15 +511,6 @@ export default function MusicPage() {
       setSort(nextSort);
     }
   }, [activeJamPhase, currentJamValue, jamDetecting, jamId, pageVersion, sort]);
-
-  useEffect(() => {
-    if (jamDetecting) return;
-    if (hasMoreParam) return;
-
-    setSelectedMoreFilters(
-      getDefaultMusicMoreFilters(jamId, currentJamValue, activeJamPhase),
-    );
-  }, [activeJamPhase, currentJamValue, hasMoreParam, jamDetecting, jamId]);
 
   useEffect(() => {
     if (jamDetecting) return;
@@ -900,7 +872,6 @@ export default function MusicPage() {
               if (streamSafe) more.add(MORE_FILTERS.backgroundSafe);
               else more.delete(MORE_FILTERS.backgroundSafe);
               setSelectedLicenses(next);
-              setSelectedMoreFilters(more);
               const params = new URLSearchParams(window.location.search);
               const licenses = serializeMultiValueParam(next);
               if (licenses) params.set("licenses", licenses);
@@ -1029,7 +1000,6 @@ export default function MusicPage() {
                   const next = new Set(selectedMoreFilters);
                   if (event.target.checked) next.add(option.value);
                   else next.delete(option.value);
-                  setSelectedMoreFilters(next);
                   updateMoreQueryParam(next);
                 }}
               />
