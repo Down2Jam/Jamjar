@@ -1425,17 +1425,19 @@ export default function ClientGamePage({
                             </div>
                           );
                         })}
-                      <div className="w-96 h-60">
-                        <GameRatingChart data={currentScoreKeys.map(
-                              (score) => ({
-                                subject: t(score),
-                                A: currentScores[score].averageScore / 2,
-                                B:
-                                  currentScores[score].averageUnrankedScore / 2,
-                                fullMark: 5,
-                              }),
-                             )} showRanked={displayGame.category !== "EXTRA"} />
-                      </div>
+                      {currentScoreKeys.length > 2 && (
+                        <div className="w-96 h-60">
+                          <GameRatingChart data={currentScoreKeys.map(
+                                (score) => ({
+                                  subject: t(score),
+                                  A: currentScores[score].averageScore / 2,
+                                  B:
+                                    currentScores[score].averageUnrankedScore / 2,
+                                  fullMark: 5,
+                                }),
+                               )} showRanked={displayGame.category !== "EXTRA"} />
+                        </div>
+                      )}
                     </>
                   )}
                 {isEditable && isCurrentJamGame && isRatingOpenPhase && (

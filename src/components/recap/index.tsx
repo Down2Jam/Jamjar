@@ -1873,7 +1873,7 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
               subtitle={uiText("AppStrings.TheStarRatingOfVariousAspectsOfYour")}
             >
               <Vstack align="start" gap={6} className="w-full">
-                <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)] gap-6 w-full items-start">
+                <div className={`grid grid-cols-1 gap-6 w-full items-start ${chart.length > 2 ? "lg:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]" : ""}`}>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 xl:gap-x-16 gap-y-6">
                     {entries.map((entry) => {
                       const { gradient, first } = getResultsGradient(
@@ -1912,35 +1912,37 @@ export default function Recap({ targetUserSlug, preview = false }: RecapProps) {
                     })}
                   </div>
 
-                  <Vstack align="start" gap={4} className="w-full h-full">
-                    <div className="w-full h-[280px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart
-                          cx="50%"
-                          cy="50%"
-                          outerRadius="80%"
-                          data={chart}
-                          margin={{ top: 20, right: 70, bottom: 20, left: 70 }}
-                        >
-                          <PolarGrid stroke={colors.crust} />
-                          <PolarAngleAxis
-                            dataKey="subject"
-                            tick={<RatingRadarLabel color={colors.textFaded} />}
-                          />
-                          <PolarRadiusAxis
-                            domain={[0, 5]}
-                            axisLine={false}
-                            tick={false}
-                          />
-                          <Radar
-                            name={game.category === "EXTRA" ? "All" : "Ranked"}
-                            dataKey={game.category === "EXTRA" ? "all" : "ranked"}
-                            shape={<RatingRadarShape colors={colors} />}
-                          />
-                        </RadarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </Vstack>
+                  {chart.length > 2 && (
+                    <Vstack align="start" gap={4} className="w-full h-full">
+                      <div className="w-full h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <RadarChart
+                            cx="50%"
+                            cy="50%"
+                            outerRadius="80%"
+                            data={chart}
+                            margin={{ top: 20, right: 70, bottom: 20, left: 70 }}
+                          >
+                            <PolarGrid stroke={colors.crust} />
+                            <PolarAngleAxis
+                              dataKey="subject"
+                              tick={<RatingRadarLabel color={colors.textFaded} />}
+                            />
+                            <PolarRadiusAxis
+                              domain={[0, 5]}
+                              axisLine={false}
+                              tick={false}
+                            />
+                            <Radar
+                              name={game.category === "EXTRA" ? "All" : "Ranked"}
+                              dataKey={game.category === "EXTRA" ? "all" : "ranked"}
+                              shape={<RatingRadarShape colors={colors} />}
+                            />
+                          </RadarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </Vstack>
+                  )}
                 </div>
               </Vstack>
             </Section>
