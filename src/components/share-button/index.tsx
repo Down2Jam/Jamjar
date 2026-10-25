@@ -9,15 +9,19 @@ export default function ShareButton(){
     const [displayCheckIcon, setDisplayCheckIcon] = useState(false)
     return (
         <Button 
-        onClick={()=>{
+        title={uiText("AppStrings.CopyShareLink")}
+        onClick={(e)=>{
             const timeoutTime = 2500
             var url = location.href;
             navigator.clipboard.writeText(url);
 
-            var text = document.getElementById("copy-link-text");
-            if(text != null){
-                text.textContent = uiText("AppStrings.LinkCopied");
-                setTimeout(()=>text.textContent = uiText("AppStrings.CopyShareLink"), timeoutTime)
+            var button = e.currentTarget
+            if(button != null){
+                button.title = uiText("AppStrings.LinkCopied");
+                setTimeout(()=>{
+                    if(button==null) return;
+                    button.title = uiText("AppStrings.CopyShareLink")
+                }, timeoutTime)
             }
             setDisplayCheckIcon(true)
             setTimeout(()=>setDisplayCheckIcon(false), timeoutTime)
@@ -26,7 +30,10 @@ export default function ShareButton(){
         
         >
             <Hstack className="items-center gap-2"><Icon name={displayCheckIcon ? "check" : "share2"} color="text" size={16} />
-            <span id="copy-link-text">{uiText("AppStrings.CopyShareLink")}</span></Hstack>
+            {
+                // <span id="copy-link-text">{uiText("AppStrings.CopyShareLink")}</span>
+            }
+            </Hstack>
             
         </Button>
 
