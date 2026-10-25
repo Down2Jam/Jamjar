@@ -11,6 +11,8 @@ import { addToast, Button, Card, Hstack, Icon, Spinner, Text, Vstack } from "bio
 import { useRouter } from "@/compat/next-navigation";
 import { useState } from "react";
 import Editor from "@/components/editor";
+import PageCard from "@/components/PageCard";
+import { Newspaper } from "lucide-react";
 import { Input } from "bioloom-ui";
 import DocumentationIconPicker from "./DocumentationIconPicker";
 
@@ -30,6 +32,8 @@ export default function DocumentationCreatePage({
   icon,
 }: Props) {
   const uiText = useUiTranslations();
+  const isPressKit = section === "PRESS_KIT";
+  const flatPanel = isPressKit ? "border-0! bg-transparent! shadow-none! p-0! rounded-none!" : undefined;
   const hasToken = hasCookie("token");
   const { data: user, isLoading } = useSelf(hasToken);
   const router = useRouter();
@@ -55,9 +59,9 @@ export default function DocumentationCreatePage({
     );
   }
 
-  return (
+  const pageContent = (
     <div className="flex flex-col gap-6">
-      <Card>
+      {!isPressKit && <Card>
         <Vstack align="start" gap={1}>
           <Hstack>
             <Icon name={icon} />
@@ -67,8 +71,8 @@ export default function DocumentationCreatePage({
           </Hstack>
           <Text color="textFaded">{description}</Text>
         </Vstack>
-      </Card>
-      <Card>
+      </Card>}
+      <Card className={flatPanel}>
         <Vstack align="start" gap={4}>
           <Input
             value={documentTitle}
@@ -116,4 +120,6 @@ export default function DocumentationCreatePage({
       </Card>
     </div>
   );
+
+  return isPressKit ? <PageCard icon={Newspaper} title={title} description={description}>{pageContent}</PageCard> : pageContent;
 }

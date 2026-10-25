@@ -4,6 +4,7 @@ export interface LinkedPostGame {
   slug: string;
   name: string;
   thumbnail?: string | null;
+  jam?: { name: string };
   relationType?: PostGameRelation;
 }
 

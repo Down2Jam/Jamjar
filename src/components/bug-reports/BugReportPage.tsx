@@ -1,17 +1,18 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
-import { CSSProperties, useState } from "react";
-import { Button, Input, Textarea, Vstack, Hstack, Text } from "bioloom-ui";
+import { useState } from "react";
+import { Button, Input, Textarea, Vstack, Text } from "bioloom-ui";
 import { Bug, CheckCircle2 } from "lucide-react";
 import { useTheme } from "@/providers/useSiteTheme";
 import { hasCookie } from "@/helpers/cookie";
 import { submitBug } from "@/requests/bugs";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
+import PageCard from "@/components/PageCard";
 import "@/components/game-editing-form/game-editor.css";
 import "@/components/form-editor.css";
 
 export default function BugReportPage() {
   const uiText = useUiTranslations();
-  const { colors, siteTheme } = useTheme();
+  const { colors } = useTheme();
   const [title, setTitle] = useState("");
   const [page, setPage] = useState(() => new URLSearchParams(window.location.search).get("page")?.slice(0, 300) ?? "");
   const [steps, setSteps] = useState("");
@@ -32,15 +33,7 @@ export default function BugReportPage() {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-7xl space-y-4" style={{
-      "--editor-surface": colors.mantle,
-      "--editor-text": colors.text,
-      color: colors.text,
-    } as CSSProperties}>
-      <header className="py-2 text-center" style={{ textShadow: siteTheme.type === "Light" ? "none" : "0 1px 5px rgba(0, 0, 0, 0.75)" }}>
-        <h1 className="text-3xl font-semibold">{uiText("AppStrings.ReportABug")}</h1>
-        <p className="mt-1 text-sm opacity-[0.82]">{uiText("AppStrings.SomethingNotWorkingHelpUsTrackItDown")}</p>
-      </header>
+    <PageCard icon={Bug} title={uiText("AppStrings.ReportABug")} description={uiText("AppStrings.SomethingNotWorkingHelpUsTrackItDown")}>
 
       {reportId !== null ? (
         <section className="form-editor-panel settings-editor-panel" role="status">
@@ -69,12 +62,6 @@ export default function BugReportPage() {
           finally { setSaving(false); }
         }}>
           <fieldset disabled={saving} className="form-editor-panel settings-editor-panel">
-            <div className="game-editor-panel-heading">
-              <Hstack gap={3}>
-                <Bug size={28} />
-                <h2 className="text-2xl font-bold">{uiText("AppStrings.ReportABug")}</h2>
-              </Hstack>
-            </div>
             {fields.map((field) => (
               <div key={field.id} className="game-editor-row">
                 <Vstack align="start">
@@ -92,7 +79,7 @@ export default function BugReportPage() {
             ))}
           </fieldset>
           {error && <p role="alert" className="mt-4 text-sm" style={{ color: colors.red }}>{error}</p>}
-          <EditorFooter floating={false} status={uiText("AppStrings.SubmitBugReport")} description={
+          <EditorFooter floating={false} actionsOnlyWhenSaved status={uiText("AppStrings.SubmitBugReport")} description={
             <span style={{ color: details.length > 2000 ? colors.red : undefined }}>{details.length} {uiText("AppStrings.2000Characters")}</span>
           }>
             <Button type="submit" icon="bug" disabled={saving || details.length > 2000} aria-busy={saving}>{saving ? uiText("AppStrings.Submitting") : uiText("AppStrings.SubmitBugReport")}</Button>
@@ -100,6 +87,6 @@ export default function BugReportPage() {
         </form>
       )}
 
-    </div>
+    </PageCard>
   );
 }

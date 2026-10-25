@@ -1,4 +1,5 @@
 "use client";
+import { useLayoutEffect } from "react";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
@@ -36,6 +37,12 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
   const uiText = useUiTranslations();
   const direction = useScrollDirection();
   const hidden = direction === "down";
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty("--mobile-navbar-offset", hidden ? "0px" : "calc(60px + env(safe-area-inset-bottom))");
+    return () => {
+      document.documentElement.style.removeProperty("--mobile-navbar-offset");
+    };
+  }, [hidden]);
   const { colors } = useTheme();
 
   const hasToken = hasCookie("token");
@@ -69,6 +76,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         hidden ? "translate-y-full" : "translate-y-0"
       } border-t-2 !fixed !top-auto bottom-0 left-0 right-0 z-50 px-4 py-1 duration-500 ease-in-out transition-color`}
       style={{
+        transitionProperty: "transform, background-color, border-color",
         height: "calc(60px + env(safe-area-inset-bottom))",
         paddingBottom: "env(safe-area-inset-bottom)",
         boxShadow: "0 -12px 24px -14px rgb(0 0 0 / 85%)",
@@ -112,17 +120,6 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
             description={uiText("Navbar.Profile.Description")}
           >
              {uiText("Navbar.Profile.Title")} </Dropdown.Item>
-        )}
-        {user && (
-          <Dropdown.Item
-            value="listening-history"
-            icon="clock"
-            href="/music/history"
-            description="Revisit tracks you’ve listened to"
-            kbd="G X"
-          >
-            Listening history
-          </Dropdown.Item>
         )}
         {user && (
           <Dropdown.Item
@@ -327,8 +324,10 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
         <Dropdown.Item
           value="donate"
           icon="heart"
-          href="/donate"
+          href="https://donate.bioloom.studio"
           description={uiText("Navbar.Donate.Description")}
+                  externalIcon={false}
+                  kbd="G 2"
         >
            {uiText("Navbar.Donate.Title")} </Dropdown.Item>
         <Dropdown.Item
@@ -336,6 +335,7 @@ export default function Mobilebar({ isLoggedIn }: MobilebarProps) {
           icon="rss"
           href="/rss"
           description={uiText("Navbar.RSS.Description")}
+                  kbd="G 1"
         >
            {uiText("Navbar.RSS.Title")} </Dropdown.Item>
         <Dropdown.Item

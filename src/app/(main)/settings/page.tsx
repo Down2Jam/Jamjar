@@ -1,13 +1,15 @@
 "use client";
 
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
+import { Settings } from "lucide-react";
 
 
 import TwitchConnection from "@/components/twitch-connection";
 import Editor from "@/components/editor";
 import { getCookie, hasCookie } from "@/helpers/cookie";
 import { UserType } from "@/types/UserType";
-import { addToast, Form, ImageCropData, ImageInput, Tabs, Tab, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Icon } from "bioloom-ui";
+import { addToast, Form, ImageCropData, ImageInput, Tab, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Icon } from "bioloom-ui";
+import SettingsTabs from "@/components/settings/SettingsTabs";
 import { redirect, usePathname } from "@/compat/next-navigation";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { getSelf, updateUser } from "@/requests/user";
@@ -91,7 +93,7 @@ export default function UserPage() {
   const [primaryRoles, setPrimaryRoles] = useState<Set<string>>(new Set());
   const [secondaryRoles, setSecondaryRoles] = useState<Set<string>>(new Set());
   const [roles, setRoles] = useState<RoleType[]>([]);
-  const { colors, siteTheme } = useTheme();
+  const { colors } = useTheme();
   const [defaultPfps, setDefaultPfps] = useState<string[]>([]);
   const { emojis, refresh: refreshEmojis } = useEmojis();
   const [emoteSlug, setEmoteSlug] = useState("");
@@ -399,10 +401,10 @@ export default function UserPage() {
       {/* App fields use this separate form so they never submit or validate the profile form. */}
       <form id={DEVELOPER_APP_FORM_ID} onSubmit={event => event.preventDefault()} />
       <Form
-        className={`w-full max-w-6xl flex flex-col gap-4 ${
-          hasUnsavedChanges ? "pb-48 sm:pb-32" : ""
+        className={`mx-auto box-border flex w-full max-w-[1200px] flex-col gap-[18px] rounded-[14px] bg-[var(--editor-surface)] p-8 text-[var(--editor-text)] shadow-[-22px_0_34px_-18px_rgb(0_0_0_/_78%),22px_0_34px_-18px_rgb(0_0_0_/_78%)] max-[700px]:min-h-[calc(100dvh_-_var(--site-navbar-height,0px)_-_5rem_-_env(safe-area-inset-bottom))] max-[700px]:rounded-none max-[700px]:p-[24px_max(16px,env(safe-area-inset-right))_24px_max(16px,env(safe-area-inset-left))] max-[700px]:gap-[14px] max-[700px]:shadow-none [&_.settings-editor-panel]:border-0! [&_.settings-editor-panel]:rounded-none! [&_.settings-editor-panel]:bg-transparent! [&_.settings-editor-panel]:px-2! sm:[&_.settings-editor-panel]:px-3! max-[700px]:[&_.settings-editor-panel]:px-0! [&_.game-editor-panel-heading]:mx-0! [&_.game-editor-panel-heading]:px-0! ${
+          hasUnsavedChanges ? "pb-48! sm:pb-32!" : ""
         }`}
-        style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
+        style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-muted": colors.textFaded, "--editor-accent": colors.blue } as CSSProperties}
         validationErrors={errors}
         onReset={resetSettingsForm}
         onSubmit={async (e) => {
@@ -466,33 +468,17 @@ export default function UserPage() {
           }
         }}
       >
-        <header className="py-2 text-center">
-          <h1
-            className="text-3xl font-semibold"
-            style={{
-              color: colors["text"],
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
-            }}
-          >
-             {uiText("Navbar.Settings.Title")} </h1>
-          <p
-            className="mt-1 text-sm"
-            style={{
-              color: colors["text"],
-              opacity: 0.82,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
-            }}
-          >
-             {uiText("Navbar.Settings.Description")} </p>
+        <header className="flex flex-col items-start gap-2 px-2 pt-4 pb-1 sm:px-3 sm:pt-5 max-[700px]:items-center max-[700px]:p-[0_0_8px] max-[700px]:text-center">
+          <h1 className="m-0 flex items-center gap-3 text-[clamp(36px,4vw,52px)] font-bold leading-[1.15] tracking-[-.035em] max-[700px]:text-[36px]">
+            <Settings aria-hidden="true" strokeWidth={3} className="h-[1em] w-[1em] shrink-0" />
+            {uiText("Navbar.Settings.Title")}
+          </h1>
+          <p className="m-0 text-base text-[var(--editor-muted)] max-[700px]:text-sm">
+            {uiText("Navbar.Settings.Description")}
+          </p>
         </header>
 
-        <Tabs defaultIndex={Math.max(0, ["general", "notifications", "streams", "emotes", "tokens", "apps"].indexOf(new URLSearchParams(window.location.search).get("tab") ?? "general"))} className="[&>[role=tablist]]:justify-center">
+        <SettingsTabs defaultIndex={Math.max(0, ["general", "notifications", "streams", "emotes", "tokens", "apps"].indexOf(new URLSearchParams(window.location.search).get("tab") ?? "general"))}>
           <Tab title={uiText("AppStrings.General")} icon="cog">
             <div className="form-editor-panel settings-editor-panel">
               <div className="game-editor-panel-heading">
@@ -1341,7 +1327,7 @@ export default function UserPage() {
           <Tab title="Your apps" icon="code">
             <DeveloperAppsSection />
           </Tab>
-        </Tabs>
+        </SettingsTabs>
 
         {hasUnsavedChanges && (
           <EditorFooter

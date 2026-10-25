@@ -36,7 +36,6 @@ const ImportGamePage = lazy(() => import("@/app/(main)/import-game/page"));
 const CreatePostPage = lazy(() => import("@/app/(main)/create-post/page"));
 const DocsPage = lazy(() => import("@/app/(main)/docs/page"));
 const DocsNewPage = lazy(() => import("@/app/(main)/docs/new/page"));
-const DonatePage = lazy(() => import("@/app/(main)/donate/page"));
 const EventPage = lazy(() => import("@/app/(main)/e/[slug]/page"));
 const EventsPage = lazy(() => import("@/app/(main)/events/page"));
 const ForgotPasswordPage = lazy(
@@ -70,7 +69,6 @@ const RssPage = lazy(() => import("@/app/(main)/rss/page"));
 const ScreenshotsPage = lazy(() => import("@/app/(main)/screenshots/page"));
 const SettingsPage = lazy(() => import("@/app/(main)/settings/page"));
 const SignupPage = lazy(() => import("@/app/(main)/signup/page"));
-const SocialsPage = lazy(() => import("@/app/(main)/socials/page"));
 const TeamPage = lazy(() => import("@/app/(main)/team/page"));
 const TeamFinderPage = lazy(() => import("@/app/(main)/team-finder/page"));
 const ThemeEliminationPage = lazy(
@@ -82,7 +80,6 @@ const ThemeSuggestionsPage = lazy(
 const ThemeVotingPage = lazy(() => import("@/app/(main)/theme-voting/page"));
 const ThemesPage = lazy(() => import("@/app/(main)/themes/page"));
 const LanguagesPage = lazy(() => import("@/app/(main)/languages/page"));
-const WhyPage = lazy(() => import("@/app/(main)/why/page"));
 
 const lazyRoute = <T extends ComponentType>(
   loader: () => Promise<Record<string, T>>,
@@ -256,21 +253,6 @@ const indexedRouteMetadata = [
     description: "AppStrings.DownloadAndViewDown2JamPressKitMaterials",
   },
   {
-    pattern: /^\/donate\/?$/,
-    title: "Navbar.Donate.Title",
-    description: "AppStrings.SupportDown2JamAndItsCommunity",
-  },
-  {
-    pattern: /^\/why\/?$/,
-    title: "AppStrings.WhyDown2Jam",
-    description: "AppStrings.WhyDown2JamExistsAndHowItSupportsCommunityGameJams",
-  },
-  {
-    pattern: /^\/socials\/?$/,
-    title: "AppStrings.Socials",
-    description: "AppStrings.FindDown2JamCommunityLinksAndSocialChannels",
-  },
-  {
     pattern: /^\/d2guess\/?$/,
     title: "Navbar.Down2Guess.Title",
     description:
@@ -364,7 +346,6 @@ export default function App() {
           <Route path="docs" element={<DocsPage />} />
           <Route path="docs/new" element={<DocsNewPage />} />
           <Route path="docs/:slug" element={<DocsDetailRoute />} />
-          <Route path="donate" element={<DonatePage />} />
           <Route path="e/:slug" element={<EventPage />} />
           <Route path="events" element={<EventsPage />} />
           <Route path="forgot-password" element={<ForgotPasswordPage />} />
@@ -406,7 +387,6 @@ export default function App() {
           <Route path="screenshots" element={<ScreenshotsPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="signup" element={<SignupPage />} />
-          <Route path="socials" element={<SocialsPage />} />
           <Route path="team" element={<TeamPage />} />
           <Route path="team-finder" element={<TeamFinderPage />} />
           <Route path="theme-elimination" element={<ThemeEliminationPage />} />
@@ -415,7 +395,6 @@ export default function App() {
           <Route path="themes" element={<ThemesPage />} />
           <Route path="languages" element={<LanguagesPage />} />
           <Route path="u/:slug" element={<Suspense fallback={<UserProfileSkeleton />}><UserRoute /></Suspense>} />
-          <Route path="why" element={<WhyPage />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>

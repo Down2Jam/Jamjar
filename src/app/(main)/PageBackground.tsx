@@ -24,12 +24,14 @@ export default function PageBackground({ children, plain = false, fade = false, 
 }) {
   const { siteTheme } = useTheme();
   const [background, setBackground] = useState<string | null | undefined>();
-  const image = background === undefined ? defaultImage : background;
+  const image = background ?? defaultImage;
+  const fadeDefaultBackground = fade && !background;
+  const shouldDimBackground = dimBackground || fadeDefaultBackground;
   const isLightTheme = siteTheme.type === "Light";
-  const imageOpacity = !dimBackground || !image || fade
+  const imageOpacity = !shouldDimBackground || !image || fadeDefaultBackground
     ? "opacity-100"
     : isLightTheme ? "opacity-[0.72] sm:opacity-[0.78]" : "opacity-30 sm:opacity-40";
-  const imageFilter = !dimBackground ? "none" : !image ? "brightness(0.75)" : fade
+  const imageFilter = !shouldDimBackground ? "none" : !image ? "brightness(0.75)" : fadeDefaultBackground
     ? isLightTheme ? "brightness(0.9)" : "brightness(0.78)"
     : isLightTheme
     ? "brightness(1.02) saturate(0.8) contrast(0.9)"
@@ -40,8 +42,8 @@ export default function PageBackground({ children, plain = false, fade = false, 
     : siteTheme.colors.crust;
 
   return <BackgroundContext.Provider value={setBackground}>
-    <div className="relative isolate min-h-screen flex flex-col" style={{ backgroundColor: fade && !plain ? "#000" : undefined }}>
-      {fade ? (!plain && <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div className="relative isolate min-h-screen flex flex-col" style={{ backgroundColor: fadeDefaultBackground && !plain ? "#000" : undefined }}>
+      {fadeDefaultBackground ? (!plain && <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden="true">
         {image && <img
           src={image}
           alt=""
@@ -49,7 +51,7 @@ export default function PageBackground({ children, plain = false, fade = false, 
           style={{ filter: imageFilter }}
           className={`relative left-1/2 block h-auto w-full min-w-[1542px] max-w-none -translate-x-1/2 [mask-image:linear-gradient(to_bottom,black_0%,black_58%,rgb(0_0_0_/_96%)_64%,rgb(0_0_0_/_84%)_70%,rgb(0_0_0_/_64%)_76%,rgb(0_0_0_/_40%)_82%,rgb(0_0_0_/_18%)_88%,rgb(0_0_0_/_4%)_94%,transparent_99%,transparent_100%)] ${imageOpacity}`}
         />}
-        {dimBackground && <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_calc(50%_-_760px),rgb(0_0_0_/_45%)_calc(50%_-_600px),rgb(0_0_0_/_45%)_calc(50%_+_600px),transparent_calc(50%_+_760px))]" />}
+        {shouldDimBackground && <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_calc(50%_-_760px),rgb(0_0_0_/_45%)_calc(50%_-_600px),rgb(0_0_0_/_45%)_calc(50%_+_600px),transparent_calc(50%_+_760px))]" />}
       </div>) : (
         <div
           // Start each background at its final opacity; only theme changes animate.

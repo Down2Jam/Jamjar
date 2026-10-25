@@ -4,9 +4,11 @@ import { isOwnTrack } from "@/helpers/isOwnTrack";
 "use client";
 
 import { useTranslations } from "@/compat/next-intl";
+import MusicFilters from "./MusicFilters";
+import MusicTabs from "./MusicTabs";
 
 import type { CSSProperties } from "react";
-import { ChevronDown, Music, Play, Pause, LoaderCircle, ListOrdered, Shuffle } from "lucide-react";
+import { Music, Play, Pause, LoaderCircle, ListOrdered, Shuffle } from "lucide-react";
 import SidebarSong from "@/components/sidebar/SidebarSong";
 import { useMusic } from "bioloom-miniplayer";
 import { postTrackRating } from "@/requests/rating";
@@ -807,7 +809,7 @@ export default function MusicPage() {
   const featuredJamValue = hasCurrentMusicJam && currentJamValue
     ? currentJamValue
     : getJamUrlValue(latestListedJam) || null;
-  const selectedJamName = jamOptions.find((jam) => jam.id === jamId)?.name;
+
 
   const musicScope = JSON.stringify([
     "music", jamId, sort, pageVersion, selectedLooping,
@@ -838,79 +840,32 @@ export default function MusicPage() {
   const filterMenuClass = "!rounded-[10px] !p-[5px] !shadow-[0_8px_24px_#0005] [&_[role=menuitem]]:!rounded-[4px] [&_[role=menuitem]]:!px-[10px] [&_[role=menuitem]]:!py-2 [&_[role=menuitem]]:!bg-transparent [&_[role=menuitem]]:!text-[var(--music-text)] [&_[role=menuitem]]:!transition-none [&_[role=menuitem]_*]:!transition-none [&_[role=menuitem]_p]:!text-[13px] [&_[role=menuitem]_p]:!leading-4 [&_[role=menuitem]_p]:!font-semibold [&_[role=menuitem]_svg]:!shrink-0 [&_[role=menuitem]_svg]:!h-4 [&_[role=menuitem]_svg]:!w-4 [&_[role=menuitem]:hover:not(:disabled)]:!bg-[var(--music-accent)] [&_[role=menuitem]:hover:not(:disabled)]:!text-[#101b27] [&_[role=menuitem]:focus-visible]:!bg-[var(--music-accent)] [&_[role=menuitem]:focus-visible]:!text-[#101b27]";
 
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
-  const [sortMenuOpen, setSortMenuOpen] = useState(false);
-  const [jamMenuOpen, setJamMenuOpen] = useState(false);
+
+
 
   return (
-    <Vstack align="stretch" className={"music-library-shell @container box-border rounded-[14px] w-full max-w-[1200px] m-[0_auto] p-[32px] gap-[18px]! [background:var(--music-surface)] text-[var(--music-text)] [box-shadow:-22px_0_34px_-18px_rgb(0_0_0_/_78%),22px_0_34px_-18px_rgb(0_0_0_/_78%)] max-[700px]:p-[20px_12px] max-[700px]:gap-[14px]! "} style={{ "--music-surface": colors.mantle, "--music-text": colors.text, "--music-muted": colors.textFaded, "--music-accent": colors.blue, "--music-line": colors.base } as CSSProperties}>
-      <header className={"music-library-heading px-2 pt-4 pb-1 sm:px-3 sm:pt-5 sm:pb-1 [&_h1]:m-0 [&_h1]:text-[clamp(36px,4vw,52px)] [&_h1]:font-bold [&_h1]:leading-[1.15] [&_h1]:tracking-[-.035em] max-[700px]:[&_h1]:text-[36px]  flex flex-col items-start gap-2"}><h1 className="flex items-center gap-3"><Music aria-hidden="true" strokeWidth={3} className="h-[1em] w-[1em] shrink-0 text-inherit" />{t("Navbar.Music.Title")}</h1><p className="m-0 text-base text-[var(--music-muted)]">{t("AppStrings.AllTheMusicUploadedToTheSite")}</p></header>
-      <nav className={"music-library-tabs flex gap-[28px] [scrollbar-width:thin] [border-bottom:1px_solid_color-mix(in_srgb,var(--music-text)_9%,transparent)] m-[0_0_6px] p-0 flex-wrap overflow-visible justify-between gap-x-[24px] gap-y-0 [&_button]:relative [&_button]:flex-none [&_button]:p-[12px_0] [&_button]:[border:0] [&_button]:bg-transparent [&_button]:text-[var(--music-muted)] [&_button]:text-[15px] [&_button]:font-semibold [&_button]:whitespace-nowrap [&_button]:cursor-[pointer] [&_button:is(:hover,[aria-current=page])]:text-[var(--music-accent)] [&_button[aria-current=page]::after]:[content:''] [&_button[aria-current=page]::after]:absolute [&_button[aria-current=page]::after]:left-0 [&_button[aria-current=page]::after]:right-0 [&_button[aria-current=page]::after]:bottom-0 [&_button[aria-current=page]::after]:h-[2px] [&_button[aria-current=page]::after]:[background:var(--music-accent)] [&_button:focus-visible]:[outline:2px_solid_var(--music-accent)] [&_button:focus-visible]:outline-offset-[2px] [&_.music-library-more-sorts]:flex [&_.music-library-more-sorts]:items-center [&_.music-library-more-sorts]:justify-center [&_.music-library-more-sorts]:min-w-[28px] [&_.music-library-more-sorts]:px-[6px] [&_.music-library-jam-picker]:flex [&_.music-library-jam-picker]:items-center [&_.music-library-jam-picker]:justify-center [&_.music-library-jam-picker]:min-w-[28px] [&_.music-library-jam-picker]:px-[6px] [&_button:disabled]:opacity-[.45] [&_button:disabled]:cursor-[default] "} aria-label="Music lists">
-        <div className={"music-library-sort-tabs flex items-center gap-[22px] flex-wrap max-[700px]:gap-[16px] "}>
-        {Object.entries(sorts).filter(([key]) => key !== "score" && key !== "karma" && key !== "ratingbalance" && key !== "danger" && !((isRestricted(key as GameSort) && !canUseRestrictedSorts) || (key === "score" && !canUseScore))).map(([key, value]) => <button key={key} type="button" aria-current={sort === key ? "page" : undefined} title={value.description} onClick={() => { setSort(key as GameSort); updateQueryParam("sort", key); }}>{value.name}</button>)}
-        {canUseRestrictedSorts && (sort === "karma" || sort === "ratingbalance" || sort === "danger") && (
-          <button type="button" aria-current="page" title={sorts[sort].description} onClick={() => updateQueryParam("sort", sort)}>
-            {sorts[sort].name}
-          </button>
-        )}
-        {canUseRestrictedSorts && (
-          <Dropdown instant
-          triggerClassName="!rounded-md"
-            portal
-            position="bottom-left"
-            isOpen={sortMenuOpen}
-            onOpenChange={setSortMenuOpen}
-            selectedValue={sort}
-            trigger={<button type="button" className={"music-library-more-sorts flex items-center gap-[6px] "} aria-label="More sorts" title="More sorts" aria-haspopup="menu" aria-expanded={sortMenuOpen}>
-              <ChevronDown size={16} aria-hidden="true" className={`transition-transform duration-200 motion-reduce:transition-none ${sortMenuOpen ? "rotate-180" : ""}`} />
-            </button>}
-            onSelect={(key) => {
-              setSort(key as GameSort);
-              updateQueryParam("sort", key as string);
-            }}
-          >
-            {(["danger", "karma", "ratingbalance"] as const).map((key) => (
-              <Dropdown.Item key={key} value={key} icon={sorts[key].icon} description={sorts[key].description}>
-                {sorts[key].name}
-              </Dropdown.Item>
-            ))}
-          </Dropdown>
-        )}
-        </div>
-        <div className={"music-library-jam-tabs flex items-center gap-[18px] ml-auto flex-wrap justify-end max-[700px]:gap-[14px] "}>
-          <Dropdown instant portal position="bottom-right" selectedValue={jamId} onSelect={selectJam}
-            isOpen={jamMenuOpen} onOpenChange={setJamMenuOpen}
-            trigger={<button type="button" className="music-library-jam-picker" aria-label="Choose jam" title="Choose jam" aria-haspopup="menu" aria-expanded={jamMenuOpen}>
-              <ChevronDown size={16} aria-hidden="true" className={`transition-transform duration-200 motion-reduce:transition-none ${jamMenuOpen ? "rotate-180" : ""}`} />
-            </button>}
-          >
-          {jamOptions.filter((jam) => jam.id !== "all").map((j) => (
-            <Dropdown.Item
-              key={j.id}
-              value={j.id}
-              icon={j.icon || "gamepad2"}
-              description={
-                j.description ??
-                (j.id === "all" ? t("AppStrings.BrowseMusicFromEveryJam") : undefined)
-              }
-            >
-              {j.name}
-            </Dropdown.Item>
-          ))}
-          </Dropdown>
-          {jamId !== "all" && jamId !== featuredJamValue && selectedJamName && (
-            <button type="button" aria-current="page" onClick={() => selectJam(jamId)}>
-              {selectedJamName}
-            </button>
-          )}
-          <button type="button" disabled={!featuredJamValue} title={jamOptions.find((jam) => jam.id === featuredJamValue)?.name} aria-current={jamId === featuredJamValue ? "page" : undefined} onClick={() => featuredJamValue && selectJam(featuredJamValue)}>
-            {jamOptions.find((jam) => jam.id === featuredJamValue)?.name || t("AppStrings.CurrentJam")}
-          </button>
-          <button type="button" aria-current={jamId === "all" ? "page" : undefined} onClick={() => selectJam("all")}>{t("AppStrings.AllJams")}</button>
-        </div>
-      </nav>
-      <div className={`flex flex-col ${advancedFiltersOpen ? "gap-y-[10px]" : "gap-y-0"} @min-[1100px]:grid @min-[1100px]:grid-cols-[repeat(3,max-content_max-content_12px)_minmax(max-content,1fr)] @min-[1100px]:items-center @min-[1100px]:gap-x-2 @min-[1100px]:[&_.music-library-filter]:contents @min-[1100px]:[&_.music-library-filter>div]:w-full @min-[1100px]:[&_.music-library-filter>div>div]:w-full @min-[1100px]:[&_.music-library-filter>div>div]:grid-cols-[minmax(max-content,1fr)]!`}>
-      <div className={"music-library-filters @min-[1100px]:grid @min-[1100px]:col-span-10 @min-[1100px]:grid-cols-subgrid @min-[1100px]:gap-x-2 @min-[1100px]:[&>button]:col-start-10 @min-[1100px]:[&>button]:justify-self-end flex items-center justify-between flex-wrap gap-[14px_24px] w-full max-[700px]:justify-start max-[700px]:gap-[12px_20px]  relative z-30"}>
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-1 @min-[1100px]:[&>div]:col-start-2 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-genres"><span id="music-filter-genres" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Genre:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+    <Vstack align="stretch" className={"music-library-shell max-[700px]:min-h-[calc(100dvh_-_var(--site-navbar-height,0px)_-_5rem_-_env(safe-area-inset-bottom))] max-[700px]:rounded-none! max-[700px]:shadow-none! max-[700px]:p-[24px_max(16px,env(safe-area-inset-right))_24px_max(16px,env(safe-area-inset-left))]! @container box-border rounded-[14px] w-full max-w-[1200px] m-[0_auto] p-[32px] gap-[18px]! [background:var(--music-surface)] text-[var(--music-text)] [box-shadow:-22px_0_34px_-18px_rgb(0_0_0_/_78%),22px_0_34px_-18px_rgb(0_0_0_/_78%)] max-[700px]:p-[20px_12px] max-[700px]:gap-[14px]! "} style={{ "--music-surface": colors.mantle, "--music-text": colors.text, "--music-muted": colors.textFaded, "--music-accent": colors.blue, "--music-line": colors.base } as CSSProperties}>
+      <header className={"music-library-heading max-[700px]:p-[0_0_8px]! max-[700px]:items-center! max-[700px]:text-center max-[700px]:[&_p]:text-sm px-2 pt-4 pb-1 sm:px-3 sm:pt-5 sm:pb-1 [&_h1]:m-0 [&_h1]:text-[clamp(36px,4vw,52px)] [&_h1]:font-bold [&_h1]:leading-[1.15] [&_h1]:tracking-[-.035em] max-[700px]:[&_h1]:text-[36px]  flex flex-col items-start gap-2"}><h1 className="flex items-center gap-3"><Music aria-hidden="true" strokeWidth={3} className="h-[1em] w-[1em] shrink-0 text-inherit" />{t("Navbar.Music.Title")}</h1><p className="m-0 text-base text-[var(--music-muted)]">{t("AppStrings.AllTheMusicUploadedToTheSite")}</p></header>
+      <MusicTabs groups={[
+        {
+          label: "More sorts",
+          selected: sort,
+          onSelect: key => { setSort(key as GameSort); updateQueryParam("sort", key); },
+          choices: Object.entries(sorts)
+            .filter(([key]) => (!isRestricted(key as GameSort) || canUseRestrictedSorts) && (key !== "score" || canUseScore))
+            .map(([id, option]) => ({ id, ...option, inline: ["recommended", "random", "leastratings"].includes(id) })),
+        },
+        {
+          label: "Choose jam",
+          selected: jamId,
+          onSelect: selectJam,
+          choices: jamOptions.map(option => ({ ...option, inline: option.id === featuredJamValue || option.id === "all" })),
+        },
+      ]} />
+      <MusicFilters open={advancedFiltersOpen} onOpenChange={setAdvancedFiltersOpen}>
+      <div className={`flex flex-col ${advancedFiltersOpen ? "gap-y-[10px]" : "gap-y-0"} @min-[1100px]:grid @min-[1100px]:grid-cols-[repeat(3,max-content_max-content_12px)_minmax(max-content,1fr)] @min-[1100px]:items-center @min-[1100px]:gap-x-2 @min-[1100px]:[&_.music-library-filter]:contents @min-[1100px]:[&_.music-library-filter>div]:w-full @min-[1100px]:[&_.music-library-filter>div>div]:w-full @min-[1100px]:[&_.music-library-filter`}>
+      <div className={"music-library-filters max-[700px]:flex-col! max-[700px]:items-stretch! max-[700px]:gap-3! max-[700px]:[&>button]:self-end max-[700px]:[&>button]:min-h-11 @min-[1100px]:grid @min-[1100px]:col-span-10 @min-[1100px]:grid-cols-subgrid @min-[1100px]:gap-x-2 @min-[1100px]:[&>button]:col-start-10 @min-[1100px]:[&>button]:justify-self-end flex items-center justify-between flex-wrap gap-[14px_24px] w-full max-[700px]:justify-start max-[700px]:gap-[12px_20px]  relative z-30"}>
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-1 @min-[1100px]:[&>div]:col-start-2 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-genres"><span id="music-filter-genres" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Genre:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
             sizingOptions={(tagsByCategory.get("Genre") ?? []).map(tag => ({ label: <TagLabel name={tag.name} fallback="music" /> }))}
             multiple
             multipleWithModifiers
@@ -931,7 +886,7 @@ export default function MusicPage() {
               </Dropdown.Item>
             ))}
           </Dropdown></div>
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-4 @min-[1100px]:[&>div]:col-start-5 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-license"><span id="music-filter-license" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>License:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-4 @min-[1100px]:[&>div]:col-start-5 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-license"><span id="music-filter-license" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>License:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
             sizingOptions={Object.keys(TRACK_LICENSES).map(license => ({
               label: <span className="flex items-center gap-2"><LicenseMark license={license} /><span>{getTrackLicense(license).label}</span></span>,
             }))}
@@ -967,7 +922,7 @@ export default function MusicPage() {
               </Dropdown.Item>
             ))}
           </Dropdown></div>
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-7 @min-[1100px]:[&>div]:col-start-8 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-mood"><span id="music-filter-mood" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Mood:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-7 @min-[1100px]:[&>div]:col-start-8 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-mood"><span id="music-filter-mood" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Mood:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
             sizingOptions={(tagsByCategory.get("Mood") ?? []).map(tag => ({ label: <TagLabel name={tag.name} fallback="mood" /> }))}
             multiple
             multipleWithModifiers
@@ -989,10 +944,10 @@ export default function MusicPage() {
             ))}
           </Dropdown></div>
 
-        <Button variant="ghost" icon="settings2" aria-expanded={advancedFiltersOpen} aria-controls="music-advanced-filters" onClick={() => setAdvancedFiltersOpen(value => !value)}><span className="inline-grid text-left"><span className="[grid-area:1/1]">{advancedFiltersOpen ? "Collapse filters" : "Advanced filters"}</span><span aria-hidden="true" className="invisible [grid-area:1/1]">Advanced filters</span><span aria-hidden="true" className="invisible [grid-area:1/1]">Collapse filters</span></span></Button>
+        <Button className="music-desktop-filter-toggle" variant="ghost" icon="settings2" aria-expanded={advancedFiltersOpen} aria-controls="music-advanced-filters" onClick={() => setAdvancedFiltersOpen(value => !value)}><span className="inline-grid text-left"><span className="[grid-area:1/1]">{advancedFiltersOpen ? "Collapse filters" : "Advanced filters"}</span><span aria-hidden="true" className="invisible [grid-area:1/1]">Advanced filters</span><span aria-hidden="true" className="invisible [grid-area:1/1]">Collapse filters</span></span></Button>
       </div>
-      <div id="music-advanced-filters" aria-hidden={!advancedFiltersOpen} inert={!advancedFiltersOpen} className={`music-library-advanced flex items-center justify-between flex-wrap gap-[14px_24px] w-full max-[700px]:justify-start max-[700px]:gap-[12px_20px] relative z-20 @min-[1100px]:grid @min-[1100px]:col-span-10 @min-[1100px]:grid-cols-subgrid @min-[1100px]:gap-x-2 ${advancedFiltersOpen ? "" : "h-0 overflow-hidden invisible pointer-events-none"}`}>
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-1 @min-[1100px]:[&>div]:col-start-2 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-version"><span id="music-filter-version" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Version:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+      <div id="music-advanced-filters" aria-hidden={!advancedFiltersOpen} inert={!advancedFiltersOpen} className={`music-library-advanced max-[700px]:flex-col! max-[700px]:items-stretch! max-[700px]:gap-3! flex items-center justify-between flex-wrap gap-[14px_24px] w-full max-[700px]:justify-start max-[700px]:gap-[12px_20px] relative z-20 @min-[1100px]:grid @min-[1100px]:col-span-10 @min-[1100px]:grid-cols-subgrid @min-[1100px]:gap-x-2 ${advancedFiltersOpen ? "" : "h-0 overflow-hidden invisible pointer-events-none"}`}>
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-1 @min-[1100px]:[&>div]:col-start-2 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-version"><span id="music-filter-version" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Version:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
           selectedValue={pageVersion}
           onSelect={(key) => {
             const next = key as ListingPageVersion;
@@ -1012,7 +967,7 @@ export default function MusicPage() {
           ))}
         </Dropdown></div>
 
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-4 @min-[1100px]:[&>div]:col-start-5 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-use-case"><span id="music-filter-use-case" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Use Case:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-4 @min-[1100px]:[&>div]:col-start-5 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-use-case"><span id="music-filter-use-case" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Use Case:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
             sizingOptions={(tagsByCategory.get("Use Case") ?? []).map(tag => ({ label: <TagLabel name={tag.name} fallback="use-case" /> }))}
             multiple
             multipleWithModifiers
@@ -1033,7 +988,7 @@ export default function MusicPage() {
               </Dropdown.Item>
             ))}
           </Dropdown></div>
-        <div className={"music-library-filter @min-[1100px]:[&>span]:col-start-7 @min-[1100px]:[&>div]:col-start-8 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-looping"><span id="music-filter-looping" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Looping:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
+        <div className={"music-library-filter max-[700px]:grid! max-[700px]:grid-cols-[64px_minmax(0,1fr)] max-[700px]:gap-2! max-[700px]:[&>div]:w-full max-[700px]:[&>div]:min-w-0 max-[700px]:[&>div>div]:w-full max-[700px]:[&>div>div]:min-w-0 max-[700px]:[&>div>div]:grid-cols-[minmax(0,1fr)]! max-[700px]:[&_button>p]:min-w-0 max-[700px]:[&_button>p]:overflow-hidden @min-[1100px]:[&>span]:col-start-7 @min-[1100px]:[&>div]:col-start-8 flex items-center gap-[10px] min-w-0 max-[700px]:flex-wrap max-[700px]:gap-[6px] "} role="group" aria-labelledby="music-filter-looping"><span id="music-filter-looping" className={"music-library-filter-label shrink-0 text-[var(--music-muted)] text-[13px] font-semibold "}>Looping:</span><Dropdown instant fitLongestOption matchTriggerWidth arrowToChevron triggerClassName={filterTriggerClass} triggerChevronClassName={filterChevronClass} className={filterMenuClass}
             sizingOptions={(tagsByCategory.get("Looping") ?? []).map(tag => ({ label: tag.name, icon: loopingIconForLabel(tag.name) }))}
             selectedValue={selectedLooping}
             onSelect={(key) => {
@@ -1084,7 +1039,8 @@ export default function MusicPage() {
         </div>
       </div>
       </div>
-      {!musicError && <div className="relative z-0 flex justify-start">
+      </MusicFilters>
+      {!musicError && <div className="music-library-play-all max-[700px]:order-2 relative z-0 flex justify-start max-[700px]:justify-center">
         <Dropdown instant portal position="top-left" isOpen={playAllMenuOpen} onOpenChange={setPlayAllMenuOpen} trigger={
         <button type="button" className="group inline-flex items-center gap-4 rounded-full border-0 bg-transparent p-1 pr-3 text-[var(--music-text)] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--music-accent)] disabled:cursor-default disabled:opacity-40" aria-busy={startingPlayback} disabled={startingPlayback || (!controlsPlayback && (initialLoading || !musicQueue.length))} onClick={event => { event.stopPropagation(); if (controlsPlayback) toggle(); else void playAll(); }}
           ref={playAllButton} aria-haspopup="menu" aria-expanded={playAllMenuOpen}
@@ -1108,7 +1064,7 @@ export default function MusicPage() {
       </div>}
 
       {/* List */}
-      {!musicError && <div className={"music-library-count text-[var(--music-muted)] mt-[2px] [&_*]:[text-shadow:none]!  relative z-0 flex min-h-5 items-center justify-between gap-3"} aria-busy={initialLoading}>
+      {!musicError && <div className={"music-library-count max-[700px]:order-1 text-[var(--music-muted)] mt-[2px] [&_*]:[text-shadow:none]!  relative z-0 flex min-h-5 items-center justify-between gap-3"} aria-busy={initialLoading}>
         {initialLoading ? <TrackCountSkeleton /> : <Text
           size="sm"
           color={headerTextColor}
@@ -1122,12 +1078,14 @@ export default function MusicPage() {
         >
           {t(displayedMusic.length === 1 ? "AppStrings.TrackCount" : "AppStrings.TracksCount", { count: displayedMusic.length })}
         </Text>}
-
+        <div className="hidden max-[700px]:block">
+          <Button variant="ghost" icon="settings2" aria-haspopup="dialog" aria-expanded={advancedFiltersOpen} onClick={() => setAdvancedFiltersOpen(true)}>Filters</Button>
+        </div>
       </div>}
       <Vstack
         align="stretch"
         gap={0}
-        className="music-library-tracks relative z-0 w-full"
+        className="music-library-tracks max-[700px]:order-3 max-[700px]:[&_.music-library-track-row]:p-[12px_8px]! max-[700px]:[&_.music-library-track-row]:gap-3! max-[700px]:[&_.music-library-track-row]:min-h-[88px]! relative z-0 w-full"
       >
         {initialLoading && <ListingSkeleton kind="music" />}
         {musicError && <Button onClick={() => void refetchMusic()}>{t("AppStrings.Retry")}</Button>}
@@ -1137,14 +1095,7 @@ export default function MusicPage() {
             const canRateTrack =
               Boolean(user) &&
               Boolean(ratingTrackId) &&
-              Array.isArray(track.game?.team?.users) &&
               !isOwnTrack(track, user) &&
-              currentJamId != null &&
-              String(track.game?.jamId ?? "") === currentJamId &&
-              (track.pageVersion === "POST_JAM"
-                ? activeJamPhase === "Post-Jam Rating"
-                : activeJamPhase === "Rating" ||
-                  activeJamPhase === "Submission") &&
               Boolean(trackOverallCategory);
 
             return (

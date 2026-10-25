@@ -149,7 +149,7 @@ const getTrackBackground = (track?: RadioTrack | null) =>
   track?.gamePage.screenshots?.[0] ||
   track?.gamePage.banner ||
   track?.gamePage.thumbnail ||
-  "/images/D2J_Icon_watermark.png";
+  "";
 
 function RadioLandingChoice({
   station,
@@ -272,7 +272,7 @@ export default function RadioLandingPage() {
   }, []);
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-12 flex flex-col overflow-hidden md:flex-row">
+    <main className="fixed inset-x-0 bottom-0 top-12 flex flex-col overflow-hidden bg-black md:flex-row">
       <RadioLandingChoice
         station="all"
         title={uiText("Navbar.Radio.Title")}
@@ -991,9 +991,6 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   if (loading) {
     return (
       <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden bg-black">
-        <div className="absolute inset-0 bg-[url('/images/mountain_beautypath_render.png')] bg-cover bg-center opacity-20" />
-        <div className="absolute inset-0 bg-black/75" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/40" />
         <div className="relative z-10 flex h-full flex-col justify-between p-5 sm:p-8">
           <Vstack align="start" className="gap-3 text-white">
             <Text size="5xl">{uiText("Navbar.Radio.Title")}</Text>
@@ -1071,7 +1068,7 @@ export function RadioStationPage({ station }: { station: RadioStation }) {
   );
 
   return (
-    <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden">
+    <main className="fixed inset-x-0 bottom-0 top-12 overflow-hidden bg-black">
       {previousBackgroundImage && (
         <div
           className="radio-background-out absolute inset-0 bg-cover bg-center"

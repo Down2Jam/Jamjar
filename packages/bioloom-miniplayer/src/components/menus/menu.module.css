@@ -1,0 +1,82 @@
+.player,
+.player * {
+  box-sizing: border-box;
+}
+
+.player button {
+  margin: 0;
+  font: inherit;
+}
+
+.player {
+  color: #f4f5f2;
+  --site-bg: #101b27;
+  --site-font: Inter,system-ui,sans-serif;
+  --site-surface: #1a2936;
+}
+
+.player :global(.record-disc-hole) {
+  fill: #101b27;
+}
+
+.contextMenu {
+  position: fixed;
+  z-index: 1000;
+  max-height: calc(100dvh - 16px);
+  max-width: calc(100vw - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 0;
+  padding: 5px;
+  color: #f4f5f2;
+  box-shadow: 0 5px 20px #0006;
+  background: var(--player-menu-gradient),var(--site-surface);
+  font: 600 13px var(--site-font);
+}
+
+.contextMenu :where([role^='menuitem']) {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  cursor: pointer;
+  align-items: center;
+  gap: 9px;
+  border-radius: 4px;
+  border-style: solid;
+  border-width: 0;
+  background-color: transparent;
+  padding: 8px 10px;
+  text-align: left;
+  color: inherit;
+  text-decoration-line: none;
+  font: inherit;
+}
+
+.contextMenu [role='separator'] {
+  margin: 4px 5px;
+  height: 1px;
+  background: #ffffff18;
+}
+
+.contextMenu [role^='menuitem'] svg {
+  flex: none;
+}
+
+.contextMenu [role^='menuitem']:disabled {
+  cursor: default;
+  opacity: .4;
+}
+
+.contextMenu [role^='menuitem']:focus-visible {
+  color: #101b27;
+  outline-style: none;
+  background: var(--player-accent);
+}
+
+.contextMenu [role^='menuitem']:hover:not(:disabled) {
+  color: #101b27;
+  outline-style: none;
+  background: var(--player-accent);
+}

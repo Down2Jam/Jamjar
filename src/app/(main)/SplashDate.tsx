@@ -80,7 +80,7 @@ export default function SplashDate() {
       {isPostJamPhase(activeJamResponse?.phase) && nextJam && (
         <>
           <br />
-          {uiText("AppStrings.NextEdition")}
+          {uiText("AppStrings.NextEdition")}{" "}
           {formatJamRange(nextJam.startTime, nextJam.jammingHours)}
         </>
       )}

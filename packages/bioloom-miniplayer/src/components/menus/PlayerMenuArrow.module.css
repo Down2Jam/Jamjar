@@ -1,0 +1,10 @@
+.menuArrow {
+  pointer-events: none;
+  position: fixed;
+  z-index: 1001;
+  height: 8px;
+  width: 14px;
+  background-color: var(--site-surface);
+  background-image: var(--player-menu-gradient);
+  background-repeat: no-repeat;
+}

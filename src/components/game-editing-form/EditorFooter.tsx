@@ -6,13 +6,18 @@ import "./game-editor.css";
 type EditorFooterProps = {
   floating: boolean;
   compact?: boolean;
+  actionsOnlyWhenSaved?: boolean;
   status: ReactNode;
   description: ReactNode;
   children?: ReactNode;
 };
 
-export default function EditorFooter({ floating, compact = false, status, description, children }: EditorFooterProps) {
+export default function EditorFooter({ floating, compact = false, actionsOnlyWhenSaved = false, status, description, children }: EditorFooterProps) {
   const { colors } = useTheme();
+
+  if (actionsOnlyWhenSaved && !floating) {
+    return <div className="flex w-full flex-wrap items-center justify-start gap-2 py-3">{children}</div>;
+  }
 
   return (
     <footer

@@ -21,7 +21,7 @@ import {
 } from "bioloom-ui";
 import { useRef, useState } from "react";
 
-export default function PressKitGallery() {
+export default function PressKitGallery({ embedded = false }: { embedded?: boolean }) {
   const uiText = useUiTranslations();
   const { data, isLoading } = usePressKitMedia();
   const { data: user } = useSelf(hasCookie("token"));
@@ -86,7 +86,7 @@ export default function PressKitGallery() {
   }
 
   return (
-    <Card className="px-6 py-7 md:px-10 md:py-10 lg:px-12 lg:py-12">
+    <Card className={embedded ? "border-0! bg-transparent! shadow-none! p-0! rounded-none!" : "px-6 py-7 md:px-10 md:py-10 lg:px-12 lg:py-12"}>
       <Vstack align="stretch" gap={4}>
         <Vstack align="start" gap={1}>
           <Hstack>

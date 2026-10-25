@@ -18,6 +18,7 @@ import {
   Palette,
   Trophy,
 } from "lucide-react";
+import PageCard from "@/components/PageCard";
 import Editor from "@/components/editor";
 import { redirect } from "@/compat/next-navigation";
 import { hasCookie } from "@/helpers/cookie";
@@ -30,7 +31,7 @@ import type { EventIcon } from "@/types/EventIcon";
 import {
   addToast,
   Button,
-  Card,
+
   Dropdown,
   Form,
   Hstack,
@@ -111,8 +112,8 @@ function FieldLabel({ children, hint }: { children: ReactNode; hint?: string }) 
 
 export default function CreateEventPage() {
   const uiText = useUiTranslations();
-  const { colors, siteTheme } = useTheme();
-  const headerColor = colors["text"];
+  const { colors } = useTheme();
+
   const hasToken = hasCookie("token");
   const { data: user, isLoading } = useSelf(hasToken);
   const initialSchedule = defaultSchedule();
@@ -199,47 +200,16 @@ export default function CreateEventPage() {
   };
 
   return (
-    <main className="mx-auto w-full max-w-6xl pb-10">
-      <Vstack align="stretch" gap={5}>
-        <header className="relative py-2 text-center">
-          <h1
-            className="text-3xl font-semibold"
-            style={{
-              color: headerColor,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
-            }}
-          >
-             {uiText("AppStrings.CreateAnEvent")} </h1>
-          <p
-            className="mt-1 text-sm"
-            style={{
-              color: headerColor,
-              opacity: 0.82,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
-            }}
-          >
-             {uiText("AppStrings.AddAStreamTournamentShowcaseOrCommunityGetTogether")} </p>
-          <div className="mt-3 flex justify-center sm:absolute sm:left-0 sm:top-2 sm:mt-0">
-            <Button href="/events" icon="arrowleft" variant="ghost">
-               {uiText("Navbar.Events.Title")} </Button>
-          </div>
-        </header>
-
+    <PageCard icon={CalendarClock} title={uiText("AppStrings.CreateAnEvent")} description={uiText("AppStrings.AddAStreamTournamentShowcaseOrCommunityGetTogether")}>
         {isLoading ? (
-          <Card radius="lg">
+          <div>
             <Hstack justify="center" className="py-14">
               <Spinner />
               <Text color="textFaded">{uiText("AppStrings.CheckingEventAccess")}</Text>
             </Hstack>
-          </Card>
+          </div>
         ) : !hasToken ? (
-          <Card radius="lg">
+          <div>
             <Vstack gap={3} className="py-10 text-center">
               <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
               <Text size="xl" weight="semibold">{uiText("AppStrings.SignInToCreateAnEvent")}</Text>
@@ -250,9 +220,9 @@ export default function CreateEventPage() {
                 <Button href="/events" variant="ghost">{uiText("AppStrings.BackToEvents")}</Button>
               </Hstack>
             </Vstack>
-          </Card>
+          </div>
         ) : !canCreateEvent ? (
-          <Card radius="lg">
+          <div>
             <Vstack gap={3} className="py-10 text-center">
               <CalendarClock size={34} style={{ color: colors["textFaded"] }} />
               <Text size="xl" weight="semibold">{uiText("AppStrings.ConnectTwitchToCreateEvents")}</Text>
@@ -263,12 +233,12 @@ export default function CreateEventPage() {
                 <Button href="/events" variant="ghost">{uiText("AppStrings.BackToEvents")}</Button>
               </Hstack>
             </Vstack>
-          </Card>
+          </div>
         ) : (
           <Form onSubmit={submitEvent}>
-            <Card padding={0} radius="lg" className="overflow-hidden">
+            <div className="w-full min-w-0">
               <Vstack align="stretch" gap={0}>
-                <section className="space-y-5 p-5 sm:p-7">
+                <section className="space-y-5 px-2 py-6 sm:px-3">
                   <Vstack align="start" gap={0}>
                     <Text size="xl" weight="semibold">{uiText("AppStrings.EventDetails")}</Text>
                   </Vstack>
@@ -334,7 +304,7 @@ export default function CreateEventPage() {
                 </section>
 
                 <section
-                  className="space-y-5 border-y p-5 sm:p-7"
+                  className="space-y-5 border-y px-2 py-6 sm:px-3"
                   style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 7%, transparent)` }}
                 >
                   <Vstack align="start" gap={0}>
@@ -368,7 +338,7 @@ export default function CreateEventPage() {
                   </div>
                 </section>
 
-                <section className="space-y-3 p-5 sm:p-7">
+                <section className="space-y-3 px-2 py-6 sm:px-3">
                   <Vstack align="start" gap={0}>
                     <Text size="xl" weight="semibold">{uiText("About.Title")}</Text>
                     <Text size="sm" color="textFaded">
@@ -378,7 +348,7 @@ export default function CreateEventPage() {
                 </section>
 
                 <footer
-                  className="flex flex-col-reverse items-stretch justify-between gap-3 border-t p-5 sm:flex-row sm:items-center sm:p-7"
+                  className="flex flex-col-reverse items-stretch justify-between gap-3 border-t px-2 py-6 sm:flex-row sm:items-center sm:px-3"
                   style={{ borderColor: `color-mix(in srgb, ${colors["text"]} 7%, transparent)` }}
                 >
                   <div className="min-h-5">
@@ -396,10 +366,9 @@ export default function CreateEventPage() {
                   </Hstack>
                 </footer>
               </Vstack>
-            </Card>
+            </div>
           </Form>
         )}
-      </Vstack>
-    </main>
+    </PageCard>
   );
 }

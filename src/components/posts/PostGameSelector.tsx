@@ -4,7 +4,7 @@ import { getLinkablePostGames } from "@/requests/post";
 import { readArray } from "@/requests/helpers";
 import type { LinkedPostGame } from "@/types/PostType";
 import { useTheme } from "@/providers/useSiteTheme";
-import Select, { type StylesConfig } from "react-select";
+import PostSelect from "./PostSelect";
 
 export default function PostGameSelector({ value, onChange }: {
   value: LinkedPostGame[];
@@ -23,26 +23,7 @@ export default function PostGameSelector({ value, onChange }: {
     }).catch(() => {});
     return () => { active = false; };
   }, []);
-  const styles: StylesConfig<LinkedPostGame, true> = {
-    container: base => ({ ...base, width: "100%", maxWidth: "28rem", fontSize: 14, lineHeight: "20px" }),
-    control: (base, { isFocused }) => ({
-      ...base,
-      backgroundColor: colors.base,
-      borderColor: isFocused ? colors.blue : `color-mix(in srgb, ${colors.text} 10%, ${colors.mantle})`,
-      boxShadow: isFocused ? `0 0 0 1px ${colors.blue}` : "none",
-      borderRadius: 8,
-      minWidth: 0,
-      ":hover": { borderColor: colors.blue },
-    }),
-    input: base => ({ ...base, color: colors.text }),
-    placeholder: base => ({ ...base, color: colors.textFaded }),
-    menu: base => ({ ...base, backgroundColor: colors.mantle, color: colors.text }),
-    menuPortal: base => ({ ...base, zIndex: 100, fontSize: 14, lineHeight: "20px" }),
-    option: (base, { isFocused }) => ({ ...base, backgroundColor: isFocused ? colors.base : "transparent", color: colors.text }),
-    multiValue: base => ({ ...base, backgroundColor: colors.surface0 }),
-    multiValueLabel: base => ({ ...base, color: colors.text }),
-    multiValueRemove: base => ({ ...base, color: colors.textFaded, ":hover": { backgroundColor: colors.base, color: colors.text } }),
-  };
+
   if (!games.length) return null;
   return <div className="game-editor-row">
     <div className="flex flex-col gap-3">
@@ -50,7 +31,7 @@ export default function PostGameSelector({ value, onChange }: {
         <label htmlFor={id} className="mb-1 block text-sm font-medium">{t("PostGames.SelectTitle")}</label>
         <p id={`${id}-description`} className="text-xs" style={{ color: colors.textFaded }}>{t("PostGames.SelectDescription")}</p>
       </div>
-      <Select<LinkedPostGame, true>
+      <PostSelect<LinkedPostGame>
         inputId={id}
         instanceId={id}
         aria-describedby={`${id}-description`}
@@ -60,8 +41,22 @@ export default function PostGameSelector({ value, onChange }: {
         value={value}
         getOptionValue={game => String(game.gameId)}
         getOptionLabel={game => game.name}
+        formatOptionLabel={(game, { context }) => (
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={game.thumbnail || "/images/game-thumbnail.png"}
+              alt=""
+              className={`aspect-video shrink-0 rounded object-cover ${context === "menu" ? "w-[76px]" : "w-12"}`}
+            />
+            <span className="flex min-w-0 flex-col gap-1 break-words">
+              <span>{game.name}</span>
+              {context === "menu" && game.jam?.name && (
+                <span className="text-xs font-normal opacity-75">{game.jam.name}</span>
+              )}
+            </span>
+          </div>
+        )}
         onChange={selected => onChange(selected.map(game => ({ ...game, relationType: game.relationType ?? "devlog" })))}
-        styles={styles}
         placeholder={t("PostGames.SelectPlaceholder")}
         noOptionsMessage={() => t("PostGames.NoMatchingGames")}
         menuPortalTarget={document.body}

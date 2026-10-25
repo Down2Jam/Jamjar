@@ -5,7 +5,8 @@ import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 import { useDelayedHover } from "@/hooks/useDelayedHover";
 
-import { useMusic, loadWaveform, getAnalyzedDuration } from "bioloom-miniplayer";
+import { useMusic } from "bioloom-miniplayer";
+import { audioAnalysis } from "@/components/music/audioAnalysis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addToast,
@@ -25,6 +26,8 @@ import MentionedContent from "@/components/mentions/MentionedContent";
 import { useEmojis } from "@/providers/useEmojis";
 import { sortEmojisByUsage } from "@/helpers/emojiSorting";
 import { useTheme } from "@/providers/useSiteTheme";
+
+const { loadWaveform, getAnalyzedDuration } = audioAnalysis;
 
 type TimestampComment = {
   id: number;

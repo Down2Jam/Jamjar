@@ -1,0 +1,36 @@
+.menu {
+  width: 190px;
+}
+
+.menu :global(.player-download-item) {
+  display: grid;
+  grid-template-columns: 16px minmax(0,1fr);
+  align-items: flex-start;
+  column-gap: 9px;
+  row-gap: 4px;
+}
+
+.downloadItem :global(.player-menu-license) {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.downloadItem > svg {
+  margin-top: 2px;
+}
+
+.menuLicense {
+  display: block;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 400;
+  color: inherit;
+  opacity: .8;
+}
+
+.menuLicense > span {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 6px;
+  background: #ffffff0d;
+}

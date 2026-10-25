@@ -203,15 +203,6 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
           <>
             <Divider orientation="vertical" />
             <div className="flex items-center">
-              {/* <NavbarButton
-                icon={<Heart size={16} />}
-                href="/donate"
-                name="Navbar.Donate.Title"
-                description="Navbar.Donate.Description"
-                hotkey={["G", "D"]}
-                isIconOnly
-                color="green"
-              /> */}
               {showLuckyShortcut && (
                 <NavbarButton
                   icon="dice3"
@@ -290,6 +281,25 @@ export default function PCbar({ isLoggedIn, languages }: PCbarProps) {
                   />
                 }
               >
+                <Dropdown.Item
+                  value="rss"
+                  href="/rss"
+                  icon="rss"
+                  description={t("Navbar.RSS.Description")}
+                  kbd="G 1"
+                >
+                  {t("Navbar.RSS.Title")}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  value="donate"
+                  href="https://donate.bioloom.studio"
+                  icon="heart"
+                  description={t("Navbar.Donate.Description")}
+                  externalIcon={false}
+                  kbd="G 2"
+                >
+                  {t("Navbar.Donate.Title")}
+                </Dropdown.Item>
                 {!showScreenshotsShortcut && (
                   <Dropdown.Item
                     value="screenshots"

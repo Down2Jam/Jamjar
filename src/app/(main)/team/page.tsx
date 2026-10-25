@@ -7,8 +7,8 @@ import { hasCookie } from "@/helpers/cookie";
 import {
   addToast,
   Form,
-  Tabs,
-  Tab,
+
+
   Modal,
   ModalBody,
   ModalContent,
@@ -17,7 +17,7 @@ import {
   useDisclosure,
 } from "bioloom-ui";
 import { redirect, useSearchParams } from "@/compat/next-navigation";
-import { CSSProperties, useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import { UserType } from "@/types/UserType";
 import { getSelf, searchUsers } from "@/requests/user";
 import { RoleType } from "@/types/RoleType";
@@ -36,7 +36,7 @@ import { Text } from "bioloom-ui";
 import { Button } from "bioloom-ui";
 import { Hstack, Vstack } from "bioloom-ui";
 import { Input } from "bioloom-ui";
-import { Dropdown } from "bioloom-ui";
+import Dropdown from "@/components/game-editing-form/EditorDropdown";
 import { Icon } from "bioloom-ui";
 import { Textarea } from "bioloom-ui";
 import { Spinner } from "bioloom-ui";
@@ -46,6 +46,9 @@ import { Avatar } from "bioloom-ui";
 import { readArray, readItem } from "@/requests/helpers";
 import { Chip } from "bioloom-ui";
 
+import MusicTabs from "@/app/(main)/music/MusicTabs";
+import { getGameTeamName } from "@/helpers/gameTeamName";
+import TeamPageCard from "@/components/TeamPageCard";
 import EditorFooter from "@/components/game-editing-form/EditorFooter";
 import "@/components/form-editor.css";
 
@@ -63,6 +66,7 @@ export default function EditTeamPage() {
   const [selectedAuthor, setSelectedAuthor] = useState<UserType>();
   const [searchResults, setSearchResults] = useState<Array<UserType>>([]);
   const [selectedTeam, setSelectedTeam] = useState<number>(0);
+  const [selectedSection, setSelectedSection] = useState("general");
   const [waitingSave, setWaitingSave] = useState(false);
   const [description, setDescription] = useState<string>("");
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -71,8 +75,8 @@ export default function EditTeamPage() {
   const [invitations, setInvitations] = useState<TeamInviteType[]>([]);
   const { data: activeJamResponse } = useCurrentJam();
   const [name, setName] = useState<string>("");
-  const { siteTheme, colors } = useTheme();
-  const headerColor = colors["text"];
+  const { colors } = useTheme();
+
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
 
 
@@ -146,6 +150,7 @@ export default function EditTeamPage() {
     setSelectedTeam(newid);
 
     if (!teams) return;
+    if (selectedSection === "finder" && teams[newid].jamId !== activeJamResponse?.jam?.id) setSelectedSection("general");
 
     setApplicationsOpen(teams[newid].applicationsOpen);
     setDescription(teams[newid].description);
@@ -169,8 +174,7 @@ export default function EditTeamPage() {
 
   if (!user)
     return (
-      <Vstack>
-        <Card className="max-w-96">
+      <TeamPageCard title={uiText("AppStrings.Team")} description={uiText("AppStrings.ViewAndManageYourTeamForTheJam")}>
           <Vstack>
             <Vstack gap={0}>
               <Hstack>
@@ -188,14 +192,12 @@ export default function EditTeamPage() {
               </Button>
             </Hstack>
           </Vstack>
-        </Card>
-      </Vstack>
+      </TeamPageCard>
     );
 
   if (loading) {
     return (
-      <Vstack>
-        <Card className="max-w-96">
+      <TeamPageCard title={uiText("AppStrings.Team")} description={uiText("AppStrings.ViewAndManageYourTeamForTheJam")}>
           <Vstack>
             <Hstack>
               <Spinner />
@@ -203,15 +205,13 @@ export default function EditTeamPage() {
             </Hstack>
             <Text color="textFaded">{uiText("AppStrings.LoadingTeamPage")}</Text>
           </Vstack>
-        </Card>
-      </Vstack>
+      </TeamPageCard>
     );
   }
 
   if (!teams || teams.length == 0)
     return (
-      <Vstack>
-        <Card className="max-w-96">
+      <TeamPageCard title={uiText("AppStrings.Team")} description={uiText("AppStrings.ViewAndManageYourTeamForTheJam")}>
           <Vstack>
             <Vstack gap={0}>
               <Hstack>
@@ -237,8 +237,7 @@ export default function EditTeamPage() {
                  {uiText("AppStrings.CreateTeam")} </Button>
             </Hstack>
           </Vstack>
-        </Card>
-      </Vstack>
+      </TeamPageCard>
     );
 
   const selectedTeamData = teams[selectedTeam];
@@ -256,10 +255,9 @@ export default function EditTeamPage() {
   );
 
   return (
-    <div className="flex items-center justify-center">
-      <Form
-        className={`w-full max-w-6xl flex flex-col gap-4 ${hasUnsavedChanges ? "pb-48 sm:pb-32" : ""}`}
-        style={{ "--editor-surface": colors.mantle, "--editor-text": colors.text, "--editor-accent": colors.blue } as CSSProperties}
+    <TeamPageCard hasTabs title={uiText("AppStrings.Team")} description={isCurrentJamTeam || !teamGameName ? uiText("AppStrings.ViewAndManageYourTeamForTheJam") : uiText("AppStrings.ViewAndManageYourTeamForValue0", { value0: teamGameName })}>
+      <Form style={{ "--music-text": colors.text, "--music-muted": colors.textFaded, "--music-accent": colors.blue } as CSSProperties}
+        className={`w-full min-w-0 flex flex-col gap-4 ${hasUnsavedChanges ? "pb-48 sm:pb-32" : ""}`}
         onReset={() => {
           setApplicationsOpen(teams[selectedTeam].applicationsOpen);
           setDescription(teams[selectedTeam].description);
@@ -304,59 +302,33 @@ export default function EditTeamPage() {
           }
         }}
       >
-        <header className="py-2 text-center">
-          <h1
-            className="text-3xl font-semibold"
-            style={{
-              color: headerColor,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 5px rgba(0, 0, 0, 0.75)",
-            }}
-          >
-             {uiText("AppStrings.Team")} </h1>
-          <p
-            className="mt-1 text-sm"
-            style={{
-              color: headerColor,
-              opacity: 0.82,
-              textShadow:
-                siteTheme.type === "Light"
-                  ? "none"
-                  : "0 1px 4px rgba(0, 0, 0, 0.8)",
-            }}
-          >
-            {isCurrentJamTeam || !teamGameName
-              ? uiText("AppStrings.ViewAndManageYourTeamForTheJam")
-              : uiText("AppStrings.ViewAndManageYourTeamForValue0", { value0: teamGameName })}
-          </p>
-        </header>
         {teams[selectedTeam].ownerId != user.id && (
           <p>{uiText("AppStrings.YouCannotEditTheTeamIfYouAre")}</p>
         )}
-        {teams.length > 1 && (
-          <div className="flex gap-2">
-            <Button
-              icon="arrowleft"
-              onClick={() => {
-                changeTeam(selectedTeam - 1);
-              }}
-              disabled={selectedTeam == 0}
-            >
-               {uiText("AppStrings.PreviousTeam")} </Button>
-            <Button
-              icon="arrowright"
-              onClick={() => {
-                changeTeam(selectedTeam + 1);
-              }}
-              disabled={selectedTeam == teams.length - 1}
-            >
-               {uiText("AppStrings.NextTeam")} </Button>
-          </div>
-        )}
-        <Tabs className="[&>[role=tablist]]:justify-center">
-          <Tab title={uiText("AppStrings.General")} icon="cog">
+        <MusicTabs ariaLabel={uiText("AppStrings.Team")} groups={[
+          {
+            label: "Team sections",
+            selected: selectedSection,
+            onSelect: setSelectedSection,
+            choices: [
+              { id: "general", name: uiText("AppStrings.General"), inline: true },
+              ...(isCurrentJamTeam ? [{ id: "finder", name: uiText("Navbar.TeamFinder.Title"), inline: true }] : []),
+              { id: "members", name: `${uiText("AppStrings.Members")} (${users.length})`, inline: true },
+            ],
+          },
+          {
+            label: "Choose team",
+            selected: String(selectedTeamData.id),
+            onSelect: id => changeTeam(teams.findIndex(team => String(team.id) === id)),
+            maxInline: 2,
+            choices: teams.map(team => ({
+              id: String(team.id),
+              name: getGameTeamName(team, owner => uiText("AppStrings.Value0STeam2", { value0: owner })) || uiText("AppStrings.Team"),
+              inline: true,
+            })),
+          },
+        ]} />
+          {selectedSection === "general" && <section aria-label={uiText("AppStrings.General")}>
             <div className="form-editor-panel settings-editor-panel">
               <div className="game-editor-panel-heading">
                 <Vstack align="start">
@@ -403,9 +375,9 @@ export default function EditTeamPage() {
                   </div>
                 )}
             </div>
-          </Tab>
-          {isCurrentJamTeam && (
-            <Tab title={uiText("Navbar.TeamFinder.Title")} icon="search">
+          </section>}
+          {isCurrentJamTeam && selectedSection === "finder" && (
+            <section aria-label={uiText("Navbar.TeamFinder.Title")}>
               <div className="form-editor-panel settings-editor-panel">
                 <div className="game-editor-panel-heading">
                   <Vstack align="start">
@@ -474,9 +446,9 @@ export default function EditTeamPage() {
               </Vstack>
             </div>
               </div>
-            </Tab>
+            </section>
           )}
-          <Tab title={uiText("AppStrings.Members")} icon="users">
+          {selectedSection === "members" && <section aria-label={uiText("AppStrings.Members")}>
             <div className="form-editor-panel settings-editor-panel">
               <div className="game-editor-panel-heading">
                 <Vstack align="start">
@@ -541,8 +513,8 @@ export default function EditTeamPage() {
           </div>
         ))}
             </div>
-          </Tab>
-        </Tabs>
+          </section>}
+
         <Modal
           isOpen={isOpen}
           onOpenChange={() => {
@@ -682,6 +654,6 @@ export default function EditTeamPage() {
           )}
         </div>
       </Form>
-    </div>
+    </TeamPageCard>
   );
 }

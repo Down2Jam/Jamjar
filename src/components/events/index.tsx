@@ -3,7 +3,7 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "@/compat/next-link";
 import { useRouter, useSearchParams } from "@/compat/next-navigation";
 import { hasCookie } from "@/helpers/cookie";
@@ -18,13 +18,14 @@ import {
   Avatar,
   Badge,
   Button,
-  Card,
   Hstack,
   Text,
   Vstack,
 } from "bioloom-ui";
 import type { IconName } from "bioloom-ui";
 import { CalendarDays, Clock3 } from "lucide-react";
+import PageCard from "@/components/PageCard";
+import MusicTabs from "@/app/(main)/music/MusicTabs";
 
 const FILTERS: Record<
   EventFilter,
@@ -113,11 +114,7 @@ function EventTiming({ event, filter }: { event: EventType; filter: EventFilter 
 function EventCard({ event, filter }: { event: EventType; filter: EventFilter }) {
   const uiText = useUiTranslations();
   return (
-    <Card
-      padding={0}
-      radius="lg"
-      className="overflow-hidden transition-transform duration-200 hover:-translate-y-0.5"
-    >
+<article className="overflow-hidden border-b border-[color-mix(in_srgb,var(--editor-text)_9%,transparent)] last:border-b-0">
       <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
         <Badge
           content={getIcon(event.icon, 15)}
@@ -177,13 +174,13 @@ function EventCard({ event, filter }: { event: EventType; filter: EventFilter })
           </Hstack>
         </Vstack>
       </div>
-    </Card>
+    </article>
   );
 }
 
 function EventSkeleton() {
   return (
-    <Card padding={0} radius="lg" className="overflow-hidden">
+    <div className="overflow-hidden">
       <div className="flex animate-pulse items-center gap-4 p-5">
         <div className="h-11 w-11 shrink-0 rounded-full bg-white/10" />
         <div className="flex-1 space-y-2">
@@ -192,7 +189,7 @@ function EventSkeleton() {
           <div className="h-3 w-3/5 rounded-full bg-white/5" />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
 
@@ -200,8 +197,7 @@ export default function Events() {
   const uiText = useUiTranslations();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { colors, siteTheme } = useTheme();
-  const headerColor = colors["text"];
+  const { colors } = useTheme();
   const initialFilter = searchParams.get("filter") as EventFilter;
   const [filter, setFilter] = useState<EventFilter>(
     FILTER_ORDER.includes(initialFilter) ? initialFilter : "current",
@@ -231,61 +227,17 @@ export default function Events() {
   };
 
   return (
-    <Vstack align="stretch" gap={5}>
-      <header className="relative py-2 text-center">
-        <h1
-          className="text-3xl font-semibold"
-          style={{
-            color: headerColor,
-            textShadow:
-              siteTheme.type === "Light"
-                ? "none"
-                : "0 1px 5px rgba(0, 0, 0, 0.75)",
-          }}
-        >
-           {uiText("Navbar.Events.Title")} </h1>
-        <p
-          className="mt-1 text-sm"
-          style={{
-            color: headerColor,
-            opacity: 0.82,
-            textShadow:
-              siteTheme.type === "Light"
-                ? "none"
-                : "0 1px 4px rgba(0, 0, 0, 0.8)",
-          }}
-        >
-           {uiText("AppStrings.CommunityStreamsTournamentsShowcasesAndGetTogethers")} </p>
-        {canCreateEvent && (
-          <div className="mt-3 flex justify-center sm:absolute sm:right-0 sm:top-2 sm:mt-0">
-            <Button icon="calendarplus" color="blue" href="/create-event">
-               {uiText("AppStrings.CreateEvent2")} </Button>
-          </div>
-        )}
-      </header>
-
-      <div
-        className="flex flex-wrap justify-center gap-1 rounded-xl border p-1.5 sm:self-center"
-        style={{
-          backgroundColor: `color-mix(in srgb, ${colors["mantle"]} 82%, transparent)`,
-          borderColor: `color-mix(in srgb, ${colors["text"]} 8%, transparent)`,
-        }}
-        aria-label={uiText("AppStrings.EventFilters")}
-      >
-        {FILTER_ORDER.map((key) => (
-          <Button
-            key={key}
-            size="sm"
-            variant={filter === key ? "standard" : "ghost"}
-            color={filter === key ? "blue" : "default"}
-            icon={FILTERS[key].icon}
-            onClick={() => selectFilter(key)}
-            aria-pressed={filter === key}
-          >
-            {uiText(FILTERS[key].name)}
-          </Button>
-        ))}
-      </div>
+    <PageCard icon={CalendarDays} title={uiText("Navbar.Events.Title")} description={uiText("AppStrings.CommunityStreamsTournamentsShowcasesAndGetTogethers")} hasTabs>
+      <div className="flex min-w-0 flex-col gap-5 [&_.music-responsive-tab-group]:max-w-full" style={{ "--music-text": colors.text, "--music-muted": colors.textFaded, "--music-accent": colors.blue } as CSSProperties}>
+        <MusicTabs ariaLabel={uiText("AppStrings.EventFilters")} groups={[{
+          label: uiText("AppStrings.EventFilters"),
+          selected: filter,
+          onSelect: value => selectFilter(value as EventFilter),
+          choices: FILTER_ORDER.map(key => ({ id: key, name: uiText(FILTERS[key].name), description: uiText(FILTERS[key].description), icon: FILTERS[key].icon, inline: true })),
+        }]} />
+        {canCreateEvent && <div className="flex justify-start">
+          <Button icon="calendarplus" color="blue" href="/create-event">{uiText("AppStrings.CreateEvent2")}</Button>
+        </div>}
 
       <div className="flex items-center justify-between gap-3">
         <Vstack align="start" gap={0}>
@@ -293,7 +245,7 @@ export default function Events() {
             {uiText(FILTERS[filter].name)}
           </Text>
           <Text size="sm" color="textFaded">
-            {FILTERS[filter].description}
+            {uiText(FILTERS[filter].description)}
           </Text>
         </Vstack>
         {!loading && !isError && (
@@ -307,7 +259,7 @@ export default function Events() {
         {loading ? (
           Array.from({ length: 3 }).map((_, index) => <EventSkeleton key={index} />)
         ) : isError ? (
-          <Card radius="lg">
+          <div>
             <Vstack gap={2} className="py-7 text-center">
               <Text size="lg" weight="semibold">{uiText("AppStrings.EventsCouldNotBeLoaded")}</Text>
               <Text size="sm" color="textFaded">
@@ -315,12 +267,12 @@ export default function Events() {
               <Button size="sm" onClick={() => window.location.reload()}>
                  {uiText("AppStrings.TryAgain")} </Button>
             </Vstack>
-          </Card>
+          </div>
         ) : visibleEvents.length === 0 ? (
-          <Card radius="lg">
+          <div>
             <Vstack gap={2} className="py-8 text-center">
               <CalendarDays size={30} style={{ color: colors["textFaded"] }} />
-              <Text size="lg" weight="semibold">{uiText("AppStrings.No")} {FILTERS[filter].name.toLowerCase()}  {uiText("AppStrings.Events2")}</Text>
+              <Text size="lg" weight="semibold">{filter === "current" ? uiText("AppStrings.NoEventsHappeningNow") : <>{uiText("AppStrings.No")} {uiText(FILTERS[filter].name).toLowerCase()} {uiText("AppStrings.Events2")}</>}</Text>
               <Text size="sm" color="textFaded">
                 {filter === "current"
                   ? uiText("AppStrings.NothingIsLiveRightNowCheckWhatSComingUpNext")
@@ -333,13 +285,14 @@ export default function Events() {
                    {uiText("AppStrings.ViewUpcomingEvents")} </Button>
               )}
             </Vstack>
-          </Card>
+          </div>
         ) : (
           visibleEvents.map((event) => (
             <EventCard key={event.id} event={event} filter={filter} />
           ))
         )}
       </Vstack>
-    </Vstack>
+      </div>
+    </PageCard>
   );
 }

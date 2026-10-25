@@ -850,7 +850,7 @@ export default function ClientGamePage({
             <Image
               src={displayGame.banner}
               alt={uiText("AppStrings.Value0SBanner", { value0: displayGame.name })}
-              className={`object-contain ${hasTransparentBanner ? "drop-shadow-2xl" : "lg:rounded-t-xl"}`}
+              className={`object-contain object-bottom ${hasTransparentBanner ? "drop-shadow-2xl" : "lg:rounded-t-xl"}`}
               fill
               onLoad={(event) => {
                 const banner = displayGame.banner;
@@ -863,7 +863,7 @@ export default function ClientGamePage({
           )}
         </div>
         <div
-          className={`grid gap-6 border-t p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)] ${hasTransparentBanner ? "rounded-t-xl shadow-2xl" : ""}`}
+          className={`relative grid gap-6 p-4 md:p-6 lg:border lg:rounded-b-xl lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,962px)_minmax(360px,1fr)] ${hasTransparentBanner ? "border-t rounded-t-xl shadow-2xl" : "-mt-px border-t-0 lg:border-t-0"}`}
           style={{
             backgroundColor: siteTheme.colors["mantle"],
             borderColor: interactiveOutlineColor,

@@ -3,13 +3,14 @@
 import { useTranslations as useUiTranslations } from "@/compat/next-intl";
 
 
-import { Button, Card, Spinner, Hstack, Vstack, Text, Icon } from "bioloom-ui";
+import { Button, Spinner, Hstack, Vstack, Text, Icon } from "bioloom-ui";
 import { createPostJamVersion, getGame } from "@/requests/game";
 import { GameType, PageVersion } from "@/types/GameType";
 import { use, useEffect, useMemo, useState } from "react";
 import GameEditingForm from "../../../../../components/game-editing-form/GameEditingForm";
 import { useCurrentJam } from "@/hooks/queries";
-import PageVersionToggle from "@/components/page-version-toggle/PageVersionToggle";
+import PageCard from "@/components/PageCard";
+import { Gamepad2 } from "lucide-react";
 import { addToast } from "bioloom-ui";
 import { getSelectedGamePage, materializeGamePage } from "@/helpers/gamePages";
 import { getApiErrorMessage, readItem } from "@/requests/helpers";
@@ -72,8 +73,7 @@ export default function ClientGameEditPage({
 
   if (loading) {
     return (
-      <Vstack>
-        <Card className="max-w-96">
+      <PageCard icon={Gamepad2} title={uiText("CreateGame.Edit.Title")} description={uiText("CreateGame.Edit.Description")}>
           <Vstack>
             <Hstack>
               <Spinner />
@@ -81,15 +81,13 @@ export default function ClientGameEditPage({
             </Hstack>
             <Text color="textFaded">{uiText("AppStrings.LoadingEditPage")}</Text>
           </Vstack>
-        </Card>
-      </Vstack>
+      </PageCard>
     );
   }
 
   if (!game || !formGame) {
     return (
-      <Vstack>
-        <Card className="max-w-96">
+      <PageCard icon={Gamepad2} title={uiText("CreateGame.Edit.Title")} description={uiText("CreateGame.Edit.Description")}>
           <Vstack>
             <Hstack>
               <Icon name="x" />
@@ -98,16 +96,14 @@ export default function ClientGameEditPage({
             <Text color="textFaded">
                {uiText("AppStrings.YouDoNotHaveAccessToEditingThis")} </Text>
           </Vstack>
-        </Card>
-      </Vstack>
+      </PageCard>
     );
   }
 
   return (
-    <Vstack align="stretch">
-      {canCreateOrEditPostJamVersion && (
+    <PageCard hasTabs icon={Gamepad2} title={uiText(selectedVersion === "POST_JAM" ? "AppStrings.EditPostJamPage" : "CreateGame.Edit.Title")} description={uiText(selectedVersion === "POST_JAM" ? "AppStrings.EditThePostJamVersionOfYourGamePage" : "CreateGame.Edit.Description")}>
+      {canCreateOrEditPostJamVersion && !game.postJamPage && (
         <Vstack>
-          {!game.postJamPage ? (
             <Button
               icon="plus"
               disabled={creatingPostJamVersion}
@@ -136,16 +132,12 @@ export default function ClientGameEditPage({
               }}
             >
                {uiText("AppStrings.CreateAPostJamVersionOfThePage")} </Button>
-          ) : (
-            <PageVersionToggle
-              value={selectedVersion}
-              onChange={setSelectedVersion}
-            />
-          )}
         </Vstack>
       )}
 
-      <GameEditingForm game={formGame} pageVersion={selectedVersion} />
-    </Vstack>
+      <div className="min-w-0 [&_.game-editor-tabs]:w-full [&_.game-editor-tabs>[role=tabpanel]]:border-0! [&_.game-editor-tabs>[role=tabpanel]]:rounded-none! [&_.game-editor-tabs>[role=tabpanel]]:bg-transparent! [&_.game-editor-tabs>[role=tabpanel]]:px-2! sm:[&_.game-editor-tabs>[role=tabpanel]]:px-3! max-[700px]:[&_.game-editor-tabs>[role=tabpanel]]:px-0!">
+        <GameEditingForm hideHeading musicTabs game={formGame} pageVersion={selectedVersion} onPageVersionChange={canCreateOrEditPostJamVersion && game.postJamPage ? setSelectedVersion : undefined} />
+      </div>
+    </PageCard>
   );
 }

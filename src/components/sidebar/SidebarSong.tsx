@@ -257,7 +257,7 @@ export default function SidebarSong({
         <Hstack
           justify="between"
           gap={wide ? 4 : 2}
-          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rowIndex !== undefined ? "flex-wrap" : ""} ${rating && rowIndex === undefined ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
+          className={wide ? `min-h-24 min-w-0 p-3 sm:p-4 ${rowIndex !== undefined ? "music-library-track-row max-[700px]:[&>div:first-child]:basis-full max-[700px]:[&>div:first-child]:gap-3 max-[700px]:[&_.sidebar-song-disc-button]:w-16! max-[700px]:[&_.sidebar-song-disc-button]:h-16! max-[700px]:[&>div:last-child_button]:min-h-11 flex-wrap" : ""} ${rating && rowIndex === undefined ? "!grid grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_auto_7.5rem]" : ""}` : ""}
         >
           <Hstack gap={wide || squareThumbnail ? 3 : 2} className="min-w-0 flex-1">
             {playlist ? (
