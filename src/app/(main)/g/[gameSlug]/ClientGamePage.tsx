@@ -94,6 +94,7 @@ import { usePageMetadata } from "@/hooks/usePageMetadata";
 import { UserHoverPreview } from "@/components/hover-previews";
 import EmbeddedGameBridge from "@/components/EmbeddedGameBridge";
 import { useSession } from "@/hooks/useSession";
+import ShareButton from "@/components/share-button";
 
 const platformOrder: Record<string, number> = {
   Windows: 1,
@@ -1034,6 +1035,7 @@ export default function ClientGamePage({
             <div className="mt-auto flex flex-col gap-4">
               {displayGame.published && <GameDevlog key={displayGame.slug} gameSlug={displayGame.slug} />}
               <Hstack wrap>
+                <ShareButton/>
                 {sortedDownloadLinks.map((downloadLink) => (
                   <Button
                     className="transition-transform hover:-translate-y-0.5 hover:scale-[1.02]"
@@ -2062,6 +2064,7 @@ export default function ClientGamePage({
         </>
       )}
     </PriorityEmotesContext.Provider>
+    
   );
 }
 
