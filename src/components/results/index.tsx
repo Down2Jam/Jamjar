@@ -520,32 +520,34 @@ export default function Results({ preview = false }: { preview?: boolean }) {
                         );
                       })}
                   </div>
-                  <div className="w-80 h-40 shrink-0">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart
-                        cx="50%"
-                        cy="50%"
-                        outerRadius="80%"
-                        data={radarData}
-                      >
-                        <PolarGrid stroke={colors["crust"]} />
-                        <PolarAngleAxis
-                          dataKey="subject"
-                          tick={<RatingRadarLabel color={colors.textFaded} />}
-                        />
-                        <PolarRadiusAxis
-                          domain={[0, 5]}
-                          axisLine={false}
-                          tick={false}
-                        />
-                        <Radar
-                          name="Rating"
-                          dataKey="rating"
-                          shape={<RatingRadarShape colors={colors} fillOpacity={0.6} />}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
+                  {radarData.length > 2 && (
+                    <div className="w-80 h-40 shrink-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <RadarChart
+                          cx="50%"
+                          cy="50%"
+                          outerRadius="80%"
+                          data={radarData}
+                        >
+                          <PolarGrid stroke={colors["crust"]} />
+                          <PolarAngleAxis
+                            dataKey="subject"
+                            tick={<RatingRadarLabel color={colors.textFaded} />}
+                          />
+                          <PolarRadiusAxis
+                            domain={[0, 5]}
+                            axisLine={false}
+                            tick={false}
+                          />
+                          <Radar
+                            name="Rating"
+                            dataKey="rating"
+                            shape={<RatingRadarShape colors={colors} fillOpacity={0.6} />}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </Hstack>
               </Card>
             );

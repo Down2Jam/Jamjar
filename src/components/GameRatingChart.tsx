@@ -9,6 +9,9 @@ type RatingChartPoint = { subject: string; A: number; B: number; fullMark: numbe
 
 export default function GameRatingChart({ data, showRanked = true }: { data: RatingChartPoint[]; showRanked?: boolean }) {
   const { colors } = useTheme();
+
+  if (data.length < 3) return null;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
